@@ -684,14 +684,26 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.advancedModeText = "Advanced Mode";
         }
 
-        // Initialize state
-        this.init();
+        // Wait for query engine to load
+        const onLoad = () => {
+            // Initialize state
+            this.init();
 
-        // Setup the flowchart Model
-        this.setupFlowChartModel();
+            // Setup the flowchart Model
+            this.setupFlowChartModel();
 
-        // Validate when the page loads
-        this.validate();
+            // Validate when the page loads
+            this.validate();
+        };
+
+        if (this.engine instanceof Promise) {
+            this.engine.then(queryEngine => {
+                this.engine = queryEngine;
+                onLoad();
+            });
+        } else {
+            onLoad();
+        }
     }
 
     /**

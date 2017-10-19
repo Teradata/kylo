@@ -42,6 +42,11 @@ public class EntityIdentificationAlertContent<C extends Serializable> implements
     public EntityIdentificationAlertContent(){
 
     }
+
+    public EntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType) {
+        this.entityId = entityId;
+        this.entityType = entityType;
+    }
     public EntityIdentificationAlertContent(String entityId, SecurityRole.ENTITY_TYPE entityType, C content) {
         this.entityId = entityId;
         this.entityType = entityType;
@@ -71,4 +76,6 @@ public class EntityIdentificationAlertContent<C extends Serializable> implements
     public void setContent(C content) {
         this.content = content;
     }
+
+
 }

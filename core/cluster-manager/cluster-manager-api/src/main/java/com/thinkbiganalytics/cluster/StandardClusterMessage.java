@@ -26,6 +26,7 @@ import java.io.Serializable;
  * A standard cluster message implementation
  */
 public class StandardClusterMessage implements ClusterMessage, Serializable {
+    private String id;
 
     private String type;
 
@@ -36,9 +37,14 @@ public class StandardClusterMessage implements ClusterMessage, Serializable {
 
     }
 
-    public StandardClusterMessage(String type, Serializable message) {
+    public StandardClusterMessage(String id,String type, Serializable message) {
+        this.id = id;
         this.type = type;
         this.message = message;
+    }
+
+    public String getId() {
+        return id;
     }
 
     @Override

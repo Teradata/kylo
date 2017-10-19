@@ -35,6 +35,7 @@ public class EmailServiceLevelAgreementActionTest {
         Mockito.verify(service).sendMail("a@a.com", "SLA Violated: sla name", "desc");
         Mockito.verify(service).sendMail("b@b.com", "SLA Violated: sla name", "desc");
         Mockito.verify(service).sendMail("c@c.com", "SLA Violated: sla name", "desc");
+
     }
 
     @Test
@@ -45,6 +46,7 @@ public class EmailServiceLevelAgreementActionTest {
         action.sendToAddresses("desc", "sla name", "a@a.com");
 
         Mockito.verify(service).sendMail("a@a.com", "SLA Violated: sla name", "desc");
+
     }
 
 }

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../query-engine", "./spark-constants", "./spark-script-builder", "./spark-query-parser", "rxjs/Subject", "../../../services/VisualQueryService"], function (require, exports, query_engine_1, spark_constants_1, spark_script_builder_1, spark_query_parser_1, Subject_1, VisualQueryService_1) {
+define(["require", "exports", "../query-engine", "./spark-constants", "./spark-script-builder", "./spark-query-parser", "rxjs/Subject", "../../../services/VisualQueryService", "../query-engine-factory.service"], function (require, exports, query_engine_1, spark_constants_1, spark_script_builder_1, spark_query_parser_1, Subject_1, VisualQueryService_1, query_engine_factory_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -92,6 +92,43 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
          */
         SparkQueryEngine.prototype.getColumnName = function (column) {
             return column.displayName;
+        };
+        /**
+         * Gets the schema fields for the the current transformation.
+         *
+         * @returns the schema fields or {@code null} if the transformation has not been applied
+         */
+        SparkQueryEngine.prototype.getFields = function () {
+            // Get list of columns
+            var columns = this.getColumns();
+            if (columns === null) {
+                return null;
+            }
+            // Get field list
+            return columns.map(function (col) {
+                var dataType;
+                //comment out decimal to double.  Decimals are supported ... will remove after testing
+                if (col.dataType.startsWith("decimal")) {
+                    dataType = "decimal";
+                }
+                else if (col.dataType === "smallint") {
+                    dataType = "int";
+                }
+                else {
+                    dataType = col.dataType;
+                }
+                var colDef = { name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
+                if (dataType === 'decimal') {
+                    //parse out the precisionScale
+                    var precisionScale = '20,2';
+                    if (col.dataType.indexOf("(") > 0) {
+                        precisionScale = col.dataType.substring(col.dataType.indexOf("(") + 1, col.dataType.length - 1);
+                    }
+                    colDef.precisionScale = precisionScale;
+                }
+                colDef.derivedDataType = dataType;
+                return colDef;
+            });
         };
         /**
          * Returns the data sources that are supported natively by this engine.
@@ -316,5 +353,6 @@ define(["require", "exports", "../query-engine", "./spark-constants", "./spark-s
         return SparkQueryEngine;
     }(query_engine_1.QueryEngine));
     exports.SparkQueryEngine = SparkQueryEngine;
+    query_engine_factory_service_1.registerQueryEngine("spark", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", SparkQueryEngine]);
 });
 //# sourceMappingURL=spark-query-engine.js.map

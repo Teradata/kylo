@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.thrift;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,7 +35,6 @@ import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
-import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
@@ -55,7 +54,6 @@ import java.util.concurrent.TimeUnit;
 @CapabilityDescription("Execute provided HIVE or Spark statement. This can be any HQL DML or DDL statement that results in no results."
 )
 public class ExecuteHQLStatement extends AbstractNiFiProcessor {
-
 
     public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
         .name("Database Connection Pooling Service")
@@ -96,7 +94,7 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
     }
 
     @Override
-    public void onTrigger(final ProcessContext context, final ProcessSession session) throws RuntimeException {
+    public void onTrigger(final ProcessContext context, final ProcessSession session) {
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
@@ -106,17 +104,20 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
         String[] hiveStatements = StringUtils.split(ddlQuery, ';');
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
-        executeStatements(session, flowFile, hiveStatements, thriftService);
+        executeStatements(context,session, flowFile, hiveStatements, thriftService);
     }
 
-    public void executeStatements(ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
+    public void executeStatements(ProcessContext context,ProcessSession session, FlowFile flowFile, String[] hiveStatements, ThriftService thriftService) {
         final ComponentLog logger = getLog();
+
+        String EXCEPTION_STATUS_KEY = "HQLStmt Status ";
 
         final StopWatch stopWatch = new StopWatch(true);
 
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
             boolean result = false;
+            EXCEPTION_STATUS_KEY = context.getName() + EXCEPTION_STATUS_KEY;
 
             for (String statement : hiveStatements) {
                 //  leading whitespace will cause Hive statement to fail
@@ -129,8 +130,10 @@ public class ExecuteHQLStatement extends AbstractNiFiProcessor {
             session.transfer(flowFile, IngestProperties.REL_SUCCESS);
         } catch (final Exception e) {
             logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{hiveStatements, flowFile, e});
+            logger.error(e.getMessage());
+            //add the exception to the flow file
+            flowFile = session.putAttribute(flowFile, EXCEPTION_STATUS_KEY, "Failed With Exception: "+(e.getMessage().length() > 300 ? e.getMessage().substring(0,300) : e.getMessage()));
             session.transfer(flowFile, IngestProperties.REL_FAILURE);
-            throw new ProcessException(e);
         }
     }
 

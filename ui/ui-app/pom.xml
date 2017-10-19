@@ -77,6 +77,11 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-security-auth-kylo-groups</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-auth-kerberos</artifactId>
       <version>${project.version}</version>
     </dependency>

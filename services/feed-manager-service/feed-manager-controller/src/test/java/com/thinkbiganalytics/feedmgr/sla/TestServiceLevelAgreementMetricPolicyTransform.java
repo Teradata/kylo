@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.sla;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.common.velocity.config.VelocitySpringConfiguration;
 import com.thinkbiganalytics.feedmgr.config.TestSpringConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
@@ -43,7 +44,7 @@ import javax.inject.Inject;
 /**
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestSpringConfiguration.class})
+@ContextConfiguration(classes = {TestSpringConfiguration.class,VelocitySpringConfiguration.class})
 public class TestServiceLevelAgreementMetricPolicyTransform {
 
     @Inject

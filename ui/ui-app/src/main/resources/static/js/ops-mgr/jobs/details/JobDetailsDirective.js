@@ -17,7 +17,9 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         };
     }
 
-    function JobDetailsDirectiveController($http, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService) {
+
+
+    function JobDetailsDirectiveController($http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService) {
         var self = this;
 
         /**
@@ -79,6 +81,9 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         this.relatedJobs = [];
         this.relatedJob = null;
         this.changeRelatedJob = changeRelatedJob;
+        this.navigateToLogs = navigateToLogs;
+        this.navigateToLogsForStep = navigateToLogsForStep;
+        this.logUiEnabled = false;
 
         this.init = function() {
             var executionId = self.executionId;
@@ -96,6 +101,28 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
         function previousTab() {
             self.tabMetadata.selectedIndex = Math.max(self.tabMetadata.selectedIndex - 1, 0);
         };
+
+        function logUiEnabled() {
+            self.logUiEnabled = AngularModuleExtensionService.stateExists("log-ui");
+        }
+
+        logUiEnabled();
+
+        function navigateToLogs(jobStartTime, jobEndTime){
+            $state.go("log-ui", {startTime:jobStartTime, endTime:jobEndTime, showCustom:true});
+        }
+
+        function navigateToLogsForStep(failedStep){
+            var previousStep = '';
+            for (var title in self.stepData) {
+                var step = self.stepData[title];
+                if(failedStep.title == title) {
+                    break;
+                }
+                previousStep = step;
+            }
+            $state.go("log-ui", {startTime:previousStep.startTime, endTime:failedStep.content.endTime, showCustom:true});
+        }
 
         //Tab Functions
 
@@ -491,6 +518,6 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
                 });
     }
 
-    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$http","$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService",JobDetailsDirectiveController]);
+    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",JobDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaJobDetails", directive);
 });

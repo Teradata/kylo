@@ -27,6 +27,8 @@ import java.io.Serializable;
  */
 public interface ClusterMessage {
 
+    String getId();
+
     /**
      * String describing the type of message.
      * Used when receiving to check if the receiver should process the message

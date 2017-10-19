@@ -23,6 +23,9 @@ package com.thinkbiganalytics.feedmgr.config;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.JGroupsClusterService;
+import com.thinkbiganalytics.common.velocity.service.InMemoryVelocityTemplateProvider;
+import com.thinkbiganalytics.common.velocity.service.VelocityTemplateProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.nifi.rest.NiFiObjectCache;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -494,6 +497,16 @@ public class TestSpringConfiguration {
     @Bean
     public ServicesApplicationStartup servicesApplicationStartup(){
         return Mockito.mock(ServicesApplicationStartup.class);
+    }
+
+    @Bean
+    public VelocityTemplateProvider velocityTemplateProvider() {
+        return new InMemoryVelocityTemplateProvider();
+    }
+
+    @Bean
+    public ServiceLevelAgreementActionTemplateProvider serviceLevelAgreementActionTemplateProvider() {
+        return Mockito.mock(ServiceLevelAgreementActionTemplateProvider.class);
     }
 
 }

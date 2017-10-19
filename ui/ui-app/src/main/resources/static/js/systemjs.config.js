@@ -91,7 +91,8 @@ System.config({
         'rxjs': 'npm:rxjs',
         "svg-morpheus":"bower:svg-morpheus/compile/unminified/svg-morpheus",
         "underscore":"bower:underscore/underscore-min",
-        "vis":"bower:vis/dist/vis.min"
+        "vis":"bower:vis/dist/vis.min",
+        "mdPickers":"bower:mdPickers/dist/mdPickers.min"
     },
     meta: {
         "@angular/core": {deps:["angular"]},
@@ -110,6 +111,7 @@ System.config({
         'angular-visjs':['angular','vis'],
         "codemirror-pig": ["codemirror"],
         "codemirror-properties":["codemirror"],
+        "codemirror-velocity":["codemirror"],
         "codemirror-python":["codemirror"],
         "codemirror-xml":["codemirror"],
         "codemirror-shell":["codemirror"],

@@ -38,6 +38,8 @@ public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicy
 
     private String validationMessage;
 
+    private String velocityTemplateType;
+
     @ApiModelProperty(value = "actionClasses", name = "actionClasses", reference = "#")
     private List<Class<? extends ServiceLevelAgreementAction>> actionClasses;
 
@@ -64,5 +66,13 @@ public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicy
 
     public void setValidationMessage(String validationMessage) {
         this.validationMessage = validationMessage;
+    }
+
+    public String getVelocityTemplateType() {
+        return velocityTemplateType;
+    }
+
+    public void setVelocityTemplateType(String velocityTemplateType) {
+        this.velocityTemplateType = velocityTemplateType;
     }
 }

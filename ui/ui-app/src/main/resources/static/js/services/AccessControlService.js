@@ -374,6 +374,9 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
              * @returns {boolean} {@code true} if the action is allowed, or {@code false} if denied
              */
             hasAction: function (name, actions) {
+                if(name == null){
+                    return true;
+                }
                 var self = this;
                 return _.some(actions, function (action) {
                     if (action.systemName === name) {

@@ -1,22 +1,22 @@
 #!/bin/bash
-NIFI_INSTALL_HOME=$1
-NIFI_USER=$2
-NIFI_GROUP=$3
-WORKING_DIR=$4
+NIFI_VERSION=$1
+NIFI_INSTALL_HOME=$2
+NIFI_USER=$3
+NIFI_GROUP=$4
+WORKING_DIR=$5
 NIFI_DATA=$NIFI_INSTALL_HOME/data
-NIFI_VERSION=${6:-1.3.0}
 
 # If we copy the NiFi tarball from $WORKING_DIR/nifi/ instead of downloading it
 offline=false
 
-if [ "$5" = "-o" ] || [ "$5" = "-O" ]
+if [ "$6" = "-o" ] || [ "$6" = "-O" ]
 then
     echo "Working in offline mode"
-        offline=true
+    offline=true
 fi
 
 if [ $# -lt 3 ] || [ $# -gt 6 ]; then
-    echo "Unknown arguments. Arg1 should be the nifi_home. Arg2 should be the nifi user, Arg3 should be the nifi group. For offline mode pass Arg4 the kylo setup folder and Arg5 the -o -or -O option. Arg6 is the NiFi Version override "
+    echo "Unknown arguments. Arg1 should be the nifi version, Arg2 should be the nifi home, Arg3 should be the nifi user, Arg4 should be the nifi group. For offline mode pass Arg5 the kylo setup folder and Arg6 the -o -or -O option"
     exit 1
 fi
 

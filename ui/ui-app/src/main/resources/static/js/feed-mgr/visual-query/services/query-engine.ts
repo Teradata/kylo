@@ -200,19 +200,18 @@ export abstract class QueryEngine<T> {
         }
 
         // Get field list
-        return columns.map(function (col) {
+        return columns.map(function (col: any) {
             let dataType;
             //comment out decimal to double.  Decimals are supported ... will remove after testing
             if (col.dataType.startsWith("decimal")) {
                 dataType = "decimal";
-            }
-            else if (col.dataType === "smallint") {
-                dataType = "int";
             } else {
                 dataType = col.dataType;
             }
             const colDef = {name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
-            if (dataType === 'decimal') {
+            if (col.precisionScale) {
+                colDef.precisionScale = col.precisionScale;
+            } else if (dataType === 'decimal') {
                 //parse out the precisionScale
                 let precisionScale = '20,2';
                 if (col.dataType.indexOf("(") > 0) {

@@ -155,14 +155,14 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
                 if (col.dataType.startsWith("decimal")) {
                     dataType = "decimal";
                 }
-                else if (col.dataType === "smallint") {
-                    dataType = "int";
-                }
                 else {
                     dataType = col.dataType;
                 }
                 var colDef = { name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
-                if (dataType === 'decimal') {
+                if (col.precisionScale) {
+                    colDef.precisionScale = col.precisionScale;
+                }
+                else if (dataType === 'decimal') {
                     //parse out the precisionScale
                     var precisionScale = '20,2';
                     if (col.dataType.indexOf("(") > 0) {

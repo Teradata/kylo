@@ -108,6 +108,10 @@ public interface FeedServicesAccessControl {
                                                                      "Access Service Level Agreements",
                                                                      "Allows access to service level agreements");
 
+    Action ACCESS_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES = FEEDS_SUPPORT.subAction("accessSLAEmailTemplates",
+                                                                     "Access Service Level Agreements Email Templates",
+                                                                     "Allows access to service level agreement email templates");
+
     Action EDIT_SERVICE_LEVEL_AGREEMENTS = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("editServiceLevelAgreements",
                                                                                      "Edit Service Level Agreements",
                                                                                      "Allows creating and editing service level agreements");

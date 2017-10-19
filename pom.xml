@@ -1182,6 +1182,15 @@
         <nifi.version>${nifi.version.override}</nifi.version>
       </properties>
     </profile>
+    <profile>
+      <id>nifi.version.1.4.0</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <nifi.version>1.4.0</nifi.version>
+      </properties>
+    </profile>
   </profiles>
 
 </project>

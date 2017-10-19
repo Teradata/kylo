@@ -51,7 +51,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
  */
 @Entity
 @Table(name = "FEED_ACL_INDEX")
-public class JpaFeedOpsAclEntry implements FeedOpsAclEntry {
+public class JpaFeedOpsAclEntry implements FeedOpsAclEntry, Serializable{
 
     @EmbeddedId
     private EntryId id;

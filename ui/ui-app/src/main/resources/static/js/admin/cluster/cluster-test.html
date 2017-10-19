@@ -1,0 +1,67 @@
+
+<md-content class="md-padding">
+
+<div layout="column">
+
+  <div layout="row">
+    <span class="md-title"> Is Kylo Clustered</span>
+    <ng-md-icon ng-if="vm.isClustered" icon="check_circle"></ng-md-icon>
+    <ng-md-icon ng-if="!vm.isClustered" icon="do_not_disturb"></ng-md-icon>
+  </div>
+
+  <div layout="column">
+    <span class="md-title">Cluster Members</span>
+    <div layout="column" ng-repeat="member in vm.members">
+      {{member}}
+    </div>
+  </div>
+
+  <md-divider></md-divider>
+
+  <div layout="row">
+    <md-input-container>
+      <label>Send a Message</label>
+      <input ng-model="vm.simpleMessage" required>
+    </md-input-container>
+    <md-button ng-click="vm.sendMessage();">Send</md-button>
+  </div>
+
+</div>
+
+  <md-divider></md-divider>
+  <div layout="column">
+   <span class="md-title">Received Messages</span>
+    <md-list  layout-fill layout="column" class="list-item-table">
+      <md-list-item  ng-repeat="msg in vm.receivedMessages|orderBy:'-dateTime' " >
+        <div layout="row" layout-fill>
+          <div flex="60" layout="column" class="item-column md-list-item-text " >
+            <span class="item-title" >{{msg.message}}</span>
+            <span class="column-title column-title-bottom">
+                              Message
+            </span>
+          </div>
+
+          <div layout="column" flex="20" class="item-column md-list-item-text ">
+          <span class="item-title" >{{msg.from}}</span>
+          <span class="column-title column-title-bottom">
+                              From
+            </span>
+        </div>
+          <div layout="column" flex="20" class="item-column md-list-item-text ">
+            <span class="item-title" >{{msg.dateTime | date:'HH:mm:ss'}}</span>
+            <span class="column-title column-title-bottom">
+                              Date
+            </span>
+          </div>
+
+        </div>
+        <md-divider ng-if="!$last"></md-divider>
+      </md-list-item>
+      <md-list-item ng-if="vm.receivedMessages.length == 0">
+        <div style="width:100%" class="item-column" >
+          <span class="item-title" >No Messages received</span>
+        </div>
+      </md-list-item>
+    </md-list>
+  </div>
+</md-content>

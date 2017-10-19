@@ -8,10 +8,14 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          var data = {
              DASHBOARD_UPDATED:'DASHBOARD_UPDATED',
              FEED_SUMMARY_UPDATED:'FEED_SUMMARY_UPDATED',
+             TAB_SELECTED:'TAB_SELECTED',
              feedSummaryData:{},
              feedUnhealthyCount:0,
              feedHealthyCount:0,
-             dashboard:{}
+             dashboard:{},
+             selectFeedHealthTab:function(tab) {
+                 BroadcastService.notify(data.TAB_SELECTED,tab);
+             }
          };
 
          var setupFeedHealth = function(){

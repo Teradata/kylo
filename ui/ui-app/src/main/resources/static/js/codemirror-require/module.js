@@ -11,6 +11,7 @@ define(['angular','codemirror-require/module-name','kylo-utils/LazyLoadUtil', 'c
                                              'codemirror/mode/pig/pig',
                                              'codemirror/mode/properties/properties',
                                              'codemirror/mode/python/python',
+                                             'codemirror/mode/velocity/velocity',
                                              'codemirror/mode/xml/xml',
                                              'codemirror/mode/shell/shell',
                                              'codemirror/mode/javascript/javascript',

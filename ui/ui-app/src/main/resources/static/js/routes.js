@@ -11,7 +11,40 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             debug: false
         });
 
-        $urlRouterProvider.otherwise("/home");
+        function onOtherwise(AngularModuleExtensionService, $state,url){
+            var stateData = AngularModuleExtensionService.stateAndParamsForUrl(url);
+            if(stateData.valid) {
+                $state.go(stateData.state,stateData.params);
+            }
+            else {
+                $state.go('home')
+            }
+        }
+
+        $urlRouterProvider.otherwise(function($injector, $location){
+            var $state = $injector.get('$state');
+            var svc = $injector.get('AngularModuleExtensionService');
+            var url = $location.url();
+            if(svc != null) {
+                if (svc.isInitialized()) {
+                    onOtherwise(svc,$state,url)
+                    return true;
+                }
+                else {
+                    $injector.invoke(function ($window, $state,AngularModuleExtensionService) {
+                        AngularModuleExtensionService.registerModules().then(function () {
+                            onOtherwise(AngularModuleExtensionService,$state,url)
+                            return true;
+                        });
+                    });
+                    return true;
+                }
+            }
+            else {
+                $location.url("/home")
+            }
+
+        });
 
         $stateProvider
             .state('home', {
@@ -598,10 +631,55 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                     console.log("Error loading admin jcr ", err);
                     return err;
                 });
-                ;
             }
         });
 
+        $stateProvider.state('sla-email-templates.**', {
+            url: '/sla-email-templates',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('sla-email-templates',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading sla email templates ", err);
+                    return err;
+                });
+            }
+        });
+
+        $stateProvider.state({
+            name: 'sla-email-template.**',
+            url: '/sla-email-template/:emailTemplateId',
+            params: {
+                emailTemplateId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/sla/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('sla-email-template',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading sla email template ", err);
+                    return err;
+                });
+
+            }
+        });
+
+        $stateProvider.state('cluster.**', {
+            url: '/admin/cluster',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('admin/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('cluster',transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading admin cluster ", err);
+                    return err;
+                });
+            }
+        });
 
         $stateProvider.state({
            name:'access-denied',
@@ -673,7 +751,6 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
               * and redirect if not authorized
               */
              $transitions.onStart({}, function (trans) {
-
                  if (AngularModuleExtensionService.isInitialized()) {
                      return onStartOfTransition(trans);
                  }

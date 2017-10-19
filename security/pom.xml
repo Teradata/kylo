@@ -21,6 +21,7 @@
     <module>security-auth-file</module>
     <module>security-auth-kylo-local</module>
     <module>security-auth-kylo-rest</module>
+    <module>security-auth-kylo-groups</module>
     <module>security-auth-kerberos</module>
     <module>security-auth-spark</module>
     <module>security-auth-cache</module>

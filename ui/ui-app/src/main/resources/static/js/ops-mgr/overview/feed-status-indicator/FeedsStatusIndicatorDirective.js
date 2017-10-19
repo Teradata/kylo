@@ -38,7 +38,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
         function onChartElementClick(key){
-        //    OpsManagerFeedService.setFeedHealthCardTab(key);
+            OpsManagerDashboardService.selectFeedHealthTab(key);
         }
 
         function updateChartData(){

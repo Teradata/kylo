@@ -20,28 +20,45 @@ package com.thinkbiganalytics.metadata.sla;
  * #L%
  */
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.mail.MailSender;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import com.google.common.base.Throwables;
+import com.thinkbiganalytics.common.velocity.model.VelocityEmailTemplate;
 
-import java.util.Properties;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import javax.inject.Inject;
+import javax.mail.Message;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 /**
- * Spring service that is used to send emails based upon the defined "slaEmailConfiguratoin" bean that is defined in the {@link com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration}
+ * Spring service that is used to send emails based upon the defined "slaEmailConfiguration" bean that is defined in the {@link com.thinkbiganalytics.metadata.sla.config.EmailServiceLevelAgreementSpringConfiguration}
  */
 public class SlaEmailService {
 
+    private static final Logger log = LoggerFactory.getLogger(SlaEmailService.class);
+
     @Inject
     @Qualifier("slaEmailSender")
-    private MailSender mailSender;
+    private JavaMailSender mailSender;
 
     @Inject
     @Qualifier("slaEmailConfiguration")
     private EmailConfiguration emailConfiguration;
+
+    private VelocityEmailTemplate defaultTemplate;
 
     /**
      * Send an email
@@ -51,12 +68,31 @@ public class SlaEmailService {
      * @param body    the email body
      */
     public void sendMail(String to, String subject, String body) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(emailConfiguration.getFrom());
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(body);
-        mailSender.send(message);
+
+        try {
+            if (testConnection()) {
+
+                MimeMessagePreparator mimeMessagePreparator = new MimeMessagePreparator() {
+                    @SuppressWarnings({"rawtypes", "unchecked"})
+                    public void prepare(MimeMessage message) throws Exception {
+                         MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                        String fromAddress = StringUtils.defaultIfBlank(emailConfiguration.getFrom(), emailConfiguration.getUsername());
+                     //   message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(to));
+                        helper.setFrom(new InternetAddress(fromAddress));
+                        helper.setTo(InternetAddress.parse(to));
+                        helper.setSubject(subject);
+                        helper.setText(body,true);
+                     //   helper.addInline("kylo-logo",new ClassPathResource("kylo-logo-orange-200.png"));
+                    }
+                };
+                mailSender.send(mimeMessagePreparator);
+                log.debug("Email send to {}", to);
+            }
+        } catch (MessagingException ex) {
+            log.error("Exception while sending mail : {}", ex.getMessage());
+            Throwables.propagate(ex);
+
+        }
     }
 
     /**
@@ -65,7 +101,6 @@ public class SlaEmailService {
      * @return {@code true} if valid, {@code false} if not valid
      */
     public boolean testConnection() throws MessagingException {
-        Properties props = ((JavaMailSenderImpl) mailSender).getSession().getProperties();
         ((JavaMailSenderImpl) mailSender).testConnection();
         return true;
     }
@@ -78,4 +113,24 @@ public class SlaEmailService {
     }
 
 
+    public VelocityEmailTemplate getDefaultTemplate() {
+        if (defaultTemplate == null) {
+            try {
+                Resource defaultTemplateResource = new ClassPathResource("default.email.template.vm");
+                BufferedReader br = new BufferedReader(new InputStreamReader(defaultTemplateResource.getInputStream()), 1024);
+                StringBuilder stringBuilder = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    stringBuilder.append(line).append('\n');
+                }
+                br.close();
+              String body  = stringBuilder.toString();
+              String subject = "SLA Violation for $sla.name";
+                defaultTemplate = new VelocityEmailTemplate(subject,body);
+            } catch (Exception e) {
+                //log it
+            }
+        }
+        return defaultTemplate;
+    }
 }

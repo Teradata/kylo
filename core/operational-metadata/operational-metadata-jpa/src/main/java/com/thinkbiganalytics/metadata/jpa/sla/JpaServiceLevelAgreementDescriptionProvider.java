@@ -20,23 +20,32 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.common.velocity.model.VelocityTemplate;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataChange;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.sla.ServiceLevelAgreementEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 @Service
@@ -51,52 +60,81 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
     @Inject
     private OpsManagerFeedProvider feedProvider;
 
+    @Inject
+    private ServiceLevelAgreementActionTemplateProvider serviceLevelAgreementActionTemplateProvider;
 
+    @Inject
+    MetadataAccess metadataAccess;
 
+    @Inject
+    private MetadataEventService metadataEventService;
+
+    @Inject
+    private ServiceLevelAgreementDescriptionCache serviceLevelAgreementDescriptionCache;
+
+    private SlaDeletedListener slaDeletedListener = new SlaDeletedListener();
 
     @Autowired
-    public JpaServiceLevelAgreementDescriptionProvider(JpaServiceLevelAssessmentRepository serviceLevelAssessmentRepository, JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
-         this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
+    public JpaServiceLevelAgreementDescriptionProvider(JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository) {
+        this.serviceLevelAgreementDescriptionRepository = serviceLevelAgreementDescriptionRepository;
+    }
+
+    @PostConstruct
+    private void init() {
+        metadataAccess.read(() -> serviceLevelAgreementDescriptionCache.populateCache(), MetadataAccess.SERVICE);
+        metadataEventService.addListener(slaDeletedListener);
     }
 
 
+    @Override
+    public ServiceLevelAgreementDescription findOne(ServiceLevelAgreement.ID id) {
+        return serviceLevelAgreementDescriptionRepository.findOne((ServiceLevelAgreementDescriptionId) resolveId(id.toString()));
+    }
+
+    @Override
+    public List<ServiceLevelAgreementDescription> findAll() {
+        return new ArrayList<>(serviceLevelAgreementDescriptionRepository.findAll());
+    }
+
     /**
      * Updates the Service Level Agreement (SLA) JPA mapping and its relationship to Feeds
-     * @param slaId the SLA id
-     * @param name the SLA Name
+     * Called from ModeShape when an SLA is saved/updated
+     *
+     * @param slaId       the SLA id
+     * @param name        the SLA Name
      * @param description the SLA Description
-     * @param feeds a set of Feed Ids related to this SLA
+     * @param feeds       a set of Feed Ids related to this SLA
      */
     @Override
-    public void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds){
+    public void updateServiceLevelAgreement(ServiceLevelAgreement.ID slaId, String name, String description, Set<Feed.ID> feeds, Set<VelocityTemplate.ID> velocityTemplates) {
         ServiceLevelAgreementDescriptionId id = null;
-        if(!(slaId instanceof  ServiceLevelAgreementDescriptionId)){
+        if (!(slaId instanceof ServiceLevelAgreementDescriptionId)) {
             id = new ServiceLevelAgreementDescriptionId(slaId.toString());
-        }
-        else {
+        } else {
             id = (ServiceLevelAgreementDescriptionId) slaId;
         }
         JpaServiceLevelAgreementDescription serviceLevelAgreementDescription = serviceLevelAgreementDescriptionRepository.findOne(id);
-        if(serviceLevelAgreementDescription == null){
+        if (serviceLevelAgreementDescription == null) {
             serviceLevelAgreementDescription = new JpaServiceLevelAgreementDescription();
             serviceLevelAgreementDescription.setSlaId(id);
         }
         serviceLevelAgreementDescription.setName(name);
         serviceLevelAgreementDescription.setDescription(description);
         List<OpsManagerFeed> jpaFeeds = null;
-        if(feeds != null){
-            List<OpsManagerFeed.ID> feedIds =feeds.stream().map(f -> feedProvider.resolveId(f.toString())).collect(Collectors.toList());
+        if (feeds != null) {
+            List<OpsManagerFeed.ID> feedIds = feeds.stream().map(f -> feedProvider.resolveId(f.toString())).collect(Collectors.toList());
             jpaFeeds = (List<OpsManagerFeed>) feedProvider.findByFeedIds(feedIds);
         }
-        if(jpaFeeds != null) {
+        if (jpaFeeds != null) {
             serviceLevelAgreementDescription.setFeeds(new HashSet<>(jpaFeeds));
-        }
-        else {
+        } else {
             serviceLevelAgreementDescription.setFeeds(null);
         }
-
         serviceLevelAgreementDescriptionRepository.save(serviceLevelAgreementDescription);
-
+        //update the cache
+        serviceLevelAgreementDescriptionCache.save(serviceLevelAgreementDescription);
+        //save the velocity template relationships
+        serviceLevelAgreementActionTemplateProvider.assignTemplateByIds(serviceLevelAgreementDescription, velocityTemplates);
     }
 
     public ServiceLevelAgreement.ID resolveId(Serializable ser) {
@@ -107,8 +145,21 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
         }
     }
 
-    public List< ? extends  ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId){
+    public List<? extends ServiceLevelAgreementDescription> findForFeed(OpsManagerFeed.ID feedId) {
         return serviceLevelAgreementDescriptionRepository.findForFeed(feedId);
+    }
+
+    /**
+     * Listen for when SLAs are deleted from ModeShape
+     */
+    private class SlaDeletedListener implements MetadataEventListener<ServiceLevelAgreementEvent> {
+
+        @Override
+        public void notify(ServiceLevelAgreementEvent event) {
+            if (event.getData().getChange() == MetadataChange.ChangeType.DELETE) {
+                serviceLevelAgreementDescriptionCache.deleteByDtoId(event.getData().getId().toString());
+            }
+        }
     }
 
 

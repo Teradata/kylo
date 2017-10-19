@@ -1,0 +1,109 @@
+<!--
+  #%L
+  thinkbig-ui-operations-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<card-layout flex header-css="filter-header">
+  <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+
+  </header-section>
+  <body-section>
+    <div ng-if="vm.loading">
+      <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+      <span class="md-body-2 layout-padding-left">Loading templates</span>
+    </div>
+    <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
+            <md-list flex layout-fill class="list-item-table">
+              <md-list-item class="md-secondary overview" dir-paginate="template in vm.templates|orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
+                            pagination-id="vm.paginationId" ng-click="vm.editTemplate($event,template)">
+                <div layout="row" layout-fill>
+                <div flex="70" layout="column" class="item-column md-list-item-text ">
+                                    <span ng-class="{'disabled':template.enabled == false}">
+                                      {{template.name}}
+                                    </span>
+                  <div layout="row" class="column-title column-title-bottom">
+                    <span>Template Name</span>
+                    <span ng-if="template.enabled == false">DISABLED</span>
+                  </div>
+                </div>
+                  <div flex="30" layout="column" class="item-column md-list-item-text ">
+                    <span>
+                     <ng-md-icon class="primary-color-1" icon="check_box" ng-if="template.default"></ng-md-icon>
+                     <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!template.default"></ng-md-icon>
+                    </span>
+                    <div layout="row" class="column-title column-title-bottom">
+                      <span>Default Template</span>
+                    </div>
+                  </div>
+                </div>
+                <md-divider ng-if="!$last"></md-divider>
+              </md-list-item>
+              <md-list-item ng-show="vm.loading == false && vm.templates.length ==0">
+                No templates found
+              </md-list-item>
+              <md-divider></md-divider>
+              <md-list-item layout-align="end center" layout-row class="pagination-list-item">
+                <dir-pagination-controls pagination-id="vm.paginationId"
+                                         auto-hide="false"
+                                         max-size="5"
+                                         direction-links="true"
+                                         boundary-links="false"
+                                         template-url="js/common/dir-pagination/dirPagination.tpl.html"
+                                         current-page="vm.currentPage(tab)"
+                                         on-page-change="vm.onPaginationChange(newPageNumber)"
+                                         label="Rows per page"
+                                         rows-per-page="vm.paginationData.rowsPerPage"
+                                         rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                         class="pagination-row">
+                </dir-pagination-controls>
+              </md-list-item>
+            </md-list>
+          </div>
+          <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
+            <md-table-container>
+              <table md-table md-progress="vm.deferred.promise">
+                <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
+                <tr md-row>
+                  <th md-column name="Template" md-order-by="name">Template</th>
+                  <th md-column name="Active" md-order-by="enabled">Active</th>
+                  <th md-column name="Default" md-order-by="default">Default</th>
+                </tr>
+                </thead>
+                <tbody md-body>
+                <tr md-row
+                    ng-repeat="template in vm.templates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"
+                    ng-click="vm.editTemplate($event,template)">
+                  <td md-cell>{{template.name}}</td>
+                  <td md-cell>{{template.enabled}}</td>
+                  <td md-cell>
+                     <ng-md-icon class="primary-color-1" icon="check_box" ng-if="template.default"></ng-md-icon>
+                      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!template.default"></ng-md-icon>
+                  </td>
+                </tr>
+                </tbody>
+              </table>
+            </md-table-container>
+
+            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.content.length}}" md-on-paginate="vm.onPaginationChange"
+                                 md-limit-options="[5,10,20,50]"></md-table-pagination>
+
+          </div>
+
+
+  </body-section>
+</card-layout>

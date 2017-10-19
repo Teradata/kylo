@@ -23,15 +23,21 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
  * #L%
  */
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.cluster.ClusterMessage;
+import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.jpa.cache.AbstractCacheBackedProvider;
+import com.thinkbiganalytics.metadata.jpa.cache.CacheBackedProviderClusterMessage;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.security.Principal;
@@ -51,6 +57,7 @@ import javax.inject.Inject;
  */
 public class JpaFeedOpsAccessControlProvider extends AbstractCacheBackedProvider<JpaFeedOpsAclEntry, JpaFeedOpsAclEntry.EntryId> implements FeedOpsAccessControlProvider {
 
+    private static final Logger log = LoggerFactory.getLogger(JpaFeedOpsAccessControlProvider.class);
     @Inject
     private MetadataEventService eventService;
 
@@ -72,6 +79,7 @@ public class JpaFeedOpsAccessControlProvider extends AbstractCacheBackedProvider
     @PostConstruct
     private void init(){
         subscribeListener(feedAclCache);
+        clusterService.subscribe(this);
         //initially populate
         metadataAccess.read(() ->populateCache(), MetadataAccess.SERVICE );
     }
@@ -223,6 +231,8 @@ public class JpaFeedOpsAccessControlProvider extends AbstractCacheBackedProvider
     public List<JpaFeedOpsAclEntry> findForFeed(String feedId) {
          return this.repository.findForFeed(UUID.fromString(feedId));
     }
+
+
 
 
 

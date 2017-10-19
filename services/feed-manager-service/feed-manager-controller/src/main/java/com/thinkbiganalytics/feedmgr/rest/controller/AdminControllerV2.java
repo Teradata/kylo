@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
@@ -31,6 +32,9 @@ import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheById;
+import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
+import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -79,11 +83,24 @@ public class AdminControllerV2 {
     @Inject
     UploadProgressService uploadProgressService;
 
+    @Inject
+    private ClusterService clusterService;
+
     /**
      * Feed manager metadata service
      */
     @Inject
     MetadataService metadataService;
+
+    @Inject
+    FeedAclCache feedAclCache;
+
+    @Inject
+    OpsManagerFeedCacheById opsManagerFeedCacheById;
+
+    @Inject
+    OpsManagerFeedCacheByName opsManagerFeedCacheByName;
+
 
     @GET
     @Path("/upload-status/{key}")
@@ -174,6 +191,61 @@ public class AdminControllerV2 {
             importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
         }
         return Response.ok(importTemplate).build();
+    }
+
+    @GET
+    @Path("/cache-summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the size of the feed acl cache")
+    public Response getCacheSizes() {
+        Long feedAclSize = feedAclCache.size();
+        Long feedCacheNameSize = opsManagerFeedCacheByName.size();
+        Long feedCacheIdSize = opsManagerFeedCacheById.size();
+        CacheSummary cacheSummary = new CacheSummary(feedAclSize, feedCacheNameSize, feedCacheIdSize);
+        return Response.ok(cacheSummary).build();
+
+    }
+
+
+    private class CacheSummary {
+
+        Long feedAclSize;
+        Long feedByNameSize;
+        Long feedByIdSize;
+
+        public CacheSummary() {
+
+        }
+
+        public CacheSummary(Long feedAclSize, Long feedByNameSize, Long feedByIdSize) {
+            this.feedAclSize = feedAclSize;
+            this.feedByNameSize = feedByNameSize;
+            this.feedByIdSize = feedByIdSize;
+        }
+
+        public Long getFeedAclSize() {
+            return feedAclSize;
+        }
+
+        public void setFeedAclSize(Long feedAclSize) {
+            this.feedAclSize = feedAclSize;
+        }
+
+        public Long getFeedByNameSize() {
+            return feedByNameSize;
+        }
+
+        public void setFeedByNameSize(Long feedByNameSize) {
+            this.feedByNameSize = feedByNameSize;
+        }
+
+        public Long getFeedByIdSize() {
+            return feedByIdSize;
+        }
+
+        public void setFeedByIdSize(Long feedByIdSize) {
+            this.feedByIdSize = feedByIdSize;
+        }
     }
 
 }

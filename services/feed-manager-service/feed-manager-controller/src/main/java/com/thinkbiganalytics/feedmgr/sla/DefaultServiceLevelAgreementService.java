@@ -20,7 +20,10 @@ package com.thinkbiganalytics.feedmgr.sla;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
+import com.thinkbiganalytics.common.velocity.model.VelocityTemplate;
+import com.thinkbiganalytics.common.velocity.service.VelocityTemplateProvider;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
@@ -32,18 +35,25 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplate;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
+import com.thinkbiganalytics.metadata.jpa.common.JpaVelocityTemplate;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementEmailTemplate;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,6 +63,7 @@ import org.slf4j.LoggerFactory;
 
 import java.security.AccessControlException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +100,12 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
     @Inject
     private ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider;
+
+    @Inject
+    private VelocityTemplateProvider velocityTemplateProvider;
+
+    @Inject
+    private ServiceLevelAgreementActionTemplateProvider serviceLevelAgreementActionTemplateProvider;
 
 
     private List<ServiceLevelAgreementRule> serviceLevelAgreementRules;
@@ -173,14 +190,27 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
     @Override
     public void unscheduleServiceLevelAgreement(Feed.ID feedId) {
-        metadataAccess.read(() -> {
+        unscheduleServiceLevelAgreement(feedId,false);
+    }
+
+
+    public void unscheduleServiceLevelAgreement(Feed.ID feedId, boolean remove) {
+        metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
             if (agreements != null) {
                 for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
                     serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
+                    if(sla instanceof FeedServiceLevelAgreement && ((FeedServiceLevelAgreement)sla).getFeeds().size() == 1){
+                        feedSlaProvider.removeFeedRelationships(sla.getId());
+                        slaProvider.removeAgreement(sla.getId());
+                    }
                 }
             }
         });
+    }
+
+    public void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId) {
+        unscheduleServiceLevelAgreement(feedId,true);
     }
 
 
@@ -325,6 +355,8 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
                                 .findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreementGroup.getRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
+
+                    applyVelocityTemplateSelectionToActionActionItems(serviceLevelAgreementGroup.getActionConfigurations());
                     serviceLevelAgreementGroup.setCanEdit(modelSla.isCanEdit());
                     return serviceLevelAgreementGroup;
                 }
@@ -371,9 +403,57 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
     @Override
     public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
 
-        return ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
+        List<ServiceLevelAgreementActionUiConfigurationItem> actionItems = ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
+        applyVelocityTemplateSelectionToActionActionItems(actionItems);
+        return actionItems;
     }
 
+
+    private void applyVelocityTemplateSelectionToActionActionItems(List<ServiceLevelAgreementActionUiConfigurationItem> actionItems) {
+        if (actionItems != null && !actionItems.isEmpty()) {
+
+            Map<ServiceLevelAgreementActionUiConfigurationItem, List<FieldRuleProperty>>
+                velocityTemplatePropertyMap =
+                actionItems.stream().collect(Collectors.toMap(a -> a, a -> ServiceLevelAgreementMetricTransformer.instance()
+                    .findPropertiesForRulesetMatchingRenderTypes(Lists.newArrayList(a), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.velocityTemplate.name()})));
+
+            velocityTemplatePropertyMap.entrySet().stream().forEach(e ->
+                                                                    {
+                                                                        List<? extends VelocityTemplate>
+                                                                            availableTemplates =
+                                                                            velocityTemplateProvider.findEnabledByType(e.getKey().getVelocityTemplateType());
+                                                                        if (e.getValue() != null && !e.getValue().isEmpty()) {
+
+                                                                            e.getValue().stream().forEach(p -> {
+                                                                                if (availableTemplates.isEmpty()) {
+                                                                                    p.setHidden(true);
+                                                                                    //log hiding template property
+                                                                                } else {
+                                                                                    if (availableTemplates.size() == 1) {
+                                                                                        p.setHidden(true);
+                                                                                        p.setValue(availableTemplates.get(0).getId().toString());
+                                                                                    } else {
+                                                                                        List<LabelValue>
+                                                                                            templateSelection =
+                                                                                            availableTemplates.stream().filter(t -> t.isEnabled())
+                                                                                                .map(t -> new LabelValue(t.getName(), t.getId().toString()))
+                                                                                                .collect(Collectors.toList());
+                                                                                        p.setSelectableValues(templateSelection);
+                                                                                        if (StringUtils.isBlank(p.getValue())) {
+                                                                                            p.setValue(availableTemplates.get(0).getId().toString());
+                                                                                        }
+                                                                                        if (p.getValues() == null) {
+                                                                                            p.setValues(new ArrayList<>()); // reset the initial values to be an empty arraylist
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            });
+                                                                        }
+
+                                                                    });
+
+        }
+    }
 
     @Override
     public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName) {
@@ -386,6 +466,15 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
         return saveAndScheduleSla(serviceLevelAgreement, null);
     }
 
+
+    private Set<VelocityTemplate.ID> findVelocityTemplates(ServiceLevelAgreementGroup agreement) {
+        if(agreement.getActionConfigurations() == null) {
+            return null;
+        }
+        return agreement.getActionConfigurations().stream().flatMap(a -> ServiceLevelAgreementMetricTransformer.instance()
+            .findPropertiesForRulesetMatchingRenderTypes(Lists.newArrayList(a), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.velocityTemplate.name()}).stream())
+            .filter(r -> StringUtils.isNotBlank(r.getValue())).map(r -> velocityTemplateProvider.resolveId(r.getValue())).collect(Collectors.toSet());
+    }
 
     /**
      * In order to Save an SLA if it is related to a Feed(s) the user needs to have EDIT_DETAILS permission on the Feed(s)
@@ -481,12 +570,14 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
                     //relate them
                     Set<Feed.ID> feedIds = new HashSet<>();
                     FeedServiceLevelAgreementRelationship feedServiceLevelAgreementRelationship = feedSlaProvider.relateFeeds(savedSla, slaFeeds);
-                    if(feedServiceLevelAgreementRelationship != null && feedServiceLevelAgreementRelationship.getFeeds() != null){
-                        feedIds  = feedServiceLevelAgreementRelationship.getFeeds().stream().map(f -> f.getId()).collect(Collectors.toSet());
+                    if (feedServiceLevelAgreementRelationship != null && feedServiceLevelAgreementRelationship.getFeeds() != null) {
+                        feedIds = feedServiceLevelAgreementRelationship.getFeeds().stream().map(f -> f.getId()).collect(Collectors.toSet());
                     }
 
+                    Set<VelocityTemplate.ID> velocityTemplates = findVelocityTemplates(serviceLevelAgreement);
+
                     //Update the JPA mapping in Ops Manager for this SLA and its related Feeds
-                    serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(savedSla.getId(),savedSla.getName(),savedSla.getDescription(),feedIds);
+                    serviceLevelAgreementDescriptionProvider.updateServiceLevelAgreement(savedSla.getId(), savedSla.getName(), savedSla.getDescription(), feedIds, velocityTemplates);
 
                     com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = serviceLevelAgreementTransform.toModel(savedSla, slaFeeds, true);
                     //schedule it
@@ -518,5 +609,62 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
     }
 
+    public List<ServiceLevelAgreementEmailTemplate> getServiceLevelAgreementEmailTemplates() {
+        return metadataAccess.read(() -> {
+            List<? extends ServiceLevelAgreementActionTemplate> serviceLevelAgreementActionTemplates = serviceLevelAgreementActionTemplateProvider.findAll();
+            Map<VelocityTemplate.ID, List<ServiceLevelAgreementActionTemplate>>
+                templatesByVelocityId =
+                serviceLevelAgreementActionTemplates.stream().collect(Collectors.groupingBy(c -> c.getVelocityTemplate().getId()));
+
+            return velocityTemplateProvider.findByType(ServiceLevelAgreementEmailTemplate.EMAIL_TEMPLATE_TYPE).stream()
+                .map(t -> new ServiceLevelAgreementEmailTemplate(t.getId().toString(), t.getName(), t.getSystemName(), t.getTitle(), t.getTemplate(), t.isEnabled(), t.isDefault())).collect(
+                    Collectors.toList());
+        });
+    }
+
+
+    public List<SimpleServiceLevelAgreementDescription> getSlaReferencesForVelocityTemplate(String velocityTemplateId) {
+        return metadataAccess.read(() -> {
+            List<? extends ServiceLevelAgreementActionTemplate> templates = serviceLevelAgreementActionTemplateProvider.findByVelocityTemplate(velocityTemplateProvider.resolveId(velocityTemplateId));
+            if (templates != null) {
+                return templates.stream().map(t -> {
+                    ServiceLevelAgreementDescription sla = t.getServiceLevelAgreementDescription();
+                    return new SimpleServiceLevelAgreementDescription(sla.getSlaId().toString(), sla.getName(), sla.getDescription());
+                }).collect(Collectors.toList());
+            }
+            return Collections.emptyList();
+        });
+    }
+
+
+    public ServiceLevelAgreementEmailTemplate saveEmailTemplate(ServiceLevelAgreementEmailTemplate emailTemplate) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENTS);
+        return metadataAccess.commit(() -> {
+            JpaVelocityTemplate jpaVelocityTemplate = null;
+            if (StringUtils.isNotBlank(emailTemplate.getId())) {
+                VelocityTemplate.ID id = velocityTemplateProvider.resolveId(emailTemplate.getId());
+                jpaVelocityTemplate = (JpaVelocityTemplate) velocityTemplateProvider.findById(id);
+                jpaVelocityTemplate.setName(emailTemplate.getName());
+                jpaVelocityTemplate.setTitle(emailTemplate.getSubject());
+                jpaVelocityTemplate.setTemplate(emailTemplate.getTemplate());
+                jpaVelocityTemplate.setEnabled(emailTemplate.isEnabled());
+                jpaVelocityTemplate.setDefault(emailTemplate.isDefault());
+                if (!emailTemplate.isEnabled()) {
+                    List<? extends ServiceLevelAgreementActionTemplate> slaTemplates = serviceLevelAgreementActionTemplateProvider.findByVelocityTemplate(id);
+                    if (slaTemplates != null && !slaTemplates.isEmpty()) {
+                        throw new IllegalArgumentException("Unable to disable this template. There are " + slaTemplates.size() + " SLAs using it.");
+                    }
+                }
+            } else {
+                jpaVelocityTemplate =
+                    new JpaVelocityTemplate(ServiceLevelAgreementEmailTemplate.EMAIL_TEMPLATE_TYPE, emailTemplate.getName(), emailTemplate.getName(), emailTemplate.getSubject(),
+                                            emailTemplate.getTemplate(), emailTemplate.isEnabled());
+            }
+
+            VelocityTemplate template = velocityTemplateProvider.save(jpaVelocityTemplate);
+            emailTemplate.setId(template.getId().toString());
+            return emailTemplate;
+        });
+    }
 
 }

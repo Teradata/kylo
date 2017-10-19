@@ -21,7 +21,7 @@ package com.thinkbiganalytics.ui.config;
  */
 
 import com.thinkbiganalytics.spring.FileResourceService;
-import com.thinkbiganalytics.ui.service.UiTemplateService;
+import com.thinkbiganalytics.ui.service.StandardUiTemplateService;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +38,8 @@ public class UiSpringConfiguration {
     }
 
     @Bean
-    public UiTemplateService uiTemplateService(){
-        return new UiTemplateService();
+    public StandardUiTemplateService uiTemplateService(){
+        return new StandardUiTemplateService();
     }
 
 }

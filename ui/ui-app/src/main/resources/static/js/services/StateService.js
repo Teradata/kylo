@@ -165,6 +165,9 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.navigateToServiceLevelAgreement = function (slaId) {
                 $state.go('service-level-agreements',{slaId:slaId});
             }
+            data.navigateToNewEmailTemplate = function (templateId) {
+                $state.go('sla-email-template',{emailTemplateId:templateId});
+            }
             return data;
         }
 

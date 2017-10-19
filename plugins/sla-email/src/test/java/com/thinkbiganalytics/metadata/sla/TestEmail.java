@@ -20,7 +20,11 @@ package com.thinkbiganalytics.metadata.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.common.velocity.config.VelocitySpringConfiguration;
+import com.thinkbiganalytics.common.velocity.service.VelocityService;
+import com.thinkbiganalytics.metadata.api.sla.TestMetric;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -29,8 +33,10 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.config.DeveloperEmailConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +45,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -50,7 +58,7 @@ import javax.inject.Inject;
  * Users can use this as a base test and update the {@link TestConfiguration} class with the proper connection information
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestConfiguration.class, DeveloperEmailConfiguration.class})
+@ContextConfiguration(classes = {TestConfiguration.class, DeveloperEmailConfiguration.class, VelocitySpringConfiguration.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @ActiveProfiles("developer.email")
 @Ignore
@@ -59,6 +67,9 @@ public class TestEmail {
 
     @Inject
     EmailServiceLevelAgreementAction emailServiceLevelAgreementAction;
+
+    @Inject
+    private VelocityService velocityService;
 
 
     private ServiceLevelAssessment serviceLevelAssessment() {
@@ -168,12 +179,104 @@ public class TestEmail {
 
     @Test
     public void testSlaEmail() {
-        String email = "thinkbig.tester@gmail.com";
+        String email = "scott.reisdorf@thinkbiganalytics.com";
+        String template = getTemplate();
+        velocityService.registerEmailTemplate("test","SLA Violation $sla.name ",template);
         EmailServiceLevelAgreementActionConfiguration emailServiceLevelAgreementActionConfiguration = new EmailServiceLevelAgreementActionConfiguration(email);
-
+        emailServiceLevelAgreementActionConfiguration.setVelocityTemplateId("test");
         emailServiceLevelAgreementAction.respond(emailServiceLevelAgreementActionConfiguration, serviceLevelAssessment(), null);
 
     }
+
+    private String getTemplate(){
+
+       return
+        "<html>\n"
+        +" <body>"
+        + "<table>\n"
+        + "\n"
+        + "        <tr>\n"
+        + "\n"
+        + "               <td align=\"center\" style=\"background-color:rgb(119, 119, 119);\"><img src=\"cid:kylo-logo\"></td>\n"
+        + "\n"
+        + "        </tr>\n"
+        + "\n"
+        + "        <tr>\n"
+        + "\n"
+        + "               <td>\n"
+        + "\n"
+        + "                   <table>\n"
+        + "\n"
+        + "                       <tr>\n"
+        + "                               <td>$sla.name</td>\n"
+        + "                       </tr>"
+        + "                       <tr> "
+        + "                               <td>$sla.description</td>\n"
+        + "                       </tr>\n"
+        + "                       <tr><td colspan=\"2\">$description</td></tr> "
+        + "\n"
+        + "                   </table>\n"
+        + "\n"
+        + "               </td>\n"
+        + "\n"
+        + "        </tr>\n"
+        + "\n"
+        + "</table>"
+        + "</body>"
+        + "</html>";
+    }
+
+    @Test
+    public void testVelocityEmail() {
+        String email = "thinkbig.tester@gmail.com";
+        String template = getTemplate();
+
+        velocityService.registerTemplate("test",template);
+        Map<String,Object> map = new HashMap();
+        InMemorySLAProvider slaProvider = new InMemorySLAProvider();
+        Metric m1 = new SimpleMetric();
+
+        ServiceLevelAgreement sla = slaProvider.builder()
+            .name("Test SLA")
+            .description("Test SLA desc")
+            .obligationBuilder(ObligationGroup.Condition.REQUIRED)
+            .metric(m1)
+            .build()
+            .build();
+        map.put("sla",sla);
+        String emailBody = velocityService.mergeTemplate("test",map);
+        Assert.assertEquals("This is my test Test SLA and description: Test SLA desc. \n"
+                            + "            Metric: this is my metric desc \n"
+                            + "       ",emailBody);
+        int i = 0;
+    }
+
+    private class SimpleMetric extends TestMetric {
+
+        private String description;
+
+        public SimpleMetric() {
+            this.description = "this is my metric desc";
+        }
+
+        public SimpleMetric(AssessmentResult result) {
+            super(result);
+        }
+
+        public SimpleMetric(AssessmentResult result, String msg) {
+            super(result, msg);
+        }
+
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+    }
+
 
 }
 

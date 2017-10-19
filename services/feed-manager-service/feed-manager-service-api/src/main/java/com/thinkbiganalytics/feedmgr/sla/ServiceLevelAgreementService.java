@@ -23,8 +23,8 @@ package com.thinkbiganalytics.feedmgr.sla;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
-
-import org.joda.time.DateTime;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementEmailTemplate;
 
 import java.util.List;
 
@@ -54,7 +54,18 @@ public interface ServiceLevelAgreementService {
 
     ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId);
 
+    /**
+     * Remove and unschedule a given sla by its id
+     * @param id
+     * @return
+     */
     boolean removeAndUnscheduleAgreement(String id);
+
+    /**
+     * Remove and Unschedule all SLA's for a feedId
+     * @param feedId the feed id
+     */
+    void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId);
 
     boolean removeAllAgreements();
 
@@ -65,4 +76,10 @@ public interface ServiceLevelAgreementService {
     ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement);
 
     ServiceLevelAgreement saveAndScheduleFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId);
+
+    List<SimpleServiceLevelAgreementDescription> getSlaReferencesForVelocityTemplate(String velocityTemplateId);
+
+    ServiceLevelAgreementEmailTemplate saveEmailTemplate(ServiceLevelAgreementEmailTemplate emailTemplate);
+
+    List<ServiceLevelAgreementEmailTemplate> getServiceLevelAgreementEmailTemplates();
 }

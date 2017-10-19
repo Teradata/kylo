@@ -15,7 +15,7 @@
     "bower_components"
   ],
   "dependencies": {
-    "core.js":"~2.4.1",
+    "core.js": "~2.4.1",
     "angular": "~1.6.2",
     "angular-cookies": "~1.4.1",
     "angular-sanitize": "latest",
@@ -45,7 +45,8 @@
     "requirejs": "~2.1.18",
     "svg-morpheus": "latest",
     "underscore": "1.8.3",
-    "fattable": "fulmicoton/fattable"
+    "fattable": "fulmicoton/fattable",
+    "mdPickers": "^0.7.5"
   },
   "resolutions": {
     "angular": "~1.6.2",

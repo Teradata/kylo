@@ -166,12 +166,19 @@
                         <span class="column-title column-title-bottom">Start Time</span>
                       </div>
                       <div flex="30" layout="column">
-                                               <span class="item-title">
-                                                   <kylo-timer ng-if="step.content.running"
-                                                              start-time="step.content.runTime"></kylo-timer>
-                                                   <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
-                                               </span>
-                        <span class="column-title column-title-bottom">Run Time</span>
+                        <div layout="row">
+                          <div>
+                            <span class="item-title">
+                             <kylo-timer ng-if="step.content.running"
+                                         start-time="step.content.runTime"></kylo-timer>
+                             <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
+                            </span>
+                              <span class="column-title column-title-bottom">Run Time</span>
+                          </div>
+                          <div>
+                            <md-button md-no-ink ng-show="vm.logUiEnabled && step.content.displayStatus =='FAILED'" class="border-btn action-btn md-warn" ng-click="vm.navigateToLogsForStep(step)">Search Logs</md-button>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
@@ -249,6 +256,9 @@
           </md-button>
           <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin"
                      ng-click="vm.abandonJob($event)">ABANDON
+          </md-button>
+          <md-button md-no-ink ng-class="vm.jobData.status =='FAILED' ? 'border-btn action-btn md-warn': 'border-btn action-btn' " ng-show="vm.logUiEnabled" ng-click="vm.navigateToLogs(vm.jobData.startTime, vm.jobData.endTime)" >
+            Search Logs
           </md-button>
         </div>
         <div ng-if="vm.jobData.errorMessage != ''" class="error">

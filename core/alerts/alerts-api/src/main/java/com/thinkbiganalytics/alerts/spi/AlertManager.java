@@ -24,11 +24,14 @@ package com.thinkbiganalytics.alerts.spi;
  */
 
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.EntityAwareAlertCriteria;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Iterator;
 
 /**
  * A kind of AlertSource that provides alert creation and change management functions.
@@ -95,6 +98,13 @@ public interface AlertManager extends AlertSource {
      * @return millis as to when the manager created/updated alerts
      */
     Long getLastUpdatedTime();
+
+    /**
+     * Update the time to Now to notify others alerts have been updated
+     * Useful if alert data managed by this manager have been updated by an outside source
+     * and others need to get notified of the update
+     */
+    void updateLastUpdatedTime();
 
 
 }

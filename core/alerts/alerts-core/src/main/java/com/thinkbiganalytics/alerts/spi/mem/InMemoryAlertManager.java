@@ -137,6 +137,11 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
+    public void updateLastUpdatedTime() {
+        this.lastUpdated = DateTime.now();
+    }
+
+    @Override
     public boolean addDescriptor(AlertDescriptor descriptor) {
         return this.descriptors.add(descriptor);
     }

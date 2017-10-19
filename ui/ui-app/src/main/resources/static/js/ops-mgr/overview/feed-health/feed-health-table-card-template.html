@@ -73,8 +73,12 @@
                     </div>
 
 
-                    <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="(!feed.stream || (feed.stream && !feed.running))">
-                                   <span class="item-title"><kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
+                    <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="((!feed.stream  || (feed.stream && !feed.running)))">
+                                   <span class="item-title" ng-if="feed.status != 'UNKNOWN'">
+                                      <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
+                                   </span>
+                                   <span class="item-title" ng-if="feed.status == 'UNKNOWN'">
+                                    --
                                    </span>
                       <span class="column-title column-title-bottom">Since</span>
                     </div>
