@@ -25,7 +25,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
@@ -240,6 +239,17 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after) {
         return accessController.isEntityAccessControlled() ? statisticsRepository.findWithErrorsAfterTimeWithAcl(feedName, after)
                                                            : statisticsRepository.findWithErrorsAfterTimeWithoutAcl(feedName, after);
+    }
+
+    @Override
+    public List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName) {
+        if (accessController.isEntityAccessControlled()) {
+            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithAcl(feedName).getDateProjection();
+            return statisticsRepository.findLatestFinishedStatsWithAcl(feedName, latestTime);
+        } else {
+            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
+            return statisticsRepository.findLatestFinishedStatsWithoutAcl(feedName, latestTime);
+        }
     }
 
 
