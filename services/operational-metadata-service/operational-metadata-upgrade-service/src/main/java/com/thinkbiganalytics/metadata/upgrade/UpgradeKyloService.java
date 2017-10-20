@@ -126,10 +126,10 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
      */
     private void setupFreshInstall() {
         metadataAccess.commit(() -> {
-            User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", "thinkbig");
-            User analyst = createDefaultUser("analyst", "Analyst", "analyst");
-            User designer = createDefaultUser("designer", "Designer", "designer");
-            User operator = createDefaultUser("operator", "Operator", "operator");
+            User dladmin = createDefaultUser("dladmin", "Data Lake Administrator", null);
+            User analyst = createDefaultUser("analyst", "Analyst", null);
+            User designer = createDefaultUser("designer", "Designer", null);
+            User operator = createDefaultUser("operator", "Operator", null);
             
             // Create default groups if they don't exist.
             UserGroup adminsGroup = createDefaultGroup("admin", "Administrators");
@@ -313,7 +313,9 @@ public class UpgradeKyloService implements PostMetadataConfigAction {
             user = userOption.get();
         } else {
             user = userProvider.ensureUser(username);
-            user.setPassword(passwordEncoder.encode(password));
+            if (password != null) {
+                user.setPassword(passwordEncoder.encode(password));
+            }
             user.setDisplayName(displayName);
         }
         
