@@ -13,7 +13,8 @@
     "processorType": "datatransformation.jdbc.template",
     "datasourcePropertyKeys": [
       "Database Connection",
-      "Table"
+      "Table",
+      "{Database Connection:Database Connection URL}"
     ],
     "datasourceType": "DatabaseDatasource",
     "connectionType": "SOURCE",

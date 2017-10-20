@@ -194,6 +194,11 @@ public class DerivedDatasourceFactory {
         final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
         final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
 
+        if(processorType.equals(DATA_TRANSFORMATION_JDBC_DEFINITION)){
+            properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,properties.get(JDBC_CONNECTION_KEY)));
+        }
+
+
         final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
         return Collections.singleton(datasource.getId());
     }
@@ -234,6 +239,8 @@ public class DerivedDatasourceFactory {
                 datasourceDefinition = jdbcDefinition;
                 properties.put(JDBC_CONNECTION_KEY, datasource.getName());
                 properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
+                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,datasource.getName()));
+
             }
 
             // Create the derived data source
@@ -357,6 +364,41 @@ public class DerivedDatasourceFactory {
                    getFeedInputProcessorTypes(feedMetadata).contains(datasourceDefinition.getProcessorType())));
     }
 
+    private Map<String, String> parseDataTransformControllerServiceProperties(DatasourceDefinition datasourceDefinition, String controllerServiceName) {
+        Map<String, String> properties = new HashMap<>();
+        try {
+            if(StringUtils.isNotBlank(controllerServiceName)) {
+                //{Source Database Connection:Database Connection URL}
+                List<String>
+                    controllerServiceProperties =
+                    datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{" + JDBC_CONNECTION_KEY + ":(.*)\\}")).collect(Collectors.toList());
+                List<String> serviceProperties = new ArrayList<>();
+                controllerServiceProperties.stream().forEach(p -> {
+                    String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
+                    serviceProperties.add(property);
+                });
+                ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceByName(controllerServiceName);
+                if (csDto != null) {
+
+                    serviceProperties.stream().forEach(p -> {
+
+                        if (csDto != null) {
+                                String value = csDto.getProperties().get(p);
+                                if (value != null) {
+                                    properties.put(p, value);
+                                }
+                        }
+                    });
+                }
+            }
+        } catch (Exception e) {
+            log.warn("An error occurred trying to parse controller service properties for data transformation when deriving the datasource for {}, {}. {} ", datasourceDefinition.getDatasourceType(),
+                     datasourceDefinition.getConnectionType(), e.getMessage(), e);
+        }
+
+        return properties;
+    }
+
     /**
      * Parse the defintion metadata for the {propertyKey:CS Property Key} objects and pick out the values in the controller service
      *
@@ -389,12 +431,14 @@ public class DerivedDatasourceFactory {
                                  && StringUtils.isNotBlank(p.getPropertyDescriptor().getIdentifiesControllerService())).map(p -> p.getValue()).findFirst().orElse(null);
                 if (controllerServiceId != null) {
                     ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceById(controllerServiceId);
-                    e.getValue().stream().forEach(propertyKey -> {
-                        String value = csDto.getProperties().get(propertyKey);
-                        if (value != null) {
-                            properties.put(propertyKey, value);
-                        }
-                    });
+                    if(csDto != null) {
+                        e.getValue().stream().forEach(propertyKey -> {
+                            String value = csDto.getProperties().get(propertyKey);
+                            if (value != null) {
+                                properties.put(propertyKey, value);
+                            }
+                        });
+                    }
 
                 }
 
