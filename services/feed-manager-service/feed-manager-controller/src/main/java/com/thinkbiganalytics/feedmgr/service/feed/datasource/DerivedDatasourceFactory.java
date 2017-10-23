@@ -190,17 +190,21 @@ public class DerivedDatasourceFactory {
 
         // Create datasource
         final DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(processorType);
-        final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
-        final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
-        final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
+        if(datasourceDefinition != null) {
+            final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+            final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+            final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
 
-        if(processorType.equals(DATA_TRANSFORMATION_JDBC_DEFINITION)){
-            properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,properties.get(JDBC_CONNECTION_KEY)));
+            if (processorType.equals(DATA_TRANSFORMATION_JDBC_DEFINITION)) {
+                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, properties.get(JDBC_CONNECTION_KEY)));
+            }
+
+            final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+            return Collections.singleton(datasource.getId());
         }
-
-
-        final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
-        return Collections.singleton(datasource.getId());
+        else {
+            return Collections.emptySet();
+        }
     }
 
     /**
@@ -242,14 +246,15 @@ public class DerivedDatasourceFactory {
                 properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,datasource.getName()));
 
             }
+            if(datasourceDefinition != null) {
+                // Create the derived data source
+                final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+                final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+                final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
 
-            // Create the derived data source
-            final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
-            final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
-            final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
-
-            final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
-            datasources.add(datasource.getId());
+                final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+                datasources.add(datasource.getId());
+            }
         });
 
         // Build the data sources from the data source ids
@@ -366,34 +371,37 @@ public class DerivedDatasourceFactory {
 
     private Map<String, String> parseDataTransformControllerServiceProperties(DatasourceDefinition datasourceDefinition, String controllerServiceName) {
         Map<String, String> properties = new HashMap<>();
-        try {
-            if(StringUtils.isNotBlank(controllerServiceName)) {
-                //{Source Database Connection:Database Connection URL}
-                List<String>
-                    controllerServiceProperties =
-                    datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{" + JDBC_CONNECTION_KEY + ":(.*)\\}")).collect(Collectors.toList());
-                List<String> serviceProperties = new ArrayList<>();
-                controllerServiceProperties.stream().forEach(p -> {
-                    String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
-                    serviceProperties.add(property);
-                });
-                ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceByName(controllerServiceName);
-                if (csDto != null) {
+        if(datasourceDefinition != null) {
+            try {
+                if (StringUtils.isNotBlank(controllerServiceName)) {
+                    //{Source Database Connection:Database Connection URL}
+                    List<String>
+                        controllerServiceProperties =
+                        datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{" + JDBC_CONNECTION_KEY + ":(.*)\\}")).collect(Collectors.toList());
+                    List<String> serviceProperties = new ArrayList<>();
+                    controllerServiceProperties.stream().forEach(p -> {
+                        String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
+                        serviceProperties.add(property);
+                    });
+                    ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceByName(controllerServiceName);
+                    if (csDto != null) {
 
-                    serviceProperties.stream().forEach(p -> {
+                        serviceProperties.stream().forEach(p -> {
 
-                        if (csDto != null) {
+                            if (csDto != null) {
                                 String value = csDto.getProperties().get(p);
                                 if (value != null) {
                                     properties.put(p, value);
                                 }
-                        }
-                    });
+                            }
+                        });
+                    }
                 }
+            } catch (Exception e) {
+                log.warn("An error occurred trying to parse controller service properties for data transformation when deriving the datasource for {}, {}. {} ",
+                         datasourceDefinition.getDatasourceType(),
+                         datasourceDefinition.getConnectionType(), e.getMessage(), e);
             }
-        } catch (Exception e) {
-            log.warn("An error occurred trying to parse controller service properties for data transformation when deriving the datasource for {}, {}. {} ", datasourceDefinition.getDatasourceType(),
-                     datasourceDefinition.getConnectionType(), e.getMessage(), e);
         }
 
         return properties;
