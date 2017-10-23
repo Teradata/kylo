@@ -119,7 +119,7 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
         try {
             groups = retrieveGroups(userConfig);
         } catch (Exception e) {
-            log.error("An error occurred while getting Kylo Groups username: {}", username);
+            log.error("An error occurred while getting Kylo Groups username: {}", username, e);
             throw new RuntimeException("An error occurred while getting Kylo Groups", e);
         }
 
