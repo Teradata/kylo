@@ -56,7 +56,7 @@ public interface NifiFlowCache {
 
     NiFiFlowCacheSync previewUpdates(String syncId);
 
-    void rebuildAll();
+    boolean rebuildAll();
 
     NiFiFlowCacheSync refreshAll(String syncId);
 
