@@ -186,6 +186,10 @@ md-sidenav .collapse-btn {
   padding-right: 8px;
 }
 
+.layout-padding-left-right-16 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
 .layout-padding-right {
   padding-right: 10px;
 }
@@ -195,6 +199,10 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-left-16 {
+  padding-left: 16px;
+}
+
+.layout-padding-right-16 {
   padding-left: 16px;
 }
 

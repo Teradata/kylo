@@ -27,13 +27,22 @@
     </div>
   </md-toolbar>
   <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
-    <div layout="column">
+    <div layout="column" ng-if="resolvedTemplate.sendTest == false">
       <div class="md-title">Subject</div>
       <div class="layout-padding-top-bottom" ng-bind-html="resolvedTemplateSubject"></div>
 
       <md-divider></md-divider>
       <div class="md-title layout-padding-top">Body</div>
       <div class="layout-padding-top-bottom" ng-bind-html="resolvedTemplateBody"></div>
+    </div>
+
+    <div layout="column" ng-if="resolvedTemplate.sendTest == true && resolvedTemplate.success == false">
+      <div class="md-title">Error sending template</div>
+      <div>{{resolvedTemplate.exceptionMessage}}</div>
+    </div>
+
+    <div layout="column" ng-if="resolvedTemplate.sendTest == true && resolvedTemplate.success == true">
+      <div class="md-title">Successfully sent template to {{emailAddress}}</div>
     </div>
 
   </md-dialog-content>

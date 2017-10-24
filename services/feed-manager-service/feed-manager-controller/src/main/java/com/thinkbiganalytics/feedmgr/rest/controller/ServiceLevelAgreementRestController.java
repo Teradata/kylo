@@ -32,6 +32,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.feedmgr.sla.SimpleServiceLevelAgreementDescription;
+import com.thinkbiganalytics.feedmgr.sla.TestSlaVelocityEmail;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
@@ -56,7 +57,10 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -397,6 +401,39 @@ public class ServiceLevelAgreementRestController {
         String body = velocityTemplateProvider.testTemplate(template.getBody(), map);
 
         return new VelocityEmailTemplate(subject, body);
+
+    }
+
+    @POST
+    @Path("/send-test-email-template")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Tests a velocity template.")
+    public VelocityEmailTemplate sendTestTemplate(TestSlaVelocityEmail template) {
+
+        VelocityEmailTemplate parsedTemplate = testTemplate(template);
+        String subject = parsedTemplate.getSubject();
+        String body = parsedTemplate.getBody();
+
+        TestSlaVelocityEmail testSlaVelocityEmail = new TestSlaVelocityEmail(subject, body, template.getEmailAddress());
+
+        //if we have the plugin then send it
+        try {
+            Object emailService = SpringApplicationContext.getBean("slaEmailService");
+            if (emailService != null) {
+                MethodUtils.invokeMethod(emailService, "sendMail", template.getEmailAddress(), subject, body);
+                testSlaVelocityEmail.setSuccess(true);
+            }
+        } catch (Exception e) {
+            String message = e.getMessage();
+            Throwable root = ExceptionUtils.getRootCause(e);
+            if (root != null) {
+                message = root.getMessage();
+            }
+            log.error("unable to send preview/test email for SLA template {} ", message, e);
+            testSlaVelocityEmail.setExceptionMessage(message);
+        }
+        return testSlaVelocityEmail;
+
 
     }
 

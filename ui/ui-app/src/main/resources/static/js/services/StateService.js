@@ -168,6 +168,9 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
             data.navigateToNewEmailTemplate = function (templateId) {
                 $state.go('sla-email-template',{emailTemplateId:templateId});
             }
+            data.navigateToEmailTemplates = function () {
+                $state.go('sla-email-templates');
+            }
             return data;
         }
 
