@@ -19,6 +19,7 @@ package com.thinkbiganalytics.metadata.jpa.sla;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.jpa.cache.ClusterAwareDtoCache;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -39,6 +40,9 @@ public class ServiceLevelAgreementDescriptionCache extends ClusterAwareDtoCache<
 
     @Inject
     ServiceLevelAgreementDescriptionProvider serviceLevelAgreementDescriptionProvider;
+
+    @Inject
+    MetadataAccess metadataAccess;
 
     @Override
     public String getClusterMessageKey() {
@@ -67,21 +71,28 @@ public class ServiceLevelAgreementDescriptionCache extends ClusterAwareDtoCache<
 
     @Override
     public CachedServiceLevelAgreement transformEntityToDto(String dtoId, ServiceLevelAgreementDescription entity) {
+      return  metadataAccess.read(() -> {
         JpaServiceLevelAgreementDescription jpaSla = ((JpaServiceLevelAgreementDescription) entity);
         Set<CachedServiceLevelAgreement.SimpleFeed> feeds = new HashSet<>();
         if (!jpaSla.getFeeds().isEmpty()) {
             feeds = jpaSla.getFeeds().stream().map(f -> new CachedServiceLevelAgreement.SimpleFeed(f.getId().toString(), f.getName())).collect(Collectors.toSet());
         }
         return new CachedServiceLevelAgreement(dtoId, entity.getName(), feeds);
+        },MetadataAccess.SERVICE);
     }
 
     @Override
     public ServiceLevelAgreementDescription fetchForKey(ServiceLevelAgreement.ID entityId) {
-        return serviceLevelAgreementDescriptionProvider.findOne(entityId);
+        return
+            metadataAccess.read(() -> {
+              return  serviceLevelAgreementDescriptionProvider.findOne(entityId);
+            },MetadataAccess.SERVICE);
     }
 
     @Override
     public List<ServiceLevelAgreementDescription> fetchAll() {
+     return   metadataAccess.read(() -> {
         return serviceLevelAgreementDescriptionProvider.findAll();
+        },MetadataAccess.SERVICE);
     }
 }
