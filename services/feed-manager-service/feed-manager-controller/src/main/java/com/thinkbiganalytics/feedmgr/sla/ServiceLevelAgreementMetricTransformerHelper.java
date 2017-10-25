@@ -188,7 +188,9 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                 List<Metric> metrics = obligation.getMetrics();
                 for (Metric metric : metrics) {
                     ServiceLevelAgreementRule rule = ServiceLevelAgreementMetricTransformer.instance().toUIModel(metric);
+                    rule.setCondition(com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition.valueOf(group.getCondition()));
                     slaGroup.addServiceLevelAgreementRule(rule);
+
                 }
             }
         }

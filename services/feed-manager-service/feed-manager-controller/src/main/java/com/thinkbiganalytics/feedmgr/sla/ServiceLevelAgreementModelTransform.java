@@ -170,8 +170,12 @@ public class ServiceLevelAgreementModelTransform {
                 }
             } else {
                 for (ObligationGroup domainGroup : domain.getObligationGroups()) {
+                    //Force it to be required
+                    //TODO Rework once the SLA page allows for Sufficient/Required settings
+                    // TODO use the domainGroup.condition instead
                     com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group
-                        = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup(domainGroup.getCondition().toString());
+                        = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup(ObligationGroup.Condition.REQUIRED.name());
+
                     for (Obligation domainOb : domainGroup.getObligations()) {
                         com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob = toModel(domainOb, true);
                         group.addObligation(ob);

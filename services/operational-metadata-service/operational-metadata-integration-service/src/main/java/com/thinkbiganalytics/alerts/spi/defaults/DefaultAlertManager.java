@@ -418,6 +418,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
             JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user, descr, content);
             alert.addEvent(event);
+            //need to save it
+            repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
         updateLastUpdatedTime();

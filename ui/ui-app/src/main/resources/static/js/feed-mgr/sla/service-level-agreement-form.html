@@ -51,13 +51,14 @@
     <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding-left-right">
       <div layout="row">
         <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
+        <!--
         <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
           <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
             <md-option value="REQUIRED">AND</md-option>
             <md-option value="SUFFICIENT">OR</md-option>
           </md-select>
         </md-input-container>
-
+   -->
         <div layout="column" flex class="layout-padding-left md-body-2">
           <span>{{rule.name}}</span>
           <span class="hint">{{rule.description}}</span>
@@ -82,7 +83,7 @@
 
     <div ng-if="vm.addingSlaCondition" class="layout-padding-left-right" layout="row" flex>
 
-
+<!--
       <md-input-container class="md-block layout-padding-top-bottom" ng-if="vm.editSla != null && vm.editSla.rules.length >0" md-no-float>
         <label class="md-container-ignore label-small layout-padding-top">Condition</label>
         <md-select ng-model="vm.ruleTypeCondition" aria-label="Condition">
@@ -90,6 +91,7 @@
           <md-option value="SUFFICIENT">OR</md-option>
         </md-select>
       </md-input-container>
+      -->
       <md-input-container class="md-block layout-padding-top-bottom">
         <label class="md-container-ignore label-small layout-padding-top">Select New Condition</label>
         <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
