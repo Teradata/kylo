@@ -69,9 +69,12 @@ public class FeedFailureService {
     public LastFeedJob findLastJob(String feedName){
      return metadataAccess.read(() -> {
 
-         OpsManagerFeed feed = feedProvider.findByName(feedName);
+         OpsManagerFeed feed = feedProvider.findByNameWithoutAcl(feedName);
+         if(feed == null){
+             return null;
+         }
          if (feed.isStream()) {
-             List<NifiFeedProcessorStats> latestStats = nifiFeedProcessorStatisticsProvider.findLatestFinishedStats(feedName);
+             List<NifiFeedProcessorStats> latestStats = nifiFeedProcessorStatisticsProvider.findLatestFinishedStatsWithoutAcl(feedName);
              Optional<NifiFeedProcessorStats> total = latestStats.stream().reduce((a, b) -> {
                  a.setFailedCount(a.getFailedCount() + b.getFailedCount());
                  return a;

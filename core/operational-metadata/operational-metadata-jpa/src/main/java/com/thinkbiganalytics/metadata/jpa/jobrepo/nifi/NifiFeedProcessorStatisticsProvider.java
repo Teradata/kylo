@@ -247,9 +247,13 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithAcl(feedName).getDateProjection();
             return statisticsRepository.findLatestFinishedStatsWithAcl(feedName, latestTime);
         } else {
-            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
-            return statisticsRepository.findLatestFinishedStatsWithoutAcl(feedName, latestTime);
+          return findLatestFinishedStatsWithoutAcl(feedName);
         }
+    }
+    @Override
+    public List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName) {
+        DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
+        return statisticsRepository.findLatestFinishedStatsWithoutAcl(feedName, latestTime);
     }
 
 

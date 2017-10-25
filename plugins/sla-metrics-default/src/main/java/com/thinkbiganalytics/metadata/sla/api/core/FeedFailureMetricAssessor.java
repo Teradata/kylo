@@ -51,7 +51,11 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         String feedName = metric.getFeedName();
 
         FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLastJob(feedName);
-        if(!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)){
+        if(lastFeedJob == null){
+            String msg = "Feed " + feedName + " is does not exist.";
+            builder.message(msg).result(AssessmentResult.WARNING);
+        }
+        else if(!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)){
             DateTime lastTime = lastFeedJob.getDateTime();
 
             //compare with the latest feed time, alerts with same timestamps will not be raised

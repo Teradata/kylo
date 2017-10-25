@@ -107,7 +107,21 @@ public interface NifiFeedProcessorStatisticsProvider {
 
     List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after);
 
+    /**
+     * Finds the latest stats for a feed.
+     * This is bound by Entity Access control rules
+     * @param feedName the name of the feed
+     * @return the stats
+     */
     List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName);
+
+    /**
+     * Finds the latest stats for a feed.
+     * This is NOT bound by Entity Access control rules
+     * @param feedName the name of the feed
+     * @return the stats
+     */
+    List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName);
 
     /**
      * allow for specifying a time to look back from when querying for statistical information
