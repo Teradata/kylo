@@ -228,7 +228,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Override
     public OpsManagerFeed save(OpsManagerFeed.ID feedId, String systemName, boolean isStream, Long timeBetweenBatchJobs) {
-        OpsManagerFeed feed = repository.findOne(feedId);
+        OpsManagerFeed feed = repository.findByIdWithoutAcl(feedId);
         if (feed == null) {
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
@@ -245,7 +245,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Override
     public void delete(OpsManagerFeed.ID id) {
-        OpsManagerFeed feed = repository.findOne(id);
+        OpsManagerFeed feed = repository.findByIdWithoutAcl(id);
         if (feed != null) {
             log.info("Deleting feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
             //first delete all jobs for this feed
