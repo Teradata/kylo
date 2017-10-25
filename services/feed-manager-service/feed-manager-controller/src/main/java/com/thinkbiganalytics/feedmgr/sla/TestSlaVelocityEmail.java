@@ -20,9 +20,7 @@ package com.thinkbiganalytics.feedmgr.sla;
  */
 import com.thinkbiganalytics.common.velocity.model.VelocityEmailTemplate;
 
-/**
- * Created by sr186054 on 10/22/17.
- */
+
 public class TestSlaVelocityEmail extends VelocityEmailTemplate {
 
     private String emailAddress;
