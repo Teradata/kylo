@@ -410,7 +410,7 @@ public class TemplateCreationHelper {
                                         validControllerServiceId = hasMatchingService(enabledServiceNameMap,name) ? enabledServiceNameMap.get(name).get(0).getId()
                                                                                                       : hasMatchingService(serviceNameMap, name) ? serviceNameMap.get(name).get(0).getId() : null;
 
-                                    if (StringUtils.isNotBlank(validControllerServiceId)) {
+                                    if (StringUtils.isNotBlank(validControllerServiceId) && ( v.isRequired() || !v.isRequired() &&  StringUtils.isNotBlank(processorDTO.getConfig().getProperties().get(k)))) {
                                         processorDTO.getConfig().getProperties().put(k, validControllerServiceId);
                                         updatedProcessorProperties.put(k, validControllerServiceId);
                                         if (!updatedProcessors.contains(processorDTO)) {

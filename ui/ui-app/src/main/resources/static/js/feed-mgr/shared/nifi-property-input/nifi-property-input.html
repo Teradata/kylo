@@ -46,6 +46,7 @@
              ng-disabled="propertyDisabled"
              ng-change="onPropertyChanged(property)"
              ng-required="property.required">
+    <md-option ng-value="" ng-if="!property.required">Not Set</md-option>
     <md-option ng-repeat="allowableValue in property.selectOptions" value="{{allowableValue}}">
       {{allowableValue}}
     </md-option>
@@ -55,6 +56,7 @@
              ng-disabled="propertyDisabled"
              ng-change="onPropertyChanged(property)"
              ng-required="property.required">
+    <md-option ng-value="" ng-if="!property.required">Not Set</md-option>
         <md-option ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}">
             {{allowableValue.displayName}}
         </md-option>

@@ -118,7 +118,6 @@ public class NifiProperty {
         this.renderType = property.getRenderType();
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
-        this.processorName = property.getProcessorType();
         this.containsConfigurationVariables = property.isContainsConfigurationVariables();
         this.sensitive = property.isSensitive();
         this.required = property.isRequired();
