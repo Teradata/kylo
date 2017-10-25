@@ -37,6 +37,7 @@ import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
@@ -124,6 +125,8 @@ public class FeedManagerMetadataService implements MetadataService {
     @Inject
     private NiFiRestClient nifiClient;
 
+    @Inject
+    ServiceLevelAgreementService serviceLevelAgreementService;
 
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
@@ -192,6 +195,15 @@ public class FeedManagerMetadataService implements MetadataService {
             final List<String> systemNames = feed.getUsedByFeeds().stream().map(FeedSummary::getCategoryAndFeedSystemName).collect(Collectors.toList());
             throw new IllegalStateException("Feed is referenced by " + feed.getUsedByFeeds().size() + " other feeds: " + systemNames);
         }
+
+        //check SLAs
+        metadataAccess.read(() -> {
+        boolean hasSlas = serviceLevelAgreementService.hasServiceLevelAgreements(feedProvider.resolveFeed(feedId));
+        if(hasSlas) {
+            log.error("Unable to delete "+feed.getCategoryAndFeedDisplayName()+".  1 or more SLAs exist for this feed. ");
+            throw new IllegalStateException("Unable to delete the feed. 1 or more Service Level agreements exist for this feed " + feed.getCategoryAndFeedDisplayName() + ".  Please delete the SLA's, or remove the feed from the SLA's and try again.");
+        }
+        },MetadataAccess.SERVICE);
 
         // Step 4: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
