@@ -65,8 +65,7 @@ public class SolrSearchService implements Search {
             client.commit(indexName);
             log.info("Deleted schema document for index={}, type={}, id={}", indexName, typeName, id);
         } catch (final IOException | SolrServerException e) {
-            log.warn("Failed to delete document in index:{} with id:{} [{}]", indexName, id, e);
-        }
+            log.warn("Failed to delete document in index:{} with id:{}[{}]", indexName, id, e);}
 
         try {
             //delete the data
@@ -90,6 +89,11 @@ public class SolrSearchService implements Search {
 
     @Override
     public void index(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final Map<String, Object> fields) {
+        index(indexName, typeName, id, fields, null);
+    }
+
+    @Override
+    public void index(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final Map<String, Object> fields, String parentId) {
         buildRestClient();
         try {
             client.add(indexName, createDocument(id, fields));

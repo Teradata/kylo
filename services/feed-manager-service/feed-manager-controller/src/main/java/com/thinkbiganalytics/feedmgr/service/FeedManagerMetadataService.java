@@ -34,6 +34,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.category.MetadataChangeListener;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -54,6 +55,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.slf4j.Logger;
@@ -123,8 +125,9 @@ public class FeedManagerMetadataService implements MetadataService {
      */
     @Inject
     private NiFiRestClient nifiClient;
-
-
+    
+    @Autowired(required = false)
+    private List<MetadataChangeListener> metadataChangeListeners;
     @Override
     public boolean checkFeedPermission(String id, Action action, Action... more) {
         return feedProvider.checkFeedPermission(id, action, more);
@@ -166,6 +169,10 @@ public class FeedManagerMetadataService implements MetadataService {
             //requery to get the latest version
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
             feed.setFeedMetadata(updatedFeed);
+
+            if (CollectionUtils.isNotEmpty(metadataChangeListeners)) {
+                metadataChangeListeners.forEach(metadataChangeListener -> metadataChangeListener.feedCreatedOrUpdated(updatedFeed));
+            }
         }
         return feed;
 
@@ -385,6 +392,10 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     public void saveCategory(FeedCategory category) {
         categoryProvider.saveCategory(category);
+
+        if (CollectionUtils.isNotEmpty(metadataChangeListeners)) {
+            metadataChangeListeners.forEach(metadataChangeListener -> metadataChangeListener.categoryCreatedOrUpdated(category));
+        }
     }
 
     @Override
@@ -445,13 +456,13 @@ public class FeedManagerMetadataService implements MetadataService {
     public Optional<Set<UserProperty>> getFeedUserFields(@Nonnull final String categoryId) {
         return feedProvider.getUserFields(categoryId);
     }
-    
+
     @Nonnull
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeFeeds) {
         return feedProvider.getFeedVersions(feedId, includeFeeds);
     }
-    
+
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }

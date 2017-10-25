@@ -98,6 +98,11 @@ public class ElasticSearchService implements Search {
 
     @Override
     public void index(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final Map<String, Object> fields) {
+        index(indexName, typeName, id, fields, null);
+    }
+
+    @Override
+    public void index(@Nonnull final String indexName, @Nonnull final String typeName, @Nonnull final String id, @Nonnull final Map<String, Object> fields, String parentId) {
         buildTransportClient();
         client.prepareIndex(indexName, typeName, id).setSource(fields).execute()
             .addListener(new ActionListener<IndexResponse>() {

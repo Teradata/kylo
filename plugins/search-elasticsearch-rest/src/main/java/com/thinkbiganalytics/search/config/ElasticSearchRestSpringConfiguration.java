@@ -20,10 +20,12 @@ package com.thinkbiganalytics.search.config;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.service.category.MetadataChangeListener;
 import com.thinkbiganalytics.search.ElasticSearchRestModeShapeConfigurationService;
 import com.thinkbiganalytics.search.ElasticSearchRestService;
 import com.thinkbiganalytics.search.api.RepositoryIndexConfiguration;
 import com.thinkbiganalytics.search.api.Search;
+import com.thinkbiganalytics.search.indexing.ElasticSearchMetadataChangeListener;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -53,5 +55,10 @@ public class ElasticSearchRestSpringConfiguration {
     @Bean
     public Search search(ElasticSearchRestClientConfiguration elasticSearchRestClientConfiguration) {
         return new ElasticSearchRestService(elasticSearchRestClientConfiguration);
+    }
+
+    @Bean
+    public MetadataChangeListener elasticSearchMetadataChangeListener() {
+        return new ElasticSearchMetadataChangeListener();
     }
 }
