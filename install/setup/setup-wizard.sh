@@ -91,6 +91,34 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
     done
 fi
 echo " ";
+
+USERS_FILE_CREATED=false;
+if [ ! -f $kylo_home_folder/users.properties ]; then
+    while true; do
+        echo "Please enter the password for the dladmin user";
+        read -p "> " -s DLADMIN_PASSWORD_1;
+        printf "\n"
+        echo "Please re-enter the password for the dladmin user";
+        read -p "> " -s DLADMIN_PASSWORD_2;
+        [ "$DLADMIN_PASSWORD_1" = "$DLADMIN_PASSWORD_2" ] && break
+        printf "\n\n"
+        echo "Passwords do not match. Please try again"
+        printf "\n\n"
+    done
+
+    echo "dladmin=$DLADMIN_PASSWORD_1" >> $kylo_home_folder/users.properties
+    sed -i "s|#security.auth.file.users=file:\/\/\/opt\/kylo\/users.properties|security.auth.file.users=file:\/\/$kylo_home_folder\/users.properties|" $kylo_home_folder/kylo-services/conf/application.properties
+    sed -i "s|#security.auth.file.users=file:\/\/\/opt\/kylo\/users.properties|security.auth.file.users=file:\/\/$kylo_home_folder\/users.properties|" $kylo_home_folder/kylo-ui/conf/application.properties
+    USERS_FILE_CREATED=true
+
+    if [ ! -f $kylo_home_folder/groups.properties ]; then
+        touch $kylo_home_folder/groups.properties
+        sed -i "s|#security.auth.file.users=file:\/\/\/opt\/kylo\/groups.properties|security.auth.file.users=file:\/\/$kylo_home_folder\/groups.properties|" $kylo_home_folder/kylo-services/conf/application.properties
+        sed -i "s|#security.auth.file.users=file:\/\/\/opt\/kylo\/groups.properties|security.auth.file.users=file:\/\/$kylo_home_folder\/groups.properties|" $kylo_home_folder/kylo-ui/conf/application.properties
+    fi
+fi
+
+echo " ";
 while [[ ! $java_type =~ ^[1-4]{1}$ ]]; do
     echo "Please choose an option to configure Java for Kylo, ActiveMQ, and NiFi"
     echo "1) I already have Java 8 or higher installed as the system Java and want to use that"
@@ -244,3 +272,11 @@ if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
 
 
 fi
+
+if [ "$USERS_FILE_CREATED" ] ; then
+    echo ""
+    echo ""
+    echo "users.properties and groups.properties was created in the $kylo_home_folder folder with the dladmin user. For more information on configuring users and groups please see the \"Configure Access Control\" page in the Kylo Docs"
+fi
+echo ""
+echo "If this is the first time installing Kylo, or you made hive/database related changes, you will need to modify those settings in the $kylo_home_folder/kylo-services/conf/application.properties file ";
