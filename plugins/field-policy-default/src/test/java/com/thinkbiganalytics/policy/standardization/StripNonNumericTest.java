@@ -79,4 +79,10 @@ public class StripNonNumericTest {
         assertEquals(stripNonNumeric.convertValue(rawValueStr), expectedValueStr);
         assertEquals(stripNonNumeric.convertRawValue(rawValueObj), expectedValueObj);
     }
+
+    @Test
+    public void testConvertValuesWithSigns() throws Exception {
+        assertEquals("-24.32", StripNonNumeric.instance().convertValue("-$abc24.e32"));
+        assertEquals("+232.1234", StripNonNumeric.instance().convertValue("+232.ab1234"));
+    }
 }
