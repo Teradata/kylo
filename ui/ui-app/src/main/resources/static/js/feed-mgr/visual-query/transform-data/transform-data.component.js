@@ -166,8 +166,22 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
                 // Watch for changes to field policies
+                if (_this.fieldPolicies == null) {
+                    _this.fieldPolicies = [];
+                }
                 _this.engine.setFieldPolicies(_this.fieldPolicies);
                 _this.$scope.$watch(function () { return _this.fieldPolicies; }, function () {
+                    _this.fieldPolicies.forEach(function (policy) {
+                        if (policy.name == null) {
+                            policy.name = policy.fieldName;
+                        }
+                        if (policy.fieldName !== policy.name) {
+                            policy.fieldName = policy.name;
+                        }
+                        if (policy.feedFieldName !== policy.name) {
+                            policy.feedFieldName = policy.name;
+                        }
+                    });
                     _this.engine.setFieldPolicies(_this.fieldPolicies);
                     _this.query();
                 }, true);

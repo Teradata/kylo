@@ -18,6 +18,7 @@
   <modules>
     <module>nifi-hadoop-service</module>
     <module>nifi-hadoop-service-v1-nar</module>
+    <module>nifi-hadoop-service-v1.2-nar</module>
   </modules>
 
 </project>

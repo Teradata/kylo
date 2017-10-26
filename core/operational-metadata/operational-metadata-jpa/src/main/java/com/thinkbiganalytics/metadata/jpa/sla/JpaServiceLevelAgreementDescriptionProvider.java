@@ -88,7 +88,7 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
 
     @Override
     public ServiceLevelAgreementDescription findOne(ServiceLevelAgreement.ID id) {
-        return serviceLevelAgreementDescriptionRepository.findOne((ServiceLevelAgreementDescriptionId) resolveId(id.toString()));
+        return serviceLevelAgreementDescriptionRepository.findByIdFetchFeeds((ServiceLevelAgreementDescriptionId) resolveId(id.toString()));
     }
 
     @Override

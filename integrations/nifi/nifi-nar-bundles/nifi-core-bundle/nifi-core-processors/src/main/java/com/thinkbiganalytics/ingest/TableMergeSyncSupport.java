@@ -73,9 +73,37 @@ public class TableMergeSyncSupport implements Serializable {
      */
     public void setHiveConf(String[] configurations) {
         for (String conf : configurations) {
-            doExecuteSQL("set " + conf);
+            if(conf.equalsIgnoreCase("reset")){
+                    resetHiveConf();
+            }
+            else {
+                doExecuteSQL("set " + conf);
+            }
         }
     }
+
+    /**
+     * Sets the list of configurations given in name=value string pairs
+     */
+    public void resetHiveConf() {
+            doExecuteSQL("reset");
+    }
+
+
+    public String getHivePropertyValue(String parameter) throws SQLException{
+
+        String value = null;
+        try (final Statement st = conn.createStatement()) {
+            ResultSet rs = doSelectSQL(st, "set "+parameter);
+
+            while (rs.next()) {
+                value = rs.getString(1);
+                logger.info("Value = {} ",value);
+            }
+        }
+        return value;
+    }
+
 
     /**
      * Performs a sync replacing all data in the target table. A temporary table is created with the new data, old table dropped and the temporary table renamed to become the new table.  This causes a

@@ -318,7 +318,7 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
                     if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
                         var policyMap_1 = {};
                         state.fieldPolicies.forEach(function (policy) {
-                            policyMap_1[policy.fieldName] = policy;
+                            policyMap_1[policy.name] = policy;
                         });
                         state.fieldPolicies = state.columns.map(function (column) {
                             if (policyMap_1[column.hiveColumnLabel]) {

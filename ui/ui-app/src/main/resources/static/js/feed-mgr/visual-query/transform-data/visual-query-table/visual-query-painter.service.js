@@ -36,6 +36,7 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
             _this.$templateCache = $templateCache;
             _this.$templateRequest = $templateRequest;
             _this.$timeout = $timeout;
+            _this.$window = $window;
             /**
              * Indicates that the tooltip should be visible.
              */
@@ -221,11 +222,28 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
          */
         VisualQueryPainterService.prototype.showTooltip = function (cellDiv) {
             this.tooltipVisible = true;
+            // Update content
             var $scope = this.tooltipPanel.panelEl.scope();
             $scope.validation = angular.element(cellDiv).data("validation");
             $scope.value = cellDiv.innerText;
-            this.tooltipPanel.updatePosition(this.$mdPanel.newPanelPosition().relativeTo(cellDiv).addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, this.$mdPanel.yPosition.BELOW)
-                .withOffsetX("28px").withOffsetY("0"));
+            // Update position
+            var cellOffset = angular.element(cellDiv).offset();
+            var offsetY;
+            var yPosition;
+            if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
+                offsetY = "-27" + PIXELS;
+                yPosition = this.$mdPanel.yPosition.ABOVE;
+            }
+            else {
+                offsetY = "0";
+                yPosition = this.$mdPanel.yPosition.BELOW;
+            }
+            this.tooltipPanel.updatePosition(this.$mdPanel.newPanelPosition()
+                .relativeTo(cellDiv)
+                .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
+                .withOffsetX("28px")
+                .withOffsetY(offsetY));
+            // Show tooltip
             this.tooltipPanel.open();
         };
         /**

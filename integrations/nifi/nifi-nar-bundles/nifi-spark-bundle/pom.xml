@@ -19,6 +19,7 @@
   <modules>
     <module>nifi-spark-processors</module>
     <module>nifi-spark-v1-nar</module>
+    <module>nifi-spark-v1.2-nar</module>
   </modules>
 
 </project>

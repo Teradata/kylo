@@ -321,7 +321,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
                     const policyMap = {};
                     state.fieldPolicies.forEach(policy => {
-                        policyMap[policy.fieldName] = policy;
+                        policyMap[policy.name] = policy;
                     });
 
                     state.fieldPolicies = state.columns.map(column => {

@@ -36,4 +36,7 @@ public interface JpaServiceLevelAgreementDescriptionRepository extends JpaReposi
     @Query("select distinct sla from JpaServiceLevelAgreementDescription sla join sla.feeds f where f.id = :id ")
     List<JpaServiceLevelAgreementDescription> findForFeed(@Param("id") OpsManagerFeed.ID feedId);
 
+    @Query("select distinct sla from JpaServiceLevelAgreementDescription sla left join fetch sla.feeds where sla.slaId = :id")
+    JpaServiceLevelAgreementDescription findByIdFetchFeeds(@Param("id") ServiceLevelAgreementDescriptionId id);
+
 }

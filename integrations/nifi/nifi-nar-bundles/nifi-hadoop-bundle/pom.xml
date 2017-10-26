@@ -19,6 +19,7 @@
   <modules>
     <module>nifi-hadoop-processors</module>
     <module>nifi-hadoop-bundle-v1-nar</module>
+    <module>nifi-hadoop-bundle-v1.2-nar</module>
   </modules>
 
 </project>
