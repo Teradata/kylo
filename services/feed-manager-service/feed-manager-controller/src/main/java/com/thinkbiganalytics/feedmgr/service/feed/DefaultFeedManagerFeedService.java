@@ -879,8 +879,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
             //unschedule any SLAs
-            //serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
-            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier);
+            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier,feed.getQualifiedName());
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;
