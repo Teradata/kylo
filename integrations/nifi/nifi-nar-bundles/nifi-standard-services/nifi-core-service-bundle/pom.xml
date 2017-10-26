@@ -18,6 +18,7 @@
   <modules>
     <module>nifi-core-service</module>
     <module>nifi-core-service-nar</module>
+    <module>nifi-core-service-v1.2-nar</module>
   </modules>
 
 </project>

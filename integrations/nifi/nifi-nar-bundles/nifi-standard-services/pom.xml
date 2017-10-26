@@ -20,6 +20,7 @@
     <module>nifi-core-service-api</module>
     <module>nifi-hadoop-service-api</module>
     <module>nifi-standard-services-nar</module>
+    <module>nifi-standard-services-v1.2-nar</module>
     <module>nifi-core-service-bundle</module>
     <module>nifi-hadoop-service-bundle</module>
     <module>nifi-spark-service-api</module>

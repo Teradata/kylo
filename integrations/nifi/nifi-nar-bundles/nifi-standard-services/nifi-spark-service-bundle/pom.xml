@@ -18,6 +18,7 @@
   <modules>
     <module>nifi-spark-service</module>
     <module>nifi-spark-service-v1-nar</module>
+    <module>nifi-spark-service-v1.2-nar</module>
   </modules>
 
 </project>

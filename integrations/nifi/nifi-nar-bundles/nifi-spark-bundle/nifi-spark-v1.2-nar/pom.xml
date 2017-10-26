@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>kylo-nifi-core-v1-nar</artifactId>
+  <artifactId>kylo-nifi-spark-v1.2-nar</artifactId>
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <artifactId>kylo-nifi-core-bundle</artifactId>
+    <artifactId>kylo-nifi-spark-bundle</artifactId>
     <version>0.8.4-SNAPSHOT</version>
   </parent>
   <packaging>nar</packaging>
@@ -19,28 +19,26 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-nifi-core-processors</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-nifi-merge-table-processor-v1</artifactId>
+      <artifactId>kylo-nifi-framework-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-nifi-standard-services-nar</artifactId>
+      <artifactId>kylo-nifi-spark-processors</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-standard-services-v1.2-nar</artifactId>
       <version>${project.version}</version>
       <type>nar</type>
     </dependency>
 
-
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-nifi-framework-v1</artifactId>
+      <artifactId>kylo-nifi-security-v1</artifactId>
       <version>${project.version}</version>
     </dependency>
 

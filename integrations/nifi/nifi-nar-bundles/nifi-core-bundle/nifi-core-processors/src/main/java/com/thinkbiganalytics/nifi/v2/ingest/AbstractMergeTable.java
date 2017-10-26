@@ -29,9 +29,11 @@ import com.thinkbiganalytics.util.PartitionSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
+import org.apache.nifi.annotation.behavior.TriggerSerially;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
@@ -61,13 +63,8 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_SCHEM
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TABLE;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
-@EventDriven
-@InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
-@Tags({"hive", "ddl", "merge", "sync", "thinkbig"})
-@CapabilityDescription("Fully synchronize or Merge values from a feed partition into the target table optionally supporting de-dupe and overwriting partitions. Sync will overwrite the entire table "
-                       + "to match the source."
-)
-public class MergeTable extends AbstractNiFiProcessor {
+
+public abstract class AbstractMergeTable extends AbstractNiFiProcessor {
 
     /**
      * Merge using primary key
@@ -113,16 +110,27 @@ public class MergeTable extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+
+    public static final PropertyDescriptor RESET_HIVE = new PropertyDescriptor.Builder()
+        .name("Reset hive on connection")
+        .description("Upon getting a new connection it will call Hive 'reset' to reset hive settings back to the default.")
+        .allowableValues("true", "false")
+        .defaultValue("true")
+        .required(true)
+        .build();
+
+
+
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
-    public MergeTable() {
+    public AbstractMergeTable() {
         final Set<Relationship> r = new HashSet<>();
         r.add(REL_SUCCESS);
         r.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(r);
 
-        final List<PropertyDescriptor> pds = new ArrayList<>();
+        List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(THRIFT_SERVICE);
         pds.add(MERGE_STRATEGY);
         pds.add(SOURCE_SCHEMA);
@@ -133,8 +141,13 @@ public class MergeTable extends AbstractNiFiProcessor {
         pds.add(PARTITION_SPECIFICATION);
         pds.add(FIELD_SPECIFICATION);
         pds.add(HIVE_CONFIGURATIONS);
-
+        pds.add(RESET_HIVE);
+        addPropertyDescriptors(pds);
         propDescriptors = Collections.unmodifiableList(pds);
+    }
+
+    public void addPropertyDescriptors(final List<PropertyDescriptor> pds){
+
     }
 
     @Override
@@ -147,6 +160,11 @@ public class MergeTable extends AbstractNiFiProcessor {
         return propDescriptors;
     }
 
+    public Connection getConnection(ProcessContext context) {
+        ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
+        return thriftService.getConnection();
+    }
+
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ComponentLog logger = getLog();
@@ -157,7 +175,6 @@ public class MergeTable extends AbstractNiFiProcessor {
 
         String PROVENANCE_EXECUTION_STATUS_KEY = context.getName() + " Execution Status";
 
-        ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         String partitionSpecString = context.getProperty(PARTITION_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
         String sourceSchema = context.getProperty(SOURCE_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
         String sourceTable = context.getProperty(SOURCE_TABLE).evaluateAttributeExpressions(flowFile).getValue();
@@ -166,6 +183,7 @@ public class MergeTable extends AbstractNiFiProcessor {
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
         String hiveConfigurations = context.getProperty(HIVE_CONFIGURATIONS).evaluateAttributeExpressions(flowFile).getValue();
+        boolean resetHive = context.getProperty(RESET_HIVE).asBoolean();
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
@@ -188,9 +206,12 @@ public class MergeTable extends AbstractNiFiProcessor {
 
         final StopWatch stopWatch = new StopWatch(true);
 
-        try (final Connection conn = thriftService.getConnection()) {
+        try (final Connection conn = getConnection(context)) {
 
             TableMergeSyncSupport mergeSupport = new TableMergeSyncSupport(conn);
+            if(resetHive) {
+                mergeSupport.resetHiveConf();
+            }
             mergeSupport.enableDynamicPartitions();
 
             if (StringUtils.isNotEmpty(hiveConfigurations)) {
