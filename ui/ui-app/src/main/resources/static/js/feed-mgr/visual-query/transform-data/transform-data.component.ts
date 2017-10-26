@@ -217,9 +217,23 @@ export class TransformDataComponent implements OnInit {
             }
 
             // Watch for changes to field policies
+            if (this.fieldPolicies == null) {
+                this.fieldPolicies = [];
+            }
             this.engine.setFieldPolicies(this.fieldPolicies);
 
             this.$scope.$watch(() => this.fieldPolicies, () => {
+                this.fieldPolicies.forEach(policy => {
+                    if (policy.name == null) {
+                        policy.name = policy.fieldName;
+                    }
+                    if (policy.fieldName !== policy.name) {
+                        policy.fieldName = policy.name;
+                    }
+                    if (policy.feedFieldName !== policy.name) {
+                        policy.feedFieldName = policy.name;
+                    }
+                });
                 this.engine.setFieldPolicies(this.fieldPolicies);
                 this.query();
             }, true);
