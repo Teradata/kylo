@@ -77,7 +77,7 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     constructor(private $compile: angular.ICompileService, private $mdPanel: angular.material.IPanelService, private $scope: angular.IRootScopeService,
                 private $templateCache: angular.ITemplateCacheService, private $templateRequest: angular.ITemplateRequestService, private $timeout: angular.ITimeoutService,
-                $window: angular.IWindowService) {
+                private $window: angular.IWindowService) {
         super();
 
         $templateRequest(HEADER_TEMPLATE);
@@ -259,12 +259,33 @@ export class VisualQueryPainterService extends fattable.Painter {
     private showTooltip(cellDiv: HTMLElement) {
         this.tooltipVisible = true;
 
+        // Update content
         const $scope = this.tooltipPanel.panelEl.scope() as any;
         $scope.validation = angular.element(cellDiv).data("validation");
         $scope.value = cellDiv.innerText;
 
-        this.tooltipPanel.updatePosition(this.$mdPanel.newPanelPosition().relativeTo(cellDiv).addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, this.$mdPanel.yPosition.BELOW)
-            .withOffsetX("28px").withOffsetY("0"));
+        // Update position
+        const cellOffset = angular.element(cellDiv).offset();
+        let offsetY;
+        let yPosition;
+
+        if (cellOffset.top + VisualQueryPainterService.ROW_HEIGHT * 3 > this.$window.innerHeight) {
+            offsetY = "-27" + PIXELS;
+            yPosition = this.$mdPanel.yPosition.ABOVE;
+        } else {
+            offsetY = "0";
+            yPosition = this.$mdPanel.yPosition.BELOW;
+        }
+
+        this.tooltipPanel.updatePosition(
+            this.$mdPanel.newPanelPosition()
+                .relativeTo(cellDiv)
+                .addPanelPosition(this.$mdPanel.xPosition.ALIGN_START, yPosition)
+                .withOffsetX("28px")
+                .withOffsetY(offsetY)
+        );
+
+        // Show tooltip
         this.tooltipPanel.open();
     }
 
