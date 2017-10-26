@@ -32,6 +32,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
@@ -113,6 +114,19 @@ public class MergeTable extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor RESET_HIVE = new PropertyDescriptor.Builder()
+        .name("Reset hive on connection")
+        .description("Upon getting a new connection it will call Hive 'reset' to reset hive settings back to the default.")
+        .allowableValues("true", "false")
+        .defaultValue("true")
+        .required(true)
+        .build();
+    public static PropertyDescriptor HIVE_CONNECTION_POOL = new PropertyDescriptor.Builder()
+        .name("Hive Connection Pooling Service")
+        .description("If specified this connection pool will be used in place of the Thrift Service")
+        .required(false)
+        .identifiesControllerService(DBCPService.class)
+        .build();
     private final Set<Relationship> relationships;
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -133,6 +147,9 @@ public class MergeTable extends AbstractNiFiProcessor {
         pds.add(PARTITION_SPECIFICATION);
         pds.add(FIELD_SPECIFICATION);
         pds.add(HIVE_CONFIGURATIONS);
+        pds.add(RESET_HIVE);
+        pds.add(HIVE_CONNECTION_POOL);
+
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -166,6 +183,7 @@ public class MergeTable extends AbstractNiFiProcessor {
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
         String hiveConfigurations = context.getProperty(HIVE_CONFIGURATIONS).evaluateAttributeExpressions(flowFile).getValue();
+        boolean resetHive = context.getProperty(RESET_HIVE).asBoolean();
         final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
             .filter(StringUtils::isNotEmpty)
             .map(ColumnSpec::createFromString)
@@ -188,9 +206,12 @@ public class MergeTable extends AbstractNiFiProcessor {
 
         final StopWatch stopWatch = new StopWatch(true);
 
-        try (final Connection conn = thriftService.getConnection()) {
+        try (final Connection conn = getConnection(context)) {
 
             TableMergeSyncSupport mergeSupport = new TableMergeSyncSupport(conn);
+            if(resetHive) {
+                mergeSupport.resetHiveConf();
+            }
             mergeSupport.enableDynamicPartitions();
 
             if (StringUtils.isNotEmpty(hiveConfigurations)) {
@@ -222,6 +243,18 @@ public class MergeTable extends AbstractNiFiProcessor {
             logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e}, e);
             flowFile = session.putAttribute(flowFile, PROVENANCE_EXECUTION_STATUS_KEY, "Failed: " + e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
+        }
+    }
+
+    public Connection getConnection(ProcessContext context) {
+        ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
+        DBCPService hiveConnectionPool = context.getProperty(HIVE_CONNECTION_POOL).asControllerService(DBCPService.class);
+        if (hiveConnectionPool != null) {
+            getLogger().info("Returning Connection from HiveConnectionPool");
+            return hiveConnectionPool.getConnection();
+        } else {
+            getLogger().info("Returning Connection from ThriftConnectionPool");
+            return thriftService.getConnection();
         }
     }
 }
