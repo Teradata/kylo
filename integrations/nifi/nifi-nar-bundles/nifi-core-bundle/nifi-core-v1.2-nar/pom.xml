@@ -13,6 +13,7 @@
     <maven.javadoc.skip>true</maven.javadoc.skip>
     <source.skip>true</source.skip>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
+    <nifi.nar.maven.plugin.version>1.2.0</nifi.nar.maven.plugin.version>
   </properties>
 
   <dependencies>
@@ -45,7 +46,7 @@
 
   </dependencies>
 
-  <build>
+ <!-- <build>
     <plugins>
       <plugin>
         <groupId>org.apache.nifi</groupId>
@@ -54,5 +55,6 @@
       </plugin>
     </plugins>
   </build>
+  -->
 
 </project>
