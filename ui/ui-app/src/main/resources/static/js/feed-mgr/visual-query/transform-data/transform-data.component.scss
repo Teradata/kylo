@@ -69,13 +69,21 @@ thinkbig-visual-query-transform {
       > div {
         border-bottom: 1px solid rgba(0, 0, 0, .24);
         padding: 0 28px;
+        @include user-select(none);
         vertical-align: middle;
-      }
-      > div.invalid {
-        background-color: map_get($mat-red, 100);
-      }
-      > div.null {
-        background-color: map_get($mat-grey, 100);
+
+        &.invalid {
+          background-color: map_get($mat-red, 100);
+        }
+        &.null {
+          background-color: map_get($mat-grey, 100);
+        }
+        &.selected {
+          -webkit-user-select: text;
+          -moz-user-select: text;
+          -ms-user-select: text;
+          user-select: text;
+        }
       }
     }
 
@@ -206,10 +214,16 @@ md-menu-item > div > md-input-container {
   margin: 0;
 }
 
+/** Menu */
+.md-panel.visual-query-menu {
+  transform-origin: right top 0;
+}
+
 /** Tooltip */
 .md-tooltip.visual-query-tooltip {
   height: auto;
   overflow: visible;
+  @include user-select(none);
 
   ul {
     color: map_get($mat-red, 100);

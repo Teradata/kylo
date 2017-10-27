@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "fattable"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../services/column-delegate", "fattable"], function (require, exports, angular, column_delegate_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -38,21 +38,37 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
             _this.$timeout = $timeout;
             _this.$window = $window;
             /**
+             * Indicates that the menu should be visible.
+             */
+            _this.menuVisible = false;
+            /**
              * Indicates that the tooltip should be visible.
              */
             _this.tooltipVisible = false;
             $templateRequest(HEADER_TEMPLATE);
+            $window.addEventListener("scroll", function () { return _this.hideTooltip(); }, true);
+            // Create menu
+            _this.menuPanel = $mdPanel.create({
+                animation: _this.$mdPanel.newPanelAnimation().withAnimation({ open: 'md-active md-clickable', close: 'md-leave' }),
+                attachTo: angular.element(document.body),
+                clickOutsideToClose: true,
+                escapeToClose: true,
+                focusOnOpen: true,
+                panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
+                templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
+            });
+            _this.menuPanel.attach().then(function () { return _this.menuPanel.panelEl.on("click", function () { return _this.hideMenu(); }); });
+            // Create tooltip
             _this.tooltipPanel = $mdPanel.create({
-                animation: _this.$mdPanel.newPanelAnimation().withAnimation({ open: 'md-show', close: 'md-hide' }),
+                animation: _this.$mdPanel.newPanelAnimation().withAnimation({ open: "md-show", close: "md-hide" }),
                 attachTo: angular.element(document.body),
                 template: "{{value}}<ul><li ng-repeat=\"item in validation\">{{item.rule}}: {{item.reason}}</li></ul>",
                 focusOnOpen: false,
-                panelClass: 'md-tooltip md-origin-bottom visual-query-tooltip',
+                panelClass: "md-tooltip md-origin-bottom visual-query-tooltip",
                 propagateContainerEvents: true,
                 zIndex: 100
             });
             _this.tooltipPanel.attach();
-            $window.addEventListener("scroll", function () { return _this.hideTooltip(); }, true);
             return _this;
         }
         Object.defineProperty(VisualQueryPainterService.prototype, "delegate", {
@@ -147,7 +163,9 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
                 cellDiv.textContent = cell.value;
             }
             if (cell !== null) {
-                angular.element(cellDiv).data("validation", cell.validation);
+                angular.element(cellDiv)
+                    .data("column", cell.column)
+                    .data("validation", cell.validation);
             }
         };
         /**
@@ -197,8 +215,12 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
          */
         VisualQueryPainterService.prototype.setupCell = function (cellDiv) {
             var _this = this;
-            angular.element(cellDiv).on("mouseenter", function () { return _this.showTooltip(cellDiv); });
-            angular.element(cellDiv).on("mouseleave", function () { return _this.hideTooltip(); });
+            angular.element(cellDiv)
+                .on("contextmenu", function () { return false; })
+                .on("mousedown", function () { return _this.setSelected(cellDiv); })
+                .on("mouseenter", function () { return _this.showTooltip(cellDiv); })
+                .on("mouseleave", function () { return _this.hideTooltip(); })
+                .on("mouseup", function (event) { return _this.showMenu(cellDiv, event); });
             cellDiv.style.font = this.rowFont;
             cellDiv.style.lineHeight = VisualQueryPainterService.ROW_HEIGHT + PIXELS;
         };
@@ -216,6 +238,63 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
             // Load template
             headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE);
             this.$compile(headerDiv)(this.$scope.$new(true));
+        };
+        /**
+         * Hides the cell menu.
+         */
+        VisualQueryPainterService.prototype.hideMenu = function () {
+            var _this = this;
+            this.menuVisible = false;
+            this.$timeout(function () {
+                if (_this.menuVisible === false) {
+                    _this.menuPanel.hide();
+                }
+            }, 75);
+        };
+        /**
+         * Sets the currently selected cell.
+         */
+        VisualQueryPainterService.prototype.setSelected = function (cellDiv) {
+            // Remove previous selection
+            if (this.selectedCell) {
+                angular.element(this.selectedCell).removeClass(VisualQueryPainterService.SELECTED_CLASS);
+            }
+            // Set new selection
+            this.selectedCell = cellDiv;
+            angular.element(this.selectedCell).addClass(VisualQueryPainterService.SELECTED_CLASS);
+        };
+        /**
+         * Shows the cell menu on the specified cell.
+         */
+        VisualQueryPainterService.prototype.showMenu = function (cellDiv, event) {
+            // Get column info
+            var column = angular.element(cellDiv).data("column");
+            var header = this.delegate.columns[column];
+            var selection = this.$window.getSelection();
+            if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
+                return; // ignore dragging between elements
+            }
+            if (angular.element(document.body).children(".CodeMirror-hints").length > 0) {
+                return; // ignore clicks when CodeMirror function list is active
+            }
+            else if (header.delegate.dataCategory === column_delegate_1.DataCategory.DATETIME || header.delegate.dataCategory === column_delegate_1.DataCategory.NUMERIC || header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) {
+                this.menuVisible = true;
+            }
+            else {
+                return; // ignore clicks on columns with unsupported data types
+            }
+            // Update content
+            var $scope = this.menuPanel.config.scope;
+            $scope.DataCategory = column_delegate_1.DataCategory;
+            $scope.header = header;
+            $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
+            $scope.table = this.delegate;
+            $scope.value = cellDiv.innerText;
+            // Show menu
+            this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
+                .left(event.clientX + PIXELS)
+                .top(event.clientY + PIXELS));
+            this.menuPanel.open();
         };
         /**
          * Shows the tooltip on the specified cell.
@@ -272,6 +351,10 @@ define(["require", "exports", "angular", "fattable"], function (require, exports
      * Height of data rows.
      */
     VisualQueryPainterService.ROW_HEIGHT = 48;
+    /**
+     * Class for selected cells.
+     */
+    VisualQueryPainterService.SELECTED_CLASS = "selected";
     VisualQueryPainterService.$inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
     exports.VisualQueryPainterService = VisualQueryPainterService;
     angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);

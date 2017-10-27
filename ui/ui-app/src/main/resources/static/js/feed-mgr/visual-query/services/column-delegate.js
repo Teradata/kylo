@@ -1,4 +1,4 @@
-define(["require", "exports"], function (require, exports) {
+define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -64,6 +64,86 @@ define(["require", "exports"], function (require, exports) {
             this.filters = this.getFilters(this.dataCategory);
             this.transforms = this.getTransforms(this.dataCategory);
         }
+        /**
+         * Filters for rows where the specified column does not contain the specified value.
+         *
+         * @param value - the value to remove
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.deleteRowsContaining = function (value, column) {
+            var formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "')))";
+            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value });
+        };
+        /**
+         * Filters for rows where the specified column is not the specified value.
+         *
+         * @param value - the value to remove
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.deleteRowsEqualTo = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value });
+        };
+        /**
+         * Filters for rows where the specified column is less than or equal to the specified value.
+         *
+         * @param value - the maximum value (inclusive)
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.deleteRowsGreaterThan = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value });
+        };
+        /**
+         * Filters for rows where the specified column is greater than or equal to the specified value.
+         *
+         * @param value - the minimum value (inclusive)
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.deleteRowsLessThan = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value });
+        };
+        /**
+         * Filters for rows where the specified column contains the specified value.
+         *
+         * @param value - the value to find
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.findRowsContaining = function (value, column) {
+            var formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "'))";
+            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value });
+        };
+        /**
+         * Filters for rows where the specified column is the specified value.
+         *
+         * @param value - the value to find
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.findRowsEqualTo = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value });
+        };
+        /**
+         * Filters for rows where the specified column is greater than the specified value.
+         *
+         * @param value - the minimum value (exclusive)
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.findRowsGreaterThan = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value });
+        };
+        /**
+         * Filters for rows where the specified column is less than the specified value.
+         *
+         * @param value - the maximum value (exclusive)
+         * @param column - the column
+         */
+        ColumnDelegate.prototype.findRowsLessThan = function (value, column) {
+            var formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.quote(value) + "')";
+            this.controller.addFunction(formula, { formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value });
+        };
         /**
          * Hides the specified column.
          *
@@ -137,6 +217,20 @@ define(["require", "exports"], function (require, exports) {
         ColumnDelegate.prototype.sortColumn = function (direction, column, grid) {
             grid.sortColumn(column, direction, true);
             grid.refresh();
+        };
+        /**
+         * Splits the specified column on the specified value.
+         *
+         * @param value - the value to split on
+         * @param column - the column
+         * @param grid - the table
+         */
+        ColumnDelegate.prototype.splitOn = function (value, column, grid) {
+            var displayName = this.getColumnDisplayName(column);
+            var fieldName = this.getColumnFieldName(column);
+            var pattern = "[" + StringUtils.quote(value).replace(/]/g, "\\]") + "]";
+            var formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.quote(displayName) + "\")", column, grid);
+            this.controller.addFunction(formula, { formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value });
         };
         /**
          * Executes the specified operation on the column.

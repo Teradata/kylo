@@ -1,6 +1,6 @@
-import {TransformDataComponent} from "../transform-data/transform-data.component";
+import * as angular from "angular";
 
-declare const angular: angular.IAngularStatic;
+import {TransformDataComponent} from "../transform-data/transform-data.component";
 
 /**
  * Categories for data types.
@@ -84,6 +84,94 @@ export class ColumnDelegate {
     }
 
     /**
+     * Filters for rows where the specified column does not contain the specified value.
+     *
+     * @param value - the value to remove
+     * @param column - the column
+     */
+    deleteRowsContaining(value: string, column: any) {
+        const formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "')))";
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is not the specified value.
+     *
+     * @param value - the value to remove
+     * @param column - the column
+     */
+    deleteRowsEqualTo(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is less than or equal to the specified value.
+     *
+     * @param value - the maximum value (inclusive)
+     * @param column - the column
+     */
+    deleteRowsGreaterThan(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is greater than or equal to the specified value.
+     *
+     * @param value - the minimum value (inclusive)
+     * @param column - the column
+     */
+    deleteRowsLessThan(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column contains the specified value.
+     *
+     * @param value - the value to find
+     * @param column - the column
+     */
+    findRowsContaining(value: string, column: any) {
+        const formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "'))";
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is the specified value.
+     *
+     * @param value - the value to find
+     * @param column - the column
+     */
+    findRowsEqualTo(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is greater than the specified value.
+     *
+     * @param value - the minimum value (exclusive)
+     * @param column - the column
+     */
+    findRowsGreaterThan(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is less than the specified value.
+     *
+     * @param value - the maximum value (exclusive)
+     * @param column - the column
+     */
+    findRowsLessThan(value: string, column: any) {
+        const formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.quote(value) + "')";
+        this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value});
+    }
+
+    /**
      * Hides the specified column.
      *
      * @param {ui.grid.GridColumn} column the column to be hidden
@@ -163,6 +251,21 @@ export class ColumnDelegate {
     sortColumn(direction: string, column: any, grid: any) {
         grid.sortColumn(column, direction, true);
         grid.refresh();
+    }
+
+    /**
+     * Splits the specified column on the specified value.
+     *
+     * @param value - the value to split on
+     * @param column - the column
+     * @param grid - the table
+     */
+    splitOn(value: string, column: any, grid: any) {
+        const displayName = this.getColumnDisplayName(column);
+        const fieldName = this.getColumnFieldName(column);
+        const pattern = "[" + StringUtils.quote(value).replace(/]/g, "\\]") + "]";
+        const formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.quote(displayName) + "\")", column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value});
     }
 
     /**

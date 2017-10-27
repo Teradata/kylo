@@ -2,6 +2,7 @@ import * as angular from "angular";
 import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService";
+import {DataCategory} from "../../services/column-delegate";
 
 /**
  * Default font.
@@ -41,6 +42,11 @@ export class VisualQueryPainterService extends fattable.Painter {
     static readonly ROW_HEIGHT = 48;
 
     /**
+     * Class for selected cells.
+     */
+    static readonly SELECTED_CLASS = "selected";
+
+    /**
      * Visual Query Component instance.
      */
     private _delegate: any;
@@ -59,6 +65,21 @@ export class VisualQueryPainterService extends fattable.Painter {
      * Font for the data rows
      */
     private _rowFont: string;
+
+    /**
+     * Panel containing the cell menu.
+     */
+    private menuPanel: angular.material.IPanelRef;
+
+    /**
+     * Indicates that the menu should be visible.
+     */
+    private menuVisible: boolean = false;
+
+    /**
+     * Cell that was last clicked.
+     */
+    private selectedCell: HTMLElement;
 
     /**
      * Panel containing the tooltip.
@@ -81,19 +102,31 @@ export class VisualQueryPainterService extends fattable.Painter {
         super();
 
         $templateRequest(HEADER_TEMPLATE);
+        $window.addEventListener("scroll", () => this.hideTooltip(), true);
 
+        // Create menu
+        this.menuPanel = $mdPanel.create({
+            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-active md-clickable', close: 'md-leave'}),
+            attachTo: angular.element(document.body),
+            clickOutsideToClose: true,
+            escapeToClose: true,
+            focusOnOpen: true,
+            panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
+            templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
+        });
+        this.menuPanel.attach().then(() => this.menuPanel.panelEl.on("click", () => this.hideMenu()));
+
+        // Create tooltip
         this.tooltipPanel = $mdPanel.create({
-            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: 'md-show', close: 'md-hide'}),
+            animation: this.$mdPanel.newPanelAnimation().withAnimation({open: "md-show", close: "md-hide"}),
             attachTo: angular.element(document.body),
             template: `{{value}}<ul><li ng-repeat="item in validation">{{item.rule}}: {{item.reason}}</li></ul>`,
             focusOnOpen: false,
-            panelClass: 'md-tooltip md-origin-bottom visual-query-tooltip',
+            panelClass: "md-tooltip md-origin-bottom visual-query-tooltip",
             propagateContainerEvents: true,
             zIndex: 100
-        } as any);
+        });
         this.tooltipPanel.attach();
-
-        $window.addEventListener("scroll", () => this.hideTooltip(), true);
     }
 
     /**
@@ -177,7 +210,9 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
 
         if (cell !== null) {
-            angular.element(cellDiv).data("validation", cell.validation);
+            angular.element(cellDiv)
+                .data("column", cell.column)
+                .data("validation", cell.validation);
         }
     }
 
@@ -229,8 +264,12 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {HTMLElement} cellDiv the cell <div> element
      */
     setupCell(cellDiv: HTMLElement) {
-        angular.element(cellDiv).on("mouseenter", () => this.showTooltip(cellDiv));
-        angular.element(cellDiv).on("mouseleave", () => this.hideTooltip());
+        angular.element(cellDiv)
+            .on("contextmenu", () => false)
+            .on("mousedown", () => this.setSelected(cellDiv))
+            .on("mouseenter", () => this.showTooltip(cellDiv))
+            .on("mouseleave", () => this.hideTooltip())
+            .on("mouseup", event => this.showMenu(cellDiv, event));
 
         cellDiv.style.font = this.rowFont;
         cellDiv.style.lineHeight = VisualQueryPainterService.ROW_HEIGHT + PIXELS;
@@ -251,6 +290,69 @@ export class VisualQueryPainterService extends fattable.Painter {
         // Load template
         headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
         this.$compile(headerDiv)(this.$scope.$new(true));
+    }
+
+    /**
+     * Hides the cell menu.
+     */
+    private hideMenu() {
+        this.menuVisible = false;
+        this.$timeout(() => {
+            if (this.menuVisible === false) {
+                this.menuPanel.hide();
+            }
+        }, 75);
+    }
+
+    /**
+     * Sets the currently selected cell.
+     */
+    private setSelected(cellDiv: HTMLElement) {
+        // Remove previous selection
+        if (this.selectedCell) {
+            angular.element(this.selectedCell).removeClass(VisualQueryPainterService.SELECTED_CLASS);
+        }
+
+        // Set new selection
+        this.selectedCell = cellDiv;
+        angular.element(this.selectedCell).addClass(VisualQueryPainterService.SELECTED_CLASS);
+    }
+
+    /**
+     * Shows the cell menu on the specified cell.
+     */
+    private showMenu(cellDiv: HTMLElement, event: JQueryEventObject) {
+        // Get column info
+        const column = angular.element(cellDiv).data("column");
+        const header = this.delegate.columns[column];
+        const selection = this.$window.getSelection();
+
+        if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
+            return;  // ignore dragging between elements
+        }
+        if (angular.element(document.body).children(".CodeMirror-hints").length > 0) {
+            return;  // ignore clicks when CodeMirror function list is active
+        } else if (header.delegate.dataCategory === DataCategory.DATETIME || header.delegate.dataCategory === DataCategory.NUMERIC || header.delegate.dataCategory === DataCategory.STRING) {
+            this.menuVisible = true;
+        } else {
+            return;  // ignore clicks on columns with unsupported data types
+        }
+
+        // Update content
+        const $scope: IScope = (this.menuPanel.config as any).scope;
+        $scope.DataCategory = DataCategory;
+        $scope.header = header;
+        $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
+        $scope.table = this.delegate;
+        $scope.value = cellDiv.innerText;
+
+        // Show menu
+        this.menuPanel.updatePosition(
+            this.$mdPanel.newPanelPosition()
+                .left(event.clientX + PIXELS)
+                .top(event.clientY + PIXELS)
+        );
+        this.menuPanel.open();
     }
 
     /**
