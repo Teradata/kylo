@@ -7,11 +7,12 @@ then
     NIFI_USER=$3
     NIFI_GROUP=$4
 else
-    echo "Unknown arguments. You must pass in the nifi-kylo setup folder location, the HDF NiFI Home folder location, and user:group names. For example: /opt/nifi-kylo /usr/hdp/current/nifi nifi:nifi"
+    echo "Unknown arguments. You must pass in the nifi-kylo setup folder location, the HDF NiFI Home folder location, and user:group names. For example: /opt/nifi-kylo /usr/hdf/current/nifi nifi:nifi"
     exit 1
 fi
 
 mkdir $HDF_NIFI_HOME_FOLDER/lib/app
+chown $NIFI_USER:$NIFI_GROUP $HDF_NIFI_HOME_FOLDER/lib/app
 
 echo "Creating symbolic links"
 ln -f -s $NIFI_KYLO_FOLDER/lib/kylo-nifi-core-service-nar-*.nar $HDF_NIFI_HOME_FOLDER/lib/kylo-nifi-core-service-nar.nar
