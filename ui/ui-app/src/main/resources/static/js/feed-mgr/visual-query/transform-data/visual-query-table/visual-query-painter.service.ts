@@ -347,13 +347,33 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.table = this.delegate;
         $scope.value = cellDiv.innerText;
 
-        // Show menu
+        // Update position
         this.menuPanel.updatePosition(
             this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
                 .top(event.clientY + PIXELS)
         );
-        this.menuPanel.open();
+
+        // Show menu
+        this.menuPanel.open()
+            .then(() => {
+                // Calculate position
+                const element = angular.element(this.menuPanel.panelEl);
+                const height = element.height();
+                const offset = element.offset();
+                const width = element.width();
+
+                // Fix position if off screen
+                const left = (offset.left + width > this.$window.innerWidth) ? this.$window.innerWidth - width - 8 : event.clientX;
+                const top = (offset.top + height > this.$window.innerHeight) ? this.$window.innerHeight - height - 8 : event.clientY;
+                if (left !== event.clientX || top !== event.clientY) {
+                    this.menuPanel.updatePosition(
+                        this.$mdPanel.newPanelPosition()
+                            .left(left + PIXELS)
+                            .top(top + PIXELS)
+                    );
+                }
+            });
     }
 
     /**

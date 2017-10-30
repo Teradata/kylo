@@ -267,6 +267,7 @@ define(["require", "exports", "angular", "../../services/column-delegate", "fatt
          * Shows the cell menu on the specified cell.
          */
         VisualQueryPainterService.prototype.showMenu = function (cellDiv, event) {
+            var _this = this;
             // Get column info
             var column = angular.element(cellDiv).data("column");
             var header = this.delegate.columns[column];
@@ -291,11 +292,27 @@ define(["require", "exports", "angular", "../../services/column-delegate", "fatt
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;
             $scope.value = cellDiv.innerText;
-            // Show menu
+            // Update position
             this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
                 .top(event.clientY + PIXELS));
-            this.menuPanel.open();
+            // Show menu
+            this.menuPanel.open()
+                .then(function () {
+                // Calculate position
+                var element = angular.element(_this.menuPanel.panelEl);
+                var height = element.height();
+                var offset = element.offset();
+                var width = element.width();
+                // Fix position if off screen
+                var left = (offset.left + width > _this.$window.innerWidth) ? _this.$window.innerWidth - width - 8 : event.clientX;
+                var top = (offset.top + height > _this.$window.innerHeight) ? _this.$window.innerHeight - height - 8 : event.clientY;
+                if (left !== event.clientX || top !== event.clientY) {
+                    _this.menuPanel.updatePosition(_this.$mdPanel.newPanelPosition()
+                        .left(left + PIXELS)
+                        .top(top + PIXELS));
+                }
+            });
         };
         /**
          * Shows the tooltip on the specified cell.
