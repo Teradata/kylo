@@ -18,27 +18,34 @@ package com.thinkbiganalytics.cluster;
  * limitations under the License.
  * #L%
  */
-
-import java.util.Set;
+import java.util.Map;
 
 /**
- * Created by sr186054 on 10/13/17.
+ * Created by sr186054 on 10/30/17.
  */
-public interface MessageDeliveryStatus {
+public interface ClusterNodeSummary {
 
-    void sentTo(String to);
+    Long getMessagesSent();
 
-    void redeliveredTo(String to);
+    Long getMessagesReceived();
 
-    void receivedFrom(String from);
+    Long getLastReceivedMessageTimestamp();
 
-    boolean isComplete();
+    void messageSent(String type);
 
-    Set<String> getNodesAwaitingMessage();
+    void messageReceived(String type);
 
-    Long getSentTime();
+    Long getMessagesSentForType(String type);
 
-    boolean isTimeLongerThan(Long millis);
+    Long getMessagesReceivedForType(String type);
 
-    ClusterMessage getMessage();
+    String getNodeAddress();
+
+    Long getLastSentMessageTimestamp();
+
+    Map<String,Long> getMessagesReceivedByType();
+
+    Map<String,Long> getMessagesSentByType();
+
+    Map<String,Object> getChannelStats();
 }

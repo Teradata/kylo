@@ -37,9 +37,17 @@ public interface ClusterService {
 
     /**
      * Subscribe to cluster message events
+     * This will get notified for all topics
      * @param messageReceiver a receiver of a message sent by another cluster member
      */
     void subscribe(ClusterServiceMessageReceiver messageReceiver);
+
+    /**
+     * Subscrbe a set of topics
+     * @param messageReceiver  the receiver
+     * @param topic the topics to subscribe to
+     */
+    void subscribe(ClusterServiceMessageReceiver messageReceiver,String... topic);
 
     /**
      * Adds this node to the cluster
@@ -92,6 +100,8 @@ public interface ClusterService {
      */
     List<String> getMembersAsString();
 
+    boolean isAcknowledgingMessages();
+
     /**
      *
      * @return Return other member addresses, excluding this address
@@ -101,4 +111,6 @@ public interface ClusterService {
     List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement();
 
     List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement(Long longerThanMillis);
+
+    ClusterNodeSummary getClusterNodeSummary();
 }

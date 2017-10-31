@@ -113,7 +113,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     @PostConstruct
     private void init() {
-        clusterService.subscribe(this);
+        clusterService.subscribe(this,AlertManagerChangedClusterMessage.TYPE);
     }
 
     @Override

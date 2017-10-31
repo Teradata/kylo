@@ -29,6 +29,7 @@ import com.thinkbiganalytics.alerts.api.AlertSummary;
 import com.thinkbiganalytics.alerts.api.core.AlertCriteriaInput;
 import com.thinkbiganalytics.alerts.rest.AlertsModel;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
+import com.thinkbiganalytics.alerts.service.ServiceStatusAlerts;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.cache.util.TimeUtil;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
@@ -177,6 +178,9 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
         } else if (alertSummary.getSlaId() != null) {
             return filterSlaAlertForUserAccess(userContext, alertSummary, feedName);
         } else {
+            if(StringUtils.isNotBlank(feedName)){
+                return !alertSummary.getType().equals(ServiceStatusAlerts.SERVICE_STATUS_ALERT_TYPE);
+            }
             return true;
         }
     }

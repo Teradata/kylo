@@ -19,6 +19,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterNodeSummary;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceTester;
 import com.thinkbiganalytics.cluster.MessageDeliveryStatus;
@@ -102,7 +103,7 @@ public class ClusterServiceTestController {
     @GET
     @Path("/awaiting-messages")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the members in the cluster.")
+    @ApiOperation("Gets messages awaiting acknowledgement.  This will only return data if the property: kylo.cluster.acknowledge=true  in the application.properties of kylo-services ")
     public List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement(@QueryParam("longerThan") Long longerThan) {
         if (longerThan != null && longerThan > 0L) {
             return clusterService.getMessagesAwaitingAcknowledgement(longerThan);
@@ -111,4 +112,14 @@ public class ClusterServiceTestController {
         }
 
     }
+
+
+    @GET
+    @Path("/cluster-node-summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Returns a summary of this cluster node.")
+    public ClusterNodeSummary getClusterNodeSummary() {
+            return clusterService.getClusterNodeSummary();
+    }
+
 }

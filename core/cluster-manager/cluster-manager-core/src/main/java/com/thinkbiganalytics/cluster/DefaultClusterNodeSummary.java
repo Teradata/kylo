@@ -23,12 +23,13 @@ import com.google.common.util.concurrent.AtomicLongMap;
 
 import org.joda.time.DateTime;
 
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by sr186054 on 10/13/17.
  */
-public class ClusterNodeSummary {
+public class DefaultClusterNodeSummary implements ClusterNodeSummary {
 
     private String nodeAddress;
 
@@ -37,6 +38,8 @@ public class ClusterNodeSummary {
 
     Long lastReceivedMessageTimestamp;
     Long lastSentMessageTimestamp;
+
+    Map<String,Object> channelStats;
 
     AtomicLongMap<String> messagesReceivedByType = AtomicLongMap.create();
     AtomicLongMap<String> messagesSentByType = AtomicLongMap.create();
@@ -53,55 +56,73 @@ public class ClusterNodeSummary {
     }
 
 
-    public ClusterNodeSummary(String nodeAddress) {
+    public DefaultClusterNodeSummary(String nodeAddress) {
         this.nodeAddress = nodeAddress;
     }
 
+    @Override
     public Long getMessagesSent() {
         return messagesSent.get();
     }
 
+    @Override
     public Long getMessagesReceived() {
         return messagesReceived.get();
     }
 
+    @Override
     public Long getLastReceivedMessageTimestamp() {
         return lastReceivedMessageTimestamp;
     }
 
+    @Override
     public void messageSent(String type) {
         lastSentMessageTimestamp = DateTime.now().getMillis();
         messagesSent.incrementAndGet();
         messagesSentByType.getAndIncrement(type);
     }
 
+    @Override
     public void messageReceived(String type) {
         lastReceivedMessageTimestamp = DateTime.now().getMillis();
         messagesReceived.incrementAndGet();
         messagesReceivedByType.getAndIncrement(type);
     }
 
+    @Override
     public Long getMessagesSentForType(String type) {
         return messagesSentByType.get(type);
     }
 
+    @Override
     public Long getMessagesReceivedForType(String type) {
         return messagesReceivedByType.get(type);
     }
 
+    @Override
     public String getNodeAddress() {
         return nodeAddress;
     }
 
+    @Override
     public Long getLastSentMessageTimestamp() {
         return lastSentMessageTimestamp;
     }
 
-    public AtomicLongMap getMessagesReceivedByType() {
-        return messagesReceivedByType;
+    public Map<String,Long> getMessagesReceivedByType() {
+        return messagesReceivedByType.asMap();
     }
 
-    public AtomicLongMap getMessagesSentByType() {
-        return messagesSentByType;
+    public Map<String,Long> getMessagesSentByType() {
+        return messagesSentByType.asMap();
+    }
+
+    @Override
+    public Map<String, Object> getChannelStats() {
+        return channelStats;
+    }
+
+    public void setChannelStats(Map<String, Object> channelStats) {
+        this.channelStats = channelStats;
     }
 }

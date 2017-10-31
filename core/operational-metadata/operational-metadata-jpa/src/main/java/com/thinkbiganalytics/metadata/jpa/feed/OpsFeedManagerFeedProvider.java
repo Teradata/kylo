@@ -128,10 +128,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     @Inject
     private MetadataAccess metadataAccess;
 
+    private static String CLUSTER_MESSAGE_KEY = "OPS_MANAGER_FEED_CACHE";
 
     @Override
     public String getClusterMessageKey() {
-        return "OPS_MANAGER_FEED_CACHE";
+        return CLUSTER_MESSAGE_KEY;
     }
 
     @Override
@@ -163,7 +164,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private void init() {
         subscribeListener(opsManagerFeedCacheByName);
         subscribeListener(opsManagerFeedCacheById);
-        clusterService.subscribe(this);
+        clusterService.subscribe(this,getClusterMessageKey());
         //initially populate
         metadataAccess.read(() -> populateCache(), MetadataAccess.SERVICE);
     }

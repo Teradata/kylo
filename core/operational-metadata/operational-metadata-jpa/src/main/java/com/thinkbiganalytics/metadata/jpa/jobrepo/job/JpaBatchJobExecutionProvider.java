@@ -186,7 +186,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @PostConstruct
     private void init(){
-        clusterService.subscribe(batchStatusChangeReceiver);
+        clusterService.subscribe(batchStatusChangeReceiver,FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE);
     }
 
     @Override

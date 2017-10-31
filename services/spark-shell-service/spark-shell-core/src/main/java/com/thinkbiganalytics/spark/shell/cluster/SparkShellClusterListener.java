@@ -30,6 +30,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcessListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,8 @@ public class SparkShellClusterListener implements ClusterServiceListener, Cluste
 
         // Subscribe to cluster events
         clusterService.subscribe((ClusterServiceListener) this);
-        clusterService.subscribe((ClusterServiceMessageReceiver) this);
+
+        clusterService.subscribe( this,new String[] {SparkShellProcessChangedMessage.TYPE,SparkShellProcessSyncMessage.TYPE});
     }
 
     @Override

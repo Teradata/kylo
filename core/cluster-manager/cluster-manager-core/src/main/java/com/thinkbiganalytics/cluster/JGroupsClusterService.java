@@ -21,6 +21,8 @@ package com.thinkbiganalytics.cluster;
  */
 
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
@@ -39,13 +41,16 @@ import org.springframework.beans.factory.annotation.Value;
 import java.io.FileNotFoundException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -62,27 +67,48 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
     @Value("${kylo.cluster.jgroupsConfigFile:#{null}}")
     private String jgroupsConfigFile;
 
+    @Value("${kylo.cluster.acknowledge:false}")
+    private boolean sendAcknowledgementMessage = false;
+
+    @Value("${kylo.cluster.pending.acknowledge.expire.minutes:30}")
+    private Integer pendingMessageAcknowledgeTime = 30;
+
     private static final String CLUSTER_NAME = "internal-kylo-cluster";
+
+    private static final String ALL_TOPIC = "!!!ALL!!!";
 
 
     private List<ClusterServiceListener> listeners = new ArrayList<>();
 
-    private List<ClusterServiceMessageReceiver> messageReceivers = new ArrayList<>();
+    //private List<ClusterServiceMessageReceiver> messageReceivers = new ArrayList<>();
+
+    private Map<String,List<ClusterServiceMessageReceiver>> messageReceivers = new ConcurrentHashMap<>();
 
     public void subscribe(ClusterServiceListener listener) {
         listeners.add(listener);
     }
 
     public void subscribe(ClusterServiceMessageReceiver messageReceiver) {
-        messageReceivers.add(messageReceiver);
+        messageReceivers.computeIfAbsent(ALL_TOPIC,t -> new ArrayList<>()).add(messageReceiver);
+    }
+
+    public void subscribe(ClusterServiceMessageReceiver messageReceiver,String... topics) {
+        Arrays.stream(topics).forEach(topic -> messageReceivers.computeIfAbsent(topic,t -> new ArrayList<>()).add(messageReceiver) );
     }
 
     private String ENSURE_MESSAGE_DELIVERY_TYPE = "ENSURE_MESSAGE_DELIVERY";
 
-    private Map<String, MessageDeliveryStatus> ensureMessageDeliveryMap = new ConcurrentHashMap<>();
+    Cache<String, MessageDeliveryStatus> ensureMessageDeliveryMap = CacheBuilder.newBuilder().expireAfterWrite(pendingMessageAcknowledgeTime, TimeUnit.MINUTES).build();
 
-    private ClusterNodeSummary clusterNodeSummary;
+  //  private Map<String, MessageDeliveryStatus> ensureMessageDeliveryMap = new ConcurrentHashMap<>();
 
+    private DefaultClusterNodeSummary clusterNodeSummary;
+
+
+    @Override
+    public boolean isAcknowledgingMessages() {
+        return sendAcknowledgementMessage;
+    }
 
     /**
      * Start a channel on the cluster
@@ -94,13 +120,13 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         } else if (StringUtils.isNotBlank(jgroupsConfigFile)) {
             try {
                 channel = new JChannel(jgroupsConfigFile);
-
                 String name = Util.generateLocalName();
                 channel.setName("Kylo - " + name);
                 channel.setReceiver(this);
                 channel.addChannelListener(new Listener());
                 channel.connect(CLUSTER_NAME);
-                clusterNodeSummary = new ClusterNodeSummary(channel.getAddressAsString());
+                channel.enableStats(true);
+                clusterNodeSummary = new DefaultClusterNodeSummary(channel.getAddressAsString());
                 clusterNodeSummary.connected();
             } catch (FileNotFoundException e) {
                 log.error("Unable to find the jgroups cluster configuration file {}.  Kylo is not clustered ", jgroupsConfigFile);
@@ -166,26 +192,34 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
      * @param msg a message
      */
     public void receive(Message msg) {
-        log.info("Receiving {} : {} ", msg.getSrc(), msg.getObject());
+
         ClusterMessage clusterMessage = (ClusterMessage) msg.getObject();
         String from = msg.getSrc().toString();
-        messageReceivers.stream().forEach(messageReceiver -> {
-            messageReceiver.onMessageReceived(from, clusterMessage);
+        Set<ClusterServiceMessageReceiver>
+            receivers =  messageReceivers.entrySet().stream().filter(e -> ALL_TOPIC.equalsIgnoreCase(e.getKey()) || e.getKey().equalsIgnoreCase(clusterMessage.getType())).flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
+        log.info("Receiving message from {} : {}, notifying {} receivers ", msg.getSrc(), msg.getObject(),receivers.size());
+        receivers.stream().forEach(messageReceiver -> {
+           try {
+               messageReceiver.onMessageReceived(from, clusterMessage);
+           }catch (Exception e){
+               log.error("Error procesing onMessageReceived from {} topic: {}, message: {} ",from,clusterMessage.getType(),clusterMessage.getMessage(),e);
+           }
         });
+        clusterNodeSummary.messageReceived(clusterMessage.getType());
         acknowledgeMessage(from, clusterMessage);
-
-
     }
 
     private void acknowledgeMessage(String from, ClusterMessage clusterMessage) {
         //Acknowledge receiving the message
         if (ENSURE_MESSAGE_DELIVERY_TYPE.equalsIgnoreCase(clusterMessage.getType())) {
             EnsureMessageDeliveryMessage ensureMessageDeliveryMessage = (EnsureMessageDeliveryMessage) clusterMessage.getMessage();
-            MessageDeliveryStatus status = ensureMessageDeliveryMap.get(ensureMessageDeliveryMessage.getMessageId());
-            status.receivedFrom(from);
-            if (status.isComplete()) {
-                ensureMessageDeliveryMap.remove(ensureMessageDeliveryMessage.getMessageId());
-                log.debug("Successfully acknowledged message deliver of {}, type: {}", clusterMessage.getId(), clusterMessage.getType());
+            MessageDeliveryStatus status = ensureMessageDeliveryMap.getIfPresent(ensureMessageDeliveryMessage.getMessageId());
+            if(status != null) {
+                status.receivedFrom(from);
+                if (status.isComplete()) {
+                    ensureMessageDeliveryMap.invalidate(ensureMessageDeliveryMessage.getMessageId());
+                    log.debug("Successfully acknowledged message deliver of {}, type: {}", clusterMessage.getId(), clusterMessage.getType());
+                }
             }
         } else {
             sendAcknowledgementMessage(from, clusterMessage);
@@ -232,7 +266,10 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                 log.info("Sending message with id: {}, of type:{} to ALL from {}", id, type, channel.getAddressAsString());
                 ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                 MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage, new HashSet<String>(getMembersAsString()));
-                ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                if(sendAcknowledgementMessage) {
+                    //store this message id in the acknowledgement map
+                    ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                }
                 channel.send(null, clusterMessage);
             } catch (Exception e) {
                 log.error("Unable to send message of type: {} to other nodes: {} ", type, e.getMessage(), e);
@@ -252,7 +289,9 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                     log.info("Sending message with id: {}, of type:{} to {} from {}", id, type, address, channel.getAddressAsString());
                     ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                     MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage);
-                    ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                    if(sendAcknowledgementMessage) {
+                        ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                    }
                     channel.send(address.get(), clusterMessage);
                     clusterNodeSummary.messageSent(type);
                     status.sentTo(address.toString());
@@ -278,7 +317,9 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                 String id = newMessageId();
                 ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                 MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage);
-                ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                if(sendAcknowledgementMessage) {
+                    ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
+                }
                 for (Address address : getOtherMembers()) {
                     log.info("Sending message with id:{} of type:{} to {} from {} ", id, type, address, this.channel.getAddressAsString());
                     channel.send(address, clusterMessage);
@@ -293,7 +334,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
 
 
     private void sendAcknowledgementMessage(String from, ClusterMessage message) {
-        if (isClustered()) {
+        if (isClustered() && sendAcknowledgementMessage) {
             try {
                 final Optional<Address> address = getOtherMembers().stream()
                     .filter(member -> from.equalsIgnoreCase(member.toString()))
@@ -323,11 +364,11 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                     .findFirst();
                 if (address.isPresent()) {
                     log.info("Redeliver message with id: {}, of type:{} to {} from {}", clusterMessage.getId(), clusterMessage.getType(), address, channel.getAddressAsString());
-                    MessageDeliveryStatus status = ensureMessageDeliveryMap.get(clusterMessage.getId());
+                    MessageDeliveryStatus status = ensureMessageDeliveryMap.getIfPresent(clusterMessage.getId());
                     channel.send(address.get(), clusterMessage);
                     clusterNodeSummary.messageSent(clusterMessage.getType());
                     if (status != null) {
-                        status.redeliverdTo(address.toString());
+                        status.redeliveredTo(address.toString());
                     }
                 } else {
                     throw new IllegalArgumentException("Cluster node does not exist: " + other);
@@ -362,14 +403,14 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
     }
 
     public List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement() {
-        return Lists.newArrayList(ensureMessageDeliveryMap.values());
+        return Lists.newArrayList(ensureMessageDeliveryMap.asMap().values());
     }
 
     /**
      * Find any Messages awaiting to be delivered longer than a certain time
      */
     public List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement(Long longerThanMillis) {
-        return ensureMessageDeliveryMap.values().stream().filter(m -> m.isTimeLongerThan(longerThanMillis)).collect(Collectors.toList());
+        return ensureMessageDeliveryMap.asMap().values().stream().filter(m -> m.isTimeLongerThan(longerThanMillis)).collect(Collectors.toList());
     }
 
     public void redeliverToAwaitingNodes(Long millis) {
@@ -378,5 +419,10 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         });
     }
 
-
+    public ClusterNodeSummary getClusterNodeSummary() {
+        if(channel != null) {
+            clusterNodeSummary.setChannelStats(channel.dumpStats());
+        }
+        return clusterNodeSummary;
+    }
 }

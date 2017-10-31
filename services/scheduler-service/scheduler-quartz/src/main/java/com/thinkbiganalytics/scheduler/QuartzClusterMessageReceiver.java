@@ -24,6 +24,8 @@ import com.thinkbiganalytics.cluster.ClusterMessage;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 
+import java.util.Arrays;
+
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -44,7 +46,7 @@ public class QuartzClusterMessageReceiver implements ClusterServiceMessageReceiv
 
     @PostConstruct
     private void init(){
-    clusterService.subscribe(this);
+    clusterService.subscribe(this, Arrays.stream(QuartzClusterMessage.QUARTZ_CLUSTER_MESSAGE_TYPE.values()).map(Enum::name).toArray(String[]::new));
     }
 
 
