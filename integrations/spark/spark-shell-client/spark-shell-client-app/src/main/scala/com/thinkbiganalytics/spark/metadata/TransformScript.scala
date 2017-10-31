@@ -91,7 +91,10 @@ abstract class TransformScript(destination: String, policies: Array[FieldPolicy]
 
             // Generate the column statistics
             profile = Option(profiler)
-                .flatMap(p => Option(p.profile(rows, new ProfilerConfiguration)))
+                .flatMap(p => {
+                    val source = if (useValidation) rows.drop(rows.schema().fieldNames.last) else rows
+                    Option(p.profile(source, new ProfilerConfiguration))
+                })
                 .map(_.getColumnStatisticsMap.asScala)
                 .map(_.flatMap(_._2.getStatistics))
                 .map(_.toSeq)
