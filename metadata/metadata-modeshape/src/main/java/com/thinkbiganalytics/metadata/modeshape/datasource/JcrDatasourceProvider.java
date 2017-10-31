@@ -193,7 +193,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                 try {
                     jcrDerivedDatasource = findDerivedDatasourceByNodeName(nodeName);
                 } catch (RepositoryException e) {
-                    log.warn("An exception ocurred trying to find the DerivedDatasource by node name {}.  {} ", nodeName, e.getMessage());
+                    log.warn("An exception occurred trying to find the DerivedDatasource by node name {}.  {} ", nodeName, e.getMessage());
                 }
                 derivedDatasource = jcrDerivedDatasource;
                 if (jcrDerivedDatasource == null) {
