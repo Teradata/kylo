@@ -83,7 +83,8 @@
                       <span class="column-title column-title-bottom">Since</span>
                     </div>
                     <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
-                      <span class="item-title">{{feed.runTimeString}}</span>
+                      <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
+                      <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
                       <span class="column-title column-title-bottom">Last Run Time</span>
                     </div>
                   </div>

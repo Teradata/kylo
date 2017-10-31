@@ -112,12 +112,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             if (self.refreshing == false) {
                 self.refreshing = true;
                     var data = OpsManagerDashboardService.dashboard.dataConfidenceSummary;
-                    self.allData = data;
-                    if (self.dataLoaded == false) {
-                        self.dataLoaded = true;
+                    if(angular.isDefined(data)) {
+                        self.allData = data;
+                        if (self.dataLoaded == false) {
+                            self.dataLoaded = true;
+                        }
+                        self.dataMap.Healthy.count = data.successCount;
+                        self.dataMap.Unhealthy.count = data.failedCount;
                     }
-                    self.dataMap.Healthy.count = data.successCount;
-                    self.dataMap.Unhealthy.count = data.failedCount;
                     self.updateChart();
                 }
                  self.refreshing = false;
