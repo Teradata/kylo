@@ -7,6 +7,7 @@ import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {TransformValidationResult} from "../model/transform-validation-result";
 import {QueryEngine} from "../services/query-engine";
+import {WindowUnloadService} from "../../../services/WindowUnloadService";
 
 declare const CodeMirror: any;
 declare const StringUtils: any;
@@ -141,7 +142,7 @@ export class TransformDataComponent implements OnInit {
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
                 private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
-                StepperService: any, WindowUnloadService: any) {
+                StepperService: any, WindowUnloadService: WindowUnloadService) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
