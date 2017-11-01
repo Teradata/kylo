@@ -11,6 +11,7 @@ import com.thinkbiganalytics.spark.DataSet
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow
 import com.thinkbiganalytics.spark.dataprofiler.{Profiler, ProfilerConfiguration}
 import com.thinkbiganalytics.spark.datavalidator.DataValidator
+import com.thinkbiganalytics.spark.model.AsyncTransformResponse
 import com.thinkbiganalytics.spark.rest.model.{TransformQueryResult, TransformResponse}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
@@ -58,6 +59,19 @@ abstract class TransformScript(destination: String, policies: Array[FieldPolicy]
 
     /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
     protected abstract class QueryResultCallable extends Callable[TransformResponse] {
+
+        /** Builds an asynchronous response model from a data set result. */
+        def toAsyncResponse(dataset: DataSet): AsyncTransformResponse = {
+            val result = new TransformQueryResult("SELECT * FROM " + destination)
+            result.setColumns(new QueryResultRowTransform(dataset.schema(), destination).columns.toSeq)
+
+            val response = new AsyncTransformResponse(this)
+            response.setProgress(0.0)
+            response.setResults(result)
+            response.setStatus(TransformResponse.Status.PENDING)
+            response.setTable(destination)
+            response
+        }
 
         /** Builds a response model from a data set result.
           *

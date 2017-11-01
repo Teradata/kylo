@@ -2,10 +2,11 @@ package com.thinkbiganalytics.spark.metadata
 
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy
-import com.thinkbiganalytics.spark.SparkContextService
 import com.thinkbiganalytics.spark.dataprofiler.Profiler
 import com.thinkbiganalytics.spark.datavalidator.DataValidator
+import com.thinkbiganalytics.spark.model.AsyncTransformResponse
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import com.thinkbiganalytics.spark.{DataSet, SparkContextService}
 import org.apache.hadoop.hive.ql.session.SessionState
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
@@ -21,9 +22,28 @@ abstract class TransformScript16(destination: String, policies: Array[FieldPolic
 
     private[this] val log = LoggerFactory.getLogger(classOf[TransformScript])
 
+    /** The evaluated and cached transform script. */
+    private[this] lazy val dataSet = {
+        // SPARK-17245 Create a new session if SessionState is unavailable
+        if (SessionState.get() == null) {
+            try {
+                sqlContext.setConf("com.thinkbiganalytics.spark.spark17245", "")
+            } catch {
+                case _: NullPointerException => sqlContext.newSession()
+            }
+        }
+
+        // Cache data frame
+        val cache = dataFrame.cache
+        cache.registerTempTable(destination)
+
+        // Build response object
+        sparkContextService.toDataSet(cache)
+    }
+
     /** Evaluates this transform script and stores the result in a Hive table. */
-    def run(): QueryResultCallable = {
-        new QueryResultCallable16
+    def run(): AsyncTransformResponse = {
+        new QueryResultCallable16().toAsyncResponse(dataSet)
     }
 
     /** Evaluates the transform script.
@@ -53,28 +73,14 @@ abstract class TransformScript16(destination: String, policies: Array[FieldPolic
     }
 
     /** Creates a new [[com.thinkbiganalytics.spark.DataSet]] from the specified rows and schema. */
-    override protected def toDataSet(rows: RDD[Row], schema: StructType) = {
+    override protected def toDataSet(rows: RDD[Row], schema: StructType): DataSet = {
         sparkContextService.toDataSet(sqlContext, rows, schema)
     }
 
     /** Stores the `DataFrame` results in a [[QueryResultColumn]] and returns the object. */
     private class QueryResultCallable16 extends QueryResultCallable {
         override def call(): TransformResponse = {
-            // SPARK-17245 Create a new session if SessionState is unavailable
-            if (SessionState.get() == null) {
-                try {
-                    sqlContext.setConf("com.thinkbiganalytics.spark.spark17245", "")
-                } catch {
-                    case _: NullPointerException => sqlContext.newSession()
-                }
-            }
-
-            // Cache data frame
-            val cache = dataFrame.cache
-            cache.registerTempTable(destination)
-
-            // Build response object
-            toResponse(sparkContextService.toDataSet(cache))
+            toResponse(dataSet)
         }
     }
 

@@ -1,10 +1,11 @@
 package com.thinkbiganalytics.spark.metadata
 
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy
-import com.thinkbiganalytics.spark.SparkContextService
 import com.thinkbiganalytics.spark.dataprofiler.Profiler
 import com.thinkbiganalytics.spark.datavalidator.DataValidator
+import com.thinkbiganalytics.spark.model.AsyncTransformResponse
 import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import com.thinkbiganalytics.spark.{DataSet, SparkContextService}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.StructType
 import org.apache.spark.sql.{DataFrame, Row, SQLContext}
@@ -19,9 +20,19 @@ abstract class TransformScript20(destination: String, policies: Array[FieldPolic
 
     private[this] val log = LoggerFactory.getLogger(classOf[TransformScript])
 
+    /** Evaluated and cached transform script. */
+    private[this] lazy val dataSet = {
+        // Cache data frame
+        val cache = dataFrame.cache
+        cache.registerTempTable(destination)
+
+        // Build response object
+        sparkContextService.toDataSet(cache)
+    }
+
     /** Evaluates this transform script and stores the result in a Hive table. */
-    def run(): QueryResultCallable = {
-        new QueryResultCallable20
+    def run(): AsyncTransformResponse = {
+        new QueryResultCallable20().toAsyncResponse(dataSet)
     }
 
     /** Evaluates the transform script.
@@ -54,19 +65,14 @@ abstract class TransformScript20(destination: String, policies: Array[FieldPolic
         throw new UnsupportedOperationException
     }
 
-    override protected def toDataSet(rows: RDD[Row], schema: StructType) = {
+    override protected def toDataSet(rows: RDD[Row], schema: StructType): DataSet = {
         sparkContextService.toDataSet(sqlContext, rows, schema)
     }
 
     /** Stores the `DataFrame` results in a [[com.thinkbiganalytics.discovery.schema.QueryResult]] and returns the object. */
     private class QueryResultCallable20 extends QueryResultCallable {
         override def call(): TransformResponse = {
-            // Cache data frame
-            val cache = dataFrame.cache
-            cache.registerTempTable(destination)
-
-            // Build response object
-            toResponse(sparkContextService.toDataSet(cache))
+            toResponse(dataSet)
         }
     }
 

@@ -206,6 +206,7 @@ export class TransformDataComponent implements OnInit {
 
         // Wait for query engine to load
         const onLoad = () => {
+            let domainTypesLoaded = false;
             this.sampleFormulas = this.engine.sampleFormulas;
 
             if (angular.isArray(this.model.states) && this.model.states.length > 0) {
@@ -235,20 +236,20 @@ export class TransformDataComponent implements OnInit {
                     }
                 });
                 this.engine.setFieldPolicies(this.fieldPolicies);
-                this.query();
+                if (domainTypesLoaded) {
+                    this.query();
+                }
             }, true);
 
             // Fetch domain types
             this.domainTypesService.findAll()
                 .then(domainTypes => {
                     this.domainTypes = domainTypes;
+                    domainTypesLoaded = true;
 
                     // Load table data
                     this.query();
                 });
-
-            // Load table data
-            this.query();
         };
 
         if (this.engine instanceof Promise) {
@@ -462,6 +463,8 @@ export class TransformDataComponent implements OnInit {
         this.queryProgress = 0;
 
         // Query Spark shell service
+        let didUpdateColumns = false;
+
         const successCallback = function () {
             //mark the query as finished
             self.executingQuery = false;
@@ -501,6 +504,10 @@ export class TransformDataComponent implements OnInit {
         };
         const notifyCallback = function (progress: number) {
             self.queryProgress = progress * 100;
+            if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
+                didUpdateColumns = true;
+                self.updateGrid();
+            }
         };
 
         self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
@@ -606,17 +613,17 @@ export class TransformDataComponent implements OnInit {
      */
     addFunction(formula: any, context: any) {
         this.addFilters();
-        this.pushFormula(formula, context);
-        this.query();
+        this.pushFormula(formula, context, true);
     };
 
     /**
      * Appends the specified formula to the current script.
      *
-     * @param {string} formula the formula
-     * @param {TransformContext} context the UI context for the transformation
+     * @param {string} formula - the formula
+     * @param {TransformContext} context - the UI context for the transformation
+     * @param {boolean} doQuery - true to immediately execute the query
      */
-    pushFormula(formula: any, context: any) {
+    pushFormula(formula: any, context: any, doQuery: boolean = false) {
         // Covert to a syntax tree
         this.ternServer.server.addFile("[doc]", formula);
         let file = this.ternServer.server.findFile("[doc]");
@@ -639,6 +646,10 @@ export class TransformDataComponent implements OnInit {
 
         // Add to function history
         this.functionHistory.push(context);
+
+        if (doQuery || this.engine.getRows() === null) {
+            this.query();
+        }
     };
 
     /**

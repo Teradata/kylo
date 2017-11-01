@@ -199,10 +199,14 @@ public class TransformService {
             throw e;
         } catch (final InterruptedException | TimeoutException e) {
             log.trace("Timeout waiting for script result", e);
-            response = new TransformResponse();
-            response.setProgress(0.0);
-            response.setStatus(TransformResponse.Status.PENDING);
-            response.setTable(table);
+            if (result instanceof TransformResponse) {
+                response = (TransformResponse) result;
+            } else {
+                response = new TransformResponse();
+                response.setProgress(0.0);
+                response.setStatus(TransformResponse.Status.PENDING);
+                response.setTable(table);
+            }
         }
 
         log.trace("exit with({})", response);

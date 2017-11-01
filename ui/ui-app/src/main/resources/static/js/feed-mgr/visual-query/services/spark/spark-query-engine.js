@@ -272,8 +272,15 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
             var self = this;
             var deferred = new Subject_1.Subject();
             var successCallback = function (response) {
+                var state = self.states_[index];
                 // Check status
                 if (response.data.status === "PENDING") {
+                    if (state.columns === null && response.data.results && response.data.results.columns) {
+                        state.columns = response.data.results.columns;
+                        state.rows = [];
+                        state.table = response.data.table;
+                        self.updateFieldPolicies(state);
+                    }
                     deferred.next(response.data.progress);
                     self.$timeout(function () {
                         self.$http({
@@ -296,7 +303,6 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
                 var reserved = _.find(response.data.results.columns, function (column) {
                     return (column.hiveColumnLabel === "processing_dttm");
                 });
-                var state = self.states_[index];
                 if (angular.isDefined(invalid)) {
                     state.columns = [];
                     state.rows = [];
@@ -314,30 +320,7 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
                     state.validationResults = response.data.results.validationResults;
-                    // Update field policies
-                    if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
-                        var policyMap_1 = {};
-                        state.fieldPolicies.forEach(function (policy) {
-                            policyMap_1[policy.name] = policy;
-                        });
-                        state.fieldPolicies = state.columns.map(function (column) {
-                            if (policyMap_1[column.hiveColumnLabel]) {
-                                return policyMap_1[column.hiveColumnLabel];
-                            }
-                            else {
-                                return {
-                                    name: column.hiveColumnLabel,
-                                    fieldName: column.hiveColumnLabel,
-                                    feedFieldName: column.hiveColumnLabel,
-                                    domainTypeId: null,
-                                    partition: null,
-                                    profile: true,
-                                    standardization: null,
-                                    validation: null
-                                };
-                            }
-                        });
-                    }
+                    self.updateFieldPolicies(state);
                     // Indicate observable is complete
                     deferred.complete();
                 }
@@ -378,6 +361,35 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
          */
         SparkQueryEngine.prototype.parseQuery = function (source) {
             return new spark_query_parser_1.SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_);
+        };
+        /**
+         * Updates the field policies of the specified state to match the column order.
+         * @param {ScriptState<string>} state
+         */
+        SparkQueryEngine.prototype.updateFieldPolicies = function (state) {
+            if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
+                var policyMap_1 = {};
+                state.fieldPolicies.forEach(function (policy) {
+                    policyMap_1[policy.name] = policy;
+                });
+                state.fieldPolicies = state.columns.map(function (column) {
+                    if (policyMap_1[column.hiveColumnLabel]) {
+                        return policyMap_1[column.hiveColumnLabel];
+                    }
+                    else {
+                        return {
+                            name: column.hiveColumnLabel,
+                            fieldName: column.hiveColumnLabel,
+                            feedFieldName: column.hiveColumnLabel,
+                            domainTypeId: null,
+                            partition: null,
+                            profile: true,
+                            standardization: null,
+                            validation: null
+                        };
+                    }
+                });
+            }
         };
         return SparkQueryEngine;
     }(query_engine_1.QueryEngine));
