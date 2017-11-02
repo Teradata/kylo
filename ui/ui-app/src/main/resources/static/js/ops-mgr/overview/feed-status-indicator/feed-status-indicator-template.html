@@ -24,11 +24,11 @@
         <div ng-if="vm.dataLoaded">
             <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container" >
-            <span layout="column">
+            <span layout="column" ng-click="vm.onHealthyClick()" style="cursor: pointer;">
                 <span class="kpi-health-count" ng-class="{'healthy':vm.dataMap.Healthy.count >0}">{{vm.dataMap.Healthy.count}}</span>
                 <span class="md-caption kpi-health-label">Healthy</span>
             </span>
-            <span layout="column">
+            <span layout="column" ng-click="vm.onUnhealthyClick()" style="cursor: pointer;">
                 <span class="kpi-health-count" ng-class="{'unhealthy':vm.dataMap.Unhealthy.count >0}">{{vm.dataMap.Unhealthy.count}}</span>
                 <span class="md-caption kpi-health-label">Unhealthy</span>
             </span>

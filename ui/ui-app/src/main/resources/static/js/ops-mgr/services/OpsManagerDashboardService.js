@@ -3,8 +3,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
      * Service to call out to Feed REST.
      *
      */
-    angular.module(moduleName).factory('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService',
-     function ($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService, BroadcastService) {
+    angular.module(moduleName).factory('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',
+     function ($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService, BroadcastService, OpsManagerFeedService) {
          var data = {
              DASHBOARD_UPDATED:'DASHBOARD_UPDATED',
              FEED_SUMMARY_UPDATED:'FEED_SUMMARY_UPDATED',
@@ -13,16 +13,19 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              feedUnhealthyCount:0,
              feedHealthyCount:0,
              dashboard:{},
+             feedsSearchResult:{},
+             totalFeeds:0,
+             activeFeedRequest:null,
              selectFeedHealthTab:function(tab) {
                  BroadcastService.notify(data.TAB_SELECTED,tab);
-             }
+             },
+             feedHealthQueryParams:{tab:'All',filter:'',start:0,limit:10, sort:''}
          };
 
-         var setupFeedHealth = function(){
-             if(data.dashboard.feedStatus) {
-                 if(data.dashboard.feedStatus.feeds) {
+         var setupFeedHealth = function(feedData){
+             if(feedData) {
                      var processed = [];
-                     _.each(data.dashboard.feedStatus.feedSummary, function (feedHealth) {
+                     _.each(feedData, function (feedHealth) {
                          if (data.feedSummaryData[feedHealth.feed]) {
                              angular.extend(data.feedSummaryData[feedHealth.feed], feedHealth);
                          }
@@ -32,7 +35,20 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                          if (feedHealth.lastUnhealthyTime) {
                              feedHealth.sinceTimeString = new moment(feedHealth.lastUnhealthyTime).fromNow();
                          }
-                         processed.push(feedHealth.feed);
+
+                         OpsManagerFeedService.decorateFeedSummary(feedHealth);
+                         if(feedHealth.stream == true && feedHealth.feedHealth){
+                             feedHealth.runningCount = feedHealth.feedHealth.runningCount;
+                             if(feedHealth.runningCount == null){
+                                 feedHealth.runningCount =0;
+                             }
+                         }
+
+                         if(feedHealth.running){
+                             feedHealth.timeSinceEndTime = feedHealth.runTime;
+                             feedHealth.runTimeString = '--';
+                         }
+                          processed.push(feedHealth.feed);
                      });
                      var keysToRemove=_.difference(Object.keys(data.feedSummaryData),processed);
                      if(keysToRemove != null && keysToRemove.length >0){
@@ -40,25 +56,66 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                              delete  data.feedSummaryData[key];
                          })
                      }
-
-
                  }
-                 data.feedUnhealthyCount = data.dashboard.feedStatus.failedCount;
-                 data.feedHealthyCount = data.dashboard.feedStatus.healthyCount;
-             }
+
          };
+
+         data.isFetchingFeedHealth = function(){
+             return data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest);
+         }
+
+
+         data.fetchFeeds = function(tab,filter,start,limit, sort){
+             console.log("FETCHING FEEDS!!!")
+             if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
+                 data.activeFeedRequest.resolve();
+             }
+             var canceler = $q.defer();
+             data.activeFeedRequest = canceler;
+
+             var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
+
+             var successFn = function (response) {
+                 data.feedsSearchResult = response.data;
+                 if(response.data && response.data.data) {
+                     setupFeedHealth(response.data.data);
+                     data.totalFeeds = response.data.recordsFiltered;
+                 }
+                 data.activeFeedRequest = null;
+             }
+             var errorFn = function (err) {
+                 canceler.resolve();
+                 canceler = null;
+                 data.activeFeedRequest = null;
+             }
+             var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL,{timeout: canceler.promise,params:params});
+             promise.then(successFn, errorFn);
+             return promise;
+         }
+
+         data.updateFeedHealthQueryParams = function(tab,filter,start,limit, sort){
+             var params = {start: start, limit: limit, sort: sort, filter:filter, tab:tab};
+             angular.extend(data.feedHealthQueryParams,params);
+         }
 
          data.fetchDashboard = function() {
              var successFn = function (response) {
                  data.dashboard = response.data;
-                 setupFeedHealth();
+                 data.feedsSearchResult = response.data.feeds;
+                 if(data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
+                     setupFeedHealth(data.dashboard.feeds.data);
+                     data.totalFeeds = data.dashboard.feeds.recordsFiltered;
+                 }
+                 data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'];
+                 data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'];
                  BroadcastService.notify(data.DASHBOARD_UPDATED,data.dashboard);
 
              }
              var errorFn = function (err) {
 
              }
-             var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL);
+             var params = data.feedHealthQueryParams;
+             var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL,{params:params});
              promise.then(successFn, errorFn);
              return promise;
          };

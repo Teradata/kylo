@@ -21,10 +21,13 @@ package com.thinkbiganalytics.metadata.cache;
 
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.jobrepo.query.model.DataConfidenceSummary;
-import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
+import com.thinkbiganalytics.jobrepo.query.model.FeedSummary;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sr186054 on 9/22/17.
@@ -39,8 +42,11 @@ public class Dashboard {
 
     private String user;
     private Long time;
-    private FeedStatus feedStatus;
     private Status status;
+    private Map<String, Long> healthCounts = new HashMap<>();
+
+    private SearchResult feeds;
+
 
     private List<AlertSummaryGrouped> alerts;
 
@@ -52,22 +58,16 @@ public class Dashboard {
         this.status = status;
     }
 
-    public Dashboard(Long time, String user, FeedStatus feedStatus, List<AlertSummaryGrouped> alerts, DataConfidenceSummary dataConfidenceSummary, List<ServiceStatusResponse> serviceStatus) {
+    public Dashboard(Long time, String user, Map<String, Long> healthCounts, SearchResult<FeedSummary> feeds, List<AlertSummaryGrouped> alerts, DataConfidenceSummary dataConfidenceSummary,
+                     List<ServiceStatusResponse> serviceStatus) {
         this.time = time;
         this.user = user;
-        this.feedStatus = feedStatus;
+        this.healthCounts = healthCounts;
+        this.feeds = feeds;
         this.alerts = alerts;
         this.dataConfidenceSummary = dataConfidenceSummary;
         this.serviceStatus = serviceStatus;
         this.status = Status.READY;
-    }
-
-    public FeedStatus getFeedStatus() {
-        return feedStatus;
-    }
-
-    public void setFeedStatus(FeedStatus feedStatus) {
-        this.feedStatus = feedStatus;
     }
 
     public List<AlertSummaryGrouped> getAlerts() {
@@ -108,5 +108,25 @@ public class Dashboard {
 
     public void setTime(Long time) {
         this.time = time;
+    }
+
+    public Map<String, Long> getHealthCounts() {
+        return healthCounts;
+    }
+
+    public void setHealthCounts(Map<String, Long> healthCounts) {
+        this.healthCounts = healthCounts;
+    }
+
+    public Status getStatus() {
+        return status;
+    }
+
+    public SearchResult getFeeds() {
+        return feeds;
+    }
+
+    public void setFeeds(SearchResult feeds) {
+        this.feeds = feeds;
     }
 }

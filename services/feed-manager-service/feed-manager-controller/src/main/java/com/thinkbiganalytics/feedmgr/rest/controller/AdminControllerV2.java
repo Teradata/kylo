@@ -32,6 +32,9 @@ import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
+import com.thinkbiganalytics.metadata.jpa.cache.AbstractCacheBackedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheById;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
@@ -39,6 +42,8 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.util.Set;
@@ -70,6 +75,9 @@ import io.swagger.annotations.Tag;
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Administration", description = "administrator operations"))
 public class AdminControllerV2 {
 
+    private static final Logger log = LoggerFactory.getLogger(AdminControllerV2.class);
+
+
     public static final String BASE = "/v2/feedmgr/admin";
     public static final String IMPORT_TEMPLATE = "/import-template";
     public static final String IMPORT_FEED = "/import-feed";
@@ -100,6 +108,12 @@ public class AdminControllerV2 {
 
     @Inject
     OpsManagerFeedCacheByName opsManagerFeedCacheByName;
+
+    @Inject
+    FeedOpsAccessControlProvider feedOpsAccessControlProvider;
+
+    @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
 
 
     @GET
@@ -204,6 +218,17 @@ public class AdminControllerV2 {
         CacheSummary cacheSummary = new CacheSummary(feedAclSize, feedCacheNameSize, feedCacheIdSize);
         return Response.ok(cacheSummary).build();
 
+    }
+
+    @POST
+    @Path("/reset-cache")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the size of the feed acl cache")
+    public Response refreshCache() {
+        log.info("RESET Feed and FeedAcl caches");
+        ((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache();
+        ((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache();
+        return getCacheSizes();
     }
 
 

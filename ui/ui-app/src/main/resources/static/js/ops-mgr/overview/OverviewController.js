@@ -28,7 +28,13 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         self.refreshInterval = 5000;
 
+        /**
+         * Refresh interval object for the dashboard
+         * @type {null}
+         */
         var interval = null;
+
+
 
         // Stop polling on destroy
         $scope.$on("$destroy", function() {
@@ -37,6 +43,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 $interval.cancel(interval);
                 interval = null;
             }
+
         });
 
         // Fetch allowed permissions
@@ -59,7 +66,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         function init(){
             OpsManagerDashboardService.fetchDashboard();
+
             interval = $interval(OpsManagerDashboardService.fetchDashboard,self.refreshInterval);
+
         }
 
         init();

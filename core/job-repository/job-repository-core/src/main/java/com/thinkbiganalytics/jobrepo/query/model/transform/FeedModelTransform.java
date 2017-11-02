@@ -232,6 +232,15 @@ public class FeedModelTransform {
 
     }
 
+
+    public static FeedStatus feedStatusFromFeedSummary(List<com.thinkbiganalytics.jobrepo.query.model.FeedSummary> feedSummaryList) {
+
+        DefaultFeedStatus status = new DefaultFeedStatus();
+        status.populate(feedSummaryList);
+        return status;
+
+    }
+
     /**
      * Transforms the feed object to a FeedStatus object summarizing the feed, assuming the feed has not yet executed.
      *
