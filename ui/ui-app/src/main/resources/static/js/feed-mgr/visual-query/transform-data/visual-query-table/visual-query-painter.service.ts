@@ -323,8 +323,10 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private showMenu(cellDiv: HTMLElement, event: JQueryEventObject) {
         // Get column info
-        const column = angular.element(cellDiv).data("column");
+        const cell = angular.element(cellDiv);
+        const column = cell.data("column");
         const header = this.delegate.columns[column];
+        const isNull = cell.hasClass("null");
         const selection = this.$window.getSelection();
 
         if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
@@ -345,7 +347,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.header = header;
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;
-        $scope.value = cellDiv.innerText;
+        $scope.value = isNull ? null : cellDiv.innerText;
 
         // Update position
         this.menuPanel.updatePosition(

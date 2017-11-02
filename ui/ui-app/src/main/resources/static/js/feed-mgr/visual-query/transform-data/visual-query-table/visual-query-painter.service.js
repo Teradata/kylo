@@ -269,8 +269,10 @@ define(["require", "exports", "angular", "../../services/column-delegate", "fatt
         VisualQueryPainterService.prototype.showMenu = function (cellDiv, event) {
             var _this = this;
             // Get column info
-            var column = angular.element(cellDiv).data("column");
+            var cell = angular.element(cellDiv);
+            var column = cell.data("column");
             var header = this.delegate.columns[column];
+            var isNull = cell.hasClass("null");
             var selection = this.$window.getSelection();
             if (this.selectedCell !== event.target || (selection.anchorNode !== null && selection.anchorNode !== selection.focusNode)) {
                 return; // ignore dragging between elements
@@ -291,7 +293,7 @@ define(["require", "exports", "angular", "../../services/column-delegate", "fatt
             $scope.header = header;
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;
-            $scope.value = cellDiv.innerText;
+            $scope.value = isNull ? null : cellDiv.innerText;
             // Update position
             this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
