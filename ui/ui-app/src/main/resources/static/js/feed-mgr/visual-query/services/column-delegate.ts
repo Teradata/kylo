@@ -466,7 +466,7 @@ export class ColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      * @returns {string} a formula that replaces the column
      */
-    private toFormula(script: string, column: any, grid: any): string {
+    protected toFormula(script: string, column: any, grid: any): string {
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
         const self = this;

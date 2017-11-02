@@ -343,7 +343,6 @@ export class VisualQueryPainterService extends fattable.Painter {
         // Update content
         const $scope: IScope = (this.menuPanel.config as any).scope;
         $scope.DataCategory = DataCategory;
-        $scope.canSplit = (header.delegate.controller.engine.getFunctionDefs().split != null);
         $scope.header = header;
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;

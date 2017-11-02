@@ -289,7 +289,6 @@ define(["require", "exports", "angular", "../../services/column-delegate", "fatt
             // Update content
             var $scope = this.menuPanel.config.scope;
             $scope.DataCategory = column_delegate_1.DataCategory;
-            $scope.canSplit = (header.delegate.controller.engine.getFunctionDefs().split != null);
             $scope.header = header;
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;

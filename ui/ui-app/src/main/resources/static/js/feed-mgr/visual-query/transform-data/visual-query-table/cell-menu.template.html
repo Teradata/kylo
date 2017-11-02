@@ -5,7 +5,7 @@
   <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.deleteRowsContaining(selection, header)">Delete rows containing {{ selection }}</md-button>
   </md-menu-item>
-  <md-menu-item ng-if="canSplit && selection && value !== null">
+  <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selection }}</md-button>
   </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>
