@@ -24,29 +24,11 @@
     <md-card layout-align="center center">
       <md-card-content layout="column" style="width:100%;">
         <div layout="row" class="layout-padding-left">
-          <!--<span flex layout-align="end top" class="md-button-group layout-padding feed-stats-filter" layout-padding>-->
-            <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:5:5" ng-class="{'selected': vm.timeFrame == opt.value}"-->
-                   <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
-            <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:10:5" ng-class="{'selected': vm.timeFrame == opt.value}"-->
-                   <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
-          <!--</span>-->
           <div layout="column" class="layout-padding-left">
             <md-input-container style="margin: 0; padding: 0;" class="feed-stats-filter">
               <md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"
                          ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>
-
-              <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:9:0 track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"-->
-                         <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
-
-              <!--<label class="md-container-ignore label-small">Flow Rate Time Frame</label>-->
-              <!--<md-select ng-model="vm.timeFrameOption" ng-change="vm.onTimeFrameOptionChange()" aria-label="Rule Type">-->
-                <!--<md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions">{{ opt.label }}</md-option>-->
-              <!--</md-select>-->
             </md-input-container>
-            <!--<md-input-container style="margin: 0; padding: 0;" class="feed-stats-filter">-->
-              <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:9:9 track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"-->
-                         <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
-            <!--</md-input-container>-->
           </div>
           <span flex></span>
           <div layout="column">
