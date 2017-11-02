@@ -27,7 +27,6 @@ import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.querydsl.sql.SQLQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
@@ -56,9 +55,6 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     @Autowired
     private JPAQueryFactory factory;
-
-    @Autowired
-    private SQLQueryFactory sqlQueryFactory;
 
     private NifiFeedProcessorStatisticsRepository statisticsRepository;
 
