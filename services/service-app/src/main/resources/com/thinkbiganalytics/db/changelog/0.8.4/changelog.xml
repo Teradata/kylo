@@ -26,5 +26,6 @@
 
   <include file="kylo_alert_add_audit_columns.xml" relativeToChangelogFile="true"/>
   <include file="sla-email-templates.xml" relativeToChangelogFile="true"/>
+  <include file="nifi-feed-processor-stats-add-min-event-time-millis-column.xml" relativeToChangelogFile="true"/>
 
 </databaseChangeLog>

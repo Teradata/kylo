@@ -37,9 +37,10 @@ import com.thinkbiganalytics.security.AccessController;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -159,39 +160,14 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the feed statistics.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
+    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe, @QueryParam("dp") @DefaultValue("400") Integer maxDataPoints) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
         return metadataAccess.read(() -> {
             NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
             NifiFeedStats feedStats = nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName);
 
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime(), maxDataPoints);
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-            Integer timeInterval = 5000;
-            Long diff = statsContainer.getEndTime().getMillis() - statsContainer.getStartTime().getMillis();
-            DateTime start = statsContainer.getStartTime();
-            if (model != null && !model.isEmpty()) {
-                //add in times based
-                Long maxTime = model.stream().map(item -> item.getMaxEventTime().getMillis()).max(Long::compare).get();
-                Long endTime = statsContainer.getEndTime().getMillis();
-                diff = endTime - maxTime;
-                start = new DateTime(maxTime);
-            }
-            Long extraBlankItems = diff / timeInterval;
-            Integer extras = extraBlankItems.intValue();
-            if (model == null) {
-                model = new ArrayList<>();
-            }
-            for (int i = 0; i < extras; i++) {
-                start = start.plus(timeInterval);
-                if (start.isBefore(statsContainer.getEndTime())) {
-                    com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats stats = new com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats();
-                    stats.setFeedName(feedName);
-                    stats.setMinEventTime(start);
-                    stats.setMaxEventTime(start);
-                    model.add(stats);
-                }
-            }
 
             statsContainer.setStats(model);
             if (feedStats != null) {
@@ -219,7 +195,13 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     )
     public Response getTimeFrameOptions() {
         List<LabelValue> vals = Arrays.stream(NifiFeedProcessorStatisticsProvider.TimeFrame.values())
-            .map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name()))
+            .map(timeFrame -> {
+                LabelValue label = new LabelValue(timeFrame.getDisplayName(), timeFrame.name());
+                Map<String, Object> properties = new HashMap<>(1);
+                properties.put("millis", timeFrame.getMillis());
+                label.setProperties(properties);
+                return label;
+            })
             .collect(Collectors.toList());
         return Response.ok(vals).build();
     }

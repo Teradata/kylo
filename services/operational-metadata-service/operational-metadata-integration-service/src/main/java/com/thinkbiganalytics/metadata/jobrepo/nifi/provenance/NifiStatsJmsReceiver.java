@@ -381,6 +381,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
         nifiFeedProcessorStats.setProcessorsFailed(groupedStats.getProcessorsFailed());
         nifiFeedProcessorStats.setCollectionTime(new DateTime(groupedStats.getTime()));
         nifiFeedProcessorStats.setMinEventTime(new DateTime(groupedStats.getMinTime()));
+        nifiFeedProcessorStats.setMinEventTimeMillis(nifiFeedProcessorStats.getMinEventTime().getMillis());
         nifiFeedProcessorStats.setMaxEventTime(new DateTime(groupedStats.getMaxTime()));
         nifiFeedProcessorStats.setJobsFailed(groupedStats.getJobsFailed());
         nifiFeedProcessorStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());

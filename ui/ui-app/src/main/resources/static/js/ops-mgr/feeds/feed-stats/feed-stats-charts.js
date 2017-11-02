@@ -47,8 +47,11 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         this.statusPieChartApi = {};
 
+        self.maxDataPointsOptions = [200, 400, 800, 1600, 3200, 6400];
+        self.maxDataPoints = self.maxDataPointsOptions[1];
         self.timeframeOptions = [];
         self.timeFrame = 'FIVE_MIN';
+        self.timeFrameOption = self.timeFrame;
         self.lastRefreshTime = null;
         self.timeFramOptionsLookupMap = {};
         self.selectedTimeFrameOptionObject = {};
@@ -111,6 +114,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         self.feedProcessorErrors = FeedStatsService.feedProcessorErrors;
 
+        self.onTimeFrameOptionChange = function() {
+            onTimeFrameClick(self.timeFrame);
+        };
+
         self.onTimeFrameClick = onTimeFrameClick;
 
         self.onProcessorChartFunctionChanged = onProcessorChartFunctionChanged;
@@ -138,6 +145,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
 
         function init(){
+            FeedStatsService.setMaxDataPoints(self.maxDataPoints);
             FeedStatsService.setTimeFrame(self.timeFrame);
             FeedStatsService.setFeedName(self.feedName);
             setupChartOptions();
@@ -195,19 +203,19 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                      margin: {
                          top: 10,
                          right: 20,
-                         bottom: 100,
+                         bottom: 110,
                          left: 65
                      },
                      x: function (d) {
                          return d[0];
                      },
                      y: function (d) {
-                         return d[1];
+                         return d3.format('.2f')(d[1]);
                      },
                      showTotalInTooltip:true,
                      interpolate:'linear',
                      useVoronoi: false,
-                     clipEdge: false,
+                     // clipEdge: false,
                      duration: 250,
                      useInteractiveGuideline: true,
                      interactiveLayer: {tooltip: {gravity: 's'}},
@@ -215,10 +223,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                          return d3.format(',')(parseInt(d))
                      },
                      xAxis: {
-                         axisLabel: 'Time',
+                         axisLabel: '',
                          showMaxMin: false,
                          tickFormat: function (d) {
-                             return d3.time.format('%X')(new Date(d))
+                             return d3.time.format.utc("%Y-%m-%d %H:%M:%S")(new Date(d))
                          },
                          rotateLabels: -45
                      },
@@ -237,7 +245,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                          renderEnd: function () {
                              // fixChartWidth();
                          }
-                     }
+                     },
                  }
 
              };
@@ -261,10 +269,11 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
 
         function onTimeFrameClick(timeFrame){
-             self.timeFrame = timeFrame;
+            self.timeFrame = timeFrame;
             clearRefreshInterval();
             //abort
             FeedStatsService.setTimeFrame(self.timeFrame);
+            FeedStatsService.setMaxDataPoints(self.maxDataPoints);
             buildChartData(true);
             setRefreshInterval();
         }
@@ -273,8 +282,8 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         function onProcessorChartFunctionChanged() {
              FeedStatsService.setSelectedChartFunction(self.selectedProcessorStatisticFunction);
-         var chartData=    FeedStatsService.changeProcessorChartDataFunction(self.selectedProcessorStatisticFunction);
-         self.processorChartData[0].values = chartData.data;
+            var chartData=    FeedStatsService.changeProcessorChartDataFunction(self.selectedProcessorStatisticFunction);
+            self.processorChartData[0].values = chartData.data;
             FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,chartData.data.length,self.selectedProcessorStatisticFunction);
         }
 
@@ -368,12 +377,24 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             self.feedTimeChartLoading = true;
             $q.when(FeedStatsService.fetchFeedTimeSeriesData()).then(function (feedTimeSeries) {
 
-                self.minTime = feedTimeSeries.minTime;
-                self.maxTime = feedTimeSeries.maxTime;
+                self.minTime = feedTimeSeries.time.startTime;
+                self.maxTime = feedTimeSeries.time.endTime;
 
                 var chartArr = [];
-                chartArr.push({label: 'Completed', value: 'jobsFinishedPerSecond', color: '#3483BA'});
-                chartArr.push({label: 'Started', value: 'jobsStartedPerSecond', area:true, color: "#F08C38"});
+                chartArr.push({label: 'Completed', color: '#3483BA', valueFn: function(item) {
+                    if (item.timeInterval > item.collectionIntervalSeconds) {
+                        return item.jobsFinishedPerSecond / item.timeInterval * item.collectionIntervalSeconds;
+                    } else {
+                        return item.jobsFinishedPerSecond;
+                    }
+                }});
+                chartArr.push({label: 'Started', area:true, color: "#F08C38", valueFn: function (item) {
+                    if (item.timeInterval > item.collectionIntervalSeconds) {
+                        return item.jobsStartedPerSecond / item.timeInterval * item.collectionIntervalSeconds;
+                    } else {
+                        return item.jobsStartedPerSecond;
+                    }
+                }});
                 //preserve the legend selections
                 if (feedChartLegendState.length > 0) {
                     _.each(chartArr, function (item, i) {
@@ -381,7 +402,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     });
                 }
 
-                self.feedChartData = Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'maxEventTime');
+                self.feedChartData = Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'maxEventTime', null, self.minTime, self.maxTime, self.maxDataPoints);
                 var max = 0;
                 if(self.feedChartData && self.feedChartData[0]) {
                   max = d3.max(self.feedChartData[0].values, function (d) {
@@ -394,7 +415,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 else {
                     max *=1.2;
                 }
-                max = Math.round(max)
+                max = Math.round(max);
                 self.feedChartOptions.chart.forceY = [0,max];
                 if(self.feedChartOptions.chart.yAxis.ticks != max) {
                     self.feedChartOptions.chart.yDomain = [0, max];
@@ -505,6 +526,14 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         function setRefreshInterval() {
             clearRefreshInterval();
+            // anything below 5 minute interval to be refreshed every 5 seconds,
+            // anything above 5 minutes to be refreshed in proportion to its time span, i.e. the longer the time span the less it is refreshed
+            var option = self.timeFramOptionsLookupMap[self.timeFrame];
+            if (!_.isUndefined(option)) {
+                //timeframe option will be undefined when page loads for the first time
+                var refreshInterval = option.properties.millis / 60;
+                self.refreshIntervalTime = refreshInterval < 5000 ? 5000 : refreshInterval;
+            }
             if (self.refreshIntervalTime) {
                 self.refreshInterval = $interval(function() {
                     buildChartData()}, self.refreshIntervalTime

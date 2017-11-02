@@ -278,6 +278,18 @@ public interface NifiFeedProcessorStats {
     void setMinEventTime(DateTime minEventTime);
 
     /**
+     * return the minimum event time for this feed and processor
+     *
+     * @return the minimum event time for this feed and processor
+     */
+    Long getMinEventTimeMillis();
+
+    /**
+     * set the minimum event time
+     */
+    void setMinEventTimeMillis(Long minEventTimeMillis);
+
+    /**
      * return the maximum event time for this feed and processor
      *
      * @return the maximum event time for this feed and processor

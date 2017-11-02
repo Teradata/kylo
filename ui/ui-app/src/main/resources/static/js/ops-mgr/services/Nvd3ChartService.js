@@ -32,9 +32,12 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
      * @param labelValueMapArr
      * @param xAxisKey
      * @param colorForSeriesFn
+     * @param minTime
+     * @param maxTime
+     * @param maxDataPoints - max data points requested for the graph
      * @returns {Array}
      */
-    this.toLineChartData = function (response, labelValueMapArr, xAxisKey, colorForSeriesFn) {
+    this.toLineChartData = function (response, labelValueMapArr, xAxisKey, colorForSeriesFn, minTime, maxTime, maxDataPoints) {
         var dataMap = {}
 
         var data = [];
@@ -49,20 +52,21 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
                 _.each(labelValueMapArr, function (labelValue) {
                     var label = item[labelValue.label];
                     if (label == undefined) {
-                        label = labelValue.label;
+                        label = labelValue.label; //label = Completed,Started
                     }
                     if (dataMap[label] == undefined) {
                         dataMap[label] = {};
                     }
-                    dateMap[item[xAxisKey]] = item[xAxisKey];
+                    dateMap[item[xAxisKey]] = item[xAxisKey]; //dateMap[item[maxEventTime]] = maxEventTime
                     var value;
+                    // console.log("labelValeu.valueFn = ", labelValue.valueFn);
                     if (labelValue.valueFn != undefined) {
                         value = labelValue.valueFn(item);
                     }
                     else {
-                        value = item[labelValue.value];
+                        value = item[labelValue.value]; //item[jobsStartedPerSecond]
                     }
-                    dataMap[label][item[xAxisKey]] = value;
+                    dataMap[label][item[xAxisKey]] = value; //dataMap[Started][maxEventTime] = jobsStartedPerSecond
                     if (labelValue['color'] != undefined) {
                         labelColorMap[label] = labelValue.color;
                     }
@@ -76,21 +80,47 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
 
             var keys = Object.keys(dateMap),
                 len = keys.length;
-            keys.sort();
+            keys.sort(); //sort all the dates
+
+            //add missing data points
+            var timeInterval = (maxTime - minTime) / maxDataPoints;
+            var doubleTimeInterval = timeInterval * 2;
+            var currentTime = minTime;
+            var closestTime;
+            var newDateMap = [];
+            for (var i = 0; i < maxDataPoints && currentTime < maxTime; i++ ) {
+                closestTime = getClosestTime(keys, currentTime);
+                var diff = Math.abs(currentTime - closestTime);
+                if (diff > doubleTimeInterval) {
+                    newDateMap[currentTime] = currentTime;
+                } else {
+                    newDateMap[closestTime] = closestTime;
+                }
+                currentTime += timeInterval;
+            }
+
+            function getClosestTime(times, goal) {
+                if (_.isUndefined(times) || _.isEmpty(times)) {
+                    return 0;
+                }
+                return times.reduce(function(prev, curr) {
+                    return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+                });
+            }
+
+            dateMap = newDateMap;
+            keys = Object.keys(dateMap);
+            len = keys.length;
+            keys.sort(); //sort again after adding missing time points
 
             angular.forEach(dataMap, function (labelCounts, label) {
-                //fill in any empty dates with 0 values
+                // //fill in any empty dates with 0 values
                 var valuesArray = [];
-                angular.forEach(dateMap, function (date) {
-                    if (labelCounts[date] == undefined) {
-                        labelCounts[date] = 0;
-                    }
-                });
-
                 for (var i = 0; i < len; i++) {
                     var date = keys[i];
                     var count = labelCounts[date];
-                    valuesArray.push([parseInt(date), count]);
+                    var dateAsNum = parseInt(date);
+                    valuesArray.push([dateAsNum, _.isUndefined(count) ? 0 : count]);
                 }
                 var color = colorForSeriesFn != undefined ? colorForSeriesFn(label) : labelColorMap[label];
                 var disabled = labelDisabledMap[label] != undefined ? labelDisabledMap[label] : false;

@@ -69,6 +69,16 @@ public class NifiFeedProcessorStats {
 
     private Long collectionIntervalSeconds;
 
+    private Double timeInterval;
+
+    public Double getTimeInterval() {
+        return timeInterval;
+    }
+
+    public void setTimeInterval(Double timeInterval) {
+        this.timeInterval = timeInterval;
+    }
+
     public String getId() {
         return id;
     }

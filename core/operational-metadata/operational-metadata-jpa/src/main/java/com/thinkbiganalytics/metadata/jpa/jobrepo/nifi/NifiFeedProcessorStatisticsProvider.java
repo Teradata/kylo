@@ -23,8 +23,11 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
 import com.google.common.collect.Lists;
 import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
+import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.querydsl.sql.SQLQueryFactory;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
@@ -34,6 +37,7 @@ import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -52,6 +56,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     @Autowired
     private JPAQueryFactory factory;
+
+    @Autowired
+    private SQLQueryFactory sqlQueryFactory;
 
     private NifiFeedProcessorStatisticsRepository statisticsRepository;
 
@@ -99,7 +106,7 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame) {
         DateTime now = DateTime.now();
-        return findForFeedStatisticsGroupedByTime(feedName, timeFrame.startTimeRelativeTo(now), now);
+        return findForFeedStatisticsGroupedByTime(feedName, timeFrame.startTimeRelativeTo(now), now, 400);
     }
 
 
@@ -197,7 +204,52 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
 
-    public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end) {
+    public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end, Integer maxDataPoints) {
+        QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
+
+        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
+
+        double aggregationMillis = Seconds.secondsBetween(start, end).getSeconds() * 1000d / maxDataPoints.doubleValue();
+        double aggregationSeconds = aggregationMillis / 1000d;
+
+        //round() because "group by" with decimal points does not split into required number of data points
+        NumberExpression<Long> minEventTimeGroup = stats.minEventTimeMillis.divide(aggregationMillis).round();
+        JPAQuery
+            query = factory.select(
+            Projections.bean(JpaNifiFeedProcessorStats.class,
+                             stats.feedName,
+                             Expressions.asNumber(aggregationSeconds).as("timeInterval"),
+                             minEventTimeGroup.as("minEventTimeGroup"),
+                             stats.bytesIn.sum().longValue().as("bytesIn"),
+                             stats.bytesOut.sum().longValue().as("bytesOut"),
+                             stats.duration.sum().longValue().as("duration"),
+                             stats.jobsStarted.sum().longValue().as("jobsStarted"),
+                             stats.jobsFinished.sum().longValue().as("jobsFinished"),
+                             stats.jobDuration.sum().longValue().as("jobDuration"),
+                             stats.flowFilesStarted.sum().longValue().as("flowFilesStarted"),
+                             stats.flowFilesFinished.sum().longValue().as("flowFilesFinished"),
+                             stats.failedCount.sum().longValue().as("failedCount"),
+                             stats.maxEventTime,
+                             stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
+                             stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
+                             stats.collectionIntervalSeconds.as("collectionIntervalSeconds"),
+                             stats.jobsFailed.sum().longValue().as("jobsFailed"),
+                             stats.totalCount.sum().longValue().as("totalCount"),
+                             stats.count().longValue().as("resultSetCount"))
+        )
+            .from(stats)
+            .innerJoin(feed).on(feed.name.eq(stats.feedName))
+            .where(stats.feedName.eq(feedName)
+                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))
+                       .and(stats.minEventTime.goe(start).and(stats.maxEventTime.loe(end))))
+
+            .groupBy(stats.feedName, minEventTimeGroup, stats.collectionIntervalSeconds)
+            .orderBy(minEventTimeGroup.asc());
+
+        return (List<JpaNifiFeedProcessorStats>) query.fetch();
+    }
+
+    public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTimeAllData(String feedName, DateTime start, DateTime end) {
         QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
 
         QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
@@ -212,7 +264,6 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.maxEventTime,
                              stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
                              stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
-                             //stats.maxEventTime,
                              stats.collectionIntervalSeconds.as("collectionIntervalSeconds"),
                              stats.jobsFailed.sum().as("jobsFailed"), stats.totalCount.sum().as("totalCount"),
                              stats.count().as("resultSetCount"))

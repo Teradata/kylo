@@ -188,6 +188,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 }
             },
             lastSummaryStats: [],
+            setMaxDataPoints: function (maxDataPoints) {
+                this.maxDataPoints = maxDataPoints;
+            },
             setTimeFrame: function (timeFrame) {
                 this.timeFrame = timeFrame;
             },
@@ -384,7 +387,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 var deferred = $q.defer();
                 var self = this;
                 this.loadingFeedTimeSeriesData = true;
-                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.timeFrame)).then(function (response) {
+                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.timeFrame, self.maxDataPoints)).then(function (response) {
 
                     var statsContainer = response.data;
                     if (statsContainer.stats == null) {

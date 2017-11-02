@@ -17,90 +17,111 @@
   limitations under the License.
   #L%
   -->
-
 <div class="feed-stats">
   <div layout="column" ng-if="vm.dataLoaded" layout-padding>
 
 
-      <md-card layout-align="center center">
-        <md-card-content layout="column" style="width:100%;">
-          <div layout="row" class="layout-padding-left">
-            <span flex layout-align="end top" class="md-button-group layout-padding feed-stats-filter" layout-padding>
+    <md-card layout-align="center center">
+      <md-card-content layout="column" style="width:100%;">
+        <div layout="row" class="layout-padding-left">
+          <!--<span flex layout-align="end top" class="md-button-group layout-padding feed-stats-filter" layout-padding>-->
+            <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:5:5" ng-class="{'selected': vm.timeFrame == opt.value}"-->
+                   <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
+            <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:10:5" ng-class="{'selected': vm.timeFrame == opt.value}"-->
+                   <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
+          <!--</span>-->
+          <div layout="column" class="layout-padding-left">
+            <md-input-container style="margin: 0; padding: 0;" class="feed-stats-filter">
               <md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"
                          ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>
-            </span>
-            <span flex></span>
-            <div layout="column">
-              <div layout="column" class="layout-padding-right">
-                <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
-                <span class="md-caption">Last Refreshed</span>
-              </div>
-              <div flex="20" class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
-                <div layout="column">
-                  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                </div>
 
-              </div>
+              <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:9:0 track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"-->
+                         <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
 
+              <!--<label class="md-container-ignore label-small">Flow Rate Time Frame</label>-->
+              <!--<md-select ng-model="vm.timeFrameOption" ng-change="vm.onTimeFrameOptionChange()" aria-label="Rule Type">-->
+                <!--<md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions">{{ opt.label }}</md-option>-->
+              <!--</md-select>-->
+            </md-input-container>
+            <!--<md-input-container style="margin: 0; padding: 0;" class="feed-stats-filter">-->
+              <!--<md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions | limitTo:9:9 track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"-->
+                         <!--ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>-->
+            <!--</md-input-container>-->
+          </div>
+          <span flex></span>
+          <div layout="column">
+            <div layout="column" class="layout-padding-right">
+              <span class="hint">{{vm.lastRefreshTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+              <span class="md-caption">Last Refreshed</span>
+            </div>
+            <div class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+              <div layout="column">
+                <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+              </div>
 
             </div>
-
+          </div>
+          <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-click="vm.onTimeFrameOptionChange()">
+            <ng-md-icon icon="refresh" ng-style="{'fill':vm.eventSuccessKpi.color}" size="40"></ng-md-icon>
           </div>
 
-        </md-card-content>
-      </md-card>
+        </div>
+
+      </md-card-content>
+    </md-card>
 
     <div ng-if="vm.feedProcessorErrors.visibleData.length >0">
       <md-card>
-      <md-toolbar class="md-table-toolbar md-default" layout="column">
-        <div class="md-toolbar-tools">
-          <span>Error Messages</span>
-          <span flex="5"></span>
-          <div flex style="margin-top:25px">
-          <md-input-container flex layout-fill>
-            <label>Filter</label>
-            <input ng-model="vm.feedProcessorErrorsTable.filter" ng-model-options="{debounce:1000}"/>
-          </md-input-container>
+        <md-toolbar class="md-table-toolbar md-default" layout="column">
+          <div class="md-toolbar-tools">
+            <span>Error Messages</span>
+            <span flex="5"></span>
+            <div flex style="margin-top:25px">
+              <md-input-container flex layout-fill>
+                <label>Filter</label>
+                <input ng-model="vm.feedProcessorErrorsTable.filter" ng-model-options="{debounce:1000}"/>
+              </md-input-container>
+            </div>
+            <span flex="5"></span>
+            <div layout="column" layout-align="end end">
+              <div layout="row">
+                <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.feedProcessorErrors.autoRefresh"
+                           ng-change="vm.toggleFeedProcessorErrorsRefresh(vm.feedProcessorErrors.autoRefresh)">
+                  Auto Refresh: {{vm.feedProcessorErrors.autoRefreshMessage}}
+                </md-switch>
+                <md-button class="md-icon-button" ng-if="vm.feedProcessorErrors.autoRefresh == false" ng-click="vm.viewNewFeedProcessorErrors()">
+                  <ng-md-icon icon="refresh"></ng-md-icon>
+                </md-button>
+              </div>
+              <span ng-if="vm.feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{vm.feedProcessorErrors.newErrorCount}} new errors exist.</span>
+            </div>
           </div>
-          <span flex="5"></span>
-          <div layout="column" layout-align="end end">
-             <div layout="row">
-          <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.feedProcessorErrors.autoRefresh" ng-change="vm.toggleFeedProcessorErrorsRefresh(vm.feedProcessorErrors.autoRefresh)">
-            Auto Refresh: {{vm.feedProcessorErrors.autoRefreshMessage}}
-          </md-switch>
-          <md-button class="md-icon-button" ng-if="vm.feedProcessorErrors.autoRefresh == false" ng-click="vm.viewNewFeedProcessorErrors()">
-            <ng-md-icon icon="refresh"></ng-md-icon>
-          </md-button>
-             </div>
-            <span ng-if="vm.feedProcessorErrors.newErrorCount >0" class="hint" style="padding-bottom: 10px;margin0--top:-10px;"> {{vm.feedProcessorErrors.newErrorCount}} new errors exist.</span>
-          </div>
-        </div>
-      </md-toolbar>
+        </md-toolbar>
 
-      <md-table-container ng-if="vm.feedProcessorErrors.visibleData.length >0">
-        <table md-table >
-          <thead md-head md-order="vm.feedProcessorErrorsTable.sortOrder">
-          <tr md-row>
-            <th md-column name="Processor" md-order-by="processorName"><span>Processor</span></th>
-            <th md-column name="Errors" md-order-by="errorMessages"><span>Errors</span></th>
-            <th md-column name="Time" md-order-by="errorMessageTimestamp" md-desc><span>Time</span></th>
-          </tr>
-          </thead>
-          <tbody md-body>
-          <tr md-row
-              ng-repeat="item in vm.feedProcessorErrors.visibleData | filter: vm.feedProcessorErrorsTable.filter | orderBy:  vm.feedProcessorErrorsTable.sortOrder | limitTo: vm.feedProcessorErrorsTable.rowLimit : (vm.feedProcessorErrorsTable.page -1) * vm.feedProcessorErrorsTable.rowLimit"  >
-            <td md-cell>{{item.processorName}}</td>
-            <td md-cell>{{item.errorMessages}}</td>
-            <td md-cell>{{item.errorMessageTimestamp | date:'HH:mm:ss'}}</td>
-          </tr>
-          </tbody>
-        </table>
-      </md-table-container>
-        <md-table-pagination md-limit="vm.feedProcessorErrorsTable.rowLimit" md-limit-options="[5,10,15,20,50,100]" md-page="vm.feedProcessorErrorsTable.page" md-total="{{vm.feedProcessorErrors.visibleData.length}}" md-page-select="true" md-boundary-links="false"></md-table-pagination>
-    </md-card>
+        <md-table-container ng-if="vm.feedProcessorErrors.visibleData.length >0">
+          <table md-table>
+            <thead md-head md-order="vm.feedProcessorErrorsTable.sortOrder">
+            <tr md-row>
+              <th md-column name="Processor" md-order-by="processorName"><span>Processor</span></th>
+              <th md-column name="Errors" md-order-by="errorMessages"><span>Errors</span></th>
+              <th md-column name="Time" md-order-by="errorMessageTimestamp" md-desc><span>Time</span></th>
+            </tr>
+            </thead>
+            <tbody md-body>
+            <tr md-row
+                ng-repeat="item in vm.feedProcessorErrors.visibleData | filter: vm.feedProcessorErrorsTable.filter | orderBy:  vm.feedProcessorErrorsTable.sortOrder | limitTo: vm.feedProcessorErrorsTable.rowLimit : (vm.feedProcessorErrorsTable.page -1) * vm.feedProcessorErrorsTable.rowLimit">
+              <td md-cell>{{item.processorName}}</td>
+              <td md-cell>{{item.errorMessages}}</td>
+              <td md-cell>{{item.errorMessageTimestamp | date:'HH:mm:ss'}}</td>
+            </tr>
+            </tbody>
+          </table>
+        </md-table-container>
+        <md-table-pagination md-limit="vm.feedProcessorErrorsTable.rowLimit" md-limit-options="[5,10,15,20,50,100]" md-page="vm.feedProcessorErrorsTable.page"
+                             md-total="{{vm.feedProcessorErrors.visibleData.length}}" md-page-select="true" md-boundary-links="false"></md-table-pagination>
+      </md-card>
 
     </div>
-
 
 
     <div layout="row" layout-sm="column" layout-xs="column">
@@ -162,10 +183,30 @@
         <!-- END KPIs -->
 
         <div>
-          <md-card layout-align="start start" style="margin-left: 0px;margin-right: 0px;">
-            <span class="card-title kpi-header layout-padding-left">Flow Rate</span>
-            <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Monitor the rate of the feed flows</span>
-            <md-card-content style="width:100%;">
+          <md-card layout-align="start start" style="margin: 0">
+            <md-card-content flex="100" style="width: 100%; padding: 0">
+              <div flex layout="row" layout-align="start end">
+                <span flex ng-if="vm.feedTimeChartLoading">
+                  <md-progress-linear ng-disabled="false" md-mode="indeterminate"></md-progress-linear>
+                </span>
+                <span flex ng-if="!vm.feedTimeChartLoading">
+                  <md-progress-linear ng-disabled="true" md-mode="indeterminate"></md-progress-linear>
+                </span>
+              </div>
+              <div layout="row" layout-align="center center">
+                <div flex layout="column">
+                  <span class="card-title kpi-header layout-padding-left">Average Flow Rate</span>
+                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Monitor the average rate of the feed flows</span>
+                </div>
+                <div flex></div>
+                <md-input-container class="md-block layout-padding-top-bottom">
+                  <label class="md-container-ignore label-small layout-padding-top">Data Points</label>
+                  <md-select ng-model="vm.maxDataPoints" ng-change="vm.onTimeFrameOptionChange()" aria-label="Rule Type">
+                    <md-option value="{{opt}}" ng-repeat="opt in vm.maxDataPointsOptions">{{ opt }}</md-option>
+                  </md-select>
+                </md-input-container>
+              </div>
+
               <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
 
             </md-card-content>
@@ -186,8 +227,8 @@
               <div flex layout="row" layout-align="start end">
                 <span flex></span>
                 <span flex="20" ng-if="vm.showProcessorChartLoading">
-          <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-        </span>
+                  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                </span>
               </div>
               <nvd3 flex options="vm.processorChartOptions" data="vm.processorChartData" api="vm.processorChartApi" config="{deepWatchOptions:true}"></nvd3>
 
@@ -271,16 +312,13 @@
                 </md-list-item>
 
                 <md-list-item>
-                  <div layout="column" class="layout-padding-top-bottom layout-padding-left-right"  layout-align="space-between start">
+                  <div layout="column" class="layout-padding-top-bottom layout-padding-left-right" layout-align="space-between start">
                     <div class="md-subheader layout-padding-bottom">Feed Manager</div>
                     <span class="layout-padding-bottom">
                        <a href ng-click="vm.gotoFeedDetails($event)">Feed Details</a>
                     </span>
                   </div>
                 </md-list-item>
-
-
-
 
 
               </md-list>

@@ -449,3 +449,8 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
 .feed-stats-filter .md-button.selected {
   background-color: #EEEEEE;
 }
+.feed-stats-filter .md-button.small {
+  padding: 0 10px;
+  margin: 5px;
+  min-width: 1%;
+}

@@ -54,12 +54,11 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
-    /*
-        @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
-        @Column(name = "MIN_EVENT_TIME_MILLIS")
-        @QueryType(PropertyType.COMPARABLE)
-        private DateTime minEventTimeMillis;
 
+    @Column(name = "MIN_EVENT_TIME_MILLIS")
+    private Long minEventTimeMillis;
+
+    /*
         @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
         @Column(name = "MAX_EVENT_TIME_MILLIS")
         @QueryType(PropertyType.COMPARABLE)
@@ -141,6 +140,12 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
 
     @Transient
     private BigDecimal jobsFinishedPerSecond;
+
+    @Transient
+    private Double timeInterval;
+
+    @Transient
+    private Double minEventTimeGroup;
 
     public JpaNifiFeedProcessorStats(String feedName, String processorId) {
         this.feedName = feedName;
@@ -361,6 +366,15 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
     @Override
     public void setMinEventTime(DateTime minEventTime) {
         this.minEventTime = minEventTime;
+        setMinEventTimeMillis(minEventTime.getMillis());
+    }
+
+    public Long getMinEventTimeMillis() {
+        return minEventTimeMillis;
+    }
+
+    public void setMinEventTimeMillis(Long minEventTimeMillis) {
+        this.minEventTimeMillis = minEventTimeMillis;
     }
 
     @Override
@@ -455,5 +469,19 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
         this.jobsFinishedPerSecond = jobsFinishedPerSecond;
     }
 
+    public Double getTimeInterval() {
+        return timeInterval;
+    }
 
+    public void setTimeInterval(Double timeInterval) {
+        this.timeInterval = timeInterval;
+    }
+
+    public Double getMinEventTimeGroup() {
+        return minEventTimeGroup;
+    }
+
+    public void setMinEventTimeGroup(Double minEventTimeGroup) {
+        this.minEventTimeGroup = minEventTimeGroup;
+    }
 }
