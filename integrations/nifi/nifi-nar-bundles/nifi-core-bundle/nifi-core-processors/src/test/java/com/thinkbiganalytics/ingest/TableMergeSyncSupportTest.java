@@ -110,6 +110,10 @@ public class TableMergeSyncSupportTest {
         return hiveShell.executeQuery("select * from " + HiveUtils.quoteIdentifier(targetSchema, targetTable));
     }
 
+    private List<String> fetchEmployeesWithoutProcessingDttm(String targetSchema, String targetTable) {
+        return hiveShell.executeQuery("select `id`, `timestamp`, `name`, `company`, `zip`, `phone`, `email`, `hired`, `country` from " + HiveUtils.quoteIdentifier(targetSchema, targetTable));
+    }
+
 
     @Test
     /**
@@ -383,6 +387,47 @@ public class TableMergeSyncSupportTest {
         results = fetchEmployees(targetSchema, targetTableNP);
         assertEquals(7, results.size());
         verifyUnique(results);
+    }
+
+    @Test
+    /**
+     * Tests that merge with dedupe works correctly even when merges are processed out of order
+     */
+    public void testMergeNonPartitionedWithProcessingDttmOutOfOrder() throws Exception {
+        String targetTableNP = "employeepd_np";
+        // Insert one record to start
+        hiveShell.execute(
+                "insert into emp_sr.employeepd_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`, `processing_dttm`)  values (60, '1', 'Billy',"
+                        + "'ABC',"
+                        + "'94550',"
+                        + "'555-1212',"
+                        + "'billy@acme.org','2015-01-01', 'USA', '20150119974350');");
+
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(1, results.size());
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // Now create a new record that is duplicated in two successive processing_dttms
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974360') "
+                + "values (200, '1', 'Helen', 'ABC', '94611', '555-1212', 'wendy@acme.org', '2016-01-02', 'USA');");
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974370') "
+                + "values (200, '1', 'Helen', 'ABC', '94611', '555-1212', 'wendy@acme.org', '2016-01-02', 'USA');");
+
+        // Ensure that only a single record is inserted, even if the processing_dttms are merged out of order
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974370", true);
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974360", true);
+
+        // we should now have 6 records and no duplicates
+        results = fetchEmployeesWithoutProcessingDttm(targetSchema, targetTableNP);
+        verifyUnique(results);
+        assertEquals(6, results.size());
     }
 
     @Test
