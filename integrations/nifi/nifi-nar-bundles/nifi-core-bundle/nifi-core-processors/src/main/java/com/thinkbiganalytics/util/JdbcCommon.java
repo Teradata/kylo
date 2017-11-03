@@ -164,6 +164,15 @@ public class JdbcCommon {
                     }
                     DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
                     val = formatter.print(new DateTime(time.getTime()));
+                } else if (colType == Types.BLOB) {
+                    byte[] bytes = rs.getBytes(i);
+
+                    if (bytes != null)
+                        val = rs.getBytes(i).toString();
+
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    }
                 } else {
                     val = rs.getString(i);
                     if (visitor != null) {
