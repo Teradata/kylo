@@ -19,7 +19,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              selectFeedHealthTab:function(tab) {
                  BroadcastService.notify(data.TAB_SELECTED,tab);
              },
-             feedHealthQueryParams:{tab:'All',filter:'',start:0,limit:10, sort:''}
+             feedHealthQueryParams:{fixedFilter:'All',filter:'',start:0,limit:10, sort:''}
          };
 
          var setupFeedHealth = function(feedData){
@@ -66,7 +66,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
 
          data.fetchFeeds = function(tab,filter,start,limit, sort){
-             console.log("FETCHING FEEDS!!!")
              if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
                  data.activeFeedRequest.resolve();
              }
@@ -94,7 +93,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          }
 
          data.updateFeedHealthQueryParams = function(tab,filter,start,limit, sort){
-             var params = {start: start, limit: limit, sort: sort, filter:filter, tab:tab};
+             var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
              angular.extend(data.feedHealthQueryParams,params);
          }
 
