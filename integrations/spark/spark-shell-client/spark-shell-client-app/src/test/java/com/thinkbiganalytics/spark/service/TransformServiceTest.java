@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,7 +78,15 @@ public class TransformServiceTest {
         final ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
         Mockito.verify(engine).eval(evalScript.capture(), evalBindings.capture());
 
-        final String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        String expectedScript = null;
+        try (InputStream stream = getClass().getResourceAsStream("transform-service-script1.scala")){
+            expectedScript = IOUtils.toString( stream,"UTF-8");
+        }
+
+        if(expectedScript == null) {
+            throw new Exception("transform-service-script1.scala failed to load");
+        }
+
         Assert.assertEquals(expectedScript, evalScript.getValue());
 
         final List<NamedParam> bindings = evalBindings.getValue();

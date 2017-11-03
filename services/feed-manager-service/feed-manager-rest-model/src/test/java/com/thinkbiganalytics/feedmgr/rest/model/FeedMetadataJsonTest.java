@@ -27,6 +27,7 @@ import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
+import java.io.InputStream;
 import java.nio.charset.Charset;
 
 import static org.junit.Assert.assertNotNull;
@@ -50,9 +51,11 @@ public class FeedMetadataJsonTest {
     public void deserializationUnsortedTest() throws Exception{
 
         Resource r = new ClassPathResource("unsorted-feed.json");
-        String json = IOUtils.toString(r.getInputStream(), Charset.defaultCharset());
-        FeedMetadata feed = ObjectMapperSerializer.deserialize(json,FeedMetadata.class);
-        assertNotNull(feed);
+        try (InputStream inputStream = r.getInputStream()){
+            String json = IOUtils.toString(inputStream, Charset.defaultCharset());
+            FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+            assertNotNull(feed);
+        }
 
     }
 
