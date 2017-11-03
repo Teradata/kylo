@@ -84,7 +84,7 @@ fi
 sed -i "s|#cluster.name: my-application|cluster.name: demo-cluster|" /etc/elasticsearch/elasticsearch.yml
 sed -i "s|#network.host: 192.168.0.1|network.host: localhost|" /etc/elasticsearch/elasticsearch.yml
 
-if [ -z "$ES_JAVA_HOME" ]
+if [ -z "$ES_JAVA_HOME" ] || ["$ES_JAVA_HOME" == "SYSTEM_JAVA" ]
 then
  echo "No Java home has been specified for Elasticsearch. Using the system Java home"
 else

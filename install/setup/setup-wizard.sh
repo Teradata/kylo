@@ -215,7 +215,7 @@ fi
 
 if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
     echo "Installing Elasticsearch"
-        ES_JAVA_HOME=""
+        ES_JAVA_HOME="SYSTEM_JAVA"
     if [ "$java_type" == "2" ] ; then
         ES_JAVA_HOME=/opt/java/current
     elif [ "$java_type" == "3" ] ; then
