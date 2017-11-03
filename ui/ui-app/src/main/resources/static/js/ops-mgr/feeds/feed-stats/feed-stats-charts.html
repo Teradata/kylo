@@ -23,14 +23,18 @@
 
     <md-card layout-align="center center">
       <md-card-content layout="column" style="width:100%;">
-        <div layout="row" class="layout-padding-left">
-          <div layout="column" class="layout-padding-left">
-            <md-input-container style="margin: 0; padding: 0;" class="feed-stats-filter">
-              <md-button flex="none" class="border-btn small" ng-repeat="opt in vm.timeFrameOptions track by opt.value" ng-class="{'selected': vm.timeFrame == opt.value}"
-                         ng-click="vm.onTimeFrameClick(opt.value)">{{opt.label}}</md-button>
-            </md-input-container>
+        <div layout="row" class="" layout-align="center center">
+          <div flex="100" layout="column" layout-align="center stretch">
+            <div class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</div>
+            <div layout="row" flex="100">
+              <md-slider-container flex="100">
+                <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[0].label}}</label>
+                <md-slider flex="100" ng-model="vm.timeFrameOptionIndex" min="0" max="{{vm.timeFrameOptionIndexLength - 1}}" aria-label="Time Frame"></md-slider>
+                <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[vm.timeFrameOptionIndexLength - 1].label}}</label>
+              </md-slider-container>
+            </div>
           </div>
-          <span flex></span>
+          <span flex style="padding-left: 40px"></span>
           <div layout="column">
             <div layout="column" class="layout-padding-right">
               <span class="hint">{{vm.lastRefreshTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
@@ -40,15 +44,12 @@
               <div layout="column">
                 <md-progress-linear md-mode="indeterminate"></md-progress-linear>
               </div>
-
             </div>
           </div>
-          <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-click="vm.onTimeFrameOptionChange()">
+          <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer; margin-top: -20px" ng-click="vm.onTimeFrameOptionChange()">
             <ng-md-icon icon="refresh" ng-style="{'fill':vm.eventSuccessKpi.color}" size="40"></ng-md-icon>
           </div>
-
         </div>
-
       </md-card-content>
     </md-card>
 

@@ -49,9 +49,11 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         self.maxDataPointsOptions = [200, 400, 800, 1600, 3200, 6400];
         self.maxDataPoints = self.maxDataPointsOptions[1];
-        self.timeframeOptions = [];
         self.timeFrame = 'FIVE_MIN';
+        self.timeframeOptions = [];
         self.timeFrameOption = self.timeFrame;
+        self.timeFrameOptionIndex = 0;
+        self.timeFrameOptionIndexLength = 0;
         self.lastRefreshTime = null;
         self.timeFramOptionsLookupMap = {};
         self.selectedTimeFrameOptionObject = {};
@@ -63,7 +65,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         self.summaryStatistics = FeedStatsService.summaryStatistics;
 
 
-        var feedChartLegendState = []
+        var feedChartLegendState = [];
         this.feedChartData = [];
         this.feedChartApi = {};
         this.feedChartOptions ={};
@@ -76,7 +78,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         self.feed = {
             displayStatus:''
-        }
+        };
 
 
 
@@ -91,19 +93,19 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             value:0,
             icon:'',
             color:''
-        }
+        };
 
         self.flowRateKpi = {
             value:0,
             icon: 'tune',
             color: '#1f77b4'
-        }
+        };
 
         self.avgDurationKpi = {
             value:0,
             icon: 'access_time',
             color: '#1f77b4'
-        }
+        };
 
         self.feedProcessorErrorsTable = {
             sortOrder:'-errorMessageTimestamp',
@@ -127,11 +129,11 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             if(self.feed.feedId != undefined) {
                 StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
             }
-        }
+        };
 
         self.viewNewFeedProcessorErrors = function() {
             self.feedProcessorErrors.viewAllData();
-        }
+        };
 
         self.toggleFeedProcessorErrorsRefresh = function(autoRefresh){
             if(autoRefresh){
@@ -141,7 +143,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             else {
                 self.feedProcessorErrors.autoRefreshMessage ='disabled';
             }
-        }
+        };
 
 
         function init(){
@@ -261,11 +263,30 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
         function loadTimeFrameOption() {
             ProvenanceEventStatsService.getTimeFrameOptions().then(function (response) {
                 self.timeFrameOptions = response.data;
+                self.timeFrameOptionIndexLength = self.timeFrameOptions.length;
+                $timeout(function() {
+                    //update initial slider position in UI
+                    self.timeFrameOptionIndex = _.findIndex(self.timeFrameOptions, function(option) {
+                        return option.value === self.timeFrame;
+                    });
+                }, 1000);
                 _.each(response.data, function (labelValue) {
                     self.timeFramOptionsLookupMap[labelValue.value] = labelValue;
                 });
-            })
+            });
         }
+        $scope.$watch(
+            //update time frame when slider is moved
+            function() {
+                return self.timeFrameOptionIndex;
+            },
+            function() {
+                if (!_.isUndefined(self.timeFrameOptions)) {
+                    self.timeFrame = self.timeFrameOptions[Math.floor(self.timeFrameOptionIndex)].value;
+                    self.onTimeFrameOptionChange();
+                }
+            }
+        );
 
 
         function onTimeFrameClick(timeFrame){

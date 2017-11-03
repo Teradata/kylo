@@ -128,22 +128,22 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     enum TimeFrame {
 
-        ONE_MIN((long) (1000 * 60), "1 min"),
-        THREE_MIN(ONE_MIN.millis * 3, "3 min"),
-        FIVE_MIN(ONE_MIN.millis * 5, "5 min"),
-        TEN_MIN(ONE_MIN.millis * 10, "10 min"),
-        THIRTY_MIN(ONE_MIN.millis * 30, "30 min"),
-        HOUR(ONE_MIN.millis * 60, "1 h"),
-        THREE_HOUR(HOUR.millis * 3, "3 h"),
-        FIVE_HOUR(HOUR.millis * 5, "5 h"),
-        TEN_HOUR(HOUR.millis * 10, "10 h"),
-        DAY(HOUR.millis * 24, "1 d"),
-        THREE_DAYS(DAY.millis * 3, " 3 d"),
-        WEEK(DAY.millis * 7, "7 d"),
-        MONTH(DAY.millis * 30, "1 m"),
-        THREE_MONTHS(MONTH.millis * 3, "3 m"),
-        SIX_MONTHS(DAY.millis * (365 / 2), "6 m"),
-        YEAR(DAY.millis * 365, "1 y");
+        ONE_MIN((long) (1000 * 60), "Last Minute"),
+        THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"),
+        FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes"),
+        TEN_MIN(ONE_MIN.millis * 10, "Last 10 Minutes"),
+        THIRTY_MIN(ONE_MIN.millis * 30, "Last 30 Minutes"),
+        HOUR(ONE_MIN.millis * 60, "Last Hour"),
+        THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"),
+        FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"),
+        TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
+        DAY(HOUR.millis * 24, "Last Day"),
+        THREE_DAYS(DAY.millis * 3, "Last 3 Days"),
+        WEEK(DAY.millis * 7, "Last Week"),
+        MONTH(DAY.millis * (365 / 12), "Last Month"),
+        THREE_MONTHS(DAY.millis * (365 / 6), "Last 3 Months"),
+        SIX_MONTHS(DAY.millis * (365 / 2), "Last 6 Months"),
+        YEAR(DAY.millis * 365, "Last Year");
 
         protected Long millis;
         private String displayName;
