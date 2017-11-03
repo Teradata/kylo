@@ -82,36 +82,38 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
                 len = keys.length;
             keys.sort(); //sort all the dates
 
-            //add missing data points
-            var timeInterval = (maxTime - minTime) / maxDataPoints;
-            var doubleTimeInterval = timeInterval * 2;
-            var currentTime = minTime;
-            var closestTime;
-            var newDateMap = [];
-            for (var i = 0; i < maxDataPoints && currentTime < maxTime; i++ ) {
-                closestTime = getClosestTime(keys, currentTime);
-                var diff = Math.abs(currentTime - closestTime);
-                if (diff > doubleTimeInterval) {
-                    newDateMap[currentTime] = currentTime;
-                } else {
-                    newDateMap[closestTime] = closestTime;
+            if(angular.isDefined(minTime) && angular.isDefined(maxTime) && angular.isDefined(maxDataPoints)) {
+                //add missing data points
+                var timeInterval = (maxTime - minTime) / maxDataPoints;
+                var doubleTimeInterval = timeInterval * 2;
+                var currentTime = minTime;
+                var closestTime;
+                var newDateMap = [];
+                for (var i = 0; i < maxDataPoints && currentTime < maxTime; i++) {
+                    closestTime = getClosestTime(keys, currentTime);
+                    var diff = Math.abs(currentTime - closestTime);
+                    if (diff > doubleTimeInterval) {
+                        newDateMap[currentTime] = currentTime;
+                    } else {
+                        newDateMap[closestTime] = closestTime;
+                    }
+                    currentTime += timeInterval;
                 }
-                currentTime += timeInterval;
-            }
 
-            function getClosestTime(times, goal) {
-                if (_.isUndefined(times) || _.isEmpty(times)) {
-                    return 0;
+                function getClosestTime(times, goal) {
+                    if (_.isUndefined(times) || _.isEmpty(times)) {
+                        return 0;
+                    }
+                    return times.reduce(function (prev, curr) {
+                        return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
+                    });
                 }
-                return times.reduce(function(prev, curr) {
-                    return (Math.abs(curr - goal) < Math.abs(prev - goal) ? curr : prev);
-                });
-            }
 
-            dateMap = newDateMap;
-            keys = Object.keys(dateMap);
-            len = keys.length;
-            keys.sort(); //sort again after adding missing time points
+                dateMap = newDateMap;
+                keys = Object.keys(dateMap);
+                len = keys.length;
+                keys.sort(); //sort again after adding missing time points
+            }
 
             angular.forEach(dataMap, function (labelCounts, label) {
                 // //fill in any empty dates with 0 values
