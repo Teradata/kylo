@@ -24,7 +24,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.EvictingQueue;
-import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.cluster.ClusterMessage;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
@@ -459,11 +458,4 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         }
     }
 
-    private class ApplicationStartedListener implements ServicesApplicationStartupListener {
-
-        @Override
-        public void onStartup(DateTime startTime) {
-
-        }
-    }
 }
