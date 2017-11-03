@@ -75,7 +75,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     private static final Logger log = LoggerFactory.getLogger(JcrDatasourceProvider.class);
     private static final Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> DOMAIN_TYPES_MAP;
     private static final Map<String, Class<? extends JcrDatasource>> NODE_TYPES_MAP;
-    public static JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
+    public static final JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
         @Override
         public Class<? extends JcrDatasource> resolve(Node node) {
             try {

@@ -101,7 +101,9 @@ public class SparkFileSchemaParserService {
             log.error("Error parsing file {}: {}", fileType, e.getMessage());
             throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
-            tempFile.delete();
+            if(!tempFile.delete()) {
+                log.error("The temp file was not deleted successfully: " + tempFile.getName());
+            }
         }
     }
     // Port: 8450

@@ -28,7 +28,7 @@ import java.io.Serializable;
 public class FeedOperationBatchStatusChange implements Serializable {
 
     private static final long serialVersionUID = 1L;
-    public static String CLUSTER_MESSAGE_TYPE = "FeedOperationBatchStatusChange";
+    public static final String CLUSTER_MESSAGE_TYPE = "FeedOperationBatchStatusChange";
 
     private  Feed.ID feedId;
     private  String feedName;

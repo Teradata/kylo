@@ -51,7 +51,7 @@ import javax.inject.Inject;
 @Service
 public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider {
 
-    public static String ITEM_LAST_MODIFIED_KEY = "NIFI_FEED_PROCESSOR_STATS";
+    public static final String ITEM_LAST_MODIFIED_KEY = "NIFI_FEED_PROCESSOR_STATS";
 
     @Autowired
     private JPAQueryFactory factory;

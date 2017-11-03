@@ -35,7 +35,7 @@ public class JcrJdbcDatasourceDetails extends JcrDatasourceDetails implements Jd
     /**
      * JCR node type
      */
-    public static String NODE_TYPE = "tba:jdbcDatasourceDetails";
+    public static final String NODE_TYPE = "tba:jdbcDatasourceDetails";
 
     /**
      * Name of the controllerServiceId attribute

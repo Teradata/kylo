@@ -58,7 +58,7 @@ public class ModeShapeEngineConfig {
     public static final String INDEX_DIR_PROP = "modeshape.index.dir";
     public static final File DEFAULT_INDEX_DIR = new File("/opt/kylo/modeshape/modeshape-local-index");
 
-    public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password",

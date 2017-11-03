@@ -87,8 +87,8 @@ public class KyloGroupsConfig {
                     .moduleClass(KyloGroupsLoginModule.class)
                     .controlFlag(this.loginFlag)
                     .option(KyloGroupsLoginModule.REST_CLIENT_CONFIG, loginRestClientConfig)
-                    .option(KyloGroupsLoginModule.LOGIN_USER, loginUser)
-                    .option(KyloGroupsLoginModule.LOGIN_PASSWORD, loginPassword)
+                    .option(KyloGroupsLoginModule.LOGIN_USER_FIELD, loginUser)
+                    .option(KyloGroupsLoginModule.LOGIN_PASSWORD_FIELD, loginPassword)
                     .add()
                 .build();
 

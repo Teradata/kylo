@@ -42,9 +42,9 @@ import javax.jcr.RepositoryException;
  */
 public class JcrEntity extends JcrObject implements ExtensibleEntity {
 
-    public static String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
+    public static final String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
 
-    public static String OWNER = "jcr:createdBy";
+    public static final String OWNER = "jcr:createdBy";
 
     /**
      *

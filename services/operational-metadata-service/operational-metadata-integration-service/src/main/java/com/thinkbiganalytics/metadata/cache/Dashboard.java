@@ -38,7 +38,7 @@ public class Dashboard {
         READY, NOT_READY
     }
 
-    public static Dashboard NOT_READY = new Dashboard(Status.NOT_READY);
+    public static final Dashboard NOT_READY = new Dashboard(Status.NOT_READY);
 
     private String user;
     private Long time;

@@ -87,7 +87,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver{
     @Inject
     private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
-    public static String NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE = "NIFI_FEED_PROCESSOR_ERROR";
+    public static final String NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE = "NIFI_FEED_PROCESSOR_ERROR";
 
     @Inject
     private ClusterService clusterService;

@@ -39,7 +39,7 @@ public class JcrDomainType extends AbstractJcrAuditableSystemEntity implements D
     /**
      * JCR node type
      */
-    public static String NODE_TYPE = "tba:domainType";
+    public static final String NODE_TYPE = "tba:domainType";
 
     /**
      * Name of field metadata JCR field

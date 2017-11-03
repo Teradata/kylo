@@ -105,8 +105,8 @@ public class GenericQueryDslFilter {
             .put(Ops.LIKE_IC, ComparablePath.class)
             .build();
     private static final Logger log = LoggerFactory.getLogger(GenericQueryDslFilter.class);
-    public static String NULL_FILTER = "NULL";
-    public static String NOT_NULL_FILTER = "NOT_NULL";
+    public static final String NULL_FILTER = "NULL";
+    public static final String NOT_NULL_FILTER = "NOT_NULL";
     /**
      * Custom converter used to convert the filter String value to the respective Value on the QueryDSL/JPA object A custom converter is needed to add the Enum conversion types
      */

@@ -27,7 +27,7 @@ import java.util.Collection;
  */
 public class JcrExtensiblePropertyCollection {
 
-    public static int COLLECTION_TYPE = -10;
+    public static final int COLLECTION_TYPE = -10;
 
     private int collectionType;
     private Collection collection;

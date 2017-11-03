@@ -220,7 +220,7 @@ public class NiFiFlowInspectorManager {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("Error waiting for latch", e);
             }
         }
 
