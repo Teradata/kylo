@@ -57,9 +57,9 @@ public class DateTimeUtil {
         .appendSuffix(" sec ", " sec ")
         .toFormatter();
 
-    public static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
+    public static final DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
-    public static DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
+    public static final DateTimeFormatter dateTimeFormatWithTimeZone = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss z");
 
 
     public static Date convertToUTC(Date date) {

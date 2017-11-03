@@ -50,11 +50,11 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
     /**
      * Option for the URL of the REST API endpoint
      */
-    static final String LOGIN_USER = "loginUser";
+    static final String LOGIN_USER_FIELD = "loginUser";
     /**
      * Option for the URL of the REST API endpoint
      */
-    static final String LOGIN_PASSWORD = "loginPassword";
+    static final String LOGIN_PASSWORD_FIELD = "loginPassword";
 
     /**
      * Option for REST client configuration
@@ -82,8 +82,8 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
 
         try {
             config = (LoginJerseyClientConfig) options.get(REST_CLIENT_CONFIG);
-            loginUser = (String) getOption(LOGIN_USER).orElse(null);
-            loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD)
+            loginUser = (String) getOption(LOGIN_USER_FIELD).orElse(null);
+            loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD_FIELD)
                 .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
         } catch (RuntimeException e) {
             log.error("Unhandled exception during initialization", e);

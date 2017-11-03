@@ -49,7 +49,7 @@ import javax.annotation.Nullable;
  */
 public class TableMergeSyncSupport implements Serializable {
 
-    public static Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
+    public static final Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
 
     protected Connection conn;
 
