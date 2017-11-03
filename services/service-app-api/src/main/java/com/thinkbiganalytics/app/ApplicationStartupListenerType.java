@@ -1,5 +1,4 @@
 package com.thinkbiganalytics.app;
-
 /*-
  * #%L
  * thinkbig-service-app-api
@@ -9,9 +8,9 @@ package com.thinkbiganalytics.app;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,21 +18,22 @@ package com.thinkbiganalytics.app;
  * limitations under the License.
  * #L%
  */
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * Allow classes to subscribe to the startup event of Kylo.
- * The startup event is fired when Spring has refreshed its context and started.
+ * Indicate the type of startup listener
  */
-public interface ServicesApplicationStartup {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface ApplicationStartupListenerType {
 
-    enum ApplicationType{
-        UPGRADE,KYLO
+    enum ListenerType {
+        UPGRADE_ONLY, KYLO_ONLY,UPGRADE_AND_KYLO
     }
 
-    /**
-     * Subscribe to the start of the application
-     *
-     * @param o a listener that will be called when the application starts and Spring is loaded
-     */
-    void subscribe(ServicesApplicationStartupListener o);
+    ListenerType listenerType() default ListenerType.UPGRADE_AND_KYLO;
+
 }
