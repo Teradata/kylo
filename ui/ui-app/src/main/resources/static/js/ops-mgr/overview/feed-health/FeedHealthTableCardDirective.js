@@ -259,7 +259,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             var tab = activeTab.title;
             var sort = PaginationDataService.sort(self.pageName);
             var start = (limit * self.currentPage) - limit;
-            return {limit:limit,tab:tab,sort:sort,start:start,filter:self.filter};
+            return {limit:limit,fixedFilter:tab,sort:sort,start:start,filter:self.filter};
         }
 
             /**
