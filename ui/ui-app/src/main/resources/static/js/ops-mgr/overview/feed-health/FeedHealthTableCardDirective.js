@@ -275,7 +275,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
               }
               var queryParams = getFeedHealthQueryParams();
               var limit = queryParams.limit;
-              var tab =queryParams.tab;
+              var tab =queryParams.fixedFilter;
               var sort = queryParams.sort;
               var start = queryParams.start;
               var filter = queryParams.filter;

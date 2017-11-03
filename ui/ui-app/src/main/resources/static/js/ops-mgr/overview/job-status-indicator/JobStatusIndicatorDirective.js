@@ -162,10 +162,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                         notify = true;
                     }
                 }
-                else{
-                    //it needs to be fetched.  notify for requery
-                    notify = true;
-                }
             });
             //any of those that are not in the runningFeedNames are not running anymore
             var notRunning = _.difference(Object.keys(summaryData), runningFeedNames);
