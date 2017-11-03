@@ -87,6 +87,18 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             });
         }
 
+        this.onHealthyClick = function(){
+            if(self.dataMap.Healthy.count >0){
+                self.openDetailsDialog('Healthy');
+            }
+        }
+
+        this.onUnhealthyClick = function(){
+            if(self.dataMap.Unhealthy.count >0){
+                self.openDetailsDialog('Unhealthy');
+            }
+        }
+
 
 
         this.updateChart = function(){

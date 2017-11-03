@@ -23,6 +23,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Feed Status built from the transform class
@@ -43,6 +44,13 @@ public class DefaultFeedStatus implements FeedStatus {
     public DefaultFeedStatus(List<FeedHealth> feeds) {
         this.feeds = feeds;
         this.populate();
+
+    }
+    public void populate(List<FeedSummary> feeds) {
+        if(feeds != null && !feeds.isEmpty()) {
+            this.feeds = feeds.stream().map(f -> f.getFeedHealth()).collect(Collectors.toList());
+        }
+        populate();
 
     }
 

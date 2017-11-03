@@ -1,9 +1,12 @@
 define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
     angular.module(moduleName).service('TabService', ["PaginationDataService", function (PaginationDataService) {
 
+
+
         var self = this;
         this.tabs = {};
         this.tabMetadata = {};
+        this.tabPageData = {};
 
         this.getTab = function (pageName, tabName) {
             var tabs = self.tabs[pageName];
@@ -104,7 +107,29 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                     tabs.push(tab);
                 });
             }
+
             return self.tabs[pageName];
+        }
+
+        this.tabPageData = function(pageName){
+            if(angular.isUndefined(self.tabPageData[pageName])){
+                var data = {
+                    total: 0,
+                    content: [],
+                    setTotal: function (total) {
+                        this.total = total;
+                    },
+                    clearContent: function () {
+                        this.content = [];
+                        this.total = 0;
+                    },
+                    addContent: function (content) {
+                        this.content.push(content);
+                    }
+                };
+                self.tabPageData[pageName] = data;
+            }
+            return self.tabPageData[pageName];
         }
 
         this.selectedTab = function (pageName, tab) {

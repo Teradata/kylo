@@ -685,7 +685,7 @@ public class IntegrationTestBase {
 
     protected FeedSummary[] getFeeds() {
         final ObjectMapper mapper = new ObjectMapper();
-        SearchResult searchResult = getFeedsExpectingStatus(HTTP_OK).as(SearchResultImpl.class);
+        SearchResult<Object> searchResult = getFeedsExpectingStatus(HTTP_OK).as(SearchResultImpl.class);
         return searchResult.getData().stream().map(o -> mapper.convertValue(o, FeedSummary.class)).toArray(FeedSummary[]::new);
     }
 
@@ -970,7 +970,7 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_OK);
 
-        SearchResult result = response.as(SearchResultImpl.class);
+        SearchResult<Object> result = response.as(SearchResultImpl.class);
         final ObjectMapper mapper = new ObjectMapper();
         return result.getData().stream().map(o -> mapper.convertValue(o, ServiceLevelAssessment.class)).toArray(ServiceLevelAssessment[]::new);
     }

@@ -11,6 +11,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
         this.DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
 
+        this.DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
+
         this.FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
         this.FEED_NAMES_URL = this.FEEDS_BASE + "/names";
         this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";

@@ -65,6 +65,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.transforms = this.getTransforms(this.dataCategory);
         }
         /**
+         * Filters for rows where the specified column is not null.
+         */
+        ColumnDelegate.prototype.deleteNullRows = function (column) {
+            var formula = "filter(not(isnull(" + this.getColumnFieldName(column) + ")))";
+            this.controller.addFunction(formula, { formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " if null" });
+        };
+        /**
          * Filters for rows where the specified column does not contain the specified value.
          *
          * @param value - the value to remove
@@ -103,6 +110,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         ColumnDelegate.prototype.deleteRowsLessThan = function (value, column) {
             var formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value });
+        };
+        /**
+         * Filters for rows where the specified column is null.
+         */
+        ColumnDelegate.prototype.findNullRows = function (column) {
+            var formula = "filter(isnull(" + this.getColumnFieldName(column) + "))";
+            this.controller.addFunction(formula, { formula: formula, icon: "=", name: "Find where " + this.getColumnDisplayName(column) + " is null" });
         };
         /**
          * Filters for rows where the specified column contains the specified value.

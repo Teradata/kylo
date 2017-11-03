@@ -25,11 +25,10 @@ import com.thinkbiganalytics.jobrepo.query.model.CheckDataJob;
 import com.thinkbiganalytics.jobrepo.query.model.DataConfidenceSummary;
 import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.cache.util.TimeUtil;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
-import com.thinkbiganalytics.metadata.jpa.feed.OpsFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
@@ -38,6 +37,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -78,7 +78,7 @@ public class CacheService {
     /**
      * We need the Acl List populated in order to do the correct fetch
      */
-    public Dashboard getDashboard() {
+    public Dashboard getDashboard(FeedHealthSummaryCache.FeedSummaryFilter feedSummaryFilter) {
         Dashboard dashboard = null;
         if (!accessController.isEntityAccessControlled() || (accessController.isEntityAccessControlled() && feedAclCache.isAvailable())) {
             Long time = TimeUtil.getTimeNearestFiveSeconds();
@@ -93,7 +93,8 @@ public class CacheService {
                 List<Future<Object>> results = pool.invokeAll(tasks);
                 DataConfidenceSummary dataConfidenceSummary = new DataConfidenceSummary(dataConfidenceJobsCache.getUserCache(time), 60);
                 dashboard =
-                    new Dashboard(time, userContext.getName(), feedHealthSummaryCache.getUserFeeds(time), alertsCache.getUserCache(time), dataConfidenceSummary, serviceStatusCache.getUserCache(time));
+                    new Dashboard(time, userContext.getName(), feedHealthSummaryCache.getUserFeedHealthCounts(time), feedHealthSummaryCache.getUserFeedHealth(time, feedSummaryFilter),
+                                  alertsCache.getUserCache(time), dataConfidenceSummary, serviceStatusCache.getUserCache(time));
             } catch (Exception e) {
 
             }
@@ -104,6 +105,11 @@ public class CacheService {
         }
     }
 
+    public Map<String,Long> getUserFeedHealthCounts(){
+        Long time = TimeUtil.getTimeNearestFiveSeconds();
+       return feedHealthSummaryCache.getUserFeedHealthCounts(time);
+    }
+
 
     public FeedStatus getUserFeedHealth(String feedName) {
         return feedHealthSummaryCache.getUserFeed(feedName);
@@ -111,6 +117,10 @@ public class CacheService {
 
     public FeedStatus getUserFeedHealth() {
         return feedHealthSummaryCache.getUserFeeds();
+    }
+
+    public SearchResult getUserFeedHealthWithFilter(FeedHealthSummaryCache.FeedSummaryFilter filter) {
+        return feedHealthSummaryCache.getUserFeedHealth(filter);
     }
 
     public List<CheckDataJob> getUserDataConfidenceJobs() {

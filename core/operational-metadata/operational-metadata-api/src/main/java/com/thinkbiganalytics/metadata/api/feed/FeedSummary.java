@@ -104,6 +104,6 @@ public interface FeedSummary {
     }
 
     enum RunStatus {
-        RUNNING, FINISHED
+        RUNNING, FINISHED, INITIAL, UNKNOWN
     }
 }

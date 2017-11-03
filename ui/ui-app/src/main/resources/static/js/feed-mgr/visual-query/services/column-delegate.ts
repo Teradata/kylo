@@ -84,6 +84,14 @@ export class ColumnDelegate {
     }
 
     /**
+     * Filters for rows where the specified column is not null.
+     */
+    deleteNullRows(column: any) {
+        const formula = "filter(not(isnull(" + this.getColumnFieldName(column) + ")))";
+        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " if null"});
+    }
+
+    /**
      * Filters for rows where the specified column does not contain the specified value.
      *
      * @param value - the value to remove
@@ -125,6 +133,14 @@ export class ColumnDelegate {
     deleteRowsLessThan(value: string, column: any) {
         const formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value});
+    }
+
+    /**
+     * Filters for rows where the specified column is null.
+     */
+    findNullRows(column: any) {
+        const formula = "filter(isnull(" + this.getColumnFieldName(column) + "))";
+        this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find where " + this.getColumnDisplayName(column) + " is null"});
     }
 
     /**
@@ -450,7 +466,7 @@ export class ColumnDelegate {
      * @param {ui.grid.Grid} grid the grid with the column
      * @returns {string} a formula that replaces the column
      */
-    private toFormula(script: string, column: any, grid: any): string {
+    protected toFormula(script: string, column: any, grid: any): string {
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
         const self = this;

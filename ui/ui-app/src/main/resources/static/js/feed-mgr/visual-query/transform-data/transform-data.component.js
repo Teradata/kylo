@@ -156,6 +156,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Wait for query engine to load
             var onLoad = function () {
+                var domainTypesLoaded = false;
                 _this.sampleFormulas = _this.engine.sampleFormulas;
                 if (angular.isArray(_this.model.states) && _this.model.states.length > 0) {
                     _this.engine.setQuery(source, _this.model.$datasources);
@@ -183,17 +184,18 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                         }
                     });
                     _this.engine.setFieldPolicies(_this.fieldPolicies);
-                    _this.query();
+                    if (domainTypesLoaded) {
+                        _this.query();
+                    }
                 }, true);
                 // Fetch domain types
                 _this.domainTypesService.findAll()
                     .then(function (domainTypes) {
                     _this.domainTypes = domainTypes;
+                    domainTypesLoaded = true;
                     // Load table data
                     _this.query();
                 });
-                // Load table data
-                _this.query();
             };
             if (this.engine instanceof Promise) {
                 this.engine.then(function (queryEngine) {
@@ -393,6 +395,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.executingQuery = true;
             this.queryProgress = 0;
             // Query Spark shell service
+            var didUpdateColumns = false;
             var successCallback = function () {
                 //mark the query as finished
                 self.executingQuery = false;
@@ -426,6 +429,10 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             var notifyCallback = function (progress) {
                 self.queryProgress = progress * 100;
+                if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
+                    didUpdateColumns = true;
+                    self.updateGrid();
+                }
             };
             self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
             return deferred.promise;
@@ -518,17 +525,18 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          */
         TransformDataComponent.prototype.addFunction = function (formula, context) {
             this.addFilters();
-            this.pushFormula(formula, context);
-            this.query();
+            this.pushFormula(formula, context, true);
         };
         ;
         /**
          * Appends the specified formula to the current script.
          *
-         * @param {string} formula the formula
-         * @param {TransformContext} context the UI context for the transformation
+         * @param {string} formula - the formula
+         * @param {TransformContext} context - the UI context for the transformation
+         * @param {boolean} doQuery - true to immediately execute the query
          */
-        TransformDataComponent.prototype.pushFormula = function (formula, context) {
+        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery) {
+            if (doQuery === void 0) { doQuery = false; }
             // Covert to a syntax tree
             this.ternServer.server.addFile("[doc]", formula);
             var file = this.ternServer.server.findFile("[doc]");
@@ -550,6 +558,9 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Add to function history
             this.functionHistory.push(context);
+            if (doQuery || this.engine.getRows() === null) {
+                this.query();
+            }
         };
         ;
         /**

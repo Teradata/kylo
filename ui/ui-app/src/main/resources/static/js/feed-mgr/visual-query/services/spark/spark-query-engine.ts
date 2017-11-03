@@ -16,6 +16,7 @@ import {registerQueryEngine} from "../query-engine-factory.service";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
+import {ScriptState} from "../../model/script-state";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -273,8 +274,17 @@ export class SparkQueryEngine extends QueryEngine<string> {
         let deferred = new Subject();
 
         let successCallback = function (response: angular.IHttpResponse<TransformResponse>) {
+            let state = self.states_[index];
+
             // Check status
             if (response.data.status === "PENDING") {
+                if (state.columns === null && response.data.results && response.data.results.columns) {
+                    state.columns = response.data.results.columns;
+                    state.rows = [];
+                    state.table = response.data.table;
+                    self.updateFieldPolicies(state);
+                }
+
                 deferred.next(response.data.progress);
 
                 self.$timeout(function () {
@@ -300,7 +310,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 return (column.hiveColumnLabel === "processing_dttm");
             });
 
-            let state = self.states_[index];
             if (angular.isDefined(invalid)) {
                 state.columns = [];
                 state.rows = [];
@@ -316,31 +325,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
                 state.validationResults = response.data.results.validationResults;
-
-                // Update field policies
-                if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
-                    const policyMap = {};
-                    state.fieldPolicies.forEach(policy => {
-                        policyMap[policy.name] = policy;
-                    });
-
-                    state.fieldPolicies = state.columns.map(column => {
-                        if (policyMap[column.hiveColumnLabel]) {
-                            return policyMap[column.hiveColumnLabel];
-                        } else {
-                            return {
-                                name: column.hiveColumnLabel,
-                                fieldName: column.hiveColumnLabel,
-                                feedFieldName: column.hiveColumnLabel,
-                                domainTypeId: null,
-                                partition: null,
-                                profile: true,
-                                standardization: null,
-                                validation: null
-                            };
-                        }
-                    });
-                }
+                self.updateFieldPolicies(state);
 
                 // Indicate observable is complete
                 deferred.complete();
@@ -387,6 +372,36 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     protected parseQuery(source: any): string {
         return new SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_);
+    }
+
+    /**
+     * Updates the field policies of the specified state to match the column order.
+     * @param {ScriptState<string>} state
+     */
+    private updateFieldPolicies(state: ScriptState<string>) {
+        if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
+            const policyMap = {};
+            state.fieldPolicies.forEach(policy => {
+                policyMap[policy.name] = policy;
+            });
+
+            state.fieldPolicies = state.columns.map(column => {
+                if (policyMap[column.hiveColumnLabel]) {
+                    return policyMap[column.hiveColumnLabel];
+                } else {
+                    return {
+                        name: column.hiveColumnLabel,
+                        fieldName: column.hiveColumnLabel,
+                        feedFieldName: column.hiveColumnLabel,
+                        domainTypeId: null,
+                        partition: null,
+                        profile: true,
+                        standardization: null,
+                        validation: null
+                    };
+                }
+            });
+        }
     }
 }
 

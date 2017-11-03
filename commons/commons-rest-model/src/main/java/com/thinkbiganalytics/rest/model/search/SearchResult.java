@@ -25,19 +25,19 @@ import java.util.List;
 /**
  * Searching/Filtering object to store the results and summary information about the resulting data
  */
-public interface SearchResult {
+public interface SearchResult<T extends Object> {
 
     /**
      * Return the data from the search
      *
      * @return the data from the search
      */
-    List<? extends Object> getData();
+    List<T> getData();
 
     /**
      * set the data
      */
-    void setData(List<? extends Object> data);
+    void setData(List<T> data);
 
     /**
      * Return the total record count (not filtered)

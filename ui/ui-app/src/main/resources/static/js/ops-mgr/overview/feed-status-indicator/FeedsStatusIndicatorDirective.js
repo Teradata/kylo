@@ -99,6 +99,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 self.chartData.push({key: "Unhealthy", value: 0})
         }
 
+        this.onHealthyClick = function(){
+            OpsManagerDashboardService.selectFeedHealthTab('Healthy');
+        }
+
+        this.onUnhealthyClick = function(){
+            OpsManagerDashboardService.selectFeedHealthTab('Unhealthy');
+        }
+
         function init(){
             initializePieChart();
             watchDashboard();

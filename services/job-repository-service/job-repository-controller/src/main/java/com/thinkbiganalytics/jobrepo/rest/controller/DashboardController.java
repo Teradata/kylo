@@ -21,7 +21,6 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
 
 import com.thinkbiganalytics.alerts.rest.model.AlertRange;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.jobrepo.query.model.CheckDataJob;
 import com.thinkbiganalytics.jobrepo.query.model.DataConfidenceSummary;
 import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
@@ -29,23 +28,27 @@ import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.metadata.cache.CacheService;
 import com.thinkbiganalytics.metadata.cache.CategoryFeedService;
 import com.thinkbiganalytics.metadata.cache.Dashboard;
+import com.thinkbiganalytics.metadata.cache.FeedHealthSummaryCache;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -92,16 +95,31 @@ public class DashboardController {
 
 
     @GET
-    @Path("/feeds")
+    @Path("/pageable-feeds")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Provides a detailed health status of every feed.")
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
     )
-    public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
-        return cacheService.getUserFeedHealth();
+    public SearchResult getPageableFeedHealth(@Context HttpServletRequest request, @QueryParam("sort") @DefaultValue("") String sort,
+                                              @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                              @QueryParam("start") @DefaultValue("0") Integer start,
+                                              @QueryParam("fixedFilter") String fixedFilter,
+                                              @QueryParam("filter") String filter) {
+        return cacheService.getUserFeedHealthWithFilter(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, filter, limit, start, sort));
+
     }
 
+    @GET
+    @Path("/feed-health-counts")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Provides a detailed health status of every feed.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the health.", response = FeedStatus.class)
+    )
+    public Map<String, Long> getFeedHealthCounts(@Context HttpServletRequest request) {
+       return cacheService.getUserFeedHealthCounts();
+    }
 
     @GET
     @Path("/running-jobs")
@@ -156,8 +174,12 @@ public class DashboardController {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns summary of the alerts grouped.", response = AlertRange.class)
     )
-    public Dashboard getDashboard() {
-        return cacheService.getDashboard();
+    public Dashboard getDashboard(@Context HttpServletRequest request, @QueryParam("sort") @DefaultValue("") String sort,
+                                  @QueryParam("limit") @DefaultValue("10") Integer limit,
+                                  @QueryParam("start") @DefaultValue("0") Integer start,
+                                  @QueryParam("fixedFilter") String fixedFilter,
+                                  @QueryParam("filter") String filter) {
+        return cacheService.getDashboard(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, filter, limit, start, sort));
     }
 
 
