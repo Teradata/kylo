@@ -106,7 +106,9 @@ public class RetryProvenanceEventWithDelay {
             }
             holder.setEvents(unregisteredEvents);
             if (receiver != null && !queue.contains(holder)) {
-                queue.offer(holder);
+                if(!queue.offer(holder)) {
+                    throw new RuntimeException("Error adding item to the queue");
+                }
             }
         }
     }
@@ -123,7 +125,9 @@ public class RetryProvenanceEventWithDelay {
             }
             holder.setFeedStatistics(unregisteredEvents);
             if (statsJmsReceiver != null && !statsQueue.contains(holder)) {
-                statsQueue.offer(holder);
+                if(!statsQueue.offer(holder)) {
+                    throw new RuntimeException("Error adding item to the queue");
+                }
             }
         }
     }
@@ -151,8 +155,10 @@ public class RetryProvenanceEventWithDelay {
     private void processEventQueue() {
         try {
             List<ProvenanceEventRecordDTOHolder> events = new ArrayList<>();
-            queue.drainTo(events);
-            events.stream().forEach(e -> receiver.receiveEvents(e));
+            int numberOfEvents = queue.drainTo(events);
+            if(numberOfEvents > 0) {
+                events.stream().forEach(e -> receiver.receiveEvents(e));
+            }
         } catch (Exception e) {
             log.error("Error Processing Retry Provenance Events", e);
         }
@@ -161,8 +167,10 @@ public class RetryProvenanceEventWithDelay {
     private void processStatsQueue() {
         try {
             List<AggregatedFeedProcessorStatisticsHolder> stats = new ArrayList<>();
-            statsQueue.drainTo(stats);
-            stats.stream().forEach(e -> statsJmsReceiver.receiveTopic(e));
+            int numberOfEvents = statsQueue.drainTo(stats);
+            if(numberOfEvents > 0) {
+                stats.stream().forEach(e -> statsJmsReceiver.receiveTopic(e));
+            }
         } catch (Exception e) {
             log.error("Error Processing Retry Provenance Stats", e);
         }
