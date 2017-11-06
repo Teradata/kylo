@@ -113,13 +113,11 @@ public class ElasticSearchRestService implements Search {
             }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
-            log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
-            responseException.printStackTrace();
+            log.error("Index document deletion encountered issues in Elasticsearch for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id);
-            clientProtocolException.printStackTrace();
+            log.error("Http protocol error for delete document for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            log.error("IO Error in rest client", ioException);
         } finally {
             closeRestClient();
         }

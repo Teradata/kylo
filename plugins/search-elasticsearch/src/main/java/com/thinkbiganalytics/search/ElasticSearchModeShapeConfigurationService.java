@@ -27,6 +27,8 @@ import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.schematic.document.EditableDocument;
 import org.modeshape.schematic.document.Editor;
 import org.modeshape.schematic.document.ParsingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.FileNotFoundException;
 import java.util.HashMap;
@@ -36,6 +38,7 @@ import java.util.Map;
  * ModeShape configuration for Elasticsearch integration
  */
 public class ElasticSearchModeShapeConfigurationService implements RepositoryIndexConfiguration {
+    private static Logger log = LoggerFactory.getLogger(ElasticSearchModeShapeConfigurationService.class);
 
     private ElasticSearchClientConfiguration clientConfig;
     private static final String ELASTIC_SEARCH = "elasticsearch";
@@ -57,7 +60,7 @@ public class ElasticSearchModeShapeConfigurationService implements RepositoryInd
         try {
             repositoryConfiguration = RepositoryConfiguration.read(EMPTY_CONFIG);
         } catch (ParsingException | FileNotFoundException e) {
-            e.printStackTrace();
+            log.error("Error loading the repository configuration", e);
             return null;
         }
 

@@ -31,7 +31,7 @@ import java.util.Date;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TriggerInfo {
 
-    public TriggerState state;
+    private TriggerState state;
     private ScheduleIdentifier triggerIdentifier;
     private ScheduleIdentifier jobIdentifier;
     private Date nextFireTime;

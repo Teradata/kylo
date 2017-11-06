@@ -35,7 +35,7 @@ import java.util.Date;
 public class DefaultTriggerInfo implements TriggerInfo {
 
 
-    public TriggerState state;
+    private TriggerState state;
     boolean simpleTrigger;
     boolean scheduled;
     private TriggerIdentifier triggerIdentifier;
