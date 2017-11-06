@@ -44,23 +44,23 @@ import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAll
  */
 public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate, AccessControlledMixin {
 
-    public static String NODE_TYPE = "tba:feedTemplate";
+    public static final String NODE_TYPE = "tba:feedTemplate";
 
-    public static String STATE = "tba:state";
-    public static String DEFINE_TABLE = "tba:defineTable";
-    public static String DATA_TRANSFORMATION = "tba:dataTransformation";
-    public static String ALLOW_PRECONDITIONS = "tba:allowPreconditions";
-    public static String ICON = "tba:icon";
-    public static String ICON_COLOR = "tba:iconColor";
-    public static String NIFI_TEMPLATE_ID = "tba:nifiTemplateId";
-    public static String FEEDS = "tba:feeds";
-    public static String ORDER = "tba:order";
+    public static final String STATE = "tba:state";
+    public static final String DEFINE_TABLE = "tba:defineTable";
+    public static final String DATA_TRANSFORMATION = "tba:dataTransformation";
+    public static final String ALLOW_PRECONDITIONS = "tba:allowPreconditions";
+    public static final String ICON = "tba:icon";
+    public static final String ICON_COLOR = "tba:iconColor";
+    public static final String NIFI_TEMPLATE_ID = "tba:nifiTemplateId";
+    public static final String FEEDS = "tba:feeds";
+    public static final String ORDER = "tba:order";
 
-    public static String JSON = "tba:json";
+    public static final String JSON = "tba:json";
 
-    public static String IS_STREAM = "tba:isStream";
+    public static final String IS_STREAM = "tba:isStream";
 
-    public static String TEMPLATE_TABLE_OPTION = "tba:templateTableOption";
+    public static final String TEMPLATE_TABLE_OPTION = "tba:templateTableOption";
 
 
     public JcrFeedTemplate(Node node) {

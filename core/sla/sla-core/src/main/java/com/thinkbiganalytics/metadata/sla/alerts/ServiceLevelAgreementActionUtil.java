@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ServiceLevelAgreementActionUtil {
 
 
-    public static Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
+    protected static final Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
     Timer invalidActionConfigurationCacheTimer = new Timer();
 
     public ServiceLevelAgreementActionUtil() {
