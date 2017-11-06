@@ -26,6 +26,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
@@ -39,6 +40,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheById;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -115,6 +117,8 @@ public class AdminControllerV2 {
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
 
+    @Inject
+    private AccessController accessController;
 
     @GET
     @Path("/upload-status/{key}")
@@ -210,7 +214,7 @@ public class AdminControllerV2 {
     @GET
     @Path("/cache-summary")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the size of the feed acl cache")
+    @ApiOperation("Gets the size of the Feed and FeedACL cache")
     public Response getCacheSizes() {
         Long feedAclSize = feedAclCache.size();
         Long feedCacheNameSize = opsManagerFeedCacheByName.size();
@@ -223,8 +227,9 @@ public class AdminControllerV2 {
     @POST
     @Path("/reset-cache")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the size of the feed acl cache")
+    @ApiOperation("Resets the Feed and FeedACL cache.")
     public Response refreshCache() {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
         log.info("RESET Feed and FeedAcl caches");
         ((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache();
         ((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache();
