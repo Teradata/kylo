@@ -63,7 +63,7 @@ public class KyloServerApplication implements SchedulingConfigurer {
         if (upgrader.isUpgradeRequired()) {
             KyloVersion currentVersion = upgrader.getCurrentVersion();
             log.info("*****  Upgrade required - this may take some time  *****");
-            log.info("Beginning upgrade from version ...", currentVersion == null ? "unknown" : currentVersion);
+            log.info("Beginning upgrade from version {} ...", currentVersion == null ? "unknown" : currentVersion);
             upgrader.upgrade();
             log.info("*****  Upgrading complete  *****");
         }
