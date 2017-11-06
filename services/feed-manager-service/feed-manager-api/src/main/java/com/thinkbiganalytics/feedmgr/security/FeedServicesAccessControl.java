@@ -116,6 +116,10 @@ public interface FeedServicesAccessControl {
                                                                                      "Edit Service Level Agreements",
                                                                                      "Allows creating and editing service level agreements");
 
+    Action EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE = ACCESS_SERVICE_LEVEL_AGREEMENTS.subAction("editServiceLevelAgreementEmailTemplate",
+                                                                                     "Edit Service Level Agreement Email Templates",
+                                                                                     "Allows creating and editing service level agreement email templates");
+
     Action ACCESS_GLOBAL_SEARCH = FEEDS_SUPPORT.subAction("accessSearch",
                                                           "Access Global Search",
                                                           "Allows access to search all indexed columns");
