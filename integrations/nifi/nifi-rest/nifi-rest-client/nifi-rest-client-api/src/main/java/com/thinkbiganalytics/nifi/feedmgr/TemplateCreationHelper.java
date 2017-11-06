@@ -74,9 +74,9 @@ public class TemplateCreationHelper {
 
     public static final String REUSABLE_TEMPLATES_CATEGORY_NAME = "Reusable Templates";
     private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
-    public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
+    public static final String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
 
-    public static String TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME = "kylo_temporary_template_inspection";
+    public static final String TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME = "kylo_temporary_template_inspection";
     /**
      * REST client for NiFi API
      */

@@ -62,9 +62,9 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
 
-    public static String QTZ_JOB_SCHEDULED_MESSAGE_TYPE = "QTZ_JOB_SCHEDULED";
+    public static final String QTZ_JOB_SCHEDULED_MESSAGE_TYPE = "QTZ_JOB_SCHEDULED";
 
-    public static String QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE = "QTZ_JOB_UNSCHEDULED";
+    public static final String QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE = "QTZ_JOB_UNSCHEDULED";
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -258,8 +258,8 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         map.put(SlaQuartzJobBean.SLA_ID_PARAM,slaId);
         try {
             scheduler.scheduleJob(jobIdentifier, triggerIdentifier, SlaQuartzJobBean.class, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron), map);
-        }catch(SchedulerException e) {
-            e.printStackTrace();
+        } catch(SchedulerException e) {
+            throw new RuntimeException("Error scheduling job", e);
         }
     }
 
