@@ -233,8 +233,8 @@ public class CreateFeedBuilder {
             Stopwatch eventTime = Stopwatch.createStarted();
 
             TemplateDTO template = getTemplate();
-            log.debug("Time to get Template {}.  ElapsedTime: {} ms", template.getName(), eventTime(eventTime));
             if (template != null) {
+                log.debug("Time to get Template {}.  ElapsedTime: {} ms", template.getName(), eventTime(eventTime));
 
                 //create the encompassing process group
                 eventTime.start();
@@ -429,6 +429,10 @@ public class CreateFeedBuilder {
 
 
                 }
+            }
+            else {
+                log.error("Unable to create/save the feed {}.  Unable to find a template for id {}",feedName,templateId);
+                throw new FeedCreationException("Unable to create the feed [" + feedName + "]. Unable to find a template with id "+templateId);
             }
             log.info("Time save Feed flow in NiFi.  ElapsedTime: {} ms", eventTime(totalTime));
             return newProcessGroup;
