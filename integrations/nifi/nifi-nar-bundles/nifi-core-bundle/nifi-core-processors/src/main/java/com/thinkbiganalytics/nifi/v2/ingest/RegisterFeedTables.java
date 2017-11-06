@@ -98,7 +98,7 @@ public class RegisterFeedTables extends AbstractNiFiProcessor {
     /**
      * Specify creation of all tables
      */
-    public static String ALL_TABLES = "ALL";
+    public static final String ALL_TABLES = "ALL";
     /**
      * Property indicating which tables to register
      */

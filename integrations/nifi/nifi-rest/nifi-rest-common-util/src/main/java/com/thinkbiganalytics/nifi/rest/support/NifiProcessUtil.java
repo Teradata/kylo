@@ -49,9 +49,9 @@ public class NifiProcessUtil {
     /**
      * Type of the cleanup processor
      */
-    public static String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
+    public static final String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
 
-    public static String TRIGGER_FEED_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed";
+    public static final String TRIGGER_FEED_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed";
 
     /**
      * Return processors matching a supplied processor type matching {@link ProcessorDTO#getType()} against the supplied {@code type}

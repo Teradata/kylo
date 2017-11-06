@@ -35,9 +35,9 @@ public class ProvenanceEventDtoUtil {
 
     public static final String FLOWFILE_QUEUE_EMPTIED = "flowfile queue emptied";
 
-    public static final String[] STARTING_EVENT_TYPES = {"RECEIVE", "CREATE"};
+    protected static final String[] STARTING_EVENT_TYPES = {"RECEIVE", "CREATE"};
 
-    public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE"};
+    protected static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE"};
 
     public static boolean contains(String[] allowedEvents, String event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);

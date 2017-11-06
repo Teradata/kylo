@@ -267,7 +267,9 @@ public class FeedEventStatistics implements Serializable {
             try {
                 File f = new File(location);
                 if (f.exists()) {
-                    f.delete();
+                    if(! f.delete()) {
+                        throw new RuntimeException("Error deleting file " + f.getName());
+                    }
                 }
             } catch (Exception e) {
 
