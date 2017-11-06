@@ -31,17 +31,6 @@
         mode: 'text/velocity'
         }">
           </div>
-          <!--
-                  <md-input-container ng-if="vm.availableSlaActions.length > 1">
-                    <label>Assign to SLA Actions</label>
-                    <md-select ng-model="vm.template.actionClasses" multiple >
-                      <md-option ng-repeat="t in vm.availableSlaActions" ng-value="t.value">
-                        {{t.label}} ({{t.value}})
-                      </md-option>
-                    </md-select>
-                  </md-input-container>
-          -->
-
           <div ng-if="vm.availableSlaActions.length ==0">
             Warning unable to find any SLA Actions configured. This template will not be able to be applied
           </div>
@@ -70,9 +59,9 @@
                 <label>Test email address</label>
                 <input ng-model="vm.emailAddress" type="email" size="50">
               </md-input-container>
-              <md-button ng-click="vm.sendTestEmail()" class="md-primary" ng-disabled="vm.emailAddress == null || vm.emailAddress == ''">Send Test</md-button>
+              <md-button ng-click="vm.sendTestEmail()" class="md-primary" ng-disabled="!vm.self.allowEdit && (vm.emailAddress == null || vm.emailAddress == '')">Send Test</md-button>
             </div>
-            <md-button ng-click="vm.saveTemplate()" class="md-primary" ng-disabled="!vm.slaEmailTemplateForm.$valid">Save</md-button>
+            <md-button ng-click="vm.saveTemplate()" class="md-primary" ng-disabled="!vm.slaEmailTemplateForm.$valid && !vm.self.allowEdit">Save</md-button>
           </div>
 
         </div>

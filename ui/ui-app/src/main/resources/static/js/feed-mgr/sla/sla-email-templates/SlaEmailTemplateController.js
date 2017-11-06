@@ -3,6 +3,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
     var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService) {
         var self = this;
 
+        self.allowEdit = false;
+
         /**
          * The current template we are editing
          * @type {null}
@@ -204,6 +206,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         getAvailableActionItems();
         getRelatedSlas();
 
+        // Fetch the allowed actions
+        AccessControlService.getUserAllowedActions()
+            .then(function(actionSet) {
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            });
 
     };
 
