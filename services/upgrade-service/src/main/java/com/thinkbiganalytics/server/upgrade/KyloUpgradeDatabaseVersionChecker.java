@@ -99,7 +99,7 @@ public class KyloUpgradeDatabaseVersionChecker {
 
         } catch (SQLException e) {
             // this is ok.. If an error happens assume the upgrade is needed.  The method will return a null value if errors occur and the upgrade app will start.
-            e.printStackTrace();
+            log.error("Error has occurred so upgrade is needed", e);
         } finally {
             JdbcUtils.closeStatement(statement);
             JdbcUtils.closeResultSet(resultSet);
