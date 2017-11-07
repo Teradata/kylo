@@ -59,7 +59,7 @@ public class SolrSearchModeShapeConfigurationService implements RepositoryIndexC
             repositoryConfiguration = RepositoryConfiguration.read(EMPTY_CONFIG);
         } catch (ParsingException | FileNotFoundException e) {
             e.printStackTrace();
-            return null;
+            repositoryConfiguration = new RepositoryConfiguration();
         }
 
         Editor editor = repositoryConfiguration.edit();
