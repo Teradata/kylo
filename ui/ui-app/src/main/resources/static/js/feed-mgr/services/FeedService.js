@@ -99,6 +99,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     description: null,
                     systemFeedName: '',
                     inputProcessorType: '',
+                    inputProcessorName:null,
                     inputProcessor: null,
                     nonInputProcessors: [],
                     properties: [],
@@ -172,6 +173,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             updateFeed: function (feedModel) {
                 var self = this;
+                this.editFeedModel.inputProcessorName = null;
                 angular.extend(this.editFeedModel, feedModel);
                 //set the field name to the policy name attribute
                 if (this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
@@ -414,6 +416,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         properties.push(property);
                     });
                 });
+                if(model.inputProcessor) {
+                    model.inputProcessorName = model.inputProcessor.name;
+                }
                 model.properties = properties;
                 //prepare access control changes if any
                 EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);

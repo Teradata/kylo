@@ -261,6 +261,7 @@ public class FeedModelTransform {
         result.setDataTransformation(source.getDataTransformation());
         result.setHadoopAuthorizationType(source.getHadoopAuthorizationType());
         result.setInputProcessorType(source.getInputProcessorType());
+        result.setInputProcessorName(source.getInputProcessorName());
         result.setIsReusableFeed(source.isReusableFeed());
         result.setNifiProcessGroupId(source.getNifiProcessGroupId());
         result.setOptions(source.getOptions());

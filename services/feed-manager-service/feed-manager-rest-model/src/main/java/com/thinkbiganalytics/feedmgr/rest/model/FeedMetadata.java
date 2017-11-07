@@ -67,6 +67,8 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     //Nifi specific
     private String inputProcessorType;
+    private String inputProcessorName;
+
     private String templateName;
     private List<NifiProperty> properties;
 
@@ -221,6 +223,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setInputProcessorType(String inputProcessorType) {
         this.inputProcessorType = inputProcessorType;
+    }
+
+    public String getInputProcessorName() {
+        return inputProcessorName;
+    }
+
+    public void setInputProcessorName(String inputProcessorName) {
+        this.inputProcessorName = inputProcessorName;
     }
 
     public List<Tag> getTags() {

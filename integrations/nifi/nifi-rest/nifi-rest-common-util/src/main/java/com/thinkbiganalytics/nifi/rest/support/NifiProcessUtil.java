@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -80,6 +81,22 @@ public class NifiProcessUtil {
             }
         }
         return null;
+    }
+
+    public static ProcessorDTO findFirstProcessorsByTypeAndName(Collection<ProcessorDTO> processors, String type, String name) {
+        ProcessorDTO processorDTO = null;
+        if (type != null) {
+            List<ProcessorDTO> list = findProcessorsByType(processors, type);
+            if (list != null && !list.isEmpty()) {
+                if(StringUtils.isNotBlank(name)){
+                    processorDTO = list.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst().orElse(list.get(0));
+                }
+                if( processorDTO == null) {
+                    processorDTO = list.get(0);
+                }
+            }
+        }
+        return processorDTO;
     }
 
     /**

@@ -682,7 +682,8 @@ public class CreateFeedBuilder {
     private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupDTO entity) {
         // Find first processor by type
         final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity);
-        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
+        String inputProcessorName = feedMetadata != null ? feedMetadata.getInputProcessorName() : null;
+        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByTypeAndName(inputProcessors, inputProcessorType, inputProcessorName))
             .orElseGet(() -> inputProcessors.stream()
                 .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
                 .findFirst()
