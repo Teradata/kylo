@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.8.4-RC2</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -28,7 +28,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-search-elasticsearch</artifactId>
-      <version>0.8.4-SNAPSHOT</version>
+      <version>0.8.4-RC2</version>
     </dependency>
 
     <dependency>
@@ -246,7 +246,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.8.4-SNAPSHOT</version>
+      <version>0.8.4-RC2</version>
     </dependency>
 
     <!-- NiFi REST clients -->
