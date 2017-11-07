@@ -1,6 +1,6 @@
 define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
-    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService) {
+    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService,AccessControlService) {
         var self = this;
 
         self.allowEdit = false;
@@ -242,6 +242,6 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
     angular.module(moduleName).controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
 
-    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService','StateService', controller]);
+    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService','StateService','AccessControlService', controller]);
 
 });
