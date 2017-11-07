@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.modeshape.security.role;
+package com.thinkbiganalytics.metadata.modeshape.security;
 
 /*-
  * #%L

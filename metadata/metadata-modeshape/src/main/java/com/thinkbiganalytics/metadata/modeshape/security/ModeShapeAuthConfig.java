@@ -25,7 +25,6 @@ import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
-import com.thinkbiganalytics.metadata.modeshape.security.role.EnsureServicesAccessControlAction;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRoleProvider;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
