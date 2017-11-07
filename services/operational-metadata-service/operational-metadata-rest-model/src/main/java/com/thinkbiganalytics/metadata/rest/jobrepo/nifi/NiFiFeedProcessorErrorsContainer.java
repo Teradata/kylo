@@ -35,28 +35,15 @@ public class NiFiFeedProcessorErrorsContainer {
 
     DateTime endTime;
 
-    NifiFeedProcessorStatisticsProvider.TimeFrame timeframe;
-
     List<NifiFeedProcessorStatsErrors> errors;
 
     public NiFiFeedProcessorErrorsContainer() {
 
     }
 
-    public NiFiFeedProcessorErrorsContainer(NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-        this.timeframe = timeframe;
-        DateTime now = DateTime.now();
-        startTime = timeframe.startTimeRelativeTo(now);;
-        endTime = now;
-    }
-
-
-    public NifiFeedProcessorStatisticsProvider.TimeFrame getTimeframe() {
-        return timeframe;
-    }
-
-    public void setTimeframe(NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-        this.timeframe = timeframe;
+    public NiFiFeedProcessorErrorsContainer(DateTime startTime, DateTime endTime) {
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     public DateTime getStartTime() {

@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 
 import org.apache.commons.beanutils.BeanUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,7 @@ public class NifiFeedProcessorStatsTransform {
         if (domains != null && !domains.isEmpty()) {
            return domains.stream().map(domain -> toModel(domain)).collect(Collectors.toList());
         }
-        return null;
+        return new ArrayList<>(0);
     }
 
     /**

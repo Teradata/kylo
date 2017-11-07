@@ -23,9 +23,12 @@
 
     <md-card layout-align="center center">
       <md-card-content layout="column" style="width:100%;">
-        <div layout="row" class="" layout-align="center center">
+        <div layout="row" class="" layout-align="start start">
           <div flex="100" layout="column" layout-align="center stretch">
-            <div class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</div>
+            <div layout="column" layout-align="start start">
+              <div class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</div>
+              <label ng-if="vm.isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}'</label>
+            </div>
             <div layout="row" flex="100">
               <md-slider-container flex="100">
                 <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[0].label}}</label>
@@ -36,18 +39,25 @@
           </div>
           <span flex style="padding-left: 40px"></span>
           <div layout="column">
-            <div layout="column" class="layout-padding-right">
-              <span class="hint">{{vm.lastRefreshTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
-              <span class="md-caption">Last Refreshed</span>
+            <div layout="row">
+              <div layout="column" class="layout-padding-right">
+                <span class="hint">{{vm.lastRefreshTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+                <span class="md-caption" style="white-space: nowrap">Last Refreshed</span>
+              </div>
+              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-click="vm.onTimeFrameOptionChange()">
+                <ng-md-icon icon="refresh" ng-style="{'fill':vm.eventSuccessKpi.color}" size="40"></ng-md-icon>
+              </div>
             </div>
-            <div class="md-block layout-padding-top-bottom" ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
+            <div layout="row" class="layout-padding-top" layout-align="start center">
+              <md-checkbox ng-model="vm.isAutoRefreshDisabled" style="margin-bottom: 0;"></md-checkbox>
+              <label style="white-space: nowrap" class="hint">Disable Auto-Refresh</label>
+            </div>
+            <div class="md-block layout-padding-top"
+                 ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
               <div layout="column">
                 <md-progress-linear md-mode="indeterminate"></md-progress-linear>
               </div>
             </div>
-          </div>
-          <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer; margin-top: -20px" ng-click="vm.onTimeFrameOptionChange()">
-            <ng-md-icon icon="refresh" ng-style="{'fill':vm.eventSuccessKpi.color}" size="40"></ng-md-icon>
           </div>
         </div>
       </md-card-content>
@@ -179,12 +189,12 @@
               <div layout="row" layout-align="center center">
                 <div flex layout="column">
                   <span class="card-title kpi-header layout-padding-left">Average Flow Rate</span>
-                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Monitor the average rate of the feed flows</span>
+                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Zoom in/out and pan left/right to see custom time frame</span>
                 </div>
                 <div flex></div>
                 <md-input-container class="md-block layout-padding-top-bottom">
                   <label class="md-container-ignore label-small layout-padding-top">Data Points</label>
-                  <md-select ng-model="vm.maxDataPoints" ng-change="vm.onTimeFrameOptionChange()" aria-label="Rule Type">
+                  <md-select ng-model="vm.maxDataPoints" ng-change="vm.onDataPointsChange()" aria-label="Rule Type">
                     <md-option value="{{opt}}" ng-repeat="opt in vm.maxDataPointsOptions">{{ opt }}</md-option>
                   </md-select>
                 </md-input-container>

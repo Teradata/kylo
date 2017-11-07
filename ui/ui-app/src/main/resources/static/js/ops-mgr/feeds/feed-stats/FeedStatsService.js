@@ -130,7 +130,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
         var data = {
             feedName: '',
-            timeFrame: 'FIVE_MIN',
             loadingProcessorStatistics: false,
             processorStatistics: {
                 topN: 3,
@@ -147,7 +146,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             },
             summaryStatistics: {
                 lastRefreshTime: '',
-                time: {startTime: 0, endTime: 0, timeFrame: ''},
+                time: {startTime: 0, endTime: 0},
                 flowsStartedPerSecond: 0,
                 flowsStarted: 0,
                 flowsFinished: 0,
@@ -162,7 +161,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             loadingFeedTimeSeriesData: false,
             feedTimeSeries: {
                 lastRefreshTime: '',
-                time: {startTime: 0, endTime: 0, timeFrame: ''},
+                time: {startTime: 0, endTime: 0},
                 minTime: 0,
                 maxTime: 0,
                 raw: [],
@@ -191,8 +190,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             setMaxDataPoints: function (maxDataPoints) {
                 this.maxDataPoints = maxDataPoints;
             },
-            setTimeFrame: function (timeFrame) {
-                this.timeFrame = timeFrame;
+            setTimeBoundaries: function(from, to) {
+                this.fromMillis = from;
+                this.toMillis = to;
             },
             setFeedName: function (feedName) {
                 this.feedName = feedName;
@@ -216,7 +216,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 var deferred = $q.defer();
 
                 var selectedChartFunction = self.processorStatistics.selectedChartFunction;
-                $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, self.timeFrame)).then(function (response) {
+                $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, self.fromMillis, self.toMillis)).then(function (response) {
                     var processorStatsContainer = response.data;
 
                     var processorStats = processorStatsContainer.stats;
@@ -259,7 +259,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
                     summary.time.startTime = processorStatsContainer.startTime;
                     summary.time.endTime = processorStatsContainer.endTime;
-                    summary.time.timeFrame = processorStatsContainer.timeFrame;
                     summary.flowsStarted = flowsStarted;
                     summary.flowsFinished = flowsFinished;
                     summary.flowsFailed = flowsFailed;
@@ -387,7 +386,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 var deferred = $q.defer();
                 var self = this;
                 this.loadingFeedTimeSeriesData = true;
-                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.timeFrame, self.maxDataPoints)).then(function (response) {
+                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.fromMillis, self.toMillis, self.maxDataPoints)).then(function (response) {
 
                     var statsContainer = response.data;
                     if (statsContainer.stats == null) {
@@ -406,7 +405,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
                     self.feedTimeSeries.time.startTime = statsContainer.startTime;
                     self.feedTimeSeries.time.endTime = statsContainer.endTime;
-                    self.feedTimeSeries.time.timeFrame = statsContainer.timeFrame;
                     self.feedTimeSeries.raw = statsContainer;
 
                     self.loadingFeedTimeSeriesData = false;
@@ -430,7 +428,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     self.feedProcessorErrors.newErrorCount = 0;
 
                 }
-                $q.when(ProvenanceEventStatsService.getFeedProcessorErrors(self.feedName, self.timeFrame, self.feedProcessorErrors.time.endTime)).then(function (response) {
+                $q.when(ProvenanceEventStatsService.getFeedProcessorErrors(self.feedName, self.fromMillis, self.toMillis, self.feedProcessorErrors.time.endTime)).then(function (response) {
 
 
                     var container = response.data;
