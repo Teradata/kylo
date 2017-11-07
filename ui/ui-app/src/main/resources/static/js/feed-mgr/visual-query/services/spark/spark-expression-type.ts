@@ -1,5 +1,5 @@
-import {ScriptExpressionType} from "../script-expression-type";
-import {QueryEngineConstants} from "../query-engine-constants";
+import {QueryEngineConstants} from "../../wrangler/query-engine-constants";
+import {ScriptExpressionType} from "../../wrangler/script-expression-type";
 
 /**
  * Types supported by {@link SparkExpression}.

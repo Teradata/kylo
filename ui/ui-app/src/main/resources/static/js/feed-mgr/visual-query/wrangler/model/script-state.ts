@@ -1,5 +1,5 @@
-import {ProfileOutputRow} from "../../model/profile-output-row";
-import {QueryResultColumn} from "../../model/query-result-column";
+import {ProfileOutputRow} from "./profile-output-row";
+import {QueryResultColumn} from "./query-result-column";
 import {TransformValidationResult} from "./transform-validation-result";
 
 /**

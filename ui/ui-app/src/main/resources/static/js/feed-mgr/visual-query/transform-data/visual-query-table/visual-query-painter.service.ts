@@ -2,7 +2,7 @@ import * as angular from "angular";
 import "fattable";
 
 import {DomainType} from "../../../services/DomainTypesService";
-import {DataCategory} from "../../services/column-delegate";
+import {DataCategory} from "../../wrangler/column-delegate";
 
 /**
  * Default font.

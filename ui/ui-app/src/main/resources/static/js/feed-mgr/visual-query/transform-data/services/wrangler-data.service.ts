@@ -1,6 +1,6 @@
 import * as angular from "angular";
 
-import {TransformValidationResult} from "../../model/transform-validation-result";
+import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 

@@ -1,17 +1,11 @@
 import {Observable} from "rxjs/Observable";
-
-import {ProfileOutputRow} from "../../model/profile-output-row";
-import {QueryResultColumn} from "../../model/query-result-column";
-import {SchemaField} from "../../model/schema-field";
-import {TableSchema} from "../../model/table-schema";
-import {UserDatasource} from "../../model/user-datasource";
-import {DatasourcesServiceStatic} from "../../services/DatasourcesService.typings";
-import {SqlDialect} from "../../services/VisualQueryService";
-import {ScriptState} from "../model/script-state";
-import {TransformValidationResult} from "../model/transform-validation-result";
-import {TransformDataComponent} from "../transform-data/transform-data.component";
 import {ColumnDelegate} from "./column-delegate";
+
+import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaField, SqlDialect, TableSchema, UserDatasource} from "./index";
+import {ScriptState} from "./model/script-state";
+import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
+import {ColumnController} from "./column-controller";
 
 /**
  * Provides the ability to query and transform data.
@@ -114,7 +108,7 @@ export abstract class QueryEngine<T> {
     /**
      * Creates a column delegate of the specified data type.
      */
-    createColumnDelegate(dataType: string, controller: TransformDataComponent): ColumnDelegate {
+    createColumnDelegate(dataType: string, controller: ColumnController): ColumnDelegate {
         return new ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants);
     }
 

@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../query-engine", "../query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder"], function (require, exports, angular, Subject_1, _, VisualQueryService_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
+define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder"], function (require, exports, angular, Subject_1, _, VisualQueryService_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

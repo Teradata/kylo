@@ -1,4 +1,4 @@
-import {QueryResultColumn} from "../../model/query-result-column";
+import {QueryResultColumn} from "./query-result-column";
 import {TransformValidationResult} from "./transform-validation-result";
 
 /**

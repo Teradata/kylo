@@ -5,8 +5,8 @@ import * as _ from "underscore";
 
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
-import {TransformValidationResult} from "../model/transform-validation-result";
-import {QueryEngine} from "../services/query-engine";
+import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
+import {QueryEngine} from "../wrangler/query-engine";
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 
 declare const CodeMirror: any;

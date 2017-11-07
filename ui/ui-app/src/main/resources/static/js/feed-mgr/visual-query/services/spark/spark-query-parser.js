@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../query-parser", "./spark-constants"], function (require, exports, query_parser_1, spark_constants_1) {
+define(["require", "exports", "underscore", "../../wrangler/query-parser", "./spark-constants"], function (require, exports, _, query_parser_1, spark_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /** Name of the DatasourceProvider variable */

@@ -1,4 +1,4 @@
-import {UserDatasource} from "../../model/user-datasource";
+import {UserDatasource} from "./index";
 import {VisualQueryModel} from "../../services/VisualQueryService";
 
 /**

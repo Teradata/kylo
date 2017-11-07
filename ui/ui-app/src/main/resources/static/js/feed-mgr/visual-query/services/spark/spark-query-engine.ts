@@ -4,19 +4,19 @@ import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import * as _ from "underscore";
 
-import {QueryResultColumn} from "../../../model/query-result-column";
 import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
-import {TransformResponse} from "../../model/transform-response";
-import {QueryEngine} from "../query-engine";
-import {registerQueryEngine} from "../query-engine-factory.service";
+import {QueryResultColumn} from "../../wrangler/model/query-result-column";
+import {ScriptState} from "../../wrangler/model/script-state";
+import {TransformResponse} from "../../wrangler/model/transform-response";
+import {QueryEngine} from "../../wrangler/query-engine";
+import {registerQueryEngine} from "../../wrangler/query-engine-factory.service";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
-import {ScriptState} from "../../model/script-state";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.

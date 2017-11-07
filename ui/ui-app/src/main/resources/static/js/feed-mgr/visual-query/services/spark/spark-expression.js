@@ -1,4 +1,4 @@
-define(["require", "exports", "../parse-exception", "./spark-constants", "./spark-expression-type"], function (require, exports, parse_exception_1, spark_constants_1, spark_expression_type_1) {
+define(["require", "exports", "../../wrangler/parse-exception", "./spark-constants", "./spark-expression-type"], function (require, exports, parse_exception_1, spark_constants_1, spark_expression_type_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

@@ -5,7 +5,7 @@ import * as _ from "underscore";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {TableSchema} from "../../model/table-schema";
 import {UserDatasource} from "../../model/user-datasource";
-import {QueryEngine} from "../services/query-engine";
+import {QueryEngine} from "../wrangler/query-engine";
 
 declare const flowchart: any;
 

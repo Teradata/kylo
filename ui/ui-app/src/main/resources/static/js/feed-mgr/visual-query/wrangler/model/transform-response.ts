@@ -1,4 +1,4 @@
-import {ProfileOutputRow} from "../../model/profile-output-row";
+import {ProfileOutputRow} from "./profile-output-row";
 import {TransformQueryResult} from "./transform-query-result";
 
 export interface TransformResponse {

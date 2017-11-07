@@ -16,7 +16,7 @@
   },
   "repository": "https://github.com/teradata/kylo.git",
   "license": "Apache-2.0",
-  "author": "Think big Analytics",
+  "author": "Think Big Analytics",
   "dependencies": {
     "@angular/animations": "^4.2.0",
     "@angular/common": "^4.2.0",

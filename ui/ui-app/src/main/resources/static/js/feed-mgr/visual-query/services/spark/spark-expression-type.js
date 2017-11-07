@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../script-expression-type", "../query-engine-constants"], function (require, exports, script_expression_type_1, query_engine_constants_1) {
+define(["require", "exports", "../../wrangler/query-engine-constants", "../../wrangler/script-expression-type"], function (require, exports, query_engine_constants_1, script_expression_type_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

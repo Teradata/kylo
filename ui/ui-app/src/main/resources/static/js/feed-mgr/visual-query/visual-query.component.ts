@@ -2,7 +2,7 @@ import {Input, OnDestroy, OnInit} from "@angular/core";
 import {IAngularStatic} from "angular";
 
 import {FeedDataTransformation} from "../model/feed-data-transformation";
-import {QueryEngine} from "./services/query-engine";
+import {QueryEngine} from "./wrangler/query-engine";
 
 declare const angular: IAngularStatic;
 

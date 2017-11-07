@@ -1,10 +1,9 @@
-import {UserDatasource} from "../../../model/user-datasource";
-import {QueryParser} from "../query-parser";
-import {SparkConstants} from "./spark-constants";
-import {UnderscoreStatic} from "underscore";
-import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, VisualQueryModel} from "../../../services/VisualQueryService";
+import * as _ from "underscore";
 
-declare const _: UnderscoreStatic;
+import {UserDatasource} from "../../../model/user-datasource";
+import {A_Expr, BoolExpr, JoinExpr, RangeVar, ResTarget, VisualQueryModel} from "../../../services/VisualQueryService";
+import {QueryParser} from "../../wrangler/query-parser";
+import {SparkConstants} from "./spark-constants";
 
 /** Name of the DatasourceProvider variable */
 const DATASOURCE_PROVIDER = "datasourceProvider";

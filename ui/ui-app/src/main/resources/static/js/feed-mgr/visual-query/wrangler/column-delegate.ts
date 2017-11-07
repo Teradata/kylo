@@ -1,6 +1,5 @@
 import * as angular from "angular";
-
-import {TransformDataComponent} from "../transform-data/transform-data.component";
+import {ColumnController} from "./column-controller";
 
 /**
  * Categories for data types.
@@ -77,7 +76,7 @@ export class ColumnDelegate {
     /**
      * Constructs a column delegate.
      */
-    constructor(public dataType: string, public controller: TransformDataComponent, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any) {
+    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any) {
         this.dataCategory = this.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);

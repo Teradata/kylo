@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../script-builder", "./spark-expression", "./spark-expression-type", "./spark-constants"], function (require, exports, script_builder_1, spark_expression_1, spark_expression_type_1, spark_constants_1) {
+define(["require", "exports", "../../wrangler/script-builder", "./spark-constants", "./spark-expression", "./spark-expression-type"], function (require, exports, script_builder_1, spark_constants_1, spark_expression_1, spark_expression_type_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**

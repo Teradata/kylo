@@ -4,7 +4,7 @@ import * as $ from "jquery";
 import * as _ from "underscore";
 
 import {DomainType} from "../../../services/DomainTypesService";
-import {TransformValidationResult} from "../../model/transform-validation-result";
+import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
 import {WranglerEventType} from "../services/wrangler-event-type";
 import {WranglerTableService} from "../services/wrangler-table.service";
