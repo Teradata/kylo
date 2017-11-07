@@ -684,7 +684,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
         $scope.$on('$destroy', function () {
             clearRefreshInterval();
-            cancelPreviousOnZoomChange();
+            cancelPreviousOnZoomed();
         });
 
     };
