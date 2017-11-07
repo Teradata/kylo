@@ -55,6 +55,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         self.timeFramOptionsLookupMap = {};
         self.selectedTimeFrameOptionObject = {};
         self.isAutoRefreshDisabled = false;
+        self.isAtInitialZoom = true;
 
         /**
          * Summary stats
@@ -114,8 +115,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             onZoomChange();
         };
 
-        self.onTimeFrameOptionChange = function () {
-            self.isZoomed = false;
+        self.onRefreshButtonClick = function () {
             onTimeFrameClick(self.timeFrame);
         };
 
@@ -146,7 +146,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         function init() {
             FeedStatsService.setFeedName(self.feedName);
             setupChartOptions();
-            self.onTimeFrameOptionChange();
+            self.onRefreshButtonClick();
             self.dataLoaded = true;
         }
 
@@ -245,6 +245,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         verticalOff: true,
                         unzoomEventType: "dblclick.zoom",
                         zoomed: function(xDomain, yDomain) {
+                            // console.log("zoomed xD, yD", xDomain, yDomain);
                             self.zoomedMinTime = Math.floor(xDomain[0]);
                             self.zoomedMaxTime = Math.floor(xDomain[1]);
 
@@ -269,20 +270,36 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     },
                     interactiveLayer: {
                         dispatch: {
-                            elementClick: function (t, u) {
-                                    if (self.minTime !== self.zoomedMinTime) {
-                                        self.minTime = self.zoomedMinTime;
-                                        self.maxTime = self.zoomedMaxTime;
-                                        self.isAutoRefreshDisabled = true;
-                                        self.isZoomed = true;
-                                        onZoomChange();
-                                    }
-                                }
+                            elementClick: function (t, u) {}
                         }
                     }
                 }
 
             };
+        }
+
+
+        function onZoomed() {
+            cancelPreviousOnZoomed();
+            var delay = 2000;
+            var runTimes = 1;
+            self.changeZoomPromise = $interval(changeZoom, delay, runTimes);
+        }
+
+        var changeZoom = function() {
+            self.minTime = self.zoomedMinTime;
+            self.maxTime = self.zoomedMaxTime;
+            self.isAutoRefreshDisabled = true;
+            self.isZoomed = true;
+            self.isAtInitialZoom = true;
+            onZoomChange();
+        };
+
+        function cancelPreviousOnZoomed() {
+            if (!_.isUndefined(self.changeZoomPromise)) {
+                $interval.cancel(self.changeZoomPromise);
+                self.changeZoomPromise = undefined;
+            }
         }
 
         function isLoading() {
@@ -314,7 +331,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             function () {
                 if (!_.isUndefined(self.timeFrameOptions)) {
                     self.timeFrame = self.timeFrameOptions[Math.floor(self.timeFrameOptionIndex)].value;
-                    self.onTimeFrameOptionChange();
+                    self.onRefreshButtonClick();
                 }
             }
         );
@@ -332,7 +349,27 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             }
         );
 
+        $scope.$watch(
+            function () {
+                return self.zoomedMinTime;
+            },
+            function () {
+                if (!_.isUndefined(self.zoomedMinTime) && self.zoomedMinTime > 0) {
+                    if (self.isAtInitialZoom) {
+                        self.isAtInitialZoom = false;
+                    } else {
+                        onZoomed();
+                    }
+                } else {
+                    // console.log("zoom min time out of range");
+                }
+            }
+        );
+
         function onTimeFrameClick(timeFrame) {
+            self.isZoomed = false;
+            self.isAtInitialZoom = true;
+
             self.timeFrame = timeFrame;
             clearRefreshInterval();
 
@@ -598,7 +635,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 }
                 if (self.refreshIntervalTime) {
                     self.refreshInterval = $interval(function () {
-                            self.onTimeFrameOptionChange();
+                            self.onRefreshButtonClick();
                         }, self.refreshIntervalTime
                     );
 
@@ -647,6 +684,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
         $scope.$on('$destroy', function () {
             clearRefreshInterval();
+            cancelPreviousOnZoomChange();
         });
 
     };
