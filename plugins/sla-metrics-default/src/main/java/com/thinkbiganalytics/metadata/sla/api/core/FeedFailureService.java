@@ -59,7 +59,7 @@ public class FeedFailureService {
     @Inject
     private NifiFeedProcessorStatisticsProvider nifiFeedProcessorStatisticsProvider;
 
-    public static LastFeedJob EMPTY_JOB = new LastFeedJob("empty", DateTime.now(), true);
+    public static final LastFeedJob EMPTY_JOB = new LastFeedJob("empty", DateTime.now(), true);
 
     /**
      * Map with the Latest recorded failure that has been assessed by the FeedFailureMetricAssessor

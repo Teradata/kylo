@@ -33,9 +33,9 @@ import java.io.IOException;
  */
 public class HDFSSupport {
 
-    public static Logger logger = LoggerFactory.getLogger(HDFSSupport.class);
+    public static final Logger logger = LoggerFactory.getLogger(HDFSSupport.class);
 
-    public FileSystem hdfs;
+    private FileSystem hdfs;
 
     public HDFSSupport(FileSystem hdfs) {
         this.hdfs = hdfs;

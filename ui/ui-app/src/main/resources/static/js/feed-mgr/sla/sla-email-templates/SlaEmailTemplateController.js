@@ -1,7 +1,9 @@
 define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
-    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService) {
+    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService,AccessControlService) {
         var self = this;
+
+        self.allowEdit = false;
 
         /**
          * The current template we are editing
@@ -204,6 +206,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         getAvailableActionItems();
         getRelatedSlas();
 
+        // Fetch the allowed actions
+        AccessControlService.getUserAllowedActions()
+            .then(function(actionSet) {
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            });
 
     };
 
@@ -235,6 +242,6 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
     angular.module(moduleName).controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
 
-    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService','StateService', controller]);
+    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService','StateService','AccessControlService', controller]);
 
 });

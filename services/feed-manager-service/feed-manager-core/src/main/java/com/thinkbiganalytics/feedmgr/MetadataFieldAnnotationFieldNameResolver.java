@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class MetadataFieldAnnotationFieldNameResolver extends AnnotationFieldNameResolver {
 
-    public static String metadataPropertyPrefix = "metadata.";
+    public static final String metadataPropertyPrefix = "metadata.";
 
     private Map<String, String> matchingPropertyMap = new HashMap<>();
 

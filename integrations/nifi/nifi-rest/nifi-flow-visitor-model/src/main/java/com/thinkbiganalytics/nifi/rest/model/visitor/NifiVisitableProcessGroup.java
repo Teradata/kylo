@@ -42,7 +42,7 @@ public class NifiVisitableProcessGroup implements NifiVisitable {
     /**
      * all the processors visited in this group
      */
-    public Set<NifiVisitableProcessor> processors;
+    private Set<NifiVisitableProcessor> processors;
     /**
      * the Nifi process group
      */

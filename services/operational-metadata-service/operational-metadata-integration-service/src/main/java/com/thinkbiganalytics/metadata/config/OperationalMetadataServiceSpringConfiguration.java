@@ -33,6 +33,7 @@ import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiBulletinExcept
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventFeedUtil;
 import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.ProvenanceEventReceiver;
+import com.thinkbiganalytics.metadata.jobrepo.nifi.provenance.RetryProvenanceEventWithDelay;
 import com.thinkbiganalytics.metadata.sla.DefaultServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.JpaJcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.ServiceLevelAgreementActionAlertResponderFactory;
@@ -42,17 +43,15 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 /**
  * Spring configuration class for the beans in the current module
  */
 @Configuration
-public class OperationlMetadataServiceSpringConfiguration {
+public class OperationalMetadataServiceSpringConfiguration {
 
-    @Bean
-    public NifiStatsJmsReceiver nifiStatsJmsReceiver() {
-        return new NifiStatsJmsReceiver();
-    }
+
 
     @Bean
     public ServiceLevelAgreementScheduler serviceLevelAgreementScheduler() {
@@ -76,10 +75,27 @@ public class OperationlMetadataServiceSpringConfiguration {
         return new ProvenanceEventFeedUtil();
     }
 
-
     @Bean
     public StreamingFeedService streamingFeedService() {
         return new StreamingFeedService();
+    }
+
+    @Bean
+    @Profile("!kyloUpgrade")
+    public RetryProvenanceEventWithDelay retryProvenanceEventWithDelay() {
+            return new RetryProvenanceEventWithDelay();
+    }
+
+    @Bean
+    @Profile("!kyloUpgrade")
+    public ProvenanceEventReceiver provenanceEventReceiver(){
+        return new ProvenanceEventReceiver();
+    }
+
+    @Bean
+    @Profile("!kyloUpgrade")
+    public NifiStatsJmsReceiver nifiStatsJmsReceiver() {
+        return new NifiStatsJmsReceiver();
     }
 
     @Bean
@@ -87,10 +103,7 @@ public class OperationlMetadataServiceSpringConfiguration {
         return new NifiBulletinExceptionExtractor();
     }
 
-    @Bean
-    public ProvenanceEventReceiver provenanceEventReceiver(){
-        return new ProvenanceEventReceiver();
-    }
+
 
     @Bean
     public CacheService cacheService(){

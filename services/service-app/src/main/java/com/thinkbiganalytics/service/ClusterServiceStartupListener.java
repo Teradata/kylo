@@ -25,6 +25,8 @@ import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.cluster.ClusterService;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -33,6 +35,8 @@ import javax.inject.Inject;
 
 @Service
 public class ClusterServiceStartupListener implements ServicesApplicationStartupListener {
+
+    private static final Logger log = LoggerFactory.getLogger(ClusterServiceStartupListener.class);
 
     @Inject
     ServicesApplicationStartup startup;
@@ -43,8 +47,8 @@ public class ClusterServiceStartupListener implements ServicesApplicationStartup
     public void onStartup(DateTime startTime) {
         try {
             clusterService.start();
-        }catch (Exception e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("Error with startup", e);
         }
     }
 
@@ -55,11 +59,11 @@ public class ClusterServiceStartupListener implements ServicesApplicationStartup
 
 
     @PreDestroy
-    private void destroy(){
+    private void destroy() {
         try {
-        clusterService.stop();
-        }catch (Exception e) {
-            e.printStackTrace();
+            clusterService.stop();
+        } catch (Exception e) {
+            log.error("Error with destroy", e);
         }
     }
 

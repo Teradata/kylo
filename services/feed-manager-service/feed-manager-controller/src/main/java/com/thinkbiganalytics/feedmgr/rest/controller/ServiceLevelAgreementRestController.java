@@ -309,10 +309,9 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Path("/email-template")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the specified assessment.")
+    @ApiOperation("Gets the list of email templates.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
-                      @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Returns the list of email templates.", response = ServiceLevelAgreementEmailTemplate.class, responseContainer = "List")
                   })
     public List<ServiceLevelAgreementEmailTemplate> getServiceLevelAgreementEmailTemplates() {
         return serviceLevelAgreementService.getServiceLevelAgreementEmailTemplates();
@@ -321,10 +320,9 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Path("/available-sla-template-actions")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the specified assessment.")
+    @ApiOperation("Gets the available SLA actions.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
-                      @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Returns the list of SLA actions used when creating/editing an SLA Email Template.", response = LabelValue.class, responseContainer = "List")
                   })
     public Set<LabelValue> getAvailableServiceLevelAgreementTemplateActionClasses() {
 
@@ -343,12 +341,12 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Path("/email-template-sla-references")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the slas related to this email template.")
+    @ApiOperation("Gets the SLA's related to this email template.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the assessment.", response = ServiceLevelAgreement.class),
-                      @ApiResponse(code = 400, message = "The assessment could not be found.", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Returns the list of SLA's related to the given templateId.", response = SimpleServiceLevelAgreementDescription.class, responseContainer = "List")
                   })
     public List<SimpleServiceLevelAgreementDescription> getSlaReferencesForVelocityTemplate(@QueryParam("templateId") String velocityTemplateId) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE);
         return serviceLevelAgreementService.getSlaReferencesForVelocityTemplate(velocityTemplateId);
     }
 
@@ -361,10 +359,11 @@ public class ServiceLevelAgreementRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the specified SLA.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the SLA.", response = ServiceLevelAgreementGroup.class),
+                      @ApiResponse(code = 200, message = "Save the SLA email template.", response = ServiceLevelAgreementEmailTemplate.class),
                       @ApiResponse(code = 500, message = "The SLA could not be saved.", response = RestResponseStatus.class)
                   })
     public ServiceLevelAgreementEmailTemplate saveEmailTemplate(ServiceLevelAgreementEmailTemplate emailTemplate) {
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE);
         try {
             return serviceLevelAgreementService.saveEmailTemplate(emailTemplate);
         } catch (IllegalArgumentException e) {
@@ -375,9 +374,12 @@ public class ServiceLevelAgreementRestController {
     @POST
     @Path("/test-email-template")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Tests a velocity template.")
+    @ApiOperation("Tests a velocity SLA email template.  This will validate and return the parsed template allowing you to preview it.  If an parse exception occurs it will be indicated in the content of the response.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "The the SLA email template.", response = VelocityEmailTemplate.class)
+                  })
     public VelocityEmailTemplate testTemplate(VelocityEmailTemplate template) {
-
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE);
         Map<String, Object> map = new HashMap();
         InMemorySLAProvider slaProvider = new InMemorySLAProvider();
         Metric m1 = new SimpleMetric();
@@ -407,9 +409,12 @@ public class ServiceLevelAgreementRestController {
     @POST
     @Path("/send-test-email-template")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Tests a velocity template.")
+    @ApiOperation("Test sending the SLA email template.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Test and send the email template to a test address.  If unable to send or an error occurs it will be indicated in the response.", response = VelocityEmailTemplate.class)
+                  })
     public VelocityEmailTemplate sendTestTemplate(TestSlaVelocityEmail template) {
-
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE);
         VelocityEmailTemplate parsedTemplate = testTemplate(template);
         String subject = parsedTemplate.getSubject();
         String body = parsedTemplate.getBody();

@@ -117,10 +117,8 @@ class SqoopThreadedStreamHandler extends Thread {
             }
         } catch (IOException ioe) {
             logger.warn("I/O error occurred while handling stream. [{}]", new Object[]{ioe.getMessage()});
-            ioe.printStackTrace();
         } catch (Throwable t) {
             logger.warn("An error occurred handling stream. [{}]", new Object[]{t.getMessage()});
-            t.printStackTrace();
         } finally {
             for (long i = 0; i < latch.getCount(); i++) {
                 latch.countDown();
@@ -129,7 +127,6 @@ class SqoopThreadedStreamHandler extends Thread {
                 bufferedReader.close();
             } catch (IOException ioe) {
                 logger.warn("I/O error closing buffered reader for stream");
-                ioe.printStackTrace();
             }
         }
     }

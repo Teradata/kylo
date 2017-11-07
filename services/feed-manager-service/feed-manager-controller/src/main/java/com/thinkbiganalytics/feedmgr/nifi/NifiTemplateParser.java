@@ -105,7 +105,6 @@ public class NifiTemplateParser {
             InputSource is = new InputSource(strReader);
             doc = builder.parse(is);
         } catch (Exception e) {
-            e.printStackTrace();
             throw e;
         }
 

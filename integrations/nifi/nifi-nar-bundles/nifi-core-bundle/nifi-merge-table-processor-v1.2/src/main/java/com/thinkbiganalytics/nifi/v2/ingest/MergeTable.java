@@ -71,7 +71,7 @@ import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVI
 )
 public class MergeTable extends AbstractMergeTable {
 
-    public static PropertyDescriptor HIVE_CONNECTION_POOL = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor HIVE_CONNECTION_POOL = new PropertyDescriptor.Builder()
         .name("Hive Connection Pooling Service")
         .description("If specified this connection pool will be used in place of the Thrift Service")
         .required(false)

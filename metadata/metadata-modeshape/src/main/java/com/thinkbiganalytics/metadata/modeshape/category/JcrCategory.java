@@ -59,10 +59,10 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     public static final String DETAILS = "tba:details";
 
-    public static String CATEGORY_NAME = "tba:category";
-    public static String NODE_TYPE = "tba:category";
-    public static String ICON = "tba:icon";
-    public static String ICON_COLOR = "tba:iconColor";
+    public static final String CATEGORY_NAME = "tba:category";
+    public static final String NODE_TYPE = "tba:category";
+    public static final String ICON = "tba:icon";
+    public static final String ICON_COLOR = "tba:iconColor";
 
     private CategoryDetails details;
 

@@ -19,7 +19,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
 
 
 
-    function JobDetailsDirectiveController($http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService) {
+    function JobDetailsDirectiveController($scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService) {
         var self = this;
 
         /**
@@ -509,6 +509,10 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             })
         };
 
+        $scope.$on('$destroy', function(){
+            cancelLoadJobDataTimeout();
+        })
+
 
 
         // Fetch allowed permissions
@@ -518,6 +522,6 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
                 });
     }
 
-    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",JobDetailsDirectiveController]);
+    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",JobDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaJobDetails", directive);
 });

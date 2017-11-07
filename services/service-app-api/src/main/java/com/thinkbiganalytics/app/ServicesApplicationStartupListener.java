@@ -27,6 +27,11 @@ import org.joda.time.DateTime;
  */
 public interface ServicesApplicationStartupListener {
 
+
+    enum ListenerType {
+        UPGRADE_ONLY, KYLO_ONLY,UPGRADE_AND_KYLO
+    }
+
     /**
      * notified when services-app starts up
      *

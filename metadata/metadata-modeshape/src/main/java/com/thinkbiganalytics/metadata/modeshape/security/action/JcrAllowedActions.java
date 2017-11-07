@@ -82,7 +82,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), JcrAllowableAction.NODE_TYPE);
             return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
         } catch (Exception e) {
-            throw new MetadataException("Failed to retrieve the accessible functons", e);
+            throw new MetadataException("Failed to retrieve the accessible functions", e);
         }
     }
 

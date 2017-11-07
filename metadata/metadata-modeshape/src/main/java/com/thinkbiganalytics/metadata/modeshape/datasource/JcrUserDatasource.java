@@ -53,13 +53,13 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     /**
      * JCR node type
      */
-    public static String NODE_TYPE = "tba:userDatasource";
+    public static final String NODE_TYPE = "tba:userDatasource";
 
     /**
      * Sub-node under {@code datasources} node for {@code userDatasource} nodes
      */
     @SuppressWarnings("unused")
-    public static String PATH_NAME = "user";
+    public static final String PATH_NAME = "user";
 
     /**
      * Name of the details attribute

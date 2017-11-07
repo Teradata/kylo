@@ -49,7 +49,7 @@ import javax.annotation.Nonnull;
  */
 public class TableRegisterSupport {
 
-    public static Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
+    public static final Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
 
     private Connection conn;
 

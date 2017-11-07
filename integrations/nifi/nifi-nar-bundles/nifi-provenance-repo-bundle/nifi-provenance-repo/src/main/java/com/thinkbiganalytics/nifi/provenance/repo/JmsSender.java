@@ -77,8 +77,7 @@ public class JmsSender {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
-            //TODO log
+            log.error("Error writing provenance events to JMS", e);
         }
     }
 

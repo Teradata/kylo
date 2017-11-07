@@ -27,6 +27,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidat
 import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 
 import java.lang.reflect.InvocationTargetException;
@@ -41,9 +43,9 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  */
 public class ServiceLevelAgreementActionUtil {
+    private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementActionUtil.class);
 
-
-    public static Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
+    protected static final Map<Class<? extends ServiceLevelAgreementAction>, Boolean> validActionCache = new ConcurrentHashMap<>();
     Timer invalidActionConfigurationCacheTimer = new Timer();
 
     public ServiceLevelAgreementActionUtil() {
@@ -112,8 +114,7 @@ public class ServiceLevelAgreementActionUtil {
             try {
                 action = ConstructorUtils.invokeConstructor(clazz, null);
             } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                //TODO LOG error
-                e.printStackTrace();
+                log.error("Error invoking constructor", e);
             }
         }
         return action;

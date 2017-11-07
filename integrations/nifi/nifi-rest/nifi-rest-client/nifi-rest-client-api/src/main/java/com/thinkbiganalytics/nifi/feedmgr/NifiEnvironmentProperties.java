@@ -33,7 +33,7 @@ import java.util.Map;
  */
 public class NifiEnvironmentProperties {
 
-    public static String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
+    public static final String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
 
 
     public NifiEnvironmentProperties() {

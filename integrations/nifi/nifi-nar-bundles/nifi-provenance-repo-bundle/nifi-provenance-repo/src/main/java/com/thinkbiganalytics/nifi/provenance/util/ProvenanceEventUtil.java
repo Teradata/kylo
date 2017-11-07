@@ -34,9 +34,9 @@ public class ProvenanceEventUtil {
 
     public static final String FLOWFILE_QUEUE_EMPTIED = "flowfile queue emptied";
 
-    public static final ProvenanceEventType[] STARTING_EVENT_TYPES = {ProvenanceEventType.RECEIVE, ProvenanceEventType.CREATE};
+    private static final ProvenanceEventType[] STARTING_EVENT_TYPES = {ProvenanceEventType.RECEIVE, ProvenanceEventType.CREATE};
 
-    public static final ProvenanceEventType[] ENDING_EVENT_TYPES = {ProvenanceEventType.DROP, ProvenanceEventType.EXPIRE};
+    private static final ProvenanceEventType[] ENDING_EVENT_TYPES = {ProvenanceEventType.DROP, ProvenanceEventType.EXPIRE};
 
     public static boolean contains(ProvenanceEventType[] allowedEvents, ProvenanceEventType event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);

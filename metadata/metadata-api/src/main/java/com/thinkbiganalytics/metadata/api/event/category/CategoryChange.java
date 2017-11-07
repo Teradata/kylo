@@ -35,7 +35,7 @@ import java.util.Optional;
  */
 public class CategoryChange extends MetadataChange {
 
-    public static String CLUSTER_EVENT_TYPE = "CategoryChange";
+    public static final String CLUSTER_EVENT_TYPE = "CategoryChange";
 
     private static final long serialVersionUID = 1L;
 

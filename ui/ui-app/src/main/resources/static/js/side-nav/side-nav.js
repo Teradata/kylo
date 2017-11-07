@@ -135,7 +135,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                     links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
                     links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
-                    links.push({sref: "sla-email-templates",type:'link', icon: "email", text: "SLA Email", defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
+                    links.push({sref: "sla-email-templates",type:'link', icon: "email", text: "SLA Email", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions});
                     addExtensionLinks(MENU_KEY.ADMIN, links);
                     menu.links = links;
                     menuMap[MENU_KEY.ADMIN] = menu;

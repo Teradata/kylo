@@ -24,9 +24,9 @@ package com.thinkbiganalytics.metadata.sla.api;
  */
 public class ServiceLevelAgreementActionValidation {
 
-    public static ServiceLevelAgreementActionValidation VALID = new ServiceLevelAgreementActionValidation(true);
-    public static ServiceLevelAgreementActionValidation INVALID = new ServiceLevelAgreementActionValidation(false);
-    public String validationMessage;
+    public static final ServiceLevelAgreementActionValidation VALID = new ServiceLevelAgreementActionValidation(true);
+    public static final ServiceLevelAgreementActionValidation INVALID = new ServiceLevelAgreementActionValidation(false);
+    private String validationMessage;
     private String actionClass;
     private boolean valid;
 

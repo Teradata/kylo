@@ -29,7 +29,7 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DerivedDatasource extends Datasource {
 
-    public Map<String, Object> properties;
+    private Map<String, Object> properties;
 
     private String datasourceType;
 

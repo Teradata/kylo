@@ -113,13 +113,11 @@ public class ElasticSearchRestService implements Search {
             }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
-            log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
-            responseException.printStackTrace();
+            log.error("Index document deletion encountered issues in Elasticsearch for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id);
-            clientProtocolException.printStackTrace();
+            log.error("Http protocol error for delete document for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            log.error("IO Error in rest client", ioException);
         } finally {
             closeRestClient();
         }
@@ -135,13 +133,11 @@ public class ElasticSearchRestService implements Search {
             );
             log.debug("Committed index with name {}", indexName);
         } catch (ResponseException responseException) {
-            log.warn("Index refresh encountered issues in Elasticsearch for index name {}", indexName);
-            responseException.printStackTrace();
+            log.error("Index refresh encountered issues in Elasticsearch for index name {" + indexName + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.trace("Http protocol error for refresh for index name {}", indexName);
-            clientProtocolException.printStackTrace();
+            log.error("Http protocol error for refresh for index name {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            log.error("IO Error in rest client", ioException);
         } finally {
             closeRestClient();
         }
@@ -160,13 +156,11 @@ public class ElasticSearchRestService implements Search {
                 httpEntity);
             log.debug("Wrote to index with name {}", indexName);
         } catch (ResponseException responseException) {
-            log.warn("Index write encountered issues in Elasticsearch for index name {} of type {} with id {}", indexName, typeName, id);
-            responseException.printStackTrace();
+            log.warn("Index write encountered issues in Elasticsearch for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for write for index name {}", indexName);
-            clientProtocolException.printStackTrace();
+            log.debug("Http protocol error for write for index {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
+            log.error("IO Error in rest client", ioException);
         } finally {
             closeRestClient();
         }
@@ -231,8 +225,7 @@ public class ElasticSearchRestService implements Search {
             return transformElasticSearchRestResponse(response);
 
         } catch (IOException ioe) {
-            log.error("An error occurred during submitting search request for query: {}, start: {}, size: {}", query, start, size);
-            ioe.printStackTrace();
+            log.error("An error occurred during submitting search request for query: {" + query + "}, start: {" + start + "}, size: {" + size + "}", ioe);
         } finally {
             closeRestClient();
         }
@@ -431,8 +424,7 @@ public class ElasticSearchRestService implements Search {
                 .toString();
 
         } catch (JSONException jsonException) {
-            log.warn("Could not construct request body query dsl for query: {}, start: {}, size: {}", query, start, size);
-            jsonException.printStackTrace();
+            log.warn("Could not construct request body query dsl for query: {" + query + "}, start: {" + start + "}, size: {" + size + "}",jsonException);
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
@@ -469,8 +461,7 @@ public class ElasticSearchRestService implements Search {
             jsonBodyString = queryObject.toString();
 
         } catch (JSONException jsonException) {
-            log.warn("Could not construct data deletion request body query dsl for schema {}, table {}", schema, table);
-            jsonException.printStackTrace();
+            log.warn("Could not construct data deletion request body query dsl for schema {" + schema + "}, table {" + table + "}", jsonException);
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));

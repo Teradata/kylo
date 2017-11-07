@@ -76,7 +76,7 @@ public class JerseyRestClient {
     /**
      * Flag to indicate if the client is configured correctly and available to be used.
      */
-    public boolean isHostConfigured;
+    private boolean isHostConfigured;
     /**
      * The Jersey Client
      */

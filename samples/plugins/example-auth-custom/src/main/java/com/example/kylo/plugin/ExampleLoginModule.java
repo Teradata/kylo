@@ -44,8 +44,8 @@ import javax.security.auth.login.CredentialException;
  */
 public class ExampleLoginModule extends AbstractLoginModule {
 
-    public static final String USERNAME = "username";
-    public static final String PASSWORD = "password";
+    public static final String FIELD_USERNAME = "username";
+    public static final String FIELD_PASSWORD = "password";
 
     private String username;
     private char[] password;
@@ -58,9 +58,9 @@ public class ExampleLoginModule extends AbstractLoginModule {
         super.initialize(subject, callbackHandler, sharedState, options);
 
         // Retrieve the configured username and optional password that must match the incoming values entered by the user.
-        this.username = (String) getOption(USERNAME)
-            .orElseThrow(() -> new IllegalArgumentException("The \"" + USERNAME + "\" option is required"));
-        this.password = (char[]) getOption(PASSWORD).orElse(new char[0]);
+        this.username = (String) getOption(FIELD_USERNAME)
+            .orElseThrow(() -> new IllegalArgumentException("The \"" + FIELD_USERNAME + "\" option is required"));
+        this.password = (char[]) getOption(FIELD_PASSWORD).orElse(new char[0]);
     }
 
     /* (non-Javadoc)

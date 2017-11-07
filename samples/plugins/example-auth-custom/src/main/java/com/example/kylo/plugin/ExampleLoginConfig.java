@@ -49,14 +49,14 @@ public class ExampleLoginConfig {
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(ExampleLoginModule.class)
                     .controlFlag(LoginModuleControlFlag.REQUIRED)
-                    .option(ExampleLoginModule.USERNAME, "dladmin")
-                    .option(ExampleLoginModule.PASSWORD, "admin".toCharArray())
+                    .option(ExampleLoginModule.FIELD_USERNAME, "dladmin")
+                    .option(ExampleLoginModule.FIELD_PASSWORD, "admin".toCharArray())
                     .add()
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(ExampleLoginModule.class)
                     .controlFlag(LoginModuleControlFlag.REQUIRED)
-                    .option(ExampleLoginModule.USERNAME, "dladmin")
-                    .option(ExampleLoginModule.PASSWORD, "admin".toCharArray())
+                    .option(ExampleLoginModule.FIELD_USERNAME, "dladmin")
+                    .option(ExampleLoginModule.FIELD_PASSWORD, "admin".toCharArray())
                     .add()
                 .build();
 

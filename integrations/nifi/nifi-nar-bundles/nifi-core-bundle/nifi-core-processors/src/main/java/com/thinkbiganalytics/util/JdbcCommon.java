@@ -89,7 +89,7 @@ import static java.sql.Types.VARCHAR;
  */
 public class JdbcCommon {
 
-    public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
+    public static final Logger log = LoggerFactory.getLogger(JdbcCommon.class);
 
     /**
      * Converts the specified SQL result set to a delimited text file written to the specified output stream.
@@ -107,7 +107,7 @@ public class JdbcCommon {
         int dateConversionWarning = 0;
 
         if (rs == null || rs.getMetaData() == null) {
-            logger.warn("Received empty resultset or no metadata.");
+            log.warn("Received empty resultset or no metadata.");
             return 0;
         }
         OutputStreamWriter writer = new OutputStreamWriter(outStream);
@@ -146,7 +146,7 @@ public class JdbcCommon {
                     } catch (Exception e) {
                         // Still failed, maybe exotic date type
                         if (dateConversionWarning++ < 10) {
-                            logger.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
+                            log.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
                         }
                     }
 
@@ -164,6 +164,15 @@ public class JdbcCommon {
                     }
                     DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
                     val = formatter.print(new DateTime(time.getTime()));
+                } else if (colType == Types.BLOB) {
+                    byte[] bytes = rs.getBytes(i);
+
+                    if (bytes != null)
+                        val = rs.getBytes(i).toString();
+
+                    if (visitor != null) {
+                        visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
+                    }
                 } else {
                     val = rs.getString(i);
                     if (visitor != null) {
@@ -276,7 +285,7 @@ public class JdbcCommon {
 
                         } catch (Exception e) {
                             if (dateConversionWarning++ < 10) {
-                                logger.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
+                                log.warn("{} is not convertible to timestamp or date", rs.getMetaData().getColumnName(i));
                             }
                         }
 

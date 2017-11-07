@@ -36,7 +36,7 @@ import java.util.stream.Collectors;
  */
 public class NifiFlowCacheSnapshot {
 
-    public static NifiFlowCacheSnapshot EMPTY = new Builder()
+    public static final NifiFlowCacheSnapshot EMPTY = new Builder()
         .withProcessorIdToFeedNameMap(ImmutableMap.of())
         .withProcessorIdToFeedProcessGroupId(ImmutableMap.of())
         .withProcessorIdToProcessorName(ImmutableMap.of())

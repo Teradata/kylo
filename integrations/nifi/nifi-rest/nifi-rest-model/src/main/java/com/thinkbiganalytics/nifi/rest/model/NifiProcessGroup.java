@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class NifiProcessGroup {
 
-    public static String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
+    public static final String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
     private ProcessGroupDTO processGroupEntity;
 
     private List<ProcessorDTO> activeProcessors;

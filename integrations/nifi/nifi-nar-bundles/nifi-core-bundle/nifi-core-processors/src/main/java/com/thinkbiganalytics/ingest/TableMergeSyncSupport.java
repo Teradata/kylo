@@ -49,7 +49,7 @@ import javax.annotation.Nullable;
  */
 public class TableMergeSyncSupport implements Serializable {
 
-    public static Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
+    public static final Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
 
     protected Connection conn;
 
@@ -548,7 +548,7 @@ public class TableMergeSyncSupport implements Serializable {
                " union all " +
                " select " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) +
-               ") x group by " + groupBySQL + " having min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
+               ") x group by " + groupBySQL + " having count(processing_dttm) = 1 and min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
     }
 
     /**
@@ -627,7 +627,7 @@ public class TableMergeSyncSupport implements Serializable {
                "  from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " a" +
                "  where " +
                "  a.processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) +
-               " union " +
+               " union all" +
                "  select " + selectSQLWithAlias +
                "  from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " a left outer join (" + sbSourceQuery + ") b " +
                "  on (" + joinOnClause + ")" +

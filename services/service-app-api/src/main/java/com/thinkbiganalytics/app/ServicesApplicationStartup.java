@@ -26,6 +26,10 @@ package com.thinkbiganalytics.app;
  */
 public interface ServicesApplicationStartup {
 
+    enum ApplicationType{
+        UPGRADE,KYLO
+    }
+
     /**
      * Subscribe to the start of the application
      *
