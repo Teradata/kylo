@@ -105,8 +105,17 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                      setupFeedHealth(data.dashboard.feeds.data);
                      data.totalFeeds = data.dashboard.feeds.recordsFiltered;
                  }
-                 data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'];
-                 data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'];
+
+                 if(angular.isUndefined(data.dashboard.healthCounts['UNHEALTHY'])) {
+                     data.dashboard.healthCounts['UNHEALTHY'] = 0;
+                 }
+                 if(angular.isUndefined(data.dashboard.healthCounts['HEALTHY'])) {
+                     data.dashboard.healthCounts['HEALTHY'] = 0;
+                 }
+
+                 data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'] || 0;
+                 data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'] || 0;
+
                  BroadcastService.notify(data.DASHBOARD_UPDATED,data.dashboard);
 
              }
