@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.upgrade.v084;
  */
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
@@ -41,9 +40,6 @@ import javax.inject.Inject;
 public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeState {
 
     @Inject
-    private MetadataAccess metadata;
-
-    @Inject
     private ActionsModuleBuilder builder;
 
     private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementEmailTemplateUpgradeAction.class);
@@ -60,11 +56,10 @@ public class ServiceLevelAgreementEmailTemplateUpgradeAction implements UpgradeS
 
 
     public void upgradeTo(final KyloVersion startingVersion) {
-        metadata.commit(() -> builder
-            .module(AllowedActions.SERVICES)
+           builder.module(AllowedActions.SERVICES)
             .action(FeedServicesAccessControl.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE)
             .add()
-            .build(), MetadataAccess.SERVICE);
+            .build();
     }
 
 }

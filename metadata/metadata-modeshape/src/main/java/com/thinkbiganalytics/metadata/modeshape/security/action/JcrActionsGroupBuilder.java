@@ -69,7 +69,7 @@ public class JcrActionsGroupBuilder extends JcrAbstractActionsBuilder implements
 
         try {
             Node securityNode = session.getRootNode().getNode(SecurityPaths.SECURITY.toString());
-            this.groupsNode = this.groupsNode == null ? session.getRootNode().getNode(this.protoModulesPath) : this.groupsNode;
+            this.groupsNode = this.groupsNode == null || !this.groupsNode.getSession().isLive()? session.getRootNode().getNode(this.protoModulesPath) : this.groupsNode;
             this.protoActionsNode = JcrUtil.getOrCreateNode(groupsNode, name, JcrAllowedActions.NODE_TYPE);
 //            this.actionsNode = JcrUtil.getOrCreateNode(securityNode, name, JcrAllowedActions.NODE_TYPE);
 
