@@ -6,5 +6,6 @@ ${AnsiColor.GREEN} ██╔═██╗   ╚██╔╝  ██║     ██
 ${AnsiColor.GREEN} ██║  ██╗   ██║   ███████╗╚██████╔╝  ${AnsiColor.BLUE}  ╚██████╔╝██║     ╚██████╔╝██║  ██║██║  ██║██████╔╝███████╗
 ${AnsiColor.GREEN} ╚═╝  ╚═╝   ╚═╝   ╚══════╝ ╚═════╝   ${AnsiColor.BLUE}   ╚═════╝ ╚═╝      ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ ╚══════╝
 ${AnsiColor.BRIGHT_BLUE}
-:: Running Kylo upgrade application
+:: Running Kylo upgrade application.
+:: *** This may take some time.  Please be patient ***
 ${AnsiColor.DEFAULT}
