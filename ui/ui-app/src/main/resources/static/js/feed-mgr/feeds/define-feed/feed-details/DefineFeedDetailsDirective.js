@@ -126,7 +126,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 self.model.allowPreconditions = template.allowPreconditions;
 
                 self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
-
+            }
                 if (angular.isDefined(self.model.inputProcessor)) {
                     var match = matchInputProcessor(self.model.inputProcessor, self.inputProcessors);
                     if (angular.isDefined(match)) {
@@ -156,7 +156,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
-            }
+
             self.loading = false;
             validate();
         }
