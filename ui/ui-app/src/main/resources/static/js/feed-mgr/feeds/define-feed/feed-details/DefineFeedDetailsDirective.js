@@ -113,13 +113,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} template the template with properties
          */
         function initializeProperties(template) {
-            if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
                 RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
-                self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+                var inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+                //sort them by name
+                self.inputProcessors = _.sortBy(inputProcessors,'name')
+
                 self.model.allowPreconditions = template.allowPreconditions;
-                //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
-                //    return self.model.inputProcessorType == processor.type;
-                // });
+
                 self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
 
                 if(angular.isDefined(self.model.inputProcessor)){
@@ -151,7 +151,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
-            }
+
             self.loading = false;
             validate();
         }
