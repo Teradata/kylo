@@ -53,6 +53,7 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Arrays;
 
 import javax.annotation.Nonnull;
 
@@ -168,7 +169,7 @@ public class JdbcCommon {
                     byte[] bytes = rs.getBytes(i);
 
                     if (bytes != null)
-                        val = rs.getBytes(i).toString();
+                        val = Arrays.toString(bytes);
 
                     if (visitor != null) {
                         visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
