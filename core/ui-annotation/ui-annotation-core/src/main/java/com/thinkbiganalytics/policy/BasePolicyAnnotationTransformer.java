@@ -20,11 +20,11 @@ package com.thinkbiganalytics.policy;
  * #L%
  */
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
+import com.thinkbiganalytics.guava.PredicateImpl;
 import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
@@ -202,9 +202,9 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
     public List<FieldRuleProperty> findPropertiesMatchingDefaultValue(List<FieldRuleProperty> properties, final String[] values) {
         final List list = Arrays.asList(values);
-        return Lists.newArrayList(Iterables.filter(properties, new Predicate<FieldRuleProperty>() {
+        return Lists.newArrayList(Iterables.filter(properties, new PredicateImpl<FieldRuleProperty>() {
             @Override
-            public boolean apply(FieldRuleProperty fieldRuleProperty) {
+            public boolean test(FieldRuleProperty fieldRuleProperty) {
                 return list.contains(fieldRuleProperty.getValue());
             }
         }));
@@ -212,9 +212,9 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
     public List<FieldRuleProperty> findPropertiesMatchingRenderTypes(List<FieldRuleProperty> properties, final String[] types) {
         final List list = Arrays.asList(types);
-        return Lists.newArrayList(Iterables.filter(properties, new Predicate<FieldRuleProperty>() {
+        return Lists.newArrayList(Iterables.filter(properties, new PredicateImpl<FieldRuleProperty>() {
             @Override
-            public boolean apply(FieldRuleProperty fieldRuleProperty) {
+            public boolean test(FieldRuleProperty fieldRuleProperty) {
                 return list.contains(fieldRuleProperty.getType());
             }
         }));

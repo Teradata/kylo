@@ -8,6 +8,7 @@
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+    <guava.version>19.0</guava.version>
   </properties>
   <artifactId>kylo-nifi</artifactId>
   <packaging>pom</packaging>

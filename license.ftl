@@ -122,6 +122,8 @@
   <@antlrLicense/>
 <#elseif project.groupId == "org.bouncycastle">
   <@bouncyCastleLicense/>
+<#elseif project.groupId == "org.codehaus.mojo" && project.artifactId == "animal-sniffer-annotations">
+  <@animalSnifferLicense/>
 <#elseif project.groupId == "org.codehaus.jettison">
   <@apache2License/>
 <#elseif project.groupId == "org.codehaus.woodstox">
@@ -223,6 +225,16 @@ Copyright (c) 2000 - 2016 The Legion of the Bouncy Castle Inc. (https://www.boun
 
   <@mitLicense/>
 </#macro>
+
+<#-- Bouncy Castle License -->
+<#macro animalSnifferLicense>
+  <@projectInfo project/>
+
+Copyright (c) 2009 codehaus.org.
+
+  <@mitLicense/>
+</#macro>
+
 
 <#-- BSD 3-Clause License -->
 <#macro bsd3License>

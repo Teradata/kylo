@@ -21,8 +21,8 @@ package com.thinkbiganalytics.policy.rest.model;
  */
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.guava.PredicateImpl;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.ClassUtils;
@@ -121,9 +121,9 @@ public class BaseUiPolicyRule {
     @JsonIgnore
     public FieldRuleProperty getProperty(final String name) {
 
-        return Iterables.tryFind(getProperties(), new Predicate<FieldRuleProperty>() {
+        return Iterables.tryFind(getProperties(), new PredicateImpl<FieldRuleProperty>() {
             @Override
-            public boolean apply(FieldRuleProperty fieldRuleProperty) {
+            public boolean test(FieldRuleProperty fieldRuleProperty) {
                 return fieldRuleProperty.getName().equalsIgnoreCase(name);
             }
         }).orNull();

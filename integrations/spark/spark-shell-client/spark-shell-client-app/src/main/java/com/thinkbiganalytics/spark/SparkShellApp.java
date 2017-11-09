@@ -23,7 +23,7 @@ package com.thinkbiganalytics.spark;
 import com.beust.jcommander.JCommander;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
+import com.thinkbiganalytics.guava.PredicateImpl;
 import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
@@ -239,10 +239,10 @@ public class SparkShellApp {
                     return (input != null) ? input.entrySet() : null;
                 }
             })
-            .filter(new Predicate<Map.Entry<String, Object>>() {
+            .filter(new PredicateImpl<Map.Entry<String, Object>>() {
                 @Override
-                public boolean apply(@Nullable final Map.Entry<String, Object> input) {
-                    return (input != null && input.getKey().startsWith("spark."));
+                public boolean test(Map.Entry<String, Object> stringObjectEntry) {
+                    return (stringObjectEntry != null && stringObjectEntry.getKey().startsWith("spark."));
                 }
             });
         for (final Map.Entry<String, Object> entry : properties) {

@@ -14,6 +14,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+    <guava.version>19.0</guava.version>
   </properties>
 
   <modules>
@@ -24,4 +25,15 @@
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
   </modules>
+
+<dependencyManagement>
+<dependencies>
+     <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
+</dependencies>
+  </dependencyManagement>
+
 </project>
