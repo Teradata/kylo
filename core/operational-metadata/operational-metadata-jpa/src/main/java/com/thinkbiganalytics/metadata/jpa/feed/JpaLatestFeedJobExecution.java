@@ -55,8 +55,6 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
     @JoinColumn(name = "FEED_ID", insertable = false, updatable = false)
     private OpsManagerFeed feed;
 
-
-    @Column(name = "FEED_ID", insertable = false, updatable = false)
     private LatestJobExecutionFeedId feedId;
 
     @Column(name = "FEED_NAME", insertable = false, updatable = false)
@@ -231,7 +229,7 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
         private static final long serialVersionUID = 6017751710414995750L;
 
-        @Column(name = "FEED_ID")
+        @Column(name = "FEED_ID",insertable = false, updatable = false)
         private UUID uuid;
 
         public LatestJobExecutionFeedId() {

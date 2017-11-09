@@ -106,7 +106,7 @@ public class DashboardController {
                                               @QueryParam("start") @DefaultValue("0") Integer start,
                                               @QueryParam("fixedFilter") String fixedFilter,
                                               @QueryParam("filter") String filter) {
-        return cacheService.getUserFeedHealthWithFilter(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, filter, limit, start, sort));
+        return cacheService.getUserFeedHealthWithFilter(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, null, limit, start, sort));
 
     }
 
@@ -179,7 +179,7 @@ public class DashboardController {
                                   @QueryParam("start") @DefaultValue("0") Integer start,
                                   @QueryParam("fixedFilter") String fixedFilter,
                                   @QueryParam("filter") String filter) {
-        return cacheService.getDashboard(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, filter, limit, start, sort));
+        return cacheService.getDashboard(new FeedHealthSummaryCache.FeedSummaryFilter(fixedFilter, filter, null, limit, start, sort));
     }
 
 
