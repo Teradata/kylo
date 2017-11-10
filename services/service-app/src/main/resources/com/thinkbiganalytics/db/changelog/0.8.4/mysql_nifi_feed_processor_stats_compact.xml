@@ -45,7 +45,7 @@
 
 <changeSet id="call_mysql_compact_feed_processor_stats_proc" author="sr186054" dbms="mysql">
 <sql dbms="mysql" >
-  CALL compact_feed_processor_stats();
+  CALL compact_feed_processor_stats(@output);
 </sql>
 </changeSet>
 
