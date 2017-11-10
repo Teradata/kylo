@@ -63,13 +63,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
          * Datasource model for the edit view.
          * @type {JdbcDatasource}
          */
-        self.editModel = {password: PASSWORD_PLACEHOLDER};
-
-        /**
-         * Indicates that the value of the password field was changed.
-         * @type {boolean}
-         */
-        self.hasPasswordChanged = false;
+        self.editModel = {};
 
         /**
          * Indicates if the Access Control edit view is displayed.
@@ -149,11 +143,15 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
             self.editModel = angular.copy(self.model);
 
             if (self.isNew()) {
-                self.hasPasswordChanged = true;
+                self.editModel.hasPasswordChanged = true;
             } else {
                 self.editModel.password = PASSWORD_PLACEHOLDER;
-                self.hasPasswordChanged = false;
+                self.editModel.hasPasswordChanged = false;
             }
+        };
+
+        self.onPasswordChange = function () {
+            self.editModel.hasPasswordChanged = true;
         };
 
         /**
@@ -189,7 +187,7 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                 var matches = /^(?:jdbc:)?([^:]+):/.exec(model.databaseConnectionUrl);
                 model.type = (matches !== null) ? matches[1] : model.databaseDriverClassName;
             }
-            if (!self.isNew() && !self.hasPasswordChanged) {
+            if (!self.isNew() && !self.editModel.hasPasswordChanged) {
                 model.password = null;
             }
             $mdDialog.show({
@@ -302,16 +300,6 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
                     .then(self.validate);
             } else {
                 self.validate();
-            }
-        });
-
-        // Watch for changes to password
-        $scope.$watch(function () {
-            return self.editModel.password;
-        }, function () {
-            if (!self.isNew() && !self.hasPasswordChanged) {
-                self.editModel.password = "";
-                self.hasPasswordChanged = true;
             }
         });
     }

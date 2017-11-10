@@ -83,7 +83,7 @@
 
             <md-input-container class="md-block">
               <label>Password</label>
-              <input type="password" ng-model="vm.editModel.password"/>
+              <input type="password" ng-model="vm.editModel.password" ng-change="vm.onPasswordChange()"/>
             </md-input-container>
           </ng-form>
         </editable-section>
