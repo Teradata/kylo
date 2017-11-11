@@ -74,7 +74,7 @@ public class ServiceLevelAgreementDescriptionCache extends ClusterAwareDtoCache<
       return  metadataAccess.read(() -> {
         JpaServiceLevelAgreementDescription jpaSla = ((JpaServiceLevelAgreementDescription) entity);
         Set<CachedServiceLevelAgreement.SimpleFeed> feeds = new HashSet<>();
-        if (!jpaSla.getFeeds().isEmpty()) {
+        if (jpaSla.getFeeds() != null && !jpaSla.getFeeds().isEmpty()) {
             feeds = jpaSla.getFeeds().stream().map(f -> new CachedServiceLevelAgreement.SimpleFeed(f.getId().toString(), f.getName())).collect(Collectors.toSet());
         }
         return new CachedServiceLevelAgreement(dtoId, entity.getName(), feeds);
