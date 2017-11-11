@@ -26,8 +26,10 @@
         <div layout="row" class="" layout-align="start start">
           <div flex="100" layout="column" layout-align="center stretch">
             <div layout="column" layout-align="start start">
-              <div class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</div>
-              <label ng-if="vm.isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}'</label>
+              <div layout="row" layout-align="space-between start" layout-fill>
+                <span class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</span>
+                <span style="margin-top: 5px;">Date Range: {{vm.minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{vm.maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+              </div>
             </div>
             <div layout="row" flex="100">
               <md-slider-container flex="100">
@@ -36,30 +38,21 @@
                 <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[vm.timeFrameOptionIndexLength - 1].label}}</label>
               </md-slider-container>
             </div>
+            <label ng-if="vm.isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}'</label>
           </div>
           <span flex style="padding-left: 40px"></span>
           <div layout="column">
             <div layout="row">
-              <div layout="column" class="layout-padding-right">
-                <span class="hint">{{vm.lastRefreshTime | date:'yyyy-MM-dd HH:mm:ss'}}</span>
-                <span class="md-caption" style="white-space: nowrap">Last Refreshed</span>
-              </div>
-              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-click="vm.onRefreshButtonClick()">
-                <ng-md-icon icon="refresh" ng-style="{'fill':vm.eventSuccessKpi.color}" size="40"></ng-md-icon>
+              <div class="md-media-sm card-media layout-padding-left-right" style="cursor: pointer;" ng-if="!vm.autoRefresh" ng-click="vm.onRefreshButtonClick()">
+                <md-button> Refresh</md-button>
               </div>
             </div>
-            <div layout="row" class="layout-padding-top" layout-align="start center">
-              <md-checkbox ng-model="vm.isAutoRefreshDisabled" style="margin-bottom: 0;"></md-checkbox>
-              <label style="white-space: nowrap" class="hint">Disable Auto-Refresh</label>
-            </div>
-            <div class="md-block layout-padding-top"
-                 ng-if="vm.showProcessorChartLoading || vm.showFeedTimeChartLoading">
-              <div layout="column">
-                <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-              </div>
-            </div>
+            <md-switch class="md-primary" md-no-ink aria-label="Auto Refresh" ng-model="vm.autoRefresh" >
+              Auto Refresh
+            </md-switch>
           </div>
         </div>
+
       </md-card-content>
     </md-card>
 
@@ -186,18 +179,12 @@
                   <md-progress-linear ng-disabled="true" md-mode="indeterminate"></md-progress-linear>
                 </span>
               </div>
-              <div layout="row" layout-align="center center">
+              <div layout="row" layout-align="space-between center">
                 <div flex layout="column">
                   <span class="card-title kpi-header layout-padding-left">Average Flow Rate</span>
                   <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Zoom in/out and pan left/right to see custom time frame</span>
                 </div>
-                <div flex></div>
-                <md-input-container class="md-block layout-padding-top-bottom">
-                  <label class="md-container-ignore label-small layout-padding-top">Data Points</label>
-                  <md-select ng-model="vm.maxDataPoints" ng-change="vm.onDataPointsChange()" aria-label="Rule Type">
-                    <md-option value="{{opt}}" ng-repeat="opt in vm.maxDataPointsOptions">{{ opt }}</md-option>
-                  </md-select>
-                </md-input-container>
+                  <md-button ng-click="vm.onResetZoom()">Reset Zoom</md-button>
               </div>
 
               <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
@@ -209,20 +196,19 @@
 
         <div>
           <md-card layout-align="center center" style="margin-left: 0px;margin-right: 0px;">
-            <span class="card-title kpi-header">Feed Processor Metrics</span>
-            <md-card-content style="width:100%;">
+            <md-card-content layout-fill>
+
+              <div layout="column" layout-align="start start">
+                <span class="card-title kpi-header">Feed Processor Metrics</span>
+              </div>
+
               <md-input-container class="md-block layout-padding-top-bottom">
                 <label class="md-container-ignore label-small layout-padding-top">Processor Metric</label>
                 <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
                   <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
                 </md-select>
               </md-input-container>
-              <div flex layout="row" layout-align="start end">
-                <span flex></span>
-                <span flex="20" ng-if="vm.showProcessorChartLoading">
-                  <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-                </span>
-              </div>
+
               <nvd3 flex options="vm.processorChartOptions" data="vm.processorChartData" api="vm.processorChartApi" config="{deepWatchOptions:true}"></nvd3>
 
             </md-card-content>
@@ -232,8 +218,8 @@
 
       </div>
 
-      <div flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left">
-        <card-layout class="right-card">
+      <div flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" class="layout-padding-left" style="margin-top:-5px;">
+        <card-layout class="right-card" >
           <header-section>
             <div layout="column">
               <div class="card-title right-card-title-text">Feed Details</div>
@@ -255,6 +241,17 @@
                   </div>
                   <md-divider></md-divider>
                 </md-list-item>
+
+                <md-list-item>
+                  <div layout="column" class="item-column md-list-item-text ">
+                        {{vm.minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{vm.maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
+                    <span class="column-title column-title-bottom">Date Range</span>
+                  </div>
+                  <md-divider></md-divider>
+                </md-list-item>
+
+
+
 
                 <md-list-item>
                   <div layout="column" class="item-column md-list-item-text ">

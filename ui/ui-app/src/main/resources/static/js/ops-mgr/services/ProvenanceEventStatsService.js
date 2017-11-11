@@ -23,7 +23,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                 promise.then(successFn, errorFn);
                 return promise;
             },
-            getFeedStatisticsOverTime: function (feedName, from, to, maxDataPoints) {
+            getFeedStatisticsOverTime: function (feedName, from, to) {
                 var self = this;
 
                 var successFn = function (response) {
@@ -32,7 +32,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                 var errorFn = function (err) {
                     self.loading = false;
                 };
-                var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, from, to, maxDataPoints));
+                var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, from, to));
                 promise.then(successFn, errorFn);
                 return promise;
             },

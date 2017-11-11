@@ -55,7 +55,8 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
 
-    @Column(name = "MIN_EVENT_TIME_MILLIS")
+   // @Column(name = "MIN_EVENT_TIME_MILLIS")
+    @Transient
     private Long minEventTimeMillis;
 
     /*

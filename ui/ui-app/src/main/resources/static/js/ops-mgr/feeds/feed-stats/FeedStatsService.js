@@ -187,9 +187,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 }
             },
             lastSummaryStats: [],
-            setMaxDataPoints: function (maxDataPoints) {
-                this.maxDataPoints = maxDataPoints;
-            },
             setTimeBoundaries: function(from, to) {
                 this.fromMillis = from;
                 this.toMillis = to;
@@ -210,13 +207,20 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             isLoading: function () {
                 return this.loadingProcessorStatistics || this.loadingFeedTimeSeriesData;
             },
-            fetchProcessorStatistics: function () {
+            fetchProcessorStatistics: function (minTime, maxTime) {
                 var self = this;
                 this.loadingProcessorStatistics = true;
                 var deferred = $q.defer();
 
                 var selectedChartFunction = self.processorStatistics.selectedChartFunction;
-                $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, self.fromMillis, self.toMillis)).then(function (response) {
+
+                if(angular.isUndefined(minTime)){
+                    minTime = self.fromMillis;
+                }
+                if(angular.isUndefined(maxTime)){
+                    maxTime = self.toMillis;
+                }
+                $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, minTime,maxTime)).then(function (response) {
                     var processorStatsContainer = response.data;
 
                     var processorStats = processorStatsContainer.stats;
@@ -308,7 +312,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
 
                 chartOptions.chart.yAxis.axisLabel = configMap.axisLabel
                 var chartHeight = 35 * rows;
+                var prevHeight = chartOptions.chart.height;
                 chartOptions.chart.height = chartHeight < 200 ? 200 : chartHeight;
+                var heightChanged = prevHeight != chartOptions.chart.height;
                 if (configMap && configMap.valueFormatFn != undefined) {
                     chartOptions.chart.valueFormat = configMap.valueFormatFn;
                     chartOptions.chart.yAxis.tickFormat = configMap.valueFormatFn;
@@ -324,6 +330,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 }
                 if (chartApi && chartApi.update) {
                     chartApi.update();
+                    if(heightChanged) {
+                        chartApi.refresh();
+                    }
                 }
             },
             buildProcessorDurationChartData: function () {
@@ -337,7 +346,6 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 var self = this;
                 var statusPieChartData = [];
                 statusPieChartData.push({key: "Successful Flows", value: self.summaryStatistics.flowsSuccess})
-                //statusPieChartData.push({key: "Failed Flows", value: self.summaryStatistics.flowsFailed})
                 statusPieChartData.push({key: "Running Flows", value: self.summaryStatistics.flowsRunning});
                 return statusPieChartData;
             },
@@ -353,7 +361,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
             emptyFeedTimeSeriesObject: function (eventTime, feedName) {
                 return {
                     "duration": 0,
-                    "minEventTime": null,
+                    "minEventTime": eventTime,
                     "maxEventTime": eventTime,
                     "bytesIn": 0,
                     "bytesOut": 0,
@@ -386,7 +394,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                 var deferred = $q.defer();
                 var self = this;
                 this.loadingFeedTimeSeriesData = true;
-                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.fromMillis, self.toMillis, self.maxDataPoints)).then(function (response) {
+                $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.fromMillis, self.toMillis)).then(function (response) {
 
                     var statsContainer = response.data;
                     if (statsContainer.stats == null) {
@@ -394,7 +402,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                     }
 
                     var timeArr = _.map(statsContainer.stats, function (item) {
-                        return item.maxEventTime
+                        return item.minEventTime != null ? item.minEventTime : item.maxEventTime;
                     });
 
 
@@ -443,10 +451,7 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,mod
                         });
                     }
                     self.feedProcessorErrors.newErrorCount = self.feedProcessorErrors.allData.length - self.feedProcessorErrors.visibleData.length;
-
-                   /// if(self.feedProcessorErrors.time.startTime == null || self.feedProcessorErrors.time.startTime  == 0){
-                        self.feedProcessorErrors.time.startTime = container.startTime;
-                   // }
+                    self.feedProcessorErrors.time.startTime = container.startTime;
                     self.feedProcessorErrors.time.endTime = container.endTime;
                     deferred.resolve(container);
                 }, function (err) {

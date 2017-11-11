@@ -88,7 +88,7 @@ public interface NifiFeedProcessorStatisticsProvider {
      *
      * @return a list of feed processor statistics
      */
-    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end, Integer maxDataPoints);
+    List<? extends NifiFeedProcessorStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end);
 
     /**
      * Find stats for a given feed and time frame grouped by the stats eventTime

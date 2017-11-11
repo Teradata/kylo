@@ -44,7 +44,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -62,8 +61,10 @@ import io.swagger.annotations.ApiResponses;
 @Path("/v2/provenance-stats")
 public class NifiFeedProcessorStatisticsRestControllerV2 {
 
-    /** Maximum number of processor statistics to be returned to client, otherwise server would do
-     * unnecessary aggregations and clients may get overloaded anyway **/
+    /**
+     * Maximum number of processor statistics to be returned to client, otherwise server would do
+     * unnecessary aggregations and clients may get overloaded anyway
+     **/
     private static final Integer MAX_DATA_POINTS = 6400;
 
     @Inject
@@ -161,6 +162,7 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
 
     }
 
+
     @GET
     @Path("/{feedName}")
     @Produces(MediaType.APPLICATION_JSON)
@@ -168,12 +170,9 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the feed statistics.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findFeedStats(@PathParam("feedName") String feedName, @QueryParam("from") Long fromMillis, @QueryParam("to") Long toMillis, @QueryParam("dp") @DefaultValue("400") Integer maxDataPoints) {
+    public Response findFeedStats(@PathParam("feedName") String feedName, @QueryParam("from") Long fromMillis, @QueryParam("to") Long toMillis) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-        if (maxDataPoints > MAX_DATA_POINTS) {
-            maxDataPoints = MAX_DATA_POINTS;
-        }
-        final int points = maxDataPoints;
+
         final DateTime endTime = getToDateTime(toMillis);
         final DateTime startTime = getFromDateTime(fromMillis);
 
@@ -181,7 +180,7 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
             NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(startTime, endTime);
             NifiFeedStats feedStats = nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName);
 
-            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime(), points);
+            List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
 
             statsContainer.setStats(model);
