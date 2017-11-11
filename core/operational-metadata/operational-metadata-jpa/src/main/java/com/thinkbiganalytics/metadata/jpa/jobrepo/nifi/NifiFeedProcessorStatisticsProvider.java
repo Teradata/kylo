@@ -43,7 +43,7 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Provider for accessing the statstics for a feed and processor
+ * Provider for accessing the statistics for a feed and processor
  */
 @Service
 public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider {
@@ -227,40 +227,6 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
-
-/*
-    public List<? extends JpaNifiFeedProcessorStats> findForFeedStatisticsGroupedByTimeAllData(String feedName, DateTime start, DateTime end) {
-        QJpaNifiFeedProcessorStats stats = QJpaNifiFeedProcessorStats.jpaNifiFeedProcessorStats;
-
-        QJpaOpsManagerFeed feed = QJpaOpsManagerFeed.jpaOpsManagerFeed;
-
-        JPAQuery
-            query = factory.select(
-            Projections.bean(JpaNifiFeedProcessorStats.class,
-                             stats.feedName,
-                             stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
-                             stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
-                             stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.failedCount.sum().as("failedCount"),
-                             stats.maxEventTime,
-                             stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
-                             stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
-                             stats.collectionIntervalSeconds.as("collectionIntervalSeconds"),
-                             stats.jobsFailed.sum().as("jobsFailed"), stats.totalCount.sum().as("totalCount"),
-                             stats.count().as("resultSetCount"))
-        )
-            .from(stats)
-            .innerJoin(feed).on(feed.name.eq(stats.feedName))
-            .where(stats.feedName.eq(feedName)
-                       .and(FeedAclIndexQueryAugmentor.generateExistsExpression(feed.id, accessController.isEntityAccessControlled()))
-                       .and(stats.minEventTime.goe(start)
-                                .and(stats.maxEventTime.loe(end))))
-
-            .groupBy(stats.feedName, stats.maxEventTime, stats.collectionIntervalSeconds)
-            .orderBy(stats.maxEventTime.asc());
-
-        return (List<JpaNifiFeedProcessorStats>) query.fetch();
-    }
-    */
 
     public List<? extends NifiFeedProcessorErrors> findFeedProcessorErrors(String feedName, DateTime start, DateTime end) {
         return accessController.isEntityAccessControlled() ? statisticsRepository.findWithErrorsWithinTimeWithAcl(feedName, start, end)
