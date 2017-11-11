@@ -23,6 +23,7 @@ package com.thinkbiganalytics.policy.validation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -68,7 +69,7 @@ public class DateValidator implements ValidationPolicy<String> {
     public DateTime parseDate(String value) {
         int cnt = value.length();
         if (cnt == LENGTH) {
-            return DATE.parseDateTime(value);
+            return LocalDate.parse(value,DATE).toDateTimeAtStartOfDay();
         } else {
             throw new IllegalArgumentException("Expecting yyyy-MM-dd");
         }
