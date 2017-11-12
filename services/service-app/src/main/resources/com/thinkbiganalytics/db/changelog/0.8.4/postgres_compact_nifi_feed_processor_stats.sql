@@ -1,8 +1,31 @@
+-- -
+-- #%L
+-- kylo-service-app
+-- %%
+-- Copyright (C) 2017 ThinkBig Analytics
+-- %%
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- #L%
+-- -
+
 CREATE OR REPLACE FUNCTION compact_feed_processor_stats() RETURNS VARCHAR as $$
 
 DECLARE curr_date Timestamp DEFAULT NOW();
 DECLARE output VARCHAR(4000) DEFAULT '';
-DECLARE countRow INT;
+DECLARE insertRowCount INT DEFAULT 0;
+DECLARE deleteRowCount INT DEFAULT 0;
+DECLARE totalCompactSize INT DEFAULT 0;
+
 BEGIN
 
 -- group event times by nearest hour for records captured before yesterday at midnight
@@ -46,7 +69,7 @@ GROUP  BY fm_feed_name,
           nifi_feed_process_group_id,
           date_trunc('hour', now() + interval '30 minute');
 
-GET DIAGNOSTICS countRow = ROW_COUNT;
+GET DIAGNOSTICS insertRowCount = ROW_COUNT;
 
 SELECT CONCAT('Insert: Compacted ',countRow,' rows') into output;
 
@@ -55,9 +78,9 @@ WHERE  collection_id is not null
 AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day';
 
 
-GET DIAGNOSTICS countRow = ROW_COUNT;
+GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
 
-SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
+SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
 
 
 -- rollup data older than xx hours ago together, grouping every minute
@@ -102,17 +125,16 @@ GROUP  BY fm_feed_name,
           nifi_feed_process_group_id,
           date_trunc('minute', now() + interval '30 second');
 
-GET DIAGNOSTICS countRow = ROW_COUNT;
-
-SELECT CONCAT(output,'\n','Insert: Compacted to nearest minute',countRow,' rows') into output;
+GET DIAGNOSTICS insertRowCount = ROW_COUNT;
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
 AND    COLLECTION_TIME < (curr_date - interval '10 hour');
 
-GET DIAGNOSTICS countRow = ROW_COUNT;
+GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
 
-SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
+SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
+SELECT (output,'\n Reduced table by ',totalCompactSize,' rows');
 
 
  return output;
