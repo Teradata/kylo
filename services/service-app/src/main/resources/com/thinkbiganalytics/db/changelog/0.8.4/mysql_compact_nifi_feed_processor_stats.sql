@@ -18,11 +18,13 @@
 -- #L%
 -- -
 
-CREATE PROCEDURE compact_feed_processor_stats()
+CREATE PROCEDURE compact_feed_processor_stats(out res varchar(255))
 BEGIN
 DECLARE curr_date Timestamp DEFAULT NOW();
 DECLARE output VARCHAR(4000) DEFAULT '';
-DECLARE countRow INT;
+DECLARE insertRowCount INT DEFAULT 0;
+DECLARE deleteRowCount INT DEFAULT 0;
+DECLARE totalCompactSize INT DEFAULT 0;
 
 INSERT INTO NIFI_FEED_PROCESSOR_STATS
 SELECT fm_feed_name											 AS FM_FEED_NAME,
@@ -63,17 +65,17 @@ GROUP  BY fm_feed_name,
           nifi_feed_process_group_id,
           timestamp_nearest_hour(MIN_EVENT_TIME);
 
-SET countRow =  ROW_COUNT();
-
-SELECT CONCAT('Insert: Compacted ',countRow,' rows') into output;
+SET insertRowCount =  ROW_COUNT();
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
 AND    COLLECTION_TIME < (DATE(curr_date)- interval 1 DAY);   -- look for records processed before yesterday
 
-SET countRow =  ROW_COUNT();
+SET deleteRowCount =  ROW_COUNT();
 
-SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
+SET totalCompactSize = deleteRowCount - insertRowCount;
+
+SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
 
 
 -- rollup data older than xx hours ago together, grouping every minute
@@ -117,19 +119,19 @@ GROUP  BY fm_feed_name,
           processor_name,
           nifi_feed_process_group_id,
           timestamp_nearest_minute(MIN_EVENT_TIME);
-SET countRow =  ROW_COUNT();
-
-SELECT CONCAT(output,'\n','Insert: Compacted to nearest minute',countRow,' rows') into output;
+SET insertRowCount =  ROW_COUNT();
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
 AND    COLLECTION_TIME < DATE_SUB(curr_date, INTERVAL 10 HOUR);  -- look for records processed 10 or more hours ago
 
-SET countRow =  ROW_COUNT();
+SET deleteRowCount =  ROW_COUNT();
 
-SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
-
+SET totalCompactSize = totalCompactSize + (deleteRowCount - insertRowCount);
+SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
+SELECT (output,'\n Reduced table by ',totalCompactSize,' rows');
 
 SELECT output;
+set res = output;
 
 END;
