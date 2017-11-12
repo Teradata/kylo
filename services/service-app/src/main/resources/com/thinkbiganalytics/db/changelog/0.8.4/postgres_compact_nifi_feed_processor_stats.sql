@@ -71,14 +71,13 @@ GROUP  BY fm_feed_name,
 
 GET DIAGNOSTICS insertRowCount = ROW_COUNT;
 
-SELECT CONCAT('Insert: Compacted ',countRow,' rows') into output;
-
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
 AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day';
 
-
 GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
+
+SET totalCompactSize = deleteRowCount - insertRowCount;
 
 SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
 
@@ -132,6 +131,8 @@ WHERE  collection_id is not null
 AND    COLLECTION_TIME < (curr_date - interval '10 hour');
 
 GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
+
+SET totalCompactSize = totalCompactSize + (deleteRowCount - insertRowCount);
 
 SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
 SELECT (output,'\n Reduced table by ',totalCompactSize,' rows');
