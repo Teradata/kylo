@@ -27,6 +27,7 @@
   <include file="kylo_alert_add_audit_columns.xml" relativeToChangelogFile="true"/>
   <include file="sla-email-templates.xml" relativeToChangelogFile="true"/>
   <include file="nifi-feed-processor-stats-drop-min-event-time-millis-column.xml" relativeToChangelogFile="true"/>
-<include file="nifi-feed-processor-stats-remove-constraints.xml" relativeToChangelogFile="true"/>
-  <include file="mysql_nifi_feed_processor_stats_compact.xml" relativeToChangelogFile="true"/>
+  <include file="nifi-feed-processor-stats-remove-constraints.xml" relativeToChangelogFile="true"/>
+  <include file="mysql_nifi_feed_processor_stats_compact.xml" relativeToChangelogFile="true" />
+  <include file="postgres_nifi_feed_processor_stats_compact.xml" relativeToChangelogFile="true" />
 </databaseChangeLog>

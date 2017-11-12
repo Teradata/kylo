@@ -1,28 +1,11 @@
--- -
--- #%L
--- kylo-service-app
--- %%
--- Copyright (C) 2017 ThinkBig Analytics
--- %%
--- Licensed under the Apache License, Version 2.0 (the "License");
--- you may not use this file except in compliance with the License.
--- You may obtain a copy of the License at
---
---     http://www.apache.org/licenses/LICENSE-2.0
---
--- Unless required by applicable law or agreed to in writing, software
--- distributed under the License is distributed on an "AS IS" BASIS,
--- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
--- See the License for the specific language governing permissions and
--- limitations under the License.
--- #L%
--- -
+CREATE OR REPLACE FUNCTION compact_feed_processor_stats() RETURNS VARCHAR as $$
 
-CREATE PROCEDURE compact_feed_processor_stats()
-BEGIN
 DECLARE curr_date Timestamp DEFAULT NOW();
 DECLARE output VARCHAR(4000) DEFAULT '';
 DECLARE countRow INT;
+BEGIN
+
+-- group event times by nearest hour for records captured before yesterday at midnight
 
 INSERT INTO NIFI_FEED_PROCESSOR_STATS
 SELECT fm_feed_name											 AS FM_FEED_NAME,
@@ -33,7 +16,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(duration_millis)                                  AS DURATION_MILLIS,
        Sum(bytes_in)                                         AS BYTES_IN,
        Sum(bytes_out)                                        AS BYTES_OUT,
-       timestamp_nearest_hour(MIN_EVENT_TIME)				 AS MIN_EVENT_TIME,
+       date_trunc('hour', now() + interval '30 minute')				 AS MIN_EVENT_TIME,
 	     MAX(max_event_time) 				                     AS MAX_EVENT_TIME,
        Sum(jobs_started)                                     AS JOBS_STARTED,
        Sum(jobs_finished)                                    AS JOBS_FINISHED,
@@ -56,22 +39,23 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Max(error_messages_timestamp)                         AS ERROR_MESSAGES_TIMESTAMP
 FROM   NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < (DATE(curr_date)- interval 1 DAY)   -- look for records processed before yesterday
+AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day'
 GROUP  BY fm_feed_name,
           nifi_processor_id,
           processor_name,
           nifi_feed_process_group_id,
-          timestamp_nearest_hour(MIN_EVENT_TIME);
+          date_trunc('hour', now() + interval '30 minute');
 
-SET countRow =  ROW_COUNT();
+GET DIAGNOSTICS countRow = ROW_COUNT;
 
 SELECT CONCAT('Insert: Compacted ',countRow,' rows') into output;
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < (DATE(curr_date)- interval 1 DAY);   -- look for records processed before yesterday
+AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day';
 
-SET countRow =  ROW_COUNT();
+
+GET DIAGNOSTICS countRow = ROW_COUNT;
 
 SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
 
@@ -88,7 +72,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(duration_millis)                                  AS DURATION_MILLIS,
        Sum(bytes_in)                                         AS BYTES_IN,
        Sum(bytes_out)                                        AS BYTES_OUT,
-       timestamp_nearest_minute(MIN_EVENT_TIME)				 AS MIN_EVENT_TIME,
+       date_trunc('minute', now() + interval '30 second')				 AS MIN_EVENT_TIME,
 	   MAX(max_event_time) 				                     AS MAX_EVENT_TIME,
        Sum(jobs_started)                                     AS JOBS_STARTED,
        Sum(jobs_finished)                                    AS JOBS_FINISHED,
@@ -111,25 +95,26 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Max(error_messages_timestamp)                         AS ERROR_MESSAGES_TIMESTAMP
 FROM   NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < DATE_SUB(curr_date, INTERVAL 10 HOUR)  -- look for records processed 10 or more hours ago
+AND    COLLECTION_TIME < (curr_date - interval '10 hour')
 GROUP  BY fm_feed_name,
           nifi_processor_id,
           processor_name,
           nifi_feed_process_group_id,
-          timestamp_nearest_minute(MIN_EVENT_TIME);
-SET countRow =  ROW_COUNT();
+          date_trunc('minute', now() + interval '30 second');
+
+GET DIAGNOSTICS countRow = ROW_COUNT;
 
 SELECT CONCAT(output,'\n','Insert: Compacted to nearest minute',countRow,' rows') into output;
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < DATE_SUB(curr_date, INTERVAL 10 HOUR);  -- look for records processed 10 or more hours ago
+AND    COLLECTION_TIME < (curr_date - interval '10 hour');
 
-SET countRow =  ROW_COUNT();
+GET DIAGNOSTICS countRow = ROW_COUNT;
 
 SELECT CONCAT(output,'\n','Deleted ',countRow) into output;
 
 
-SELECT output;
-
+ return output;
 END;
+$$ LANGUAGE plpgsql;
