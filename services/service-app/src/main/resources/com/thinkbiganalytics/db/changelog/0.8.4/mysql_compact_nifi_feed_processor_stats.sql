@@ -75,7 +75,7 @@ SET deleteRowCount =  ROW_COUNT();
 
 SET totalCompactSize = deleteRowCount - insertRowCount;
 
-SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
+SELECT CONCAT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
 
 
 -- rollup data older than xx hours ago together, grouping every minute
@@ -128,8 +128,8 @@ AND    COLLECTION_TIME < DATE_SUB(curr_date, INTERVAL 10 HOUR);  -- look for rec
 SET deleteRowCount =  ROW_COUNT();
 
 SET totalCompactSize = totalCompactSize + (deleteRowCount - insertRowCount);
-SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
-SELECT (output,'\n Reduced table by ',totalCompactSize,' rows');
+SELECT CONCAT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
+SELECT CONCAT(output,'\n Reduced table by ',totalCompactSize,' rows');
 
 SELECT output;
 set res = output;
