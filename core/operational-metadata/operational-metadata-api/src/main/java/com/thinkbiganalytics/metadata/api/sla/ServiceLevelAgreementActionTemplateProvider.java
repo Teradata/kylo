@@ -40,6 +40,8 @@ public interface ServiceLevelAgreementActionTemplateProvider {
 
     List<? extends ServiceLevelAgreementActionTemplate> findBySlaId(ServiceLevelAgreement.ID slaId);
 
+    List<? extends ServiceLevelAgreementActionTemplate> deleteForSlaId(ServiceLevelAgreement.ID slaId);
+
    // ServiceLevelAgreementActionTemplate assignTemplate(String actionClass, VelocityTemplate velocityTemplate);
 
 

@@ -263,4 +263,12 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
         }
         return stats;
     }
+
+    /**
+     * Call the procedure to compact the NIFI_FEED_PROCESSOR_STATS table
+     * @return a summary of what was compacted
+     */
+    public String compactFeedProcessorStatistics(){
+        return statisticsRepository.compactFeedProcessorStats();
+    }
 }

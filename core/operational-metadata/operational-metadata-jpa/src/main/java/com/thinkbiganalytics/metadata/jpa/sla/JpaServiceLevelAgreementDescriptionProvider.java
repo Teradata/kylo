@@ -29,12 +29,15 @@ import com.thinkbiganalytics.metadata.api.event.sla.ServiceLevelAgreementEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplate;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -51,7 +54,7 @@ import javax.inject.Inject;
 @Service
 public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevelAgreementDescriptionProvider {
 
-
+    private static final Logger log = LoggerFactory.getLogger(JpaServiceLevelAgreementDescriptionProvider.class);
     private JpaServiceLevelAgreementDescriptionRepository serviceLevelAgreementDescriptionRepository;
 
     @Inject
@@ -158,6 +161,18 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
         public void notify(ServiceLevelAgreementEvent event) {
             if (event.getData().getChange() == MetadataChange.ChangeType.DELETE) {
                 serviceLevelAgreementDescriptionCache.deleteByDtoId(event.getData().getId().toString());
+                try {
+                    ServiceLevelAgreementDescriptionId serviceLevelAgreementDescriptionId = (ServiceLevelAgreementDescriptionId) resolveId(event.getData().getId().toString());
+                    ServiceLevelAgreementDescription serviceLevelAgreementDescription = serviceLevelAgreementDescriptionRepository.findOne(serviceLevelAgreementDescriptionId);
+
+                    List<? extends ServiceLevelAgreementActionTemplate> slaTemplates = serviceLevelAgreementActionTemplateProvider.deleteForSlaId(serviceLevelAgreementDescriptionId);
+
+                    if (serviceLevelAgreementDescription != null) {
+                        serviceLevelAgreementDescriptionRepository.delete((JpaServiceLevelAgreementDescription) serviceLevelAgreementDescription);
+                    }
+                }catch (Exception e){
+                    log.error("Unable to delete the Service Level Description for "+event.getData().getName()+" ( "+event.getData().getId());
+                }
             }
         }
     }

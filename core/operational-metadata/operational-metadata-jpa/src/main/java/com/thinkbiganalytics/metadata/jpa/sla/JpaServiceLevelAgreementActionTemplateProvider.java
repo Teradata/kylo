@@ -61,6 +61,15 @@ public class JpaServiceLevelAgreementActionTemplateProvider implements ServiceLe
         return serviceLevelAgreementActionTemplateRepository.findByServiceLevelAgreement((ServiceLevelAgreementDescriptionId)slaId);
     }
 
+
+    public List<? extends ServiceLevelAgreementActionTemplate> deleteForSlaId(ServiceLevelAgreement.ID slaId) {
+        List<JpaServiceLevelAgreementActionTemplate> slaTemplates = serviceLevelAgreementActionTemplateRepository.findByServiceLevelAgreement((ServiceLevelAgreementDescriptionId)slaId);
+        if (slaTemplates != null) {
+            serviceLevelAgreementActionTemplateRepository.delete(slaTemplates);
+        }
+        return slaTemplates;
+    }
+
     @Override
     public List<JpaServiceLevelAgreementActionTemplate> assignTemplate(ServiceLevelAgreementDescription sla, List<? extends VelocityTemplate> velocityTemplates) {
 
