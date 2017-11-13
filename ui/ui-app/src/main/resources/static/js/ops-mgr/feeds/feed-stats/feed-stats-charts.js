@@ -315,6 +315,39 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 }
             }
 
+            /**
+             * Prevent zooming into a level of detail that the data doesnt allow
+             * Stats > a day are aggregated up to the nearest hour
+             * Stats > 10 hours are aggregated up to the nearest minute
+             * If a user is looking at data within the 2 time frames above, prevent the zoom to a level greater than the hour/minute
+             * @param xDomain
+             * @param yDomain
+             * @return {boolean}
+             */
+            function canZoom(xDomain, yDomain) {
+
+                var diff = self.maxTime - self.minTime;
+
+                var minX  = Math.floor(xDomain[0]);
+                var maxX = Math.floor(xDomain[1]);
+                var zoomDiff = maxX - minX;
+                //everything above the day should be zoomed at the hour level
+                //everything above 10 hrs should be zoomed at the minute level
+                if(diff >= (1000*60*60*24)){
+                    if(zoomDiff < (1000*60*60)){
+                        return false   //prevent zooming!
+                    }
+                }
+                else if(diff >= (1000*60*60*10)) {
+                    // zoom at minute level
+                    if(zoomDiff < (1000*60)){
+                        return false;
+                    }
+                }
+                return true;
+
+            }
+
             self.feedChartOptions = {
                 chart: {
                     type: 'lineChart',
@@ -366,12 +399,14 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         useFixedDomain:true,
                         zoomed: function(xDomain, yDomain) {
                             //zoomed will get called initially (even if not zoomed)
-                            // because of this we need to check to see if we really are zoomed or not by comparing the incoming x axis with the min x axis in the data set
+                            // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
                             if(!self.preventZoomChange) {
                                 self.isZoomed = true;
-                                self.zoomedMinTime = Math.floor(xDomain[0]);
-                                self.zoomedMaxTime = Math.floor(xDomain[1]);
-                                self.timeDiff = self.zoomedMaxTime - self.zoomedMinTime;
+                                if(canZoom(xDomain,yDomain)) {
+                                    self.zoomedMinTime = Math.floor(xDomain[0]);
+                                    self.zoomedMaxTime = Math.floor(xDomain[1]);
+                                    self.timeDiff = self.zoomedMaxTime - self.zoomedMinTime;
+                                }
                                 return {x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
                             }
                             else {
