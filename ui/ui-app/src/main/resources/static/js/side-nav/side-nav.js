@@ -113,7 +113,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                        links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
                        links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
                        links.push({sref: "service-level-assessments",type:'link', icon: "work", text: "SLA Assessments", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
-                       links.push({sref: "scheduler",type:'link', icon: "today", text: "Scheduled Jobs", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
+                       links.push({sref: "scheduler",type:'link', icon: "today", text: "Tasks", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
                        links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
                       addExtensionLinks(MENU_KEY.OPS_MGR, links);
                        menu.links = links;
