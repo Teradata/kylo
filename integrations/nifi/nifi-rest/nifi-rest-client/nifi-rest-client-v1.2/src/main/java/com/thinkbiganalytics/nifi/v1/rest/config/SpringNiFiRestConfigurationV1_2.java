@@ -34,10 +34,10 @@ import org.springframework.context.annotation.Profile;
 import javax.annotation.Nonnull;
 
 /**
- * Configures a {@link NiFiRestClient} for NiFi v1.0.
+ * Configures a {@link NiFiRestClient} for NiFi v1.2+.
  */
 @Configuration
-@Profile({"nifi-v1.2","nifi-v1.3"})
+@Profile({"nifi-v1.2","nifi-v1.3","nifi-v1.4"})
 public class SpringNiFiRestConfigurationV1_2 {
 
     /**

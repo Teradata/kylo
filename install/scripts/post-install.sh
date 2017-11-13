@@ -233,7 +233,7 @@ KYLO_NIFI_PROFILE="nifi-v1"
 if [[ \${PROFILES} == *"nifi-v1.1"* ]];
  then
  KYLO_NIFI_PROFILE="nifi-v1.1"
-elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]] || [[ \${PROFILES} == *"nifi-v1.4"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
@@ -254,7 +254,7 @@ KYLO_NIFI_PROFILE="nifi-v1"
 if [[ \${PROFILES} == *"nifi-v1.1"* ]];
  then
  KYLO_NIFI_PROFILE="nifi-v1.1"
-elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]] || [[ \${PROFILES} == *"nifi-v1.4"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
