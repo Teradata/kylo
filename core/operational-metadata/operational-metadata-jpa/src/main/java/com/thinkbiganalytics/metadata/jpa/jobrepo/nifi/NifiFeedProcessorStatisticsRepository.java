@@ -26,15 +26,19 @@ import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepo
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * Spring data repository for {@link JpaNifiFeedProcessorStats}
+ * A custom repository is used to call the stored procedure
  */
-public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats> {
+public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats>, NifiFeedProcessorStatisticsRepositoryCustom
+                                                                {
 
     @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
@@ -109,6 +113,9 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     @Query("select max(stats.minEventTime) as dateProjection from JpaNifiFeedProcessorStats as stats "
            + " where stats.feedName = :feedName")
     DateProjection findLatestFinishedTimeWithoutAcl(@Param("feedName") String feedName);
+
+  //  @Procedure(name = "NifiFeedProcessorStats.compactFeedProcessorStats")
+  //  String compactFeedProcessorStatistics();
 
 
 

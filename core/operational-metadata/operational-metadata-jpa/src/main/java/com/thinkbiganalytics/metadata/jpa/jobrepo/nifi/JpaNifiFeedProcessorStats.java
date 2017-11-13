@@ -55,21 +55,9 @@ public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats, NifiFe
     @Column(name = "MAX_EVENT_TIME")
     protected DateTime maxEventTime;
 
-   // @Column(name = "MIN_EVENT_TIME_MILLIS")
     @Transient
     private Long minEventTimeMillis;
 
-    /*
-        @Type(type = "com.thinkbiganalytics.jpa.PersistentDateTimeAsMillisLong")
-        @Column(name = "MAX_EVENT_TIME_MILLIS")
-        @QueryType(PropertyType.COMPARABLE)
-        private DateTime maxEventTimeMillis;
-
-        @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-        @Column(name = "COLLECTION_TIME_MILLIS")
-        @QueryType(PropertyType.COMPARABLE)
-        private DateTime collectionTimeMillis;
-    */
     @Column(name = "COLLECTION_INTERVAL_SEC")
     protected Long collectionIntervalSeconds = null;
 

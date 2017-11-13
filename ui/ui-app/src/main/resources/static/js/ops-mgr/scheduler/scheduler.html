@@ -18,55 +18,60 @@
   #L%
   -->
     <div flex layout="row" layout-sm="column" layout-xs="column">
-            <card-layout flex="100" flex-gt-sm="80" flex-order="1" flex-order-xs="2" flex-order-sm="2" >
+            <card-layout flex="100" flex-gt-sm="80" flex-order="1" flex-order-xs="2" flex-order-sm="2" body-css="layout-padding-left">
                 <header-section style="white-space:nowrap" transclude-to="head" class="card-title">Scheduled Jobs</header-section>
 
                 <body-section>
-                <md-list flex layout-fill transclude-to="body" class="list-item-table">
-                    <md-list-item  ng-repeat="job in vm.jobs | orderBy:'jobName'" layout="row">
+                  <div ng-repeat="group in vm.jobGroups | orderBy:'name'">
+                    <div class="md-title layout-padding-left primary-color-1">{{group.name}}</div>
+                    <md-list flex layout-fill transclude-to="body" class="list-item-table">
+                      <md-list-item  ng-repeat="job in group.jobs | orderBy:'jobName'" layout="row">
 
-                            <div flex="25" layout="column" class="item-column md-list-item-text ">
+                        <div flex="35" layout="column" class="item-column md-list-item-text ">
                                      <span class="item-title">
                                        {{job.jobName}}
                                      </span>
-                                      <span ng-class="{'healthy': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'warn':job.state == 'PAUSED', 'error':job.state == 'UNKNOWN'}" class="column-title-bottom">
+                          <span ng-class="{'healthy': job.state == 'RUNNING' || job.state == 'SCHEDULED', 'warn':job.state == 'PAUSED', 'error':job.state == 'UNKNOWN'}" class="column-title-bottom">
                                          <ng-md-icon icon="{{job.stateIcon}}" size="20" options='{"rotation": "clock"}' >
                                          </ng-md-icon>   {{job.state}}
                                     </span>
 
 
-                            </div>
-                            <div flex="10" layout="column" class="item-column md-list-item-text ">
-                                   <span  class="item-title" >
-                                     {{job.jobGroup}}</span>
-                                     <span class="column-title column-title-bottom">
-                                     Group
-                                   </span>
-                            </div>
-                            <div flex="20" layout="column" class="item-column md-list-item-text ">
+                        </div>
+                        <div flex="20" layout="column" class="item-column md-list-item-text ">
                                    <span  class="item-title" >
                                      {{job.nextFireTimeString}}
                                    </span>
-                                     <span class="column-title column-title-bottom">
+                          <span class="column-title column-title-bottom">
                                      Next Fire
                                    </span>
-                            </div>
-                            <div flex="15" layout="column" class="item-column md-list-item-text " hide show-gt-md>
+                        </div>
+                        <div flex="15" layout="column" class="item-column md-list-item-text " hide show-gt-md>
                                    <span  class="item-title" >
                                      {{job.cronExpression}}</span>
-                                     <span class="column-title column-title-bottom">
+                          <span class="column-title column-title-bottom">
                                      Cron Expression
                                    </span>
-                            </div>
-                            <div flex="30" flex-md="45" flex-sm="45" flex-xs="45" layout="row" class="item-column md-list-item-text " ng-if="vm.allowAdmin">
-                                <md-button class="border-btn" ng-if="job.state=='RUNNING' || job.state =='SCHEDULED'" ng-disabled="job.state =='PAUSED' || job.state == 'RUNNING' || vm.schedulerDetails.status == 'PAUSED' " ng-click="vm.pauseJob(job)">PAUSE</md-button>
-                                <md-button class="border-btn" ng-if="job.state=='PAUSED'" ng-disabled="job.state =='RUNNING' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.resumeJob(job)">RESUME</md-button>
-                                <md-button class="border-btn" ng-disabled="job.state !='SCHEDULED' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.triggerJob(job)">FIRE NOW </md-button>
-                            </div>
+                        </div>
+                        <div flex="30" flex-md="45" flex-sm="45" flex-xs="45" layout="row" class="item-column md-list-item-text " ng-if="vm.allowAdmin">
+                          <md-button class="border-btn" ng-if="job.state=='RUNNING' || job.state =='SCHEDULED'" ng-disabled="job.state =='PAUSED' || job.state == 'RUNNING' || vm.schedulerDetails.status == 'PAUSED' " ng-click="vm.pauseJob(job)">PAUSE</md-button>
+                          <md-button class="border-btn" ng-if="job.state=='PAUSED'" ng-disabled="job.state =='RUNNING' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.resumeJob(job)">RESUME</md-button>
+                          <md-button class="border-btn" ng-disabled="job.state !='SCHEDULED' || vm.schedulerDetails.status == 'PAUSED'" ng-click="vm.triggerJob(job)">FIRE NOW </md-button>
+                        </div>
 
                         <md-divider ng-if="!$last"></md-divider>
-                    </md-list-item>
-                </md-list>
+                      </md-list-item>
+                      <md-list-item ng-if="group.jobs.length ==0">
+                        <div flex="100" layout="column" class="item-column md-list-item-text ">
+                                     <span class="item-title">
+                                       No jobs exist for this group
+                                     </span>
+                        </div>
+                      </md-list-item>
+                    </md-list>
+                  </div>
+
+
                 </body-section>
             </card-layout>
 

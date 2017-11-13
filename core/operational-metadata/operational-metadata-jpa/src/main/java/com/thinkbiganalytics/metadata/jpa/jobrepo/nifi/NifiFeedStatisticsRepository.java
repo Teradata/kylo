@@ -24,13 +24,14 @@ import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepo
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 
 /**
- * Spring data repository for {@link JpaNifiFeedProcessorStats}
+ * Spring data repository for {@link JpaNifiFeedStats}
  */
 public interface NifiFeedStatisticsRepository extends JpaRepository<JpaNifiFeedStats, String>, QueryDslPredicateExecutor<JpaNifiFeedStats> {
 
@@ -64,5 +65,6 @@ public interface NifiFeedStatisticsRepository extends JpaRepository<JpaNifiFeedS
     @Query(value = "select distinct stats from JpaNifiFeedStats stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName ")
     List<JpaNifiFeedStats> findFeedStatsWithoutAcl();
+
 
 }

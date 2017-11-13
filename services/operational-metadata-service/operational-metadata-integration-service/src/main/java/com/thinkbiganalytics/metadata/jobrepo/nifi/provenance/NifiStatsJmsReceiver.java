@@ -43,11 +43,18 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessor
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
+import com.thinkbiganalytics.scheduler.JobIdentifier;
+import com.thinkbiganalytics.scheduler.JobScheduler;
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+import com.thinkbiganalytics.scheduler.TriggerIdentifier;
+import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -87,6 +94,15 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @Inject
     private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
 
+    @Inject
+    private JobScheduler jobScheduler;
+
+    @Value("${kylo.ops.mgr.stats.compact.cron:0 0 0 1/1 * ? *}")
+    private String compactStatsCronSchedule;
+
+    @Value("${kylo.ops.mgr.stats.compact.enabled:true}")
+    private boolean compactStatsEnabled;
+
     public static final String NIFI_FEED_PROCESSOR_ERROR_CLUSTER_TYPE = "NIFI_FEED_PROCESSOR_ERROR";
 
     @Inject
@@ -117,6 +133,24 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @PostConstruct
     private void init() {
         retryProvenanceEventWithDelay.setStatsJmsReceiver(this);
+        scheduleStatsCompaction();
+    }
+
+
+    /**
+     * Schedule the compaction job in Quartz if the properties have this enabled with a Cron Expression
+     */
+    private void scheduleStatsCompaction() {
+        if (compactStatsEnabled && StringUtils.isNotBlank(compactStatsCronSchedule)) {
+            QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+            JobIdentifier jobIdentifier = new DefaultJobIdentifier("Compact NiFi Processor Stats", "KYLO");
+            TriggerIdentifier triggerIdentifier = new DefaultTriggerIdentifier(jobIdentifier.getName(), jobIdentifier.getGroup());
+            try {
+                scheduler.scheduleJob(jobIdentifier, triggerIdentifier, NiFiStatsCompactionQuartzJobBean.class, compactStatsCronSchedule, null);
+            } catch (SchedulerException e) {
+                throw new RuntimeException("Error scheduling job: Compact NiFi Processor Stats", e);
+            }
+        }
     }
 
     /**

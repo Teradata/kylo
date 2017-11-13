@@ -2,21 +2,67 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
 
     var controller = function ($scope, $interval, $timeout, $http, $location, HttpService, Utils,AccessControlService) {
         var self = this;
-        this.refreshIntervalTime = 5000;
-        this.refreshedDate;
-        this.jobs = [];
+
+        /**
+         * Time to query for the jobs
+         * @type {number}
+         */
+        var refreshInterval = 3000;
+
+        /**
+         * A map of the jobKey to job
+         * @type {{}}
+         */
         this.jobMap = {};
-        this.allMetadata = {};
+
+        /**
+         * An arry of the Groups along with their respective jobs
+         * @type {Array}
+         */
+        this.jobGroups = [];
+
+        /**
+         * Map of group name to group objects
+         * @type {{}}
+         */
+        this.jobsByGroupMap = {}
+
+        /**
+         * Scheduler status indicating if its up/down/paused
+         * @type {{}}
+         */
         this.schedulerDetails = {};
+
         var API_URL_BASE = '/proxy/v1/scheduler';
 
+        /**
+         * Flag to indicate we are fetching the scheduler metadata/details
+         * @type {boolean}
+         */
         this.fetchingMetadata = false;
-        this.fetchingJobs = false;
 
+        /**
+         * timeout promise when fetching the jobs
+         * @type {null}
+         */
         this.fetchJobsTimeout = null;
 
+        /**
+         * A map of jobs that are currently running (either from the fetch status or manually triggered.
+         * This is used to ensure the icon stays running/scheduled when refreshing job status
+         * @type {{}}
+         */
         var firedJobs = {};
+        /**
+         * Time frame that simulated "RUNNING" status should be displayed for before returning back to "Scheduled" status
+         * @type {number}
+         */
         var runningDisplayInterval = 3000;
+
+        /**
+         * Flag to indicate this view is being destroyed (i.e. the user navigated away)
+         * @type {boolean}
+         */
         this.destroyed = false;
 
         /**
@@ -25,6 +71,10 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
          */
         this.allowAdmin = false;
 
+        /**
+         * Fetch the metadata about the scheduler and populate the self.schedulerDetails object
+         * @param metadata
+         */
         this.populateSchedulerDetails = function(metadata){
 
             if(metadata.runningSince) {
@@ -53,6 +103,10 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
             this.schedulerDetails["status"] = status;
             this.schedulerDetails['statusIcon'] = icon;
         }
+
+        /**
+         * Refresh the page
+         */
         this.refreshAll = function() {
             //force the refresh
             self.editing = false;
@@ -60,10 +114,16 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
             self.refresh();
         }
 
+        /**
+         * Clear the scheduler details
+         */
         this.clearSchedulerDetails = function() {
              this.schedulerDetails = {"startTime":'','jobsExecuted':0,"status":"RUNNING", icon:'check_circle'};
         }
 
+        /**
+         * Query for the scheduler details
+         */
         this.fetchSchedulerDetails = function() {
                 this.fetchingMetadata = true;
                 $http.get(API_URL_BASE + "/metadata").then(function (response) {
@@ -76,11 +136,13 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
 
                 },function () {
                     this.fetchingMetadata = false;
-                    // console.log("failed to retrieve the jobs ")
                 });
         }
 
-
+        /**
+         * Pause a given job
+         * @param job
+         */
         this.pauseJob = function(job){
             $http.post(API_URL_BASE+"/jobs/pause",job.jobIdentifier).then(function (response) {
                 self.fetchJobs();
@@ -89,6 +151,10 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
             });
         }
 
+        /**
+         * Resume a given job
+         * @param job
+         */
         this.resumeJob = function(job){
             $http.post(API_URL_BASE+"/jobs/resume",job.jobIdentifier).then(function (response) {
                 self.fetchJobs();
@@ -97,16 +163,12 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
             });
         }
 
-
-
-function justFiredJob(job){
-    firedJobs[job.jobName]= new Date();
-    var jobName = job.jobName;
-    $timeout(function() {delete firedJobs[jobName];}, runningDisplayInterval);
-}
-
+        /**
+         * Trigger the job
+         * @param job
+         */
         this.triggerJob = function(job){
-          justFiredJob(job);
+            justFiredJob(job);
 
             $http.post(API_URL_BASE+"/jobs/trigger",job.jobIdentifier).then(function (response) {
                 self.fetchJobs();
@@ -115,15 +177,20 @@ function justFiredJob(job){
             });
         }
 
-
+        /**
+         * Pause the entire scheduler
+         */
         this.pauseScheduler = function(){
-                $http.post(API_URL_BASE+"/pause").then(function (response) {
-                    self.fetchSchedulerDetails();
-                },function (xhr, status, err) {
-                    console.log("failed to standby the scheduler  ", xhr, status, err)
-                });
+            $http.post(API_URL_BASE+"/pause").then(function (response) {
+                self.fetchSchedulerDetails();
+            },function (xhr, status, err) {
+                console.log("failed to standby the scheduler  ", xhr, status, err)
+            });
         }
 
+        /**
+         * Resume the entire scheduler
+         */
         this.resumeScheduler = function(){
             $http.post(API_URL_BASE+"/resume").then(function (response) {
                 self.fetchSchedulerDetails();
@@ -132,15 +199,45 @@ function justFiredJob(job){
             });
         }
 
-        this.completedRefresh = function(){
-            this.refreshedDate = new Date();
+        /**
+         * Store data that a job just got fired (i.e. user manually triggered the job)
+         * this will keep the job in a "RUNNING" state for the 'runningDisplayInterval'
+         * @param job
+         */
+        function justFiredJob(job){
+            firedJobs[job.jobName]= new Date();
+            var jobName = job.jobName;
+            $timeout(function() {
+                delete firedJobs[jobName];
+                var currentJob = self.jobMap[jobName];
+                if(currentJob != undefined) {
+                    //If a Job was just fired keep it in the psuedo running state.
+                    //this will be cleaned up in the $timeout below
+                    if (firedJobs[jobName] != undefined) {
+                        currentJob.state = 'RUNNING'
+                    }
+                    if (currentJob.state != 'RUNNING' && self.schedulerDetails.status == 'PAUSED') {
+                        currentJob.state = 'PAUSED';
+                    }
+                    //add the moment date
+                    setNextFireTimeString(currentJob);
+                    applyIcon(currentJob);
+                }
+            }, runningDisplayInterval);
         }
 
+        /**
+         * Reset the timeout to query for the jobs again
+         */
         this.assignFetchTimeout = function() {
             $timeout.cancel(self.fetchJobsTimeout);
-            self.fetchJobsTimeout = $timeout(function(){self.refresh() },1000);
+            self.fetchJobsTimeout = $timeout(function(){self.refresh() },refreshInterval);
         }
 
+        /**
+         * Depending upon the state of the job, assign an icon
+         * @param job
+         */
         function applyIcon(job){
             if(job.state =='RUNNING') {
                 job.stateIcon = 'directions_run';
@@ -156,6 +253,11 @@ function justFiredJob(job){
             }
         }
 
+        /**
+         * Return a unique key for the job
+         * @param job
+         * @return {string}
+         */
         function jobKey(job){
             var key = job.jobName+'-'+job.jobGroup;
             return key;
@@ -190,41 +292,83 @@ function justFiredJob(job){
             }
         }
 
+        /**
+         * Query for the jobs
+         */
         this.fetchJobs = function () {
 
             $http.get(API_URL_BASE+"/jobs").then(function (response) {
+
+                //store a record of the jobs that were processed
+                var processedJobGroups = {};
+
                 if(response && response.data){
-                    var jobArray = [];
+
+                    var processedJobs = []
                     angular.forEach(response.data,function(job,i){
                         var key = jobKey(job);
                         var theJob = self.jobMap[key];
+
                         if(theJob == undefined) {
                             theJob = job;
-                            self.jobMap[key] = job;
+                            self.jobMap[key] = theJob;
                         }
+                        processedJobs.push(key);
+
+
                         if(theJob.nextFireTime != job.nextFireTime && self.schedulerDetails.status != 'PAUSED' && theJob.state != 'PAUSED') {
-                            //the job just got fired.... simulate teh running condition
+                            //the job just got fired.... simulate the running condition
                             justFiredJob(theJob);
                         }
-                        angular.extend(theJob,job);
                         var jobName = theJob.jobName;
                         //If a Job was just fired keep it in the psuedo running state.
-                        //this will be cleaned up in the $timeout below
+                        //this will be cleaned up in the $timeout for the firedJob
                         if(firedJobs[jobName] != undefined){
-                            theJob.state ='RUNNING'
+                            job.state ='RUNNING'
                         }
-                        if(theJob.state != 'RUNNING' && self.schedulerDetails.status == 'PAUSED'){
-                            theJob.state = 'PAUSED';
+                        if(job.state != 'RUNNING' && self.schedulerDetails.status == 'PAUSED'){
+                            job.state = 'PAUSED';
                         }
                         //add the moment date
-                        setNextFireTimeString(theJob);
-                       // theJob.nextFireTimeString = moment(job.nextFireTime).fromNow();
-                        applyIcon(theJob);
-                        jobArray.push(theJob);
+                        setNextFireTimeString(job);
+                        applyIcon(job);
+                        //write it back to the theJob
+                        angular.extend(theJob,job);
+
+
+                        if(self.jobsByGroupMap[theJob.jobGroup] == undefined) {
+                            //add the group if its new
+                            var group = {name:theJob.jobGroup,jobs:[], jobMap:{}}
+                            self.jobsByGroupMap[theJob.jobGroup] = group;
+                            self.jobGroups.push(group);
+                        }
+                        var jobMap = self.jobsByGroupMap[theJob.jobGroup].jobMap;
+                        if(jobMap[key] == undefined) {
+                            //add the job if its new
+                            self.jobsByGroupMap[theJob.jobGroup].jobs.push(theJob);
+                            self.jobsByGroupMap[theJob.jobGroup].jobMap[key] = theJob;
+                        }
                     });
                 }
-                self.jobs = jobArray;
-                self.completedRefresh();
+
+                //reconcile the data back to the ui bound object
+                _.each(self.jobMap,function(job,jobKey){
+                    if(_.indexOf(processedJobs,jobKey) == -1){
+                        //this job has been removed
+                        var group = job.jobGroup;
+                        if(self.jobsByGroupMap[group] != undefined){
+                            var groupJobsArray = self.jobsByGroupMap[group].jobs;
+                            var groupJobMap = self.jobsByGroupMap[group].jobMap;
+                            var idx = _.indexOf(groupJobsArray,job);
+                            if(idx > -1){
+                                groupJobsArray.splice(idx,1);
+                            }
+                            delete groupJobMap[jobKey];
+                        }
+                        delete self.jobMap[jobKey];
+                    }
+                });
+
                 if(!self.destroyed) {
                     self.assignFetchTimeout();
                 }
@@ -251,7 +395,6 @@ function justFiredJob(job){
             this.clearSchedulerDetails();
             this.fetchJobs();
             this.fetchSchedulerDetails();
-           // this.setRefreshInterval();
         }
 
         this.refresh = function(){
@@ -265,7 +408,6 @@ function justFiredJob(job){
 
 
         $scope.$on('$destroy', function () {
-           // self.clearRefreshInterval();
             if(self.fetchJobsTimeout) {
                 $timeout.cancel(self.fetchJobsTimeout);
             }

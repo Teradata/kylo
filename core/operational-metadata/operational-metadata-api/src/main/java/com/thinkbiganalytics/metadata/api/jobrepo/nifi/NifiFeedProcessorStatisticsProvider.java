@@ -124,6 +124,13 @@ public interface NifiFeedProcessorStatisticsProvider {
     List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName);
 
     /**
+     * Compact the NiFi Feed Processor Stats table.
+     *
+     * @return a summary of the rows that were compacted
+     */
+    String compactFeedProcessorStatistics();
+
+    /**
      * allow for specifying a time to look back from when querying for statistical information
      */
     enum TimeFrame {
