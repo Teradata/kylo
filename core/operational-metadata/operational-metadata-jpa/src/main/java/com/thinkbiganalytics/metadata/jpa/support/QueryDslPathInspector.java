@@ -76,6 +76,7 @@ public class QueryDslPathInspector {
     private static Object getObjectForField(BeanPath basePath, String field) throws IllegalAccessException {
         Map<String, Field> fieldSet = getFields(basePath.getClass());
         if (StringUtils.isNotBlank(field)) {
+            field = StringUtils.trim(field);
             Field f = fieldSet.get(field);
             if (f != null) {
                 Object o = f.get(basePath);

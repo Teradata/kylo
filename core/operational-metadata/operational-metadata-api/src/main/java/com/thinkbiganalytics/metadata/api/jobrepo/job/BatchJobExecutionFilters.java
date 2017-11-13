@@ -28,7 +28,7 @@ public interface BatchJobExecutionFilters {
     /**
      * Filter to find all the running jobs
      */
-    String RUNNING_FILTER = "endTime==NULL";
+    String RUNNING_FILTER = "status==\""+ BatchJobExecution.JobStatus.STARTED.name() + "," + BatchJobExecution.JobStatus.STARTING.name()+"\"";
 
     /**
      * Filter to find all the Abandoned jobs
