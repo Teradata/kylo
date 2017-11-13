@@ -78,14 +78,16 @@ public class FeedIT extends IntegrationTestBase {
 
     private static final String SAMPLES_DIR = "/samples";
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
-    private static final String NIFI_VERSION = "nifi-1.0";
-    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_VERSION + "/";
-    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_VERSION + "/";
+    private static final String NIFI_FEED_SAMPLE_VERSION = "nifi-1.3";
+    private static final String NIFI_TEMPLATE_SAMPLE_VERSION = "nifi-1.0";
+    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_TEMPLATE_SAMPLE_VERSION + "/";
+    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_FEED_SAMPLE_VERSION + "/";
     protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private static final int VALID_RESULTS = 879;
+    private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
 
     private String sampleFeedsPath;
@@ -225,7 +227,7 @@ public class FeedIT extends IntegrationTestBase {
 
 
     protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed textIndex = importFeed(sampleFeedsPath + "index_text_service_elasticsearch.feed.zip");
+        ExportImportFeedService.ImportFeed textIndex = importFeed(sampleFeedsPath + INDEX_TEXT_SERVICE_V2_FEED_ZIP);
         enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
 
