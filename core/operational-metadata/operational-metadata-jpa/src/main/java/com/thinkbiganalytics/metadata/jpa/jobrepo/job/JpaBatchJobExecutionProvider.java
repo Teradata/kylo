@@ -542,8 +542,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     public void markStreamingFeedAsStopped(String feed) {
         BatchJobExecution jobExecution = findLatestJobForFeed(feed);
-        log.info("Stopping Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
         if (jobExecution != null && !jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STOPPED)) {
+            log.info("Stopping Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
             jobExecution.setStartTime(DateTime.now());
@@ -555,9 +555,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     public void markStreamingFeedAsStarted(String feed) {
         BatchJobExecution jobExecution = findLatestJobForFeed(feed);
-        log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
         //ensure its Running
         if (!jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
+            log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
             jobExecution.setStartTime(DateTime.now());
