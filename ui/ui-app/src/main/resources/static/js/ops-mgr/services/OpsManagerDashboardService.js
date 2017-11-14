@@ -16,39 +16,48 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              feedsSearchResult:{},
              totalFeeds:0,
              activeFeedRequest:null,
+             activeDashboardRequest:null,
              selectFeedHealthTab:function(tab) {
                  BroadcastService.notify(data.TAB_SELECTED,tab);
              },
              feedHealthQueryParams:{fixedFilter:'All',filter:'',start:0,limit:10, sort:''}
          };
 
-         var setupFeedHealth = function(feedData){
-             if(feedData) {
+         var setupFeedHealth = function(feedsArray){
+             var processedFeeds = [];
+             if(feedsArray) {
                      var processed = [];
-                     _.each(feedData, function (feedHealth) {
+
+                     _.each(feedsArray, function (feedHealth) {
+                         //pointer to the feed that is used/bound to the ui/service
+                         var feedData = null;
                          if (data.feedSummaryData[feedHealth.feed]) {
-                             angular.extend(data.feedSummaryData[feedHealth.feed], feedHealth);
+                             feedData = data.feedSummaryData[feedHealth.feed]
+                             angular.extend(feedData, feedHealth);
+                             feedHealth = feedData;
                          }
                          else {
                              data.feedSummaryData[feedHealth.feed] = feedHealth;
+                             feedData = feedHealth;
                          }
-                         if (feedHealth.lastUnhealthyTime) {
-                             feedHealth.sinceTimeString = new moment(feedHealth.lastUnhealthyTime).fromNow();
+                         processedFeeds.push(feedData);
+                         if (feedData.lastUnhealthyTime) {
+                             feedData.sinceTimeString = new moment(feedData.lastUnhealthyTime).fromNow();
                          }
 
-                         OpsManagerFeedService.decorateFeedSummary(feedHealth);
-                         if(feedHealth.stream == true && feedHealth.feedHealth){
-                             feedHealth.runningCount = feedHealth.feedHealth.runningCount;
-                             if(feedHealth.runningCount == null){
-                                 feedHealth.runningCount =0;
+                         OpsManagerFeedService.decorateFeedSummary(feedData);
+                         if(feedData.stream == true && feedData.feedHealth){
+                             feedData.runningCount = feedData.feedHealth.runningCount;
+                             if(feedData.runningCount == null){
+                                 feedData.runningCount =0;
                              }
                          }
 
-                         if(feedHealth.running){
-                             feedHealth.timeSinceEndTime = feedHealth.runTime;
-                             feedHealth.runTimeString = '--';
+                         if(feedData.running){
+                             feedData.timeSinceEndTime = feedData.runTime;
+                             feedData.runTimeString = '--';
                          }
-                          processed.push(feedHealth.feed);
+                          processed.push(feedData.feed);
                      });
                      var keysToRemove=_.difference(Object.keys(data.feedSummaryData),processed);
                      if(keysToRemove != null && keysToRemove.length >0){
@@ -57,6 +66,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                          })
                      }
                  }
+                 return processedFeeds;
 
          };
 
@@ -69,6 +79,11 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
                  data.activeFeedRequest.resolve();
              }
+             //Cancel any active dashboard queries as this will supercede them
+             if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
+                 data.activeDashboardRequest.resolve();
+             }
+
              var canceler = $q.defer();
              data.activeFeedRequest = canceler;
 
@@ -78,6 +93,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                  data.feedsSearchResult = response.data;
                  if(response.data && response.data.data) {
                      setupFeedHealth(response.data.data);
+                     //reset data.dashboard.feeds.data ?
                      data.totalFeeds = response.data.recordsFiltered;
                  }
                  data.activeFeedRequest = null;
@@ -98,11 +114,19 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          }
 
          data.fetchDashboard = function() {
+
+             if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
+                 data.activeDashboardRequest.resolve();
+             }
+             var canceler = $q.defer();
+             data.activeDashboardRequest = canceler;
+
              var successFn = function (response) {
                  data.dashboard = response.data;
                  data.feedsSearchResult = response.data.feeds;
                  if(data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
-                     setupFeedHealth(data.dashboard.feeds.data);
+                     var processedFeeds = setupFeedHealth(data.dashboard.feeds.data);
+                     data.dashboard.feeds.data = processedFeeds;
                      data.totalFeeds = data.dashboard.feeds.recordsFiltered;
                  }
 
@@ -115,15 +139,17 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
                  data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'] || 0;
                  data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'] || 0;
-
+                 data.activeDashboardRequest = null;
                  BroadcastService.notify(data.DASHBOARD_UPDATED,data.dashboard);
 
              }
              var errorFn = function (err) {
-
+                 canceler.resolve();
+                 canceler = null;
+                 data.activeDashboardRequest = null;
              }
              var params = data.feedHealthQueryParams;
-             var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL,{params:params});
+             var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL,{timeout: canceler.promise,params:params});
              promise.then(successFn, errorFn);
              return promise;
          };

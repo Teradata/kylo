@@ -31,10 +31,12 @@ import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.Queues;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
@@ -68,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -93,6 +96,9 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
 
     @Inject
     private NifiBulletinExceptionExtractor nifiBulletinExceptionExtractor;
+
+    @Inject
+    private BatchJobExecutionProvider batchJobExecutionProvider;
 
     @Inject
     private JobScheduler jobScheduler;
@@ -135,6 +141,13 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         retryProvenanceEventWithDelay.setStatsJmsReceiver(this);
         scheduleStatsCompaction();
     }
+
+    /**
+     * Map of the summary stats.
+     * This is used to see if we need to update the feed stats or not
+     * to reduce the query on saving all the stats
+     */
+    private Map<String, JpaNifiFeedStats> latestStatsCache = new ConcurrentHashMap<>();
 
 
     /**
@@ -372,6 +385,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                     OpsManagerFeed opsManagerFeed = provenanceEventFeedUtil.getFeed(feedName);
                     if (opsManagerFeed != null) {
                         stats.setFeedId(new JpaNifiFeedStats.OpsManagerFeedId(opsManagerFeed.getId().toString()));
+                        stats.setStream(opsManagerFeed.isStream());
                     }
                     stats.addRunningFeedFlows(runningCount);
                     stats.setTime(DateTime.now().getMillis());
@@ -380,7 +394,25 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         }
         //group stats to save together by feed name
         if (!feedStatsMap.isEmpty()) {
-            nifiFeedStatisticsProvider.saveLatestFeedStats(new ArrayList<>(feedStatsMap.values()));
+            //only save those that have changed
+            List<NifiFeedStats> updatedStats = feedStatsMap.entrySet().stream().filter(e -> {
+                                                                                           String key = e.getKey();
+                                                                                           JpaNifiFeedStats value = e.getValue();
+                                                                                           JpaNifiFeedStats savedStats = latestStatsCache.computeIfAbsent(key, name -> value);
+                                                                                           return (savedStats.getRunningFeedFlows() != value.getRunningFeedFlows() || savedStats.getLastActivityTimestamp() != value.getLastActivityTimestamp());
+                                                                                       }
+            ).map(e -> e.getValue()).collect(Collectors.toList());
+
+            //if the running flows are 0 and its streaming we should try back to see if this feed is running or not
+            updatedStats.stream().filter(s -> s.isStream()).forEach(stats -> {
+                latestStatsCache.put(stats.getFeedName(), (JpaNifiFeedStats) stats);
+                if (stats.getRunningFeedFlows() == 0L) {
+                    batchJobExecutionProvider.markStreamingFeedAsStopped(stats.getFeedName());
+                } else {
+                    batchJobExecutionProvider.markStreamingFeedAsStarted(stats.getFeedName());
+                }
+            });
+            nifiFeedStatisticsProvider.saveLatestFeedStats(updatedStats);
         }
         return feedStatsMap;
     }

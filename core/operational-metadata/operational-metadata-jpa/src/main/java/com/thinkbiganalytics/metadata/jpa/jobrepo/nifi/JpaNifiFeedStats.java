@@ -32,6 +32,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Entity
 @Table(name = "NIFI_FEED_STATS")
@@ -52,6 +53,9 @@ public class JpaNifiFeedStats implements NifiFeedStats {
 
     @Column(name = "LAST_ACTIVITY_TIMESTAMP")
     private Long lastActivityTimestamp;
+
+    @Transient
+    private boolean isStream;
 
     public JpaNifiFeedStats() {
 
@@ -82,6 +86,9 @@ public class JpaNifiFeedStats implements NifiFeedStats {
 
     @Override
     public Long getRunningFeedFlows() {
+        if(runningFeedFlows == null){
+            runningFeedFlows = 0L;
+        }
         return runningFeedFlows;
     }
 
@@ -117,6 +124,14 @@ public class JpaNifiFeedStats implements NifiFeedStats {
 
     public void setLastActivityTimestamp(Long lastActivityTimestamp) {
         this.lastActivityTimestamp = lastActivityTimestamp;
+    }
+
+    public boolean isStream() {
+        return isStream;
+    }
+
+    public void setStream(boolean stream) {
+        isStream = stream;
     }
 
     @Embeddable

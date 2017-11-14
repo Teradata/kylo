@@ -125,10 +125,10 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             if(responseData){
                 angular.forEach(responseData,function(statusCount,i){
                     if(statusCount.status == 'RUNNING'){
-                        self.running = statusCount.count;
+                        self.running += statusCount.count;
                     }
                     else if(statusCount.status =='FAILED'){
-                        self.failed = statusCount.count;
+                        self.failed += statusCount.count;
                     }
                 });
                 ensureFeedSummaryMatches(responseData);

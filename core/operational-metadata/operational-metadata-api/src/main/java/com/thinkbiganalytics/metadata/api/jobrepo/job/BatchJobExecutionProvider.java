@@ -171,6 +171,15 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     Boolean isFeedRunning(String feedName);
 
+
+    /**
+     * when a streaming feed indicates there is no new activity it needs to set the job for the feed to STOPPED
+     * @param feed
+     */
+    void markStreamingFeedAsStopped(String feed);
+
+    void markStreamingFeedAsStarted(String feed);
+
     /**
      * find all job executions matching a particular filter string, returning a paged result set
      *
