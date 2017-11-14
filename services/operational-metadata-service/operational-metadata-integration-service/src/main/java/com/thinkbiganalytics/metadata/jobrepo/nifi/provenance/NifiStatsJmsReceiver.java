@@ -399,8 +399,8 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                                                                                            String key = e.getKey();
                                                                                            JpaNifiFeedStats value = e.getValue();
                                                                                            JpaNifiFeedStats savedStats = latestStatsCache.computeIfAbsent(key, name -> value);
-                                                                                           return ( (value.getLastActivityTimestamp() != null && savedStats.getLastActivityTimestamp() != null && value.getLastActivityTimestamp() >  savedStats.getLastActivityTimestamp() ||
-                                                                                                     value.getLastActivityTimestamp() != null && value.getRunningFeedFlows() != savedStats.getRunningFeedFlows()));
+                                                                                           return ( (value.getLastActivityTimestamp() != null && savedStats.getLastActivityTimestamp() != null && value.getLastActivityTimestamp() >  savedStats.getLastActivityTimestamp()) ||
+                                                                                                    (value.getLastActivityTimestamp() != null && value.getRunningFeedFlows() != savedStats.getRunningFeedFlows()));
                                                                                        }
             ).map(e -> e.getValue()).collect(Collectors.toList());
 
