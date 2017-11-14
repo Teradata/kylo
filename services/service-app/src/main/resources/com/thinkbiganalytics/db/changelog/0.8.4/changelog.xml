@@ -30,4 +30,5 @@
   <include file="nifi-feed-processor-stats-remove-constraints.xml" relativeToChangelogFile="true"/>
   <include file="mysql_nifi_feed_processor_stats_compact.xml" relativeToChangelogFile="true" />
   <include file="postgres_nifi_feed_processor_stats_compact.xml" relativeToChangelogFile="true" />
+  <include file="update_batch_nifi_job_indexes.xml" relativeToChangelogFile="true"/>
 </databaseChangeLog>
