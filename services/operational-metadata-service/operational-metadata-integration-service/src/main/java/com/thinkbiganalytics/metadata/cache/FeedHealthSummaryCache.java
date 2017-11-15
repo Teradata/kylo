@@ -296,14 +296,20 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
 
     }
 
+    /**
+     * Streaming Feeds only show up in ALL or Streaming tab  (Running tab ??)
+     * @param feedSummary
+     * @param feedSummaryFilter
+     * @return
+     */
     private boolean fixedFilter(FeedSummary feedSummary, FeedSummaryFilter feedSummaryFilter) {
         switch (feedSummaryFilter.getFilter()) {
             case ALL:
                 return true;
             case HEALTHY:
-                return feedSummary.getFailedCount() == null || feedSummary.getFailedCount() == 0L;
+                return !feedSummary.isStream() && (feedSummary.getFailedCount() == null || feedSummary.getFailedCount() == 0L);
             case UNHEALTHY:
-                return feedSummary.getFailedCount() != null && feedSummary.getFailedCount() > 0L;
+                return !feedSummary.isStream() && (feedSummary.getFailedCount() != null && feedSummary.getFailedCount() > 0L);
             case RUNNING:
                 return feedSummary.getRunStatus() == FeedSummary.RunStatus.RUNNING;
             case STREAMING:
