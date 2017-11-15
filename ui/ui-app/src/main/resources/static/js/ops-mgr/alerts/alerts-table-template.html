@@ -44,7 +44,7 @@
                             <md-list-item dir-paginate="alert in tab.data.content|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId(tab)" total-items="tab.data.total"
                                           current-page="tab.currentPage">
                                 <div layout="row" layout-fill>
-                                    <div flex="10" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="10" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">
                                             {{alert.level}}
                                         </span>
