@@ -39,7 +39,7 @@
               <br/><br/>
             </div>
             <md-list flex layout-fill class="list-item-table">
-              <md-list-item class="md-secondary overview" dir-paginate="feed in vm.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="vm.data.total" current-page="vm.currentPage"
+              <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
                             pagination-id="vm.paginationId(tab)" ng-click="vm.feedDetails($event,feed)">
 
                 <div layout="column" layout-fill>
@@ -107,7 +107,7 @@
                                          direction-links="true"
                                          boundary-links="false"
                                          template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                         current-page="vm.currentPage"
+                                         current-page="tab.currentPage"
                                          on-page-change="vm.onPaginationChange(newPageNumber)"
                                          label="Rows per page"
                                          rows-per-page="vm.paginationData.rowsPerPage"
@@ -131,7 +131,7 @@
                 </thead>
                 <tbody md-body>
                 <tr md-row
-                    ng-repeat="feed in vm.data.content "
+                    ng-repeat="feed in tab.data.content "
                     ng-click="vm.feedDetails($event,feed)">
                   <td md-cell>{{feed.feed}}</td>
                   <td md-cell>
@@ -161,7 +161,7 @@
               </table>
             </md-table-container>
 
-            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.data.total}}" md-on-paginate="vm.onTablePaginationChange"
+            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onTablePaginationChange"
                                  md-limit-options="[5,10,20,50]"></md-table-pagination>
 
           </div>
