@@ -20,7 +20,7 @@
 <div flex layout="row" ng-if="vm.assessmentNotFound == false">
   <card-layout flex>
     <header-section transclude-to="head" flex layout>
-      <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment - {{vm.assessment.agreement.name}}</div>
+      <div style="white-space:nowrap" class="card-title" flex>Service Level Assessment</div>
     </header-section>
     <body-section transclude-to="body" transclude-replace="true">
       <md-content ng-if="vm.loading == false">
@@ -95,35 +95,20 @@
     </body-section>
   </card-layout>
 
-  <card-layout flex="30" header-css="assessment-details-header" body-css="assessment-details-right-body" ng-if="vm.loading == false">
+  <card-layout flex="30" card-toolbar="false" header-css="assessment-details-header card-toolbar2" body-css="assessment-details-right-body" ng-if="vm.loading == false">
     <header-section>
-      <div style="white-space:nowrap" class="card-title">Service Level Assessment Details</div>
-      <span flex></span>
+      <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
+      <span flex="5"></span>
     </header-section>
     <body-section >
       <md-content flex md-scroll-y>
         <md-list flex layout-fill layout="column" class="list-item-table">
-          <md-list-item>
 
-            <div layout="column" class="item-column md-list-item-text ">
-             <div layout="row">
-               <ng-md-icon ng-if="vm.assessment.result == 'FAILURE'" class="error" icon="error" size="20"></ng-md-icon>
-              <ng-md-icon ng-if="vm.assessment.result == 'SUCCESS'" class="success" icon="check_circle" size="20"></ng-md-icon>
-              <ng-md-icon ng-if="vm.assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
-              {{vm.assessment.result}}
-             </div>
-              <span class="column-title-bottom">
-              Result
-              </span>
-            </div>
-          </md-list-item>
-          <md-divider></md-divider>
           <md-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title" >
-                                                  <span ng-if="vm.agreementNotFound">Service Level Agreement not found</span>
-                                                  <a href ng-if="!vm.agreementNotFound" ng-click="vm.serviceLevelAgreement()">Service Level Agreement</a>
+                                               <span class="item-title" ng-if="vm.agreementNotFound" >Service Level Agreement not found
                                                </span>
+              <md-button class="md-primary" ng-if="!vm.agreementNotFound" ng-click="vm.serviceLevelAgreement()">Service Level Agreement</md-button>
             </div>
           </md-list-item>
 

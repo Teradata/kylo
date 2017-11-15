@@ -133,7 +133,7 @@
 
                     <div class="md-subheader layout-padding-bottom">Links</div>
                     <div ng-repeat="link in vm.alertData.links" layout="column" class="layout-padding-bottom">
-                        <a ui-sref="{{link.value}}">{{link.label}}</a>
+                        <md-button class="md-primary" ui-sref="{{link.value}}">{{link.label}}</md-button>
                     </div>
                 </div>
             </md-content>

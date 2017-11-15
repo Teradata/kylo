@@ -54,11 +54,12 @@
         <thinkbig-policy-input-form class="layout-padding-top" the-form="vm.slaForm" rule="rule" mode="vm.mode" feed="vm.feed" on-property-change="vm.onPropertyChange"></thinkbig-policy-input-form>
 
         <md-divider ng-if="!$last"></md-divider>
-        <div ng-if="vm.addingSlaCondition == false && $last" layout="row">
-          <md-button class="md-primary" ng-click="vm.addNewCondition()">Add Condition</md-button>
-          <span flex></span>
-        </div>
 
+      </div>
+
+      <div ng-if="vm.addingSlaCondition == false" layout="row">
+        <md-button class="md-primary" ng-click="vm.addNewCondition()">Add Condition</md-button>
+        <span flex></span>
       </div>
 
       <div ng-if="vm.addingSlaCondition" class="layout-padding-left-right" layout="row" flex>
