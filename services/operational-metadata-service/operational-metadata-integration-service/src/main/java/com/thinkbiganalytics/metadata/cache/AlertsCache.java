@@ -131,6 +131,9 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
     public List<AlertSummaryGrouped> getUserCache(Long time) {
         return getUserAlertSummary(time);
     }
+    public List<AlertSummaryGrouped> getUserCache(Long time, RoleSetExposingSecurityExpressionRoot userContext) {
+        return getUserAlertSummary(time, null, null,userContext);
+    }
 
     protected List<AlertSummaryGrouped> fetchUnhandledAlerts() {
         List<AlertSummary> alerts = new ArrayList<>();
@@ -187,6 +190,10 @@ public class AlertsCache implements TimeBasedCache<AlertSummaryGrouped> {
 
     private List<AlertSummaryGrouped> getUserAlertSummary(Long time, String feedName, String feedId) {
         RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
+      return getUserAlertSummary(time,feedName,feedId,userContext);
+    }
+
+    private List<AlertSummaryGrouped> getUserAlertSummary(Long time, String feedName, String feedId,RoleSetExposingSecurityExpressionRoot userContext ) {
         return getAlertSummary(time).stream()
             .filter(alertSummaryGrouped -> hasAccess(userContext, alertSummaryGrouped, feedName, feedId))
             .collect(Collectors.toList());

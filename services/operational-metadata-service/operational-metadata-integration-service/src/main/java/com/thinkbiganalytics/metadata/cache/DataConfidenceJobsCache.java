@@ -136,8 +136,13 @@ public class DataConfidenceJobsCache implements TimeBasedCache<CheckDataJob> {
 
     public List<CheckDataJob> getUserDataConfidenceJobs(Long time) {
         RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
+        return getUserDataConfidenceJobs(time,userContext);
+    }
+
+    public List<CheckDataJob> getUserDataConfidenceJobs(Long time, RoleSetExposingSecurityExpressionRoot userContext) {
         return getDataConfidenceSummary(time).stream().filter(checkDataJob -> feedAclCache.hasAccess(userContext, checkDataJob.getFeedId())).collect(Collectors.toList());
     }
+
 
     @Override
     public List<CheckDataJob> getUserCache(Long time) {
