@@ -96,6 +96,38 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 });
                 return optionsArr;
             },
+            isFeedProperty: function(property){
+                return (property.type == 'currentFeed' || property.type == 'feedSelect' || property.type == 'feedChips');
+            },
+            getRuleNames:function(ruleArray){
+                var properties = [];
+               var names = _.map(ruleArray,function(rule){
+                    return rule.name;
+                });
+               return _.uniq(names);
+            },
+            /**
+             * Return an array of the feed names for the sla
+             * @param sla
+             * @return {Array}
+             */
+            getFeedNames:function(ruleArray) {
+                var names = [];
+                _.each(ruleArray,function(rule){
+                    _.each(rule.properties,function(property) {
+                       if(data.isFeedProperty(property)) {
+                           if(property.value != null && property.value != undefined) {
+                               if(property.value != '#currentFeed') {
+                                   names.push(property.value)
+                               }
+                           }
+                       }
+                });
+            });
+                return _.uniq(names);
+
+
+            },
             /**
              * remove all feeds from the selectable values where the "feed:editDetails" property is false
              * @param policies array of policies

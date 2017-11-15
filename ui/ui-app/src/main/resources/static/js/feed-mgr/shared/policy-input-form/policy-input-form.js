@@ -11,7 +11,8 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                 rule: '=',
                 theForm: '=',
                 feed: '=?',
-                mode: '&' //NEW or EDIT
+                mode: '=', //NEW or EDIT
+                onPropertyChange:"&?"
             },
             controllerAs: 'vm',
             scope: {},
@@ -35,6 +36,20 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
         }
         self.queryChipSearch = PolicyInputFormService.queryChipSearch;
         self.transformChip = PolicyInputFormService.transformChip;
+
+        self.onPropertyChanged = function(property){
+            if(self.onPropertyChange != undefined && angular.isFunction(self.onPropertyChange)){
+                self.onPropertyChange()(property);
+            }
+        }
+        //call the onChange if the form initially sets the value
+        if(self.onPropertyChange != undefined && angular.isFunction(self.onPropertyChange)) {
+            _.each(self.rule.properties, function (property) {
+                if ((property.type == 'select' || property.type =='feedSelect' || property.type == 'currentFeed') && property.value != null) {
+                    self.onPropertyChange()(property);
+                }
+            });
+        }
 
     };
 

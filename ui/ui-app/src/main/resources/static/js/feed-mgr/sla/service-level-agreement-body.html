@@ -17,12 +17,12 @@
   limitations under the License.
   #L%
   -->
-<div ng-if="vm.loading">
+<div ng-if="vm.loading" class="layout-padding-left-right">
   <md-progress-linear md-mode="indeterminate"></md-progress-linear>
   <span class="md-body-2">{{vm.loadingMessage}}</span>
 </div>
 
-<div ng-if="vm.editSla == null && !vm.loading">
+<div ng-if="vm.editSla == null && !vm.loading" class="layout-padding-left-right">
   <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
     <md-list flex layout-fill class="list-item-table">
       <md-list-item dir-paginate="sla in vm.serviceLevelAgreements |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
@@ -42,9 +42,9 @@
       <md-list-item ng-show="vm.loading == false && vm.serviceLevelAgreements.length ==0">
         No Service Level Agreements
       </md-list-item>
-      <md-divider></md-divider>
+      <md-divider ng-show="vm.loading == false && vm.serviceLevelAgreements.length >0"></md-divider>
 
-      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length > 0">
+      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length > 0 && vm.feed == null">
         <dir-pagination-controls pagination-id="vm.paginationId"
                                  auto-hide="false"
                                  max-size="5"

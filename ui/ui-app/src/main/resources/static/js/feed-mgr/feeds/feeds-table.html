@@ -37,7 +37,7 @@
                         pagination-id="feeds"
                         current-page="vm.currentPage">
             <div layout="row" layout-fill>
-              <div flex="30" layout="column" class="item-column md-list-item-text " ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
+              <div flex="30" layout="column" class="item-column md-list-item-text pointer" ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
                                      <span class="item-title" title="{{feed.feedName}} - {{feed.state}}" ng-class="{'disabled':feed.state == 'DISABLED'}">
                                       {{feed.feedName}}
                                    </span>

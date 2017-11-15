@@ -25,17 +25,18 @@
       <label>{{property.displayName}}</label>
       <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+             ng-required="property.required" ng-disabled="!vm.rule.editable" ng-change="vm.onPropertyChanged(property)"/>
       <input name="{{property.formKey}}" ng-if="property.type == 'email'" ng-model="property.value" md-placeholder="property.placeholder" ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" type="email"/>
+             ng-required="property.required" ng-disabled="!vm.rule.editable" type="email" ng-change="vm.onPropertyChanged(property)"/>
       <input name="{{property.formKey}}" ng-if="property.type == 'emails'" ng-model="property.value" md-placeholder="property.placeholder" ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" multiple-email-validator />
+             ng-required="property.required" ng-disabled="!vm.rule.editable" multiple-email-validator ng-change="vm.onPropertyChanged(property)" />
       <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-pattern="property.patternRegExp"
-             ng-required="property.required" ng-disabled="!vm.rule.editable" type="text"/>
+             ng-required="property.required" ng-disabled="!vm.rule.editable" type="text" ng-change="vm.onPropertyChanged(property)"/>
       <md-select ng-model="property.value" ng-if="(property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' || property.type =='velocityTemplate' )" ng-required="property.required"
                  name="{{property.formKey}}"
-                 ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))">
+                 ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))"
+                 ng-change="vm.onPropertyChanged(property)">
         <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
           {{value.label}}
         </md-option>
@@ -55,7 +56,7 @@
       <label>{{property.displayName}}</label>
       <input required ng-model="property.value" name="{{property.formKey}}" ng-disabled="!vm.rule.editable"
              cron-expression-validator
-             ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
+             ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }" ng-change="vm.onPropertyChanged(property)"/>
 
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
@@ -76,7 +77,7 @@
 
     <div ng-if="property.type == 'date' ">
       <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
-                     ng-disabled="!vm.rule.editable">
+                     ng-disabled="!vm.rule.editable" ng-change="vm.onPropertyChanged(property)">
       </md-datepicker>
       <div ng-if="property.hint && property.type == 'date' " class="hint">
         {{property.hint}}
@@ -105,7 +106,7 @@
         <md-chips name="{{property.formKey}}" ng-model="property.values" md-autocomplete-snap md-on-add="vm.validateRequiredChips(property)"
                   md-on-remove="vm.validateRequiredChips(property) "
                   md-transform-chip="vm.transformChip($chip)"
-                  md-require-match="true">
+                  md-require-match="true" >
           <md-autocomplete
               md-selected-item="vm.editChips.selectedItem"
               md-search-text="vm.editChips.searchText"
