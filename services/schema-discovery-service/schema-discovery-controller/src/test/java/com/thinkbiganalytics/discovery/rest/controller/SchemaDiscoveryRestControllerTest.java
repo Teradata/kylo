@@ -33,11 +33,14 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.test.JerseyTest;
 import org.glassfish.jersey.test.TestProperties;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
+import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.GenericType;
@@ -72,7 +75,9 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
     public void testUploadFileDirect() throws Exception {
         SchemaParserDescriptor descriptor = createMockParserDescriptor();
         SchemaDiscoveryRestController c = new SchemaDiscoveryRestController();
-        Response response = c.uploadFile(ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
+        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
+        Mockito.when(request.getContentLength()).thenReturn(10000001);
+        Response response = c.uploadFile(request, ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
         assertNotNull(response != null);
     }
 

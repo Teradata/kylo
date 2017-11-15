@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -48,6 +49,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -68,6 +70,8 @@ public class SchemaDiscoveryRestController {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
+    private static final int MEGABYTE = 1000 * 1000;
+    private static final int FILE_LIMIT_MB = 10;
 
     @POST
     @Path("/hive/sample-file")
@@ -78,9 +82,17 @@ public class SchemaDiscoveryRestController {
                       @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
                       @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
                   })
-    public Response uploadFile(@FormDataParam("parser") String parserDescriptor,
+    public Response uploadFile(@Context final HttpServletRequest request,
+                               @FormDataParam("parser") String parserDescriptor,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
+
+        int contentLength = request == null ? 0 : request.getContentLength();
+        if (contentLength < 1 || contentLength > FILE_LIMIT_MB * MEGABYTE) {
+            RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
+            builder.message("File must be less than " + FILE_LIMIT_MB + " MB");
+            return Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).entity(builder.buildError()).build();
+        }
 
         Schema schema;
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();

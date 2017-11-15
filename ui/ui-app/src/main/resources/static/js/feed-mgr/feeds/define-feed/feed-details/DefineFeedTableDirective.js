@@ -738,6 +738,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
+                angular.element('#uploadButton').addClass('md-primary');
             };
             //clear partitions
             while (self.model.table.partitions.length) {
