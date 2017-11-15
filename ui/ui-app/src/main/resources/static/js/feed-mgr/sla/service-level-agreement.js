@@ -380,6 +380,9 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         self.cancelEditSla = function() {
             showList();
             applyAccessPermissions();
+            self.userSuppliedName = false;
+            self.userSuppliedDescription = false;
+
         }
 
         self.addNewCondition = function() {
@@ -536,6 +539,9 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         self.editSla = {name: '', description: '', rules: [], actionConfigurations: []};
         self.addingSlaCondition = true;
         self.renderFilter = false;
+        self.userSuppliedName = false;
+        self.userSuppliedDescription = false;
+
     }
 
     self.onEditSla = function(sla) {

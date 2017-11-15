@@ -19,7 +19,7 @@
   -->
 <div ng-if="vm.editSla != null"  >
   <div layout="row" layout-align="start start">
-    <md-button ng-click="vm.onBackToList($event)" class="md-raised">Back to List</md-button>
+    <md-button ng-click="vm.onBackToList($event)" >Back to List</md-button>
     <div flex/>
     <a href ng-click="vm.viewSlaAssessments()" ng-if="vm.feed">SLA Assessments</a>
   </div>
@@ -88,7 +88,7 @@
         <span class="md-subhead">Actions</span>
 
         <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column" class="layout-padding">
-          <span>All SLA violations will generate an Alert.</span>
+          <span>All SLA violations will generate an alert.</span>
           <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
         </div>
 
@@ -148,13 +148,14 @@
 
       </div>
 
-      <div layout="column" class="layout-padding-top" style="padding-top:16px;">
+      <div layout="column" class="layout-padding-top">
         <span class="md-subhead">Description</span>
         <div class="layout-padding-top-bottom">
 
         </div>
 
-        <md-input-container class="md-block condensed">
+        <div class="layout-padding">
+        <md-input-container class="md-block condensed" >
           <label>Name</label>
           <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name" ng-disabled="!vm.allowEdit" ng-change="vm.onNameChange()"
                  required/>
@@ -172,6 +173,7 @@
             <div ng-message="required">This field is required.</div>
           </div>
         </md-input-container>
+        </div>
       </div>
 
       <div class="layout-padding-top-bottom" flex layout="row">
