@@ -44,7 +44,7 @@
       </md-list-item>
       <md-divider ng-show="vm.loading == false && vm.serviceLevelAgreements.length >0"></md-divider>
 
-      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length > 0">
+      <md-list-item layout-align="end center" layout-row class="pagination-list-item" ng-show="vm.serviceLevelAgreements.length > 0 && vm.feed == null">
         <dir-pagination-controls pagination-id="vm.paginationId"
                                  auto-hide="false"
                                  max-size="5"

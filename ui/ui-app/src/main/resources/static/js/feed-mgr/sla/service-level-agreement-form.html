@@ -19,9 +19,9 @@
   -->
 <div ng-if="vm.editSla != null"  >
   <div layout="row" layout-align="start start">
-    <md-button ng-click="vm.onBackToList($event)" >Back to List</md-button>
+  <!--  <md-button ng-click="vm.onBackToList($event)"  class="md-primary">Back to List</md-button>-->
     <div flex/>
-    <a href ng-click="vm.viewSlaAssessments()" ng-if="vm.feed">SLA Assessments</a>
+    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">SLA Assessments</md-button>
   </div>
 
   <ng-form name="vm.slaForm" >
