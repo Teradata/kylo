@@ -185,8 +185,12 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
     }
 
     public Map<String, Long> getUserFeedHealthCounts(Long time) {
-        AtomicLongMap<String> healthCounts = AtomicLongMap.create();
         RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
+       return getUserFeedHealthCounts(time,userContext);
+    }
+
+    public Map<String, Long> getUserFeedHealthCounts(Long time,  RoleSetExposingSecurityExpressionRoot userContext ) {
+        AtomicLongMap<String> healthCounts = AtomicLongMap.create();
         List<? extends FeedSummary> list = getFeedSummaryList(time);
         list.stream()
             .filter(filter(new FeedSummaryFilter(), userContext))
@@ -213,8 +217,12 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
      * @return SearchResult filled with FeedSummary objects
      */
     public SearchResult getUserFeedHealth(Long time, FeedSummaryFilter feedSummaryFilter) {
-        SearchResult<com.thinkbiganalytics.jobrepo.query.model.FeedSummary> searchResult = new SearchResultImpl();
         RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
+       return getUserFeedHealth(time,feedSummaryFilter,userContext);
+    }
+
+    public SearchResult getUserFeedHealth(Long time, FeedSummaryFilter feedSummaryFilter,  RoleSetExposingSecurityExpressionRoot userContext) {
+        SearchResult<com.thinkbiganalytics.jobrepo.query.model.FeedSummary> searchResult = new SearchResultImpl();
         List<FeedHealth> feedSummaryHealth = null;
         //get the entire list back and filter it for user access
         List<? extends FeedSummary> list = getFeedSummaryList(time).stream().filter(filter(feedSummaryFilter, userContext)).collect(Collectors.toList());

@@ -81,15 +81,18 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          *
          * @type {number}
          */
-        this.currentPage =PaginationDataService.currentPage(self.pageName) || 1;
+        this.currentPage = function(tab) {
+            return PaginationDataService.currentPage(self.pageName, tab.title);
+        }
 
         /**
          * The pagination Id
          * @param tab optional tab to designate the pagination across tabs.
          */
-        this.paginationId = function(tab){
-            return PaginationDataService.paginationId(self.pageName);
+        this.paginationId = function(tab) {
+            return PaginationDataService.paginationId(self.pageName, tab.title);
         }
+
 
         /**
          * Refresh interval object for the feed health data
@@ -99,17 +102,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
         this.onTabSelected = function(tab) {
-            TabService.selectedTab(self.pageName,tab);
-            var currentPage = self.currentPage;
-            if(currentPage != 1){
-                self.currentPage = 1;
-                //this will trigger a reload
-            }
-            else {
-                loadFeeds(true,true);
-            }
-
+            TabService.selectedTab(self.pageName, tab);
+            return  loadFeeds(true,true);
         };
+
+
         $scope.$watch(function(){
             return self.viewType;
         },function(newVal) {
@@ -121,33 +118,29 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
         this.onOrderChange = function (order) {
+            PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName,order);
             return loadFeeds(true,true);
         };
 
         this.onPaginationChange = function (page, limit) {
             if( self.viewType == 'list') {
-                 self.currentPage = page;
+                if (loaded) {  var activeTab= TabService.getActiveTab(self.pageName);
+                    PaginationDataService.currentPage(self.pageName, activeTab.title, page);
+                    return loadFeeds(true, true);
+                }
             }
         };
 
         this.onTablePaginationChange = function(page, limit){
             if( self.viewType == 'table') {
-                var activeTab = TabService.getActiveTab(self.pageName);
-                    self.currentPage = page;
-            }
-        }
-
-        $scope.$watch(function() {
-            return self.currentPage;
-        }, function (newVal, oldVal) {
-            if (newVal != oldVal) {
+                var activeTab= TabService.getActiveTab(self.pageName);
                 if (loaded) {
-                    PaginationDataService.currentPage(self.pageName, null, newVal);
+                    PaginationDataService.currentPage(self.pageName, activeTab.title, page);
                     return loadFeeds(true, true);
                 }
             }
-        });
+        }
 
         $scope.$watch(function() {
             return self.paginationData.rowsPerPage;
@@ -258,7 +251,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             var activeTab = TabService.getActiveTab(self.pageName);
             var tab = activeTab.title;
             var sort = PaginationDataService.sort(self.pageName);
-            var start = (limit * self.currentPage) - limit;
+            var start = (limit * activeTab.currentPage) - limit;
             return {limit:limit,fixedFilter:tab,sort:sort,start:start,filter:self.filter};
         }
 
@@ -281,11 +274,12 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
               var filter = queryParams.filter;
               OpsManagerDashboardService.updateFeedHealthQueryParams(tab,filter,start , limit, sort);
               self.fetchFeedHealthPromise =  OpsManagerDashboardService.fetchFeeds(tab,filter,start , limit, sort).then(function (response) {
-                    populateFeedData();
+                    populateFeedData(tab);
               },
               function(err){
                   loaded = true;
-                  self.data.clearContent();
+                  var activeTab = TabService.getActiveTab(self.pageName);
+                  activeTab.clearContent();
                   self.showProgress = false;
               });
           }
@@ -294,13 +288,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
 
-        function populateFeedData(){
-            self.data.clearContent();
+        function populateFeedData(tab){
+            var activeTab = TabService.getActiveTab(self.pageName);
+            activeTab.clearContent();
             self.dataMap = OpsManagerDashboardService.feedSummaryData;
             _.each(self.dataMap,function(feed,feedName) {
-                self.data.addContent(feed);
+                activeTab.addContent(feed);
             });
-            self.data.setTotal(OpsManagerDashboardService.totalFeeds);
+            TabService.setTotal(self.pageName, activeTab.title, OpsManagerDashboardService.totalFeeds)
             loaded = true;
             self.showProgress = false;
         }

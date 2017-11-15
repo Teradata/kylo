@@ -40,7 +40,7 @@ import java.util.Set;
 @RepositoryType(BatchJobExecutionSecuringRepository.class)
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 
-    @Query(value = "select job from JpaBatchJobExecution as job "
+    @Query(value = "select distinct job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
                    + "where nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);

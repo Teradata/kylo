@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.cache;
  * #L%
  */
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.alerts.rest.model.AlertSummaryGrouped;
 import com.thinkbiganalytics.jobrepo.query.model.CheckDataJob;
 import com.thinkbiganalytics.jobrepo.query.model.DataConfidenceSummary;
@@ -33,15 +34,16 @@ import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
+import java.util.UUID;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import javax.inject.Inject;
 
@@ -75,31 +77,94 @@ public class CacheService {
     @Inject
     DataConfidenceJobsCache dataConfidenceJobsCache;
 
+    @Value("${kylo.ops.mgr.dashboard.threads:20}")
+    private int dashboardThreads = 20;
+
+    ExecutorService executor = Executors.newFixedThreadPool(dashboardThreads, new ThreadFactoryBuilder().setNameFormat("kylo-dashboard-pool-%d").build());
+
+    /**
+     * Threaded Task that releases the barrier counter
+     */
+    private class ThreadedDashboardTask implements Runnable {
+        CyclicBarrier barrier;
+        Runnable runnable;
+        String name;
+        public ThreadedDashboardTask(CyclicBarrier barrier, Runnable runnable){
+            this.barrier = barrier;
+            this.runnable = runnable;
+            this.name = UUID.randomUUID().toString();
+        }
+        public void run(){
+            try {
+                this.runnable.run();
+            }catch (Exception e){
+
+            }finally {
+                try {
+                    barrier.await();
+                }catch (Exception e){
+
+                }
+            }
+            }
+
+    }
+
+    /**
+     * Action called after getting feed data to create the Dashboard view as it pertains to the User
+     */
+    private class DashboardAction implements  Runnable{
+
+        private Long time;
+        private Dashboard dashboard;
+
+        private FeedHealthSummaryCache.FeedSummaryFilter feedSummaryFilter;
+        private RoleSetExposingSecurityExpressionRoot userContext;
+
+        public DashboardAction(Long time, RoleSetExposingSecurityExpressionRoot userContext,FeedHealthSummaryCache.FeedSummaryFilter feedSummaryFilter){
+            this.time = time;
+            this.feedSummaryFilter = feedSummaryFilter;
+            this.userContext = userContext;
+        }
+        public void run() {
+            try {
+                DataConfidenceSummary dataConfidenceSummary = new DataConfidenceSummary(dataConfidenceJobsCache.getUserDataConfidenceJobs(time,userContext), 60);
+                dashboard =
+                    new Dashboard(time, userContext.getName(), feedHealthSummaryCache.getUserFeedHealthCounts(time, userContext), feedHealthSummaryCache.getUserFeedHealth(time, feedSummaryFilter,userContext),
+                                  alertsCache.getUserCache(time,userContext), dataConfidenceSummary, serviceStatusCache.getUserCache(time));
+            } catch (Exception e) {
+                log.error("Error getting the dashboard ", e);
+                throw new RuntimeException("Unable to get the Dashboard " + e.getMessage());
+            }
+        }
+
+        public Dashboard getDashboard(){
+            return dashboard;
+        }
+    }
+
     /**
      * We need the Acl List populated in order to do the correct fetch
+     * Fetch the components of the dashboard in separate threads
      */
     public Dashboard getDashboard(FeedHealthSummaryCache.FeedSummaryFilter feedSummaryFilter) {
         Dashboard dashboard = null;
         if (!accessController.isEntityAccessControlled() || (accessController.isEntityAccessControlled() && feedAclCache.isAvailable())) {
             Long time = TimeUtil.getTimeNearestFiveSeconds();
             RoleSetExposingSecurityExpressionRoot userContext = feedAclCache.userContext();
-            List<Callable<Object>> tasks = new ArrayList<>();
-            tasks.add(() -> feedHealthSummaryCache.getCache(time));
-            tasks.add(() -> dataConfidenceJobsCache.getCache(time));
-            tasks.add(() -> alertsCache.getCache(time));
-            tasks.add(() -> serviceStatusCache.getCache(time));
-            ExecutorService pool = Executors.newFixedThreadPool(tasks.size());
+            DashboardAction dashboardAction = new DashboardAction(time, userContext,feedSummaryFilter);
+            CyclicBarrier barrier = new CyclicBarrier(5, dashboardAction);
+            List<ThreadedDashboardTask> tasks = new ArrayList<>();
+            tasks.add(new ThreadedDashboardTask(barrier,() -> feedHealthSummaryCache.getCache(time)));
+            tasks.add(new ThreadedDashboardTask(barrier,() -> dataConfidenceJobsCache.getCache(time)));
+            tasks.add(new ThreadedDashboardTask(barrier,() -> alertsCache.getCache(time)));
+            tasks.add(new ThreadedDashboardTask(barrier,() -> serviceStatusCache.getCache(time)));
+            tasks.stream().forEach(t -> executor.submit(t));
             try {
-                List<Future<Object>> results = pool.invokeAll(tasks);
-                DataConfidenceSummary dataConfidenceSummary = new DataConfidenceSummary(dataConfidenceJobsCache.getUserCache(time), 60);
-                dashboard =
-                    new Dashboard(time, userContext.getName(), feedHealthSummaryCache.getUserFeedHealthCounts(time), feedHealthSummaryCache.getUserFeedHealth(time, feedSummaryFilter),
-                                  alertsCache.getUserCache(time), dataConfidenceSummary, serviceStatusCache.getUserCache(time));
-            } catch (Exception e) {
-
+                barrier.await();
+            }catch (Exception e) {
             }
-            pool.shutdown();
-            return dashboard;
+            return dashboardAction.getDashboard();
         } else {
             return Dashboard.NOT_READY;
         }

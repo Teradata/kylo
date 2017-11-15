@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -158,6 +159,8 @@ public class FeedEventStatistics implements Serializable {
      * Count of the flows running by feed processor
      */
     protected Map<String,AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
+
+    protected AtomicBoolean feedProcessorRunningFeedFlowsChanged = new AtomicBoolean(false);
 
     /**
      * file location to persist this data if NiFi goes Down midstream
@@ -326,10 +329,17 @@ public class FeedEventStatistics implements Serializable {
             feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
 
             feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(),processorId -> new AtomicLong(0)).incrementAndGet();
-
+            feedProcessorRunningFeedFlowsChanged.set(true);
             //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
         }
+    }
 
+    public void markFeedProcessorRunningFeedFlowsUnchanged(){
+        feedProcessorRunningFeedFlowsChanged.set(false);
+    }
+
+    public boolean isFeedProcessorRunningFeedFlowsChanged(){
+        return feedProcessorRunningFeedFlowsChanged.get();
     }
 
     /**
@@ -541,6 +551,7 @@ public class FeedEventStatistics implements Serializable {
             AtomicLong runningCount = feedProcessorRunningFeedFlows.get(feedProcessor);
             if( runningCount != null && runningCount.get() >=1) {
                 runningCount.decrementAndGet();
+                feedProcessorRunningFeedFlowsChanged.set(true);
             }
         }
     }

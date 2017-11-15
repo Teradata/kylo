@@ -42,6 +42,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV3;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
@@ -388,10 +389,17 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                         stats.setStream(opsManagerFeed.isStream());
                     }
                     stats.addRunningFeedFlows(runningCount);
-                    stats.setTime(DateTime.now().getMillis());
+                    if(holder instanceof AggregatedFeedProcessorStatisticsHolderV3){
+                        stats.setTime(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
+                        stats.setLastActivityTimestamp(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
+                    }
+                    else {
+                        stats.setTime(DateTime.now().getMillis());
+                    }
                 }
             });
         }
+
         //group stats to save together by feed name
         if (!feedStatsMap.isEmpty()) {
             //only save those that have changed
@@ -399,7 +407,8 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                                                                                            String key = e.getKey();
                                                                                            JpaNifiFeedStats value = e.getValue();
                                                                                            JpaNifiFeedStats savedStats = latestStatsCache.computeIfAbsent(key, name -> value);
-                                                                                           return (savedStats.getRunningFeedFlows() != value.getRunningFeedFlows() || savedStats.getLastActivityTimestamp() != value.getLastActivityTimestamp());
+                                                                                           return ((value.getLastActivityTimestamp() != null && savedStats.getLastActivityTimestamp() != null && value.getLastActivityTimestamp() > savedStats.getLastActivityTimestamp()) ||
+                                                                                                   (value.getLastActivityTimestamp() != null && value.getRunningFeedFlows() != savedStats.getRunningFeedFlows()));
                                                                                        }
             ).map(e -> e.getValue()).collect(Collectors.toList());
 
