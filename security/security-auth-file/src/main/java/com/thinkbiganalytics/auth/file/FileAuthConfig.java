@@ -33,6 +33,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
+import javax.security.auth.login.AppConfigurationEntry;
+
 /**
  * Configures a file-based login module.
  */
@@ -68,7 +70,7 @@ public class FileAuthConfig {
         LoginConfigurationBuilder.ModuleBuilder building = builder
                 .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                    .moduleClass(UsersRolesLoginModule.class)
+                    .moduleClass(FailFastUsersRolesLoginModule.class)
                     .controlFlag(this.loginFlag)
                     .option("defaultUsersProperties", "users.default.properties")
                     .option("defaultRolesProperties", "groups.default.properties")
@@ -80,7 +82,9 @@ public class FileAuthConfig {
                     .option("hashEncoding", hashEncoding);
         }
 
-        return building.add().build();
+        LoginConfiguration config = building.add().build();
+        testConfiguration(config.getAllApplicationEntries().get(JaasAuthConfig.JAAS_SERVICES)[0]);
+        return config;
 
         // @formatter:on
     }
@@ -92,7 +96,7 @@ public class FileAuthConfig {
         LoginConfigurationBuilder.ModuleBuilder building = builder
                 .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_UI)
-                    .moduleClass(UsersRolesLoginModule.class)
+                    .moduleClass(FailFastUsersRolesLoginModule.class)
                     .controlFlag(this.loginFlag)
                     .option("defaultUsersProperties", "users.default.properties")
                     .option("defaultRolesProperties", "groups.default.properties")
@@ -104,9 +108,20 @@ public class FileAuthConfig {
                     .option("hashEncoding", hashEncoding);
         }
 
-        return building.add().build();
+        LoginConfiguration config = building.add().build();
+        testConfiguration(config.getAllApplicationEntries().get(JaasAuthConfig.JAAS_UI)[0]);
+        return config;
 
         // @formatter:on
+    }
+
+    /**
+     * Test configuration and fail if incorrect, otherwise only fails on login and configuration exception is
+     * is converted to Authentication exception without detailed message
+     */
+    private void testConfiguration(AppConfigurationEntry entry) {
+        FailFastUsersRolesLoginModule module = new FailFastUsersRolesLoginModule();
+        module.initialize(null, null, null, entry.getOptions());
     }
 
 }

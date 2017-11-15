@@ -134,7 +134,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
         // Parse response
         if (user == null) {
-            log.debug("Received null response from Login API for user: {}", username);
+            log.debug("No account exists with the name: {}", username);
             throw new AccountNotFoundException("No account exists with the name: " + username);
         } else if (!user.isEnabled()) {
             log.debug("User from Login API is disabled: {}", username);
