@@ -96,43 +96,54 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         this.MAX_RESET_REFRESH_INTERVALS = 4;
 
+        /**
+         * Attempt to align the data time with refresh interval to provide better user realtime refresh
+         * Experimental
+         */
+        function checkAndAlignDataWithRefreshInterval(){
+            var dataTime = response.data.time;
+            var diff = Math.abs(dataTime - start);
+
+            //if we are off by more than 2 seconds and havent reset our interval for at least 4 times then reset the interval
+          //  console.log('time off ', diff)
+            if (diff > self.DIFF_TIME_ALLOWED && self.resetRefreshCounter < self.MAX_RESET_REFRESH_INTERVALS) {
+                var nextTime = dataTime;
+                var checkDate = new Date().getTime() + 1000;
+                while (nextTime <= checkDate) {
+                    nextTime += 5000;
+                }
+                var waitTime = Math.abs(nextTime - new Date().getTime());
+                self.resetRefreshCounter++;
+
+                //reset the refresh interval to be closer to the data time to
+              //  console.log('WAITING ', waitTime, 'to sync the refresh interval to be closer to the data  on ', nextTime, ' diff is ', diff)
+                if (interval != null) {
+                    $interval.cancel(interval);
+                    $timeout(function () {
+                        setDashboardRefreshInterval();
+                    }, waitTime)
+                }
+            }
+            else {
+                self.refreshCounter++;
+                //if we have > 10 good retries, reset the interval check back to 0;
+                if (self.refreshCounter > self.MAX_REFRESH_COUNTER) {
+                    self.resetRefreshCounter = 0;
+                }
+            }
+        }
+
 
         function setDashboardRefreshInterval(){
             interval = $interval(function() {
                 var start = new Date().getTime();
-                OpsManagerDashboardService.fetchDashboard().then(function(response)
-                {
+                if(!OpsManagerDashboardService.isFetchingDashboard()) {
+                    //only fetch if we are not fetching
+                    OpsManagerDashboardService.fetchDashboard().then(function (response) {
+                        //checkAndAlignDataWithRefreshInterval();
 
-                    var dataTime = response.data.time;
-                    var diff = Math.abs(dataTime - start);
-
-                    //if we are off by more than 2 seconds and havent reset our interval for at least 4 times then reset the interval
-                    if(diff > self.DIFF_TIME_ALLOWED && self.resetRefreshCounter <self.MAX_RESET_REFRESH_INTERVALS){
-                        var nextTime = dataTime;
-                        var checkDate = new Date().getTime() + 1000;
-                        while(nextTime <= checkDate){
-                            nextTime += 5000;
-                        }
-                        var waitTime = Math.abs(nextTime - new Date().getTime());
-                        self.resetRefreshCounter++;
-
-                        //reset the refresh interval to be closer to the data time to
-                        console.log('WAITING ',waitTime,'to sync the refresh interval to be closer to the data  on ',nextTime,' diff is ',diff)
-                        if(interval != null){
-                            $interval.cancel(interval);
-                            $timeout(function() {
-                                setDashboardRefreshInterval();
-                            }, waitTime)
-                        }
-                    }
-                    else {
-                        self.refreshCounter++;
-                        //if we have > 10 good retries, reset the interval check back to 0;
-                        if(self.refreshCounter > self.MAX_REFRESH_COUNTER){
-                            self.resetRefreshCounter = 0;
-                        }
-                    }
-                })
+                    })
+                }
             },self.refreshInterval );
         }
 

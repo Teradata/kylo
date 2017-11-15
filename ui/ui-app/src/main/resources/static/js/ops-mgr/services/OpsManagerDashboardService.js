@@ -74,6 +74,9 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              return data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest);
          }
 
+         data.isFetchingDashboard = function(){
+             return data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest);
+         }
 
          data.fetchFeeds = function(tab,filter,start,limit, sort){
              if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
