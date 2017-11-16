@@ -293,8 +293,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         function populateFeedData(tab){
             var activeTab = TabService.getActiveTab(self.pageName);
             activeTab.clearContent();
-            self.dataMap = OpsManagerDashboardService.feedSummaryData;
-            _.each(self.dataMap,function(feed,feedName) {
+            self.dataArray = OpsManagerDashboardService.feedsArray;
+            _.each(self.dataArray,function(feed,i) {
                 activeTab.addContent(feed);
             });
             TabService.setTotal(self.pageName, activeTab.title, OpsManagerDashboardService.totalFeeds)

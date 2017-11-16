@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 
 import org.joda.time.DateTime;
+import org.omg.CORBA.UNKNOWN;
 
 import java.util.Map;
 import java.util.Set;
@@ -214,9 +215,9 @@ public interface BatchJobExecution {
         STARTED,
         STOPPING,
         STOPPED,
-        FAILED,
         ABANDONED,
-        UNKNOWN;
+        UNKNOWN,
+        FAILED;
     }
 
 }

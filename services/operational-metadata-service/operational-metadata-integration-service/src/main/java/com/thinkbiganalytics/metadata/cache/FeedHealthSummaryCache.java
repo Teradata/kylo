@@ -87,16 +87,35 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
     private Comparator<FeedSummary> byName = Comparator.comparing(FeedSummary::getFeedName, Comparator.nullsLast(Comparator.naturalOrder()));
 
     private Comparator<FeedSummary> byHealth = new NullSafeComparator<FeedSummary>(new Comparator<FeedSummary>() {
-
-        private Integer getHealthy(FeedSummary feedSummary) {
-            return feedSummary.getFailedCount() == null || feedSummary.getFailedCount() == 0 ? 0 : 1;
+        @Override
+        public int compare(FeedSummary o1, FeedSummary o2) {
+            BatchJobExecution.JobStatus s1 = o1.getStatus() != null ? o1.getStatus() : BatchJobExecution.JobStatus.UNKNOWN;
+            BatchJobExecution.JobStatus s2 = o2.getStatus() != null ? o2.getStatus() : BatchJobExecution.JobStatus.UNKNOWN;
+            int x = s1.ordinal();
+            int y = s2.ordinal();
+            return (x < y) ? -1 : ((x == y) ? 0 : 1);
         }
+    }, true);
+
+    private Comparator<FeedSummary> byStatus = new NullSafeComparator<FeedSummary>(new Comparator<FeedSummary>() {
 
         @Override
         public int compare(FeedSummary o1, FeedSummary o2) {
-            Integer healthy = getHealthy(o1);
-            Integer healthy2 = getHealthy(o2);
-            return healthy.compareTo(healthy2);
+            String s1 = o1.getStatus() != null ? o1.getStatus().name() : BatchJobExecution.JobStatus.UNKNOWN.name();
+            String s2 = o2.getStatus() != null ? o2.getStatus().name() : BatchJobExecution.JobStatus.UNKNOWN.name();
+            if(s1.equalsIgnoreCase(BatchJobExecution.JobStatus.STOPPED.name())){
+                s1 = BatchJobExecution.JobStatus.COMPLETED.name();
+            }
+            if(s2.equalsIgnoreCase(BatchJobExecution.JobStatus.STOPPED.name())){
+                s2 = BatchJobExecution.JobStatus.COMPLETED.name();
+            }
+            if(o1.getRunStatus() != null && (o1.getRunStatus().equals(FeedSummary.RunStatus.RUNNING) || o1.getRunStatus().equals(FeedSummary.RunStatus.INITIAL))){
+                s1 = o1.getRunStatus().name();
+            }
+            if(o2.getRunStatus() != null && (o2.getRunStatus().equals(FeedSummary.RunStatus.RUNNING) || o2.getRunStatus().equals(FeedSummary.RunStatus.INITIAL))){
+                s2 = o2.getRunStatus().name();
+            }
+            return s1.compareTo(s2);
         }
     }, true);
 
@@ -147,7 +166,7 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
         } else if (sort.toLowerCase().contains("health")) {
             c = byHealth;
         } else if (sort.toLowerCase().contains("status")) {
-            c = byRunningStatus;
+            c = byStatus;
         } else if (sort.toLowerCase().contains("since")) {
             c = bySinceTime;
         } else if (sort.toLowerCase().contains("runtime")) {

@@ -10,6 +10,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              FEED_SUMMARY_UPDATED:'FEED_SUMMARY_UPDATED',
              TAB_SELECTED:'TAB_SELECTED',
              feedSummaryData:{},
+             feedsArray:[],
              feedUnhealthyCount:0,
              feedHealthyCount:0,
              dashboard:{},
@@ -28,7 +29,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              var processedFeeds = [];
              if(feedsArray) {
                      var processed = [];
-
+                     var arr = [];
                      _.each(feedsArray, function (feedHealth) {
                          //pointer to the feed that is used/bound to the ui/service
                          var feedData = null;
@@ -41,6 +42,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                              data.feedSummaryData[feedHealth.feed] = feedHealth;
                              feedData = feedHealth;
                          }
+                         arr.push(feedData);
+
                          processedFeeds.push(feedData);
                          if (feedData.lastUnhealthyTime) {
                              feedData.sinceTimeString = new moment(feedData.lastUnhealthyTime).fromNow();
@@ -66,6 +69,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                              delete  data.feedSummaryData[key];
                          })
                      }
+                     data.feedsArray = arr;
                  }
                  return processedFeeds;
 

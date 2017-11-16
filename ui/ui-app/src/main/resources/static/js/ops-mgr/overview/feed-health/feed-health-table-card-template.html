@@ -34,10 +34,7 @@
         <md-tab-body>
           <md-divider></md-divider>
           <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
-            <div ng-if="vm.showProgress" class="md-list-table-progress">
-              <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-              <br/><br/>
-            </div>
+              <md-progress-linear md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
             <md-list flex layout-fill class="list-item-table">
               <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
                             pagination-id="vm.paginationId(tab)" ng-click="vm.feedDetails($event,feed)">
