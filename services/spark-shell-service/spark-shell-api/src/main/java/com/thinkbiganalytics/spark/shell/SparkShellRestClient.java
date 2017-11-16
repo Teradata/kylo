@@ -33,6 +33,16 @@ import javax.annotation.Nonnull;
 public interface SparkShellRestClient {
 
     /**
+     * Fetches the status of a query running on the specified Spark Shell process.
+     *
+     * @param id the query identifier
+     * @return the query status if the query exists
+     * @throws SparkShellTransformException if the query fails
+     */
+    @Nonnull
+    Optional<TransformResponse> getQueryResult(@Nonnull SparkShellProcess process, @Nonnull String id);
+
+    /**
      * Fetches the status of a transformation running on the specified Spark Shell process.
      *
      * @param table the destination table name
@@ -40,7 +50,17 @@ public interface SparkShellRestClient {
      * @throws SparkShellTransformException if the transformation fails
      */
     @Nonnull
-    Optional<TransformResponse> getTable(@Nonnull SparkShellProcess process, @Nonnull String table);
+    Optional<TransformResponse> getTransformResult(@Nonnull SparkShellProcess process, @Nonnull String table);
+
+    /**
+     * Executes a SQL query on the specified Spark Shell process.
+     *
+     * @param request the query request
+     * @return the query status
+     * @throws SparkShellTransformException if the query fails
+     */
+    @Nonnull
+    TransformResponse query(@Nonnull SparkShellProcess process, @Nonnull TransformRequest request);
 
     /**
      * Executes a Scala script on the specified Spark Shell process.

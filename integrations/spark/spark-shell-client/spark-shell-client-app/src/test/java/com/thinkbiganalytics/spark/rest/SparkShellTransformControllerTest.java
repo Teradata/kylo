@@ -20,10 +20,8 @@ package com.thinkbiganalytics.spark.rest;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.junit.Assert;
@@ -54,7 +52,6 @@ public class SparkShellTransformControllerTest {
 
         // Test transforming
         SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
         controller.transformService = transformService;
 
         Response response = controller.create(transformRequest);
@@ -74,7 +71,6 @@ public class SparkShellTransformControllerTest {
 
         // Test missing parent script
         SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
 
         Response response = controller.create(request);
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
@@ -99,7 +95,6 @@ public class SparkShellTransformControllerTest {
 
         // Test missing parent table
         SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
 
         Response response = controller.create(request);
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
@@ -115,7 +110,6 @@ public class SparkShellTransformControllerTest {
     @Test
     public void createWithMissingScript() {
         SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
 
         Response response = controller.create(new TransformRequest());
         Assert.assertEquals(Response.Status.BAD_REQUEST, response.getStatusInfo());
@@ -139,7 +133,6 @@ public class SparkShellTransformControllerTest {
 
         // Test script exception
         SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
         controller.transformService = transformService;
 
         Response response = controller.create(request);
@@ -148,43 +141,5 @@ public class SparkShellTransformControllerTest {
         TransformResponse entity = (TransformResponse) response.getEntity();
         Assert.assertEquals("Invalid script", entity.getMessage());
         Assert.assertEquals(TransformResponse.Status.ERROR, entity.getStatus());
-    }
-
-    /**
-     * Verify requesting a transformation status.
-     */
-    @Test
-    public void getTable() throws Exception {
-        // Mock transform objects
-        TransformJob pendingJob = Mockito.mock(TransformJob.class);
-        Mockito.when(pendingJob.groupId()).thenReturn("PendingJob");
-        Mockito.when(pendingJob.progress()).thenReturn(0.5);
-
-        TransformJob successJob = Mockito.mock(TransformJob.class);
-        TransformResponse successResponse = new TransformResponse();
-        Mockito.when(successJob.get()).thenReturn(successResponse);
-        Mockito.when(successJob.isDone()).thenReturn(true);
-
-        TransformService transformService = Mockito.mock(TransformService.class);
-        Mockito.when(transformService.getJob("PendingJob")).thenReturn(pendingJob);
-        Mockito.when(transformService.getJob("SuccessJob")).thenReturn(successJob);
-
-        // Test with pending job
-        SparkShellTransformController controller = new SparkShellTransformController();
-        controller.idleMonitorService = Mockito.mock(IdleMonitorService.class);
-        controller.transformService = transformService;
-
-        Response response = controller.getTable("PendingJob");
-        Assert.assertEquals(Response.Status.OK, response.getStatusInfo());
-
-        TransformResponse transformResponse = (TransformResponse) response.getEntity();
-        Assert.assertEquals(0.5, transformResponse.getProgress(), 0.001);
-        Assert.assertEquals(TransformResponse.Status.PENDING, transformResponse.getStatus());
-        Assert.assertEquals("PendingJob", transformResponse.getTable());
-
-        // Test with success job
-        response = controller.getTable("SuccessJob");
-        Assert.assertEquals(successResponse, response.getEntity());
-        Assert.assertEquals(Response.Status.OK, response.getStatusInfo());
     }
 }

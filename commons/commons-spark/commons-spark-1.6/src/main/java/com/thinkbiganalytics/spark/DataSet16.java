@@ -26,6 +26,7 @@ import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.storage.StorageLevel;
 
 import java.util.List;
 
@@ -97,5 +98,15 @@ public class DataSet16 implements DataSet {
     @Override
     public DataSet repartition(int numPartitions) {
         return new DataSet16(dataframe.repartition(numPartitions));
+    }
+
+    @Override
+    public DataSet persist(final StorageLevel newLevel) {
+        return new DataSet16(dataframe.persist(newLevel));
+    }
+
+    @Override
+    public DataSet unpersist(final boolean blocking) {
+        return new DataSet16(dataframe.unpersist(blocking));
     }
 }

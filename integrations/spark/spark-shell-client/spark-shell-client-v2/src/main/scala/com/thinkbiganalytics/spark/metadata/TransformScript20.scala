@@ -1,39 +1,16 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.policy.rest.model.FieldPolicy
-import com.thinkbiganalytics.spark.dataprofiler.Profiler
-import com.thinkbiganalytics.spark.datavalidator.DataValidator
-import com.thinkbiganalytics.spark.model.AsyncTransformResponse
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
-import com.thinkbiganalytics.spark.{DataSet, SparkContextService}
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.types.StructType
-import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import com.thinkbiganalytics.spark.SparkContextService
+import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.slf4j.LoggerFactory
 
 /** Wraps a transform script into a function that can be evaluated.
   *
-  * @param destination the name of the destination Hive table
-  * @param sqlContext  the Spark SQL context
+  * @param sqlContext the Spark SQL context
   */
-abstract class TransformScript20(destination: String, policies: Array[FieldPolicy], validator: DataValidator, profiler: Profiler, sqlContext: SQLContext, sparkContextService: SparkContextService) extends TransformScript(destination, policies, validator, profiler) {
+abstract class TransformScript20(sqlContext: SQLContext, sparkContextService: SparkContextService) extends TransformScript(sparkContextService) {
 
-    private[this] val log = LoggerFactory.getLogger(classOf[TransformScript])
-
-    /** Evaluated and cached transform script. */
-    private[this] lazy val dataSet = {
-        // Cache data frame
-        val cache = dataFrame.cache
-        cache.registerTempTable(destination)
-
-        // Build response object
-        sparkContextService.toDataSet(cache)
-    }
-
-    /** Evaluates this transform script and stores the result in a Hive table. */
-    def run(): AsyncTransformResponse = {
-        new QueryResultCallable20().toAsyncResponse(dataSet)
-    }
+    private[this] val log = LoggerFactory.getLogger(classOf[TransformScript20])
 
     /** Evaluates the transform script.
       *
@@ -64,16 +41,4 @@ abstract class TransformScript20(destination: String, policies: Array[FieldPolic
     protected override def parentDataFrame: DataFrame = {
         throw new UnsupportedOperationException
     }
-
-    override protected def toDataSet(rows: RDD[Row], schema: StructType): DataSet = {
-        sparkContextService.toDataSet(sqlContext, rows, schema)
-    }
-
-    /** Stores the `DataFrame` results in a [[com.thinkbiganalytics.discovery.schema.QueryResult]] and returns the object. */
-    private class QueryResultCallable20 extends QueryResultCallable {
-        override def call(): TransformResponse = {
-            toResponse(dataSet)
-        }
-    }
-
 }

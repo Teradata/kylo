@@ -30,11 +30,12 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataRetrievalFailureException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowCallbackHandler;
 
+import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -84,18 +85,21 @@ public class QueryRunner {
         // Execute the query
         final DefaultQueryResult queryResult = new DefaultQueryResult(query);
 
-        jdbcTemplate.query(query, rs -> {
-            // First-time initialization
-            if (queryResult.isEmpty()) {
-                initQueryResult(queryResult, rs.getMetaData());
-            }
+        jdbcTemplate.query(query, new RowCallbackHandler() {
+            @Override
+            public void processRow(ResultSet rs) throws SQLException {
+                // First-time initialization
+                if (queryResult.isEmpty()) {
+                    QueryRunner.this.initQueryResult(queryResult, rs.getMetaData());
+                }
 
-            // Add row to the result
-            final Map<String, Object> row = new LinkedHashMap<>();
-            for (final QueryResultColumn column : queryResult.getColumns()) {
-                row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                // Add row to the result
+                final Map<String, Object> row = new LinkedHashMap<>();
+                for (final QueryResultColumn column : queryResult.getColumns()) {
+                    row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                }
+                queryResult.addRow(row);
             }
-            queryResult.addRow(row);
         });
 
         return queryResult;
@@ -153,6 +157,9 @@ public class QueryRunner {
      */
     private boolean validateQuery(@Nonnull final String query) {
         final String testQuery = StringUtils.trimToEmpty(query);
-        return Arrays.stream(new String[]{"show", "select", "desc", "describe"}).anyMatch(prefix -> StringUtils.startsWithIgnoreCase(testQuery, prefix));
+        return StringUtils.startsWithIgnoreCase(testQuery, "show")
+            || StringUtils.startsWithIgnoreCase(testQuery, "select")
+            || StringUtils.startsWithIgnoreCase(testQuery, "desc")
+            || StringUtils.startsWithIgnoreCase(testQuery, "describe");
     }
 }

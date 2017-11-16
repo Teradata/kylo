@@ -2,6 +2,7 @@ export * from "./model/profile-output-row";
 export * from "./model/query-result-column";
 export * from "./model/script-state";
 export * from "./model/transform-query-result";
+export * from "./model/transform-request";
 export * from "./model/transform-response";
 export * from "./model/transform-validation-result";
 export * from "./column-delegate";
@@ -16,9 +17,12 @@ export * from "./script-expression-type";
 
 export interface StringUtilsStatic {
     quote(str: string): string;
+
     quoteSql(str: string): string;
+
     quoteSql(str: string, quoteChar: string, escapeChar: string): string;
 }
+
 export declare const StringUtils: StringUtilsStatic;
 
 /**

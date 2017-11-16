@@ -247,7 +247,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             var self = this;
             // Filter rows
             this.dataService.rows_ = _.filter(this.rows, function (row) {
-                return _.every(self.dataService.columns_, function (column) {
+                return _.every(self.dataService.columns_, function (column, index) {
                     return _.every(column.filters, function (filter) {
                         if (angular.isUndefined(filter.term) || filter.term === null) {
                             return true;
@@ -256,19 +256,19 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                             if (angular.isUndefined(filter.regex)) {
                                 filter.regex = new RegExp(filter.term);
                             }
-                            return filter.regex.test(row[column.name]);
+                            return filter.regex.test(row[index]);
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.LESS_THAN) {
-                            return row[column.name] < filter.term;
+                            return row[index] < filter.term;
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.GREATER_THAN) {
-                            return row[column.name] > filter.term;
+                            return row[index] > filter.term;
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.EXACT) {
                             if (angular.isUndefined(filter.regex)) {
                                 filter.regex = new RegExp("^" + filter.term + "$");
                             }
-                            return filter.regex.test(row[column.name]);
+                            return filter.regex.test(row[index]);
                         }
                         else {
                             return false;

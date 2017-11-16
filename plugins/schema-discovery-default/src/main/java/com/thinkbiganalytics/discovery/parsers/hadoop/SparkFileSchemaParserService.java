@@ -25,11 +25,11 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
-import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -90,7 +89,7 @@ public class SparkFileSchemaParserService {
                     Uninterruptibles.sleepUninterruptibly(100L, TimeUnit.MILLISECONDS);
                 }
 
-                final Optional<TransformResponse> optionalResponse = restClient.getTable(shellProcess, response.getTable());
+                final Optional<TransformResponse> optionalResponse = restClient.getTransformResult(shellProcess, response.getTable());
                 if (optionalResponse.isPresent()) {
                     response = optionalResponse.get();
                 }
@@ -101,7 +100,7 @@ public class SparkFileSchemaParserService {
             log.error("Error parsing file {}: {}", fileType, e.getMessage());
             throw new IOException("Unexpected exception. Verify file is the proper format", e);
         } finally {
-            if(!tempFile.delete()) {
+            if (!tempFile.delete()) {
                 log.error("The temp file was not deleted successfully: " + tempFile.getName());
             }
         }
@@ -146,7 +145,7 @@ public class SparkFileSchemaParserService {
         return sb.toString();
     }
 
-    private Schema toSchema(QueryResult results, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+    private Schema toSchema(TransformQueryResult results, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
 
         switch (tableSchemaType) {
             case HIVE:
@@ -158,6 +157,7 @@ public class SparkFileSchemaParserService {
 
     /**
      * Strip out the (precision,scale) from the datatype and assign it to the proper field.precisionScale property
+     *
      * @param field the field to inspect
      */
     private void setPrecisionAndScale(DefaultField field) {
@@ -176,13 +176,14 @@ public class SparkFileSchemaParserService {
         }
     }
 
-    private DefaultHiveSchema toHiveSchema(QueryResult result, SparkFileType fileType) {
+    private DefaultHiveSchema toHiveSchema(TransformQueryResult result, SparkFileType fileType) {
         DefaultHiveSchema schema = new DefaultHiveSchema();
         schema.setHiveFormat("STORED AS " + fileType);
         schema.setStructured(true);
         ArrayList<Field> fields = new ArrayList<>();
         List<? extends QueryResultColumn> columns = result.getColumns();
-        for (QueryResultColumn column : columns) {
+        for (int i = 0; i < columns.size(); ++i) {
+            QueryResultColumn column = columns.get(i);
             DefaultField field = new DefaultField();
             field.setName(column.getDisplayName());
             field.setNativeDataType(column.getDataType());
@@ -191,9 +192,9 @@ public class SparkFileSchemaParserService {
             //strip the precisionScale and assign to the field property
             setPrecisionAndScale(field);
             // Add sample values
-            List<Map<String, Object>> values = result.getRows();
-            for (Map<String, Object> colMap : values) {
-                Object oVal = colMap.get(column.getDisplayName());
+            List<List<Object>> values = result.getRows();
+            for (List<Object> colMap : values) {
+                Object oVal = colMap.get(i);
                 if (oVal != null) {
                     field.getSampleValues().add(oVal.toString());
                 }

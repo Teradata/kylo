@@ -7,29 +7,14 @@ import {TransformValidationResult} from "./transform-validation-result";
 export interface TransformQueryResult {
 
     /**
-     * Column display name map.
-     */
-    columnDisplayNameMap: { [displayName: string]: QueryResultColumn };
-
-    /**
-     * Column field map.
-     */
-    columnFieldMap: { [field: string]: QueryResultColumn };
-
-    /**
      * Columns in query result.
      */
     columns: QueryResultColumn[];
 
     /**
-     * Query string.
-     */
-    query: string;
-
-    /**
      * Rows in query result.
      */
-    rows: object[];
+    rows: any[][];
 
     /**
      * List of validation results for each row.

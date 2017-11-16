@@ -20,27 +20,42 @@ package com.thinkbiganalytics.spark.service;
  * #L%
  */
 
+import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
+import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
+import com.thinkbiganalytics.spark.metadata.ProfileStage;
+import com.thinkbiganalytics.spark.metadata.QueryResultRowTransform;
+import com.thinkbiganalytics.spark.metadata.ResponseStage;
+import com.thinkbiganalytics.spark.metadata.ShellTransformStage;
+import com.thinkbiganalytics.spark.metadata.SqlTransformStage;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
+import com.thinkbiganalytics.spark.metadata.ValidationStage;
+import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.DatasourceProvider;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.spark.sql.types.StructType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -49,7 +64,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
 
-import scala.Option;
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
 
@@ -151,16 +165,9 @@ public class TransformService {
     public TransformResponse execute(@Nonnull final TransformRequest request) throws ScriptException {
         log.trace("entry params({})", request);
 
-        // Generate destination
-        final String table = newTableName();
-
         // Build bindings list
         final List<NamedParam> bindings = new ArrayList<>();
-        bindings.add(new NamedParamClass("policies", "Array[" + FieldPolicy.class.getName() + "]", getPolicies(request)));
-        bindings.add(new NamedParamClass("profiler", Profiler.class.getName(), profiler));
         bindings.add(new NamedParamClass("sparkContextService", SparkContextService.class.getName(), sparkContextService));
-        bindings.add(new NamedParamClass("tableName", "String", table));
-        bindings.add(new NamedParamClass("validator", DataValidator.class.getName(), validator));
 
         if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
             if (datasourceProviderFactory != null) {
@@ -174,13 +181,21 @@ public class TransformService {
         }
 
         // Execute script
-        final Object result = this.engine.eval(toScript(request), bindings);
+        final Object result;
+        try {
+            result = this.engine.eval(toScript(request), bindings);
+        } catch (final Exception cause) {
+            final ScriptException e = new ScriptException(cause);
+            log.error("Throwing {}", e);
+            throw e;
+        }
 
-        final TransformJob job;
-        if (result instanceof Callable) {
-            @SuppressWarnings("unchecked") final Callable<TransformResponse> callable = (Callable) result;
-            job = new TransformJob(table, callable, engine.getSparkContext());
-            tracker.submitJob(job);
+        TransformResponse response;
+        StructType schema;
+        if (result instanceof DataSet) {
+            final DataSet dataSet = (DataSet) result;
+            schema = dataSet.schema();
+            response = submitJob(new ShellTransformStage(dataSet), getPolicies(request));
         } else {
             final IllegalStateException e = new IllegalStateException("Unexpected script result type: " + (result != null ? result.getClass() : null));
             log.error("Throwing {}", e);
@@ -188,25 +203,16 @@ public class TransformService {
         }
 
         // Build response
-        TransformResponse response;
+        if (response.getStatus() != TransformResponse.Status.SUCCESS) {
+            final String table = response.getTable();
+            final TransformQueryResult partialResult = new TransformQueryResult();
+            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table).columns()));
 
-        try {
-            response = job.get(500, TimeUnit.MILLISECONDS);
-            tracker.removeJob(table);
-        } catch (final ExecutionException cause) {
-            final ScriptException e = new ScriptException(cause);
-            log.error("Throwing {}", e);
-            throw e;
-        } catch (final InterruptedException | TimeoutException e) {
-            log.trace("Timeout waiting for script result", e);
-            if (result instanceof TransformResponse) {
-                response = (TransformResponse) result;
-            } else {
-                response = new TransformResponse();
-                response.setProgress(0.0);
-                response.setStatus(TransformResponse.Status.PENDING);
-                response.setTable(table);
-            }
+            response = new TransformResponse();
+            response.setProgress(0.0);
+            response.setResults(partialResult);
+            response.setStatus(TransformResponse.Status.PENDING);
+            response.setTable(table);
         }
 
         log.trace("exit with({})", response);
@@ -222,8 +228,8 @@ public class TransformService {
      */
     @Nonnull
     public TransformJob getJob(@Nonnull final String id) {
-        final Option<TransformJob> job = tracker.getJob(id);
-        if (job.isDefined()) {
+        final Optional<TransformJob> job = tracker.getJob(id);
+        if (job.isPresent()) {
             if (job.get().isDone()) {
                 tracker.removeJob(id);
             }
@@ -254,6 +260,25 @@ public class TransformService {
     }
 
     /**
+     * Executes the specified SQL query and returns the result.
+     *
+     * @param request the transformation request
+     * @return the transformation results
+     * @throws IllegalStateException if this service is not running
+     * @throws ScriptException       if the script cannot be executed
+     */
+    @Nonnull
+    public TransformResponse query(@Nonnull final TransformRequest request) throws ScriptException {
+        // Parse data source parameters
+        if (request.getDatasources() == null || request.getDatasources().size() != 1 || !(request.getDatasources().get(0) instanceof JdbcDatasource)) {
+            throw new IllegalArgumentException();
+        }
+
+        // Submit task
+        return submitJob(new SqlTransformStage(request.getScript(), (JdbcDatasource) request.getDatasources().get(0), engine.getSQLContext(), sparkContextService), getPolicies(request));
+    }
+
+    /**
      * Gets the data validator for cleansing rows.
      */
     @Nullable
@@ -264,7 +289,7 @@ public class TransformService {
     /**
      * Sets the data validator for cleansing rows.
      */
-    public void setValidator(@Nullable DataValidator validator) {
+    public void setValidator(@Nullable final DataValidator validator) {
         this.validator = validator;
     }
 
@@ -277,11 +302,9 @@ public class TransformService {
     @Nonnull
     String toScript(@Nonnull final TransformRequest request) {
         final StringBuilder script = new StringBuilder();
-        script.append("class Transform (destination: String, policies: Array[com.thinkbiganalytics.policy.rest.model.FieldPolicy], validator: com.thinkbiganalytics.spark.datavalidator.DataValidator,"
-                      + " profiler: com.thinkbiganalytics.spark.dataprofiler.Profiler, sqlContext: org.apache.spark.sql.SQLContext,"
-                      + " sparkContextService: com.thinkbiganalytics.spark.SparkContextService) extends ");
+        script.append("class Transform (sqlContext: org.apache.spark.sql.SQLContext, sparkContextService: com.thinkbiganalytics.spark.SparkContextService) extends ");
         script.append(transformScriptClass.getName());
-        script.append("(destination, policies, validator, profiler, sqlContext, sparkContextService) {\n");
+        script.append("(sqlContext, sparkContextService) {\n");
 
         script.append("override def dataFrame: org.apache.spark.sql.DataFrame = {");
         script.append(request.getScript());
@@ -297,7 +320,7 @@ public class TransformService {
         }
 
         script.append("}\n");
-        script.append("new Transform(tableName, policies, validator, profiler, sqlContext, sparkContextService).run()\n");
+        script.append("new Transform(sqlContext, sparkContextService).run()\n");
 
         return script.toString();
     }
@@ -324,5 +347,46 @@ public class TransformService {
             }
         }
         throw new IllegalStateException("Unable to generate a new table name");
+    }
+
+    /**
+     * Submits the specified task to be executed and returns the result.
+     */
+    @Nonnull
+    private TransformResponse submitJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies) throws ScriptException {
+        // Prepare script
+        Supplier<TransformResult> result = task;
+
+        if (policies != null && policies.length > 0 && validator != null) {
+            result = Suppliers.compose(new ValidationStage(policies, validator), result);
+        }
+        if (profiler != null) {
+            result = Suppliers.compose(new ProfileStage(profiler), result);
+        }
+
+        // Execute script
+        final String table = newTableName();
+        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table), result), engine.getSparkContext());
+        tracker.submitJob(job);
+
+        // Build response
+        TransformResponse response;
+
+        try {
+            response = job.get(500, TimeUnit.MILLISECONDS);
+            tracker.removeJob(table);
+        } catch (final ExecutionException cause) {
+            final ScriptException e = new ScriptException(cause);
+            log.error("Throwing {}", e);
+            throw e;
+        } catch (final InterruptedException | TimeoutException e) {
+            log.trace("Timeout waiting for script result", e);
+            response = new TransformResponse();
+            response.setProgress(0.0);
+            response.setStatus(TransformResponse.Status.PENDING);
+            response.setTable(table);
+        }
+
+        return response;
     }
 }

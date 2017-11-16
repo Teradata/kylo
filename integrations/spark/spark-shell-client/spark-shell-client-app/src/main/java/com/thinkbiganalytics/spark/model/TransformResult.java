@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.spark.rest.model;
+package com.thinkbiganalytics.spark.model;
 
 /*-
  * #%L
- * Spark Shell Service REST Model
+ * kylo-spark-shell-client-app
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,33 +20,38 @@ package com.thinkbiganalytics.spark.rest.model;
  * #L%
  */
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
+import com.thinkbiganalytics.spark.DataSet;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
+import com.thinkbiganalytics.spark.rest.model.TransformValidationResult;
 
 import java.util.List;
 
 /**
- * Model used to pass the query results
+ * Result of a wrangler transformation.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public class TransformQueryResult {
-
-    @JsonDeserialize(contentAs = DefaultQueryResultColumn.class)
-    @JsonSerialize(contentAs = DefaultQueryResultColumn.class)
-    private List<QueryResultColumn> columns;
-
-    private List<List<Object>> rows;
-
-    private List<List<TransformValidationResult>> validationResults;
+public class TransformResult {
 
     /**
-     * Get columns in query result
-     *
-     * @return list of {@link QueryResultColumn}
+     * Columns in the data set.
      */
+    private List<QueryResultColumn> columns;
+
+    /**
+     * Spark SQL data set.
+     */
+    private DataSet dataSet;
+
+    /**
+     * Profile statistics.
+     */
+    private List<OutputRow> profile;
+
+    /**
+     * Validation results.
+     */
+    private List<List<TransformValidationResult>> validationResults;
+
     public List<QueryResultColumn> getColumns() {
         return columns;
     }
@@ -55,22 +60,22 @@ public class TransformQueryResult {
         this.columns = columns;
     }
 
-    /**
-     * Get rows in query result
-     *
-     * @return list of rows
-     */
-    public List<List<Object>> getRows() {
-        return rows;
+    public DataSet getDataSet() {
+        return dataSet;
     }
 
-    public void setRows(List<List<Object>> rows) {
-        this.rows = rows;
+    public void setDataSet(DataSet dataSet) {
+        this.dataSet = dataSet;
     }
 
-    /**
-     * Gets the list of validation results for each row.
-     */
+    public List<OutputRow> getProfile() {
+        return profile;
+    }
+
+    public void setProfile(List<OutputRow> profile) {
+        this.profile = profile;
+    }
+
     public List<List<TransformValidationResult>> getValidationResults() {
         return validationResults;
     }

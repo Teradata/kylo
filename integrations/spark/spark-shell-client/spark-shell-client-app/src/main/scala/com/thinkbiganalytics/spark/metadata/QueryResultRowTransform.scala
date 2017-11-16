@@ -10,6 +10,8 @@ import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
+import scala.collection.JavaConverters._
+
 /** Helper for building [[TransformQueryResult]] objects from a Spark dataset. */
 object QueryResultRowTransform {
     /** Prefix for display names that are different from the field name */
@@ -60,15 +62,8 @@ class QueryResultRowTransform(schema: StructType, destination: String) {
     /** Array of Spark SQL object to Hive object converters */
     val converters: Array[ObjectInspectorConverters.Converter] = schema.fields.map(field => DataTypeUtils.getHiveObjectConverter(field.dataType))
 
-    /** Adds the specified row to the query result. */
-    def addRow(row: Row, result: TransformQueryResult): Unit = {
-        result.addRow(getQueryResultRow(row))
-    }
-
     /** Coverts the specified row into a [[TransformQueryResult]] compatible object. */
-    protected def getQueryResultRow(row: Row): util.Map[String, Object] = {
-        val map = new util.HashMap[String, Object]()
-        columns.indices.foreach(i => map.put(columns(i).getDisplayName, converters(i).convert(row.getAs(i))))
-        map
+    def convertRow(row: Row): util.List[Object] = {
+        columns.indices.map(i => converters(i).convert(row.getAs(i))).asJava
     }
 }

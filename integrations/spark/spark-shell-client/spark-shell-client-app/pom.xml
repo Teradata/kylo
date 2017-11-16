@@ -43,6 +43,17 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-jdbc</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.hadoop</groupId>
+          <artifactId>hadoop-common</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-rest-client</artifactId>
       <version>${project.version}</version>
       <exclusions>
@@ -88,6 +99,11 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-schema-discovery-model2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-schema-discovery-rdbms</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>

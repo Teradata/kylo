@@ -22,11 +22,15 @@ package com.thinkbiganalytics.spark.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.io.Serializable;
+
 /**
  * Indicates the reason that a value was rejected by a validator.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class TransformValidationResult {
+public class TransformValidationResult implements Serializable {
+
+    private static final long serialVersionUID = 1727527532754965859L;
 
     private String scope;
     private String field;

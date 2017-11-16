@@ -14,7 +14,7 @@ export class WranglerDataService {
     /**
      * The data rows in this table with filters and sorting applied.
      */
-    rows_: object[];
+    rows_: any[][];
 
     /**
      * The sort direction.
@@ -49,7 +49,7 @@ export class WranglerDataService {
                 field: column.name,
                 row: i,
                 validation: (validation !== null && validation.length > 0) ? validation : null,
-                value: this.rows_[i][column.name]
+                value: this.rows_[i][j]
             };
         } else {
             return null;

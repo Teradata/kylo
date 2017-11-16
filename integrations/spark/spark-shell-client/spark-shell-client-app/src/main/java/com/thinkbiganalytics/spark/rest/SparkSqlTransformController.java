@@ -2,7 +2,7 @@ package com.thinkbiganalytics.spark.rest;
 
 /*-
  * #%L
- * thinkbig-spark-shell-client-app
+ * kylo-spark-shell-client-app
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -23,11 +23,12 @@ package com.thinkbiganalytics.spark.rest;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.script.ScriptException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -42,50 +43,43 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 /**
- * Endpoint for executing Spark scripts on the server.
+ * Endpoint for executing SQL on the server.
  */
 @Api(tags = "spark")
 @Component
-@Path("/api/v1/spark/shell/transform")
-public class SparkShellTransformController extends AbstractTransformController {
+@Path("/api/v1/spark/shell/query")
+public class SparkSqlTransformController extends AbstractTransformController {
+
+    private static final Logger log = LoggerFactory.getLogger(SparkSqlTransformController.class);
 
     /**
-     * Executes a Spark script that performs transformations using a {@code DataFrame}.
+     * Executes a SQL query.
      *
-     * @param request the transformation request
-     * @return the transformation status
+     * @param request the query request
+     * @return the query status
      */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
+    @ApiOperation("Queries a SQL table.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
                       @ApiResponse(code = 400, message = "The request could not be parsed.", response = TransformResponse.class),
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = TransformResponse.class)
                   })
     @Nonnull
-    public Response create(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or source"
-                                             + " must be specified.", required = true)
-                           @Nullable final TransformRequest request) {
+    public Response create(@ApiParam(value = "The request indicates the SQL query to execute. Exactly one source must be specified.", required = true) @Nullable final TransformRequest request) {
         // Validate request
         if (request == null || request.getScript() == null) {
-            return error(Response.Status.BAD_REQUEST, "transform.missingScript");
-        }
-        if (request.getParent() != null) {
-            if (request.getParent().getScript() == null) {
-                return error(Response.Status.BAD_REQUEST, "transform.missingParentScript");
-            }
-            if (request.getParent().getTable() == null) {
-                return error(Response.Status.BAD_REQUEST, "transform.missingParentTable");
-            }
+            return error(Response.Status.BAD_REQUEST, "query.missingScript");
         }
 
         // Execute request
         try {
-            TransformResponse response = this.transformService.execute(request);
+            TransformResponse response = transformService.query(request);
             return Response.ok(response).build();
-        } catch (final ScriptException e) {
+        } catch (final Exception e) {
+            log.error("Internal server error processing SQL script: {}", request.getScript(), e);
             return error(Response.Status.INTERNAL_SERVER_ERROR, e);
         }
     }

@@ -94,7 +94,7 @@ export class VisualQueryTable {
     /**
      * The data rows in this table.
      */
-    rows: object[];
+    rows: any[][];
 
     /**
      * Validation results for the data.
@@ -357,7 +357,7 @@ export class VisualQueryTable {
 
         // Filter rows
         this.dataService.rows_ = _.filter(this.rows, function (row) {
-            return _.every(self.dataService.columns_, function (column: any) {
+            return _.every(self.dataService.columns_, function (column: any, index) {
                 return _.every(column.filters, function (filter: any) {
                     if (angular.isUndefined(filter.term) || filter.term === null) {
                         return true;
@@ -365,16 +365,16 @@ export class VisualQueryTable {
                         if (angular.isUndefined(filter.regex)) {
                             filter.regex = new RegExp(filter.term);
                         }
-                        return filter.regex.test(row[column.name]);
+                        return filter.regex.test(row[index]);
                     } else if (filter.condition === self.uiGridConstants_.filter.LESS_THAN) {
-                        return row[column.name] < filter.term;
+                        return row[index] < filter.term;
                     } else if (filter.condition === self.uiGridConstants_.filter.GREATER_THAN) {
-                        return row[column.name] > filter.term;
+                        return row[index] > filter.term;
                     } else if (filter.condition === self.uiGridConstants_.filter.EXACT) {
                         if (angular.isUndefined(filter.regex)) {
                             filter.regex = new RegExp("^" + filter.term + "$");
                         }
-                        return filter.regex.test(row[column.name]);
+                        return filter.regex.test(row[index]);
                     } else {
                         return false;
                     }

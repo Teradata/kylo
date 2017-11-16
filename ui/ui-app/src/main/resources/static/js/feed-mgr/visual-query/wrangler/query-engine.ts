@@ -298,7 +298,7 @@ export abstract class QueryEngine<T> {
      *
      * @returns the rows or {@code null} if the transformation has not been applied
      */
-    getRows(): { [k: string]: any }[] | null {
+    getRows(): any[][] | null {
         return this.getState().rows;
     }
 

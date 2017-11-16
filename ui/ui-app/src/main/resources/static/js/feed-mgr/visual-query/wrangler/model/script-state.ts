@@ -30,7 +30,7 @@ export interface ScriptState<T> {
     /**
      * Rows as returned by the server.
      */
-    rows: { [k: string]: any }[];
+    rows: any[][];
 
     /**
      * Parsed transformation query.

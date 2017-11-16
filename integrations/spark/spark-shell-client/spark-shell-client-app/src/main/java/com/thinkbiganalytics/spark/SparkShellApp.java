@@ -24,13 +24,13 @@ import com.beust.jcommander.JCommander;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.TransformJobTracker;
 import com.thinkbiganalytics.spark.service.TransformService;
@@ -38,9 +38,7 @@ import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SQLContext;
-import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -50,9 +48,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
+import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.logging.LoggingApplicationListener;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
@@ -63,6 +64,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -86,7 +88,21 @@ public class SparkShellApp {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        final ApplicationContext context = SpringApplication.run(SparkShellApp.class, args);
+        final SpringApplication app = new SpringApplication(SparkShellApp.class);
+
+        // Ignore application listeners that will load kylo-services configuration
+        final List<ApplicationListener<?>> listeners = FluentIterable.from(app.getListeners())
+            .filter(Predicates.not(
+                Predicates.or(
+                    Predicates.instanceOf(ConfigFileApplicationListener.class),
+                    Predicates.instanceOf(LoggingApplicationListener.class)
+                )
+            ))
+            .toList();
+        app.setListeners(listeners);
+
+        // Start app
+        final ApplicationContext context = app.run(args);
 
         // Keep main thread running until the idle timeout
         context.getBean(IdleMonitorService.class).awaitIdleTimeout();
@@ -119,22 +135,13 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig jerseyConfig(final TransformService service) {
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
+    public ResourceConfig jerseyConfig(final TransformService transformService) {
+        final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
+        config.packages("com.thinkbiganalytics.spark.rest");
         config.register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bindFactory(new Factory<TransformService>() {
-                    @Override
-                    public void dispose(TransformService instance) {
-                        // nothing to do
-                    }
-
-                    @Override
-                    public TransformService provide() {
-                        return service;
-                    }
-                }).to(TransformService.class).in(RequestScoped.class);
+                bind(transformService).to(TransformService.class);
             }
         });
 

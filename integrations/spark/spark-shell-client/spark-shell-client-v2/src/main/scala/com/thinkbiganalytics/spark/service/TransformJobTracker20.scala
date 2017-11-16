@@ -7,6 +7,8 @@ import org.apache.spark.Success
 import org.apache.spark.scheduler._
 import org.slf4j.LoggerFactory
 
+import scala.collection.JavaConverters._
+
 /** Tracks the progress of executing and recently completed jobs.  */
 class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJobTracker(contextClassLoader) {
 
@@ -23,10 +25,13 @@ class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJo
               */
             override def onJobEnd(@Nonnull event: SparkListenerJobEnd): Unit = {
                 log.trace("Job {} ended", event.jobId)
-                jobs.remove(event.jobId).foreach((job) => {
+                val job = jobs.remove(event.jobId)
+                if (job != null) {
                     job.onJobEnd()
-                    job.stages.map(_.stageId).foreach(stages.remove)
-                })
+                    for (stage: StageInfo <- job.getStages.asScala) {
+                        stages.remove(stage.stageId)
+                    }
+                }
             }
 
             /** Records information about a job when it starts.
@@ -44,15 +49,15 @@ class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJo
 
                 // Find transform job
                 val job = getJob(groupId)
-                if (job.isEmpty) {
+                if (!job.isPresent) {
                     log.debug("Missing job {}", groupId)
                     return
                 }
 
                 // Update job info
-                job.get.stages = event.stageInfos
-                jobs.update(event.jobId, job.get)
-                event.stageIds.foreach(stages.update(_, job.get))
+                job.get.setStages(event.stageInfos.asJava)
+                jobs.put(event.jobId, job.get)
+                event.stageIds.foreach(stages.put(_, job.get))
             }
 
             /** Records information about a completed stage.
@@ -62,7 +67,7 @@ class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJo
             override def onStageCompleted(@Nonnull event: SparkListenerStageCompleted) {
                 log.trace("Stage {} completed with failure {}", event.stageInfo.stageId, event.stageInfo.failureReason)
                 val completed = if (event.stageInfo.failureReason.isEmpty) event.stageInfo.numTasks else 0
-                stages.get(event.stageInfo.stageId).foreach(_.onStageProgress(event.stageInfo, completed))
+                Option(stages.get(event.stageInfo.stageId)).foreach(_.onStageProgress(event.stageInfo, completed))
             }
 
             /** Records information about a stage when it starts.
@@ -71,7 +76,7 @@ class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJo
               */
             override def onStageSubmitted(@Nonnull event: SparkListenerStageSubmitted) {
                 log.trace("Stage {} submitted with {} tasks", event.stageInfo.stageId, event.stageInfo.numTasks)
-                stages.get(event.stageInfo.stageId).foreach(_.onStageProgress(event.stageInfo, 0))
+                Option(stages.get(event.stageInfo.stageId)).foreach(_.onStageProgress(event.stageInfo, 0))
             }
 
             /** Records information about a task when it ends.
@@ -81,7 +86,7 @@ class TransformJobTracker20(contextClassLoader: ClassLoader) extends TransformJo
             override def onTaskEnd(@Nonnull event: SparkListenerTaskEnd) {
                 log.trace("Task {} completed for stage {} with {}", event.taskInfo.taskId.toString, event.stageId.toString, event.reason.toString)
                 if (event.reason == Success) {
-                    stages.get(event.stageId).foreach(_.onTaskEnd())
+                    Option(stages.get(event.stageId)).foreach(_.onTaskEnd())
                 }
             }
         })

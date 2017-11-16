@@ -42,6 +42,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -229,7 +230,16 @@ public class DBSchemaParser {
     public TableSchema describeTable(@Nullable final String schema, @Nonnull final String table) {
         Validate.isTrue(!StringUtils.isEmpty(table), "Table expected");
 
-        final String catalog = StringUtils.isNotBlank(schema) ? listCatalogs().stream().filter(schema::equalsIgnoreCase).findFirst().orElse(null) : null;
+        String catalog = null;
+        if (StringUtils.isNotBlank(schema)) {
+            final Iterator<String> catalogIter = listCatalogs().iterator();
+            while (catalog == null && catalogIter.hasNext()) {
+                final String next = catalogIter.next();
+                if (schema.equalsIgnoreCase(next)) {
+                    catalog = next;
+                }
+            }
+        }
 
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             try (final ResultSet result = getTables(conn, catalog, (catalog == null) ? schema : "%", table)) {

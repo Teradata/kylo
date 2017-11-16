@@ -31,7 +31,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     field: column.name,
                     row: i,
                     validation: (validation !== null && validation.length > 0) ? validation : null,
-                    value: this.rows_[i][column.name]
+                    value: this.rows_[i][j]
                 };
             }
             else {

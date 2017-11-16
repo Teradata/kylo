@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.InternalServerErrorException;
@@ -45,6 +46,11 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
     private static final Logger log = LoggerFactory.getLogger(JerseySparkShellRestClient.class);
 
     /**
+     * Pattern for matching table IDs.
+     */
+    private static final Pattern TABLE_PATTERN = Pattern.compile("^[a-f0-9-]+$");
+
+    /**
      * Map of Spark Shell processes to Jersey REST clients
      */
     @Nonnull
@@ -52,19 +58,23 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
     @Nonnull
     @Override
-    public Optional<TransformResponse> getTable(@Nonnull final SparkShellProcess process, @Nonnull final String table) {
-        // Validate arguments
-        if (!table.matches("^[a-f0-9-]+$")) {
-            return Optional.empty();
-        }
+    public Optional<TransformResponse> getQueryResult(@Nonnull SparkShellProcess process, @Nonnull String table) {
+        return getResult(process, table, "/api/v1/spark/shell/query/");
+    }
 
-        // Query Spark Shell process
+    @Nonnull
+    @Override
+    public Optional<TransformResponse> getTransformResult(@Nonnull final SparkShellProcess process, @Nonnull final String table) {
+        return getResult(process, table, "/api/v1/spark/shell/transform/");
+    }
+
+    @Nonnull
+    @Override
+    public TransformResponse query(@Nonnull SparkShellProcess process, @Nonnull TransformRequest request) {
         try {
-            return Optional.of(getClient(process).get("/api/v1/spark/shell/transform/" + table, ImmutableMap.of(), TransformResponse.class));
+            return getClient(process).post("/api/v1/spark/shell/query", request, TransformResponse.class);
         } catch (final InternalServerErrorException e) {
             throw propagate(e);
-        } catch (final NotFoundException e) {
-            return Optional.empty();
         }
     }
 
@@ -100,6 +110,34 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
         return client;
     }
 
+    /**
+     * Gets the result of the specified transformation.
+     *
+     * @param process Spark Shell process
+     * @param table   table ID
+     * @param path    Spark Shell REST API path
+     * @return the transform response
+     */
+    @Nonnull
+    private Optional<TransformResponse> getResult(@Nonnull final SparkShellProcess process, @Nonnull final String table, @Nonnull final String path) {
+        // Validate arguments
+        if (!TABLE_PATTERN.matcher(table).matches()) {
+            return Optional.empty();
+        }
+
+        // Query Spark Shell process
+        try {
+            return Optional.of(getClient(process).get(path + table, ImmutableMap.of(), TransformResponse.class));
+        } catch (final InternalServerErrorException e) {
+            throw propagate(e);
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    /**
+     * Propagates the cause of the specified internal server error.
+     */
     @Nonnull
     private SparkShellTransformException propagate(@Nonnull final InternalServerErrorException e) {
         try {

@@ -54,8 +54,7 @@ public class TransformResponse {
     /**
      * Result of a transformation
      */
-    @JsonDeserialize(as = TransformQueryResult.class)
-    private QueryResult results;
+    private TransformQueryResult results;
 
     /**
      * Success status of a transformation
@@ -126,7 +125,7 @@ public class TransformResponse {
      *
      * @return the results
      */
-    public QueryResult getResults() {
+    public TransformQueryResult getResults() {
         return results;
     }
 
@@ -135,7 +134,7 @@ public class TransformResponse {
      *
      * @param results the results
      */
-    public void setResults(QueryResult results) {
+    public void setResults(TransformQueryResult results) {
         this.results = results;
     }
 

@@ -27,6 +27,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
+import org.apache.spark.storage.StorageLevel;
 
 import java.util.List;
 
@@ -98,5 +99,15 @@ public class DataSet20 implements DataSet {
     @Override
     public DataSet repartition(int numPartitions) {
         return new DataSet20(dataset.repartition(numPartitions));
+    }
+
+    @Override
+    public DataSet persist(final StorageLevel newLevel) {
+        return new DataSet20(dataset.persist(newLevel));
+    }
+
+    @Override
+    public DataSet unpersist(final boolean blocking) {
+        return new DataSet20(dataset.unpersist(blocking));
     }
 }

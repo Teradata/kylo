@@ -125,6 +125,28 @@ public class SparkShellProxyController {
     private SparkShellRestClient restClient;
 
     /**
+     * Requests the status of a query.
+     *
+     * @param id the destination table name
+     * @return the query status
+     */
+    @GET
+    @Path("/query/{table}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Fetches the status of a query.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
+                      @ApiResponse(code = 404, message = "The query does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+                  })
+    @Nonnull
+    public Response getQueryResult(@Nonnull @PathParam("table") final String id) {
+        final SparkShellProcess process = getSparkShellProcess();
+        return getResultResponse(() -> restClient.getQueryResult(process, id));
+    }
+
+    /**
      * Requests the status of a transformation.
      *
      * @param id the destination table name
@@ -141,27 +163,40 @@ public class SparkShellProxyController {
                       @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
                   })
     @Nonnull
-    public Response getTable(@Nonnull @PathParam("table") final String id) {
-        // Forward to the Spark Shell process
+    public Response getTransformResult(@Nonnull @PathParam("table") final String id) {
         final SparkShellProcess process = getSparkShellProcess();
-        final Optional<TransformResponse> response;
+        return getResultResponse(() -> restClient.getTransformResult(process, id));
+    }
 
-        try {
-            response = restClient.getTable(process, id);
-        } catch (final Exception e) {
-            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
+    /**
+     * Executes a SQL query.
+     *
+     * @param request the query request
+     * @return the query status
+     */
+    @POST
+    @Path("/query")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Queries a data source table.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the query.", response = TransformResponse.class),
+                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+                  })
+    @Nonnull
+    public Response query(@ApiParam(value = "The request indicates the query to execute. Exactly one source must be specified.", required = true) @Nullable final TransformRequest request) {
+        // Validate request
+        if (request == null || request.getScript() == null) {
+            throw error(Response.Status.BAD_REQUEST, "query.missingScript", null);
         }
 
-        // Return response
-        try {
-            final TransformResponse transformResponse = response.orElseThrow(() -> error(Response.Status.NOT_FOUND, "getTable.unknownTable", null));
-            return Response.ok(transformResponse).build();
-        } catch (final SparkShellTransformException e) {
-            final String message = (e.getMessage() != null) ? e.getMessage() : "transform.error";
-            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
-        } catch (final Exception e) {
-            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
-        }
+        // Add data source details
+        addDatasourceDetails(request);
+
+        // Execute request
+        final SparkShellProcess process = getSparkShellProcess();
+        return getTransformResponse(() -> restClient.query(process, request));
     }
 
     /**
@@ -249,60 +284,61 @@ public class SparkShellProxyController {
         }
 
         // Add data source details
-        if (request.getDatasources() != null && !request.getDatasources().isEmpty()) {
-            // Verify access to data sources
-            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
-
-            final List<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> datasourceIds = metadata.read(
-                () -> request.getDatasources().stream()
-                    .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
-                    .map(datasourceProvider::resolve)
-                    .map(id -> {
-                        final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
-                        if (datasource != null) {
-                            return datasource.getId();
-                        } else {
-                            throw new BadRequestException("No datasource exists with the given ID: " + id);
-                        }
-                    })
-                    .collect(Collectors.toList())
-            );
-
-            // Retrieve table names using system user
-            final List<Datasource> datasources = metadata.read(
-                () -> datasourceIds.stream()
-                    .map(datasourceProvider::getDatasource)
-                    .map(datasource -> {
-                        if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
-                            return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
-                        } else {
-                            throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
-                        }
-                    })
-                    .map(datasource -> {
-                        if (datasource instanceof com.thinkbiganalytics.metadata.datasource.JdbcDatasource) {
-                            return new JdbcDatasource((com.thinkbiganalytics.metadata.datasource.JdbcDatasource) datasource);
-                        } else {
-                            throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
-                        }
-                    })
-                    .collect(Collectors.toList()),
-                MetadataAccess.SERVICE);
-            request.setDatasources(datasources);
-        }
+        addDatasourceDetails(request);
 
         // Execute request
         final SparkShellProcess process = getSparkShellProcess();
+        return getTransformResponse(() -> restClient.transform(process, request));
+    }
 
-        try {
-            final TransformResponse response = restClient.transform(process, request);
-            return Response.ok(response).build();
-        } catch (final SparkShellTransformException e) {
-            final String message = (e.getMessage() != null) ? e.getMessage() : "transform.error";
-            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
-        } catch (final Exception e) {
-            throw error(Response.Status.INTERNAL_SERVER_ERROR, "transform.error", e);
+    /**
+     * Adds the data source details to the specified request.
+     */
+    private void addDatasourceDetails(@Nonnull final TransformRequest request) {
+        // Skip empty data sources
+        if (request.getDatasources() == null || request.getDatasources().isEmpty()) {
+            return;
         }
+
+        // Verify access to data sources
+        accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+
+        final List<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> datasourceIds = metadata.read(
+            () -> request.getDatasources().stream()
+                .map(com.thinkbiganalytics.metadata.datasource.Datasource::getId)
+                .map(datasourceProvider::resolve)
+                .map(id -> {
+                    final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasourceProvider.getDatasource(id);
+                    if (datasource != null) {
+                        return datasource.getId();
+                    } else {
+                        throw new BadRequestException("No datasource exists with the given ID: " + id);
+                    }
+                })
+                .collect(Collectors.toList())
+        );
+
+        // Retrieve table names using system user
+        final List<Datasource> datasources = metadata.read(
+            () -> datasourceIds.stream()
+                .map(datasourceProvider::getDatasource)
+                .map(datasource -> {
+                    if (datasource instanceof com.thinkbiganalytics.metadata.api.datasource.UserDatasource) {
+                        return (com.thinkbiganalytics.metadata.datasource.Datasource) datasourceTransform.toDatasource(datasource, DatasourceModelTransform.Level.ADMIN);
+                    } else {
+                        throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName() + " " + datasource.getId());
+                    }
+                })
+                .map(datasource -> {
+                    if (datasource instanceof com.thinkbiganalytics.metadata.datasource.JdbcDatasource) {
+                        return new JdbcDatasource((com.thinkbiganalytics.metadata.datasource.JdbcDatasource) datasource);
+                    } else {
+                        throw new BadRequestException("Not a supported datasource: " + datasource.getClass().getSimpleName());
+                    }
+                })
+                .collect(Collectors.toList()),
+            MetadataAccess.SERVICE);
+        request.setDatasources(datasources);
     }
 
     /**
@@ -334,6 +370,31 @@ public class SparkShellProxyController {
     }
 
     /**
+     * Gets the transform response from the specified supplier.
+     */
+    @Nonnull
+    private Response getResultResponse(@Nonnull final Supplier<Optional<TransformResponse>> supplier) {
+        // Get the result
+        final Optional<TransformResponse> response;
+        try {
+            response = supplier.get();
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
+        }
+
+        // Return response
+        try {
+            final TransformResponse transformResponse = response.orElseThrow(() -> error(Response.Status.NOT_FOUND, "getTable.unknownTable", null));
+            return Response.ok(transformResponse).build();
+        } catch (final SparkShellTransformException e) {
+            final String message = (e.getMessage() != null) ? e.getMessage() : SparkShellProxyResources.TRANSFORM_ERROR;
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
+        }
+    }
+
+    /**
      * Retrieves the Spark Shell process for the current user.
      *
      * @return the Spark Shell process
@@ -346,6 +407,28 @@ public class SparkShellProxyController {
             return processManager.getProcessForUser(username);
         } catch (final Exception e) {
             throw error(Response.Status.INTERNAL_SERVER_ERROR, "start.error", e);
+        }
+    }
+
+    /**
+     * Gets the transform response from the specified supplier.
+     */
+    @Nonnull
+    private Response getTransformResponse(@Nonnull final Supplier<TransformResponse> supplier) {
+        try {
+            final TransformResponse response = supplier.get();
+            return Response.ok(response).build();
+        } catch (final SparkShellTransformException e) {
+            final String message;
+            if (e.getMessage() != null) {
+                // Strip out
+                message = e.getMessage().replaceAll("^(\\s*[a-zA-Z0-9.]+:(?=\\s*[a-zA-Z0-9.]+:))*\\s*[a-zA-Z0-9.]+?(?=[a-zA-Z0-9]+:)", "");
+            } else {
+                message = SparkShellProxyResources.TRANSFORM_ERROR;
+            }
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, message, e);
+        } catch (final Exception e) {
+            throw error(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
         }
     }
 }

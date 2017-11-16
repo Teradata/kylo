@@ -412,20 +412,41 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             var errorCallback = function (message) {
                 // Display error message
-                var alert = self.$mdDialog.alert()
-                    .parent($('body'))
-                    .clickOutsideToClose(true)
-                    .title("Error executing the query")
-                    .textContent(message)
-                    .ariaLabel("error executing the query")
-                    .ok("Got it!");
-                self.$mdDialog.show(alert);
+                self.$mdDialog.show({
+                    clickOutsideToClose: true,
+                    controller: (_a = (function () {
+                            function class_1($mdDialog) {
+                                this.$mdDialog = $mdDialog;
+                                /**
+                                 * Additional details about the error.
+                                 */
+                                this.detailMessage = message;
+                                /**
+                                 * Indicates that the detail message should be shown.
+                                 */
+                                this.showDetail = false;
+                            }
+                            /**
+                             * Hides this dialog.
+                             */
+                            class_1.prototype.hide = function () {
+                                this.$mdDialog.hide();
+                            };
+                            return class_1;
+                        }()),
+                        _a.$inject = ["$mdDialog"],
+                        _a),
+                    controllerAs: "dialog",
+                    parent: angular.element("body"),
+                    template: "\n                  <md-dialog arial-label=\"error executing the query\" style=\"max-width: 640px;\">\n                    <md-dialog-content class=\"md-dialog-content\" role=\"document\" tabIndex=\"-1\">\n                      <h2 class=\"md-title\">Error executing the query</h2>\n                      <p>There was a problem executing the query.</p>\n                      <md-button ng-if=\"!dialog.showDetail\" ng-click=\"dialog.showDetail = true\" style=\"margin: 0; padding: 0;\">Show more</md-button>\n                      <p ng-if=\"dialog.showDetail\">{{ dialog.detailMessage }}</p>\n                    </md-dialog-content>\n                    <md-dialog-actions>\n                      <md-button ng-click=\"dialog.hide()\" class=\"md-primary md-confirm-button\" md-autofocus=\"true\">Got it!</md-button>\n                    </md-dialog-actions>\n                  </md-dialog>\n                "
+                });
                 // Reset state
                 self.executingQuery = false;
                 self.engine.pop();
                 self.functionHistory.pop();
                 self.refreshGrid();
                 deferred.reject(message);
+                var _a;
             };
             var notifyCallback = function (progress) {
                 self.queryProgress = progress * 100;
