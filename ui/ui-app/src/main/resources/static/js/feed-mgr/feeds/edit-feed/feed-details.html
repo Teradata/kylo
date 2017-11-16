@@ -166,13 +166,9 @@
 
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
-                <div class="md-subheader layout-padding-bottom">Operations Manager</div>
-                <span class="layout-padding-bottom">
-                  <a href ng-click="vm.gotoFeedStats($event)">Operational Statistics</a>
-                </span>
-                <span class="layout-padding-bottom">
-                <a href ng-click="vm.gotoFeedDetails($event)" ng-if="!vm.model.isStream">Operational Job Details</a>
-                </span>
+                <div class="md-subhead layout-padding-bottom">Links</div>
+                  <md-button class="md-primary" ng-click="vm.gotoFeedStats($event)" ng-if="vm.isStream">Job Details</md-button>
+                  <md-button ng-click="vm.gotoFeedDetails($event)" class="md-primary" ng-if="!vm.isStream">Job Details</md-button>
               </div>
 
               <md-divider ng-if="!vm.isNiFiRunning"></md-divider>

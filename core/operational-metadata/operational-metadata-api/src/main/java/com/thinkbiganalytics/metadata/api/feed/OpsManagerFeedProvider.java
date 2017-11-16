@@ -74,6 +74,12 @@ public interface OpsManagerFeedProvider {
     List<? extends OpsManagerFeed> findByFeedIds(List<OpsManagerFeed.ID> ids);
 
     /**
+     * Return all feeds
+     * @return
+     */
+    List<? extends OpsManagerFeed> findAllWithoutAcl();
+
+    /**
      *  Returns a list of all the feed categorySystemName.feedSystemName
      * NOTE: This is Access Controlled and will show only those feeds a user has access to
      * @return Returns a list of all the feed categorySystemName.feedSystemName

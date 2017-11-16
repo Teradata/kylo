@@ -31,9 +31,12 @@ import com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.FeedSummary;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.cache.util.TimeUtil;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedSummary;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
@@ -48,6 +51,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -263,7 +267,7 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
         return metadataAccess.read(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends FeedSummary> list = opsManagerFeedProvider.findFeedSummary();
-            log.debug("******FETCHING FEEDS!!!!!!");
+
             Map<String, FeedSummary> latestFeeds = new HashMap<>();
             //NOTE it could also populate the last job execution time since the above query gets a union of the running jobs along with the latest finished jobs by feed
             list.stream()
@@ -273,6 +277,25 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
                     latestFeeds.put(feedId, f);
                 }
             });
+            //add in initial feeds
+            List<? extends OpsManagerFeed> allFeeds = opsManagerFeedProvider.findAllWithoutAcl();
+            allFeeds.stream().filter(f -> !latestFeeds.containsKey(f.getId().toString())).forEach(f -> {
+                                                                                        JpaFeedSummary s = new JpaFeedSummary();
+                                                                                        s.setStream(f.isStream());
+                                                                                        s.setFeedId(UUID.fromString(f.getId().toString()));
+                                                                                        s.setFeedName(f.getName());
+                                                                                        s.setFeedType(f.getFeedType());
+                                                                                        s.setRunningCount(0L);
+                                                                                        s.setAbandonedCount(0L);
+                                                                                        s.setFailedCount(0L);
+                                                                                        s.setAllCount(0L);
+                                                                                        s.setCompletedCount(0L);
+                                                                                        s.setRunStatus(FeedSummary.RunStatus.INITIAL);
+                                                                                        s.setStatus(BatchJobExecution.JobStatus.UNKNOWN);
+                                                                                       latestFeeds.put(s.getFeedId().toString(),s);
+                                                                                    }
+            );
+
             stopwatch.stop();
             log.debug("Time to fetchAndDedupe FeedSummary: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
             return new ArrayList<>(latestFeeds.values());
@@ -296,14 +319,20 @@ public class FeedHealthSummaryCache implements TimeBasedCache<FeedSummary> {
 
     }
 
+    /**
+     * Streaming Feeds only show up in ALL or Streaming tab  (Running tab ??)
+     * @param feedSummary
+     * @param feedSummaryFilter
+     * @return
+     */
     private boolean fixedFilter(FeedSummary feedSummary, FeedSummaryFilter feedSummaryFilter) {
         switch (feedSummaryFilter.getFilter()) {
             case ALL:
                 return true;
             case HEALTHY:
-                return feedSummary.getFailedCount() == null || feedSummary.getFailedCount() == 0L;
+                return !feedSummary.isStream() && (feedSummary.getFailedCount() == null || feedSummary.getFailedCount() == 0L);
             case UNHEALTHY:
-                return feedSummary.getFailedCount() != null && feedSummary.getFailedCount() > 0L;
+                return !feedSummary.isStream() && (feedSummary.getFailedCount() != null && feedSummary.getFailedCount() > 0L);
             case RUNNING:
                 return feedSummary.getRunStatus() == FeedSummary.RunStatus.RUNNING;
             case STREAMING:

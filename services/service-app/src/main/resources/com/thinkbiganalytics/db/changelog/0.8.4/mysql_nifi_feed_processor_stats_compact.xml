@@ -37,6 +37,8 @@
 
 
 <changeSet id="create_mysql_compact_feed_processor_stats_proc" author="sr186054" dbms="mysql">
+  <validCheckSum>7:afd27fbe81321220e4bd6019e2148363</validCheckSum>
+  <validCheckSum>7:b6d21396c0e6118c570e706ae7ada2c8</validCheckSum>
   <sql endDelimiter="\n">${delimiter.start}</sql>
   <createProcedure path="mysql_compact_nifi_feed_processor_stats.sql" relativeToChangelogFile="true"/>
   <sql endDelimiter="\n">${delimiter.end}</sql>

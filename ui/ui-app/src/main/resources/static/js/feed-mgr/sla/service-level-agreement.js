@@ -49,6 +49,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
         self.cardTitle = "Service Level Agreements";
 
+        self.cardLinksTitle = "Links";
+
         /**
          * show a progress bar indicating loading SLA list or individual SLA for edit
          * @type {boolean}
@@ -91,6 +93,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             });
 
         function showList(requery) {
+            self.cardTitle = "Service Level Agreements"
             self.renderFilter = true;
             self.editSla = null;
             self.creatingNewSla = null;
@@ -227,9 +230,6 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         this.sortOptions = loadSortOptions();
 
         this.filter = PaginationDataService.filter(self.pageName);
-
-
-
 
 
         $scope.$watch(function() {
@@ -547,6 +547,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         self.renderFilter = false;
         self.userSuppliedName = false;
         self.userSuppliedDescription = false;
+        self.cardTitle = "New Service Level Agreement"
 
     }
 
@@ -575,6 +576,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
     }
 
     self.loadAndEditSla = function(slaId) {
+        self.cardTitle = "Edit Service Level Agreement"
         self.mode = 'EDIT';
         self.creatingNewSla = false;
         self.editSlaId = slaId;

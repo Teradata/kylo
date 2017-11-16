@@ -22,8 +22,8 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <changeSet id="1" author="ru186002" runOnChange="true">
-    <createView replaceIfExists="true" viewName="CHECK_DATA_TO_FEED_VW">
+  <changeSet id="1" author="ru186002" runOnChange="true" >
+    <createView replaceIfExists="true" viewName="CHECK_DATA_TO_FEED_VW" >
       <![CDATA[
         SELECT FEED_ID FEED_ID, f2.NAME as FEED_NAME, check_feeds.CHECK_DATA_FEED_ID as KYLO_FEED_ID, f.NAME as KYLO_FEED_NAME
          FROM FEED_CHECK_DATA_FEEDS check_feeds
@@ -33,6 +33,10 @@
         UNION ALL
         SELECT ID FEED_ID,NAME,id, NAME KYLO_FEED_NAME from FEED
         WHERE FEED_TYPE = 'FEED'
+        UNION ALL
+          SELECT f.ID AS FEED_ID,f.name AS FEED_NAME, f.ID AS KYLO_FEED_ID, f.name AS KYLO_FEED_NAME
+          FROM FEED f
+          WHERE f.FEED_TYPE = 'CHECK'
       ]]>
     </createView>
   </changeSet>

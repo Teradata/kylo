@@ -47,16 +47,31 @@
     </sql>
   </changeSet>
 
-  <changeSet id="delete_duplicate_batch_nifi_job_flow_file_entries" author="sr186054">
+  <changeSet id="delete_duplicate_batch_nifi_job_flow_file_entries" author="sr186054" dbms="mysql">
     <sql >
       DELETE j FROM BATCH_NIFI_JOB j
       inner join (SELECT MIN(x.EVENT_ID) event_id,x.FLOW_FILE_ID
-                  FROM BATCH_NIFI_JOB x
-                  INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*)
-                              FROM BATCH_NIFI_JOB
-                              GROUP BY FLOW_FILE_ID
-                              having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
-                  group by x.FLOW_FILE_ID) d  on d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
+      FROM BATCH_NIFI_JOB x
+      INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*)
+      FROM BATCH_NIFI_JOB
+      GROUP BY FLOW_FILE_ID
+      having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
+      group by x.FLOW_FILE_ID) d  on d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
+    </sql>
+  </changeSet>
+
+  <changeSet id="postgres_delete_duplicate_batch_nifi_job_flow_file_entries" author="sr186054" dbms="postgresql">
+    <sql >
+      with records_to_delete as (SELECT MIN(x.EVENT_ID) event_id,x.FLOW_FILE_ID
+      FROM BATCH_NIFI_JOB x
+      INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*)
+      FROM BATCH_NIFI_JOB
+      GROUP BY FLOW_FILE_ID
+      having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
+      group by x.FLOW_FILE_ID)
+      DELETE FROM BATCH_NIFI_JOB j
+      USING records_to_delete d
+      where  d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
     </sql>
   </changeSet>
 

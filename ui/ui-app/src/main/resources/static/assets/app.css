@@ -608,6 +608,15 @@ card-layout .card-toolbar {
   max-height: 60px;
 }
 
+card-layout .card-toolbar2 {
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 1px rgba(255, 255, 255, 0.1);
+  background-color: #FFF;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 15px;
+}
+
 card-layout .card-toolbar.filter-header {
   padding-right: 0px !important;
 }

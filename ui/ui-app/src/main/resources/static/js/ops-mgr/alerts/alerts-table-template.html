@@ -51,26 +51,26 @@
                                         <span class="column-title column-title-bottom">Level</span>
                                     </div>
 
-                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.state }}</span>
                                         <span class="column-title column-title-bottom">State</span>
                                     </div>
-                                    <div flex="10" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="10" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.typeDisplay }}</span>
                                         <span class="column-title column-title-bottom">Type</span>
                                     </div>
-                                    <div flex="5" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)" ng-if="vm.showCleared">
+                                    <div flex="5" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)" ng-if="vm.showCleared">
                                         <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
                                         <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
                                         <span class="column-title column-title-bottom">Cleared</span>
                                     </div>
 
-                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.createdTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                         <span class="column-title column-title-bottom">Start Time</span>
                                     </div>
 
-                                    <div flex="35" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.alertDetails($event,alert)">
+                                    <div flex="35" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.description }}</span>
                                         <span class="column-title column-title-bottom">Description</span>
                                     </div>

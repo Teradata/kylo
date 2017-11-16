@@ -59,52 +59,49 @@
     summary.ABANDONED_COUNT AS ABANDONED_COUNT,
     summary.ALL_COUNT AS ALL_COUNT,
     summary.RUNNING_COUNT AS RUNNING_COUNT,
-    CASE WHEN e.JOB_EXECUTION_ID is null then 'INITIAL' else 'RUNNING' end AS RUN_STATUS
+     (CASE
+            WHEN
+                ((f.IS_STREAM = 'Y')
+                    AND (summary.RUNNING_COUNT is null))
+                    OR (summary.RUNNING_COUNT = 0)
+            THEN
+                'FINISHED'
+            ELSE 'RUNNING'
+        END) AS RUN_STATUS
     FROM FEED f
     LEFT JOIN BATCH_JOB_INSTANCE i ON i.FEED_ID = f.id
     LEFT JOIN BATCH_JOB_EXECUTION e ON e.JOB_INSTANCE_ID = i.JOB_INSTANCE_ID
     LEFT JOIN BATCH_FEED_SUMMARY_COUNTS_VW summary ON summary.FEED_ID = f.ID
     LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = f.id
     WHERE
-    ((e.END_TIME is null AND f.is_stream = 'N') or (f.IS_STREAM = 'Y' AND `summary`.`RUNNING_COUNT` > 0))
-    UNION SELECT
-    CONCAT(v.FEED_NAME, COALESCE(e.JOB_EXECUTION_ID,-99)) as ID,
-    v.FEED_ID AS FEED_ID,
-    v.FEED_NAME AS FEED_NAME,
-    v.FEED_TYPE AS FEED_TYPE,
-    v.IS_STREAM AS IS_STREAM,
-    v.JOB_EXECUTION_ID AS JOB_EXECUTION_ID,
-    e.JOB_INSTANCE_ID AS JOB_INSTANCE_ID,
-      (CASE WHEN (v.IS_STREAM = 'Y' AND summary.RUNNING_COUNT IS NOT NULL) THEN
-       (CASE WHEN (summary.RUNNING_COUNT > 0) THEN
-          'STARTING'
-        ELSE
-          'STOPPED'
-        END)
-     ELSE
-        v.STATUS
-     END) AS STATUS,
-    (CASE WHEN    (v.IS_STREAM = 'Y'AND summary.RUNNING_COUNT IS NOT NULL) THEN
-       (CASE WHEN (summary.RUNNING_COUNT > 0) THEN
-          'EXECUTING'
-        ELSE
-          'COMPLETED'
-        END)
-    ELSE
-       e.EXIT_CODE
-	END) as EXIT_CODE,
-    e.EXIT_MESSAGE AS EXIT_MESSAGE,
-    v.START_TIME AS START_TIME,
-    v.END_TIME AS END_TIME,
-    summary.FAILED_COUNT AS FAILED_COUNT,
-    summary.COMPLETED_COUNT AS COMPLETED_COUNT,
-    summary.ABANDONED_COUNT AS ABANDONED_COUNT,
-    summary.ALL_COUNT AS ALL_COUNT,
-     COALESCE(summary.RUNNING_COUNT,0) AS RUNNING_COUNT,
-    'FINISHED' AS RUN_STATUS
-    FROM LATEST_FINISHED_FEED_JOB_VW v
-    JOIN BATCH_JOB_EXECUTION e ON e.JOB_EXECUTION_ID = v.JOB_EXECUTION_ID
-    LEFT JOIN BATCH_FEED_SUMMARY_COUNTS_VW summary ON summary.FEED_ID = v.FEED_ID
+    ((e.END_TIME is null AND f.is_stream = 'N') or (f.IS_STREAM = 'Y'))
+   UNION ALL SELECT
+        CONCAT(summary.FEED_NAME,
+                COALESCE(e.JOB_EXECUTION_ID, -(99))) AS ID,
+        summary.FEED_ID AS FEED_ID,
+        summary.FEED_NAME AS FEED_NAME,
+        f.FEED_TYPE AS FEED_TYPE,
+        maxJobs.IS_STREAM AS IS_STREAM,
+        e.JOB_EXECUTION_ID AS JOB_EXECUTION_ID,
+        i.JOB_INSTANCE_ID AS JOB_INSTANCE_ID,
+        e.STATUS AS STATUS,
+        e.EXIT_CODE AS EXIT_CODE,
+        e.EXIT_MESSAGE AS EXIT_MESSAGE,
+        e.START_TIME AS START_TIME,
+        e.END_TIME AS END_TIME,
+        summary.FAILED_COUNT AS FAILED_COUNT,
+        summary.COMPLETED_COUNT AS COMPLETED_COUNT,
+        summary.ABANDONED_COUNT AS ABANDONED_COUNT,
+        summary.ALL_COUNT AS ALL_COUNT,
+        summary.RUNNING_COUNT AS RUNNING_COUNT,
+        'FINISHED' AS RUN_STATUS
+    FROM BATCH_JOB_EXECUTION e
+        JOIN BATCH_JOB_INSTANCE i ON i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID
+        JOIN FEED f ON f.id = i.FEED_ID
+        JOIN BATCH_FEED_SUMMARY_COUNTS_VW summary ON summary.FEED_ID = i.FEED_ID
+        JOIN LATEST_FEED_JOB_VW maxJobs ON maxJobs.FEED_ID = summary.FEED_ID
+            AND maxJobs.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID
+            AND f.IS_STREAM = 'N'
   ]]>
     </createView>
   </changeSet>

@@ -22,9 +22,9 @@ CREATE OR REPLACE FUNCTION compact_feed_processor_stats() RETURNS VARCHAR as $$
 
 DECLARE curr_date Timestamp DEFAULT NOW();
 DECLARE output VARCHAR(4000) DEFAULT '';
-DECLARE insertRowCount INT DEFAULT 0;
-DECLARE deleteRowCount INT DEFAULT 0;
-DECLARE totalCompactSize INT DEFAULT 0;
+DECLARE insertRowCount INTEGER DEFAULT 0;
+DECLARE deleteRowCount INTEGER DEFAULT 0;
+DECLARE totalCompactSize INTEGER DEFAULT 0;
 
 BEGIN
 
@@ -49,7 +49,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(flow_files_finished)                              AS FLOW_FILES_FINISHED,
        NULL                                                  AS COLLECTION_ID,
        SUM(collection_interval_sec)                          AS COLLECTION_INTERVAL_SEC,
-       UUID() 												 AS id,
+       uuid_in(md5(random()::text || now()::text)::cstring) 												 AS id,
        processor_name										 AS PROCESSOR_NAME,
        SUM(job_duration)                                     AS JOB_DURATION,
        SUM(successful_job_duration)                          AS SUCCESSFUL_JOB_DURATION,
@@ -77,7 +77,7 @@ AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day';
 
 GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
 
-SET totalCompactSize = deleteRowCount - insertRowCount;
+totalCompactSize := deleteRowCount - insertRowCount;
 
 SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
 
@@ -104,7 +104,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(flow_files_finished)                              AS FLOW_FILES_FINISHED,
        MAX(COLLECTION_ID)                                    AS COLLECTION_ID,
        SUM(collection_interval_sec)                          AS COLLECTION_INTERVAL_SEC,
-       UUID() 												 AS id,
+      uuid_in(md5(random()::text || now()::text)::cstring) 												 AS id,
        processor_name										 AS PROCESSOR_NAME,
        SUM(job_duration)                                     AS JOB_DURATION,
        SUM(successful_job_duration)                          AS SUCCESSFUL_JOB_DURATION,
@@ -132,10 +132,10 @@ AND    COLLECTION_TIME < (curr_date - interval '10 hour');
 
 GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
 
-SET totalCompactSize = totalCompactSize + (deleteRowCount - insertRowCount);
+totalCompactSize := totalCompactSize + (deleteRowCount - insertRowCount);
 
 SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
-SELECT (output,'\n Reduced table by ',totalCompactSize,' rows');
+SELECT (output,'\n Reduced table by ',totalCompactSize,' rows') into output;
 
 
  return output;

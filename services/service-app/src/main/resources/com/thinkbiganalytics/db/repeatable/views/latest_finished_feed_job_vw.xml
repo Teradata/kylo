@@ -48,7 +48,7 @@
       inner JOIN LATEST_FEED_JOB_END_TIME_VW maxJobs
                                    on maxJobs.FEED_ID = f.ID
                                    and maxJobs.END_TIME =e.END_TIME
-      LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = f.id
+      INNER JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = f.id
 
 
       ]]>

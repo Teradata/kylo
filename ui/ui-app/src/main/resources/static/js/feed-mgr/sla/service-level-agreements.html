@@ -28,19 +28,18 @@
         </body-section>
 
     </card-layout>
-    <card-layout flex="20" header-css="sla-details-header" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading && !vm.creatingNewSla">
+    <card-layout flex="20" card-toolbar="false"   header-css="sla-details-header card-toolbar2" body-css="sla-details-right-body" ng-if="vm.editSla != null  && !vm.loading && !vm.creatingNewSla">
       <header-section>
-        <div style="white-space:nowrap" class="card-title">Service Level Agreement</div>
-        <div layout="column" class="layout-padding-top-bottom">
-          <span class="item-title" ng-if="vm.editSla.name">{{vm.editSla.name}}</span>
-        </div>
+        <div style="white-space: nowrap;margin-top:10px;" class="card-title">Links</div>
+        <span flex="5"></span>
+
       </header-section>
       <body-section >
         <md-content flex md-scroll-y>
           <md-list flex layout-fill layout="column" class="list-item-table">
             <md-list-item>
               <div layout="column" class="item-column md-list-item-text ">
-                <a href ng-click="vm.viewSlaAssessments()">SLA Assessments</a>
+                <md-button class="md-primary" ng-click="vm.viewSlaAssessments()">SLA Assessments</md-button>
               </div>
             </md-list-item>
 

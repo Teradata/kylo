@@ -129,7 +129,7 @@ SET deleteRowCount =  ROW_COUNT();
 
 SET totalCompactSize = totalCompactSize + (deleteRowCount - insertRowCount);
 SELECT CONCAT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
-SELECT CONCAT(output,'\n Reduced table by ',totalCompactSize,' rows');
+SELECT CONCAT(output,'\n Reduced table by ',totalCompactSize,' rows') into output;
 
 SELECT output;
 set res = output;

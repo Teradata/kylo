@@ -1,8 +1,17 @@
-<div style="margin-top:-10px;">
+<div style="margin-top:-10px;" layout="row">
   <md-input-container class="md-block condensed" flex-gt-sm="" style="">
     <label class="label-small md-container-ignore">Alert Type</label>
     <md-select ng-model="ctl.filterAlertType" ng-change="ctl.onFilterAlertTypeChange(ctl.filterAlertType)"  class="md-no-underline">
       <md-option ng-repeat="opt in ctl.alertTypes track by $index" ng-value="opt">
+        {{opt.label}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+
+  <md-input-container class="md-block condensed" flex-gt-sm="" style="">
+    <label class="label-small md-container-ignore">AlertState</label>
+    <md-select ng-model="ctl.filterAlertState" ng-change="ctl.onFilterAlertStateChange(ctl.filterAlertState)"  class="md-no-underline">
+      <md-option ng-repeat="opt in ctl.alertStates track by $index" ng-value="opt">
         {{opt.label}}
       </md-option>
     </md-select>
