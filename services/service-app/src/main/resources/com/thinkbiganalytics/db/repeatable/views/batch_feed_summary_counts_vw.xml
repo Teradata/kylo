@@ -40,7 +40,7 @@
   INNER JOIN BATCH_JOB_INSTANCE i on i.JOB_INSTANCE_ID = e2.JOB_INSTANCE_ID
   INNER JOIN CHECK_DATA_TO_FEED_VW f on f.KYLO_FEED_ID = i.FEED_ID
   INNER JOIN FEED feed ON feed.id = f.FEED_ID
-   LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = feed.id
+   INNER JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = feed.id
   group by f.feed_id, feed.IS_STREAM,f.feed_name,feedStats.RUNNING_FEED_FLOWS
        ]]>
     </createView>

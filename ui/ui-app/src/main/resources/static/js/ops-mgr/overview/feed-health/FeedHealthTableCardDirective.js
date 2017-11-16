@@ -103,7 +103,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         this.onTabSelected = function(tab) {
             TabService.selectedTab(self.pageName, tab);
-            return  loadFeeds(true,true);
+            if(loaded || (!loaded && !OpsManagerDashboardService.isFetchingDashboard())) {
+                return loadFeeds(true, true);
+            }
         };
 
 
@@ -187,7 +189,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Feed':'feed','Health':'healthText','Status':'displayStatus','Since':'timeSinceEndTime','Last Run Time':'runTime','Stream':'stream'};
+            var options = {'Feed':'feed','Health':'healthText','Status':'displayStatus','Since':'timeSinceEndTime','Last Run Time':'runTime'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'feed','desc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);

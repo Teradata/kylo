@@ -17,6 +17,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              totalFeeds:0,
              activeFeedRequest:null,
              activeDashboardRequest:null,
+             skipDashboardFeedHealth:false,
              selectFeedHealthTab:function(tab) {
                  BroadcastService.notify(data.TAB_SELECTED,tab);
              },
@@ -84,7 +85,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              }
              //Cancel any active dashboard queries as this will supercede them
              if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
-                 data.activeDashboardRequest.resolve();
+                 data.skipDashboardFeedHealth = true;
              }
 
              var canceler = $q.defer();
@@ -105,6 +106,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                  canceler.resolve();
                  canceler = null;
                  data.activeFeedRequest = null;
+                 data.skipDashboardFeedHealth = false;
              }
              var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL,{timeout: canceler.promise,params:params});
              promise.then(successFn, errorFn);
@@ -117,7 +119,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          }
 
          data.fetchDashboard = function() {
-
              if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
                  data.activeDashboardRequest.resolve();
              }
@@ -125,13 +126,22 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              data.activeDashboardRequest = canceler;
 
              var successFn = function (response) {
+
                  data.dashboard = response.data;
-                 data.feedsSearchResult = response.data.feeds;
-                 if(data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
-                     var processedFeeds = setupFeedHealth(data.dashboard.feeds.data);
-                     data.dashboard.feeds.data = processedFeeds;
-                     data.totalFeeds = data.dashboard.feeds.recordsFiltered;
+                 //if the pagable feeds query came after this one it will flip the skip flag.
+                 // that should supercede this request
+                 if(!data.skipDashboardFeedHealth) {
+                     data.feedsSearchResult = response.data.feeds;
+                     if (data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
+                         var processedFeeds = setupFeedHealth(data.dashboard.feeds.data);
+                         data.dashboard.feeds.data = processedFeeds;
+                         data.totalFeeds = data.dashboard.feeds.recordsFiltered;
+                     }
                  }
+                 else {
+                //     console.log('Skip processing dashboard results for the feed since it was superceded');
+                 }
+                 data.skipDashboardFeedHealth = false;
 
                  if(angular.isUndefined(data.dashboard.healthCounts['UNHEALTHY'])) {
                      data.dashboard.healthCounts['UNHEALTHY'] = 0;
@@ -150,6 +160,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                  canceler.resolve();
                  canceler = null;
                  data.activeDashboardRequest = null;
+                 data.skipDashboardFeedHealth = false;
              }
              var params = data.feedHealthQueryParams;
              var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL,{timeout: canceler.promise,params:params});

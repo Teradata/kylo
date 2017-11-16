@@ -96,6 +96,8 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
          */
         this.MAX_RESET_REFRESH_INTERVALS = 4;
 
+        this.startRefreshTime = null;
+
         /**
          * Attempt to align the data time with refresh interval to provide better user realtime refresh
          * Experimental
@@ -134,17 +136,17 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         }
 
 
-        function setDashboardRefreshInterval(){
-            interval = $interval(function() {
+        function setDashboardRefreshInterval() {
+            interval = $interval(function () {
                 var start = new Date().getTime();
-                if(!OpsManagerDashboardService.isFetchingDashboard()) {
+                if (!OpsManagerDashboardService.isFetchingDashboard()) {
                     //only fetch if we are not fetching
+                    self.startRefreshTime = new Date().getTime();
                     OpsManagerDashboardService.fetchDashboard().then(function (response) {
                         //checkAndAlignDataWithRefreshInterval();
-
-                    })
+                    });
                 }
-            },self.refreshInterval );
+            }, self.refreshInterval);
         }
 
         function init(){

@@ -288,6 +288,10 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         return opsManagerFeedCacheByName.findAll();
     }
 
+    public List<OpsManagerFeed> findAllWithoutAcl(){
+        return findAll();
+    }
+
     @EntityAccessControlled
     public Map<String, List<OpsManagerFeed>> getFeedsGroupedByCategory() {
         return opsManagerFeedCacheByName.findAll().stream().collect(Collectors.groupingBy(f -> FeedNameUtil.category(f.getName())));

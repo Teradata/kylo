@@ -57,7 +57,7 @@
     JOIN BATCH_FEED_SUMMARY_COUNTS_VW summary ON summary.FEED_ID = i.FEED_ID
     JOIN LATEST_FEED_JOB_VW maxJobs ON (maxJobs.FEED_ID = summary.FEED_ID
     AND maxJobs.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID)
-    LEFT JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = i.FEED_ID
+    INNER JOIN NIFI_FEED_STATS feedStats ON feedStats.FEED_ID = i.FEED_ID
 
       ]]>
     </createView>
