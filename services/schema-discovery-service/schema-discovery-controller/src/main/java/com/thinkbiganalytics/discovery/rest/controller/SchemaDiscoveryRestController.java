@@ -87,8 +87,8 @@ public class SchemaDiscoveryRestController {
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
 
-        int contentLength = request == null ? 0 : request.getContentLength();
-        if (contentLength < 1 || contentLength > FILE_LIMIT_MB * MEGABYTE) {
+        if (request != null && (request.getContentLength() < 1 || request.getContentLength() > FILE_LIMIT_MB * MEGABYTE)) {
+            //request will be null in jersey unit tests
             RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
             builder.message("File must be less than " + FILE_LIMIT_MB + " MB");
             return Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).entity(builder.buildError()).build();
