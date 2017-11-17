@@ -300,6 +300,12 @@ md-list.padding-left md-list-item {
   font-size: 14px;
 }
 
+.md-button.md-link {
+  text-transform: none;
+  padding:0;
+  margin:0;
+
+}
 
 
 

@@ -131,9 +131,9 @@
                 <md-divider></md-divider>
                 <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="vm.alertData.links.length >0" style="padding-left:25px">
 
-                    <div class="md-subheader layout-padding-bottom">Links</div>
+                    <div class="md-subhead layout-padding-bottom">Links</div>
                     <div ng-repeat="link in vm.alertData.links" layout="column" class="layout-padding-bottom">
-                        <md-button class="md-primary" ui-sref="{{link.value}}">{{link.label}}</md-button>
+                        <md-button class="md-primary md-link" ui-sref="{{link.value}}">{{link.label}}</md-button>
                     </div>
                 </div>
             </md-content>
