@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 
+import org.hibernate.annotations.Immutable;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
@@ -40,14 +41,10 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Table;
 
-/**
- * FEED_SUMMARY_VIEW
- * Unions all Feeds along with the Latest Job Executions for the feeds
- * The Primary Key for this is a concat of the Feed Id and JobExecutionId.
- * Sometimes the JobExecutionId will be NULL if the feed has never been run before in ops manager
- */
+
 @Entity
 @Table(name = "FEED_SUMMARY_VIEW")
+@Immutable
 public class JpaFeedSummary implements FeedSummary {
 
     @EmbeddedId

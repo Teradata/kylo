@@ -30,5 +30,24 @@
     </sql>
   </changeSet>
 
+  <changeSet id="update_feed_id_in_nifi_feed_stats" author="sr186054" dbms="mysql">
+    <sql >
+      UPDATE NIFI_FEED_STATS s
+      INNER JOIN FEED f on f.NAME = s.FEED_NAME
+      SET s.FEED_ID = f.ID
+      WHERE s.FEED_ID is null;
+    </sql>
+  </changeSet>
+
+  <changeSet id="update_feed_id_in_nifi_feed_stats" author="sr186054" dbms="postgresql">
+    <sql >
+      UPDATE NIFI_FEED_STATS
+      SET FEED_ID = f.ID
+      FROM NIFI_FEED_STATS as s
+      INNER JOIN FEED f on f.NAME = s.FEED_NAME
+      WHERE s.FEED_ID is null;
+    </sql>
+  </changeSet>
+
 
 </databaseChangeLog>

@@ -373,6 +373,10 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                 String feedName = e.getKey();
                 Long timestamp = e.getValue();
                 JpaNifiFeedStats stats = feedStatsMap.computeIfAbsent(feedName, name -> new JpaNifiFeedStats(feedName));
+                OpsManagerFeed opsManagerFeed = provenanceEventFeedUtil.getFeed(feedName);
+                if (opsManagerFeed != null) {
+                    stats.setFeedId(new JpaNifiFeedStats.OpsManagerFeedId(opsManagerFeed.getId().toString()));
+                }
                 stats.setLastActivityTimestamp(timestamp);
             });
         }
