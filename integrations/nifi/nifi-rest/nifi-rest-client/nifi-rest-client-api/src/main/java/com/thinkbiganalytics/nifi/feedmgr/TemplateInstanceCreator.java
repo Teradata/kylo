@@ -250,8 +250,13 @@ public class TemplateInstanceCreator {
 
                     newProcessGroup.setSuccess(!newProcessGroup.hasFatalErrors());
 
-                    log.info("Finished importing template Errors found.  Success: {}, {} {}", newProcessGroup.isSuccess(), (errors != null ? errors.size() : 0),
-                             (errors != null ? " - " + StringUtils.join(errors) : ""));
+                    if(!newProcessGroup.isSuccess()) {
+                        log.info("Errors while importing the template. {} errors found. {}",  (errors != null ? errors.size() : 0),
+                                 (errors != null ? " - " + StringUtils.join(errors, ",") : ""));
+                    }
+                    else {
+                        log.info("Success.  Finished importing template ");
+                    }
 
                     return newProcessGroup;
 
