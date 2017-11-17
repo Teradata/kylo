@@ -160,6 +160,11 @@ public class FeedEventStatistics implements Serializable {
      */
     protected Map<String,AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
 
+    /**
+     * Count of the flows running by feed processor
+     */
+    protected Set<String> changedFeedProcessorRunningFeedFlows = new HashSet<>();
+
     protected AtomicBoolean feedProcessorRunningFeedFlowsChanged = new AtomicBoolean(false);
 
     /**
@@ -330,12 +335,14 @@ public class FeedEventStatistics implements Serializable {
 
             feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(),processorId -> new AtomicLong(0)).incrementAndGet();
             feedProcessorRunningFeedFlowsChanged.set(true);
+            changedFeedProcessorRunningFeedFlows.add(event.getComponentId());
             //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
         }
     }
 
     public void markFeedProcessorRunningFeedFlowsUnchanged(){
         feedProcessorRunningFeedFlowsChanged.set(false);
+        changedFeedProcessorRunningFeedFlows.clear();
     }
 
     public boolean isFeedProcessorRunningFeedFlowsChanged(){
@@ -545,6 +552,10 @@ public class FeedEventStatistics implements Serializable {
         return feedProcessorRunningFeedFlows.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
     }
 
+    public Map<String,Long> getRunningFeedFlowsChanged(){
+        return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId,processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
+    }
+
     private void decrementRunningProcessorFeedFlows(String feedFlowFile){
         String feedProcessor = feedFlowFileIdToFeedProcessorId.get(feedFlowFile);
         if(feedProcessor != null){
@@ -552,6 +563,7 @@ public class FeedEventStatistics implements Serializable {
             if( runningCount != null && runningCount.get() >=1) {
                 runningCount.decrementAndGet();
                 feedProcessorRunningFeedFlowsChanged.set(true);
+                changedFeedProcessorRunningFeedFlows.add(feedProcessor);
             }
         }
     }
