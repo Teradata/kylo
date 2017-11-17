@@ -331,7 +331,7 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
      */
     @Nonnull
     private List<String> getPolicyMapFeedFieldNames() {
-        return FluentIterable.of(policies)
+        return FluentIterable.from(Arrays.asList(policies))
             .filter(new Predicate<FieldPolicy>() {
                 @Override
                 public boolean apply(@Nullable FieldPolicy input) {
