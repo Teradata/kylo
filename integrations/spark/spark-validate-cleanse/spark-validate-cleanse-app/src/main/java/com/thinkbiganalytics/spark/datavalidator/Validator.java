@@ -85,13 +85,14 @@ public class Validator {
         Map<String, FieldPolicy> policyMap = ctx.getBean(FieldPolicyLoader.class).loadFieldPolicy(params.getFieldPolicyJsonPath());
 
         // Run validation
-        final DataValidatorResult results = app.validateTable(params.getTargetDatabase(), params.getFeedTableName(), params.getPartition(), params.getNumPartitions(), policyMap, hiveContext);
+        final DataValidatorResult results = app.validateTable(params.getTargetDatabase(), params.getFeedTableName(), params.getValidTableName(), params.getPartition(), params.getNumPartitions(),
+                                                              policyMap, hiveContext);
 
         log.info("Persistence level: {}", params.getStorageLevel());
         results.persist(StorageLevel.fromString(params.getStorageLevel()));
 
         app.saveInvalidToTable(params.getTargetDatabase(), params.getInvalidTableName(), results, hiveContext);
-        app.saveValidToTable(params.getTargetDatabase(), params.getValidTableName(), results, hiveContext);
+        app.saveValidToTable(params.getTargetDatabase(), params.getFeedTableName(), params.getValidTableName(), results, hiveContext);
         app.saveProfileToTable(params.getTargetDatabase(), params.getProfileTableName(), params.getPartition(), results, hiveContext);
         results.unpersist();
 

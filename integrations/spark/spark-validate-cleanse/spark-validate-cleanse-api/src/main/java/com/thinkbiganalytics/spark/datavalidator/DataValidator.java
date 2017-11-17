@@ -47,16 +47,17 @@ public interface DataValidator {
     /**
      * Validates the specified Hive table and returns the results.
      *
-     * @param databaseName  source database name
-     * @param tableName     source table name
-     * @param partition     source processing_dttm partition value
-     * @param numPartitions target number of Spark partitions, or 0 to disable repartitioning
-     * @param policyMap     map of field names to policies
-     * @param hiveContext   Hive context
+     * @param databaseName    source database name
+     * @param sourceTableName source table name
+     * @param targetTableName target table name
+     * @param partition       source processing_dttm partition value
+     * @param numPartitions   target number of Spark partitions, or 0 to disable repartitioning
+     * @param policyMap       map of field names to policies
+     * @param hiveContext     Hive context
      */
     @Nonnull
-    DataValidatorResult validateTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull String partition, int numPartitions, @Nonnull Map<String, FieldPolicy> policyMap,
-                                      @Nonnull HiveContext hiveContext);
+    DataValidatorResult validateTable(@Nonnull String databaseName, @Nonnull String sourceTableName, @Nonnull String targetTableName, @Nonnull String partition, int numPartitions,
+                                      @Nonnull Map<String, FieldPolicy> policyMap, @Nonnull HiveContext hiveContext);
 
     /**
      * Saves the invalid rows to the specified Hive table.
@@ -77,5 +78,5 @@ public interface DataValidator {
     /**
      * Saves the valid rows to the specified Hive table.
      */
-    void saveValidToTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext);
+    void saveValidToTable(@Nonnull String databaseName, @Nonnull String sourceTableName, @Nonnull String targetTableName, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext);
 }

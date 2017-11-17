@@ -131,14 +131,14 @@ public class StandardDataValidator implements DataValidator, Serializable {
 
     @Nonnull
     @Override
-    public DataValidatorResult validateTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final String partition, final int numPartitions,
-                                             @Nonnull final Map<String, FieldPolicy> policyMap, @Nonnull final HiveContext hiveContext) {
+    public DataValidatorResult validateTable(@Nonnull final String databaseName, @Nonnull final String sourceTableName, @Nonnull final String targetTableName, @Nonnull final String partition,
+                                             final int numPartitions, @Nonnull final Map<String, FieldPolicy> policyMap, @Nonnull final HiveContext hiveContext) {
         // Extract fields from a source table
-        StructField[] fields = resolveSchema(databaseName, tableName, hiveContext);
+        StructField[] fields = resolveSchema(databaseName, targetTableName, hiveContext);
         FieldPolicy[] policies = resolvePolicies(fields, policyMap);
 
         String selectStmt = toSelectFields(policies);
-        String sql = "SELECT " + selectStmt + " FROM " + HiveUtils.quoteIdentifier(databaseName, tableName) + " WHERE processing_dttm = '" + partition + "'";
+        String sql = "SELECT " + selectStmt + " FROM " + HiveUtils.quoteIdentifier(databaseName, sourceTableName) + " WHERE processing_dttm = '" + partition + "'";
         log.info("Executing query {}", sql);
         DataSet sourceDF = scs.sql(hiveContext, sql);
 
@@ -162,7 +162,8 @@ public class StandardDataValidator implements DataValidator, Serializable {
             }
         });
 
-        DataSet invalidDataFrame = getRows(invalidResultRDD, result.getSchema(), hiveContext);
+        final StructType invalidSchema = new StructType(resolveSchema(databaseName, tableName, hiveContext));
+        DataSet invalidDataFrame = getRows(invalidResultRDD, invalidSchema, hiveContext);
         writeToTargetTable(invalidDataFrame, databaseName, tableName, hiveContext);
 
         log.info("wrote values to the invalid Table  {}", tableName);
@@ -193,7 +194,8 @@ public class StandardDataValidator implements DataValidator, Serializable {
     }
 
     @Override
-    public void saveValidToTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final DataValidatorResult result, @Nonnull final HiveContext hiveContext) {
+    public void saveValidToTable(@Nonnull final String databaseName, @Nonnull final String sourceTableName, @Nonnull final String targetTableName, @Nonnull final DataValidatorResult result,
+                                 @Nonnull final HiveContext hiveContext) {
         // Return a new rdd based for Valid Results
         //noinspection serial
         JavaRDD<CleansedRowResult> validResultRDD = result.getCleansedRowResultRDD().filter(new Function<CleansedRowResult, Boolean>() {
@@ -204,14 +206,15 @@ public class StandardDataValidator implements DataValidator, Serializable {
         });
 
         // Write out the valid records (dropping the two columns)
-        StructType validTableSchema = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, tableName)).schema();
-        DataSet validDataFrame = getRows(validResultRDD, ModifiedSchema.getValidTableSchema(result.getSchema().fields(), validTableSchema.fields(), result.getPolicies()), hiveContext);
+        final StructType feedTableSchema = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, sourceTableName)).schema();
+        StructType validTableSchema = scs.toDataSet(hiveContext, HiveUtils.quoteIdentifier(databaseName, targetTableName)).schema();
+        DataSet validDataFrame = getRows(validResultRDD, ModifiedSchema.getValidTableSchema(feedTableSchema.fields(), validTableSchema.fields(), result.getPolicies()), hiveContext);
         validDataFrame = validDataFrame.drop(REJECT_REASON_COL).toDF();
         //Remove the columns from _valid that dont exist in the validTableName
 
-        writeToTargetTable(validDataFrame, databaseName, tableName, hiveContext);
+        writeToTargetTable(validDataFrame, databaseName, targetTableName, hiveContext);
 
-        log.info("wrote values to the valid Table  {}", tableName);
+        log.info("wrote values to the valid Table  {}", targetTableName);
     }
 
     /**
