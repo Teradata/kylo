@@ -23,8 +23,12 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedSummary;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+
+import java.util.List;
 
 public interface FeedSummaryRepository extends JpaRepository<JpaFeedSummary, FeedSummary.ID> {
 
-
+    @Query("select summary from JpaFeedSummary as summary ")
+    public List<? extends FeedSummary> findAllWithoutAcl();
 }

@@ -46,6 +46,10 @@ public interface NifiFeedStatisticsRepository extends JpaRepository<JpaNifiFeedS
                    + "where stats.feedName = :feedName ")
     JpaNifiFeedStats findLatestForFeedWithoutAcl(@Param("feedName") String feedName);
 
+    @Query(value = "select distinct stats from JpaNifiFeedStats as stats "
+                   + "where stats.feedName = :feedName ")
+    List<JpaNifiFeedStats> findForFeedWithoutAcl(@Param("feedName") String feedName);
+
     @Query(value = "select distinct stats from JpaNifiFeedStats stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED + " and (" + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH + ") "

@@ -50,6 +50,8 @@ import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescriptionRepository;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
@@ -124,6 +126,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Inject
     private OpsManagerFeedCacheById opsManagerFeedCacheById;
+
+    @Inject
+    private NifiFeedStatisticsProvider feedStatisticsProvider;
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -236,6 +241,12 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedId);
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
+            NifiFeedStats stats = feedStatisticsProvider.findLatestStatsForFeedWithoutAccessControl(systemName);
+                if(stats == null){
+                    JpaNifiFeedStats newStats = new JpaNifiFeedStats(systemName,new JpaNifiFeedStats.OpsManagerFeedId(feedId.toString()));
+                    newStats.setRunningFeedFlows(0L);
+                    feedStatisticsProvider.saveLatestFeedStats(Lists.newArrayList(newStats));
+                }
         } else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
@@ -256,6 +267,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
             if (slas != null && !slas.isEmpty()) {
                 serviceLevelAgreementDescriptionRepository.delete(slas);
             }
+            feedStatisticsProvider.deleteFeedStats(feed.getName());
             delete(feed);
 
             log.info("Successfully deleted the feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
@@ -454,7 +466,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
 
     public List<? extends FeedSummary> findFeedSummary() {
-        return feedSummaryRepository.findAll();
+        return feedSummaryRepository.findAllWithoutAcl();
     }
 
     @Override
