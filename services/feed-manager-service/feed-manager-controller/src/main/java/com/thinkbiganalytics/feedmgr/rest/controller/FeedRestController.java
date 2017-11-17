@@ -918,7 +918,7 @@ public class FeedRestController {
             String errTemplate = "Unexpected exception writing file [%s] to [%s].";
             String err = String.format(errTemplate, fileName, dropzone);
             log.error(err);
-            throw new InternalServerErrorException(err);
+            throw new InternalServerErrorException(err, e);
         }
         return Response.ok("").build();
     }

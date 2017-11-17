@@ -75,20 +75,8 @@ public class SchemaDiscoveryRestControllerTest extends JerseyTest {
     public void testUploadFileDirect() throws Exception {
         SchemaParserDescriptor descriptor = createMockParserDescriptor();
         SchemaDiscoveryRestController c = new SchemaDiscoveryRestController();
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getContentLength()).thenReturn(10000000 - 1);
-        Response response = c.uploadFile(request, ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
+        Response response = c.uploadFile(ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
         assertEquals(Response.Status.OK.getStatusCode(), response.getStatus());
-    }
-
-    @Test
-    public void testUploadFileDirect_TooLarge() throws Exception {
-        SchemaParserDescriptor descriptor = createMockParserDescriptor();
-        SchemaDiscoveryRestController c = new SchemaDiscoveryRestController();
-        HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
-        Mockito.when(request.getContentLength()).thenReturn(10000000 + 1);
-        Response response = c.uploadFile(request, ObjectMapperSerializer.serialize(descriptor), new ByteArrayInputStream("ABC".getBytes()), null);
-        assertEquals(Response.Status.REQUEST_ENTITY_TOO_LARGE.getStatusCode(), response.getStatus());
     }
 
     @Test

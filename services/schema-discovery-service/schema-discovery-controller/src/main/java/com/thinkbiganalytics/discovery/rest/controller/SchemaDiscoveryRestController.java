@@ -82,17 +82,9 @@ public class SchemaDiscoveryRestController {
                       @ApiResponse(code = 200, message = "Returns the schema.", response = Schema.class),
                       @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
                   })
-    public Response uploadFile(@Context final HttpServletRequest request,
-                               @FormDataParam("parser") String parserDescriptor,
+    public Response uploadFile(@FormDataParam("parser") String parserDescriptor,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
-
-        if (request != null && (request.getContentLength() < 1 || request.getContentLength() > FILE_LIMIT_MB * MEGABYTE)) {
-            //request will be null in jersey unit tests
-            RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
-            builder.message("File must be less than " + FILE_LIMIT_MB + " MB");
-            return Response.status(Response.Status.REQUEST_ENTITY_TOO_LARGE).entity(builder.buildError()).build();
-        }
 
         Schema schema;
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
