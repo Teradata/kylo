@@ -22,6 +22,8 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
 <changeSet id="postgres_compact_nifi_feed_processor_stats" author="sr186054" dbms="postgresql">
+  <validCheckSum>7:f99958bcb8e03fa1e219757cfccb9c16</validCheckSum>
+  <validCheckSum>7:88364432646bda8782256b29044b4705</validCheckSum>
   <sqlFile path="postgres_compact_nifi_feed_processor_stats.sql" splitStatements="false" relativeToChangelogFile="true"/>
 </changeSet>
 

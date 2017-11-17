@@ -22,22 +22,37 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
+  <!-- Postgres does a drop/create instead of a create or replace view.  Because of this it needs to do a drop/cascade -->
+
   <changeSet id="1" author="ru186002" runOnChange="true" >
-    <createView replaceIfExists="true" viewName="CHECK_DATA_TO_FEED_VW" >
+    <preConditions onFail="CONTINUE">
+      <dbms type="postgresql"/>
+      <viewExists viewName="CHECK_DATA_TO_FEED_VW"/>
+    </preConditions>
+    <comment>Drop and cascade the CHECK_DATA_TO_FEED_VW for Postgres. The views will be recreated in the next step.</comment>
+    <sql dbms="postgresql">
+          DROP view CHECK_DATA_TO_FEED_VW cascade
+  </sql>
+
+    <createView replaceIfExists="true" viewName="CHECK_DATA_TO_FEED_VW">
       <![CDATA[
         SELECT FEED_ID FEED_ID, f2.NAME as FEED_NAME, check_feeds.CHECK_DATA_FEED_ID as KYLO_FEED_ID, f.NAME as KYLO_FEED_NAME
          FROM FEED_CHECK_DATA_FEEDS check_feeds
          INNER JOIN FEED f on f.ID = check_feeds.CHECK_DATA_FEED_ID
          INNER JOIN FEED f2 on f2.ID = check_feeds.FEED_ID
          WHERE f.FEED_TYPE = 'CHECK'
-        UNION ALL
-        SELECT ID FEED_ID,NAME,id, NAME KYLO_FEED_NAME from FEED
-        WHERE FEED_TYPE = 'FEED'
-        UNION ALL
-          SELECT f.ID AS FEED_ID,f.name AS FEED_NAME, f.ID AS KYLO_FEED_ID, f.name AS KYLO_FEED_NAME
+         UNION ALL
+         SELECT ID FEED_ID,NAME,id, NAME KYLO_FEED_NAME from FEED
+         WHERE FEED_TYPE = 'FEED'
+         UNION ALL
+         SELECT f.ID AS FEED_ID,f.name AS FEED_NAME, f.ID AS KYLO_FEED_ID, f.name AS KYLO_FEED_NAME
           FROM FEED f
           WHERE f.FEED_TYPE = 'CHECK'
       ]]>
     </createView>
   </changeSet>
+
+
+
+
 </databaseChangeLog>
