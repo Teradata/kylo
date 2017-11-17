@@ -18,17 +18,18 @@
 -- #L%
 -- -
 
-CREATE OR REPLACE FUNCTION compact_feed_processor_stats() RETURNS VARCHAR as $$
 
-DECLARE curr_date Timestamp DEFAULT NOW();
-DECLARE output VARCHAR(4000) DEFAULT '';
-DECLARE insertRowCount INTEGER DEFAULT 0;
-DECLARE deleteRowCount INTEGER DEFAULT 0;
-DECLARE totalCompactSize INTEGER DEFAULT 0;
+CREATE PROCEDURE [dbo].[compact_feed_processor_stats]( @res VARCHAR OUTPUT )
+AS
 
-BEGIN
+DECLARE @curr_date datetime = getdate();
 
--- group event times by nearest hour for records captured before yesterday at midnight
+DECLARE @output VARCHAR(255) = '';
+
+DECLARE @insertRowCount INTEGER = 0;
+DECLARE @deleteRowCount INTEGER = 0;
+DECLARE @totalCompactSize INTEGER = 0;
+
 
 INSERT INTO NIFI_FEED_PROCESSOR_STATS
 SELECT fm_feed_name											 AS FM_FEED_NAME,
@@ -39,7 +40,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(duration_millis)                                  AS DURATION_MILLIS,
        Sum(bytes_in)                                         AS BYTES_IN,
        Sum(bytes_out)                                        AS BYTES_OUT,
-       dateadd(hour, datediff(hour, 0, dateadd(mi, 30, MIN_EVENT_TIME)), 0)			 AS MIN_EVENT_TIME,
+       dateadd(hour, datediff(hour, 0, dateadd(mi, 30, MIN_EVENT_TIME)), 0)				 AS MIN_EVENT_TIME,
 	     MAX(max_event_time) 				                     AS MAX_EVENT_TIME,
        Sum(jobs_started)                                     AS JOBS_STARTED,
        Sum(jobs_finished)                                    AS JOBS_FINISHED,
@@ -49,7 +50,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(flow_files_finished)                              AS FLOW_FILES_FINISHED,
        NULL                                                  AS COLLECTION_ID,
        SUM(collection_interval_sec)                          AS COLLECTION_INTERVAL_SEC,
-       uuid_in(md5(random()::text || now()::text)::cstring) 												 AS id,
+       NEWID() 												 AS id,
        processor_name										 AS PROCESSOR_NAME,
        SUM(job_duration)                                     AS JOB_DURATION,
        SUM(successful_job_duration)                          AS SUCCESSFUL_JOB_DURATION,
@@ -62,24 +63,24 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Max(error_messages_timestamp)                         AS ERROR_MESSAGES_TIMESTAMP
 FROM   NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day'
+AND    COLLECTION_TIME < dateadd(DAY,-1,@curr_date)   -- look for records processed before yesterday
 GROUP  BY fm_feed_name,
           nifi_processor_id,
           processor_name,
           nifi_feed_process_group_id,
-          date_trunc('hour',MIN_EVENT_TIME + interval '30 minute');
+          dateadd(hour, datediff(hour, 0, dateadd(mi, 30, MIN_EVENT_TIME)), 0);
 
-GET DIAGNOSTICS insertRowCount = ROW_COUNT;
+SET @insertRowCount =  @@ROWCOUNT;
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < DATE_TRUNC('day',now()) - interval '1 day';
+AND    COLLECTION_TIME < dateadd(DAY,-1,@curr_date)   -- look for records processed before yesterday
 
-GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
+SET @deleteRowCount =  @@ROWCOUNT;
 
-totalCompactSize := deleteRowCount - insertRowCount;
+SET @totalCompactSize = @deleteRowCount - @insertRowCount;
 
-SELECT('Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest hour') into output;
+SET @output = CONCAT('Compacted ',@deleteRowCount,' into ',@insertRowCount,' grouping event time to nearest hour');
 
 
 -- rollup data older than xx hours ago together, grouping every minute
@@ -94,7 +95,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(duration_millis)                                  AS DURATION_MILLIS,
        Sum(bytes_in)                                         AS BYTES_IN,
        Sum(bytes_out)                                        AS BYTES_OUT,
-       date_trunc('minute', MIN_EVENT_TIME + interval '30 second')				 AS MIN_EVENT_TIME,
+       dateadd(minute, datediff(minute, 0, dateadd(ss, 30, MIN_EVENT_TIME)), 0)				 AS MIN_EVENT_TIME,
 	   MAX(max_event_time) 				                     AS MAX_EVENT_TIME,
        Sum(jobs_started)                                     AS JOBS_STARTED,
        Sum(jobs_finished)                                    AS JOBS_FINISHED,
@@ -104,7 +105,7 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Sum(flow_files_finished)                              AS FLOW_FILES_FINISHED,
        MAX(COLLECTION_ID)                                    AS COLLECTION_ID,
        SUM(collection_interval_sec)                          AS COLLECTION_INTERVAL_SEC,
-      uuid_in(md5(random()::text || now()::text)::cstring) 												 AS id,
+       NEWID() 												 AS id,
        processor_name										 AS PROCESSOR_NAME,
        SUM(job_duration)                                     AS JOB_DURATION,
        SUM(successful_job_duration)                          AS SUCCESSFUL_JOB_DURATION,
@@ -117,27 +118,24 @@ SELECT fm_feed_name											 AS FM_FEED_NAME,
        Max(error_messages_timestamp)                         AS ERROR_MESSAGES_TIMESTAMP
 FROM   NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < (curr_date - interval '10 hour')
+AND    COLLECTION_TIME < dateadd(HOUR,-10,@curr_date) -- look for records processed 10 or more hours ago
 GROUP  BY fm_feed_name,
           nifi_processor_id,
           processor_name,
           nifi_feed_process_group_id,
-          date_trunc('minute', MIN_EVENT_TIME + interval '30 second');
+          dateadd(minute, datediff(minute, 0, dateadd(ss, 30, MIN_EVENT_TIME)), 0);
 
-GET DIAGNOSTICS insertRowCount = ROW_COUNT;
+SET @insertRowCount = @@ROWCOUNT;
 
 DELETE FROM    NIFI_FEED_PROCESSOR_STATS
 WHERE  collection_id is not null
-AND    COLLECTION_TIME < (curr_date - interval '10 hour');
+AND    COLLECTION_TIME < dateadd(HOUR,-10,@curr_date);  -- look for records processed 10 or more hours ago
 
-GET DIAGNOSTICS deleteRowCount = ROW_COUNT;
+SET @deleteRowCount = @@ROWCOUNT;
 
-totalCompactSize := totalCompactSize + (deleteRowCount - insertRowCount);
+SET @totalCompactSize = @totalCompactSize + (@deleteRowCount - @insertRowCount);
+SET @output = CONCAT(@output,'\n Compacted ',@deleteRowCount,' into ',@insertRowCount,' grouping event time to nearest minute');
+SET @output = CONCAT(@output,'\n Reduced table by ',@totalCompactSize,' rows');
 
-SELECT(output,'\n Compacted ',deleteRowCount,' into ',insertRowCount,' grouping event time to nearest minute') into output;
-SELECT (output,'\n Reduced table by ',totalCompactSize,' rows') into output;
+set @res = @output;
 
-
- return output;
-END;
-$$ LANGUAGE plpgsql;

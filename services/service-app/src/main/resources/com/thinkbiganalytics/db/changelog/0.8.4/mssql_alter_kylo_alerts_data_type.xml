@@ -22,32 +22,11 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
 
-  <changeSet id="insert_missing_nifi_feed_stats" author="sr186054" >
-    <sql >
-      INSERT INTO NIFI_FEED_STATS
-      SELECT NAME,ID,0,null,null,null
-      FROM FEED where NAME NOT IN(SELECT NAME FROM NIFI_FEED_STATS)
-    </sql>
+  <changeSet id="alter_kylo_alert_content_data_type" author="sr186054" dbms="msssql" >
+    <modifyDataType columnName="CONTENT" newDataType="varchar(MAX)"
+                    tableName="KYLO_ALERT" />
   </changeSet>
 
-  <changeSet id="update_feed_id_in_nifi_feed_stats" author="sr186054" dbms="mysql">
-    <sql >
-      UPDATE NIFI_FEED_STATS s
-      INNER JOIN FEED f on f.NAME = s.FEED_NAME
-      SET s.FEED_ID = f.ID
-      WHERE s.FEED_ID is null;
-    </sql>
-  </changeSet>
-
-  <changeSet id="update_feed_id_in_nifi_feed_stats" author="sr186054" dbms="postgresql,mssql">
-    <sql >
-      UPDATE NIFI_FEED_STATS
-      SET FEED_ID = f.ID
-      FROM NIFI_FEED_STATS as s
-      INNER JOIN FEED f on f.NAME = s.FEED_NAME
-      WHERE s.FEED_ID is null;
-    </sql>
-  </changeSet>
 
 
 </databaseChangeLog>
