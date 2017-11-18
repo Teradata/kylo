@@ -182,9 +182,9 @@
               <div layout="row" layout-align="space-between center">
                 <div flex layout="column">
                   <span class="card-title kpi-header layout-padding-left">Average Flow Rate</span>
-                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left">Zoom in/out and pan left/right to see custom time frame</span>
+                  <span class="md-caption kpi-subtitle layout-padding-top layout-padding-left" ng-show="vm.zoomEnabled">Zoom in/out and pan left/right to see custom time frame</span>
                 </div>
-                  <md-button ng-click="vm.onResetZoom()">Reset Zoom</md-button>
+                  <md-button ng-click="vm.onResetZoom()" ng-show="vm.zoomEnabled">Reset Zoom</md-button>
               </div>
 
               <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>

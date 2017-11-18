@@ -127,6 +127,46 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         self.maxDisplayTime;
 
         /**
+         * max Y value (when not zoomed)
+         * @type {number}
+         */
+        self.maxY = 0;
+
+        /**
+         * max Y Value when zoomed
+         * @type {number}
+         */
+        self.zoomMaxY = 0;
+
+        /**
+         * Min time frame to enable zooming.
+         * Defaults to 30 min.
+         * Anything less than this will not be zoomable
+         * @type {number}
+         */
+        self.minZoomTime = 1000*60*30;
+        /**
+         * Flag to indicate if zooming is enabled.
+         * Zooming is only enabled for self.minZoomTime or above
+         *
+         * @type {boolean}
+         */
+        self.zoomEnabled = false;
+
+        /**
+         * A bug in nvd3 charts exists where if the zoom is toggle to true it requires a force of the x axis when its toggled back to false upon every data refresh.
+         * this flag will be triggered when the zoom enabled changes and from then on it will manually reset the x domain when the data refreshes
+         * @type {boolean}
+         */
+        self.forceXDomain = false;
+
+        /**
+         * Flag to force the rendering of the chart to refresh
+         * @type {boolean}
+         */
+        self.forceChartRefresh = false;
+
+        /**
          * Summary stats
          * @type {*}
          */
@@ -368,6 +408,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     interpolate: 'linear',
                     useVoronoi: false,
                     duration: 250,
+                    clipEdge:false,
                     useInteractiveGuideline: true,
                     interactiveLayer: {tooltip: {gravity: 's'}},
                     valueFormat: function (d) {
@@ -390,10 +431,11 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                             }
                         }
                     },
-                    clipEdge: true,
+                    //https://github.com/krispo/angular-nvd3/issues/548
                     zoom: {
-                        enabled: true,
-                        scaleExtent: [1, 1000],
+                        enabled: false,
+                        scale: 1,
+                        scaleExtent: [1, 50],
                         verticalOff: true,
                         unzoomEventType: 'dblclick.zoom',
                         useFixedDomain:true,
@@ -406,6 +448,10 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                                     self.zoomedMinTime = Math.floor(xDomain[0]);
                                     self.zoomedMaxTime = Math.floor(xDomain[1]);
                                     self.timeDiff = self.zoomedMaxTime - self.zoomedMinTime;
+                                    var max1 = Math.ceil(yDomain[0]);
+                                    var max2 = Math.ceil(yDomain[1]);
+                                    self.zoomMaxY = max2 > max1 ? max2 : max1;
+
                                 }
                                 return {x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
                             }
@@ -414,7 +460,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                             }
                         },
                         unzoomed: function(xDomain, yDomain) {
-                         self.resetZoom();
+                       return  resetZoom();
                         }
                         },
                     interactiveLayer: {
@@ -423,14 +469,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         }
                     },
                     dispatch: {
-                        lines: {
-                            stateChange: function (e) {
-                                console.log('stateChange', e)
-                            },
-                            changeState: function (e) {
-                                console.log('changeState', e)
-                            }
-                        }
+
                     }
                 }
 
@@ -556,6 +595,13 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             self.isAtInitialZoom = true;
             self.timeFrame = timeFrame;
             var millis = self.timeFrameOptions[self.timeFrameOptionIndex].properties.millis;
+            if(millis >= self.minZoomTime && !self.zoomEnabled && !manualRefresh){
+              enableZoom();
+            }
+            else if(!manualRefresh) {
+
+                disableZoom();
+            }
             clearRefreshInterval();
             refresh();
 
@@ -566,10 +612,26 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 }
                 else {
                     setRefreshInterval();
+
                 }
             }
+
         }
 
+        function enableZoom(){
+            self.zoomEnabled = true;
+            self.feedChartOptions.chart.zoom.enabled=true;
+            self.forceChartRefresh = true;
+            self.forceXDomain = true;
+
+        }
+
+        function disableZoom(){
+            resetZoom();
+            self.zoomEnabled = false;
+            self.feedChartOptions.chart.zoom.enabled=false;
+            self.forceChartRefresh = true;
+        }
 
 
         function onProcessorChartFunctionChanged() {
@@ -683,11 +745,16 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
                 self.feedChartData = Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'minEventTime', null,self.minTime, self.maxTime);
                 var max = Nvd3ChartService.determineMaxY(self.feedChartData);
+                if(self.isZoomed) {
+                    max = self.zoomMaxY;
+                }
+                var maxChanged =  self.maxY < max;
                 self.minY = 0;
                 self.maxY = max;
                 if(max <5){
                     max = 5;
                 }
+
 
                 self.feedChartOptions.chart.forceY = [0, max];
                 if (self.feedChartOptions.chart.yAxis.ticks != max) {
@@ -702,14 +769,23 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     self.feedChartOptions.chart.yAxis.ticks = ticks;
                 }
 
-                if(self.isZoomed && self.zoomedMinTime != UNZOOMED_VALUE) {
+                if(self.isZoomed && (self.forceXDomain == true || self.zoomedMinTime != UNZOOMED_VALUE)) {
                     //reset x xaxis to the zoom values
                     self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
                 }
+                else  if(!self.isZoomed && self.forceXDomain){
+                    self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
+                }
 
                 initiatePreventZoom();
-                if (self.feedChartApi && self.feedChartApi.refresh) {
-                    self.feedChartApi.refresh();
+                if (self.feedChartApi && self.feedChartApi.refresh  && self.feedChartApi.update) {
+                      if(maxChanged || self.forceChartRefresh ) {
+                          self.feedChartApi.refresh();
+                          self.forceChartRefresh = false;
+                      }
+                      else {
+                            self.feedChartApi.update();
+                      }
                 }
 
                 self.feedTimeChartLoading = false;
