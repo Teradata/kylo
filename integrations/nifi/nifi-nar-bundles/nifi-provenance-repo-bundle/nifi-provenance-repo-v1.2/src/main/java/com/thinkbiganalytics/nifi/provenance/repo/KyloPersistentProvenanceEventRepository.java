@@ -75,6 +75,7 @@ private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new Ky
             KyloRecordWriterDelegate delegate = new KyloRecordWriterDelegate(writers[i]);
             interceptEventIdWriters[i] = delegate;
         }
+        log.info("Created {} KyloRecordWriterDelegate objects starting with: {}", writers.length,initialRecordId);
         return interceptEventIdWriters;
     }
 
