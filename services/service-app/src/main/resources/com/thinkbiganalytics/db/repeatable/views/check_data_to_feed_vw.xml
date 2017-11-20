@@ -25,14 +25,10 @@
   <!-- Postgres does a drop/create instead of a create or replace view.  Because of this it needs to do a drop/cascade -->
 
   <changeSet id="1" author="ru186002" runOnChange="true" >
-    <preConditions onFail="CONTINUE">
-      <dbms type="postgresql"/>
-      <viewExists viewName="CHECK_DATA_TO_FEED_VW"/>
-    </preConditions>
-    <comment>Drop and cascade the CHECK_DATA_TO_FEED_VW for Postgres. The views will be recreated in the next step.</comment>
+
     <sql dbms="postgresql">
-          DROP view CHECK_DATA_TO_FEED_VW cascade
-  </sql>
+      DROP VIEW IF EXISTS CHECK_DATA_TO_FEED_VW cascade
+    </sql>
 
     <createView replaceIfExists="true" viewName="CHECK_DATA_TO_FEED_VW">
       <![CDATA[
@@ -51,6 +47,7 @@
       ]]>
     </createView>
   </changeSet>
+
 
 
 
