@@ -21,11 +21,15 @@ package com.thinkbiganalytics.spark.datavalidator;
  */
 
 import com.thinkbiganalytics.policy.FieldPolicy;
+import com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndValidateRow;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.spark.sql.types.DataTypes;
+import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -36,6 +40,8 @@ import javax.annotation.Nonnull;
 
 class ModifiedSchema {
 
+    private static final Logger log = LoggerFactory.getLogger(ModifiedSchema.class);
+
     @Nonnull
     public static StructType getValidTableSchema(@Nonnull final StructField[] feedFields, @Nonnull final StructField[] validFields, @Nonnull final FieldPolicy[] policies) {
         // Map of the lower feed valid name to the field type
@@ -45,6 +51,8 @@ class ModifiedSchema {
             validFieldsMap.put(lowerFieldName, validField);
         }
 
+        // List of all the feedFieldNames that are part of the policyMap
+        final List<String> policyMapFeedFieldNames = new ArrayList<>();
         // A map of the feedFieldName to validFieldName
         final Map<String, String> validFieldToFeedFieldMap = new HashMap<>();
         // List of all those validFieldNames that have a standardizer on them
@@ -53,6 +61,7 @@ class ModifiedSchema {
             if (policy.getField() != null) {
                 String feedFieldName = policy.getFeedField().toLowerCase();
                 String fieldName = policy.getField().toLowerCase();
+                policyMapFeedFieldNames.add(feedFieldName);
                 validFieldToFeedFieldMap.put(fieldName, feedFieldName);
                 if (policy.hasStandardizationPolicies()) {
                     validFieldsWithStandardizers.add(fieldName);
@@ -63,20 +72,28 @@ class ModifiedSchema {
         List<StructField> fieldsList = new ArrayList<>(feedFields.length);
         for (StructField feedField : feedFields) {
             String lowerFeedFieldName = feedField.name().toLowerCase();
-            StructField field = feedField;
-            //get the corresponding valid table field name
-            String lowerFieldName = validFieldToFeedFieldMap.get(lowerFeedFieldName);
-            //if we are standardizing then use the field type matching the _valid table
-            if (validFieldsWithStandardizers.contains(lowerFieldName)) {
-                //get the valid table
-                field = validFieldsMap.get(lowerFieldName);
-                HCatDataType dataType = HCatDataType.createFromDataType(field.name(), field.dataType().simpleString());
-                if (dataType != null && dataType.isDateOrTimestamp()) {
-                    field = new StructField(field.name(), DataTypes.StringType, field.nullable(), field.metadata());
+            if (policyMapFeedFieldNames.contains(lowerFeedFieldName)) {
+                StructField field = feedField;
+                //get the corresponding valid table field name
+                String lowerFieldName = validFieldToFeedFieldMap.get(lowerFeedFieldName);
+                //if we are standardizing then use the field type matching the _valid table
+                if (validFieldsWithStandardizers.contains(lowerFieldName)) {
+                    //get the valid table
+                    field = validFieldsMap.get(lowerFieldName);
+                    HCatDataType dataType = HCatDataType.createFromDataType(field.name(), field.dataType().simpleString());
+                    if (dataType != null && dataType.isDateOrTimestamp()) {
+                        field = new StructField(field.name(), DataTypes.StringType, field.nullable(), field.metadata());
+                    }
                 }
+                fieldsList.add(field);
+            } else {
+                log.warn("Valid table field {} is not present in policy map", lowerFeedFieldName);
             }
-            fieldsList.add(field);
         }
+
+        // Insert the two custom fields before the processing partition column
+        fieldsList.add(new StructField(CleanseAndValidateRow.PROCESSING_DTTM_COL, DataTypes.StringType, true, Metadata.empty()));
+        fieldsList.add(fieldsList.size() - 1, new StructField(CleanseAndValidateRow.REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
 
         return new StructType(fieldsList.toArray(new StructField[0]));
     }
