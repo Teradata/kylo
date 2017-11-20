@@ -155,6 +155,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 data.createFeedModel.clonedFrom = data.createFeedModel.feedName;
                 data.createFeedModel.feedName += "_copy";
                 data.createFeedModel.systemFeedName += "_copy";
+                data.createFeedModel.owner = undefined;
                 return data.createFeedModel;
             },
             /**
