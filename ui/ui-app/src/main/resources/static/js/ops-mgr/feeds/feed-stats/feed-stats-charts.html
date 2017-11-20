@@ -31,11 +31,11 @@
                 <span style="margin-top: 5px;">Date Range: {{vm.minDisplayTime | date: 'MM/dd/yy HH:mm'}} - {{vm.maxDisplayTime | date: 'MM/dd/yy HH:mm'}}</span>
               </div>
             </div>
-            <div layout="row" flex="100">
-              <md-slider-container flex="100">
-                <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[0].label}}</label>
-                <md-slider flex="100" ng-model="vm.timeFrameOptionIndex" min="0" max="{{vm.timeFrameOptionIndexLength - 1}}" aria-label="Time Frame"></md-slider>
-                <label class="md-container-ignore label-small layout-padding-top">{{vm.timeFrameOptions[vm.timeFrameOptionIndexLength - 1].label}}</label>
+            <div flex>
+              <md-slider-container >
+                <span class="hint">{{vm.timeFrameOptions[0].label}}</span>
+                <md-slider ng-change="vm.onTimeFrameChanged()" flex ng-model="vm.timeFrameOptionIndex" min="0" max="{{vm.timeFrameOptionIndexLength - 1}}" aria-label="Time Frame"></md-slider>
+                <span class="hint">{{vm.timeFrameOptions[vm.timeFrameOptionIndexLength - 1].label}}</span>
               </md-slider-container>
             </div>
             <label ng-if="vm.isZoomed" class="hint">At custom zoom level, Refresh to reset to '{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}'</label>

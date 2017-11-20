@@ -62,18 +62,21 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
         var incrementIntervalVal = incrementInterval;
 
         var diff = maxValue - minValue;
-        //less than 5 min
+        //less than 5 min space out every 5 sec
         if(diff <= 300000){
             incrementIntervalVal = 5000;
         }
         else if(diff <=3600000) {
+            // 1 hr diff, increment every 60 sec
             incrementIntervalVal = 60000;
         }
         else if(diff <=43200000) {
-            incrementIntervalVal = 60000*24;
+            // 12 hr diff  every 5 min
+            incrementIntervalVal = 60000*5;
         }
         else {
-            incrementIntervalVal = 86400000
+            // every 20 minutes
+            incrementIntervalVal = 60000*20
         }
 
         /**
@@ -231,6 +234,10 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
                     else {
                         value = item[labelValue.value]; //item[jobsStartedPerSecond]
                     }
+                    var prevVal =  dataMap[label][item[xAxisKey]];
+                    if(angular.isDefined(prevVal)){
+                        value +=prevVal;
+                    }
                     dataMap[label][item[xAxisKey]] = value; //dataMap[Started][maxEventTime] = jobsStartedPerSecond
                     if (labelValue['color'] != undefined) {
                         labelColorMap[label] = labelValue.color;
@@ -292,6 +299,9 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
        return max
 
     }
+
+
+
 
 
 }]);

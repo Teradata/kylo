@@ -21,7 +21,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout, $q, ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService) {
+    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService) {
         var self = this;
         this.dataLoaded = false;
 
@@ -115,6 +115,12 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * @type {boolean}
          */
         self.preventZoomChange = false;
+
+        /**
+         * Timeout promise to prevent zoom
+         * @type {undefined}
+         */
+        self.preventZoomPromise = undefined;
 
         /**
          * The Min Date of data.  This will be the zoomed value if we are zooming, otherwise the min value in the dataset
@@ -236,7 +242,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * When a user clicks the Refresh Button
          */
         self.onRefreshButtonClick = function () {
-            onTimeFrameChanged(self.timeFrame, true);
+            refresh();
         };
 
 
@@ -291,10 +297,17 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * prevent the initial zoom to fire in chart after reload
          */
         function initiatePreventZoom(){
-                    if(!self.preventZoomChange) {
+            var cancelled = false;
+            if(angular.isDefined(self.preventZoomPromise)) {
+               $timeout.cancel(self.preventZoomPromise);
+                self.preventZoomPromise = undefined;
+                cancelled =true;
+            }
+                    if(!self.preventZoomChange || cancelled) {
                         self.preventZoomChange = true;
-                        $timeout(function () {
-                            self.preventZoomChange = false;
+                         self.preventZoomPromise =   $timeout(function () {
+                         self.preventZoomChange = false;
+                         self.preventZoomPromise = undefined;
                         }, 1000);
                     }
         }
@@ -438,7 +451,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         scaleExtent: [1, 50],
                         verticalOff: true,
                         unzoomEventType: 'dblclick.zoom',
-                        useFixedDomain:true,
+                        useFixedDomain:false,
                         zoomed: function(xDomain, yDomain) {
                             //zoomed will get called initially (even if not zoomed)
                             // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
@@ -456,7 +469,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                                 return {x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
                             }
                             else {
-                                return {x1: self.minTime, x2: self.maxTime, y1: yDomain[0], y2: yDomain[1]}
+                                return {x1: self.minTime, x2: self.maxTime, y1: self.minY, y2: self.maxY}
                             }
                         },
                         unzoomed: function(xDomain, yDomain) {
@@ -504,6 +517,24 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             self.minDisplayTime=self.zoomedMinTime;
             self.maxDisplayTime =self.zoomedMaxTime
 
+            /*
+           if(self.zoomedMinTime != UNZOOMED_VALUE) {
+                //reset x xaxis to the zoom values
+                self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
+                var y = self.zoomMaxY > 0 ? self.zoomMaxY : self.maxY;
+                self.feedChartOptions.chart.yDomain = [0,self.maxY]
+            }
+            else  {
+                self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
+                self.feedChartOptions.chart.yDomain = [0,self.maxY]
+            }
+           self.feedChartApi.update();
+*/
+
+
+
+
+
         };
 
         /**
@@ -517,9 +548,20 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         }
 
 
+        self.onTimeFrameChanged = function(){
+            if (!_.isUndefined(self.timeFrameOptions)) {
+                self.timeFrame = self.timeFrameOptions[Math.floor(self.timeFrameOptionIndex)].value;
+                self.displayLabel = self.timeFrame.label;
+                self.isZoomed = false;
+                self.zoomedMinTime = UNZOOMED_VALUE;
+                self.zoomedMaxTime = UNZOOMED_VALUE;
+                initiatePreventZoom();
+                onTimeFrameChanged(self.timeFrame);
 
+            }
+        }
 
-        $scope.$watch(
+     /*   $scope.$watch(
             //update time frame when slider is moved
             function () {
                 return self.timeFrameOptionIndex;
@@ -535,6 +577,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 }
             }
         );
+        */
 
         /**
          * Enable/disable the refresh interval
@@ -543,11 +586,22 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             function () {
                 return self.autoRefresh;
             },
-            function () {
+            function (newVal, oldVal) {
                 if (!self.autoRefresh) {
                     clearRefreshInterval();
+                    //toast
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Auto refresh disabled')
+                            .hideDelay(3000)
+                    );
                 } else {
                     setRefreshInterval();
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Auto refresh enabled')
+                            .hideDelay(3000)
+                    );
                 }
             }
         );
@@ -559,14 +613,14 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             function () {
                 return self.zoomedMinTime;
             },
-            function () {
+            function (newVal, oldVal) {
                 if (!_.isUndefined(self.zoomedMinTime) && self.zoomedMinTime > 0) {
-                    if (self.isAtInitialZoom) {
-                        self.isAtInitialZoom = false;
-                    } else {
+                  //  if (self.isAtInitialZoom) {
+                  //      self.isAtInitialZoom = false;
+                   // } else {
                         cancelPreviousOnZoomed();
                         self.changeZoomPromise = $timeout(changeZoom, ZOOM_DELAY);
-                    }
+                   // }
                 }
             }
         );
@@ -588,25 +642,28 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * When the slider is changed refresh the charts/data
          * @param timeFrame
          */
-        function onTimeFrameChanged(timeFrame, manualRefresh) {
+        function onTimeFrameChanged(timeFrame) {
             if(self.isZoomed){
                 resetZoom();
             }
             self.isAtInitialZoom = true;
             self.timeFrame = timeFrame;
             var millis = self.timeFrameOptions[self.timeFrameOptionIndex].properties.millis;
-            if(millis >= self.minZoomTime && !self.zoomEnabled && !manualRefresh){
+            if(millis >= self.minZoomTime){
               enableZoom();
             }
-            else if(!manualRefresh) {
+            else {
 
                 disableZoom();
             }
             clearRefreshInterval();
             refresh();
 
-            //reset refresh interval if we are 5 min or lower
-            if (!manualRefresh && millis <= (1000*60*5)) {
+            //disable refresh if > 30 min timeframe
+            if(millis >(1000*60*30)){
+                self.autoRefresh = false;
+            }
+            else {
                 if(!self.autoRefresh) {
                     self.autoRefresh = true;
                 }
@@ -615,6 +672,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
                 }
             }
+
 
         }
 
@@ -772,9 +830,12 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 if(self.isZoomed && (self.forceXDomain == true || self.zoomedMinTime != UNZOOMED_VALUE)) {
                     //reset x xaxis to the zoom values
                     self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
+                    var y = self.zoomMaxY > 0 ? self.zoomMaxY : self.maxY;
+                    self.feedChartOptions.chart.yDomain = [0,y]
                 }
                 else  if(!self.isZoomed && self.forceXDomain){
                     self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
+                    self.feedChartOptions.chart.yDomain = [0,self.maxY]
                 }
 
                 initiatePreventZoom();
@@ -917,7 +978,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
     };
 
     angular.module(moduleName).controller('FeedStatsChartsController',
-        ["$scope", "$element", "$http", "$interval", "$timeout", "$q", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", controller]);
+        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", controller]);
 
     angular.module(moduleName)
         .directive('kyloFeedStatsCharts', directive);
