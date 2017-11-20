@@ -70,8 +70,6 @@ public class SchemaDiscoveryRestController {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
-    private static final int MEGABYTE = 1000 * 1000;
-    private static final int FILE_LIMIT_MB = 10;
 
     @POST
     @Path("/hive/sample-file")
