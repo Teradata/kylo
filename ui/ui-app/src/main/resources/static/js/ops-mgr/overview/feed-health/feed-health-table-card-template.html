@@ -37,7 +37,7 @@
               <md-progress-linear md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
             <md-list flex layout-fill class="list-item-table">
               <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
-                            pagination-id="vm.paginationId(tab)" ng-click="vm.feedDetails($event,feed)">
+                            pagination-id="tab.title" ng-click="vm.feedDetails($event,feed)">
 
                 <div layout="column" layout-fill>
                   <div class="item-column md-list-item-text item-column-title"
@@ -98,13 +98,12 @@
               </md-list-item>
               <md-divider></md-divider>
               <md-list-item layout-align="end center" layout-row class="pagination-list-item">
-                <dir-pagination-controls pagination-id="vm.paginationId(tab)"
+                <dir-pagination-controls pagination-id="tab.title"
                                          auto-hide="false"
                                          max-size="5"
                                          direction-links="true"
                                          boundary-links="false"
                                          template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                         current-page="tab.currentPage"
                                          on-page-change="vm.onPaginationChange(newPageNumber)"
                                          label="Rows per page"
                                          rows-per-page="vm.paginationData.rowsPerPage"

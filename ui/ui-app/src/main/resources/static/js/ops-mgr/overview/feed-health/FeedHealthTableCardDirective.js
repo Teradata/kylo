@@ -77,15 +77,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
         self.showProgress = false;
 
         /**
-         * The current page for the card
-         *
-         * @type {number}
-         */
-        this.currentPage = function(tab) {
-            return PaginationDataService.currentPage(self.pageName, tab.title);
-        }
-
-        /**
          * The pagination Id
          * @param tab optional tab to designate the pagination across tabs.
          */
@@ -127,8 +118,9 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         this.onPaginationChange = function (page, limit) {
             if( self.viewType == 'list') {
-                if (loaded) {  var activeTab= TabService.getActiveTab(self.pageName);
-                    PaginationDataService.currentPage(self.pageName, activeTab.title, page);
+                if (loaded) {
+                    var activeTab= TabService.getActiveTab(self.pageName);
+                    activeTab.currentPage = page;
                     return loadFeeds(true, true);
                 }
             }
@@ -138,7 +130,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             if( self.viewType == 'table') {
                 var activeTab= TabService.getActiveTab(self.pageName);
                 if (loaded) {
-                    PaginationDataService.currentPage(self.pageName, activeTab.title, page);
+                    activeTab.currentPage = page;
                     return loadFeeds(true, true);
                 }
             }
@@ -264,6 +256,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
              */
         function loadFeeds(force, showProgress){
           if((angular.isDefined(force) && force == true) || !OpsManagerDashboardService.isFetchingFeedHealth()) {
+              OpsManagerDashboardService.setSkipDashboardFeedHealth(true);
               self.refreshing = true;
               if(showProgress){
                   self.showProgress = true;

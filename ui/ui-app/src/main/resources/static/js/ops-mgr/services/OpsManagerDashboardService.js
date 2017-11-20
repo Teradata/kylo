@@ -83,9 +83,13 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              return data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest);
          }
 
+         data.setSkipDashboardFeedHealth = function(skip){
+             data.skipDashboardFeedHealth = skip;
+         }
+
          data.fetchFeeds = function(tab,filter,start,limit, sort){
              if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
-                 data.activeFeedRequest.resolve();
+                 data.activeFeedRequest.reject();
              }
              //Cancel any active dashboard queries as this will supercede them
              if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
@@ -93,6 +97,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              }
 
              var canceler = $q.defer();
+
              data.activeFeedRequest = canceler;
 
              var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
@@ -105,9 +110,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                      data.totalFeeds = response.data.recordsFiltered;
                  }
                  data.activeFeedRequest = null;
+                 data.skipDashboardFeedHealth = false;
              }
              var errorFn = function (err) {
-                 canceler.resolve();
+                 canceler.reject();
                  canceler = null;
                  data.activeFeedRequest = null;
                  data.skipDashboardFeedHealth = false;
@@ -124,7 +130,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
          data.fetchDashboard = function() {
              if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
-                 data.activeDashboardRequest.resolve();
+                 data.activeDashboardRequest.reject();
              }
              var canceler = $q.defer();
              data.activeDashboardRequest = canceler;
@@ -145,8 +151,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                  else {
                 //     console.log('Skip processing dashboard results for the feed since it was superceded');
                  }
-                 data.skipDashboardFeedHealth = false;
-
                  if(angular.isUndefined(data.dashboard.healthCounts['UNHEALTHY'])) {
                      data.dashboard.healthCounts['UNHEALTHY'] = 0;
                  }
@@ -161,10 +165,11 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
              }
              var errorFn = function (err) {
-                 canceler.resolve();
+                 canceler.reject();
                  canceler = null;
                  data.activeDashboardRequest = null;
                  data.skipDashboardFeedHealth = false;
+                 console.error("Dashboard error!!!")
              }
              var params = data.feedHealthQueryParams;
              var promise = $http.get(OpsManagerRestUrlService.DASHBOARD_URL,{timeout: canceler.promise,params:params});
