@@ -1,6 +1,5 @@
 define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
     function FeedService($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService, FeedPropertyService, AccessControlService, EntityAccessControlService, StateService) {
         function trim(str) {
             return str.replace(/^\s+|\s+$/g, "");
@@ -99,7 +98,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     description: null,
                     systemFeedName: '',
                     inputProcessorType: '',
-                    inputProcessorName:null,
+                    inputProcessorName: null,
                     inputProcessor: null,
                     nonInputProcessors: [],
                     properties: [],
@@ -417,7 +416,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         properties.push(property);
                     });
                 });
-                if(model.inputProcessor) {
+                if (model.inputProcessor) {
                     model.inputProcessorName = model.inputProcessor.name;
                 }
                 model.properties = properties;
@@ -479,12 +478,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     if (model.table.feedTableSchema == undefined) {
                         model.table.feedTableSchema = { name: null, fields: [] };
                     }
-                    //remove any extra columns in the policies
-                    /*
-                     while(model.table.fieldPolicies.length > model.table.tableSchema.fields.length) {
-                     model.table.fieldPolicies.splice(model.table.tableSchema.fields.length, 1);
-                     }
-                     */
                 }
             },
             /**

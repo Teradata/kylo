@@ -112,6 +112,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 description: null,
                 systemFeedName: '',
                 inputProcessorType: '',
+                inputProcessorName:null,
                 inputProcessor: null,
                 nonInputProcessors: [],
                 properties: [],
@@ -167,7 +168,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             data.createFeedModel.clonedFrom = data.createFeedModel.feedName;
             data.createFeedModel.feedName += "_copy";
             data.createFeedModel.systemFeedName += "_copy";
-
+            data.createFeedModel.owner = undefined;
             return data.createFeedModel;
 
         },
@@ -187,6 +188,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         updateFeed: function (feedModel: any) {
             var self = this;
+            this.editFeedModel.inputProcessorName = null;
             angular.extend(this.editFeedModel, feedModel);
 
             //set the field name to the policy name attribute
@@ -449,6 +451,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     properties.push(property);
                 });
             });
+            if(model.inputProcessor) {
+                model.inputProcessorName = model.inputProcessor.name;
+            }
             model.properties = properties;
 
             //prepare access control changes if any
