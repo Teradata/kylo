@@ -39,7 +39,7 @@ define(['angular', 'admin/module-name','kylo-utils/LazyLoadUtil','constants/Acce
             },
             data:{
                 breadcrumbRoot:false,
-                displayName:'Cluster Test',
+                displayName:'Kylo Cluster',
                 module:moduleName,
                 permissions:[]
             }
