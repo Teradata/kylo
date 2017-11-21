@@ -42,6 +42,8 @@
           <packager>Think Big</packager>
           <defineStatements>
             <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+            <defineStatement>_binary_payload w9.gzdio</defineStatement>
+            <defineStatement>_binary_filedigest_algorithm 1</defineStatement>
           </defineStatements>
           <needarch>noarch</needarch>
           <targetOS>linux</targetOS>
