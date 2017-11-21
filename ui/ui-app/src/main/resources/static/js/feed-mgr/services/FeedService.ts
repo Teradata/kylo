@@ -109,7 +109,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 versionName: null,
                 templateId: '',
                 feedName: '',
-                description: null,
+                description: '',
                 systemFeedName: '',
                 inputProcessorType: '',
                 inputProcessorName:null,
@@ -157,7 +157,8 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 owner: null,
                 roleMembershipsUpdated: false,
                 tableOption: {},
-                cloned: false
+                cloned: false,
+                usedByFeeds: []
             } as any;
         },
         cloneFeed: function () {
@@ -189,6 +190,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         updateFeed: function (feedModel: any) {
             var self = this;
             this.editFeedModel.inputProcessorName = null;
+            this.editFeedModel.usedByFeeds = [];
+            this.editFeedModel.description = '';
+            this.editFeedModel.inputProcessor = null;
             angular.extend(this.editFeedModel, feedModel);
 
             //set the field name to the policy name attribute

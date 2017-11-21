@@ -95,7 +95,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     versionName: null,
                     templateId: '',
                     feedName: '',
-                    description: null,
+                    description: '',
                     systemFeedName: '',
                     inputProcessorType: '',
                     inputProcessorName: null,
@@ -143,7 +143,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     owner: null,
                     roleMembershipsUpdated: false,
                     tableOption: {},
-                    cloned: false
+                    cloned: false,
+                    usedByFeeds: []
                 };
             },
             cloneFeed: function () {
@@ -174,6 +175,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             updateFeed: function (feedModel) {
                 var self = this;
                 this.editFeedModel.inputProcessorName = null;
+                this.editFeedModel.usedByFeeds = [];
+                this.editFeedModel.description = '';
+                this.editFeedModel.inputProcessor = null;
                 angular.extend(this.editFeedModel, feedModel);
                 //set the field name to the policy name attribute
                 if (this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
