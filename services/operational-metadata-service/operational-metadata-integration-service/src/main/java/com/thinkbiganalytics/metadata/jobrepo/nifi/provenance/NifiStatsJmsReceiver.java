@@ -57,6 +57,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.quartz.ObjectAlreadyExistsException;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +162,10 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
             TriggerIdentifier triggerIdentifier = new DefaultTriggerIdentifier(jobIdentifier.getName(), jobIdentifier.getGroup());
             try {
                 scheduler.scheduleJob(jobIdentifier, triggerIdentifier, NiFiStatsCompactionQuartzJobBean.class, compactStatsCronSchedule, null);
-            } catch (SchedulerException e) {
+            } catch (ObjectAlreadyExistsException e) {
+                log.info("Unable to schedule the job to compact the NiFi processor stats.  It already exists.  Most likely another Kylo node has already schceduled this job. ");
+            }
+            catch (SchedulerException e) {
                 throw new RuntimeException("Error scheduling job: Compact NiFi Processor Stats", e);
             }
         }
