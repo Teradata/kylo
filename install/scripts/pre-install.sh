@@ -21,4 +21,3 @@
 ###
 echo "Installing Kylo"
 mkdir -p /opt/kylo
-chown kylo:kylo /opt/kylo
