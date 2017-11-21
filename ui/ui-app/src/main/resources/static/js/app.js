@@ -36,9 +36,11 @@ define([
                                           'ui.grid.moveColumns',
                                           'ui.grid.pagination', 'ngMessages']);
 
-    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider', function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider){
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider,$qProvider){
        //disable the aria-label warnings in the console
         $mdAriaProvider.disableWarnings();
+
+        $qProvider.errorOnUnhandledRejections(false);
 
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',
