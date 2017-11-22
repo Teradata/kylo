@@ -246,7 +246,7 @@ public class SchedulerRestController {
                return Response.ok(RestResponseStatus.SUCCESS).build();
            }
        }
-       return Response.ok(new RestResponseStatus.ResponseStatusBuilder().message("Unable to find a scheduled job for the group: "+group+" and name: "+name)).build();
+       return Response.ok(new RestResponseStatus.ResponseStatusBuilder().message("Unable to find a scheduled job for the group: "+group+" and name: "+name).buildError()).build();
     }
 
 }
