@@ -112,6 +112,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -990,6 +991,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (properties != null && !properties.isEmpty()) {
             List<FeedSummary> feedSummaries = getFeedSummaryData();
             List<LabelValue> feedSelection = new ArrayList<>();
+
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
                 boolean
@@ -1002,6 +1004,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) " : ""), feedSummary.getCategoryAndFeedSystemName(),
                                                  isDisabled ? "This feed is currently disabled" : "", labelValueProperties));
             }
+
+            feedSelection.sort(Comparator.comparing(LabelValue::getLabel, String.CASE_INSENSITIVE_ORDER));
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);
                 if (property.getValues() == null) {
