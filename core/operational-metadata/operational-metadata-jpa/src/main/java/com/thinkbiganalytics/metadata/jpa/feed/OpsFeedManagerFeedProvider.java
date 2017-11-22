@@ -50,7 +50,6 @@ import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
-import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescriptionRepository;
@@ -68,6 +67,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -169,9 +169,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private void init() {
         subscribeListener(opsManagerFeedCacheByName);
         subscribeListener(opsManagerFeedCacheById);
-        clusterService.subscribe(this,getClusterMessageKey());
+        clusterService.subscribe(this, getClusterMessageKey());
         //initially populate
-        metadataAccess.read(() -> populateCache(), MetadataAccess.SERVICE);
+        populateCache();
     }
 
     @Override
@@ -242,11 +242,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
             NifiFeedStats stats = feedStatisticsProvider.findLatestStatsForFeedWithoutAccessControl(systemName);
-                if(stats == null){
-                    JpaNifiFeedStats newStats = new JpaNifiFeedStats(systemName,new JpaNifiFeedStats.OpsManagerFeedId(feedId.toString()));
-                    newStats.setRunningFeedFlows(0L);
-                    feedStatisticsProvider.saveLatestFeedStats(Lists.newArrayList(newStats));
-                }
+            if (stats == null) {
+                JpaNifiFeedStats newStats = new JpaNifiFeedStats(systemName, new JpaNifiFeedStats.OpsManagerFeedId(feedId.toString()));
+                newStats.setRunningFeedFlows(0L);
+                feedStatisticsProvider.saveLatestFeedStats(Lists.newArrayList(newStats));
+            }
         } else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
@@ -300,7 +300,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         return opsManagerFeedCacheByName.findAll();
     }
 
-    public List<OpsManagerFeed> findAllWithoutAcl(){
+    public List<OpsManagerFeed> findAllWithoutAcl() {
         return findAll();
     }
 
@@ -487,5 +487,8 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         return lastFeedTime;
     }
 
-
+    @Override
+    protected Collection<OpsManagerFeed> populateCache() {
+        return metadataAccess.read(() -> super.populateCache(), MetadataAccess.SERVICE);
+    }
 }

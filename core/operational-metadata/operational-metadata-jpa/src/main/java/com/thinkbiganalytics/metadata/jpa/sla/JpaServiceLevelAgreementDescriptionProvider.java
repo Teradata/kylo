@@ -84,7 +84,7 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
 
     @PostConstruct
     private void init() {
-        metadataAccess.read(() -> serviceLevelAgreementDescriptionCache.populateCache(), MetadataAccess.SERVICE);
+        serviceLevelAgreementDescriptionCache.populateCache();
         metadataEventService.addListener(slaDeletedListener);
     }
 
@@ -170,8 +170,8 @@ public class JpaServiceLevelAgreementDescriptionProvider implements ServiceLevel
                     if (serviceLevelAgreementDescription != null) {
                         serviceLevelAgreementDescriptionRepository.delete((JpaServiceLevelAgreementDescription) serviceLevelAgreementDescription);
                     }
-                }catch (Exception e){
-                    log.error("Unable to delete the Service Level Description for "+event.getData().getName()+" ( "+event.getData().getId());
+                } catch (Exception e) {
+                    log.error("Unable to delete the Service Level Description for " + event.getData().getName() + " ( " + event.getData().getId());
                 }
             }
         }

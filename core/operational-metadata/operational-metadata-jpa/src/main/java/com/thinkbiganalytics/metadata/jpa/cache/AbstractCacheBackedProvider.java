@@ -200,9 +200,7 @@ public abstract class AbstractCacheBackedProvider<T, ID extends Serializable> im
     }
 
     protected Collection<T> populateCache() {
-        if (canRefresh()) {
-            refresh();
-        }
+        refresh();
         return cache.asMap().values();
     }
 
@@ -214,11 +212,12 @@ public abstract class AbstractCacheBackedProvider<T, ID extends Serializable> im
             populatedCache.set(true);
             cacheListeners.stream().forEach(CacheBackedProviderListener::onPopulated);
             stopwatch.stop();
-            log.info("Time to populate {} Cache {}", getProviderName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("Time to populate {} Cache {} ms", getProviderName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (Exception e) {
             populatedCache.set(false);
+        } finally {
+            populatingCache.set(false);
         }
-        populatingCache.set(false);
     }
 
     public void refreshCache() {
@@ -242,8 +241,12 @@ public abstract class AbstractCacheBackedProvider<T, ID extends Serializable> im
                 removeItems(content.getItems());
             }
             if (CacheBackedProviderClusterMessage.Type.REFRESHED == content.getType()) {
-                removeAll();
-                populateCache();
+                if (canRefresh()) {
+                    removeAll();
+                    populateCache();
+                } else {
+                    log.info("Cluster message received to Refresh the cache, but uanble to as it is still being populated.");
+                }
             } else if (CacheBackedProviderClusterMessage.Type.ADDED == content.getType()) {
                 addItems(content.getItems());
             }

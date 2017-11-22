@@ -26,11 +26,15 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.scheduler.JobInfo;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import com.thinkbiganalytics.scheduler.rest.Model;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
 import com.thinkbiganalytics.scheduler.rest.model.ScheduledJob;
 import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
 import com.thinkbiganalytics.security.AccessController;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,11 +42,14 @@ import java.util.Map;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -222,4 +229,24 @@ public class SchedulerRestController {
         }
         return quartzScheduledJobs;
     }
+
+    @DELETE
+    @Path("/job/{group}/{name}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Deletes a specific job by its group and name")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Deletes a job by its group and name", response = RestResponseStatus.class)
+    )
+    public Response deleteJob(@PathParam("group") String group, @PathParam("name")String name) throws JobSchedulerException {
+        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+       if(StringUtils.isNotBlank(group) && StringUtils.isNotBlank(name)) {
+           DefaultJobIdentifier jobIdentifier = new DefaultJobIdentifier(name,group);
+           if( ((QuartzScheduler)quartzScheduler).jobExists(jobIdentifier)){
+               quartzScheduler.deleteJob(jobIdentifier);
+               return Response.ok(RestResponseStatus.SUCCESS).build();
+           }
+       }
+       return Response.ok(new RestResponseStatus.ResponseStatusBuilder().message("Unable to find a scheduled job for the group: "+group+" and name: "+name)).build();
+    }
+
 }

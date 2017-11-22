@@ -242,6 +242,11 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
         }
 
         //save it
+        //only save if chanaged, otherwise log it?
+        if (slaAssessment.getServiceLevelAgreementId() != null) {
+            ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(slaAssessment.getServiceLevelAgreementId(), slaAssessment.getId());
+
+        }
         assessmentProvider.save(slaAssessment);
         return slaAssessment;
     }

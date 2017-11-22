@@ -25,16 +25,18 @@ import com.thinkbiganalytics.metadata.jpa.cache.ClusterAwareDtoCache;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementDescription;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
  * Cache of Service Level Agreements and their corresponding Feeds
- * Cache is sync/maintatined via the JpaServiceLevelAgreementDescriptionProvider
+ * Cache is sync/maintained via the JpaServiceLevelAgreementDescriptionProvider
  */
 public class ServiceLevelAgreementDescriptionCache extends ClusterAwareDtoCache<ServiceLevelAgreementDescription, ServiceLevelAgreement.ID, CachedServiceLevelAgreement, String> {
 
@@ -69,30 +71,40 @@ public class ServiceLevelAgreementDescriptionCache extends ClusterAwareDtoCache<
         return dto.getId();
     }
 
+    @PostConstruct
+    private void init() {
+        clusterService.subscribe(this, getClusterMessageKey());
+    }
+
     @Override
     public CachedServiceLevelAgreement transformEntityToDto(String dtoId, ServiceLevelAgreementDescription entity) {
-      return  metadataAccess.read(() -> {
-        JpaServiceLevelAgreementDescription jpaSla = ((JpaServiceLevelAgreementDescription) entity);
-        Set<CachedServiceLevelAgreement.SimpleFeed> feeds = new HashSet<>();
-        if (jpaSla.getFeeds() != null && !jpaSla.getFeeds().isEmpty()) {
-            feeds = jpaSla.getFeeds().stream().map(f -> new CachedServiceLevelAgreement.SimpleFeed(f.getId().toString(), f.getName())).collect(Collectors.toSet());
-        }
-        return new CachedServiceLevelAgreement(dtoId, entity.getName(), feeds);
-        },MetadataAccess.SERVICE);
+        return metadataAccess.read(() -> {
+            JpaServiceLevelAgreementDescription jpaSla = ((JpaServiceLevelAgreementDescription) entity);
+            Set<CachedServiceLevelAgreement.SimpleFeed> feeds = new HashSet<>();
+            if (jpaSla.getFeeds() != null && !jpaSla.getFeeds().isEmpty()) {
+                feeds = jpaSla.getFeeds().stream().map(f -> new CachedServiceLevelAgreement.SimpleFeed(f.getId().toString(), f.getName())).collect(Collectors.toSet());
+            }
+            return new CachedServiceLevelAgreement(dtoId, entity.getName(), feeds);
+        }, MetadataAccess.SERVICE);
     }
 
     @Override
     public ServiceLevelAgreementDescription fetchForKey(ServiceLevelAgreement.ID entityId) {
         return
             metadataAccess.read(() -> {
-              return  serviceLevelAgreementDescriptionProvider.findOne(entityId);
-            },MetadataAccess.SERVICE);
+                return serviceLevelAgreementDescriptionProvider.findOne(entityId);
+            }, MetadataAccess.SERVICE);
     }
 
     @Override
     public List<ServiceLevelAgreementDescription> fetchAll() {
-     return   metadataAccess.read(() -> {
-        return serviceLevelAgreementDescriptionProvider.findAll();
-        },MetadataAccess.SERVICE);
+        return metadataAccess.read(() -> {
+            return serviceLevelAgreementDescriptionProvider.findAll();
+        }, MetadataAccess.SERVICE);
+    }
+
+    @Override
+    public Collection<CachedServiceLevelAgreement> populateCache() {
+        return metadataAccess.read(() -> super.populateCache(), MetadataAccess.SERVICE);
     }
 }

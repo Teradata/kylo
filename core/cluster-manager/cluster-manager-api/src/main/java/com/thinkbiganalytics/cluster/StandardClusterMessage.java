@@ -64,4 +64,13 @@ public class StandardClusterMessage implements ClusterMessage, Serializable {
     public void setMessage(Serializable message) {
         this.message = message;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("StandardClusterMessage{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", type='").append(type).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

@@ -82,25 +82,25 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
 
     //private List<ClusterServiceMessageReceiver> messageReceivers = new ArrayList<>();
 
-    private Map<String,List<ClusterServiceMessageReceiver>> messageReceivers = new ConcurrentHashMap<>();
+    private Map<String, List<ClusterServiceMessageReceiver>> messageReceivers = new ConcurrentHashMap<>();
 
     public void subscribe(ClusterServiceListener listener) {
         listeners.add(listener);
     }
 
     public void subscribe(ClusterServiceMessageReceiver messageReceiver) {
-        messageReceivers.computeIfAbsent(ALL_TOPIC,t -> new ArrayList<>()).add(messageReceiver);
+        messageReceivers.computeIfAbsent(ALL_TOPIC, t -> new ArrayList<>()).add(messageReceiver);
     }
 
-    public void subscribe(ClusterServiceMessageReceiver messageReceiver,String... topics) {
-        Arrays.stream(topics).forEach(topic -> messageReceivers.computeIfAbsent(topic,t -> new ArrayList<>()).add(messageReceiver) );
+    public void subscribe(ClusterServiceMessageReceiver messageReceiver, String... topics) {
+        Arrays.stream(topics).forEach(topic -> messageReceivers.computeIfAbsent(topic, t -> new ArrayList<>()).add(messageReceiver));
     }
 
     private String ENSURE_MESSAGE_DELIVERY_TYPE = "ENSURE_MESSAGE_DELIVERY";
 
     Cache<String, MessageDeliveryStatus> ensureMessageDeliveryMap = CacheBuilder.newBuilder().expireAfterWrite(pendingMessageAcknowledgeTime, TimeUnit.MINUTES).build();
 
-  //  private Map<String, MessageDeliveryStatus> ensureMessageDeliveryMap = new ConcurrentHashMap<>();
+    //  private Map<String, MessageDeliveryStatus> ensureMessageDeliveryMap = new ConcurrentHashMap<>();
 
     private DefaultClusterNodeSummary clusterNodeSummary;
 
@@ -196,14 +196,16 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         ClusterMessage clusterMessage = (ClusterMessage) msg.getObject();
         String from = msg.getSrc().toString();
         Set<ClusterServiceMessageReceiver>
-            receivers =  messageReceivers.entrySet().stream().filter(e -> ALL_TOPIC.equalsIgnoreCase(e.getKey()) || e.getKey().equalsIgnoreCase(clusterMessage.getType())).flatMap(e -> e.getValue().stream()).collect(Collectors.toSet());
-        log.info("Receiving message from {} : {}, notifying {} receivers ", msg.getSrc(), msg.getObject(),receivers.size());
+            receivers =
+            messageReceivers.entrySet().stream().filter(e -> ALL_TOPIC.equalsIgnoreCase(e.getKey()) || e.getKey().equalsIgnoreCase(clusterMessage.getType())).flatMap(e -> e.getValue().stream())
+                .collect(Collectors.toSet());
+        log.info("Receiving message from {} of type: {}, notifying {} receivers ", msg.getSrc(), clusterMessage.getType(), receivers.size());
         receivers.stream().forEach(messageReceiver -> {
-           try {
-               messageReceiver.onMessageReceived(from, clusterMessage);
-           }catch (Exception e){
-               log.error("Error procesing onMessageReceived from {} topic: {}, message: {} ",from,clusterMessage.getType(),clusterMessage.getMessage(),e);
-           }
+            try {
+                messageReceiver.onMessageReceived(from, clusterMessage);
+            } catch (Exception e) {
+                log.error("Error procesing onMessageReceived from {} topic: {}, message: {} ", from, clusterMessage.getType(), clusterMessage.getMessage(), e);
+            }
         });
         clusterNodeSummary.messageReceived(clusterMessage.getType());
         acknowledgeMessage(from, clusterMessage);
@@ -214,7 +216,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
         if (ENSURE_MESSAGE_DELIVERY_TYPE.equalsIgnoreCase(clusterMessage.getType())) {
             EnsureMessageDeliveryMessage ensureMessageDeliveryMessage = (EnsureMessageDeliveryMessage) clusterMessage.getMessage();
             MessageDeliveryStatus status = ensureMessageDeliveryMap.getIfPresent(ensureMessageDeliveryMessage.getMessageId());
-            if(status != null) {
+            if (status != null) {
                 status.receivedFrom(from);
                 if (status.isComplete()) {
                     ensureMessageDeliveryMap.invalidate(ensureMessageDeliveryMessage.getMessageId());
@@ -266,7 +268,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                 log.info("Sending message with id: {}, of type:{} to ALL from {}", id, type, channel.getAddressAsString());
                 ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                 MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage, new HashSet<String>(getMembersAsString()));
-                if(sendAcknowledgementMessage) {
+                if (sendAcknowledgementMessage) {
                     //store this message id in the acknowledgement map
                     ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
                 }
@@ -289,7 +291,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                     log.info("Sending message with id: {}, of type:{} to {} from {}", id, type, address, channel.getAddressAsString());
                     ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                     MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage);
-                    if(sendAcknowledgementMessage) {
+                    if (sendAcknowledgementMessage) {
                         ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
                     }
                     channel.send(address.get(), clusterMessage);
@@ -317,7 +319,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
                 String id = newMessageId();
                 ClusterMessage clusterMessage = new StandardClusterMessage(id, type, message);
                 MessageDeliveryStatus status = new DefaultMessageDeliveryStatus(clusterMessage);
-                if(sendAcknowledgementMessage) {
+                if (sendAcknowledgementMessage) {
                     ensureMessageDeliveryMap.put(clusterMessage.getId(), status);
                 }
                 for (Address address : getOtherMembers()) {
@@ -420,7 +422,7 @@ public class JGroupsClusterService extends ReceiverAdapter implements ClusterSer
     }
 
     public ClusterNodeSummary getClusterNodeSummary() {
-        if(channel != null) {
+        if (channel != null) {
             clusterNodeSummary.setChannelStats(channel.dumpStats());
         }
         return clusterNodeSummary;

@@ -33,12 +33,14 @@ import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.jpa.cache.AbstractCacheBackedProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheById;
 import com.thinkbiganalytics.metadata.jpa.feed.OpsManagerFeedCacheByName;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
+import com.thinkbiganalytics.metadata.jpa.sla.ServiceLevelAgreementDescriptionCache;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -118,7 +120,13 @@ public class AdminControllerV2 {
     OpsManagerFeedProvider opsManagerFeedProvider;
 
     @Inject
+    ServiceLevelAgreementDescriptionCache serviceLevelAgreementDescriptionCache;
+
+    @Inject
     private AccessController accessController;
+
+    @Inject
+    private MetadataAccess metadataAccess;
 
     @GET
     @Path("/upload-status/{key}")
@@ -219,7 +227,8 @@ public class AdminControllerV2 {
         Long feedAclSize = feedAclCache.size();
         Long feedCacheNameSize = opsManagerFeedCacheByName.size();
         Long feedCacheIdSize = opsManagerFeedCacheById.size();
-        CacheSummary cacheSummary = new CacheSummary(feedAclSize, feedCacheNameSize, feedCacheIdSize);
+        Long slaDescriptionSize = serviceLevelAgreementDescriptionCache.size();
+        CacheSummary cacheSummary = new CacheSummary(feedAclSize, feedCacheNameSize, feedCacheIdSize, slaDescriptionSize);
         return Response.ok(cacheSummary).build();
 
     }
@@ -230,9 +239,10 @@ public class AdminControllerV2 {
     @ApiOperation("Resets the Feed and FeedACL cache.")
     public Response refreshCache() {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-        log.info("RESET Feed and FeedAcl caches");
-        ((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache();
-        ((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache();
+        log.info("RESET Feed, FeedAcl, and SLA description caches");
+        metadataAccess.read(() ->((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache(), MetadataAccess.SERVICE);
+        metadataAccess.read(() ->((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache(), MetadataAccess.SERVICE);
+        metadataAccess.read(() ->  serviceLevelAgreementDescriptionCache.refreshCache(), MetadataAccess.SERVICE);
         return getCacheSizes();
     }
 
@@ -242,15 +252,17 @@ public class AdminControllerV2 {
         Long feedAclSize;
         Long feedByNameSize;
         Long feedByIdSize;
+        Long slaDescriptionSize;
 
         public CacheSummary() {
 
         }
 
-        public CacheSummary(Long feedAclSize, Long feedByNameSize, Long feedByIdSize) {
+        public CacheSummary(Long feedAclSize, Long feedByNameSize, Long feedByIdSize,Long slaDescriptionSize) {
             this.feedAclSize = feedAclSize;
             this.feedByNameSize = feedByNameSize;
             this.feedByIdSize = feedByIdSize;
+            this.slaDescriptionSize = slaDescriptionSize;
         }
 
         public Long getFeedAclSize() {
@@ -275,6 +287,14 @@ public class AdminControllerV2 {
 
         public void setFeedByIdSize(Long feedByIdSize) {
             this.feedByIdSize = feedByIdSize;
+        }
+
+        public Long getSlaDescriptionSize() {
+            return slaDescriptionSize;
+        }
+
+        public void setSlaDescriptionSize(Long slaDescriptionSize) {
+            this.slaDescriptionSize = slaDescriptionSize;
         }
     }
 

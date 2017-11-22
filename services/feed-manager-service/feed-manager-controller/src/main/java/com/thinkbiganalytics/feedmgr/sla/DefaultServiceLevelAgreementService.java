@@ -202,10 +202,8 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
                     if (sla instanceof FeedServiceLevelAgreement && ((FeedServiceLevelAgreement) sla).getFeeds().size() == 1) {
                         feedSlaProvider.removeFeedRelationships(sla.getId());
-                        if (((FeedServiceLevelAgreement) sla).getFeeds().size() <= 1) {
-                            slaProvider.removeAgreement(sla.getId());
-                            serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
-                        }
+                        slaProvider.removeAgreement(sla.getId());
+                        serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
                     } else {
                         serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
                     }
@@ -385,6 +383,7 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
             return metadataAccess.commit(() -> {
                 com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId = slaProvider.resolve(id);
                 //attempt to find it
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
                 slaProvider.removeAgreement(slaId);
                 serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(slaId);
                 return true;

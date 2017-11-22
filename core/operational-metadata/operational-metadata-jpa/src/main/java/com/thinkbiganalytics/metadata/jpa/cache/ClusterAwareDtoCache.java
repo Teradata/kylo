@@ -93,7 +93,9 @@ public abstract class ClusterAwareDtoCache<E, EId, T, TId> implements ClusterSer
         return transformEntityToDto(dtoIdForEntity(entity), entity);
     }
 
-    ;
+    public Long size() {
+        return cache.size();
+    }
 
     public abstract E fetchForKey(EId entityId);
 
@@ -178,9 +180,7 @@ public abstract class ClusterAwareDtoCache<E, EId, T, TId> implements ClusterSer
     }
 
     public Collection<T> populateCache() {
-        if (canRefresh()) {
-            refresh();
-        }
+        refresh();
         return cache.asMap().values();
     }
 
@@ -192,11 +192,13 @@ public abstract class ClusterAwareDtoCache<E, EId, T, TId> implements ClusterSer
             entities.stream().map(entity -> transformEntityToDto(entity)).forEach(dto -> addItem(dto));
             populatedCache.set(true);
             stopwatch.stop();
-            log.info("Time to populate {} Cache {}", getProviderName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+            log.info("Time to populate {} Cache {} ms", getProviderName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         } catch (Exception e) {
             populatedCache.set(false);
+        } finally {
+            populatingCache.set(false);
         }
-        populatingCache.set(false);
+
     }
 
     public void refreshCache() {
@@ -220,8 +222,10 @@ public abstract class ClusterAwareDtoCache<E, EId, T, TId> implements ClusterSer
                 removeItems(content.getItems());
             }
             if (CacheBackedProviderClusterMessage.Type.REFRESHED == content.getType()) {
-                removeAll();
-                populateCache();
+                if (canRefresh()) {
+                    removeAll();
+                    populateCache();
+                }
             } else if (CacheBackedProviderClusterMessage.Type.ADDED == content.getType()) {
                 List<T> dtos = content.getItems();
                 dtos.stream().forEach(dto -> addItem(dto));
