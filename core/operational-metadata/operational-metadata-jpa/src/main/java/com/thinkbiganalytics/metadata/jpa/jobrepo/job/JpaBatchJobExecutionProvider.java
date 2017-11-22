@@ -546,7 +546,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             log.info("Stopping Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
-            jobExecution.setStartTime(DateTime.now());
+            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            jobExecution.setEndTime(DateTimeUtil.getNowUTCTime());
             save(jobExecution);
             //update the cache
             latestStreamingJobByFeedName.put(feed, jobExecution);
@@ -560,7 +561,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-            jobExecution.setStartTime(DateTime.now());
+            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            jobExecution.setStartTime(DateTimeUtil.getNowUTCTime());
             save(jobExecution);
             latestStreamingJobByFeedName.put(feed, jobExecution);
         }
@@ -802,7 +804,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                              feed.name.as("feedName"),
                              feed.isStream.as("isStream"),
                              feedStats.runningFeedFlows.as("runningFeedFlows"),
-                             jobExecution.jobExecutionId.count().as("count"));
+                             jobExecution.jobExecutionId.count().as("count"),
+                             feedStats.lastActivityTimestamp.max().as("lastActivityTimestamp"));
 
         JPAQuery<?> query = factory.select(expr)
             .from(feed)
