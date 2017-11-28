@@ -1,10 +1,8 @@
 define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Categories for data types.
      */
-    var DataCategory;
     (function (DataCategory) {
         DataCategory[DataCategory["ARRAY"] = 0] = "ARRAY";
         DataCategory[DataCategory["BINARY"] = 1] = "BINARY";
@@ -16,7 +14,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         DataCategory[DataCategory["STRUCT"] = 7] = "STRUCT";
         DataCategory[DataCategory["UNION"] = 8] = "UNION";
         DataCategory[DataCategory["OTHER"] = 9] = "OTHER";
-    })(DataCategory = exports.DataCategory || (exports.DataCategory = {}));
+    })(exports.DataCategory || (exports.DataCategory = {}));
+    var DataCategory = exports.DataCategory;
     /**
      * Hive data types.
      *
@@ -323,7 +322,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * Gets the SQL identifier for the specified column.
          */
         ColumnDelegate.prototype.getColumnFieldName = function (column) {
-            return column.field;
+            return column.field || column.name;
         };
         /**
          * Gets the filters for a column based on category.

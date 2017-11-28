@@ -372,7 +372,7 @@ export class ColumnDelegate {
      * Gets the SQL identifier for the specified column.
      */
     protected getColumnFieldName(column: any): string {
-        return column.field;
+        return column.field || column.name;
     }
 
     /**
