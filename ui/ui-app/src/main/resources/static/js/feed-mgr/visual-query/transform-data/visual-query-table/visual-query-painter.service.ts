@@ -293,6 +293,35 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 
     /**
+     * Cleanup any events attached to the header
+     * @param headerDiv
+     */
+    cleanUpHeader(headerDiv: HTMLElement){
+        var scope = angular.element(headerDiv).scope();
+        if(scope){
+            scope.$destroy();
+        }
+    }
+
+    /**
+     * Cleanup any events attached to the cell
+     * @param cellDiv
+     */
+    cleanUpCell(cellDiv: HTMLElement) {
+       angular.element(cellDiv).unbind();
+    }
+
+    /**
+     * Called when the table is refreshed
+     * This should cleanup any events/bindings/scopes created by the prior render of the table
+     * @param table
+     */
+    cleanUp(table:HTMLElement){
+        super.cleanUp(table);
+        angular.element(table).unbind();
+    }
+
+    /**
      * Hides the cell menu.
      */
     private hideMenu() {

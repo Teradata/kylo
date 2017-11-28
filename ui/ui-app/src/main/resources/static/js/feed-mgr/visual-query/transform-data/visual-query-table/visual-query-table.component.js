@@ -1,6 +1,5 @@
 define(["require", "exports", "angular", "jquery", "underscore", "../services/wrangler-event-type", "./visual-query-painter.service", "./wrangler-table-model", "fattable"], function (require, exports, angular, $, _, wrangler_event_type_1, visual_query_painter_service_1, wrangler_table_model_1) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
     /**
      * Maximum width of a column including padding.
@@ -60,27 +59,30 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                     _this.refresh();
                 }
             });
-            $scope_.$watch(function () { return _this.columns; }, function () {
+            $scope_.$watchCollection(function () { return _this.columns; }, function (newValue, oldValue, scope) {
                 _this.onColumnsChange();
                 _this.refresh();
             });
-            $scope_.$watch(function () { return _this.domainTypes; }, function () {
+            $scope_.$watchCollection(function () { return _this.domainTypes; }, function (newValue, oldValue, scope) {
                 _this.painter.domainTypes = _this.domainTypes.sort(function (a, b) { return (a.title < b.title) ? -1 : 1; });
                 _this.refresh();
             });
             $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
             $scope_.$watch(function () { return _this.options ? _this.options.rowFont : null; }, function () { return painter.rowFont = _this.options.rowFont; });
-            $scope_.$watch(function () { return _this.rows; }, function () {
+            $scope_.$watchCollection(function () { return _this.rows; }, function (newValue, oldValue, scope) {
                 _this.onRowsChange();
-                _this.refresh();
             });
-            $scope_.$watch(function () { return _this.validationResults; }, function () {
+            $scope_.$watchCollection(function () { return _this.validationResults; }, function (newValue, oldValue, scope) {
                 _this.onValidationResultsChange();
                 _this.refresh();
             });
             // Refresh table on resize
-            $scope_.$watch(function () { return $element.height(); }, function () { return _this.refresh(); });
-            $scope_.$watch(function () { return $element.width(); }, function () { return _this.refresh(); });
+            $scope_.$watch(function () { return $element.height(); }, _.debounce(function () {
+                return $scope.$apply(function () { return _this.refresh(); });
+            }, 500));
+            $scope_.$watch(function () { return $element.width(); }, _.debounce(function () {
+                return $scope.$apply(function () { return _this.refresh(); });
+            }, 500));
             // Listen for destroy event
             $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }
@@ -289,17 +291,17 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
         VisualQueryTable.prototype.onValidationResultsChange = function () {
             this.dataService.validationResults = this.validationResults;
         };
+        VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
+        /**
+         * Indicates a column should be sorted in ascending order.
+         */
+        VisualQueryTable.ASC = "asc";
+        /**
+         * Indicates a column should be sorted in descending order.
+         */
+        VisualQueryTable.DESC = "desc";
         return VisualQueryTable;
     }());
-    VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
-    /**
-     * Indicates a column should be sorted in ascending order.
-     */
-    VisualQueryTable.ASC = "asc";
-    /**
-     * Indicates a column should be sorted in descending order.
-     */
-    VisualQueryTable.DESC = "desc";
     exports.VisualQueryTable = VisualQueryTable;
     angular.module(moduleName).directive("visualQueryTable", function () {
         return {

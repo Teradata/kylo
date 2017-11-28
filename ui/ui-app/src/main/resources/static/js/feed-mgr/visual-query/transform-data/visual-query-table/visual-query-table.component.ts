@@ -128,12 +128,12 @@ export class VisualQueryTable {
             }
         });
 
-        $scope_.$watch(() => this.columns, () => {
+        $scope_.$watchCollection(() => this.columns, (newValue, oldValue, scope) => {
             this.onColumnsChange();
             this.refresh();
         });
 
-        $scope_.$watch(() => this.domainTypes, () => {
+        $scope_.$watchCollection(() => this.domainTypes, (newValue, oldValue, scope) => {
             this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
             this.refresh()
         });
@@ -141,19 +141,23 @@ export class VisualQueryTable {
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
         $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
 
-        $scope_.$watch(() => this.rows, () => {
+        $scope_.$watchCollection(() => this.rows, (newValue, oldValue, scope) => {
             this.onRowsChange();
-            this.refresh();
         });
 
-        $scope_.$watch(() => this.validationResults, () => {
+        $scope_.$watchCollection(() => this.validationResults, (newValue, oldValue, scope) => {
             this.onValidationResultsChange();
             this.refresh();
         });
 
         // Refresh table on resize
-        $scope_.$watch(() => $element.height(), () => this.refresh());
-        $scope_.$watch(() => $element.width(), () => this.refresh());
+        $scope_.$watch(() => $element.height(), _.debounce(() =>
+            $scope.$apply(() => this.refresh()),500)
+        );
+
+        $scope_.$watch(() => $element.width(), _.debounce(() =>
+            $scope.$apply(() => this.refresh()),500)
+        );
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
