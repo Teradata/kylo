@@ -85,26 +85,34 @@ public class RefreshableDataSource implements DataSource {
     }
 
     public boolean testConnection(String username, String password) throws SQLException {
-        return KerberosUtil.runWithOrWithoutKerberos(() -> {
-            boolean valid = false;
-            Connection connection = null;
-            Statement statement = null;
-            try {
-                String prefix = getPrefixWithTrailingDot();
-                String query = env.getProperty(prefix + "validationQuery");
-                connection = getConnectionForValidation();
-                statement = connection.createStatement();
-                statement.execute(query);
-                valid = true;
-            } catch (SQLException e) {
-                DataSourceUtils.releaseConnection(connection, this.getDataSource());
-                throw e;
-            } finally {
-                JdbcUtils.closeStatement(statement);
-                DataSourceUtils.releaseConnection(connection, this.getDataSource());
-            }
-            return valid;
-        }, kerberosTicketConfiguration);
+        boolean isValidConnection = false;
+
+        try {
+            isValidConnection = KerberosUtil.runWithOrWithoutKerberos(() -> {
+                boolean valid = false;
+                Connection connection = null;
+                Statement statement = null;
+                try {
+                    String prefix = getPrefixWithTrailingDot();
+                    String query = env.getProperty(prefix + "validationQuery");
+                    connection = getConnectionForValidation();
+                    statement = connection.createStatement();
+                    statement.execute(query);
+                    valid = true;
+                } catch (SQLException e) {
+                    DataSourceUtils.releaseConnection(connection, this.getDataSource());
+                    throw e;
+                } finally {
+                    JdbcUtils.closeStatement(statement);
+                    DataSourceUtils.releaseConnection(connection, this.getDataSource());
+                }
+                return valid;
+            }, kerberosTicketConfiguration);
+        } catch(Exception e) {
+            // The utility method throws a Runtime Exception so we need to re-throw it as a SQL Exception in our case
+            throw new SQLException(e);
+        }
+        return isValidConnection;
     }
 
     private Connection getConnectionForValidation() throws SQLException {
