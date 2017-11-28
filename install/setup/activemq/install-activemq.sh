@@ -59,7 +59,7 @@ then
 else
     echo "Download activemq and install"
     cd $ACTIVEMQ_INSTALL_HOME
-    curl -O https://archive.apache.org/dist/activemq/$ACTIVEMQ_INSTALL_VERSION/apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz
+    curl -O -k https://archive.apache.org/dist/activemq/$ACTIVEMQ_INSTALL_VERSION/apache-activemq-$ACTIVEMQ_INSTALL_VERSION-bin.tar.gz
 fi
 
 
@@ -79,7 +79,7 @@ echo "Installing as a service"
 chown -R $ACTIVEMQ_USER:$ACTIVEMQ_GROUP $ACTIVEMQ_INSTALL_HOME
 cp $ACTIVEMQ_INSTALL_HOME/current/bin/env /etc/default/activemq
 
-if [ -z "$ACTIVEMQ_JAVA_HOME" ]
+if [ -z "$ACTIVEMQ_JAVA_HOME" ] || ["$ACTIVEMQ_JAVA_HOME" == "SYSTEM_JAVA" ]
 then
  echo "No Java home has been specified for ActiveMQ. Using the system Java home"
 else

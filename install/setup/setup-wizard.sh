@@ -231,7 +231,7 @@ fi
 
 if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     echo "installing ActiveMQ"
-    ACTIVEMQ_JAVA_HOME=""
+    ACTIVEMQ_JAVA_HOME="SYSTEM_JAVA"
     if [ "$java_type" == "2" ] ; then
         ACTIVEMQ_JAVA_HOME=/opt/java/current
     elif [ "$java_type" == "3" ] ; then

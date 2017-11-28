@@ -60,7 +60,7 @@ else
 
     if [ "$linux_type" == "chkonfig" ]; then
         echo "Downloading RPM"
-        curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.rpm
+        curl -O -k https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.rpm
         echo "Executing RPM"
         rpm -ivh elasticsearch-5.5.0.rpm
         rm elasticsearch-5.5.0.rpm
@@ -70,7 +70,7 @@ else
 
     elif [ "$linux_type" == "update-rc.d" ]; then
         echo "Downloading DEB"
-        curl -O https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.deb
+        curl -O -k https://artifacts.elastic.co/downloads/elasticsearch/elasticsearch-5.5.0.deb
         echo "Executing DEB"
         dpkg -i elasticsearch-5.5.0.deb
         rm elasticsearch-5.5.0.deb
