@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.8.4-SNAPSHOT</version>
+  <version>0.8.4-RC3</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
