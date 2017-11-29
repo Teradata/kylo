@@ -230,7 +230,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
           
-        //  if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
               if (renderGetTableData) {
 
                   if(self.model.table.method != null && self.model.table.method != 'EXISTING_TABLE'){
@@ -241,11 +240,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                   self.model.options.skipHeader = true;
                   self.model.allowSkipHeaderOption = true;
 
-              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (angular.isUndefined(self.model.cloned) || self.model.cloned == false)){ //if (self.model.table.method !== "EXISTING_TABLE") {
+              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (angular.isUndefined(self.model.cloned) || self.model.cloned == false)){
                   self.model.table.method = 'SAMPLE_FILE';
                   self.model.table.tableSchema.fields = [];
               }
-        //  }
 
             // Update model
             self.model.inputProcessor = processor;
