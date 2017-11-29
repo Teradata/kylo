@@ -56,6 +56,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.inputProcessorId = null;
 
+        /**
+         * The initial non null input Id selected
+         * @type {null}
+         */
+        this.initialInputProcessorId = null;
+
+        /**
+         * counter holding the number of times the user changes to a different input
+         * @type {number}
+         */
+        this.inputChangedCounter = 0;
+
         this.isValid = false;
 
         this.stepperController = null;
@@ -192,6 +204,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         var inputProcessorIdWatch = $scope.$watch(function() {
             return self.inputProcessorId;
         }, function(newVal,oldVal) {
+            if(newVal != null && self.initialInputProcessorId == null){
+                self.initialInputProcessorId = newVal;
+            }
             updateInputProcessor(newVal);
             //mark the next step as not visited.. force the user to go to the next step
             self.stepperController.resetStep(parseInt(self.stepIndex)+1);
@@ -227,6 +242,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 return;
             }
 
+            self.inputChangedCounter++;
+
+            var clonedAndInputChanged = function(inputProcessorId){
+                return (self.model.cloned == true && self.inputChangedCounter >1);
+            }
+
+            var notCloned = function(){
+                return (angular.isUndefined(self.model.cloned) || self.model.cloned == false);
+            }
+
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
           
@@ -240,7 +265,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                   self.model.options.skipHeader = true;
                   self.model.allowSkipHeaderOption = true;
 
-              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (angular.isUndefined(self.model.cloned) || self.model.cloned == false)){
+              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId)|| notCloned())){
                   self.model.table.method = 'SAMPLE_FILE';
                   self.model.table.tableSchema.fields = [];
               }
