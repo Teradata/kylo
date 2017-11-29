@@ -291,7 +291,7 @@ public class StandardDataValidator implements DataValidator, Serializable {
         List<FieldPolicy> pols = new ArrayList<>(fields.length);
 
         for (StructField field : fields) {
-            String colName = field.name();
+            String colName = field.name().toLowerCase();
             FieldPolicy policy = policyMap.get(colName);
             if (policy == null) {
                 policy = FieldPolicyBuilder.SKIP_VALIDATION;
