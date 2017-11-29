@@ -191,8 +191,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         var inputProcessorIdWatch = $scope.$watch(function() {
             return self.inputProcessorId;
-        }, function(newVal) {
+        }, function(newVal,oldVal) {
             updateInputProcessor(newVal);
+            //mark the next step as not visited.. force the user to go to the next step
+            self.stepperController.resetStep(parseInt(self.stepIndex)+1);
             validate();
         });
 
@@ -228,8 +230,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
           
-          if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
+        //  if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
               if (renderGetTableData) {
+
+                  if(self.model.table.method != null && self.model.table.method != 'EXISTING_TABLE'){
+                      //reset the fields
+                      self.model.table.tableSchema.fields = [];
+                  }
                   self.model.table.method = 'EXISTING_TABLE';
                   self.model.options.skipHeader = true;
                   self.model.allowSkipHeaderOption = true;
@@ -238,7 +245,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                   self.model.table.method = 'SAMPLE_FILE';
                   self.model.table.tableSchema.fields = [];
               }
-          }
+        //  }
 
             // Update model
             self.model.inputProcessor = processor;

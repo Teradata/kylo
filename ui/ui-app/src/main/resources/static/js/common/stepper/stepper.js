@@ -167,6 +167,14 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             StepperService.activateStep(self.stepperName, index);
         }
 
+        this.resetStep = function(index){
+           var step = StepperService.getStep(self.stepperName, index);
+           if(angular.isDefined(step)) {
+               step.reset();
+               BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
+           }
+        }
+
         this.stepDisabled = function (index) {
             StepperService.stepDisabled(self.stepperName, index);
             BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
@@ -194,6 +202,10 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
         this.arePreviousStepsDisabled = function (index) {
             return StepperService.arePreviousStepsDisabled(self.stepperName, index);
+        }
+
+        this.arePreviousStepsComplete = function (index) {
+            return StepperService.arePreviousStepsComplete(self.stepperName, index);
         }
 
         this.cancelStepper = function () {

@@ -337,7 +337,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (valid) {
                 waitForStepperController(function() {
                     //since the access control step can be disabled, we care about everything before that step, so we will check the step prior to this step
-                    self.isValid = !self.stepperController.arePreviousStepsDisabled(self.stepIndex-1)
+                    self.isValid = self.stepperController.arePreviousStepsComplete(self.stepIndex-1)
                 });
 
             }

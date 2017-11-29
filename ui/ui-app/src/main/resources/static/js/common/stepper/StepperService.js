@@ -167,13 +167,26 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
         }
 
-        this.arePreviousStepsComplete = function (stepper, index) {
-            var complete = false;
+        this.arePreviousVisitedStepsComplete = function (stepper, index) {
+            var complete = true;
             var steps = self.steppers[stepper];
             for (var i = 0; i < index; i++) {
                 var step = steps[i];
-                if (step.active && step.complete && step.visited) {
-                    complete = true;
+                if (step.active && !step.complete && step.visited) {
+                    complete = false;
+                    break;
+                }
+            }
+            return complete;
+        }
+
+        this.arePreviousStepsComplete = function (stepper, index) {
+            var complete = true;
+            var steps = self.steppers[stepper];
+            for (var i = 0; i < index; i++) {
+                var step = steps[i];
+                if (step.active && !step.disabled && !step.complete) {
+                    complete = false;
                     break;
                 }
             }
@@ -181,12 +194,12 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         }
 
         this.arePreviousStepsVisited = function (stepper, index) {
-            var complete = false;
+            var complete = true;
             var steps = self.steppers[stepper];
             for (var i = 0; i < index; i++) {
                 var step = steps[i];
-                if (step.active && step.visited) {
-                    complete = true;
+                if (step.active && !step.visited) {
+                    complete = false;
                     break;
                 }
             }
