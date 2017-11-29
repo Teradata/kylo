@@ -52,7 +52,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
                 templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
             });
-            this.menuPanel.attach().then(function () { return _this.menuPanel.panelEl.on("click", function () { return _this.hideMenu(); }); });
+            this.menuPanel.attach();
             // Create tooltip
             this.tooltipPanel = $mdPanel.create({
                 animation: this.$mdPanel.newPanelAnimation().withAnimation({ open: "md-show", close: "md-hide" }),
@@ -267,7 +267,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             this.menuVisible = false;
             this.$timeout(function () {
                 if (_this.menuVisible === false) {
-                    _this.menuPanel.hide();
+                    _this.menuPanel.close();
                 }
             }, 75);
         };
@@ -320,6 +320,8 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             // Show menu
             this.menuPanel.open()
                 .then(function () {
+                // Add click listener
+                _this.menuPanel.panelEl.on("click", "button", function () { return _this.hideMenu(); });
                 // Calculate position
                 var element = angular.element(_this.menuPanel.panelEl);
                 var height = element.height();

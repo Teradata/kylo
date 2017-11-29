@@ -114,7 +114,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
             templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
         });
-        this.menuPanel.attach().then(() => this.menuPanel.panelEl.on("click", () => this.hideMenu()));
+        this.menuPanel.attach();
 
         // Create tooltip
         this.tooltipPanel = $mdPanel.create({
@@ -328,7 +328,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         this.menuVisible = false;
         this.$timeout(() => {
             if (this.menuVisible === false) {
-                this.menuPanel.hide();
+                this.menuPanel.close();
             }
         }, 75);
     }
@@ -387,6 +387,9 @@ export class VisualQueryPainterService extends fattable.Painter {
         // Show menu
         this.menuPanel.open()
             .then(() => {
+                // Add click listener
+                this.menuPanel.panelEl.on("click", "button", () => this.hideMenu());
+
                 // Calculate position
                 const element = angular.element(this.menuPanel.panelEl);
                 const height = element.height();
