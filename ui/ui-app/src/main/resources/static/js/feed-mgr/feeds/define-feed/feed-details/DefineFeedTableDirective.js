@@ -435,53 +435,54 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FeedService.syncTableFieldPolicyNames();
         };
 
-        function validateColumnNameUniqueness(columnName) {
-            var sameNameColumns = _.filter(self.model.table.tableSchema.fields, function(columnDef) {
-                return columnDef.name === columnName && !isColumnDeleted(columnDef);
-            });
-
-            _.each(sameNameColumns, function(columnDef) {
-                columnDef.validationErrors.notUnique = sameNameColumns.length > 1;
-            });
-        }
-
         function isColumnDeleted(columnDef) {
             return columnDef.deleted === true;
         }
 
+        function isInvalid(columnDef) {
+            var values = _.values(columnDef.validationErrors);
+            var error = _.find(values, function (isError) {
+                return isError === true;
+            });
+            return error !== undefined;
+        }
+
+        function updateFormValidation(columnDef) {
+            if (isInvalid(columnDef)) {
+                add(self.defineFeedTableForm.invalidColumns, columnDef);
+            } else {
+                remove(self.defineFeedTableForm.invalidColumns, columnDef);
+            }
+        }
+
         this.validateColumn = function(columnDef) {
             // console.log("validateColumn");
-            validateColumnNameUniqueness(columnDef.name);
-
             if (!isColumnDeleted(columnDef)) {
                 columnDef.validationErrors.reserved = columnDef.name === "processing_dttm";
                 columnDef.validationErrors.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
                 columnDef.validationErrors.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
                 columnDef.validationErrors.precision = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
                 columnDef.validationErrors.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
-
-                var values = _.values(columnDef.validationErrors);
-                var error = _.find(values, function(isError) {
-                    return isError === true;
-                });
-                var isInvalid = error !== undefined;
-                // console.log("isInvalid = " + isInvalid);
-                if (isInvalid) {
-                    add(self.defineFeedTableForm.invalidColumns, columnDef);
-                } else {
-                    remove(self.defineFeedTableForm.invalidColumns, columnDef);
-                }
             } else {
                 columnDef.validationErrors = {};
-                remove(self.defineFeedTableForm.invalidColumns, columnDef);
+                updateFormValidation(columnDef);
             }
+
+            var sameNameColumns = _.filter(self.model.table.tableSchema.fields, function(field) {
+                return field.name === columnDef.name && !isColumnDeleted(field) && field.validationErrors.required !== true;
+            });
+            _.each(sameNameColumns, function(field) {
+                field.validationErrors.notUnique = sameNameColumns.length > 1;
+                updateFormValidation(field);
+            });
         };
 
         function remove(array, element) {
-            var index = array.indexOf(element);
-
-            if (index !== -1) {
-                array.splice(index, 1);
+            for (var i = 0; i < array.length; i++) {
+                if (array[i]._id === element._id) {
+                    array.splice(i, 1);
+                    break;
+                }
             }
         }
 
