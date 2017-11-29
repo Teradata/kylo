@@ -1,0 +1,17 @@
+<jcr = 'http://www.jcp.org/jcr/1.0'>
+<nt='http://www.jcp.org/jcr/nt/1.0'>
+<mix='http://www.jcp.org/jcr/mix/1.0'>
+<tba = 'http://thinkbiganalytics.com/metadata'>
+<usr = 'http://thinkbiganalytics.com/pcng/usr/1.0'>
+
+[tba:metadataFolder]
+  + projects (tba:projectFolder) = nt:folder autocreated mandatory
+
+[tba:projectFolder] > nt:folder  // <== represents the "/projects" path
+ + * (tba:project) sns
+
+[tba:entity] > nt:hierarchyNode, mix:lastModified //, tba:taggable
+
+[tba:project] > tba:entity //, tba:accessControlled // tba:propertied  ?, <== represents the project entity
+ - tba:projectName (STRING)
+ - tba:containerImage (STRING)

@@ -24,4 +24,5 @@
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
   </modules>
+
 </project>

@@ -38,6 +38,7 @@ public interface AllowedActions {
     String CATEGORY = "category";
     String TEMPLATE = "template";
     String DATASOURCE = "datasource";
+    String PROJECTS = "projects";
 
     
     /**

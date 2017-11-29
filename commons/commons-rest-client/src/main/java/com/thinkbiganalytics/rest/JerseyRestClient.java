@@ -583,6 +583,27 @@ public class JerseyRestClient {
         return target.request().delete(returnType);
     }
 
+
+    /**
+     * call a GET request
+     *
+     * @param path    the path to call.
+     * @param headers key, list parameters to add http request headers to the request
+     * @param clazz   the class type to return as the response from the GET request
+     * @param params  key,value parameters to add to the request
+     * @param <T>     the class to return
+     * @return the response of class type T
+     */
+    public <T> T deleteWithHeaders(String path, MultivaluedMap<String, Object> headers, Map<String, Object> params, Class<T> clazz) {
+        WebTarget target = buildTarget(path, params);
+
+        Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
+            .headers(headers)
+            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+
+        return builder.delete(clazz);
+    }
+
     /**
      * POST a request from a {@link Form} object
      *

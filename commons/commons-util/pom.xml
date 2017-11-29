@@ -102,7 +102,7 @@
         <executions>
           <execution>
             <id>first</id>
-           <goals>
+            <goals>
               <goal>update-file-header</goal>
             </goals>
             <phase>process-sources</phase>
@@ -117,5 +117,6 @@
       </plugin>
 
     </plugins>
+
   </build>
 </project>

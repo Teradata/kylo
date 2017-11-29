@@ -34,7 +34,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -89,6 +88,7 @@ public class JerseyConfig extends ResourceConfig {
                  "com.thinkbiganalytics.jobrepo.rest.controller",
                  "com.thinkbiganalytics.hive.rest.controller",
                  "com.thinkbiganalytics.feedmgr.rest.controller",
+                 "com.thinkbiganalytics.projects.controllers",
                  "com.thinkbiganalytics.policy.rest.controller",
                  "com.thinkbiganalytics.security.rest.controller",
                  "com.thinkbiganalytics.metadata.rest.api",
