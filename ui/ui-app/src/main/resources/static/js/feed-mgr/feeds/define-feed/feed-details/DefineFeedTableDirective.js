@@ -50,6 +50,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         var NAME_PATTERN = /^[a-zA-Z0-9_-\s\)\(]*$/;
         var PRECISION_SCALE_PATTERN = /^\d+,\d+$/;
+        var MAX_COLUMN_LENGTH = 767;
 
         this.defineFeedTableForm = {};
         this.stepNumber = parseInt(this.stepIndex) + 1;
@@ -457,7 +458,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 columnDef.validationErrors.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
                 columnDef.validationErrors.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
                 columnDef.validationErrors.precision = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
-                columnDef.validationErrors.length = !_.isUndefined(columnDef.name) && columnDef.name.length > 767;
+                columnDef.validationErrors.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
 
                 var values = _.values(columnDef.validationErrors);
                 var error = _.find(values, function(isError) {
