@@ -976,7 +976,7 @@
             <licenseMerge>Creative Commons CC0 1.0 Universal|CC0|CC0 1.0 Universal|Public Domain, per Creative Commons CC0</licenseMerge>
             <licenseMerge>Eclipse Public License - v 1.0|Eclipse Public License v1.0|Eclipse Public License (EPL), Version 1.0|Eclipse Public License - Version 1.0</licenseMerge>
             <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC LICENSE|GNU Lesser General Public License|GNU General Lesser Public License (LGPL) version 2.1|lgpl|LGPL 2.1|LGPL-2.1|LGPL, version 2.1</licenseMerge>
-            <licenseMerge>MIT License|Bouncy Castle Licence</licenseMerge>
+            <licenseMerge>MIT License|Bouncy Castle Licence|MIT license</licenseMerge>
             <licenseMerge>Mozilla Public License Version 1.1|MPL 1.1</licenseMerge>
           </licenseMerges>
         </configuration>

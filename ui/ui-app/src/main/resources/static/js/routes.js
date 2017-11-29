@@ -673,6 +673,36 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
         });
 
         $stateProvider.state({
+            name: 'projects.**',
+            url: '/projects',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('projects')
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading projects ", err);
+                    return err;
+                });
+            }
+        }).state('project-details.**', {
+            url: '/project-details/{projectId}',
+            params: {
+                projectId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('project-details', transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading projects ", err);
+                    return err;
+                });
+            }
+        });
+
+        $stateProvider.state({
            name:'access-denied',
            url:'/access-denied',
            params:{attemptedState:null},
