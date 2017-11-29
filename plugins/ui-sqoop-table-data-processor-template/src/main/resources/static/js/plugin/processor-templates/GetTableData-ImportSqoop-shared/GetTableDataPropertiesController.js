@@ -370,9 +370,9 @@ define(['angular'], function (angular) {
         }
 
         /**
-         * if we are editing then get the selectedTable saved on this model.
+         * if we are editing or working with the cloned feed then get the selectedTable saved on this model.
          */
-        if(this.mode == 'edit'){
+        if(this.mode == 'edit' || self.model.cloned == true){
             var processorTableName = this.model.table.existingTableName;
             this.tablesAutocomplete.selectedTable = this.model.table.existingTableName;
             if(processorTableName != null) {

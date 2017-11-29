@@ -114,6 +114,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         function initializeProperties(template) {
             if(angular.isDefined(self.model.cloned) && self.model.cloned == true) {
+                RegisterTemplateService.setProcessorRenderTemplateUrl(self.model, 'create');
                var inputProcessors = self.model.inputProcessors;
                 self.inputProcessors = _.sortBy(inputProcessors,'name')
 
