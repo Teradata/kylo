@@ -23,7 +23,7 @@ export interface StringUtilsStatic {
     quoteSql(str: string, quoteChar: string, escapeChar: string): string;
 }
 
-export declare const StringUtils: StringUtilsStatic;
+export const StringUtils: StringUtilsStatic = (window as any).StringUtils;
 
 /**
  * Supported SQL dialects

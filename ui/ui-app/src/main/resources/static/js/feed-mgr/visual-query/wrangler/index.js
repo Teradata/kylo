@@ -13,6 +13,7 @@ define(["require", "exports", "./column-delegate", "./parse-exception", "./query
     __export(script_builder_1);
     __export(script_expression_1);
     __export(script_expression_type_1);
+    exports.StringUtils = window.StringUtils;
     /**
      * Supported SQL dialects
      */
