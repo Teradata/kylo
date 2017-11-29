@@ -69,8 +69,10 @@ thinkbig-visual-query-transform {
       > div {
         border-bottom: 1px solid rgba(0, 0, 0, .24);
         padding: 0 28px;
+        text-overflow: ellipsis;
         @include user-select(none);
         vertical-align: middle;
+        white-space: nowrap;
 
         &.invalid {
           background-color: map_get($mat-red, 100);

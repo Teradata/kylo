@@ -64,11 +64,13 @@ thinkbig-visual-query-transform visual-query-table {
   thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
     border-bottom: 1px solid rgba(0, 0, 0, 0.24);
     padding: 0 28px;
+    text-overflow: ellipsis;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    vertical-align: middle; }
+    vertical-align: middle;
+    white-space: nowrap; }
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
       background-color: #ffcdd2; }
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
