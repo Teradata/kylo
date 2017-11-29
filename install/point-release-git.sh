@@ -13,6 +13,12 @@ NEXT_NUMBER=$3
 
 set -x
 
+setVersion() {
+  mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$1
+  find ui -name package.json -a \! -path '*node_modules*' -exec sed -i '' "s/\"version\": \"[0-9.A-Z-]*\"/\"version\": \"$1\"/" {} \;
+  sed -i '' "s/\"\?ver=[0-9.A-Z-]*\"/\"?ver=$1\"/" ui/ui-app/src/main/resources/static/js/systemjs.config.js
+}
+
 #######################
 ## Point release branch
 #######################
@@ -22,14 +28,13 @@ git pull
 git checkout -b point-$RELEASE_VERSION release/$RELEASE_VERSION
 
 
-
-mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$RELEASE_VERSION.$POINT_RELEASE_NUMBER
+setVersion ${RELEASE_VERSION}.${POINT_RELEASE_NUMBER}
 
 git commit -a -m "Release $RELEASE_VERSION.$POINT_RELEASE_NUMBER"
 
 git tag v$RELEASE_VERSION.$POINT_RELEASE_NUMBER
 
-mvn versions:set versions:update-child-modules -DgenerateBackupPoms=false  -DnewVersion=$RELEASE_VERSION.$NEXT_NUMBER-SNAPSHOT
+setVersion ${RELEASE_VERSION}.${NEXT_NUMBER}-SNAPSHOT
 
 git commit -a -m "Begin $RELEASE_VERSION.$NEXT_NUMBER-SNAPSHOT"
 
