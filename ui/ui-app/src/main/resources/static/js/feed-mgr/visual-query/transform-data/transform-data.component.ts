@@ -6,6 +6,7 @@ import * as _ from "underscore";
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
 
@@ -607,27 +608,28 @@ export class TransformDataComponent implements OnInit {
     addColumnFilter(filter: any, column: any) {
         // Generate formula for filter
         let formula;
+        let safeTerm = (column.delegate.dataCategory === DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
         let verb;
 
         switch (filter.condition) {
             case this.uiGridConstants.filter.LESS_THAN:
-                formula = "filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(lessThan(" + column.field + ", " + safeTerm + "))";
                 verb = "less than";
                 break;
 
             case this.uiGridConstants.filter.GREATER_THAN:
-                formula = "filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(greaterThan(" + column.field + ", " + safeTerm + "))";
                 verb = "greater than";
                 break;
 
             case this.uiGridConstants.filter.EXACT:
-                formula = "filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(equal(" + column.field + ", " + safeTerm + "))";
                 verb = "equal to";
                 break;
 
             case this.uiGridConstants.filter.CONTAINS:
                 const query = "%" + filter.term.replace("%", "%%") + "%";
-                formula = "filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))";
+                formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
                 verb = "containing";
                 break;
 

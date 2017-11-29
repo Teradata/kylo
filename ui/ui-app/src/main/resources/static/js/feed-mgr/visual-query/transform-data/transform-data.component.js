@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -511,23 +511,24 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         TransformDataComponent.prototype.addColumnFilter = function (filter, column) {
             // Generate formula for filter
             var formula;
+            var safeTerm = (column.delegate.dataCategory === column_delegate_1.DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
             var verb;
             switch (filter.condition) {
                 case this.uiGridConstants.filter.LESS_THAN:
-                    formula = "filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(lessThan(" + column.field + ", " + safeTerm + "))";
                     verb = "less than";
                     break;
                 case this.uiGridConstants.filter.GREATER_THAN:
-                    formula = "filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(greaterThan(" + column.field + ", " + safeTerm + "))";
                     verb = "greater than";
                     break;
                 case this.uiGridConstants.filter.EXACT:
-                    formula = "filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(equal(" + column.field + ", " + safeTerm + "))";
                     verb = "equal to";
                     break;
                 case this.uiGridConstants.filter.CONTAINS:
                     var query = "%" + filter.term.replace("%", "%%") + "%";
-                    formula = "filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))";
+                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
                     verb = "containing";
                     break;
                 default:
