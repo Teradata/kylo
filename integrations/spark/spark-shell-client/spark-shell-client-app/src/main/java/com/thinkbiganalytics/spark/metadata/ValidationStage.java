@@ -28,6 +28,7 @@ import com.google.common.base.Preconditions;
 import com.thinkbiganalytics.policy.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.datavalidator.CleansedRowResult;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.datavalidator.DataValidatorResult;
@@ -42,6 +43,7 @@ import org.apache.spark.sql.types.StructType;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +89,12 @@ public class ValidationStage implements Function<TransformResult, TransformResul
             .map(new ListTransformValidationResults())
             .collect();
         result.setValidationResults(rows);
+
+        // Add the profile to the transform result
+        final List<OutputRow> profile = (result.getProfile() != null) ? new ArrayList<>(result.getProfile()) : new ArrayList<OutputRow>();
+        profile.addAll(validator.getProfileStats(validatorResult));
+        result.setProfile(profile);
+
         return result;
     }
 

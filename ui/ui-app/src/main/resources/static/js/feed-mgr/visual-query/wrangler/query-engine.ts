@@ -279,7 +279,7 @@ export abstract class QueryEngine<T> {
             profile.push({columnName: "(ALL)", metricType: "INVALID_COUNT", metricValue: 0});
         }
         if (!hasTotalCount) {
-            profile.push({columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: state.rows.length});
+            profile.push({columnName: "(ALL)", metricType: "TOTAL_COUNT", metricValue: (state.rows) ? state.rows.length : 0});
         }
         if (!hasValidCount) {
             profile.push({columnName: "(ALL)", metricType: "VALID_COUNT", metricValue: 0});

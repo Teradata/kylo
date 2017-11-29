@@ -63,7 +63,7 @@ public class ProfileStage implements Function<TransformResult, TransformResult> 
 
         // Add stats to result
         if (dataStats != null) {
-            final List<OutputRow> profile = new ArrayList<>(dataStats.getColumnStatisticsMap().size());
+            final List<OutputRow> profile = (result.getProfile() != null) ? new ArrayList<>(result.getProfile()) : new ArrayList<OutputRow>(dataStats.getColumnStatisticsMap().size());
 
             for (final ColumnStatistics columnStats : dataStats.getColumnStatisticsMap().values()) {
                 profile.addAll(columnStats.getStatistics());
