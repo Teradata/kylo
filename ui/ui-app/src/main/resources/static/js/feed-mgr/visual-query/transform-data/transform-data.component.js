@@ -623,6 +623,13 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
         };
         ;
+        /**
+         * Refreshes the table content.
+         */
+        TransformDataComponent.prototype.resample = function () {
+            this.addFilters();
+            this.query();
+        };
         //noinspection JSUnusedGlobalSymbols
         TransformDataComponent.prototype.onUndo = function () {
             this.engine.undo();

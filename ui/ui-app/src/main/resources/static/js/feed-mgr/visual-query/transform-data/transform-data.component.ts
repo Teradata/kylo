@@ -732,6 +732,14 @@ export class TransformDataComponent implements OnInit {
         }
     };
 
+    /**
+     * Refreshes the table content.
+     */
+    resample() {
+        this.addFilters();
+        this.query();
+    }
+
     //noinspection JSUnusedGlobalSymbols
     onUndo() {
         this.engine.undo();
