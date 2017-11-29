@@ -94,62 +94,32 @@
                     </span>
                   </div>
                   <div id="define-feed-data-processing-container">
-                    <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
-                         ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
-                         ng-click="vm.onSelectedColumn($index)"
-                         class="data-processing-row"
-                    >
-
-                      <div flex="30" class="md-list-item-text">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <div>{{policy.name | characters:30}}</div>
-                          <div class="hint">{{policy.field.dataTypeDisplay}}</div>
-                        </md-input-container>
-                      </div>
-                      <div flex="20" class="md-list-item-text " style="padding-left:5px;">
-                        <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                          <md-select ng-model="policy.domainTypeId" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
-                            <md-option ng-value=""><em>None</em></md-option>
-                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
-                              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
-                            </md-option>
-                          </md-select>
-                        </md-input-container>
-                      </div>
-                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
-                          </md-checkbox>
-                        </md-input-container>
-                      </div>
-                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
-                          </md-checkbox>
-                        </md-input-container>
-                      </div>
-                      <!--  rules -->
-                      <div flex="30" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
-                            <ng-md-icon icon="add_circle_outline"></ng-md-icon>
-                          </md-button>
-                          ADD
+                    <md-virtual-repeat-container
+                        id="feed-data-processing-container"
+                        ng-if="vm.model.table.fieldPolicies.length >= 30"
+                        style="min-height: 700px">
+                        <div
+                            class="repeated-item"
+                            md-virtual-repeat="policy in vm.model.table.fieldPolicies"
+                            ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
+                            ng-click="vm.onSelectedColumn($index)">
+                          <span style="display: none"></span> <!-- for whatever reason, the following ng-include is not displayed without displaying something here -->
+                          <ng-include
+                              layout="row"
+                              class="data-processing-row"
+                              src="'js/feed-mgr/feeds/define-feed/feed-details/data-processing-column.html'">
+                          </ng-include>
                         </div>
-
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                            <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)"
-                             class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
-                          <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
-                          <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
-                        </div>
-                      </div>
-
+                    </md-virtual-repeat-container>
+                    <div ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30">
+                      <ng-include
+                          layout="row"
+                          ng-repeat="policy in vm.model.table.fieldPolicies"
+                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
+                          ng-click="vm.onSelectedColumn($index)"
+                          class="data-processing-row"
+                          src="'js/feed-mgr/feeds/define-feed/feed-details/data-processing-column.html'">
+                      </ng-include>
                     </div>
                   </div>
                 </md-list>

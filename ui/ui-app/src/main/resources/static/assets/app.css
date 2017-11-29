@@ -1191,3 +1191,12 @@ md-input-container.global-search .md-input {
 
 .elastic-search-property-table tr:not(:last-child) td {
 }
+
+
+
+#feed-data-processing-container .md-virtual-repeat-scroller {
+  /* overlay required to align column in virtual
+  repeat with header columns outside of virtual repeat, otherwise
+   on Chrome header and virtual repeat is not aligned */
+  overflow-y: overlay;
+}
