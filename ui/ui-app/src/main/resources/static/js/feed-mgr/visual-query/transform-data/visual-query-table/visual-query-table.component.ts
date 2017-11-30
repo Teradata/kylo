@@ -158,7 +158,7 @@ export class VisualQueryTable {
            if(resizeTimeoutPromise != null){
                this.$timeout_.cancel(resizeTimeoutPromise);
            }
-           resizeTimeoutPromise = this.$timeout_(callback,interval);
+           resizeTimeoutPromise = this.$timeout_(callback(),interval);
         }
 
         // Refresh table on resize
