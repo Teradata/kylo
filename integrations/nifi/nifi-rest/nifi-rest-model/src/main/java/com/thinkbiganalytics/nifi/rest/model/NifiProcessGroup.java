@@ -86,10 +86,22 @@ public class NifiProcessGroup {
         if (this.inputProcessor != null && this.processGroupEntity != null) {
             NiFiComponentErrors error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
             if (error != null && !error.getValidationErrors().isEmpty()) {
-                errors.add(error);
+                if (!isErrorAlreadyRecorded(error)) {
+                    errors.add(error);
+                }
             }
         }
     }
+
+    private boolean isErrorAlreadyRecorded(NiFiComponentErrors error) {
+        for (NiFiComponentErrors existingError: errors) {
+            if ((error.getProcessGroupId().equals(existingError.getProcessGroupId())) && (error.getProcessorId().equals(existingError.getProcessorId()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     private void populateErrors() {
         this.errors = new ArrayList<NiFiComponentErrors>();
