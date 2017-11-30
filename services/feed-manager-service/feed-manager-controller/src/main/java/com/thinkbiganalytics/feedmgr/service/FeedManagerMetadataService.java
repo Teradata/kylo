@@ -57,6 +57,7 @@ import com.thinkbiganalytics.security.action.Action;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -165,6 +166,20 @@ public class FeedManagerMetadataService implements MetadataService {
         if (feed.isSuccess()) {
             if (feed.isEnableAfterSave()) {
                 enableFeed(feed.getFeedMetadata().getId());
+                //validate its enabled
+                ProcessorDTO processorDTO = feed.getFeedProcessGroup().getInputProcessor();
+               Optional<ProcessorDTO> updatedProcessor = nifiRestClient.getNiFiRestClient().processors().findById(processorDTO.getParentGroupId(),processorDTO.getId());
+               if(updatedProcessor.isPresent()){
+                   if(!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equalsIgnoreCase(updatedProcessor.get().getState())){
+                       feed.setSuccess(false);
+                       feed.getFeedProcessGroup().setInputProcessor(updatedProcessor.get());
+                       feed.getFeedProcessGroup().validateInputProcessor();
+                       if(feedMetadata.isNew() && feed.getFeedMetadata().getId() != null){
+                           //delete it
+                           deleteFeed(feed.getFeedMetadata().getId());
+                       }
+                   }
+               }
             }
             //requery to get the latest version
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());

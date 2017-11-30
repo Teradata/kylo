@@ -71,14 +71,29 @@ public class NifiProcessGroup {
         this.success = !this.hasFatalErrors();
     }
 
-    private void populateErrors() {
-        this.errors = new ArrayList<NiFiComponentErrors>();
+    public void validateInputProcessor(){
+        if(this.errors == null){
+            errors = new ArrayList<>();
+        }
+        if(processGroupEntity == null){
+            processGroupEntity = new ProcessGroupDTO();
+            processGroupEntity.setName("Process Group");
+            if(inputProcessor != null) {
+                processGroupEntity.setId(inputProcessor.getParentGroupId());
+
+            }
+        }
         if (this.inputProcessor != null && this.processGroupEntity != null) {
             NiFiComponentErrors error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
             if (error != null && !error.getValidationErrors().isEmpty()) {
                 errors.add(error);
             }
         }
+    }
+
+    private void populateErrors() {
+        this.errors = new ArrayList<NiFiComponentErrors>();
+        validateInputProcessor();
         if (this.downstreamProcessors != null && this.processGroupEntity != null) {
             List<NiFiComponentErrors> processorErrors = NifiProcessorValidationUtil.getProcessorValidationErrors(this.downstreamProcessors, true);
             if (processorErrors != null) {
@@ -184,6 +199,16 @@ public class NifiProcessGroup {
             }
         }
         return errors;
+    }
+
+
+    public void setInputProcessor(ProcessorDTO inputProcessor){
+        this.inputProcessor = inputProcessor;
+    }
+
+
+    public ProcessorDTO getInputProcessor() {
+        return inputProcessor;
     }
 
     public boolean isSuccess() {
