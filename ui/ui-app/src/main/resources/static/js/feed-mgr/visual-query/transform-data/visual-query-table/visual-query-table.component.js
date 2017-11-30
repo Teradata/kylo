@@ -76,13 +76,16 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 _this.onValidationResultsChange();
                 _this.refresh();
             });
+            var resizeTimeoutPromise = null;
+            var resizeTimeout = function (callback, interval) {
+                if (resizeTimeoutPromise != null) {
+                    _this.$timeout_.cancel(resizeTimeoutPromise);
+                }
+                resizeTimeoutPromise = _this.$timeout_(callback, interval);
+            };
             // Refresh table on resize
-            $scope_.$watch(function () { return $element.height(); }, _.debounce(function () {
-                return $scope.$apply(function () { return _this.refresh(); });
-            }, 500));
-            $scope_.$watch(function () { return $element.width(); }, _.debounce(function () {
-                return $scope.$apply(function () { return _this.refresh(); });
-            }, 500));
+            $scope_.$watch(function () { return $element.height(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
+            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
             // Listen for destroy event
             $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }

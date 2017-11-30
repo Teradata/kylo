@@ -121,6 +121,8 @@ export class VisualQueryTable {
                 private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any) {
         this.painter.delegate = this;
 
+
+
         // Refresh table when model changes
         tableService.registerTable((event) => {
             if (event.type === WranglerEventType.REFRESH) {
@@ -150,14 +152,19 @@ export class VisualQueryTable {
             this.refresh();
         });
 
-        // Refresh table on resize
-        $scope_.$watch(() => $element.height(), _.debounce(() =>
-            $scope.$apply(() => this.refresh()),500)
-        );
+        let resizeTimeoutPromise: any = null;
 
-        $scope_.$watch(() => $element.width(), _.debounce(() =>
-            $scope.$apply(() => this.refresh()),500)
-        );
+        let resizeTimeout = (callback :Function, interval:number) => {
+           if(resizeTimeoutPromise != null){
+               this.$timeout_.cancel(resizeTimeoutPromise);
+           }
+           resizeTimeoutPromise = this.$timeout_(callback,interval);
+        }
+
+        // Refresh table on resize
+        $scope_.$watch(() => $element.height(), () => resizeTimeout(() => this.refresh(),500))
+
+        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(),500))
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
@@ -172,6 +179,8 @@ export class VisualQueryTable {
         this.rows = angular.copy(this.rows);
         this.init(this.$element);
     }
+
+
 
     /**
      * Initializes the table.
