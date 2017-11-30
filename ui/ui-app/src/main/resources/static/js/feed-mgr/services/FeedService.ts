@@ -280,7 +280,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 sampleValues: [],
                 selectedSampleValue: '',
                 tags: [],
-                validationErrors: {},
+                validationErrors: {
+                    name: {},
+                    precision: {}
+                },
                 isValid: function () {
                     return this.name != '' && this.derivedDataType != '';
                 },

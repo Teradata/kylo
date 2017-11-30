@@ -435,17 +435,26 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FeedService.syncTableFieldPolicyNames();
         };
 
-        function isColumnDeleted(columnDef) {
+        function isDeleted(columnDef) {
             return columnDef.deleted === true;
         }
 
         function isInvalid(columnDef) {
-            var values = _.values(columnDef.validationErrors);
-            var error = _.find(values, function (isError) {
-                return isError === true;
+            var errorCount = 0;
+            var fields = _.values(columnDef.validationErrors);
+            _.each(fields, function(field) {
+                errorCount += self.fieldErrorCount(field);
             });
-            return error !== undefined;
+            return errorCount > 0;
         }
+
+        this.fieldErrorCount = function(errorTypes) {
+            var errorTypeValues = _.values(errorTypes);
+            var errors = _.filter(errorTypeValues, function (error) {
+                return error === true;
+            });
+            return errors === undefined ? 0 : errors.length;
+        };
 
         function updateFormValidation(columnDef) {
             if (isInvalid(columnDef)) {
@@ -456,25 +465,57 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.validateColumn = function(columnDef) {
-            // console.log("validateColumn");
-            if (!isColumnDeleted(columnDef)) {
-                columnDef.validationErrors.reserved = columnDef.name === "processing_dttm";
-                columnDef.validationErrors.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
-                columnDef.validationErrors.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
-                columnDef.validationErrors.precision = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
-                columnDef.validationErrors.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
+            if (!isDeleted(columnDef)) {
+                columnDef.validationErrors.name.reserved = columnDef.name === "processing_dttm";
+                columnDef.validationErrors.name.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
+                columnDef.validationErrors.name.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
+                columnDef.validationErrors.name.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
+                columnDef.validationErrors.precision.pattern = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
             } else {
-                columnDef.validationErrors = {};
+                columnDef.validationErrors = {
+                    name: {},
+                    precision: {}
+                };
                 updateFormValidation(columnDef);
             }
 
             var sameNameColumns = _.filter(self.model.table.tableSchema.fields, function(field) {
-                return field.name === columnDef.name && !isColumnDeleted(field) && field.validationErrors.required !== true;
+                return field.name === columnDef.name && !isDeleted(field) && field.validationErrors.name.required !== true;
             });
             _.each(sameNameColumns, function(field) {
-                field.validationErrors.notUnique = sameNameColumns.length > 1;
+                field.validationErrors.name.notUnique = sameNameColumns.length > 1;
                 updateFormValidation(field);
             });
+        };
+
+        this.messages = {
+            name: {
+                required: "Name is required",
+                pattern: "Name cannot contain special characters",
+                notUnique: "Name must be unique",
+                reserved: "Name reserved by Kylo",
+                length: "Name cannot be longer than 767 characters"
+            },
+            precision: {
+                pattern: "Invalid, e.g. 10,0"
+            }
+        };
+        this.errorMessage = function(columnDef) {
+            if (columnDef.validationErrors.name.required) {
+                return self.messages.name.required;
+            }
+            if (columnDef.validationErrors.name.pattern) {
+                return self.messages.name.pattern;
+            }
+            if (columnDef.validationErrors.name.notUnique) {
+                return self.messages.name.notUnique;
+            }
+            if (columnDef.validationErrors.name.reserved) {
+                return self.messages.name.reserved;
+            }
+            if (columnDef.validationErrors.name.length) {
+                return self.messages.name.length;
+            }
         };
 
         function remove(array, element) {

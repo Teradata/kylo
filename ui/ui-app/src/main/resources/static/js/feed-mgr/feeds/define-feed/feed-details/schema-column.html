@@ -26,13 +26,27 @@
              ng-disabled="vm.tableLocked || columnDef.deleted"
              ng-class="{strike: columnDef.deleted}"/>
     </md-input-container>
-    <div class="hint validation-error">
-      <div ng-if="columnDef.validationErrors.notUnique">Name must be unique</div>
-      <div ng-if="columnDef.validationErrors.required">Name is required</div>
-      <div ng-if="columnDef.validationErrors.pattern">Name cannot contain special characters</div>
-      <div ng-if="columnDef.validationErrors.length">Name cannot be longer than 767 characters</div>
-      <div ng-if="columnDef.validationErrors.reserved">This name is reserved by Kylo</div>
+    <div class="hint validation-error" layout="row">
+      <ng-md-icon
+          ng-if="vm.fieldErrorCount(columnDef.validationErrors.name) > 1"
+          md-icon icon="warning" class="layout-margin-right-5"
+          size="12"
+          style="width: 12px; height: 12px"></ng-md-icon>
+      <div>{{vm.errorMessage(columnDef)}}</div>
     </div>
+    <md-tooltip
+        class="tooltip-multi-line"
+        md-direction="right"
+        ng-if="vm.fieldErrorCount(columnDef.validationErrors.name) > 1">
+      Validation Errors:
+      <ul id="data-policy-item-tooltip-list" >
+        <li ng-if="columnDef.validationErrors.name.notUnique">{{vm.messages.name.notUnique}}</li>
+        <li ng-if="columnDef.validationErrors.name.required">{{vm.messages.name.required}}</li>
+        <li ng-if="columnDef.validationErrors.name.pattern">{{vm.messages.name.pattern}}</li>
+        <li ng-if="columnDef.validationErrors.name.length">{{vm.messages.name.length}}</li>
+        <li ng-if="columnDef.validationErrors.name.reserved">{{vm.messages.name.reserved}}</li>
+      </ul>
+    </md-tooltip>
   </div>
 </div>
 <div flex="25" class="md-list-item-text " style="padding-left:5px;">
@@ -54,7 +68,7 @@
         <input ng-model="columnDef.precisionScale" placeholder="10,0" name="precisionScale_{{columnDef._id}}"
                ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)" />
       </md-input-container>
-      <div class="hint validation-error" ng-if="columnDef.validationErrors.precision">Invalid, e.g. 10,0</div>
+      <div class="hint validation-error" ng-if="columnDef.validationErrors.precision.pattern">{{vm.messages.precision.pattern}}</div>
     </div>
   </div>
 </div>

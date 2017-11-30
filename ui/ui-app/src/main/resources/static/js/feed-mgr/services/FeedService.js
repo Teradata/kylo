@@ -257,7 +257,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     sampleValues: [],
                     selectedSampleValue: '',
                     tags: [],
-                    validationErrors: {},
+                    validationErrors: {
+                        name: {},
+                        precision: {}
+                    },
                     isValid: function () {
                         return this.name != '' && this.derivedDataType != '';
                     },
