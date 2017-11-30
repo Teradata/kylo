@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-service-monitor</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
   <properties>
