@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-hadoop-authorization-ranger-default</artifactId>
     <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
-    <version>0.8.4</version>
+    <version>0.8.4.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
