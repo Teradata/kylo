@@ -18,22 +18,6 @@
   #L%
   -->
 <div flex="30" class="md-list-item-text  ">
-  <!--<md-input-container md-no-float class="md-block condensed" flex-gt-sm>-->
-    <!--<input ng-model="columnDef.name" placeholder="Field Name" ng-required="(columnDef.deleted == false || columnDef.deleted == undefined)" name="name_{{columnDef._id}}"-->
-           <!--ng-change="vm.onNameFieldChange(columnDef)"-->
-           <!--ng-model-options="{updateOn: 'blur'}"-->
-           <!--ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"-->
-           <!--ng-disabled="vm.tableLocked || columnDef.deleted"-->
-           <!--ng-class="{strike: columnDef.deleted}"-->
-           <!--maxlength="767"-->
-    <!--/>-->
-    <!--<div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">-->
-      <!--<div ng-message="notUnique">Name must be unique</div>-->
-      <!--<div ng-message="required">Name is required</div>-->
-      <!--<div ng-message="pattern">Name cannot contain special characters</div>-->
-    <!--</div>-->
-  <!--</md-input-container>-->
-
   <div flex layout="column" layout-align="start start" class="schema-column-input-container">
     <md-input-container class="md-block condensed">
       <input ng-model="columnDef.name" placeholder="Field Name" name="name_{{columnDef._id}}"
@@ -67,32 +51,9 @@
     </md-input-container>
     <md-input-container class="md-dense md-block condensed" flex-gt-sm style="margin-top:10px;" ng-show="columnDef.derivedDataType == 'decimal'">
       <label>Precision, Scale</label>
-      <!--<input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"-->
-             <!--ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)"/>-->
-
-      <!--<input ng-model="columnDef.precisionScale" placeholder="10,0" name="precisionScale_{{columnDef._id}}" style="width:120px;"-->
-             <!--ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)"-->
-             <!--precision-scale-->
-      <!--/>-->
-
       <input ng-model="columnDef.precisionScale" placeholder="10,0" name="precisionScale_{{columnDef._id}}" style="width:120px;"
         ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)" />
-
-      <!--<div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].$error" md-auto-hide="false">-->
-        <!--<div ng-message="pattern" style="white-space: nowrap">Invalid, e.g. 10,0</div>-->
-      <!--</div>-->
-      <!--<div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].validationErrors" md-auto-hide="false">-->
-        <!--<div ng-message="pattern" style="white-space: nowrap">Invalid, e.g. 10,0</div>-->
-      <!--</div>-->
-      <!--<div ng-messages="columnDef.validationErrors" md-auto-hide="false">-->
-        <!--<div ng-message="pattern" style="white-space: nowrap">Invalid, e.g. 10,0</div>-->
-      <!--</div>-->
     </md-input-container>
-    <!--<div ng-if="vm.defineFeedTableForm['precisionScale_'+columnDef._id].validationErrors.pattern"-->
-         <!--class="hint" style="white-space: nowrap; color: rgb(221,44,0);" >-->
-      <!--Invalid, e.g. 10,0-->
-    <!--</div>-->
-
     <div class="hint validation-error" ng-if="columnDef.validationErrors.precision">Invalid, e.g. 10,0</div>
   </div>
 </div>
