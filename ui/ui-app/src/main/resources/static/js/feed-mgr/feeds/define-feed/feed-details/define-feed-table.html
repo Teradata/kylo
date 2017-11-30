@@ -106,11 +106,11 @@
                   <span flex></span>
                 </div>
               </md-expansion-panel-header>
-              <md-expansion-panel-content>
+              <md-expansion-panel-content style="padding: 0">
                 <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
                   No fields are defined. Click <i>Add Field</i> to define a new field for this table.
                 </div>
-                <div ng-show="vm.model.table.tableSchema.fields.length >0" class="layout-padding-indent-20">
+                <div ng-show="vm.model.table.tableSchema.fields.length >0" class="layout-padding-left-right layout-padding-top">
                   <div flex layout-fill class="list-item-table list-condensed">
 
 
@@ -118,7 +118,7 @@
                       <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
+                      <div flex="25" class="md-list-item-text hint" style="padding-left:5px;">
                         Data Type
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
@@ -139,7 +139,7 @@
                           Is this field an indicator of when the row was updated?
                         </md-tooltip>
                       </div>
-                      <div flex="20" class="md-list-item-text hint" hide-sm>
+                      <div flex="15" class="md-list-item-text hint" hide-sm>
 
                       </div>
 

@@ -216,7 +216,7 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-indent button {
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 .layout-padding-indent-20 {
@@ -224,7 +224,7 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-indent button, .layout-padding-indent-20 button {
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 .layout-padding-top-bottom, .layout-padding-top-bottom md-item {
@@ -238,6 +238,15 @@ md-sidenav .collapse-btn {
 
 .layout-padding-bottom {
   padding-bottom: 10px;
+}
+
+.layout-margin-left-right-0 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.layout-margin-left-5 {
+  margin-left: 5px;
 }
 
 .layout-max-width {
