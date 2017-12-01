@@ -107,7 +107,7 @@
                           <ng-include
                               layout="row"
                               class="data-processing-row"
-                              src="'js/feed-mgr/feeds/define-feed/feed-details/data-processing-column.html'">
+                              src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
                           </ng-include>
                         </div>
                     </md-virtual-repeat-container>
@@ -118,7 +118,7 @@
                           ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
                           ng-click="vm.onSelectedColumn($index)"
                           class="data-processing-row"
-                          src="'js/feed-mgr/feeds/define-feed/feed-details/data-processing-column.html'">
+                          src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
                       </ng-include>
                     </div>
                   </div>
