@@ -216,8 +216,6 @@ echo "    - Completed kylo-ui install"
 
 echo "    - Install kylo-services application"
 
-rm -f $INSTALL_HOME/kylo-services/lib/jetty*
-rm -f $INSTALL_HOME/kylo-services/lib/servlet-api*
 sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $INSTALL_HOME/kylo-services/conf/application.properties
 echo "   - Installed kylo-services to '$INSTALL_HOME/kylo-services'"
 
