@@ -2553,9 +2553,9 @@
     "!sparkType": "column"
   },
   "round": {
-    "!type": "fn(e: Column, scale: number) -> Column",
+    "!type": "fn(e: Column, opt_scale: number) -> Column",
     "!doc": "Round the value of e to scale decimal places if scale >= 0 or at integral part when scale < 0.",
-    "!spark": "functions.round(%c, %d)",
+    "!spark": "functions.round(%c%,?d)",
     "!sparkType": "column"
   },
   "shiftLeft": {
