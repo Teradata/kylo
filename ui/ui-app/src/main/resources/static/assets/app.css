@@ -253,6 +253,10 @@ md-sidenav .collapse-btn {
   margin-right: 5px;
 }
 
+.layout-margin-top-3 {
+  margin-top: 3px;
+}
+
 .layout-max-width {
   width: 100%;
   max-width: 960px;

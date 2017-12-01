@@ -106,6 +106,7 @@
                           <span style="display: none"></span> <!-- for whatever reason, the following ng-include is not displayed without displaying something here -->
                           <ng-include
                               layout="row"
+                              layout-align="start center"
                               class="data-processing-row"
                               src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
                           </ng-include>
@@ -114,6 +115,7 @@
                     <div ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30">
                       <ng-include
                           layout="row"
+                          layout-align="start center"
                           ng-repeat="policy in vm.model.table.fieldPolicies"
                           ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
                           ng-click="vm.onSelectedColumn($index)"

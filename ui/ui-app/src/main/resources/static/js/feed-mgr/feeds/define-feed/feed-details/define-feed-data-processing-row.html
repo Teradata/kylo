@@ -1,4 +1,4 @@
-<div flex="30" class="md-list-item-text">
+<div flex="30" class="md-list-item-text layout-margin-top-3">
   <md-input-container class="md-block" flex-gt-sm>
     <div>{{policy.name | characters:30}}</div>
     <div class="hint">{{policy.field.dataTypeDisplay}}</div>
@@ -14,35 +14,41 @@
     </md-select>
   </md-input-container>
 </div>
-<div flex="10" class="md-list-item-text layout-padding-top" layout="column" layout-align="start center">
-  <!--<md-input-container class="md-block">-->
-    <md-checkbox ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
+<div flex="10" class="md-list-item-text" layout="column" layout-align="center center">
+    <md-checkbox
+        style="margin-bottom: 0"
+        ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex"
+        ng-click="vm.indexCheckAll.clicked(!policy.index)">
     </md-checkbox>
-  <!--</md-input-container>-->
 </div>
-<div flex="10" class="md-list-item-text layout-padding-top" layout="column" layout-align="start center">
-  <!--<md-input-container class="md-block">-->
-    <md-checkbox ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
+<div flex="10" class="md-list-item-text" layout="column" layout-align="center center">
+    <md-checkbox
+        style="margin-bottom: 0"
+        ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex"
+        ng-click="vm.profileCheckAll.clicked(!policy.profile)">
     </md-checkbox>
-  <!--</md-input-container>-->
 </div>
 <!--  rules -->
-<div flex="30" class="md-list-item-text hint layout-padding-top" layout-align="start center">
-  <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
-    <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
-      <ng-md-icon icon="add_circle_outline"></ng-md-icon>
-    </md-button>
-    ADD
-  </div>
+<div flex="10" class="md-list-item-text hint">
+  <div>
+    <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
+      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
+        <ng-md-icon icon="add_circle_outline"></ng-md-icon>
+      </md-button>
+      ADD
+    </div>
 
-  <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
-    <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-      <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-    </md-button>
-    ADD
+    <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
+      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
+        <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
+      </md-button>
+      ADD
+    </div>
   </div>
+</div>
+<div flex="20" class="md-list-item-text hint" style="margin-top: -2px;">
   <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)"
-       class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+       class="orange" layout="column" layout-align="center none">
     <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
     <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
   </div>

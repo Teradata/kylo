@@ -41,11 +41,7 @@
 
 #define-feed-data-processing-container .repeated-item {
   box-sizing: border-box;
-  height: 62px;
-}
-
-#define-feed-data-processing-container .repeated-item:first-child {
-  margin-top: 15px;
+  height: 38px;
 }
 
 /**
