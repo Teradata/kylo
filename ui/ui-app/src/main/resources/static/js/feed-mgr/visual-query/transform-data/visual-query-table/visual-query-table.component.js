@@ -279,15 +279,15 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             });
             // Sort rows
             if (angular.isNumber(this.dataService.sortIndex_) && this.dataService.sortIndex_ < this.dataService.columns_.length) {
-                var field_1 = this.dataService.columns_[this.dataService.sortIndex_].name;
+                var column_1 = this.dataService.sortIndex_;
                 var lessThan_1 = (this.dataService.sortDirection_ === VisualQueryTable.ASC) ? -1 : 1;
                 var greaterThan_1 = -lessThan_1;
                 this.dataService.rows_.sort(function (a, b) {
-                    if (a[field_1] === b[field_1]) {
+                    if (a[column_1] === b[column_1]) {
                         return 0;
                     }
                     else {
-                        return (a[field_1] < b[field_1]) ? lessThan_1 : greaterThan_1;
+                        return (a[column_1] < b[column_1]) ? lessThan_1 : greaterThan_1;
                     }
                 });
             }

@@ -381,15 +381,15 @@ export class VisualQueryTable {
 
         // Sort rows
         if (angular.isNumber(this.dataService.sortIndex_) && this.dataService.sortIndex_ < this.dataService.columns_.length) {
-            const field = (this.dataService.columns_[this.dataService.sortIndex_] as any).name;
+            const column = this.dataService.sortIndex_;
             const lessThan = (this.dataService.sortDirection_ === (VisualQueryTable as any).ASC) ? -1 : 1;
             const greaterThan = -lessThan;
 
             this.dataService.rows_.sort(function (a, b) {
-                if (a[field] === b[field]) {
+                if (a[column] === b[column]) {
                     return 0;
                 } else {
-                    return (a[field] < b[field]) ? lessThan : greaterThan;
+                    return (a[column] < b[column]) ? lessThan : greaterThan;
                 }
             });
         }
