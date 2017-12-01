@@ -226,6 +226,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             // console.log("resetColumns");
             self.model.table.tableSchema.fields = [];
             self.model.table.fieldPolicies = [];
+            self.defineFeedTableForm.invalidColumns = [];
         }
 
         /**
@@ -493,14 +494,19 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             //update all columns at all times, because column removal may fix not unique name error on other columns
             var columnsByName = _.groupBy(self.model.table.tableSchema.fields, function(column){
+                //we'll disregard "not unique" name for all empty names and all deleted columns, i.e. put them into single group
+                if (isDeleted(column)) {
+                    return "";
+                }
                 return column.name ? column.name.trim() : "";
             });
             _.each(_.keys(columnsByName), function(columnName) {
                 var group = columnsByName[columnName];
                 _.each(group, function(column) {
-                    if (columnName !== "" && !isDeleted(columnDef)) {
+                    if (columnName !== "") {
                         column.validationErrors.name.notUnique = group.length > 1;
                     } else {
+                        //group with empty column name which also includes "deleted" columns
                         column.validationErrors.name.notUnique = false;
                     }
                     updateFormValidation(column);
@@ -650,9 +656,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (_.isUndefined(self.defineFeedTableForm.invalidColumns)) {
                 self.defineFeedTableForm.invalidColumns = [];
             }
-            // if (_.isUndefined(self.defineFeedTableForm.columnNames)) {
-            //     self.defineFeedTableForm.columnNames = [];
-            // }
             if (validForm == undefined) {
                 validForm = self.defineFeedTableForm.$valid ;
             }
