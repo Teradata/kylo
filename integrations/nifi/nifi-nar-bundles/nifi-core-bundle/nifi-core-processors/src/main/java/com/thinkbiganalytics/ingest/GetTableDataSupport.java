@@ -43,7 +43,7 @@ import java.util.List;
  */
 public class GetTableDataSupport {
 
-    public static final Logger logger = LoggerFactory.getLogger(GetTableDataSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(GetTableDataSupport.class);
 
     private Connection conn;
 

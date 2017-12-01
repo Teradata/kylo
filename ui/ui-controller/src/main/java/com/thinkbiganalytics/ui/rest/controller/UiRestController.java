@@ -45,7 +45,7 @@ import javax.ws.rs.core.MediaType;
 @Produces(MediaType.APPLICATION_JSON)
 public class UiRestController {
 
-    private static Logger log = LoggerFactory.getLogger(UiRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(UiRestController.class);
 
     @Autowired
     private StandardUiTemplateService uiTemplateService;

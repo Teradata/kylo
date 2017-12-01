@@ -89,7 +89,7 @@ import static java.sql.Types.VARCHAR;
  */
 public class JdbcCommon {
 
-    public static final Logger log = LoggerFactory.getLogger(JdbcCommon.class);
+    private static final Logger log = LoggerFactory.getLogger(JdbcCommon.class);
 
     /**
      * Converts the specified SQL result set to a delimited text file written to the specified output stream.

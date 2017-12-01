@@ -38,7 +38,7 @@ import java.util.Map;
  * ModeShape configuration for Elasticsearch integration
  */
 public class ElasticSearchModeShapeConfigurationService implements RepositoryIndexConfiguration {
-    private static Logger log = LoggerFactory.getLogger(ElasticSearchModeShapeConfigurationService.class);
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchModeShapeConfigurationService.class);
 
     private ElasticSearchClientConfiguration clientConfig;
     private static final String ELASTIC_SEARCH = "elasticsearch";

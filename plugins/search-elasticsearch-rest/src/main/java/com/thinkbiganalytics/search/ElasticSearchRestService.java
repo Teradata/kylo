@@ -61,7 +61,7 @@ import javax.annotation.Nonnull;
  */
 public class ElasticSearchRestService implements Search {
 
-    private static Logger log = LoggerFactory.getLogger(ElasticSearchRestService.class);
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchRestService.class);
 
     private final static String HTTP_PROTOCOL = "http";
     private final static String POST_METHOD = "POST";

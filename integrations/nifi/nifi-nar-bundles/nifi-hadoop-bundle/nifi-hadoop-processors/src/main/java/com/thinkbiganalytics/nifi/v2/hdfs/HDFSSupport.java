@@ -33,7 +33,7 @@ import java.io.IOException;
  */
 public class HDFSSupport {
 
-    public static final Logger logger = LoggerFactory.getLogger(HDFSSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(HDFSSupport.class);
 
     private FileSystem hdfs;
 

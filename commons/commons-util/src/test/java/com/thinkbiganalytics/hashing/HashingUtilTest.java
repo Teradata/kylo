@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  */
 public class HashingUtilTest {
 
-    private static Logger log = LoggerFactory.getLogger(HashingUtilTest.class);
+    private static final Logger log = LoggerFactory.getLogger(HashingUtilTest.class);
 
     @Test
     public void testHashValue_NormalString() {

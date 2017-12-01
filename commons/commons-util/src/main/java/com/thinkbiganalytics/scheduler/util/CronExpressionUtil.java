@@ -34,7 +34,7 @@ import java.util.List;
  */
 public class CronExpressionUtil {
 
-    private static Logger LOG = LoggerFactory.getLogger(CronExpressionUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CronExpressionUtil.class);
 
     public static Long getCronInterval(String cronExpression) throws ParseException {
         return getCronInterval(new CronExpression(cronExpression));

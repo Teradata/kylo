@@ -47,7 +47,7 @@ import javax.annotation.Nullable;
 
 public class StandardUiTemplateService implements UiTemplateService {
 
-    private static Logger log = LoggerFactory.getLogger(StandardUiTemplateService.class);
+    private static final Logger log = LoggerFactory.getLogger(StandardUiTemplateService.class);
 
     @Autowired
     private FileResourceService fileResourceService;

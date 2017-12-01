@@ -96,7 +96,7 @@ import javax.xml.xpath.XPathExpressionException;
  */
 public class ExportImportTemplateService {
 
-    public static final Logger log = LoggerFactory.getLogger(ExportImportTemplateService.class);
+    private static final Logger log = LoggerFactory.getLogger(ExportImportTemplateService.class);
 
     public static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate";
 
