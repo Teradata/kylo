@@ -52,6 +52,19 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         var PRECISION_SCALE_PATTERN = /^\d+,\d+$/;
         var MAX_COLUMN_LENGTH = 767;
 
+        this.messages = {
+            name: {
+                required: "Name is required",
+                pattern: "Name cannot contain special characters",
+                notUnique: "Name must be unique",
+                reserved: "Name reserved by Kylo",
+                length: "Name cannot be longer than " + MAX_COLUMN_LENGTH + " characters"
+            },
+            precision: {
+                pattern: "Invalid, e.g. 10,0"
+            }
+        };
+
         this.defineFeedTableForm = {};
         this.stepNumber = parseInt(this.stepIndex) + 1;
         this.stepperController = null;
@@ -282,7 +295,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.useUnderscoreInsteadOfSpaces) {
                 columnDef.name = replaceSpaces(columnDef.name);
             }
-            initFeedColumn(columnDef)
+            initFeedColumn(columnDef);
             //add the column to both the source and destination tables as well as the fieldPolicies array
             self.model.table.tableSchema.fields.push(columnDef);
             self.model.table.fieldPolicies.push(policy);
@@ -441,17 +454,17 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         function isInvalid(columnDef) {
             var errorCount = 0;
-            var fields = _.values(columnDef.validationErrors);
-            _.each(fields, function(field) {
-                errorCount += self.fieldErrorCount(field);
+            var columnDefFields = _.values(columnDef.validationErrors);
+            _.each(columnDefFields, function(columnDefField) {
+                errorCount += self.fieldErrorCount(columnDefField);
             });
             return errorCount > 0;
         }
 
-        this.fieldErrorCount = function(errorTypes) {
-            var errorTypeValues = _.values(errorTypes);
-            var errors = _.filter(errorTypeValues, function (error) {
-                return error === true;
+        this.fieldErrorCount = function(columnDefField) {
+            var errorTypes = _.values(columnDefField);
+            var errors = _.filter(errorTypes, function (errorType) {
+                return errorType === true;
             });
             return errors === undefined ? 0 : errors.length;
         };
@@ -476,30 +489,25 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     name: {},
                     precision: {}
                 };
-                updateFormValidation(columnDef);
             }
 
-            var sameNameColumns = _.filter(self.model.table.tableSchema.fields, function(field) {
-                return field.name === columnDef.name && !isDeleted(field) && field.validationErrors.name.required !== true;
+            //update all columns at all times, because column removal may fix not unique name error on other columns
+            var columnsByName = _.groupBy(self.model.table.tableSchema.fields, function(column){
+                return column.name ? column.name.trim() : "";
             });
-            _.each(sameNameColumns, function(field) {
-                field.validationErrors.name.notUnique = sameNameColumns.length > 1;
-                updateFormValidation(field);
+            _.each(_.keys(columnsByName), function(columnName) {
+                var group = columnsByName[columnName];
+                _.each(group, function(column) {
+                    if (columnName !== "" && !isDeleted(columnDef)) {
+                        column.validationErrors.name.notUnique = group.length > 1;
+                    } else {
+                        column.validationErrors.name.notUnique = false;
+                    }
+                    updateFormValidation(column);
+                });
             });
         };
 
-        this.messages = {
-            name: {
-                required: "Name is required",
-                pattern: "Name cannot contain special characters",
-                notUnique: "Name must be unique",
-                reserved: "Name reserved by Kylo",
-                length: "Name cannot be longer than 767 characters"
-            },
-            precision: {
-                pattern: "Invalid, e.g. 10,0"
-            }
-        };
         this.errorMessage = function(columnDef) {
             if (columnDef.validationErrors.name.required) {
                 return self.messages.name.required;
