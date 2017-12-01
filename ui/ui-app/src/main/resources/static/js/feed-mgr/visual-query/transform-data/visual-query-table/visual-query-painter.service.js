@@ -1,10 +1,16 @@
-var __extends = (this && this.__extends) || function (d, b) {
-    for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-    function __() { this.constructor = d; }
-    d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-};
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 define(["require", "exports", "angular", "../../wrangler/column-delegate", "fattable"], function (require, exports, angular, column_delegate_1) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Default font.
      */
@@ -23,28 +29,32 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
          * Constructs a {@code VisualQueryPainterService}.
          */
         function VisualQueryPainterService($compile, $mdPanel, $scope, $templateCache, $templateRequest, $timeout, $window) {
-            var _this = this;
-            _super.call(this);
-            this.$compile = $compile;
-            this.$mdPanel = $mdPanel;
-            this.$scope = $scope;
-            this.$templateCache = $templateCache;
-            this.$templateRequest = $templateRequest;
-            this.$timeout = $timeout;
-            this.$window = $window;
+            var _this = _super.call(this) || this;
+            _this.$compile = $compile;
+            _this.$mdPanel = $mdPanel;
+            _this.$scope = $scope;
+            _this.$templateCache = $templateCache;
+            _this.$templateRequest = $templateRequest;
+            _this.$timeout = $timeout;
+            _this.$window = $window;
             /**
              * Indicates that the menu should be visible.
              */
-            this.menuVisible = false;
+            _this.menuVisible = false;
             /**
              * Indicates that the tooltip should be visible.
              */
-            this.tooltipVisible = false;
+            _this.tooltipVisible = false;
             $templateRequest(HEADER_TEMPLATE);
-            $window.addEventListener("scroll", function () { return _this.hideTooltip(); }, true);
+            // Hide tooltip on scroll. Skip Angular change detection.
+            window.addEventListener("scroll", function () {
+                if (_this.tooltipVisible) {
+                    _this.hideTooltip();
+                }
+            }, true);
             // Create menu
-            this.menuPanel = $mdPanel.create({
-                animation: this.$mdPanel.newPanelAnimation().withAnimation({ open: 'md-active md-clickable', close: 'md-leave' }),
+            _this.menuPanel = $mdPanel.create({
+                animation: _this.$mdPanel.newPanelAnimation().withAnimation({ open: 'md-active md-clickable', close: 'md-leave' }),
                 attachTo: angular.element(document.body),
                 clickOutsideToClose: true,
                 escapeToClose: true,
@@ -52,10 +62,10 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 panelClass: "_md md-open-menu-container md-whiteframe-z2 visual-query-menu",
                 templateUrl: "js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.html"
             });
-            this.menuPanel.attach();
+            _this.menuPanel.attach();
             // Create tooltip
-            this.tooltipPanel = $mdPanel.create({
-                animation: this.$mdPanel.newPanelAnimation().withAnimation({ open: "md-show", close: "md-hide" }),
+            _this.tooltipPanel = $mdPanel.create({
+                animation: _this.$mdPanel.newPanelAnimation().withAnimation({ open: "md-show", close: "md-hide" }),
                 attachTo: angular.element(document.body),
                 template: "{{value}}<ul><li ng-repeat=\"item in validation\">{{item.rule}}: {{item.reason}}</li></ul>",
                 focusOnOpen: false,
@@ -63,7 +73,8 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 propagateContainerEvents: true,
                 zIndex: 100
             });
-            this.tooltipPanel.attach();
+            _this.tooltipPanel.attach();
+            return _this;
         }
         Object.defineProperty(VisualQueryPainterService.prototype, "delegate", {
             /**
@@ -374,29 +385,29 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 this.delegate.unsort();
             }
         };
-        /**
-         * Left and right padding for normal columns.
-         */
-        VisualQueryPainterService.COLUMN_PADDING = 28;
-        /**
-         * Left padding for the first column.
-         */
-        VisualQueryPainterService.COLUMN_PADDING_FIRST = 24;
-        /**
-         * Height of header row.
-         */
-        VisualQueryPainterService.HEADER_HEIGHT = 56;
-        /**
-         * Height of data rows.
-         */
-        VisualQueryPainterService.ROW_HEIGHT = 48;
-        /**
-         * Class for selected cells.
-         */
-        VisualQueryPainterService.SELECTED_CLASS = "selected";
-        VisualQueryPainterService.$inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
         return VisualQueryPainterService;
     }(fattable.Painter));
+    /**
+     * Left and right padding for normal columns.
+     */
+    VisualQueryPainterService.COLUMN_PADDING = 28;
+    /**
+     * Left padding for the first column.
+     */
+    VisualQueryPainterService.COLUMN_PADDING_FIRST = 24;
+    /**
+     * Height of header row.
+     */
+    VisualQueryPainterService.HEADER_HEIGHT = 56;
+    /**
+     * Height of data rows.
+     */
+    VisualQueryPainterService.ROW_HEIGHT = 48;
+    /**
+     * Class for selected cells.
+     */
+    VisualQueryPainterService.SELECTED_CLASS = "selected";
+    VisualQueryPainterService.$inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
     exports.VisualQueryPainterService = VisualQueryPainterService;
     angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
 });

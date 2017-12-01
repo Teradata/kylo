@@ -102,7 +102,13 @@ export class VisualQueryPainterService extends fattable.Painter {
         super();
 
         $templateRequest(HEADER_TEMPLATE);
-        $window.addEventListener("scroll", () => this.hideTooltip(), true);
+
+        // Hide tooltip on scroll. Skip Angular change detection.
+        window.addEventListener("scroll", () => {
+            if (this.tooltipVisible) {
+                this.hideTooltip();
+            }
+        }, true);
 
         // Create menu
         this.menuPanel = $mdPanel.create({
