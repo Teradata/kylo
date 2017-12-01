@@ -1,8 +1,10 @@
 define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Categories for data types.
      */
+    var DataCategory;
     (function (DataCategory) {
         DataCategory[DataCategory["ARRAY"] = 0] = "ARRAY";
         DataCategory[DataCategory["BINARY"] = 1] = "BINARY";
@@ -14,8 +16,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         DataCategory[DataCategory["STRUCT"] = 7] = "STRUCT";
         DataCategory[DataCategory["UNION"] = 8] = "UNION";
         DataCategory[DataCategory["OTHER"] = 9] = "OTHER";
-    })(exports.DataCategory || (exports.DataCategory = {}));
-    var DataCategory = exports.DataCategory;
+    })(DataCategory = exports.DataCategory || (exports.DataCategory = {}));
     /**
      * Hive data types.
      *

@@ -122,7 +122,6 @@ export class VisualQueryTable {
         this.painter.delegate = this;
 
 
-
         // Refresh table when model changes
         tableService.registerTable((event) => {
             if (event.type === WranglerEventType.REFRESH) {
@@ -130,12 +129,12 @@ export class VisualQueryTable {
             }
         });
 
-        $scope_.$watchCollection(() => this.columns, (newValue, oldValue, scope) => {
+        $scope_.$watchCollection(() => this.columns, () => {
             this.onColumnsChange();
             this.refresh();
         });
 
-        $scope_.$watchCollection(() => this.domainTypes, (newValue, oldValue, scope) => {
+        $scope_.$watchCollection(() => this.domainTypes, () => {
             this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
             this.refresh()
         });
@@ -143,28 +142,28 @@ export class VisualQueryTable {
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
         $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
 
-        $scope_.$watchCollection(() => this.rows, (newValue, oldValue, scope) => {
+        $scope_.$watchCollection(() => this.rows, () => {
             this.onRowsChange();
         });
 
-        $scope_.$watchCollection(() => this.validationResults, (newValue, oldValue, scope) => {
+        $scope_.$watchCollection(() => this.validationResults, () => {
             this.onValidationResultsChange();
             this.refresh();
         });
 
         let resizeTimeoutPromise: any = null;
 
-        let resizeTimeout = (callback :Function, interval:number) => {
-           if(resizeTimeoutPromise != null){
-               this.$timeout_.cancel(resizeTimeoutPromise);
-           }
-           resizeTimeoutPromise = this.$timeout_(callback,interval);
-        }
+        let resizeTimeout = <T>(callback: (...args: any[]) => T, interval: number) => {
+            if (resizeTimeoutPromise != null) {
+                this.$timeout_.cancel(resizeTimeoutPromise);
+            }
+            resizeTimeoutPromise = this.$timeout_(callback, interval);
+        };
 
         // Refresh table on resize
-        $scope_.$watch(() => $element.height(), () => resizeTimeout(() => this.refresh(),500))
+        $scope_.$watch(() => $element.height(), () => resizeTimeout(() => this.refresh(), 500));
 
-        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(),500))
+        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 500));
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
@@ -179,8 +178,6 @@ export class VisualQueryTable {
         this.rows = angular.copy(this.rows);
         this.init(this.$element);
     }
-
-
 
     /**
      * Initializes the table.
