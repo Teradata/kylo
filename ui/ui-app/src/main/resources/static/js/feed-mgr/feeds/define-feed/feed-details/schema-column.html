@@ -20,7 +20,7 @@
 <div flex="30" class="md-list-item-text  ">
   <div flex layout="column" layout-align="start start" class="schema-column-input-container">
     <md-input-container class="md-block condensed">
-      <input ng-model="columnDef.name" placeholder="Field Name" name="name_{{columnDef._id}}"
+      <input ng-model="columnDef.name" name="name_{{columnDef._id}}"
              ng-change="vm.onNameFieldChange(columnDef)"
              ng-model-options="{updateOn: 'blur'}"
              ng-disabled="vm.tableLocked || columnDef.deleted"
@@ -30,8 +30,8 @@
       <ng-md-icon
           ng-if="vm.fieldErrorCount(columnDef.validationErrors.name) > 1"
           md-icon icon="warning" class="layout-margin-right-5"
-          size="12"
-          style="width: 12px; height: 12px"></ng-md-icon>
+          size="10"
+          style="width: 10px; height: 10px"></ng-md-icon>
       <div>{{vm.errorMessage(columnDef)}}</div>
     </div>
     <md-tooltip
@@ -69,6 +69,8 @@
                ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)" />
       </md-input-container>
       <div class="hint validation-error" ng-if="columnDef.validationErrors.precision.pattern">{{vm.messages.precision.pattern}}</div>
+      <md-tooltip md-direction="right">Precision, Scale</md-tooltip>
+      </md-tooltip>
     </div>
   </div>
 </div>
