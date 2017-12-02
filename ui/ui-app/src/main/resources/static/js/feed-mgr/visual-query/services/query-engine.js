@@ -380,14 +380,13 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
          * Loads the specified state for using an existing transformation.
          */
         QueryEngine.prototype.setState = function (state) {
+            var _this = this;
             this.redo_ = [];
-            this.states_ = [];
-            var self = this;
             state.forEach(function (src) {
-                var state = self.newState();
+                var state = _this.newState();
                 state.context = src.context;
                 state.script = src.script;
-                self.states_.push(state);
+                _this.states_.push(state);
             });
         };
         /**

@@ -89,6 +89,7 @@ public class FeedIT extends IntegrationTestBase {
     private static final int VALID_RESULTS = 879;
     private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
+    private static String CATEGORY_NAME = "Functional Tests";
 
     private String sampleFeedsPath;
     protected String sampleTemplatesPath;
@@ -121,7 +122,7 @@ public class FeedIT extends IntegrationTestBase {
         copyDataToDropzone();
 
         //create new category
-        FeedCategory category = createCategory("Functional Tests");
+        FeedCategory category = createCategory(CATEGORY_NAME);
 
         ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
 
@@ -136,6 +137,30 @@ public class FeedIT extends IntegrationTestBase {
 
         failJobs(response.getCategoryAndFeedName());
         abandonAllJobs(response.getCategoryAndFeedName());
+    }
+
+    @Test
+    public void testEditFeed() throws Exception {
+        // Prepare environment
+        prepare();
+
+        final FeedCategory category = createCategory(CATEGORY_NAME);
+        final ExportImportTemplateService.ImportTemplate template = importDataIngestTemplate();
+
+        // Create feed
+        FeedMetadata feed = getCreateFeedRequest(category, template, FEED_NAME);
+        feed.setDescription("Test feed");
+
+        FeedMetadata response = createFeed(feed).getFeedMetadata();
+        Assert.assertEquals(feed.getFeedName(), response.getFeedName());
+
+        // Edit feed
+        feed = response;
+        feed.setDescription(null);
+
+        response = createFeed(feed).getFeedMetadata();
+        Assert.assertEquals(feed.getFeedName(), response.getFeedName());
+        Assert.assertEquals(feed.getDescription(), response.getDescription());
     }
 
     @Override
