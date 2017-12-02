@@ -464,14 +464,11 @@ export abstract class QueryEngine<T> {
      */
     setState(state: any[]): void {
         this.redo_ = [];
-        this.states_ = [];
-
-        const self = this;
-        state.forEach(function (src) {
-            const state = self.newState();
+        state.forEach((src) => {
+            const state = this.newState();
             state.context = src.context;
             state.script = src.script;
-            self.states_.push(state);
+            this.states_.push(state);
         });
     }
 
