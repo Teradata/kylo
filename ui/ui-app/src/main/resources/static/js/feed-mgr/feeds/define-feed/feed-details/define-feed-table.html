@@ -106,11 +106,11 @@
                   <span flex></span>
                 </div>
               </md-expansion-panel-header>
-              <md-expansion-panel-content>
+              <md-expansion-panel-content style="padding: 0">
                 <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
                   No fields are defined. Click <i>Add Field</i> to define a new field for this table.
                 </div>
-                <div ng-show="vm.model.table.tableSchema.fields.length >0" class="layout-padding-indent-20">
+                <div ng-show="vm.model.table.tableSchema.fields.length >0" class="layout-padding-left-right layout-padding-top">
                   <div flex layout-fill class="list-item-table list-condensed">
 
 
@@ -118,7 +118,7 @@
                       <div flex="30" class="md-list-item-text hint">
                         Field Name
                       </div>
-                      <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
+                      <div flex="25" class="md-list-item-text hint" style="padding-left:5px;">
                         Data Type
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
@@ -139,85 +139,31 @@
                           Is this field an indicator of when the row was updated?
                         </md-tooltip>
                       </div>
-                      <div flex="20" class="md-list-item-text hint" hide-sm>
+                      <div flex="15" class="md-list-item-text hint" hide-sm>
 
                       </div>
 
                     </div>
                     <div id="define-feed-dest-schema-container"
                          style="overflow-x:hidden ">
-                      <div layout="row" class="no-outline" ng-repeat="columnDef in vm.model.table.tableSchema.fields"
-                           ng-click="vm.onSelectedColumn(columnDef)">
-                        <div flex="30" class="md-list-item-text  ">
-                          <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
-                            <input ng-model="columnDef.name" placeholder="Field Name" ng-required="(columnDef.deleted == false || columnDef.deleted == undefined)" name="name_{{columnDef._id}}" ng-change="vm.onNameFieldChange(columnDef)"
-                                   ng-model-options="{updateOn: 'blur'}"
-                                   ng-pattern="/^[a-zA-Z0-9_-\s\)\(]*$/"
-                                   ng-disabled="vm.tableLocked || columnDef.deleted"
-                                   ng-class="{strike: columnDef.deleted}"
-                                   maxlength="767"
-                            />
-
-                            <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
-                              <div ng-message="notUnique">Name must be unique</div>
-                              <div ng-message="required">Name is required</div>
-                              <div ng-message="pattern">Name cannot contain special characters</div>
-                            </div>
-                          </md-input-container>
+                      <md-virtual-repeat-container
+                          ng-if="vm.model.table.tableSchema.fields.length >= 30"
+                          style="min-height: 700px">
+                        <div
+                            md-virtual-repeat="columnDef in vm.model.table.tableSchema.fields"
+                            ng-click="vm.onSelectedColumn(columnDef)">
+                          <ng-include
+                              layout="row" class="repeated-item no-outline"
+                              src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table-row.html'"></ng-include>
                         </div>
-                        <div flex="20" class="md-list-item-text " style="padding-left:5px;">
-                          <div layout="column">
-                            <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                              <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
-                                         ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef)"
-                                         ng-model-options="{updateOn: 'blur'}">
-                                <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
-                                  {{dataType}}
-                                </md-option>
-                              </md-select>
-                              <div ng-messages="vm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
-                                <div ng-message="required">Data type is required</div>
-                              </div>
-                            </md-input-container>
-                            <md-input-container class="md-dense md-block condensed" flex-gt-sm style="margin-top:10px;" ng-show="columnDef.derivedDataType == 'decimal'">
-                              <label>Precision</label>
-                              <input ng-model="columnDef.precisionScale" placeholder="10,0" ng-pattern="/^\d+,\d+$/" name="precisionScale_{{columnDef._id}}" style="width:120px;"
-                                     ng-disabled="vm.dataTypeLocked" ng-change="vm.onFieldChange(columnDef)"/>
-
-                              <div ng-messages="vm.defineFeedTableForm['precisionScale_'+columnDef._id].$error" md-auto-hide="false">
-                                <div ng-message="pattern">Format expected in form precision, scale (e.g. 10,0)</div>
-                              </div>
-                            </md-input-container>
-                          </div>
-                        </div>
-
-                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                          <md-checkbox flex-gt-sm ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox"
-                                       ng-disabled="(columnDef.dataTypeDescriptor.complex || columnDef.deleted)" ng-change="vm.onFieldChange(columnDef)">
-                          </md-checkbox>
-                        </div>
-                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                          <md-checkbox flex-gt-sm ng-model="columnDef.createdTracker" aria-label="createdTracker"
-                                       ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
-                                       class="table-schema-checkbox" ng-change="vm.onFieldChange(columnDef)">
-                          </md-checkbox>
-                        </div>
-
-                        <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                          <md-checkbox flex-gt-sm ng-model="columnDef.updatedTracker" aria-label="lastModified"
-                                       ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
-                                       class="table-schema-checkbox"  ng-change="vm.onFieldChange(columnDef)"></md-checkbox>
-                        </div>
-                        <div flex="20" class="md-list-item-text" hide-sm>
-                          <md-button aria-label="Remove field" class="md-icon-button" ng-click="vm.removeColumn($index)"
-                                     ng-disabled="(!vm.canRemoveFields || columnDef.deleted)">
-                            <ng-md-icon md-icon icon="delete" style="fill:gray"></ng-md-icon>
-                          </md-button>
-                          <md-button aria-label="Include field" class="md-icon-button" ng-click="vm.undoColumn($index)"  ng-show="columnDef.history.length > 1">
-                            <ng-md-icon md-icon icon="undo"></ng-md-icon>
-                          </md-button>
-                          <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
-                        </div>
+                      </md-virtual-repeat-container>
+                      <div ng-if="vm.model.table.tableSchema.fields.length > 0 && vm.model.table.tableSchema.fields.length < 30">
+                        <ng-include
+                            layout="row" class="no-outline"
+                            ng-repeat="columnDef in vm.model.table.tableSchema.fields"
+                            ng-click="vm.onSelectedColumn(columnDef)"
+                            src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table-row.html'">
+                        </ng-include>
                       </div>
                     </div>
                   </div>

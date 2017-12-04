@@ -270,7 +270,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             var newField: any = {
                 name: '',
                 description: '',
-                derivedDataType: '',
+                derivedDataType: 'string',
                 precisionScale: null,
                 dataTypeDisplay: '',
                 primaryKey: false,
@@ -280,6 +280,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 sampleValues: [],
                 selectedSampleValue: '',
                 tags: [],
+                validationErrors: {
+                    name: {},
+                    precision: {}
+                },
                 isValid: function () {
                     return this.name != '' && this.derivedDataType != '';
                 },

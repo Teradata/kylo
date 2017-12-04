@@ -247,7 +247,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var newField = {
                     name: '',
                     description: '',
-                    derivedDataType: '',
+                    derivedDataType: 'string',
                     precisionScale: null,
                     dataTypeDisplay: '',
                     primaryKey: false,
@@ -257,6 +257,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     sampleValues: [],
                     selectedSampleValue: '',
                     tags: [],
+                    validationErrors: {
+                        name: {},
+                        precision: {}
+                    },
                     isValid: function () {
                         return this.name != '' && this.derivedDataType != '';
                     },

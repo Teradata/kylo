@@ -1,0 +1,110 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div flex="30" class="md-list-item-text  ">
+  <div layout="column" class="schema-column-input-container">
+    <md-input-container class="md-block condensed">
+      <input ng-model="columnDef.name" name="name_{{columnDef._id}}"
+             ng-change="vm.onNameFieldChange(columnDef)"
+             ng-model-options="{updateOn: 'blur'}"
+             ng-disabled="vm.tableLocked || columnDef.deleted"
+             ng-class="{strike: columnDef.deleted}"/>
+    </md-input-container>
+    <div class="hint validation-error" layout="row">
+      <ng-md-icon
+          ng-if="vm.fieldErrorCount(columnDef.validationErrors.name) > 1"
+          md-icon icon="warning" class="layout-margin-right-5"
+          size="10"
+          style="width: 10px; height: 10px"></ng-md-icon>
+      <div>{{vm.errorMessage(columnDef)}}</div>
+    </div>
+    <md-tooltip
+        class="tooltip-multi-line"
+        md-direction="right"
+        ng-if="vm.fieldErrorCount(columnDef.validationErrors.name) > 1">
+      Validation Errors:
+      <ul id="data-policy-item-tooltip-list" >
+        <li ng-if="columnDef.validationErrors.name.notUnique">{{vm.messages.name.notUnique}}</li>
+        <li ng-if="columnDef.validationErrors.name.required">{{vm.messages.name.required}}</li>
+        <li ng-if="columnDef.validationErrors.name.pattern">{{vm.messages.name.pattern}}</li>
+        <li ng-if="columnDef.validationErrors.name.length">{{vm.messages.name.length}}</li>
+        <li ng-if="columnDef.validationErrors.name.reserved">{{vm.messages.name.reserved}}</li>
+      </ul>
+    </md-tooltip>
+  </div>
+</div>
+<div flex="25" class="md-list-item-text " style="padding-left:5px;">
+  <div layout="row">
+    <md-input-container class="md-block md-dense condensed" flex-gt-sm>
+      <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
+                 ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef)">
+        <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
+          {{dataType}}
+        </md-option>
+      </md-select>
+      <div ng-messages="vm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
+        <div ng-message="required">Data type is required</div>
+      </div>
+    </md-input-container>
+    <div layout="column" class="schema-column-input-container layout-margin-left-5">
+      <md-input-container class="md-dense md-block condensed" flex-gt-sm ng-show="columnDef.derivedDataType == 'decimal'">
+        <label>Precision, Scale</label>
+        <input ng-model="columnDef.precisionScale" placeholder="10,0" name="precisionScale_{{columnDef._id}}"
+               ng-disabled="vm.dataTypeLocked" ng-change="vm.onPrecisionChange(columnDef)" />
+      </md-input-container>
+      <div class="hint validation-error" ng-if="columnDef.validationErrors.precision.pattern">{{vm.messages.precision.pattern}}</div>
+      <md-tooltip md-direction="right">Precision, Scale</md-tooltip>
+      </md-tooltip>
+    </div>
+  </div>
+</div>
+
+<div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+  <md-checkbox ng-model="columnDef.primaryKey" aria-label="Primary" class="table-schema-checkbox"
+               ng-disabled="(columnDef.dataTypeDescriptor.complex || columnDef.deleted)" ng-change="vm.onFieldChange(columnDef)">
+  </md-checkbox>
+</div>
+<div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+  <md-checkbox ng-model="columnDef.createdTracker" aria-label="createdTracker"
+               ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
+               class="table-schema-checkbox" ng-change="vm.onFieldChange(columnDef)">
+  </md-checkbox>
+</div>
+
+<div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
+  <md-checkbox ng-model="columnDef.updatedTracker" aria-label="lastModified"
+               ng-disabled="(!(columnDef.derivedDataType == 'date' || columnDef.derivedDataType == 'timestamp') || columnDef.deleted)"
+               class="table-schema-checkbox" ng-change="vm.onFieldChange(columnDef)"></md-checkbox>
+</div>
+<div flex="15" class="md-list-item-text" hide-sm  style="white-space: nowrap">
+  <md-button aria-label="Remove field"
+             class="md-icon-button layout-margin-left-right-0"
+             ng-click="vm.removeColumn($index)"
+             ng-disabled="(!vm.canRemoveFields || columnDef.deleted)">
+    <ng-md-icon md-icon icon="delete" style="fill:gray"></ng-md-icon>
+  </md-button>
+  <md-button aria-label="Undo"
+             class="md-icon-button layout-margin-left-right-0"
+             ng-click="vm.undoColumn($index)"
+             ng-show="columnDef.history.length > 1">
+    <ng-md-icon md-icon icon="undo"></ng-md-icon>
+  </md-button>
+  <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
+</div>
+
