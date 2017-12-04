@@ -99,7 +99,7 @@
           ng-repeat="policy in vm.model.table.fieldPolicies">
         <ng-include
             layout="row" layout-fill
-            src="'js/feed-mgr/feeds/edit-feed/details/data-policy-item.html'"></ng-include>
+            src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row.html'"></ng-include>
       </md-list-item>
       <md-virtual-repeat-container
           ng-if="vm.model.table.fieldPolicies.length >= 30"
@@ -109,7 +109,7 @@
             md-virtual-repeat="policy in vm.model.table.fieldPolicies">
           <ng-include
               layout="row" layout-fill
-              src="'js/feed-mgr/feeds/edit-feed/details/data-policy-item.html'"></ng-include>
+              src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row.html'"></ng-include>
         </div>
       </md-virtual-repeat-container>
 
