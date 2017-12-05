@@ -36,11 +36,12 @@
   <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10">
     <ul class="list-item">
       <li ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:2">{{rule.name}}</li>
-      <ng-md-icon
-          size="16"
-          ng-if="vm.getAllFieldPolicies(policy).length > 2"
-          class="primary-color-1"
-          icon="more-horiz"></ng-md-icon>
+      <li ng-if="vm.getAllFieldPolicies(policy).length > 2">
+        <ng-md-icon
+          size="18"
+          style="height: 15px"
+          icon="more_horiz"></ng-md-icon>
+      </li>
     </ul>
     <md-tooltip
         class="tooltip-multi-line"
