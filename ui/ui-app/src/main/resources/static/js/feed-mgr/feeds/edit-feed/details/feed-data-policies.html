@@ -201,7 +201,7 @@
       </div>
     </div>
 
-    <md-list flex layout-fill class="list-item-table list-condensed">
+    <md-list flex layout-fill class="list-item-table list-condensed" style="min-width: 675px">
 
       <md-list-item>
         <div layout="row" layout-fill>
@@ -211,53 +211,55 @@
           <div flex="10" class="md-list-item-text hint">
             Domain<br/>Type
           </div>
-          <div flex="10" class="md-list-item-text hint">
-            Primary
-            <md-tooltip md-direction="top">
-              Indicate this column is the Primary Key for the row
-            </md-tooltip>
+          <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
+            <div class="data-policy-item-check-box">
+              Primary
+              <md-tooltip md-direction="top">
+                Indicate this column is the Primary Key for the row
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Created<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was created?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Updated<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was updated?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              Index
+              <md-tooltip md-direction="top">
+                Define what should be sent to "Global Search"
+              </md-tooltip>
+              <md-input-container class="md-block">
+                <md-checkbox aria-label="Select All"
+                             ng-checked="vm.indexCheckAll.isChecked"
+                             md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                             ng-click="vm.indexCheckAll.toggleAll()"
+                             style="margin-left:-1px;"></md-checkbox>
+              </md-input-container>
+            </div>
+            <div class="data-policy-item-check-box">
+              Profile
+              <md-tooltip md-direction="top">
+                Should this field be profiled?
+              </md-tooltip>
+              <md-input-container class="md-block">
+                <md-checkbox aria-label="Select All"
+                             ng-checked="vm.profileCheckAll.isChecked"
+                             md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                             ng-click="vm.profileCheckAll.toggleAll()"
+                style="margin-left:-1px;">
+                </md-checkbox>
+              </md-input-container>
+            </div>
           </div>
-          <div flex="10" class="md-list-item-text hint">
-            <span>Created<br/>Date</span>
-            <md-tooltip md-direction="top">
-              Is this field an indicator of when the row was created?
-            </md-tooltip>
-          </div>
-          <div flex="10" class="md-list-item-text hint">
-            <span>Updated<br/>Date</span>
-            <md-tooltip md-direction="top">
-              Is this field an indicator of when the row was updated?
-            </md-tooltip>
-          </div>
-          <div flex="10" class="md-list-item-text hint">
-            Index
-            <md-tooltip md-direction="top">
-              Define what should be sent to "Global Search"
-            </md-tooltip>
-            <md-input-container class="md-block" flex-gt-sm>
-              <md-checkbox aria-label="Select All"
-                           ng-checked="vm.indexCheckAll.isChecked"
-                           md-indeterminate="vm.indexCheckAll.isIndeterminate"
-                           ng-click="vm.indexCheckAll.toggleAll()"
-                           style="margin-left:-1px;"></md-checkbox>
-            </md-input-container>
-          </div>
-          <div flex="10" class="md-list-item-text hint">
-            Profile
-            <md-tooltip md-direction="top">
-              Should this field be profiled?
-            </md-tooltip>
-            <md-input-container class="md-block" flex-gt-sm>
-              <md-checkbox aria-label="Select All"
-                           ng-checked="vm.profileCheckAll.isChecked"
-                           md-indeterminate="vm.profileCheckAll.isIndeterminate"
-                           ng-click="vm.profileCheckAll.toggleAll()"
-              style="margin-left:-1px;">
-              </md-checkbox>
-            </md-input-container>
-          </div>
-          <div flex="15" class="md-list-item-text hint">
-            Standardize <br/>& Validate
+          <div flex="25" class="md-list-item-text hint layout-margin-left-10">
+            Standardize & Validate
           </div>
         </div>
       </md-list-item>
@@ -281,7 +283,7 @@
           style="min-height: 700px;"
           class="virtual-repeat-scroller-overlay">
         <div
-            style="height: 55px;"
+            style="height: 50px;"
             md-virtual-repeat="policy in vm.editModel.fieldPolicies">
           <ng-include
               layout="row" layout-fill

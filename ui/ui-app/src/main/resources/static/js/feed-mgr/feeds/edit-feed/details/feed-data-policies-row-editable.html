@@ -18,32 +18,38 @@
     </md-select>
     <md-button md-no-ink class="kylo-apply-domain-type-button" ng-if="policy.domainTypeId != null" ng-click="vm.onDomainTypeChange(policy)">Reapply</md-button>
   </div>
-  <div flex="10" class="md-list-item-text ">
-    <md-checkbox ng-model="policy.columnDef.primaryKey" aria-label="Primary Key" ng-change="vm.onChangePrimaryKey()"></md-checkbox>
+  <div flex="40" class="md-list-item-text layout-margin-top-7" layout-align="space-between start" layout="row">
+    <md-checkbox
+        class="data-policy-item-check-box"
+        ng-model="policy.columnDef.primaryKey" aria-label="Primary Key" ng-change="vm.onChangePrimaryKey()"></md-checkbox>
+    <md-checkbox
+        class="data-policy-item-check-box"
+        ng-model="policy.columnDef.createdTracker" aria-label="Created Tracker"
+        ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
+    <md-checkbox
+        class="data-policy-item-check-box"
+        ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker"
+        ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
+    <md-checkbox
+        class="data-policy-item-check-box"
+        ng-model="policy.index" aria-label="Index" ng-click="vm.indexCheckAll.clicked(!policy.index)"></md-checkbox>
+    <md-checkbox
+        class="data-policy-item-check-box"
+        ng-model="policy.profile" aria-label="Profile" ng-click="vm.profileCheckAll.clicked(!policy.index)"></md-checkbox>
   </div>
-  <div flex="10" class="md-list-item-text ">
-    <md-checkbox ng-model="policy.columnDef.createdTracker" aria-label="Created Tracker"
-                 ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <md-checkbox ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker"
-                 ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <md-checkbox ng-model="policy.index" aria-label="Index" ng-click="vm.indexCheckAll.clicked(!policy.index)"></md-checkbox>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <md-checkbox ng-model="policy.profile" aria-label="Profile" ng-click="vm.profileCheckAll.clicked(!policy.index)"></md-checkbox>
-  </div>
-  <div flex="15" class="md-list-item-text hint" layout-align="start center">
-    <div ng-click="vm.showFieldRuleDialog(policy)" style="color:#2D78B1;">
+  <div
+      class="md-list-item-text hint layout-margin-left-10 layout-margin-top-minus-7"
+      flex="25"
+      layout="row"
+      layout-align="start center">
+    <div ng-click="vm.showFieldRuleDialog(policy)" style="color:#2D78B1; white-space: nowrap">
       <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
         <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
       </md-button>
       ADD
     </div>
 
-    <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
+    <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)" class="orange" style="padding-left:15px; white-space: nowrap" layout="column">
       <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
       <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
     </div>

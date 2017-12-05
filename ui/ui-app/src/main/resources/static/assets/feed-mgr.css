@@ -475,3 +475,13 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   height: 0;
   min-height: 0;
 }
+
+.data-policy-item-check-box {
+  width: 55px;
+  min-width: 55px;
+  margin: 0;
+}
+
+.data-policy-item-check-box:first-child {
+  margin-left: 10px;
+}
