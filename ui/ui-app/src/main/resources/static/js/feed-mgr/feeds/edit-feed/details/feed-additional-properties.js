@@ -119,7 +119,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access;
+            self.allowEdit = access && !self.model.view.properties.disabled;
         });
 
     };

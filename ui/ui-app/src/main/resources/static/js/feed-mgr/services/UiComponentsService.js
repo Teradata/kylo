@@ -10,7 +10,7 @@
  */
 
 define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
-    angular.module(moduleName).service("UiComponentsService", ["$http", "$q", "RestUrlService", function ($http, $q, RestUrlService) {
+    angular.module(moduleName).service("UiComponentsService", ["$http", "$q", "$templateRequest","RestUrlService", function ($http, $q,$templateRequest, RestUrlService) {
 
         /**
          * Manages the pluggable UI components.
@@ -27,6 +27,36 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
              * Cache of the processor templates
              */
             PROCESSOR_TEMPLATES: null,
+
+            /**
+             * Map of the type, {progress}
+             */
+            stepperTemplateRenderProgress : {},
+
+            /**
+             * Start rendering a giben
+             * @param type
+             * @param requests
+             */
+            startStepperTemplateRender:function(tableOption, callback){
+                var type = tableOption.type;
+                var requests = tableOption.totalSteps == tableOption.totalPreSteps ? 1 : (tableOption.totalPreSteps >0 ? 2 : 1);
+              UiComponentsService.stepperTemplateRenderProgress[type] = {total:requests,complete:0, callback:callback};
+            },
+
+            completeStepperTemplateRender:function(type){
+                var complete = true;
+                if(angular.isDefined(UiComponentsService.stepperTemplateRenderProgress[type])){
+                    var progress = UiComponentsService.stepperTemplateRenderProgress[type];
+                    progress.complete +=1;
+                    complete = progress.complete == progress.total;
+                    if(complete && angular.isDefined(progress.callback) && angular.isFunction(progress.callback)) {
+                        progress.callback(type);
+                    }
+                }
+
+                return complete;
+            },
 
             /**
              * Gets the template table option with the specified type.
@@ -48,6 +78,27 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                         }
                         return result.promise;
                     });
+            },
+            getTableOptionAndCacheTemplates : function(type) {
+                var defer = $q.defer();
+                // Loads the table option template
+                UiComponentsService.getTemplateTableOption(type)
+                    .then(function (tableOption) {
+
+                        var requests = {};
+                        if(angular.isDefined(tableOption.stepperTemplateUrl)&& tableOption.stepperTemplateUrl){
+                            requests['stepperTemplateUrl'] = $templateRequest(tableOption.stepperTemplateUrl);
+                        }
+                        if(angular.isDefined(tableOption.preStepperTemplateUrl) && tableOption.preStepperTemplateUrl != null ){
+                            requests['preStepperTemplateUrl'] = $templateRequest(tableOption.preStepperTemplateUrl);
+                        }
+
+                        $q.when(requests).then(function(response){
+                            defer.resolve(tableOption);
+                        });
+                    })
+
+                return defer.promise;
             },
 
             /**

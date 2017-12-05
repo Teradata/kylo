@@ -144,7 +144,27 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     roleMembershipsUpdated: false,
                     tableOption: {},
                     cloned: false,
-                    usedByFeeds: []
+                    usedByFeeds: [],
+                    view: {
+                        generalInfo: { disabled: false },
+                        feedDetails: { disabled: false },
+                        table: { disabled: false },
+                        dataPolicies: { disabled: false },
+                        properties: {
+                            disabled: false,
+                            dataOwner: { disabled: false },
+                            tags: { disabled: false }
+                        },
+                        accessControl: { disabled: false },
+                        schedule: {
+                            disabled: false,
+                            schedulingPeriod: { disabled: false },
+                            schedulingStrategy: { disabled: false },
+                            active: { disabled: false },
+                            executionNode: { disabled: false },
+                            preconditions: { disabled: false }
+                        }
+                    }
                 };
             },
             cloneFeed: function () {
@@ -174,6 +194,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             updateFeed: function (feedModel) {
                 var self = this;
+                this.editFeedModel.totalPreSteps = 0;
                 this.editFeedModel.inputProcessorName = null;
                 this.editFeedModel.usedByFeeds = [];
                 this.editFeedModel.description = '';
@@ -191,6 +212,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         }
                     });
                 }
+                //add in the view states
+                var defaultView = self.getNewCreateFeedModel().view;
+                this.editFeedModel.view = defaultView;
             },
             /**
              * Shows the Feed Error Dialog

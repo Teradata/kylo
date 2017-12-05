@@ -22,9 +22,12 @@ package com.thinkbiganalytics.ui.config;
 
 import com.thinkbiganalytics.spring.FileResourceService;
 import com.thinkbiganalytics.ui.service.StandardUiTemplateService;
+import com.thinkbiganalytics.ui.service.TemplateTableOptionConfigurerAdapter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
  * Created by sr186054 on 7/5/17.
@@ -40,6 +43,12 @@ public class UiSpringConfiguration {
     @Bean
     public StandardUiTemplateService uiTemplateService(){
         return new StandardUiTemplateService();
+    }
+
+
+    @Bean
+    public TemplateTableOptionConfigurerAdapter templateTableOptionConfigurerAdapter(StandardUiTemplateService uiTemplateService) {
+       return new TemplateTableOptionConfigurerAdapter(uiTemplateService);
     }
 
 }

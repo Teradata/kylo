@@ -1,0 +1,61 @@
+<ng-form name="vm.form">
+  <vertical-section-layout section-title="Example Pre Step" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" allow-edit="vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
+                           is-valid="vm.form.$valid">
+
+    <readonly-section>
+      <div layout="column">
+        <div layout="row" class="layout-padding-top-bottom">
+          <span flex="25" class="property-name">Name</span>
+          <div flex>
+            {{vm.model.tableOption.preStepName}}
+          </div>
+        </div>
+
+        <div layout="row" class="layout-padding-top-bottom">
+          <span flex="25" class="property-name">Age</span>
+          <div flex>
+            {{vm.model.tableOption.preStepAge}}
+          </div>
+        </div>
+
+        <div layout="row" class="layout-padding-top-bottom">
+          <span flex="25" class="property-name">Magic Word</span>
+          <div flex>
+            {{vm.model.tableOption.preStepMagicWord}}
+          </div>
+        </div>
+
+      </div>
+    </readonly-section>
+
+    <editable-section>
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>Name</label>
+        <input ng-model="vm.editModel.tableOption.preStepName" required>
+        </input>
+      </md-input-container>
+
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>Age</label>
+        <input name="preStepAge" ng-model="vm.editModel.tableOption.preStepAge" number required  ng-change="vm.ageChanged()">
+        </input>
+        <div ng-messages="vm.form.preStepAge.$error"  md-auto-hide="false">
+          <div ng-message="required">Required.</div>
+          <div ng-message="ageError">You must be at least 21 to continue.</div>
+        </div>
+      </md-input-container>
+
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>Magic Word</label>
+        <input  name="preStepMagicWord" ng-model="vm.editModel.tableOption.preStepMagicWord" required ng-change="vm.magicWordChanged()">
+        </input>
+        <div ng-messages="vm.form.preStepMagicWord.$error" md-auto-hide="false">
+          <div ng-message="required">Required.</div>
+          <div ng-message="magicWordError">Incorrect Magic Word.... try 'kylo'</div>
+        </div>
+        <span class="hint">The magic word is 'kylo'</span>
+      </md-input-container>
+    </editable-section>
+
+  </vertical-section-layout>
+</ng-form>

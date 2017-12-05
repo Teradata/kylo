@@ -427,6 +427,24 @@ md-tabs.no-animation md-tab-content.md-left, md-tabs.no-animation md-tab-content
   transform: none !important;
 }
 
+/** center tabs fix
+https://github.com/angular/material/issues/6375
+ */
+
+md-tabs-canvas.md-center-tabs {
+/** Keeps IE11 from making `md-pagination-wrapper` as wide as the page. **/
+align-items: center;
+}
+
+md-tabs-canvas.md-center-tabs md-pagination-wrapper {
+  width: auto !important;
+}
+
+/**
+End Center Tabs fix
+ */
+
+
 md-list.list-item-left md-list-item {
   padding: 8px 0px !important;
 }

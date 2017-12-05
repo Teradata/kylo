@@ -1,0 +1,20 @@
+{
+  "description": "Example of a simple feed stepper plugin",
+  "displayName": "Example Simple Feed Stepper",
+  "resourceContext":"/example-plugin-1.0",
+  "feedDetailsTemplateUrl": "/example-plugin-1.0/feed-details-templates/simple-feed-details.html",
+  "stepperTemplateUrl": "/example-plugin-1.0/stepper-templates/simple-steps.html",
+  "metadataProperties": [
+    {
+      "name": "examplePluginProperty",
+      "description": "Example Plugin property"
+    },
+    {
+      "name": "anotherProperty",
+      "description": "This is another property"
+    }
+  ],
+  "totalCoreSteps": 1,
+  "type": "EXAMPLE_SIMPLE_FEED_STEPPER"
+
+}

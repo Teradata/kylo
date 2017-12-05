@@ -1,4 +1,4 @@
-define(["angular", "/example-ui-feed-stepper-plugin-1.0/module-name.js"], function (angular, moduleName) {
+define(["angular", "/example-ui-feed-stepper-plugin-1.0/module-name"], function (angular, moduleName) {
 
     var ExampleUiFeedStepperCard = function () {
         return {
@@ -23,7 +23,7 @@ define(["angular", "/example-ui-feed-stepper-plugin-1.0/module-name.js"], functi
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }
 
-    angular.module(moduleName, [])
+    angular.module(moduleName)
         .controller("ExampleUiFeedStepperCardController", ["FeedService", ExampleUiFeedStepperCardController])
         .directive("exampleUiFeedStepperCard", ExampleUiFeedStepperCard);
 });

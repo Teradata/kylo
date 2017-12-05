@@ -24,15 +24,23 @@ import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
 import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
 import com.thinkbiganalytics.ui.service.StandardUiTemplateService;
+import com.thinkbiganalytics.ui.service.TemplateTableOptionConfigurerAdapter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.GET;
@@ -59,6 +67,13 @@ public class UiRestController {
 
     private Map<String, Object> sparkFunctions;
 
+    private List<TemplateTableOption> allTemplateTableOptions;
+
+    @Autowired
+    private TemplateTableOptionConfigurerAdapter templateTableOptionConfigurerAdapter;
+
+
+
     @PostConstruct
     private void init() {
         processorTemplates = uiTemplateService.loadProcessorTemplateDefinitionFiles();
@@ -72,12 +87,32 @@ public class UiRestController {
         }
 
         sparkFunctions = uiTemplateService.loadSparkFunctionsDefinitions();
+        initializeJsonTemplateTableOptions();
+    }
+
+    private void initializeJsonTemplateTableOptions(){
+        List<TemplateTableOption> options = new ArrayList<>();
+        List<TemplateTableOption> jsonTemplates = templateTableOptionConfigurerAdapter.getOptions();
+
+
+        Map<String,TemplateTableOption> optionByType = templateTableOptions.stream().collect(Collectors.toMap(t -> t.getType().toUpperCase(), Function.identity()));
+        //attempt to see if we have any defined in json metadata
+        List<TemplateTableOption> otherOptions= jsonTemplates.stream().filter(o -> !optionByType.containsKey(o.getType())).collect(Collectors.toList());
+
+        options.addAll(otherOptions);
+        if(templateTableOptions != null) {
+            options.addAll(templateTableOptions);
+        }
+        allTemplateTableOptions = options;
+        int total = allTemplateTableOptions.size();
+        log.info("Loaded {} feed stepper template options ", total);
+
     }
 
     @GET
     @Path("template-table-options")
     public List<TemplateTableOption> getTemplateTableOptions() {
-        return (templateTableOptions != null) ? templateTableOptions : Collections.emptyList();
+       return allTemplateTableOptions;
     }
 
     @GET
@@ -97,4 +132,8 @@ public class UiRestController {
     public List<AngularModule> getAngularExtensionModules() {
         return angularExtensionModules;
     }
+
+
+
+
 }
