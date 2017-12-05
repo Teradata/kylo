@@ -1233,3 +1233,12 @@ md-input-container.global-search .md-input {
    on Chrome header and virtual repeat is not aligned */
   overflow-y: overlay;
 }
+
+.button-more {
+  font-size: 23px;
+  /*line-height: 8px;*/
+  height: 20px;
+  width: 25px;
+  background-color: lightgray;
+  border-radius: 2px;
+}
