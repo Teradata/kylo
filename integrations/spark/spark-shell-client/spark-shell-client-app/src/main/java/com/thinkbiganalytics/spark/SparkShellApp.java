@@ -38,6 +38,8 @@ import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.jdbc.JdbcDialect;
+import org.apache.spark.sql.jdbc.JdbcDialects;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,6 +80,7 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
  * Instantiates a REST server for executing Spark scripts.
  */
 @ComponentScan("com.thinkbiganalytics.spark")
+@PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {SecurityCoreConfig.class, VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
@@ -266,7 +269,13 @@ public class SparkShellApp {
      * @return the Spark SQL context
      */
     @Bean
-    public SQLContext sqlContext(final SparkScriptEngine engine) {
+    public SQLContext sqlContext(final SparkScriptEngine engine, @Nonnull final List<JdbcDialect> jdbcDialects) {
+        // Register JDBC dialects
+        for (final JdbcDialect dialect : jdbcDialects) {
+            JdbcDialects.registerDialect(dialect);
+        }
+
+        // Create SQL Context
         return engine.getSQLContext();
     }
 
