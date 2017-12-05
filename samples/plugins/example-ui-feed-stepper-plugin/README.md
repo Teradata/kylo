@@ -47,7 +47,7 @@ The plugin should provide a JSON file describing its purpose and indicates what 
     }   
   ]  ,
   "totalCoreSteps": "A number datatype. The number of steps defined in the 'stepperTemplateUrl'  (does not include pre-steps) (Required only if 'stepperTemplateUrl' property is defined)",
-  "totalPreSteps": "A number datatype. The number of steps defined in the 'preStepperTemplateUrl'  (does not include core-steps),  (Required only if 'preStepperTemplateUrl' property is defined)""
+  "totalPreSteps": "A number datatype. The number of steps defined in the 'preStepperTemplateUrl'  (does not include core-steps),  (Required only if 'preStepperTemplateUrl' property is defined)",
   "type": "Unique identifier for this stepper/template type",
   "initializeServiceName":"The name of the angular Initialization Service to call, defined in the 'initializeScript' file.  (Required if you define the 'initializeScript' property) ",
   "initializeScript": "The location (with the /resourceContext) of the initialization angular service.  See Initialization Service section below.  (Optional)"
