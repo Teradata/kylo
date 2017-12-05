@@ -9,6 +9,8 @@ Additional steps can be added to the Create Feed and Feed Details pages with a F
 Two plugins are included with Kylo: Data Ingest and Data Transformation. The Data Ingest plugin adds steps to define a destination Hive table. The Data Transformation plugin adds steps to generate a
 Spark script that transforms the data. Both of these plugins can be used as examples.
 
+There are a seres of 4 different plugin configurations in this project that setup various feed steppers.
+
 Plugin Definition
 -----------------
 
@@ -21,6 +23,8 @@ A simple stepper in Kylo is defined with 5 default steps
 
 The plugin should provide a JSON file describing its purpose and indicates what templates it uses.
 
+**NOTE**:  This json file must end with the suffix `-stepper-definition.json`
+
  - The metadata properties refer to `model.tableOption` in the templates and will be automatically prefixed with `metadata.tableOption`.
  - You can two types of steps
     1. pre-steps.  These will be rendered prior to the `General Info` step section.  These are useful if you want a form that users fill out that will validate before they create their feeds.  These steps are defined with the `preStepperTemplateUrl` and `totalPreSteps` properties
@@ -29,23 +33,24 @@ The plugin should provide a JSON file describing its purpose and indicates what 
 ```json
 
 {
-  "description": "A human-readable summary of this option. This is displayed as the hint when registering a template ",
-  "displayName": "A human-readable title of this option. This is displayed as the title of this option when registering a template.  ",
-  "resourceContext":"The url prefix/directory where these resources are located.  Exampe:  /example-ui-feed-stepper-plugin-1.0",
-  "feedDetailsTemplateUrl": "The location (with the /resoureceContext) of the html when viewing/editing a feed.",
-  "stepperTemplateUrl": "The location (with the /resourceContext) of the html for creating a new feed (the feed steps).  This does not include any pre-steps",
-  "preStepperTemplateUrl":"The location (with the /resourceContext) of the html for any pre-steps",
+  "description": "A human-readable summary of this option. This is displayed as the hint when registering a template (Required) ",
+  "displayName": "A human-readable title of this option. This is displayed as the title of this option when registering a template. (Required)  ",
+  "resourceContext":"The url prefix/directory where these resources are located.  Example:  /example-plugin-1.0  (Required)",
+  "feedDetailsTemplateUrl": "The location (with the /resoureceContext) of the html when viewing/editing a feed. (Required if you define the 'stepperTemplateUrl' property)",
+  "stepperTemplateUrl": "The location (with the /resourceContext) of the html for creating a new feed (the feed steps).  This does not include any pre-steps (Either 'preStepperTemplateUrl' or this property is required)",
+  "preStepperTemplateUrl":"The location (with the /resourceContext) of the html for any pre-steps  (Either 'stepperTemplateUrl' or this property is required) ",
+  "preFeedDetailsTemplateUrl":"The location (with the /resourceContext) of the html when viewing/editing a feed for any pre-steps.  (Optional)",
   "metadataProperties": [
     {
       "name": "A property name",
       "description": "A description of the property"
     }   
-  ],
-  "totalCoreSteps": The number of steps defined in the 'stepperTemplateUrl'  (does not include pre-steps),
-  "totalPreSteps":The number of steps defined in the 'preStepperTemplateUrl'  (does not include core-steps),
+  ]  (Optional but a good idea to put your properties you want stored in the metadata here),
+  "totalCoreSteps": The number of steps defined in the 'stepperTemplateUrl'  (does not include pre-steps) (Required only if 'stepperTemplateUrl' property is defined),
+  "totalPreSteps": The number of steps defined in the 'preStepperTemplateUrl'  (does not include core-steps),  (Required only if 'preStepperTemplateUrl' property is defined)
   "type": "Unique identifier for this stepper/template type",
-  "initializeServiceName":"The name of the angular Initialization Service to call, defined in the 'initializeScript' file",
-  "initializeScript": "The location (with the /resourceContext) of the initialization angular service.  See Initialization Service section below"
+  "initializeServiceName":"The name of the angular Initialization Service to call, defined in the 'initializeScript' file.  (Required if you define the 'initializeScript' property) ",
+  "initializeScript": "The location (with the /resourceContext) of the initialization angular service.  See Initialization Service section below.  (Optional)"
 }
 ````
 
@@ -93,3 +98,30 @@ the service must follow the following constructs.  (see the 'initialize.js' for 
        - tableOptionsMetadata  - This is the metadata defined in this file
 
 Refer to the `initialize.js` for a complete example
+
+**NOTE**  This Angular Service needs to belong to the `kylo.feedmgr.feeds` angular module, not the module for this specific plugin.  This is because that is the module that will be launching and running it.
+ 
+ The example below registers the Service using the `moduleName` coming from the file `feed-mgr/feeds/module-name` which resolves to: `kylo.feedmgr.feeds` 
+ 
+ ```javascript
+ 
+    define(["angular", "feed-mgr/feeds/module-name"], function (angular, moduleName) {
+        
+        var service = function(FeedService, StepperService){
+            
+             var data = {
+                        initializeCreateFeed:function(optionsMetadata,feedStepper, feedModel){
+                            //init create feed
+                          },
+                         initializeEditFeed:function(optionsMetadata,feedModel) {
+                            //init edit feed
+                         }
+                    }
+                    return data;
+        }
+        
+         angular.module(moduleName)
+                .factory("ExampleFeedStepperInitializerService", ["FeedService","StepperService", service])
+    }
+```
+
