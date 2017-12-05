@@ -11,30 +11,36 @@
                 ng-style="{'fill':vm.getDomainType(policy.domainTypeId).iconColor}">
     </ng-md-icon>
   </div>
-  <div flex="10" class="md-list-item-text ">
-    <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
-    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
+  <div flex="40" class="md-list-item-text" layout-align="space-between start" layout="row">
+    <div class="data-policy-item-check-box">
+      <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
+      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
+    </div>
+    <div class="data-policy-item-check-box">
+      <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
+      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
+    </div>
+    <div class="data-policy-item-check-box">
+      <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
+      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
+    </div>
+    <div class="data-policy-item-check-box">
+      <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
+      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
+    </div>
+    <div class="data-policy-item-check-box">
+      <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.profile"></ng-md-icon>
+      <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
+    </div>
   </div>
-  <div flex="10" class="md-list-item-text ">
-    <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
-    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
-    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
-    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
-  </div>
-  <div flex="10" class="md-list-item-text ">
-    <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.profile"></ng-md-icon>
-    <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
-  </div>
-  <div flex="15" class="md-list-item-text hint data-policy-item">
+  <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10">
     <ul class="list-item">
       <li ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:2">{{rule.name}}</li>
-      <li ng-if="vm.getAllFieldPolicies(policy).length > 2">...</li>
+      <ng-md-icon
+          size="16"
+          ng-if="vm.getAllFieldPolicies(policy).length > 2"
+          class="primary-color-1"
+          icon="more-horiz"></ng-md-icon>
     </ul>
     <md-tooltip
         class="tooltip-multi-line"

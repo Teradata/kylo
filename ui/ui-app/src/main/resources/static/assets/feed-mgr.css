@@ -476,6 +476,10 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   min-height: 0;
 }
 
+.data-policy-header {
+  min-width: 675px;
+}
+
 .data-policy-item-check-box {
   width: 55px;
   min-width: 55px;
