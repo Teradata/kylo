@@ -27,6 +27,9 @@ import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.spark.SparkContextService;
+import com.thinkbiganalytics.spark.jdbc.Converter;
+import com.thinkbiganalytics.spark.jdbc.Converters;
+import com.thinkbiganalytics.spark.jdbc.Dialect;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 
@@ -54,6 +57,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -73,6 +77,12 @@ import scala.reflect.ClassTag$;
 public class SqlTransformStage implements Supplier<TransformResult>, ResultSetExtractor<TransformResult> {
 
     private static final Logger log = LoggerFactory.getLogger(SqlTransformStage.class);
+
+    /**
+     * Result set converters
+     */
+    @Nonnull
+    private List<Converter> converters = Collections.emptyList();
 
     /**
      * SQL data source.
@@ -157,6 +167,7 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
     private StructType extractSchema(@Nonnull final ResultSetMetaData rsmd, @Nonnull final TransformResult result) throws SQLException {
         final int columnCount = rsmd.getColumnCount();
         final List<QueryResultColumn> columns = new ArrayList<>(columnCount);
+        final List<Converter> converters = new ArrayList<>(columnCount);
         final Map<String, Integer> displayNameMap = new HashMap<>();
         final JdbcDialect dialect = JdbcDialects$.MODULE$.get(datasource.getDatabaseConnectionUrl());
         final StructField[] fields = new StructField[columnCount];
@@ -201,9 +212,16 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
                 catalystType = getCatalystType(columnType, precision, scale, isSigned);
             }
             fields[i] = new StructField(columnLabel, catalystType, isNullable, metadata.build());
+
+            if (dialect instanceof Dialect) {
+                converters.add(((Dialect) dialect).getConverter(columnType));
+            } else {
+                converters.add(Converters.identity());
+            }
         }
 
         result.setColumns(columns);
+        this.converters = converters;
         return new StructType(fields);
     }
 
@@ -286,7 +304,7 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
         final Object[] values = new Object[columnCount];
 
         for (int i = 0; i < columnCount; ++i) {
-            values[i] = rs.getObject(i + 1);
+            values[i] = converters.get(i).convert(rs, i + 1);
         }
 
         return RowFactory.create(values);
