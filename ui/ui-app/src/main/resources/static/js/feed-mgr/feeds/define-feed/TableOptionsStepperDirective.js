@@ -1,8 +1,8 @@
-define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular, moduleName) {
+define(["angular", "feed-mgr/feeds/define-feed/module-name", 'kylo-utils/LazyLoadUtil'], function (angular, moduleName, lazyLoadUtil) {
     /**
      * Displays a table option stepper template.
      */
-    var kyloTableOptionsStepper = function ($compile, $mdDialog, $templateRequest, StateService, UiComponentsService) {
+    var kyloTableOptionsStepper = function ($compile, $mdDialog, $templateRequest, $ocLazyLoad, $injector, StateService, UiComponentsService, FeedService) {
         return {
             restrict: "E",
             scope: {
@@ -10,16 +10,40 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
                 selectedStepIndex: "=",
                 stepIndex: "=",
                 steps: "=",
-                type: "@"
+                type: "@",
+                stepperTemplateType:'@?'
             },
-            link: function ($scope, $element) {
+            require: ['^thinkbigStepper'],
+            link: function ($scope, $element, attrs, controllers) {
+
+                var stepperController = controllers[0];
+
+                if(angular.isUndefined($scope.stepperTemplateType)){
+                    $scope.stepperTemplateType = 'stepper';
+                }
+                if(angular.isUndefined(  $scope.totalOptions)){
+                    $scope.totalOptions = 0;
+                }
+
+                /**
+                 * The table option metadata
+                 * @type {null}
+                 */
+                $scope.tableOption = null;
+
+                /**
+                 *
+                 * @type {null}
+                 */
+                var tableOptionInitializerPromise = null;
                 /**
                  * Gets the object for the table option step at the specified index.
                  * @param {number} index - the table option step index
                  * @returns {Object} the step
                  */
                 $scope.getStep = function (index) {
-                    return $scope.steps[$scope.getStepIndex(index)];
+                    var step =  $scope.steps[$scope.getStepIndex(index)];
+                    return step;
                 };
 
                 /**
@@ -28,6 +52,7 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
                  * @returns {number} the stepper step index
                  */
                 $scope.getStepIndex = function (index) {
+
                     $scope.totalOptions = Math.max(index + 1, $scope.totalOptions);
                     return $scope.stepIndex + index;
                 };
@@ -53,13 +78,42 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
                 // Loads the table option template
                 UiComponentsService.getTemplateTableOption($scope.type)
                     .then(function (tableOption) {
-                        return (tableOption.stepperTemplateUrl !== null) ? $templateRequest(tableOption.stepperTemplateUrl) : null;
+                        $scope.tableOption = tableOption;
+                        //check to see if we are complete and should fire our initializer script for the stepper
+                        //complete will happen after all the pre-steps and the feed steps have been successfully compiled and added to the stepper
+                        var complete = UiComponentsService.completeStepperTemplateRender(tableOption.type)
+                        if(complete && angular.isDefined(tableOption.initializeScript)){
+                            tableOptionInitializerPromise =   $ocLazyLoad.load([tableOption.initializeScript]);
+                        }
+                        //Determine if we are loading pre-steps or feed steps
+                        var property = 'stepperTemplateUrl';
+                        if($scope.stepperTemplateType == 'pre-step') {
+                            property = 'preStepperTemplateUrl';
+                        }
+                        return (tableOption[property] !== null) ? $templateRequest(tableOption[property]) : null;
                     })
                     .then(function (html) {
                         if (html !== null) {
                             var template = angular.element(html);
                             $element.append(template);
                             $compile(template)($scope);
+                            if($scope.stepperTemplateType == 'pre-step' && angular.isDefined($scope.coreDataModel)) {
+                                $scope.coreDataModel.renderTemporaryPreStep = false;
+                            }
+
+                            if(angular.isDefined(tableOptionInitializerPromise)){
+                                tableOptionInitializerPromise.then(function(file) {
+
+                                    var serviceName = $scope.tableOption.initializeServiceName;
+                                    if(angular.isDefined(serviceName)) {
+                                        var svc = $injector.get(serviceName);
+                                        if (angular.isDefined(svc) && angular.isFunction(svc.initializeCreateFeed)) {
+                                            var createFeedModel = FeedService.createFeedModel;
+                                            svc.initializeCreateFeed($scope.tableOption, stepperController, createFeedModel);
+                                        }
+                                    }
+                                });
+                            }
                         }
                     }, function () {
                         $mdDialog.show(
@@ -72,9 +126,13 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
                         );
                         StateService.FeedManager().Feed().navigateToFeeds();
                     });
+
+                $element.on('$destroy',function(){
+
+                });
             }
         };
     };
 
-    angular.module(moduleName).directive("kyloTableOptionsStepper", ["$compile", "$mdDialog", "$templateRequest", "StateService", "UiComponentsService", kyloTableOptionsStepper]);
+    angular.module(moduleName).directive("kyloTableOptionsStepper", ["$compile", "$mdDialog", "$templateRequest", "$ocLazyLoad", "$injector", "StateService", "UiComponentsService","FeedService", kyloTableOptionsStepper]);
 });

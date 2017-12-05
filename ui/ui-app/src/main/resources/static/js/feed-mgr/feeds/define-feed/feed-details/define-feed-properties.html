@@ -31,14 +31,14 @@
     <body-section>
         <md-input-container class="md-block" flex-gt-sm>
             <label>Data Owner</label>
-            <input ng-model="vm.model.dataOwner">
+            <input ng-model="vm.model.dataOwner" ng-disabled="vm.model.view.properties.disabled || vm.model.view.properties.dataOwner.disabled">
             </input>
         </md-input-container>
       <thinkbig-property-list-editor properties="vm.model.userProperties" is-valid="vm.isValid"></thinkbig-property-list-editor>
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm" flex-gt-sm="" style="">
             <label class="label-small md-container-ignore">Tags</label>
-            <md-chips ng-model="vm.model.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+            <md-chips ng-model="vm.model.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false" ng-disabled="vm.model.view.properties.disabled || vm.model.view.properties.tags.disabled">
                 <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
                                  md-item-text="item.name" placeholder="Add tag(s)">
                     <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>

@@ -1,6 +1,5 @@
 define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
     function FeedService($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService, FeedPropertyService, AccessControlService, EntityAccessControlService, StateService) {
         function trim(str) {
             return str.replace(/^\s+|\s+$/g, "");
@@ -145,7 +144,27 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     roleMembershipsUpdated: false,
                     tableOption: {},
                     cloned: false,
-                    usedByFeeds: []
+                    usedByFeeds: [],
+                    view: {
+                        generalInfo: { disabled: false },
+                        feedDetails: { disabled: false },
+                        table: { disabled: false },
+                        dataPolicies: { disabled: false },
+                        properties: {
+                            disabled: false,
+                            dataOwner: { disabled: false },
+                            tags: { disabled: false }
+                        },
+                        accessControl: { disabled: false },
+                        schedule: {
+                            disabled: false,
+                            schedulingPeriod: { disabled: false },
+                            schedulingStrategy: { disabled: false },
+                            active: { disabled: false },
+                            executionNode: { disabled: false },
+                            preconditions: { disabled: false }
+                        }
+                    }
                 };
             },
             cloneFeed: function () {
@@ -175,6 +194,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             updateFeed: function (feedModel) {
                 var self = this;
+                this.editFeedModel.totalPreSteps = 0;
                 this.editFeedModel.inputProcessorName = null;
                 this.editFeedModel.usedByFeeds = [];
                 this.editFeedModel.description = '';
@@ -192,6 +212,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         }
                     });
                 }
+                //add in the view states
+                var defaultView = self.getNewCreateFeedModel().view;
+                this.editFeedModel.view = defaultView;
             },
             /**
              * Shows the Feed Error Dialog
@@ -487,12 +510,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     if (model.table.feedTableSchema == undefined) {
                         model.table.feedTableSchema = { name: null, fields: [] };
                     }
-                    //remove any extra columns in the policies
-                    /*
-                     while(model.table.fieldPolicies.length > model.table.tableSchema.fields.length) {
-                     model.table.fieldPolicies.splice(model.table.tableSchema.fields.length, 1);
-                     }
-                     */
                 }
             },
             /**

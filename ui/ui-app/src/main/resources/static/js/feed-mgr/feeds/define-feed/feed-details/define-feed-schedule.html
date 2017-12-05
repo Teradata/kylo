@@ -35,14 +35,14 @@
 
         <md-input-container class="md-block" flex>
           <label>Strategy</label>
-          <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
+          <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled">
             <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
           </md-select>
         </md-input-container>
 
         <md-input-container class="md-block" flex ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
           <label>Expression</label>
-          <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression"
+          <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingPeriod.disabled"
                  cron-expression-validator
                  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 
@@ -61,12 +61,12 @@
         <div flex ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.model.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" style="margin-bottom:-18px">
           <md-input-container class="md-block" flex>
             <label>Run Schedule</label>
-            <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
+            <input ng-model="vm.timerAmount" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
           </md-input-container>
 
           <md-input-container class="md-block" flex >
             <label>Units</label>
-            <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()" >
+            <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled">
               <md-option value="days">Days</md-option>
               <md-option value="hrs">Hours</md-option>
               <md-option value="min">Minutes</md-option>
@@ -86,7 +86,7 @@
       <div ng-if="vm.isClustered && vm.supportsExecutionNode" style="margin:18px 0">
         <md-input-container class="md-block">
           <label>Execution Node</label>
-          <md-select ng-model="vm.model.schedule.executionNode" required>
+          <md-select ng-model="vm.model.schedule.executionNode" required ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.executionNode.disabled">
             <md-option value="ALL">All nodes</md-option>
             <md-option value="PRIMARY">Primary node</md-option>
           </md-select>
@@ -116,7 +116,7 @@
               </md-list-item>
             </md-list>
           </div>
-          <md-button class="md-primary" ng-click="vm.showPreconditionDialog()">
+          <md-button class="md-primary" ng-click="vm.showPreconditionDialog()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.preconditions.disabled">
             Add Precondition
           </md-button>
         </div>
@@ -124,7 +124,7 @@
       </div>
 
       <div layout="column">
-        <md-checkbox ng-model="vm.model.active" style="margin-top:18px"> Enable feed immediately</md-checkbox>
+        <md-checkbox ng-model="vm.model.active" style="margin-top:18px" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.active.disabled"> Enable feed immediately</md-checkbox>
         <span class="hint fade" ng-show="vm.model.active" ng-hide="!vm.model.active">The feed will be scheduled and running when it is saved.</span>
         <span class="hint fade" ng-show="!vm.model.active" ng-hide="vm.model.active">The feed will be disabled when it is saved.  You will need to enable the feed later.</span>
       </div>

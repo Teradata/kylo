@@ -1,0 +1,26 @@
+<ng-form name="vm.form">
+  <vertical-section-layout section-title="Example" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" allow-edit="vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
+                           is-valid="vm.form.$valid">
+
+    <readonly-section>
+      <div layout="column">
+        <div layout="row" class="layout-padding-top-bottom">
+          <span flex="25" class="property-name">My Plugin Property</span>
+
+          <div flex>
+            {{vm.model.tableOption.examplePluginProperty}}
+          </div>
+        </div>
+      </div>
+    </readonly-section>
+
+    <editable-section>
+      <md-input-container class="md-block" flex-gt-sm>
+        <label>My Plugin Property</label>
+        <input ng-model="vm.editModel.tableOption.examplePluginProperty">
+        </input>
+      </md-input-container>
+    </editable-section>
+
+  </vertical-section-layout>
+</ng-form>
