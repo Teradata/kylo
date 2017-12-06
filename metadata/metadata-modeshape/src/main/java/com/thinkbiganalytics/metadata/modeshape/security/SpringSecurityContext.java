@@ -25,7 +25,6 @@ import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.springframework.security.core.Authentication;
 
 import java.security.Principal;
-import java.security.acl.Group;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -65,7 +64,7 @@ public class SpringSecurityContext implements SecurityContext {
             if (grant instanceof JaasGrantedAuthority) {
                 JaasGrantedAuthority jaasGrant = (JaasGrantedAuthority) grant;
 
-                return matches(roleName, jaasGrant.getPrincipal());
+                return JcrAccessControlUtil.matchesRole(jaasGrant.getPrincipal(), roleName);
             } else {
                 if (roleName.equals(grant.getAuthority())) {
                     return true;
@@ -78,24 +77,13 @@ public class SpringSecurityContext implements SecurityContext {
         if (matched) {
             return true;
         } else {
-            return this.principals.stream().anyMatch(principal -> matches(roleName, principal));
+            return this.principals.stream().anyMatch(principal -> JcrAccessControlUtil.matchesRole(principal, roleName));
         }
     }
 
     @Override
     public void logout() {
         // Ignored
-    }
-
-    private boolean matches(String roleName, Principal principal) {
-        if (principal.getName().equals(roleName)) {
-            return true;
-        } else if (principal instanceof Group) {
-            Group group = (Group) principal;
-            return Collections.list(group.members()).stream().anyMatch((p) -> matches(roleName, p));
-        } else {
-            return false;
-        }
     }
 
 }

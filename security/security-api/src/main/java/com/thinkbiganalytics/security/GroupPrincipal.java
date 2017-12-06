@@ -43,12 +43,12 @@ public class GroupPrincipal extends BasePrincipal implements Group {
     private final int hash; // Since this is immutable it only has to be calculated once.
 
     public GroupPrincipal(String name, Principal... members) {
-        this(name, new HashSet<>(Arrays.asList(members)));
+        this(name, members.length > 0 ? new HashSet<>(Arrays.asList(members)) : Collections.emptySet());
     }
 
     public GroupPrincipal(String name, Set<Principal> members) {
         super(name);
-        this.members = Collections.unmodifiableSet(new HashSet<>(members));
+        this.members = members.size() > 0 ? Collections.unmodifiableSet(new HashSet<>(members)) : Collections.emptySet();
         this.hash = super.hashCode() ^ members.hashCode();
     }
 
@@ -97,9 +97,20 @@ public class GroupPrincipal extends BasePrincipal implements Group {
      */
     @Override
     public boolean equals(Object obj) {
-        if (super.equals(obj) && obj instanceof GroupPrincipal) {
-            GroupPrincipal that = (GroupPrincipal) obj;
-            return this.members.equals(that.members);
+        if (obj instanceof Group && super.equals(obj)) {
+            Group that = (Group) obj;
+            Enumeration<? extends Principal> thatEnum = that.members();
+            int count = 0;
+            
+            while (thatEnum.hasMoreElements()) {
+                Principal thatPrinc = thatEnum.nextElement();
+                count++;
+                if (! this.members.contains(thatPrinc)) {
+                    return false;
+                }
+            }
+            
+            return count == this.members.size();
         } else {
             return false;
         }
