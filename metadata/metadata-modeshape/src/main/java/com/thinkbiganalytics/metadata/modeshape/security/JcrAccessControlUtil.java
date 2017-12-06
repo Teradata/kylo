@@ -22,6 +22,7 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.modeshape.jcr.ModeShapeRoles;
@@ -30,12 +31,15 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.security.Principal;
+import java.security.acl.Group;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -58,6 +62,9 @@ import javax.jcr.security.Privilege;
  * Utilities to apply JCR access control changes to nodes and node hierarchies.
  */
 public final class JcrAccessControlUtil {
+
+    private static final String GROUP_PREFIX = "G_";
+    private static final String USER_PREFIX = "U_";
 
     private JcrAccessControlUtil() {
         throw new AssertionError(JcrAccessControlUtil.class + " is a static utility class");
@@ -178,18 +185,52 @@ public final class JcrAccessControlUtil {
         return getPrivileges(session, principal, path).stream().anyMatch(p -> privileges.contains(p));
     }
     
+    public static Set<Privilege> getPrivileges(Node node, Principal principal) {
+        try {
+            return getPrivileges(node.getSession(), principal, node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the privileges for node " + node, e);
+        }
+    }
+    
     public static Set<Privilege> getPrivileges(Session session, Principal principal, String path) {
         try {
             AccessControlManager acm = session.getAccessControlManager();
             AccessControlList acl = getAccessControlList(path, acm);
             
             for (AccessControlEntry entry : acl.getAccessControlEntries()) {
-                if (entry.getPrincipal().getName().equals(principal.getName())) {
+                if (matchesPrincipal(principal, entry)) {
                     return new HashSet<>(Arrays.asList(entry.getPrivileges()));
                 }
             }
                 
             return Collections.emptySet();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the privileges for node " + path, e);
+        }
+    }
+    
+    public static Map<Principal, Set<Privilege>> getAllPrivileges(Node node) {
+        try {
+            return getAllPrivileges(node.getSession(), node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the privileges for node " + node, e);
+        }
+    }
+    
+    public static Map<Principal, Set<Privilege>> getAllPrivileges(Session session, String path) {
+        try {
+            Map<Principal, Set<Privilege>> map = new HashMap<>();
+            AccessControlManager acm = session.getAccessControlManager();
+            AccessControlList acl = getAccessControlList(path, acm);
+            
+            for (AccessControlEntry entry : acl.getAccessControlEntries()) {
+                Principal principal = derivePrincipal(entry);
+                
+                map.put(principal, new HashSet<>(Arrays.asList(entry.getPrivileges())));
+            }
+            
+            return map;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the privileges for node " + path, e);
         }
@@ -300,7 +341,7 @@ public final class JcrAccessControlUtil {
                     boolean removed = false;
 
                     for (AccessControlEntry entry : acl.getAccessControlEntries()) {
-                        if (entry.getPrincipal().getName().equals(principal.getName())) {
+                        if (matchesPrincipal(principal, entry)) {
                             Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
                                 .filter(p -> !Arrays.stream(removes).anyMatch(r -> r.equals(p)))
                                 .toArray(Privilege[]::new);
@@ -546,6 +587,20 @@ public final class JcrAccessControlUtil {
         }
     }
 
+    public static boolean matchesRole(Principal principal, String roleName) {
+        String princName = principal.getName();
+        
+        if (principal instanceof UsernamePrincipal) {
+            return roleName.startsWith(USER_PREFIX) && roleName.startsWith(princName, USER_PREFIX.length());
+        } else if (principal instanceof Group && ! roleName.equals(ModeShapeRoles.ADMIN)) {
+            // The "admin" group is a special case "superuser" role in modeshape that may not have a prefix but
+            // should still be match matched to a Group principal with that name, so skip this block for admin.
+            return roleName.startsWith(GROUP_PREFIX) && roleName.startsWith(princName, GROUP_PREFIX.length());
+        } else {
+            return roleName.equals(principal.getName());
+        }
+    }
+
     private static boolean updatePermissions(Session session, String path, Principal principal, boolean replace, Privilege... privileges) {
         try {
             AccessControlManager acm = session.getAccessControlManager();
@@ -579,7 +634,7 @@ public final class JcrAccessControlUtil {
         // ModeShape reads back all principals as SimplePrincipals after they are stored, so we have to use
         // the same principal type here or the entry will treated as a new one instead of adding privileges to the 
         // to an existing principal.  This can be considered a bug in ModeShape.
-        SimplePrincipal simple = SimplePrincipal.newInstance(principal.getName());
+        SimplePrincipal simple = encodePrincipal(principal);
         boolean added = acl.addAccessControlEntry(simple, privileges);
         return added;
     }
@@ -588,7 +643,7 @@ public final class JcrAccessControlUtil {
         boolean removed = false;
         
         for (AccessControlEntry entry : acl.getAccessControlEntries()) {
-            if (entry.getPrincipal().getName().equals(principal.getName())) {
+            if (matchesPrincipal(principal, entry)) {
                 acl.removeAccessControlEntry(entry);
                 removed = true;
             }
@@ -639,5 +694,63 @@ public final class JcrAccessControlUtil {
         }
         
         return false;
+    }
+    
+    /**
+     * Constructs a SimplePrincipal after encoding the source principal's type into the name.
+     * @param principal the source principal
+     * @return a SimplePrincipal derived from the source
+     */
+    private static SimplePrincipal encodePrincipal(Principal principal) {
+        if (principal instanceof UsernamePrincipal) {
+            return SimplePrincipal.newInstance(USER_PREFIX + principal.getName());
+        } else if (principal instanceof Group) {
+            return SimplePrincipal.newInstance(GROUP_PREFIX + principal.getName());
+        } else {
+            return SimplePrincipal.newInstance(principal.getName());
+        }
+    }
+    
+    /**
+     * Extracts the principal of the ACL entry and converts it to the appropriate principal type.
+     * @param entry the entry
+     * @return the derived principal
+     */
+    private static Principal derivePrincipal(AccessControlEntry entry) {
+        Principal principal = entry.getPrincipal();
+        return principal instanceof SimplePrincipal ? derivePrincipal((SimplePrincipal) entry.getPrincipal()) : principal;
+    }
+
+    /**
+     * Derives the correct principal type from the info encoded in the name of the provided
+     * SimplePrincipal coming from ModeShape.  If the SimplePrincipal does not have encoded
+     * type info then just return it.
+     * @param principal a SimplePrincipal that may have encoded type information.
+     * @return the derived Principal
+     */
+    private static Principal derivePrincipal(SimplePrincipal principal) {
+        if (principal.getName().startsWith(USER_PREFIX)) {
+            return new UsernamePrincipal(principal.getName().substring(USER_PREFIX.length()));
+        } else if (principal.getName().startsWith(GROUP_PREFIX)) {
+            return new GroupPrincipal(principal.getName().substring(GROUP_PREFIX.length()));
+        } else {
+            return principal;
+        }
+    }
+
+    /**
+     * Tests whether the supplied principal matches the principal associated with the ACL entry
+     */
+    private static boolean matchesPrincipal(Principal principal, AccessControlEntry entry) {
+        String entryName = entry.getPrincipal().getName();
+        String princName = principal.getName();
+        
+        if (principal instanceof UsernamePrincipal) {
+            return entryName.startsWith(USER_PREFIX) && entryName.startsWith(princName, USER_PREFIX.length());
+        } else if (principal instanceof Group) {
+            return entryName.startsWith(GROUP_PREFIX) && entryName.startsWith(princName, GROUP_PREFIX.length());
+        } else {
+            return entry.getPrincipal().getName().equals(principal.getName());
+        }
     }
 }

@@ -33,16 +33,20 @@ import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.bouncycastle.util.io.Streams;
 
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -211,9 +215,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
 
     @Override
     public void checkPermission(Action action, Action... more) {
-        Set<Action> actions = new HashSet<>(Arrays.asList(more));
-        actions.add(action);
-        checkPermission(actions);
+        checkPermission(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
     }
 
     @Override
@@ -260,7 +262,51 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
             throw new MetadataException("Failed to copy allowed actions", e);
         }
     }
+    
+    @Override
+    public Set<Principal> getPrincipalsAllowedAll(Action action, Action... more) {
+        return getPrincipalsAllowedAll(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
+    }
 
+    @Override
+    public Set<Principal> getPrincipalsAllowedAll(Set<Action> actions) {
+        Set<Principal> results = Collections.emptySet();
+        
+        Iterator<Action> itr = actions.iterator();
+        if (itr.hasNext()) {
+            results = findActionNode(itr.next())
+                            .map(node -> JcrAccessControlUtil.getAllPrivileges(node).keySet())
+                            .orElse(Collections.emptySet());
+        }
+        
+        while (results.size() > 0 && itr.hasNext()) {
+            Set<Principal> principals = findActionNode(itr.next())
+                            .map(node -> JcrAccessControlUtil.getAllPrivileges(node).keySet())
+                            .orElse(Collections.emptySet());
+            results.retainAll(principals);
+        }
+        
+        return results;
+    }
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAny(Action action, Action... more) {
+        return getPrincipalsAllowedAny(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAny(Set<Action> actions) {
+        return actions.stream()
+            .flatMap(action -> 
+                findActionNode(action)
+                            .map(node -> JcrAccessControlUtil.getAllPrivileges(node).keySet())
+                            .orElse(Collections.emptySet())
+                            .stream())
+            .collect(Collectors.toSet());
+    }
+
+    
+    
     protected Set<Action> getEnabledActions(Principal principal) {
         return getAvailableActions().stream()
             .flatMap(avail -> avail.stream())

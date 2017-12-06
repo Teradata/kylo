@@ -292,6 +292,10 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to remove the Node named " + name, e);
         }
     }
+    
+    public static boolean hasNodeOfType(Node parentNode, String nodeType) {
+        return StreamSupport.stream(getIterableChildren(parentNode).spliterator(), false).anyMatch(node -> isNodeType(node, nodeType));
+    }
 
     public static List<Node> getNodesOfType(Node parentNode, String nodeType) {
         try {

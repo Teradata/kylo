@@ -23,12 +23,12 @@ package com.thinkbiganalytics.metadata.modeshape;
  * #L%
  */
 
-import com.thinkbiganalytics.security.BasePrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
  */
-public class TestUserPrincipal extends BasePrincipal {
+public class TestUserPrincipal extends UsernamePrincipal {
 
     private static final long serialVersionUID = 1L;
 
