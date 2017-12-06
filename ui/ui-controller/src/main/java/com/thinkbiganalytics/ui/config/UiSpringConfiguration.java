@@ -30,7 +30,7 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 /**
- * Created by sr186054 on 7/5/17.
+ *
  */
 @Configuration
 public class UiSpringConfiguration {
