@@ -23,7 +23,7 @@ package com.thinkbiganalytics.metadata.api;
  * #L%
  */
 
-import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.ServiceAdminPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.security.Principal;
@@ -46,7 +46,7 @@ public interface MetadataAccess {
     /**
      * A principal representing an the admin group
      */
-    public static final Principal ADMIN = new GroupPrincipal("admin");
+    public static final Principal ADMIN = new ServiceAdminPrincipal();
 
     /**
      * Executes the {@link MetadataCommand} and commits any changes using credentials derived by the provided principals.

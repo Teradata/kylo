@@ -23,19 +23,11 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import com.thinkbiganalytics.security.BasePrincipal;
+import java.security.Principal;
 
 /**
- *
+ * Marks principals that are used internally by ModeShape integration code.
  */
-public class ModeShapePrincipal extends BasePrincipal {
+public interface ModeShapePrincipal extends Principal {
 
-    /**
-     *
-     */
-    private static final long serialVersionUID = 1L;
-
-    public ModeShapePrincipal(String name) {
-        super(name);
-    }
 }
