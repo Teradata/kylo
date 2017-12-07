@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
+import com.thinkbiganalytics.security.ServiceAdminPrincipal;
+
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -26,17 +28,9 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 /**
  *
  */
-public class ModeShapeAdminPrincipal extends ModeShapePrincipal {
+public class ModeShapeAdminPrincipal extends ServiceAdminPrincipal implements ModeShapePrincipal {
 
-    public static final ModeShapeAdminPrincipal INSTANCE = new ModeShapeAdminPrincipal();
-
-    /**
-     *
-     */
     private static final long serialVersionUID = 1L;
-
-    public ModeShapeAdminPrincipal() {
-        super("admin");
-    }
-
+    
+    public static final ModeShapeAdminPrincipal INSTANCE = new ModeShapeAdminPrincipal();
 }

@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-
 /*-
  * #%L
  * thinkbig-metadata-modeshape
@@ -22,21 +20,19 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
-import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import java.util.HashMap;
@@ -69,7 +65,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test
     public void testGetAllDefaultTypes() {
-        int size = metadata.commit(new AdminCredentials(), () -> {
+        int size = metadata.commit(() -> {
             List<ExtensibleType> types = typeProvider.getTypes();
 
             return types.size();
@@ -103,7 +99,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods = "testGetAllDefaultTypes")
     public void testCreatePersonType() {
-        String typeName = metadata.commit(new AdminCredentials(), () -> {
+        String typeName = metadata.commit(() -> {
             // @formatter:off
             ExtensibleType type = typeProvider.buildType("Person")
                             .field("name")
@@ -118,14 +114,14 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             // @formatter:on
 
             return type.getName();
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
 
     @Test(dependsOnMethods = "testCreatePersonType")
     public void testCreateEmployeeType() {
-        String typeName = metadata.commit(new AdminCredentials(), () -> {
+        String typeName = metadata.commit(() -> {
             ExtensibleType person = typeProvider.getType("Person");
             // @formatter:off
             ExtensibleType emp = typeProvider.buildType("Employee")
@@ -142,22 +138,22 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             // @formatter:on
 
             return emp.getSupertype().getName();
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
 
     @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetPersonType() {
-        final ExtensibleType.ID id = metadata.commit(new AdminCredentials(), () -> {
+        final ExtensibleType.ID id = metadata.commit(() -> {
             ExtensibleType type = typeProvider.getType("Person");
 
             return type.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(id).isNotNull();
 
-        Map<String, FieldDescriptor.Type> fields = metadata.commit(new AdminCredentials(), () -> {
+        Map<String, FieldDescriptor.Type> fields = metadata.commit(() -> {
             ExtensibleType type = typeProvider.getType("Person");
             Map<String, FieldDescriptor.Type> map = new HashMap<>();
 
@@ -166,7 +162,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             }
 
             return map;
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(fields).isNotNull();
         assertThat(fields).containsEntry("name", FieldDescriptor.Type.STRING);
@@ -176,11 +172,11 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetAllTypes() {
-        int size = metadata.commit(new AdminCredentials(), () -> {
+        int size = metadata.commit(() -> {
             List<ExtensibleType> types = typeProvider.getTypes();
 
             return types.size();
-        });
+        }, MetadataAccess.SERVICE);
 
         //FEED SLA are done via ModeShapeAvailability Listener which might not get fired before the assert.
         //KYLO-292 will address this.  For now to get the build to pass look for result either 15,16
@@ -191,7 +187,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods = "testCreatePersonType")
     public void testCreateEntity() {
-        ExtensibleEntity.ID id = metadata.commit(new AdminCredentials(), () -> {
+        ExtensibleEntity.ID id = metadata.commit(() -> {
             ExtensibleType type = typeProvider.getType("Person");
 
             Map<String, Object> props = new HashMap<>();
@@ -202,14 +198,14 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             ExtensibleEntity entity = entityProvider.createEntity(type, props);
 
             return entity.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(id).isNotNull();
     }
 
     @Test(dependsOnMethods = "testCreatePersonType")
     public void testGetEntity() {
-        String typeName = metadata.commit(new AdminCredentials(), () -> {
+        String typeName = metadata.commit(() -> {
             List<ExtensibleEntity> list = entityProvider.getEntities();
 
             assertThat(list).isNotNull().hasSize(1);
@@ -221,7 +217,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             assertThat(entity.getProperty("name")).isEqualTo("Bob");
 
             return entity.getTypeName();
-        });
+        }, MetadataAccess.SERVICE);
 
         assertThat(typeName).isEqualTo("Person");
     }

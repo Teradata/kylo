@@ -1,8 +1,11 @@
-package com.thinkbiganalytics.metadata.modeshape.security;
+/**
+ *
+ */
+package com.thinkbiganalytics.security;
 
 /*-
  * #%L
- * thinkbig-metadata-modeshape
+ * thinkbig-security-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,19 +23,14 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import java.security.Principal;
+/**
+ * A principal representing a privileged user/service operating with administrative rights.
+ */
+public class ServiceAdminPrincipal extends GroupPrincipal {
 
-import javax.jcr.Credentials;
+    private static final long serialVersionUID = 1L;
 
-public class AdminCredentials implements Credentials {
-
-    private static final long serialVersionUID = -6649298501188019301L;
-
-    public AdminCredentials() {
+    public ServiceAdminPrincipal() {
+        super("admin");
     }
-
-    public static Principal getPrincipal() {
-        return new ModeShapePrincipal("dladmin");
-    }
-
 }
