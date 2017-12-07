@@ -582,8 +582,11 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
             // Add unsaved filters
             self.addFilters();
 
-            // Check if updates are necessary
+            // Ensure correct table method
             var feedModel = FeedService.createFeedModel;
+            feedModel.table.method = "EXISTING_TABLE";
+
+            // Check if updates are necessary
             var newScript = self.sparkShellService.getFeedScript();
             if (newScript === feedModel.dataTransformation.dataTransformScript) {
                 var result = $q.defer();
@@ -596,7 +599,6 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
             feedModel.dataTransformation.states = self.sparkShellService.save();
 
             feedModel.table.existingTableName = "";
-            feedModel.table.method = "EXISTING_TABLE";
             feedModel.table.sourceTableSchema.name = "";
 
             // Get list of fields

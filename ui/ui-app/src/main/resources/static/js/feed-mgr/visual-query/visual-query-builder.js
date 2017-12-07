@@ -243,7 +243,9 @@ define(['angular',"feed-mgr/visual-query/module-name","feed-mgr/visual-query/mod
                 var feedModel = FeedService.createFeedModel;
                 feedModel.dataTransformation.sql = self.model.visualQuerySql;
                 feedModel.dataTransformation.chartViewModel = null;
-                feedModel.dataTransformation.datasourceIds = (self.model.selectedDatasourceId !== VisualQueryService.HIVE_DATASOURCE) ? [self.model.selectedDatasourceId] : [];
+                feedModel.dataTransformation.datasourceIds = (self.model.selectedDatasourceId && self.model.selectedDatasourceId !== VisualQueryService.HIVE_DATASOURCE)
+                    ? [self.model.selectedDatasourceId]
+                    : [];
                 feedModel.dataTransformation.datasources = DatasourcesService.filterArrayByIds(self.model.selectedDatasourceId, self.availableDatasources);
             } else if (typeof(self.chartViewModel.nodes) !== "undefined") {
                 self.isValid = (self.chartViewModel.nodes.length > 0);
