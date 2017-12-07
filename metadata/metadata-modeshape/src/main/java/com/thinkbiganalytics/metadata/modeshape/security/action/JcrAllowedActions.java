@@ -33,7 +33,6 @@ import com.thinkbiganalytics.security.action.AllowableAction;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.bouncycastle.util.io.Streams;
 
 import java.security.AccessControlException;
 import java.security.Principal;
@@ -304,8 +303,18 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                             .stream())
             .collect(Collectors.toSet());
     }
-
     
+    public Stream<Action> streamActions() {
+        return getAvailableActions().stream()
+                        .map(JcrAllowableAction.class::cast)
+                        .flatMap(a -> a.stream());
+    }
+
+    public Stream<Action> streamLeafActions() {
+        return getAvailableActions().stream()
+                        .map(JcrAllowableAction.class::cast)
+                        .flatMap(a -> a.streamLeafActions());
+    }
     
     protected Set<Action> getEnabledActions(Principal principal) {
         return getAvailableActions().stream()
