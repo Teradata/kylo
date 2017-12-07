@@ -145,7 +145,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
     /**
      * @return a stream on only the leaf actions of this action hierarchy.
      */
-    protected Stream<AllowableAction> streamLeaves() {
+    protected Stream<AllowableAction> streamLeafActions() {
         return stream().filter(action -> ! JcrUtil.hasNodeOfType(((JcrAllowableAction) action).getNode(), NODE_TYPE));
     }
 }
