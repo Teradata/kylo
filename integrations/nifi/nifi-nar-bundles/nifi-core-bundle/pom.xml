@@ -20,7 +20,6 @@
     <module>nifi-core-processors</module>
     <module>nifi-merge-table-processor-v1</module>
     <module>nifi-merge-table-processor-v1.2</module>
-    <module>nifi-savepoint-processor-v1.2</module>
     <module>nifi-core-v1-nar</module>
     <module>nifi-core-v1.2-nar</module>
   </modules>
