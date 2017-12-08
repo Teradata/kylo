@@ -36,7 +36,6 @@ import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
@@ -49,6 +48,7 @@ import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActi
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAllowedActions;
+import com.thinkbiganalytics.security.BasePrincipal;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
@@ -57,7 +57,7 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 /**
  * Ensures that all categories have the new, mandatory feedRoleMemberships node.
  */
-@Component("versionableFeedUpgradeAction084")
+@Component("aclPrincipalTypeUpgradeAction084")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class AclPrincipalTypeUpgradeAction implements UpgradeState {
 
@@ -84,8 +84,8 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
     }
 
     @Override
-    public void upgradeTo(final KyloVersion startingVersion) {
-        log.info("Recording principal types for ACLs for version: {}", startingVersion);
+    public void upgradeTo(final KyloVersion targetVersion) {
+        log.info("Recording principal types for ACLs for version: {}", targetVersion);
         
         Set<String> groupNames = StreamSupport.stream(this.userProvider.findGroups().spliterator(), false)
             .map(UserGroup::getSystemName)
@@ -153,10 +153,17 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
                             allowed.enable(newPrincipal, action);
                         }
                         
-                        allowed.disable(principal, action);
+                        allowed.disable(new RemovedPrincipal(principal), action);
                     });
             });
-        
+    }
+    
+    private static class RemovedPrincipal extends BasePrincipal {
+        private static final long serialVersionUID = 1L;
+
+        public RemovedPrincipal(Principal principal) {
+            super(principal.getName());
+        }
     }
 
 //    private void upgradeAllowableActions(Set<String> groupNames) {
