@@ -749,8 +749,10 @@ public final class JcrAccessControlUtil {
             return entryName.startsWith(USER_PREFIX) && entryName.startsWith(princName, USER_PREFIX.length());
         } else if (principal instanceof Group) {
             return entryName.startsWith(GROUP_PREFIX) && entryName.startsWith(princName, GROUP_PREFIX.length());
-        } else {
-            return entry.getPrincipal().getName().equals(principal.getName());
         }
+
+        // Default to matching just the principal name.  This will match users and groups during upgrade
+        // but those will have been converted to their encoded types after upgrade completes.
+        return entry.getPrincipal().getName().equals(principal.getName());
     }
 }
