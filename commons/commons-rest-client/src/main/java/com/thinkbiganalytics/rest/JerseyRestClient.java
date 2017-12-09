@@ -125,6 +125,7 @@ public class JerseyRestClient {
                     }
                 }
             } catch (IOException e) {
+                log.error( "Encountered IOException attempting to get keystore: ", e );
             }
 
             try {
@@ -135,6 +136,11 @@ public class JerseyRestClient {
                     }
                 }
             } catch (IOException e) {
+                log.error( "Encountered IOException attempting to get keystore: ", e );
+            }
+
+            if( config.getTruststorePassword()==null && config.getKeystorePassword() == null ) {
+                log.warn("keystorePassword and truststorePassword should not both be null, check application.properties");
             }
 
             if (keyStoreFile != null) {
