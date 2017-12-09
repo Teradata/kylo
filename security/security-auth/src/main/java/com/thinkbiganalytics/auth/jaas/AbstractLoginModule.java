@@ -90,7 +90,7 @@ public abstract class AbstractLoginModule implements LoginModule {
             setLoginSucceeded(false);
             throw e;
         } catch (Exception e) {
-            log.debug("Login exception", e);
+            log.error("Login exception", e);
             setLoginSucceeded(false);
             throw new LoginException("Login failure: " + (e.getMessage() == null ? e.toString() : e.getMessage()));
         }
