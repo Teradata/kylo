@@ -132,7 +132,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             function get2dContext(idAttribute) {
                 var canvas = document.getElementById(idAttribute);
                 if (canvas === null) {
-                    console.log("creating new canvas element for " + idAttribute);
                     canvas = document.createElement("canvas");
                     canvas.setAttribute("id", idAttribute);
                     document.createDocumentFragment().appendChild(canvas);
@@ -167,6 +166,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             });
 
             painter.fillCell = function (cellDiv, data) {
+                if (data === undefined) {
+                    return;
+                }
                 var classname = "";
                 if (data.rowId % 2 === 0) {
                     classname = "even";
@@ -192,6 +194,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             tableData.getCellSync = function (i, j) {
                 var displayName = self.headers[j].displayName;
                 var row = self.rows[i];
+                if (row === undefined) {
+                    //occurs when filtering table
+                    return undefined;
+                }
                 var invalidFieldMap = row.invalidFieldMap[displayName];
                 var isInvalid = invalidFieldMap !== undefined;
                 var rule = isInvalid ? invalidFieldMap.rule : "";
