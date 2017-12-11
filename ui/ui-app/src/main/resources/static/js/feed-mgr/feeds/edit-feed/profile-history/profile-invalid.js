@@ -38,12 +38,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
 
         //noinspection JSUnusedGlobalSymbols
         this.onLimitChange = function() {
-            getProfileValidation();
+            getProfileValidation().then(setupTable);
         };
 
         //noinspection JSUnusedGlobalSymbols
         this.onFilterChange = function() {
-            getProfileValidation();
+            getProfileValidation().then(setupTable);
         };
 
         var transformFn = function(row,columns,displayColumns){
@@ -87,6 +87,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
                     return col.name == 'dlp_reject_reason'
                 });
                 self.rows = result.rows;
+                console.log("headers", self.headers);
+                console.log("rows", self.rows);
 
                 self.loadingData = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','invalid');
@@ -123,12 +125,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             var HEADER_HEIGHT = 40;
             var PADDING = 40;
             var TABLE_CONTAINER_ID = "#fattable_container";
+
             var tableData = new fattable.SyncTableModel();
             var painter = new fattable.Painter();
 
             function get2dContext(idAttribute) {
                 var canvas = document.getElementById(idAttribute);
                 if (canvas === null) {
+                    console.log("creating new canvas element for " + idAttribute);
                     canvas = document.createElement("canvas");
                     canvas.setAttribute("id", idAttribute);
                     document.createDocumentFragment().appendChild(canvas);
@@ -148,7 +152,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
                 var headerTextWidth = headerContext.measureText(column.displayName).width;
                 var rowTextWidth = _.reduce(self.rows, function (previousMax, row) {
                     var textWidth = rowContext.measureText(row[column.displayName]).width;
-                    return Math.max(previousMax, textWidth);
+                    var validationError = row.invalidFieldMap[column.displayName];
+                    var ruleTextWidth = 0;
+                    var reasonTextWidth = 0;
+                    if (validationError !== undefined) {
+                        ruleTextWidth = rowContext.measureText(validationError.rule).width;
+                        reasonTextWidth = rowContext.measureText(validationError.reason).width;
+                    }
+                    return Math.max(previousMax, textWidth, ruleTextWidth, reasonTextWidth);
                 }, MIN_COLUMN_WIDTH);
 
                 columnWidths.push(Math.min(MAX_COLUMN_WIDTH, Math.max(headerTextWidth, rowTextWidth)) + PADDING);
