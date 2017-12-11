@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function (angular,moduleName) {
 
 
     var directive = function () {
@@ -46,15 +46,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             getProfileValidation();
         };
 
-        $scope.gridOptions = {
-            columnDefs: [],
-            rowHeight: 70,
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true,
-            useExternalSorting: false
-        };
-
         var transformFn = function(row,columns,displayColumns){
             var invalidFields = [];
             var invalidFieldMap = {};
@@ -83,26 +74,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         };
 
-        var addCellTemplate = function(columns) {
-            var cellTemplate =
-                '<div layout="column" class="ui-grid-cell-contents">' +
-                '        <div flex="100" ng-class="{ \'warn\': row.entity.invalidField(col.colDef.name) != undefined }">' +
-                '            {{row.entity[col.colDef.name]}}' +
-                '        </div>' +
-                '        <div flex="100" class="violation hint">' +
-                '                {{row.entity.invalidField(col.colDef.name).rule}}' +
-                '                <br>' +
-                '                {{row.entity.invalidField(col.colDef.name).reason}}' +
-                '        </div>' +
-                '</div>';
-
-            angular.forEach(columns, function(column) {
-                column.cellTemplate = cellTemplate;
-            });
-
-            return columns;
-        };
-
         var errorFn = function (err) {
             self.loadingData = false;
         };
@@ -111,11 +82,11 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
             var successFn = function (response) {
                 var result = self.queryResults = HiveService.transformResultsToUiGridModel(response, [], transformFn);
-                $scope.gridOptions.columnDefs = addCellTemplate(result.columns);
-                $scope.gridOptions.columnDefs = _.reject($scope.gridOptions.columnDefs, function(col) {
+                self.headers = result.columns;
+                self.headers = _.reject(self.headers, function(col) {
                     return col.name == 'dlp_reject_reason'
                 });
-                $scope.gridOptions.data = result.rows;
+                self.rows = result.rows;
 
                 self.loadingData = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','invalid');
@@ -145,10 +116,85 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             return promise;
         }
 
-        getFilterOptions();
-        getProfileValidation();
-    };
+        function setupTable() {
+            var COLUMN_WIDTH = 150;
+            var ROW_HEIGHT = 53;
+            var HEADER_HEIGHT = 40;
 
+            var tableData = new fattable.SyncTableModel();
+            tableData.columnHeaders = [];
+            var columnWidths = [];
+            for (var i = 0; i < self.headers.length; i++) {
+                columnWidths.push(COLUMN_WIDTH);
+                var headerName = self.headers[i].displayName;
+                tableData.columnHeaders.push(headerName);
+            }
+
+            var painter = new fattable.Painter();
+
+            painter.fillCell = function (cellDiv, data) {
+                var classname = "";
+                if (data.rowId % 2 === 0) {
+                    classname = "even";
+                }
+                else {
+                    classname = "odd";
+                }
+
+                var html = data.value;
+                if (data.isInvalid) {
+                    html += '<br><span class="violation hint">' + data.rule + '</span>';
+                    html += '<br><span class="violation hint">' + data.reason + '</span>';
+                    classname += " warn";
+                }
+                cellDiv.innerHTML = html;
+                cellDiv.className = classname;
+            };
+
+            painter.fillHeader = function(headerDiv, header) {
+                headerDiv.innerHTML = '<div>' + header + '</div>';
+            };
+
+            tableData.getCellSync = function (i, j) {
+                var displayName = self.headers[j].displayName;
+                var row = self.rows[i];
+                var invalidFieldMap = row.invalidFieldMap[displayName];
+                var isInvalid = invalidFieldMap !== undefined;
+                var rule = isInvalid ? invalidFieldMap.rule : "";
+                var reason = isInvalid ? invalidFieldMap.reason : "";
+                return {
+                    "value": row[displayName],
+                    "isInvalid": isInvalid,
+                    "rule": rule,
+                    "reason": reason,
+                    "rowId": i
+                };
+            };
+
+            tableData.getHeaderSync = function(j) {
+                return tableData.columnHeaders[j];
+            };
+
+            var table = fattable({
+                "container": "#fattable_container",
+                "model": tableData,
+                "nbRows": self.rows.length,
+                "rowHeight": ROW_HEIGHT,
+                "headerHeight": HEADER_HEIGHT,
+                "painter": painter,
+                "columnWidths": columnWidths
+            });
+
+            window.onresize = function () {
+                table.setup();
+            };
+
+            table.setup();
+        }
+
+        getFilterOptions();
+        getProfileValidation().then(setupTable);
+    };
 
     angular.module(moduleName).controller('FeedProfileInvalidResultsController', ["$scope","$http","FeedService","RestUrlService","HiveService","Utils","BroadcastService",controller]);
 
