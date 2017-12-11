@@ -115,7 +115,7 @@
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.jetty.aggregate</groupId>
-					<artifactId>*</artifactId>
+					<artifactId>jetty-all</artifactId>
 				</exclusion>
 				<exclusion>
 					<artifactId>httpcomponents-client</artifactId>
