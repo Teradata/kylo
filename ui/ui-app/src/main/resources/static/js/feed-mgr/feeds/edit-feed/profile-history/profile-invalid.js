@@ -87,8 +87,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
                     return col.name == 'dlp_reject_reason'
                 });
                 self.rows = result.rows;
-                console.log("headers", self.headers);
-                console.log("rows", self.rows);
 
                 self.loadingData = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','invalid');
