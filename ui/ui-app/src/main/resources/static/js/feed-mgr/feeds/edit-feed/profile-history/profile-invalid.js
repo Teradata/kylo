@@ -122,26 +122,23 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             var ROW_HEIGHT = 53;
             var HEADER_HEIGHT = 40;
             var PADDING = 40;
-            var TABLE_CONTAINER_ID = "#fattable_container";
+            var HEADER_FONT = "bold 12px Roboto, \"Helvetica Neue\", sans-serif";
+            var ROW_FONT = "14px Roboto, \"Helvetica Neue\", sans-serif";
+            var TABLE_CONTAINER_ID = "#invalidProfile";
 
             var tableData = new fattable.SyncTableModel();
             var painter = new fattable.Painter();
 
-            function get2dContext(idAttribute) {
-                var canvas = document.getElementById(idAttribute);
-                if (canvas === null) {
-                    canvas = document.createElement("canvas");
-                    canvas.setAttribute("id", idAttribute);
-                    document.createDocumentFragment().appendChild(canvas);
-                }
-                return canvas.getContext("2d");
+            function get2dContext(font) {
+                var canvas = document.createElement("canvas");
+                document.createDocumentFragment().appendChild(canvas);
+                var context = canvas.getContext("2d");
+                context.font = font;
+                return context;
             }
 
-            var headerContext = get2dContext("invalidProfileTableHeader");
-            headerContext.font = "bold 12px Roboto, \"Helvetica Neue\", sans-serif";
-
-            var rowContext = get2dContext("invalidProfileTableRow");
-            rowContext.font = "14px Roboto, \"Helvetica Neue\", sans-serif";
+            var headerContext = get2dContext(HEADER_FONT);
+            var rowContext = get2dContext(ROW_FONT);
 
             tableData.columnHeaders = [];
             var columnWidths = [];
