@@ -588,7 +588,9 @@ define(["angular", "feed-mgr/visual-query/module-name", "feed-mgr/visual-query/V
 
             // Check if updates are necessary
             var newScript = self.sparkShellService.getFeedScript();
-            if (newScript === feedModel.dataTransformation.dataTransformScript) {
+            if (newScript === feedModel.dataTransformation.dataTransformScript
+                    && feedModel.table.tableSchema.fields
+                    && feedModel.table.tableSchema.fields.length === self.sparkShellService.getFields().length) {
                 var result = $q.defer();
                 result.reject(true);
                 return result.promise;

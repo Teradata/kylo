@@ -101,6 +101,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         function onDataTransformSchemaLoaded() {
             self.syncFeedsColumns();
+            ensurePartitionData();
             validate();
         }
 
@@ -551,7 +552,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          */
         this.getColumnDefinition = function (fieldName) {
 
-            return _.find(self.model.table.fields, function (field) {
+            return _.find(self.model.table.tableSchema.fields, function (field) {
                 return field.name == fieldName;
             });
         };
