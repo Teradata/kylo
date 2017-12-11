@@ -117,20 +117,43 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
         }
 
         function setupTable() {
-            var COLUMN_WIDTH = 150;
+            var MIN_COLUMN_WIDTH = 50;
+            var MAX_COLUMN_WIDTH = 300;
             var ROW_HEIGHT = 53;
             var HEADER_HEIGHT = 40;
-
+            var PADDING = 40;
+            var TABLE_CONTAINER_ID = "#fattable_container";
             var tableData = new fattable.SyncTableModel();
-            tableData.columnHeaders = [];
-            var columnWidths = [];
-            for (var i = 0; i < self.headers.length; i++) {
-                columnWidths.push(COLUMN_WIDTH);
-                var headerName = self.headers[i].displayName;
-                tableData.columnHeaders.push(headerName);
+            var painter = new fattable.Painter();
+
+            function get2dContext(idAttribute) {
+                var canvas = document.getElementById(idAttribute);
+                if (canvas === null) {
+                    canvas = document.createElement("canvas");
+                    canvas.setAttribute("id", idAttribute);
+                    document.createDocumentFragment().appendChild(canvas);
+                }
+                return canvas.getContext("2d");
             }
 
-            var painter = new fattable.Painter();
+            var headerContext = get2dContext("invalidProfileTableHeader");
+            headerContext.font = "bold 12px Roboto, \"Helvetica Neue\", sans-serif";
+
+            var rowContext = get2dContext("invalidProfileTableRow");
+            rowContext.font = "14px Roboto, \"Helvetica Neue\", sans-serif";
+
+            tableData.columnHeaders = [];
+            var columnWidths = [];
+            _.each(self.headers, function(column) {
+                var headerTextWidth = headerContext.measureText(column.displayName).width;
+                var rowTextWidth = _.reduce(self.rows, function (previousMax, row) {
+                    var textWidth = rowContext.measureText(row[column.displayName]).width;
+                    return Math.max(previousMax, textWidth);
+                }, MIN_COLUMN_WIDTH);
+
+                columnWidths.push(Math.min(MAX_COLUMN_WIDTH, Math.max(headerTextWidth, rowTextWidth)) + PADDING);
+                tableData.columnHeaders.push(column.displayName);
+            });
 
             painter.fillCell = function (cellDiv, data) {
                 var classname = "";
@@ -176,7 +199,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'fattable'], function 
             };
 
             var table = fattable({
-                "container": "#fattable_container",
+                "container": TABLE_CONTAINER_ID,
                 "model": tableData,
                 "nbRows": self.rows.length,
                 "rowHeight": ROW_HEIGHT,
