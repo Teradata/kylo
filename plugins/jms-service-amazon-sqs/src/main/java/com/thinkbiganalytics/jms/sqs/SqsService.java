@@ -36,6 +36,7 @@ import javax.inject.Inject;
 import javax.jms.JMSException;
 import javax.jms.Queue;
 import javax.jms.Session;
+import javax.jms.Topic;
 
 /**
  * Amazon SQS Service
@@ -91,5 +92,10 @@ public class SqsService implements JmsService {
         LOG.info("Pre-creating Queues");
         getQueue(Queues.FEED_MANAGER_QUEUE);
         getQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE);
+    }
+
+    @Override
+    public Topic getTopic(String topicName) {
+        throw new UnsupportedOperationException("Topics not supported on SQS");
     }
 }
