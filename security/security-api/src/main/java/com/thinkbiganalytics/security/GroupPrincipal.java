@@ -41,6 +41,10 @@ public class GroupPrincipal extends BasePrincipal implements Group {
 
     private final Set<Principal> members;
     private final int hash; // Since this is immutable it only has to be calculated once.
+    
+    public GroupPrincipal(String name) {
+        this(name, Collections.emptySet());
+    }
 
     public GroupPrincipal(String name, Principal... members) {
         this(name, members.length > 0 ? new HashSet<>(Arrays.asList(members)) : Collections.emptySet());
