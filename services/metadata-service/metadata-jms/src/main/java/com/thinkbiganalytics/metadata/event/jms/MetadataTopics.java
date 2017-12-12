@@ -29,4 +29,10 @@ public interface MetadataTopics {
      * Indicates changes to a data source
      */
     String DATASOURCE_CHANGE = "datasourceChange";
+
+    /**
+     * Indicates changes to a savepoint
+     */
+    String SAVEPOINT_CHANGE = "savepointChange";
+
 }

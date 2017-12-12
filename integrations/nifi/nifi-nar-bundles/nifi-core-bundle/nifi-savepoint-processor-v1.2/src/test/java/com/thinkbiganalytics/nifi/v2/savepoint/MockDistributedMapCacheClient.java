@@ -20,13 +20,13 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
-
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.distributed.cache.client.Deserializer;
 import org.apache.nifi.distributed.cache.client.DistributedMapCacheClient;
 import org.apache.nifi.distributed.cache.client.Serializer;
+import org.apache.tika.io.IOUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -41,26 +41,26 @@ public class MockDistributedMapCacheClient extends AbstractControllerService imp
 
     private <K> String serialize(K v, Serializer<K> serializer) {
 
-        ByteOutputStream os = new ByteOutputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             serializer.serialize(v, os);
             return os.toString();
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            os.close();;
+            IOUtils.closeQuietly(os);
         }
     }
 
 
     private <V>V deserialize(String svalue, Deserializer<V> deserializer) {
-        ByteOutputStream os = new ByteOutputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         try {
             return deserializer.deserialize(svalue.getBytes());
         } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
-            os.close();;
+            IOUtils.closeQuietly(os);
         }
     }
 

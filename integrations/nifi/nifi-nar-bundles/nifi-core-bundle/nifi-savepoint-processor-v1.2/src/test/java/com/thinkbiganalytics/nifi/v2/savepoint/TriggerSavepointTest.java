@@ -60,6 +60,7 @@ public class TriggerSavepointTest {
 
         runner.addControllerService("service", service, serviceProperties);
         runner.enableControllerService(service);
+        runner.setProperty(SetSavepoint.SAVEPOINT_SERVICE, "service");
 
         runner.setProperty(TriggerSavepoint.SAVEPOINT_ID, "${savepointid}");
         runner.setProperty(TriggerSavepoint.BEHAVIOR, TriggerSavepoint.RETRY);
