@@ -117,7 +117,7 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     /**
      * Decodes the specified JWT cookie into tokens.
      *
-     * <p>The first element of the return value with be the JWT subject. The remaining elements are the elements in the {@code groups} list.</p>
+     * <p>The first element of the return value with be the JWT subject. The remaining element (should be 1) is the principals JSON token.</p>
      *
      * @param cookie the JWT cookie
      * @return an array with the username and group names
@@ -135,12 +135,12 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
 
         // Parse the cookie
         final String user;
-        final List<String> groups;
+        final List<String> principalsClaim;
 
         try {
             final JwtClaims claims = consumer.processToClaims(cookie);
             user = claims.getSubject();
-            groups = claims.getStringListClaimValue(PRINCIPALS);
+            principalsClaim = claims.getStringListClaimValue(PRINCIPALS);
         } catch (final InvalidJwtException e) {
             log.debug("JWT cookie is invalid: ", e);
             throw new InvalidCookieException("JWT cookie is invalid: " + e);
@@ -155,7 +155,7 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
 
         // Build the token array
         final Stream<String> userStream = Stream.of(user);
-        final Stream<String> groupStream = groups.stream();
+        final Stream<String> groupStream = principalsClaim.stream();
         return Stream.concat(userStream, groupStream).toArray(String[]::new);
     }
 
@@ -224,7 +224,6 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
     @Override
     protected UserDetails processAutoLoginCookie(@Nonnull final String[] tokens, @Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response) {
         final Collection<? extends GrantedAuthority> authorities = generateAuthorities(tokens[1]);
-//        final List<GrantedAuthority> authorities = Arrays.asList(tokens).subList(1, tokens.length).stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList());
         return new User(tokens[0], "", authorities);
     }
 
@@ -266,7 +265,7 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      * @param collection the authorities produced after login
      * @return a JSON string describing the principals derived from the authorities
      */
-    private String generatePrincipalsToken(Collection<? extends GrantedAuthority> authorities) {
+    protected String generatePrincipalsToken(Collection<? extends GrantedAuthority> authorities) {
         PrincipalsToken token = new PrincipalsToken();
         ObjectWriter writer = mapper.writer().forType(PrincipalsToken.class);
         
@@ -282,7 +281,13 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         }
     }
 
-    private Collection<? extends GrantedAuthority> generateAuthorities(String jsonString) {
+    /**
+     * Deserializes the JSON of the principals token back into JaasGrantedAuthrities containing
+     * principals of the same types as when they were serialized.
+     * @param jsonString a JSON string describing the principals derived from the authorities
+     * @return the original authorities produced after login
+     */
+    protected Collection<? extends GrantedAuthority> generateAuthorities(String jsonString) {
         ObjectReader reader = mapper.reader().forType(PrincipalsToken.class);
         
         try {
