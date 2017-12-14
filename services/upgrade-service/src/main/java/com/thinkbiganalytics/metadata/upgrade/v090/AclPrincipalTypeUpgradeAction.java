@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.upgrade.v090;
  */
 
 import java.security.Principal;
+import java.security.acl.Group;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -51,6 +52,8 @@ import com.thinkbiganalytics.metadata.modeshape.template.security.JcrTemplateAll
 import com.thinkbiganalytics.security.BasePrincipal;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
@@ -62,6 +65,9 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 public class AclPrincipalTypeUpgradeAction implements UpgradeState {
 
     private static final Logger log = LoggerFactory.getLogger(AclPrincipalTypeUpgradeAction.class);
+    
+    @Inject
+    private AllowedEntityActionsProvider actionsProvider;
     
     @Inject
     private UserProvider userProvider;
@@ -91,11 +97,21 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
             .map(UserGroup::getSystemName)
             .collect(Collectors.toSet());
 
-        upgradeTemplates(groupNames);
-        upgradeCategories(groupNames);
-        upgradeFeeds(groupNames);
+        upgradeServices(groupNames);
         upgradeDataSources(groupNames);
+        upgradeFeeds(groupNames);
+        upgradeCategories(groupNames);
+        upgradeTemplates(groupNames);
 
+    }
+
+    /**
+     * @param groupNames
+     */
+    private void upgradeServices(Set<String> groupNames) {
+        actionsProvider.getAllowedActions(AllowedActions.SERVICES)
+            .map(JcrAllowedActions.class::cast)
+            .ifPresent(allowed -> upgrade(allowed, groupNames));
     }
 
     private void upgradeTemplates(Set<String> groupNames) {
@@ -152,9 +168,19 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
                             UsernamePrincipal newPrincipal = new UsernamePrincipal(principal.getName());
                             allowed.enable(newPrincipal, action);
                         }
-                        
-                        allowed.disable(new RemovedPrincipal(principal), action);
                     });
+            });
+        
+        allowed.streamActions()
+            .forEach(action -> {
+                allowed.getPrincipalsAllowedAll(action).stream()
+                .filter(this::isUpgradable)
+                .forEach(principal -> {
+                    // If the principal name does not match a group name then assume it is a user.
+                    if (! (principal instanceof UsernamePrincipal || principal instanceof Group)) {
+                        allowed.disable(new RemovedPrincipal(principal), action);
+                    }
+                });
             });
     }
     
@@ -165,82 +191,4 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
             super(principal.getName());
         }
     }
-
-//    private void upgradeAllowableActions(Set<String> groupNames) {
-//        try {
-//            Session session = JcrMetadataAccess.getActiveSession();
-//            String query = "SELECT * FROM [" + JcrAllowableAction.NODE_TYPE + "] ";
-//            QueryResult result = JcrQueryUtil.query(session, query);
-//            NodeIterator itr = result.getNodes();
-//            int count = 0;
-//            
-//            while (itr.hasNext()) {
-//                Node actionNode = itr.nextNode();
-//                
-//                upgradeAclPrincipals(actionNode, groupNames);
-//                count++;
-//                
-//                if (count % 100 == 0) log.info("Completed {} principal type upgrades for permitted actions", count);
-//            }
-//        } catch (RepositoryException e) {
-//            throw new UpgradeException("Failed to upgrade principal types in ACLs", e);
-//        }
-//    }
-//
-//    private void upgradeAclPrincipals(Node node, Set<String> groupNames) throws RepositoryException {
-//        Map<Principal, Set<Privilege>> privsMap = JcrAccessControlUtil.getAllPrivileges(node);
-//        
-//        for (Entry<Principal, Set<Privilege>> entry : privsMap.entrySet()) {
-//            if (entry.getKey() instanceof SimplePrincipal) {
-//                Principal derived = derivePrincipal(entry.getKey(), groupNames);
-//                
-//                // Never remove the special "admin" principal from any ACL, and do not remove
-//                // an entry if the derived principal is the same as the original.
-//                if (! entry.getKey().getName().equals("admin") && ! entry.getKey().equals(derived)) {
-//                    JcrAccessControlUtil.removeAllPermissions(node, entry.getKey());
-//                }
-//                
-//                // Re-add the same privileges for the newly-derived principal.
-//                JcrAccessControlUtil.addPermissions(node, derived, entry.getValue().stream().toArray(Privilege[]::new));
-//            }
-//        }
-//    }
-//
-//    private Principal derivePrincipal(Principal principal, Set<String> groupNames) {
-//        // If the principal name does not match a group name then assume it is a user.
-//        if (groupNames.contains(principal.getName())) {
-//            return new GroupPrincipal(principal.getName());
-//        } else {
-//            return new UsernamePrincipal(principal.getName());
-//        }
-//    }
-    
-    
-//    private class FeedUpgradeAllowedActions extends JcrFeedAllowedActions {
-//
-//        public FeedUpgradeAllowedActions(JcrFeedAllowedActions allowed, FeedOpsAccessControlProvider opsAccessProvider) {
-//            super(allowed.getNode(), opsAccessProvider);
-//        }
-//    }
-//    
-//    private class CategoryUpgradeAllowedActions extends JcrCategoryAllowedActions {
-//        
-//        public CategoryUpgradeAllowedActions(JcrCategoryAllowedActions allowed) {
-//            super(allowed.getNode());
-//        }
-//    }
-//    
-//    private class TemplateUpgradeAllowedActions extends JcrTemplateAllowedActions {
-//
-//        public TemplateUpgradeAllowedActions(JcrTemplateAllowedActions allowed) {
-//            super(allowed.getNode());
-//        }
-//    }
-//    
-//    private class DatasourceUpgradeAllowedActions extends JcrDatasourceAllowedActions {
-//
-//        public DatasourceUpgradeAllowedActions(JcrDatasourceAllowedActions allowed) {
-//            super(allowed.getNode());
-//        }
-//    }
 }
