@@ -174,13 +174,13 @@ public class AclPrincipalTypeUpgradeAction implements UpgradeState {
         allowed.streamActions()
             .forEach(action -> {
                 allowed.getPrincipalsAllowedAll(action).stream()
-                .filter(this::isUpgradable)
-                .forEach(principal -> {
-                    // If the principal name does not match a group name then assume it is a user.
-                    if (! (principal instanceof UsernamePrincipal || principal instanceof Group)) {
-                        allowed.disable(new RemovedPrincipal(principal), action);
-                    }
-                });
+                    .filter(this::isUpgradable)
+                    .forEach(principal -> {
+                        // If the principal name does not match a group name then assume it is a user.
+                        if (! (principal instanceof UsernamePrincipal || principal instanceof Group)) {
+                            allowed.disable(new RemovedPrincipal(principal), action);
+                        }
+                    });
             });
     }
     
