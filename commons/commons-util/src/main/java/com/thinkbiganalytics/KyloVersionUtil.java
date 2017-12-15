@@ -117,7 +117,7 @@ public class KyloVersionUtil {
     }
 
 
-    public String getBuildTimestamp() {
+    public static String getBuildTimestamp() {
         if (StringUtils.isBlank(buildTimestamp)) {
             getBuildVersionString();
         }
@@ -211,6 +211,11 @@ public class KyloVersionUtil {
 
         public void setTag(String tag) {
             this.tag = tag;
+        }
+        
+        @Override
+        public KyloVersion withoutTag() {
+            return new Version(this.getMajorVersion(), this.getMinorVersion(), this.getPointVersion(), null);
         }
 
         /**
