@@ -37,8 +37,12 @@ public class TestNifiTemplateNameUtil {
         String processGroupName = "my group";
         Assert.assertFalse(NifiTemplateNameUtil.isVersionedProcessGroup(processGroupName));
         String versionedName = NifiTemplateNameUtil.getVersionedProcessGroupName(processGroupName);
+        String versionedName2 = NifiTemplateNameUtil.getVersionedProcessGroupName(processGroupName,"v1234");
         Assert.assertTrue(NifiTemplateNameUtil.isVersionedProcessGroup(versionedName));
+        Assert.assertTrue(NifiTemplateNameUtil.isVersionedProcessGroup(versionedName2));
         Assert.assertEquals(processGroupName, NifiTemplateNameUtil.parseVersionedProcessGroupName(versionedName));
+        Assert.assertEquals(processGroupName, NifiTemplateNameUtil.parseVersionedProcessGroupName(versionedName2));
+        Assert.assertEquals("v1234", NifiTemplateNameUtil.getKyloVersionIdentifier(versionedName2));
     }
 
 }

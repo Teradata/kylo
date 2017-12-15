@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -203,6 +204,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private FeedHiveTableService feedHiveTableService;
+
+    @Inject
+    private TemplateConnectionUtil templateConnectionUtil;
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -550,7 +554,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder
-                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache)
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache, templateConnectionUtil)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)

@@ -101,4 +101,27 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
             throw new NifiComponentNotFoundException(outputPort.getId(), NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
         }
     }
+
+
+    @Override
+    public PortDTO getInputPort(@Nonnull String portId) {
+        final PortEntity current;
+        try {
+            current = client.get("/input-ports/" + portId, null, PortEntity.class);
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(portId, NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
+        }
+        return current.getComponent();
+    }
+
+    @Override
+    public PortDTO getOutputPort(@Nonnull String portId) {
+        final PortEntity current;
+        try {
+            current = client.get("/output-ports/" + portId, null, PortEntity.class);
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(portId, NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
+        }
+        return current.getComponent();
+    }
 }

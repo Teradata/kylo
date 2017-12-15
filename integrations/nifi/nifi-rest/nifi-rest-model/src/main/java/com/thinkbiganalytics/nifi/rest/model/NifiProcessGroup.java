@@ -52,6 +52,10 @@ public class NifiProcessGroup {
 
     private boolean rolledBack = false;
 
+    private VersionedProcessGroup versionedProcessGroup;
+
+    private boolean reusableFlowInstance;
+
     public NifiProcessGroup() {
         this(new ProcessGroupDTO());
     }
@@ -71,14 +75,14 @@ public class NifiProcessGroup {
         this.success = !this.hasFatalErrors();
     }
 
-    public void validateInputProcessor(){
-        if(this.errors == null){
+    public void validateInputProcessor() {
+        if (this.errors == null) {
             errors = new ArrayList<>();
         }
-        if(processGroupEntity == null){
+        if (processGroupEntity == null) {
             processGroupEntity = new ProcessGroupDTO();
             processGroupEntity.setName("Process Group");
-            if(inputProcessor != null) {
+            if (inputProcessor != null) {
                 processGroupEntity.setId(inputProcessor.getParentGroupId());
 
             }
@@ -94,7 +98,7 @@ public class NifiProcessGroup {
     }
 
     private boolean isErrorAlreadyRecorded(NiFiComponentErrors error) {
-        for (NiFiComponentErrors existingError: errors) {
+        for (NiFiComponentErrors existingError : errors) {
             if ((error.getProcessGroupId().equals(existingError.getProcessGroupId())) && (error.getProcessorId().equals(existingError.getProcessorId()))) {
                 return true;
             }
@@ -145,6 +149,14 @@ public class NifiProcessGroup {
 
     public ProcessGroupDTO getProcessGroupEntity() {
         return processGroupEntity;
+    }
+
+    public void updateProcessGroupContent(ProcessGroupDTO dto) {
+        if (processGroupEntity != null) {
+            processGroupEntity.setContents(dto.getContents());
+        } else {
+            this.processGroupEntity = dto;
+        }
     }
 
     public List<NiFiComponentErrors> getErrors() {
@@ -214,7 +226,7 @@ public class NifiProcessGroup {
     }
 
 
-    public void setInputProcessor(ProcessorDTO inputProcessor){
+    public void setInputProcessor(ProcessorDTO inputProcessor) {
         this.inputProcessor = inputProcessor;
     }
 
@@ -229,5 +241,21 @@ public class NifiProcessGroup {
 
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+
+    public VersionedProcessGroup getVersionedProcessGroup() {
+        return versionedProcessGroup;
+    }
+
+    public void setVersionedProcessGroup(VersionedProcessGroup versionedProcessGroup) {
+        this.versionedProcessGroup = versionedProcessGroup;
+    }
+
+    public boolean isReusableFlowInstance() {
+        return reusableFlowInstance;
+    }
+
+    public void setReusableFlowInstance(boolean reusableFlowInstance) {
+        this.reusableFlowInstance = reusableFlowInstance;
     }
 }

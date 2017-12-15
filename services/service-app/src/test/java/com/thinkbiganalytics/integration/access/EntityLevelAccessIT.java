@@ -28,7 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.rest.model.Action;
@@ -68,7 +68,7 @@ public class EntityLevelAccessIT extends IntegrationTestBase {
     private static final String TEST_FILE = "access.txt";
 
     private FeedCategory category;
-    private ExportImportTemplateService.ImportTemplate template;
+    private ImportTemplate template;
     private FeedMetadata feed;
 
     @Test
