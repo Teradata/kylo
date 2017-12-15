@@ -86,7 +86,9 @@
                             <md-input-container class="md-block condensed">
                                 <md-select name="port-{{connection.feedOutputPortName}}" ng-model="connection.inputPortDisplayName" ng-change="vm.onReusableTemplateConnectionChange(connection)"
                                            required>
-                                    <md-option ng-repeat="inputPort in vm.inputPortList" value="{{inputPort.value}}">{{inputPort.label}}</md-option>
+                                    <md-option ng-repeat="inputPort in vm.inputPortList" value="{{inputPort.value}}">
+                                        <span>{{inputPort.label}}</span> <span class="hint" ng-if="inputPort.description"> ({{inputPort.description | characters:50}})</span>
+                                    </md-option>
                                 </md-select>
                                 <div ng-messages="vm.registerTemplateForm['port-'+connection.feedOutputPortName].$error " md-auto-hide="false">
                                     <div ng-message="required">This field is required.</div>

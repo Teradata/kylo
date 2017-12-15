@@ -154,6 +154,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
      */
     private Map<String, Object> tableOption;
 
+
     public FeedMetadata() {
     }
 

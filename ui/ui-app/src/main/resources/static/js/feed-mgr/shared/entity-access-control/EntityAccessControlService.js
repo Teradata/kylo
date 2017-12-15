@@ -61,7 +61,6 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
 
         var data = angular.extend(svc, {
             entityRoleTypes: {CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource"},
-
             /**
              * Ensure the entity's roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
              * @param entity the entity to save

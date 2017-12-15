@@ -199,6 +199,12 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.hashids</groupId>
+      <artifactId>hashids</artifactId>
+      <version>1.0.3</version>
+    </dependency>
+
     <!-- Upload support -->
     <dependency>
       <groupId>com.github.mifmif</groupId>

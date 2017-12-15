@@ -168,18 +168,18 @@ public class FeedManagerMetadataService implements MetadataService {
                 enableFeed(feed.getFeedMetadata().getId());
                 //validate its enabled
                 ProcessorDTO processorDTO = feed.getFeedProcessGroup().getInputProcessor();
-               Optional<ProcessorDTO> updatedProcessor = nifiRestClient.getNiFiRestClient().processors().findById(processorDTO.getParentGroupId(),processorDTO.getId());
-               if(updatedProcessor.isPresent()){
-                   if(!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equalsIgnoreCase(updatedProcessor.get().getState())){
-                       feed.setSuccess(false);
-                       feed.getFeedProcessGroup().setInputProcessor(updatedProcessor.get());
-                       feed.getFeedProcessGroup().validateInputProcessor();
-                       if(feedMetadata.isNew() && feed.getFeedMetadata().getId() != null){
-                           //delete it
-                           deleteFeed(feed.getFeedMetadata().getId());
-                       }
-                   }
-               }
+                Optional<ProcessorDTO> updatedProcessor = nifiRestClient.getNiFiRestClient().processors().findById(processorDTO.getParentGroupId(), processorDTO.getId());
+                if (updatedProcessor.isPresent()) {
+                    if (!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equalsIgnoreCase(updatedProcessor.get().getState())) {
+                        feed.setSuccess(false);
+                        feed.getFeedProcessGroup().setInputProcessor(updatedProcessor.get());
+                        feed.getFeedProcessGroup().validateInputProcessor();
+                        if (feedMetadata.isNew() && feed.getFeedMetadata().getId() != null) {
+                            //delete it
+                            deleteFeed(feed.getFeedMetadata().getId());
+                        }
+                    }
+                }
             }
             //requery to get the latest version
             FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
@@ -213,12 +213,13 @@ public class FeedManagerMetadataService implements MetadataService {
 
         //check SLAs
         metadataAccess.read(() -> {
-        boolean hasSlas = serviceLevelAgreementService.hasServiceLevelAgreements(feedProvider.resolveFeed(feedId));
-        if(hasSlas) {
-            log.error("Unable to delete "+feed.getCategoryAndFeedDisplayName()+".  1 or more SLAs exist for this feed. ");
-            throw new IllegalStateException("Unable to delete the feed. 1 or more Service Level agreements exist for this feed " + feed.getCategoryAndFeedDisplayName() + ".  Please delete the SLA's, or remove the feed from the SLA's and try again.");
-        }
-        },MetadataAccess.SERVICE);
+            boolean hasSlas = serviceLevelAgreementService.hasServiceLevelAgreements(feedProvider.resolveFeed(feedId));
+            if (hasSlas) {
+                log.error("Unable to delete " + feed.getCategoryAndFeedDisplayName() + ".  1 or more SLAs exist for this feed. ");
+                throw new IllegalStateException("Unable to delete the feed. 1 or more Service Level agreements exist for this feed " + feed.getCategoryAndFeedDisplayName()
+                                                + ".  Please delete the SLA's, or remove the feed from the SLA's and try again.");
+            }
+        }, MetadataAccess.SERVICE);
 
         // Step 4: Delete hadoop authorization security policies if they exists
         if (hadoopAuthorizationService != null) {
@@ -472,13 +473,13 @@ public class FeedManagerMetadataService implements MetadataService {
     public Optional<Set<UserProperty>> getFeedUserFields(@Nonnull final String categoryId) {
         return feedProvider.getUserFields(categoryId);
     }
-    
+
     @Nonnull
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeFeeds) {
         return feedProvider.getFeedVersions(feedId, includeFeeds);
     }
-    
+
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }
@@ -553,6 +554,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     /**
      * Update a given feeds datasources clearing its sources/destinations before revaluating the data
+     *
      * @param feedId of the feed rest model to update
      */
     public void updateFeedDatasources(String feedId) {
@@ -563,7 +565,7 @@ public class FeedManagerMetadataService implements MetadataService {
      * Iterate all of the feeds, clear all sources/destinations and reassign
      * Note this will be an expensive call if you have a lot of feeds
      */
-    public void updateAllFeedsDatasources(){
+    public void updateAllFeedsDatasources() {
         feedProvider.updateAllFeedsDatasources();
     }
 }

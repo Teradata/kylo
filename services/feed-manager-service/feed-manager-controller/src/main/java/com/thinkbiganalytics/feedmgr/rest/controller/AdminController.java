@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
@@ -30,8 +29,16 @@ import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.exporting.FeedExporter;
+import com.thinkbiganalytics.feedmgr.service.feed.exporting.model.ExportFeed;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporterFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.exporting.TemplateExporter;
+import com.thinkbiganalytics.feedmgr.service.template.exporting.model.ExportTemplate;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -43,7 +50,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -82,10 +88,17 @@ public class AdminController {
     public static final String IMPORT_FEED_NEW = "/import-feed2";
 
     @Inject
-    ExportImportTemplateService exportImportTemplateService;
+    TemplateExporter templateExporter;
 
     @Inject
-    ExportImportFeedService exportImportFeedService;
+    FeedExporter feedExporter;
+
+    @Inject
+    TemplateImporterFactory templateImporterFactory;
+
+    @Inject
+    FeedImporterFactory feedImporterFactory;
+
 
     @Inject
     UploadProgressService uploadProgressService;
@@ -107,7 +120,7 @@ public class AdminController {
                   })
     public Response exportTemplate(@NotNull @Size(min = 36, max = 36, message = "Invalid templateId size")
                                    @PathParam("templateId") String templateId) {
-        ExportImportTemplateService.ExportTemplate zipFile = exportImportTemplateService.exportTemplate(templateId);
+        ExportTemplate zipFile = templateExporter.exportTemplate(templateId);
         return Response.ok(zipFile.getFile(), MediaType.APPLICATION_OCTET_STREAM)
             .header("Content-Disposition", "attachments; filename=\"" + zipFile.getFileName() + "\"") //optional
             .build();
@@ -125,7 +138,7 @@ public class AdminController {
     public Response exportFeed(@NotNull @Size(min = 36, max = 36, message = "Invalid feedId size")
                                @PathParam("feedId") String feedId) {
         try {
-            ExportImportFeedService.ExportFeed zipFile = exportImportFeedService.exportFeed(feedId);
+            ExportFeed zipFile = feedExporter.exportFeed(feedId);
             return Response.ok(zipFile.getFile(), MediaType.APPLICATION_OCTET_STREAM)
                 .header("Content-Disposition", "attachments; filename=\"" + zipFile.getFileName() + "\"") //optional
                 .build();
@@ -161,7 +174,7 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a feed zip file.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
+                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ImportFeed.class),
                       @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
                   })
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
@@ -196,20 +209,21 @@ public class AdminController {
 
         options.setCategorySystemName(categorySystemName);
 
-        if(StringUtils.isNotBlank(templateProperties)) {
+        if (StringUtils.isNotBlank(templateProperties)) {
             List<ImportProperty> properties = ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
             });
             options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setProperties(properties);
         }
 
-        if(StringUtils.isNotBlank(feedProperties)) {
+        if (StringUtils.isNotBlank(feedProperties)) {
             List<ImportProperty> properties = ObjectMapperSerializer.deserialize(feedProperties, new TypeReference<List<ImportProperty>>() {
             });
             options.findImportComponentOption(ImportComponent.FEED_DATA).setProperties(properties);
         }
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-        ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
+        FeedImporter feedImporter = feedImporterFactory.apply(fileMetaData.getFileName(), content, options);
+        ImportFeed importFeed = feedImporter.validateAndImport();
 
         return Response.ok(importFeed).build();
     }
@@ -224,7 +238,7 @@ public class AdminController {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a template xml or zip file.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
+                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ImportTemplate.class),
                       @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
                   })
     public Response uploadTemplatex(@NotNull @FormDataParam("file") InputStream fileInputStream,
@@ -260,14 +274,15 @@ public class AdminController {
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(overwrite);
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(true);
         options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(true);
-        if(StringUtils.isNotBlank(templateProperties)) {
+        if (StringUtils.isNotBlank(templateProperties)) {
             List<ImportProperty> properties = ObjectMapperSerializer.deserialize(templateProperties, new TypeReference<List<ImportProperty>>() {
             });
             options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setProperties(properties);
         }
 
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
+        TemplateImporter templateImporter = templateImporterFactory.apply(fileMetaData.getFileName(), content, options);
+        ImportTemplate importTemplate = templateImporter.validateAndImport();
 
         return Response.ok(importTemplate).build();
     }

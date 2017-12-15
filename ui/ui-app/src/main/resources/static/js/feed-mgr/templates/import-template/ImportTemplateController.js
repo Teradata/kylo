@@ -1,12 +1,18 @@
 define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
 
-    var controller = function ($scope, $http,$interval, $timeout,$mdDialog, FileUpload, RestUrlService, ImportService) {
+    var controller = function ($scope, $http,$interval, $timeout,$mdDialog, FileUpload, RestUrlService, ImportService,RegisterTemplateService) {
 
         /**
          * reference to the controller
          * @type {controller}
          */
         var self = this;
+
+        /**
+         * the angular ng-form for validity checks
+         * @type {{}}
+         */
+        this.importTemplateForm = {};
 
         /**
          * The file to upload
@@ -88,11 +94,39 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         this.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
 
         /**
+         * Connection information options to connect out ports to other input ports
+         */
+        this.templateConnectionInfoImportOption = ImportService.newTemplateConnectionInfoImportOption();
+
+        /**
          * Called when a user changes a import option for overwriting
          */
         this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
 
+        /**
+         * Flag to indicate we need to ask the user to wire and connect the reusable flow out ports to other input ports
+         * @type {boolean}
+         */
+        this.reusableTemplateInputPortsNeeded = false;
 
+        /**
+         * Flag to indicate a connection is needed, but unable to find any
+         * @type {boolean}
+         */
+        this.noReusableConnectionsFound = false;
+
+        /**
+         * A map of the port names to the port Object
+         * used for the connections from the outputs to input ports
+         * @type {{}}
+         */
+        this.connectionMap = {};
+
+        /**
+         * The available options in the list of possible inputPorts to connect to
+         * @type {Array} of {label: port.name, value: port.name}
+         */
+        this.inputPortList = [];
 
         self.importResult = null;
         self.importResultIcon = "check_circle";
@@ -102,6 +136,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         self.errorCount = 0;
 
         self.showReorderList = false;
+
+        self.xmlType = false;
 
 
 
@@ -113,6 +149,13 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             var uploadUrl = RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
             var successFn = function (response) {
                 var responseData = response.data;
+                self.xmlFile = !responseData.zipFile;
+
+                var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : ''
+
+                var count = 0;
+                var errorMap = {"FATAL": [], "WARN": []};
+
             /*
                if(responseData.importOptions.properties){
                     _.each(responseData.importOptions.properties,function(prop){
@@ -128,13 +171,40 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 //map the options back to the object map
                 updateImportOptions(importComponentOptions);
 
-                if(!responseData.valid){
+                if(!responseData.valid  || !responseData.success){
                     //Validation Error.  Additional Input is needed by the end user
                     self.additionalInputNeeded = true;
+                    if(responseData.reusableFlowOutputPortConnectionsNeeded) {
+                        self.importResult = responseData;
+                        self.importResultIcon = "warning";
+                        self.importResultIconColor = "#FF9901";
+                        self.noReusableConnectionsFound = false;
+                        self.reusableTemplateInputPortsNeeded = true;
+                        self.message = "Additional connection information needed";
+                        //show the user the list and allow them to configure and save it.
+
+                        //add button that will make these connections
+                        RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (inputPortsResponse) {
+                            //Update connectionMap and inputPortList
+                            self.inputPortList = [];
+                            if (inputPortsResponse.data) {
+                                angular.forEach(inputPortsResponse.data, function (port, i) {
+                                    var disabled = angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName ==processGroupName
+                                    self.inputPortList.push({label: port.name, value: port.name, description:port.destinationProcessGroupName, disabled:disabled});
+                                    self.connectionMap[port.name] = port;
+                                });
+                            }
+                            if(self.inputPortList.length ==0){
+                                self.noReusableConnectionsFound = true;
+                            }
+
+                        });
+                    }
+
+
                 }
                 else {
-                    var count = 0;
-                    var errorMap = {"FATAL": [], "WARN": []};
+
                     self.importResult = responseData;
                     //if(responseData.templateResults.errors) {
                     if (responseData.templateResults.errors) {
@@ -156,7 +226,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     }
 
                     if (count == 0) {
-                        self.showReorderList = true;
+                        self.showReorderList = responseData.zipFile;
                         self.importResultIcon = "check_circle";
                         self.importResultIconColor = "#009933";
                         if (responseData.zipFile == true) {
@@ -170,7 +240,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     else {
                         if (responseData.success) {
                             resetImportOptions();
-                            self.showReorderList = true;
+                            self.showReorderList = responseData.zipFile;
                             self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
                             self.importResultIcon = "warning";
                             self.importResultIconColor = "#FF9901";
@@ -243,6 +313,31 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         });
 
+        /**
+         * Called when the user changes the output port connections
+         * @param connection
+         */
+        self.onReusableTemplateConnectionChange = function (connection) {
+            var port = self.connectionMap[connection.inputPortDisplayName];
+            connection.reusableTemplateInputPortName = port.name;
+            self.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+        };
+
+        self.setReusableConnections = function(){
+            //TEMPLATE_CONNECTION_INFORMATION
+            //submit form again for upload
+            self.importComponentOptions[ImportService.importComponentTypes.TEMPLATE_CONNECTION_INFORMATION].connectionInfo = self.importResult.reusableTemplateConnections;
+            self.importTemplate();
+
+        }
+
+
+        self.cancelImport = function(){
+            //reset and reneable import button
+            resetImportOptions();
+            self.uploadStatusMessages =[];
+            self.importResult = null;
+        }
 
 
 
@@ -290,10 +385,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
 
+            self.templateConnectionInfoImportOption = ImportService.newTemplateConnectionInfoImportOption();
+
             indexImportOptions();
             setDefaultImportOptions();
 
             self.additionalInputNeeded = false;
+
+            self.reusableTemplateInputPortsNeeded = false;
+            self.inputPortList = [];
+            self.connectionMap = {};
 
         }
 
@@ -319,6 +420,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 }
                 else if(option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE){
                     self.nifiTemplateImportOption= option;
+                }
+                else if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_CONNECTION_INFORMATION){
+                    self.templateConnectionInfoImportOption= option;
                 }
                 self.importComponentOptions[option.importComponent] = option;
             });
@@ -374,7 +478,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     };
 
-    angular.module(moduleName).controller('ImportTemplateController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","ImportService",controller]);
+    angular.module(moduleName).controller('ImportTemplateController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","ImportService","RegisterTemplateService",controller]);
 
 
 });
