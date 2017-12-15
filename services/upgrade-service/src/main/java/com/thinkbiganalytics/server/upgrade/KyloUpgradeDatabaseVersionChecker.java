@@ -69,7 +69,7 @@ public class KyloUpgradeDatabaseVersionChecker {
         KyloVersion version = null;
         Connection connection = null;
         Statement statement = null;
-        ResultSet resultSet = null;
+        ResultSet rs = null;
 
         try {
             String user = environmentProperties.getPropertyValueAsString("spring.datasource.username");
@@ -87,7 +87,7 @@ public class KyloUpgradeDatabaseVersionChecker {
             connection = dataSource.getConnection();
             String query = "SELECT * FROM KYLO_VERSION ORDER BY MAJOR_VERSION DESC, MINOR_VERSION DESC, POINT_VERSION DESC, TAG DESC";
             statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(query);
+            rs = statement.executeQuery(query);
             if (rs.next()) {
                 String majorVersion = rs.getString("MAJOR_VERSION");
                 String minorVersion = rs.getString("MINOR_VERSION");
@@ -102,7 +102,7 @@ public class KyloUpgradeDatabaseVersionChecker {
             log.error("Error has occurred so upgrade is needed", e);
         } finally {
             JdbcUtils.closeStatement(statement);
-            JdbcUtils.closeResultSet(resultSet);
+            JdbcUtils.closeResultSet(rs);
             JdbcUtils.closeConnection(connection);
         }
         return version;
