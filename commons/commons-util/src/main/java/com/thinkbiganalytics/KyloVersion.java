@@ -66,6 +66,11 @@ public interface KyloVersion extends Comparable<KyloVersion> {
      * @return the tag or and empty string if this version has no tag
      */
     String getTag();
+    
+    /**
+     * @return this version without the tag value.
+     */
+    KyloVersion withoutTag();
 
     /**
      * Return a description of the Kylo version deployed
