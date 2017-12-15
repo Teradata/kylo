@@ -400,6 +400,14 @@ public class TemplatesRestController {
         RegisteredTemplate registeredTemplate = null;
         if(registeredTemplateRequest.isTemplateEdit()) {
           registeredTemplate = registeredTemplateService.getRegisteredTemplateForUpdate(registeredTemplateRequest);
+          if(registeredTemplate != null &&  registeredTemplate.getNifiTemplate() != null && registeredTemplate.getNifiTemplate().getSnippet() != null) {
+                //ensure the template has processors
+                boolean valid = registeredTemplate.getNifiTemplate().getSnippet().getProcessors().size() >0;
+                if(!valid){
+                    throw new WebApplicationException("In order to register the template you need to have one or more processors at the root level of the template.");
+                }
+
+            }
         }
         else {
             registeredTemplate = registeredTemplateService.findRegisteredTemplate(registeredTemplateRequest);
@@ -407,6 +415,7 @@ public class TemplatesRestController {
         if(registeredTemplate == null) {
             throw new WebApplicationException("Unable to find the template "+ templateName != null ? templateName : templateId+". The template either doesnt exist, or you do not have access to edit this template.");
         }
+
         return Response.ok(registeredTemplate).build();
     }
 
