@@ -20,14 +20,17 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.security.JcrFeedAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.role.SecurityRole;
 
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.security.Principal;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -121,6 +124,16 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
         return this.opsAccessProvider;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin#enableAccessControl(com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions, java.security.Principal, java.util.List)
+     */
+    @Override
+    public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> roles) {
+        AccessControlledMixin.super.enableAccessControl(prototype, owner, roles);
+        
+        JcrAbstractRoleMembership.enableOnlyForAll(getCategory().getFeedRoleMemberships().stream(), this.getAllowedActions());
     }
 
     // -=-=--=-=- Delegate Propertied methods to data -=-=-=-=-=-
