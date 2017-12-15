@@ -539,9 +539,7 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_OK);
 
-        final NifiFeed result = response.as(NifiFeed.class);
-        Assert.assertTrue("Server failed to create feed", result.isSuccess());
-        return result;
+        return response.as(NifiFeed.class);
     }
 
     protected PartitionField byYear(String fieldName) {
