@@ -38,22 +38,15 @@ public class FailFastUsersRolesLoginModule extends UsersRolesLoginModule {
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
-        checkConfig(options.get("usersProperties"), options.get("rolesProperties"));
+        checkConfig(options.get("usersProperties"));
     }
 
-    void checkConfig(Object usersResource, Object rolesResource) {
+    void checkConfig(Object usersResource) {
         try {
             this.loadUsers();
         } catch (IOException e) {
             String msg = String.format("auth-file is configured but no users resource is found "
                          + "- please verify the config property security.auth.file.users=%s", usersResource);
-            throw new IllegalStateException(msg);
-        }
-        try {
-            this.loadRoles();
-        } catch (IOException e) {
-            String msg = String.format("auth-file is configured but no roles resource is found "
-                         + "- please verify the config property security.auth.file.roles=%s", rolesResource);
             throw new IllegalStateException(msg);
         }
     }
