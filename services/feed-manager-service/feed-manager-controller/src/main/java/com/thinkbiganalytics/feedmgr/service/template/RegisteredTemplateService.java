@@ -507,7 +507,7 @@ public class RegisteredTemplateService {
         if (registeredTemplate != null) {
             feedMetadata.setTemplateId(registeredTemplate.getId());
 
-            List<NifiProperty> templateProperties = new ArrayList<>(registeredTemplate.getProperties());
+            List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
             NifiPropertyUtil
                 .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
 
