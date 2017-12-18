@@ -34,6 +34,7 @@ define(['angular',
         'common/accordion-menu/menulink',
         'common/timer/kylo-timer',
         'common/multiple-email-validator/multiple-email-validator.js',
+        'common/lazy-load-retain-order/lazy-load-retain-order',
         'jquery'],function(angular, moduleName){
     return angular.module(moduleName);
 });

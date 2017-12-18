@@ -36,8 +36,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
@@ -124,7 +124,7 @@ public class FeedIT extends IntegrationTestBase {
         //create new category
         FeedCategory category = createCategory(CATEGORY_NAME);
 
-        ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
+        ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
         FeedMetadata feed = getCreateFeedRequest(category, ingest, FEED_NAME);
@@ -145,7 +145,7 @@ public class FeedIT extends IntegrationTestBase {
         prepare();
 
         final FeedCategory category = createCategory(CATEGORY_NAME);
-        final ExportImportTemplateService.ImportTemplate template = importDataIngestTemplate();
+        final ImportTemplate template = importDataIngestTemplate();
 
         // Create feed
         FeedMetadata feed = getCreateFeedRequest(category, template, FEED_NAME);
@@ -252,22 +252,22 @@ public class FeedIT extends IntegrationTestBase {
 
 
     protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed textIndex = importFeed(sampleFeedsPath + INDEX_TEXT_SERVICE_V2_FEED_ZIP);
+        ImportFeed textIndex = importFeed(sampleFeedsPath + INDEX_TEXT_SERVICE_V2_FEED_ZIP);
         enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
 
-    protected ExportImportTemplateService.ImportTemplate importDataIngestTemplate() {
+    protected ImportTemplate importDataIngestTemplate() {
         return importFeedTemplate(sampleTemplatesPath + DATA_INGEST_ZIP);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importFeedTemplate(String templatePath) {
+    protected ImportTemplate importFeedTemplate(String templatePath) {
         LOG.info("Importing feed template {}", templatePath);
 
         //get number of templates already there
         int existingTemplateNum = getTemplates().length;
 
         //import standard feedTemplate template
-        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templatePath);
+        ImportTemplate feedTemplate = importTemplate(templatePath);
         Assert.assertTrue(templatePath.contains(feedTemplate.getFileName()));
         Assert.assertTrue(feedTemplate.isSuccess());
 
@@ -385,7 +385,7 @@ public class FeedIT extends IntegrationTestBase {
         Assert.assertTrue(countries.contains("Brazil"));
     }
 
-    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) throws Exception {
+    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ImportTemplate template, String name) throws Exception {
         FeedMetadata feed = new FeedMetadata();
         feed.setFeedName(name);
         feed.setSystemFeedName(name.toLowerCase());

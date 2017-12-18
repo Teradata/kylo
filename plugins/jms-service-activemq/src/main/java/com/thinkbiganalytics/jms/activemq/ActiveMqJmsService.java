@@ -24,28 +24,34 @@ package com.thinkbiganalytics.jms.activemq;
 import com.thinkbiganalytics.jms.JmsService;
 
 import org.apache.activemq.command.ActiveMQQueue;
+import org.apache.activemq.command.ActiveMQTopic;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsMessagingTemplate;
 
 import javax.jms.Queue;
+import javax.jms.Topic;
 
 /**
  */
 public class ActiveMqJmsService implements JmsService {
 
-	@Override
-	public Queue getQueue(String queueName) {
-		return new ActiveMQQueue(queueName);
-	}
+    @Override
+    public Queue getQueue(String queueName) {
+        return new ActiveMQQueue(queueName);
+    }
 
-	@Override
-	public void configureContainerFactory(DefaultJmsListenerContainerFactory factory) {
-		factory.setSessionTransacted(true);
-	}
+    @Override
+    public void configureContainerFactory(DefaultJmsListenerContainerFactory factory) {
+        factory.setSessionTransacted(true);
+    }
 
-	@Override
-	public void configureJmsMessagingTemplate(JmsMessagingTemplate template) {
-		//nothing to do here
-	}
+    @Override
+    public void configureJmsMessagingTemplate(JmsMessagingTemplate template) {
+        //nothing to do here
+    }
 
+    @Override
+    public Topic getTopic(String topicName) {
+        return new ActiveMQTopic(topicName);
+    }
 }

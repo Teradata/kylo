@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.rest.client;
  * #L%
  */
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -54,6 +55,7 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.slf4j.Logger;
@@ -68,6 +70,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -146,6 +149,25 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
         return result;
     }
 
+    public Map<String, String> getTemplatesAsXmlMatchingInputPortName(final String inputPortName, String templateName) {
+         Set<TemplateDTO> templates = client.templates().findByInputPortName(inputPortName);
+
+        if(templates.size() >1 && StringUtils.isBlank(templateName))
+        {
+            templates = templates.stream().filter(templateDTO -> templateDTO.getName().equalsIgnoreCase(templateName)).collect(Collectors.toSet());
+        }
+
+        final Map<String, String> result = new HashMap<>(templates.size());
+
+
+        for (TemplateDTO template : templates) {
+
+            client.templates().download(template.getId())
+                .ifPresent(xml -> result.put(template.getId(), xml));
+        }
+        return result;
+    }
+
     /**
      * return a template by Name, populated with its Flow snippet If not found it returns null
      */
@@ -162,14 +184,19 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     @Deprecated
     public NifiProcessGroup createNewTemplateInstance(String templateId, Map<String, Object> staticConfigProperties, boolean createReusableFlow, ReusableTemplateCreationCallback creationCallback) {
-        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties, createReusableFlow, creationCallback);
+        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties, createReusableFlow, creationCallback,null);
         NifiProcessGroup group = creator.createTemplate();
         return group;
     }
-
+    @Deprecated
     public NifiProcessGroup createNewTemplateInstance(String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigProperties, boolean createReusableFlow,
                                                       ReusableTemplateCreationCallback creationCallback) {
-        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, templateProperties, staticConfigProperties, createReusableFlow, creationCallback);
+     return createNewTemplateInstance(templateId,templateProperties,staticConfigProperties,createReusableFlow,creationCallback,null);
+    }
+
+    public NifiProcessGroup createNewTemplateInstance(String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigProperties, boolean createReusableFlow,
+                                                      ReusableTemplateCreationCallback creationCallback, String versionIdentifier) {
+        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, templateProperties, staticConfigProperties, createReusableFlow, creationCallback,versionIdentifier);
         NifiProcessGroup group = creator.createTemplate();
 
         return group;
@@ -203,6 +230,53 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
                         startOutputPort(entity.getParentGroupId(), port.getId());
                     } catch (NifiClientRuntimeException e) {
                         log.error("Error starting Output Port {} for process group {}", port.getName(), entity.getName());
+                    }
+                }
+            }
+
+        }
+
+    }
+
+    public void startProcessGroupAndParentInputPorts(ProcessGroupDTO entity) {
+        //1 startAll
+        try {
+            startAll(entity.getId(), entity.getParentGroupId());
+        } catch (NifiClientRuntimeException e) {
+            log.error("Error trying to mark connection ports Running for {}", entity.getName());
+        }
+
+        Set<PortDTO> ports = null;
+        try {
+            ports = getPortsForProcessGroup(entity.getParentGroupId());
+        } catch (NifiClientRuntimeException e) {
+            log.error("Error getPortsForProcessGroup {}", entity.getName());
+        }
+        if (ports != null && !ports.isEmpty()) {
+            Map<String,PortDTO> portsById = ports.stream().collect(Collectors.toMap(port -> port.getId(), port->port));
+            ProcessGroupFlowDTO flow = getNiFiRestClient().processGroups().flow(entity.getParentGroupId());
+            if(flow != null) {
+                List<PortDTO> matchingParentGroupPorts = flow.getFlow().getConnections().stream()
+                    .map(connectionEntity -> connectionEntity.getComponent())
+                    .filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(entity.getId()))
+                    .filter(connectionDTO -> portsById.containsKey(connectionDTO.getSource().getId()))
+                    .map(connectionDTO -> portsById.get(connectionDTO.getSource().getId()))
+                    .collect(Collectors.toList());
+
+                for (PortDTO port : matchingParentGroupPorts) {
+                    port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                    if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+                        try {
+                            startInputPort(entity.getParentGroupId(), port.getId());
+                        } catch (NifiClientRuntimeException e) {
+                            log.error("Error starting Input Port {} for process group {}", port.getName(), entity.getName());
+                        }
+                    } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
+                        try {
+                            startOutputPort(entity.getParentGroupId(), port.getId());
+                        } catch (NifiClientRuntimeException e) {
+                            log.error("Error starting Output Port {} for process group {}", port.getName(), entity.getName());
+                        }
                     }
                 }
             }
@@ -585,6 +659,49 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
     }
 
+    public void removeConnectionsFromProcessGroup(String parentProcessGroupId, final String processGroupId) {
+        Set<ConnectionDTO> connectionsEntity = getProcessGroupConnections(parentProcessGroupId);
+        if (connectionsEntity != null) {
+                connectionsEntity.stream()
+                    .filter(connectionDTO -> connectionDTO.getSource().getGroupId().equals(processGroupId))
+                    .forEach(connectionDTO ->   deleteConnection(connectionDTO, true));
+
+        }
+
+    }
+
+    public boolean removeProcessGroup(String processGroupId, String parentProcessGroupId) {
+        //Now try to remove the processgroup associated with this template import
+        ProcessGroupDTO e = null;
+        try {
+            e = getProcessGroup(processGroupId, false, false);
+        } catch (NifiComponentNotFoundException notFound) {
+            //if its not there then we already cleaned up :)
+        }
+        if (e != null) {
+            try {
+                stopAllProcessors(processGroupId, parentProcessGroupId);
+                //remove connections
+                removeConnectionsToProcessGroup(parentProcessGroupId, processGroupId);
+
+                //remove output port connections
+                removeConnectionsFromProcessGroup(parentProcessGroupId,processGroupId);
+            } catch (Exception e2) {
+                //this is ok. we are cleaning up the template so if an error occurs due to no connections it is fine since we ultimately want to remove this temp template.
+            }
+            try {
+                deleteProcessGroup(e);  //importTemplate.getTemplateResults().getProcessGroupEntity()
+                return true;
+            } catch (NifiComponentNotFoundException nfe) {
+                //this is ok
+            }
+        }
+        return false;
+    }
+
+
+
+
     @Deprecated
     public ProcessGroupDTO getProcessGroup(String processGroupId, boolean recursive, boolean verbose) throws NifiComponentNotFoundException {
         return client.processGroups().findById(processGroupId, recursive, verbose)
@@ -622,9 +739,14 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
 
 
     /**
+     *
      * Disables all inputs for a given process group
+     *
+     * @param processGroupId
+     * @return processorDTO prior to disabling
+     * @throws NifiComponentNotFoundException
      */
-    public void disableAllInputProcessors(String processGroupId) throws NifiComponentNotFoundException {
+    public List<ProcessorDTO> disableAllInputProcessors(String processGroupId) throws NifiComponentNotFoundException {
         List<ProcessorDTO> processorDTOs = getInputProcessors(processGroupId);
         ProcessorDTO updateDto = new ProcessorDTO();
         if (processorDTOs != null) {
@@ -645,18 +767,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
                 }
             }
         }
-        //also stop any input ports
-
-        /*
-        List<String> inputPortIds = getInputPortIds(processGroupId);
-        if(inputPortIds != null && !inputPortIds.isEmpty())
-        {
-            for(String inputPortId : inputPortIds) {
-             InputPortEntity inputPortEntity =   stopInputPort(processGroupId, inputPortId);
-                int i =0;
-            }
-        }
-        */
+        return processorDTOs;
     }
 
     /**

@@ -22,10 +22,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import org.modeshape.jcr.security.SecurityContext;
 
-import java.security.Principal;
-import java.security.acl.Group;
-import java.util.Collections;
-
 /**
  * A security context that is in effect when an administrative operation is being executed under
  * the ModeShaepAdminPrincipal credential
@@ -51,22 +47,12 @@ public class OverrideSecurityContext implements SecurityContext {
 
     @Override
     public boolean hasRole(String roleName) {
-        return this.credentials.getRolePrincipals().stream().anyMatch((p) -> matches(roleName, p));
+        return JcrAccessControlUtil.matchesRole(this.credentials.getUserPrincipal(), roleName) || 
+                        this.credentials.getRolePrincipals().stream().anyMatch(principal -> JcrAccessControlUtil.matchesRole(principal, roleName));
     }
 
     @Override
     public void logout() {
         // Ignored
-    }
-
-    public boolean matches(String roleName, Principal principal) {
-        if (principal.getName().equals(roleName)) {
-            return true;
-        } else if (principal instanceof Group) {
-            Group group = (Group) principal;
-            return Collections.list(group.members()).stream().anyMatch((p) -> matches(roleName, p));
-        } else {
-            return false;
-        }
     }
 }

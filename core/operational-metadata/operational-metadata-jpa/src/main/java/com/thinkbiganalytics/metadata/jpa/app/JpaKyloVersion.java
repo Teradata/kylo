@@ -23,6 +23,7 @@ package com.thinkbiganalytics.metadata.jpa.app;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.KyloVersionUtil.Version;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -155,6 +156,14 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     public void setTag(String tag) {
         this.tag = tag;
     }
+    
+    @Override
+    public KyloVersion withoutTag() {
+        JpaKyloVersion ver = new JpaKyloVersion(this.getMajorVersion(), this.getMinorVersion(), this.getPointVersion(), null);
+        ver.id = this.id;
+        return ver;
+    }
+
 
     /**
      * @return the major version number

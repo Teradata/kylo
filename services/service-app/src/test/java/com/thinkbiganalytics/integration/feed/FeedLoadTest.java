@@ -22,10 +22,9 @@ package com.thinkbiganalytics.integration.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 
 import org.junit.Ignore;
-import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +88,7 @@ public class FeedLoadTest extends FeedIT {
      */
     private void loadTest(String templatePath, String feedName, int categories, int feedsInCategory, int startingCategoryId) throws Exception {
 
-        ExportImportTemplateService.ImportTemplate ingestTemplate = importTemplate(templatePath);
+        ImportTemplate ingestTemplate = importTemplate(templatePath);
 
         for (int i = startingCategoryId; i < (startingCategoryId + categories); i++) {
             //create new category

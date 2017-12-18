@@ -34,7 +34,6 @@ import com.thinkbiganalytics.metadata.api.template.TemplateDeletionException;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.junit.Test;
@@ -149,10 +148,10 @@ public class FeedManagerFeedTest {
         //now query it
         long time = System.currentTimeMillis();
 
-        Integer size = metadata.read(new AdminCredentials(), () -> {
+        Integer size = metadata.read(() -> {
             List<Feed> feeds = feedProvider.findAll();
             return feeds.size();
-        });
+        }, MetadataAccess.SERVICE);
         long stopTime = System.currentTimeMillis();
         log.info("Time to query {} feeds was {} ms", size, (stopTime - time));
 

@@ -24,6 +24,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 
+import javax.annotation.Nullable;
+
 /**
  * Utility class to support common naming of versioned process groups
  */
@@ -34,6 +36,8 @@ public class NifiTemplateNameUtil {
      **/
     static String VERSION_NAME_REGEX = "(.*) - (\\d{13})";
 
+    static String KYLO_VERSION_ID_PREFIX = "kyloId:";
+
     /**
      * Return the new name of the versioned process group
      *
@@ -41,18 +45,54 @@ public class NifiTemplateNameUtil {
      * @return the new name that has the new version timestamp
      */
     public static String getVersionedProcessGroupName(String name) {
-        return name + " - " + new Date().getTime();
+        return getVersionedProcessGroupName(name,null);
     }
 
     /**
-     * Return the process group name, removing the versioned timestamp if one exists
+     * Return the new name of the versioned process group
+     *
+     * @param name the process group name with out the version timestamp
+     * @return the new name that has the new version timestamp
+     */
+    public static String getVersionedProcessGroupName(String name, String versionIdentifier) {
+        return name + " "+ KYLO_VERSION_ID_PREFIX+versionIdentifier+" - "+new Date().getTime();
+    }
+
+    /**
+     * Return true if the name has the kyloVersionId in it
+     * @param kyloVersionId
+     * @param name
+     * @return
+     */
+    public static boolean belongsToVersion(String name,String kyloVersionId){
+        String versionId = getKyloVersionIdentifier(name);
+        return versionId != null && versionId.equalsIgnoreCase(kyloVersionId);
+    }
+
+    @Nullable
+    public static String getKyloVersionIdentifier(String name){
+        if (isVersionedProcessGroup(name) && StringUtils.contains(name,KYLO_VERSION_ID_PREFIX)){
+                String versionId = StringUtils.substringBetween(name,KYLO_VERSION_ID_PREFIX,"-");
+              return StringUtils.trim(versionId);
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Return the process group name, removing the versioned name and timestamp if one exists
      *
      * @param name a process group name
      * @return the process group name, removing the versioned timestamp if one exists
      */
     public static String parseVersionedProcessGroupName(String name) {
         if (isVersionedProcessGroup(name)) {
-            return StringUtils.substringBefore(name, " - ");
+            String processGroupName = StringUtils.substringBefore(name, " - ");
+            if(StringUtils.contains(processGroupName,KYLO_VERSION_ID_PREFIX)){
+                processGroupName = StringUtils.trim(StringUtils.substringBefore(processGroupName,KYLO_VERSION_ID_PREFIX));
+            }
+            return processGroupName;
         }
         return name;
     }

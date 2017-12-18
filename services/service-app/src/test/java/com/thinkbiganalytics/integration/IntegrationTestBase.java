@@ -53,8 +53,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
@@ -171,14 +171,14 @@ public class IntegrationTestBase {
 
     protected FeedMetadata createSimpleFeed(String feedName, String testFile) {
         FeedCategory category = createCategory(FUNCTIONAL_TESTS);
-        ExportImportTemplateService.ImportTemplate template = importSimpleTemplate();
+        ImportTemplate template = importSimpleTemplate();
         FeedMetadata request = makeCreateFeedRequest(category, template, feedName, testFile);
         FeedMetadata response = createFeed(request).getFeedMetadata();
         Assert.assertEquals(request.getFeedName(), response.getFeedName());
         return response;
     }
 
-    protected FeedMetadata makeCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String feedName, String testFile) {
+    protected FeedMetadata makeCreateFeedRequest(FeedCategory category, ImportTemplate template, String feedName, String testFile) {
         FeedMetadata feed = new FeedMetadata();
         feed.setFeedName(feedName);
         feed.setSystemFeedName(feedName.toLowerCase());
@@ -539,9 +539,7 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_OK);
 
-        final NifiFeed result = response.as(NifiFeed.class);
-        Assert.assertTrue("Server failed to create feed", result.isSuccess());
-        return result;
+        return response.as(NifiFeed.class);
     }
 
     protected PartitionField byYear(String fieldName) {
@@ -649,7 +647,7 @@ public class IntegrationTestBase {
     }
 
 
-    protected ExportImportFeedService.ImportFeed importFeed(String feedPath) {
+    protected ImportFeed importFeed(String feedPath) {
         LOG.info("Importing feed {}", feedPath);
 
         Response post = given(AdminController.BASE)
@@ -661,15 +659,15 @@ public class IntegrationTestBase {
 
         post.then().statusCode(HTTP_OK);
 
-        return post.as(ExportImportFeedService.ImportFeed.class);
+        return post.as(ImportFeed.class);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importSimpleTemplate() {
+    protected ImportTemplate importSimpleTemplate() {
         URL resource = IntegrationTestBase.class.getResource(GET_FILE_LOG_ATTRIBUTE_TEMPLATE_ZIP);
         return importTemplate(resource.getPath());
     }
 
-    protected ExportImportTemplateService.ImportTemplate importTemplate(String templatePath) {
+    protected ImportTemplate importTemplate(String templatePath) {
         LOG.info("Importing template {}", templatePath);
 
         Response post = given(AdminController.BASE)
@@ -682,7 +680,7 @@ public class IntegrationTestBase {
 
         post.then().statusCode(HTTP_OK);
 
-        return post.as(ExportImportTemplateService.ImportTemplate.class);
+        return post.as(ImportTemplate.class);
     }
 
     protected FeedSummary[] getFeeds() {

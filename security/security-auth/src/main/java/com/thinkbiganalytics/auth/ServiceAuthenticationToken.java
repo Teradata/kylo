@@ -23,7 +23,7 @@ package com.thinkbiganalytics.auth;
  * #L%
  */
 
-import com.thinkbiganalytics.security.ServiceGroupPrincipal;
+import com.thinkbiganalytics.security.ServiceAdminPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -41,8 +41,8 @@ public class ServiceAuthenticationToken extends AbstractAuthenticationToken {
     private static final UsernamePrincipal USER = new UsernamePrincipal("service");
 
     public ServiceAuthenticationToken() {
-        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceGroupPrincipal()),
-                            new JaasGrantedAuthority("admin", new ServiceGroupPrincipal()))); // ModeShape role
+        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceAdminPrincipal()),
+                            new JaasGrantedAuthority("admin", new ServiceAdminPrincipal()))); // ModeShape role
     }
 
     /* (non-Javadoc)

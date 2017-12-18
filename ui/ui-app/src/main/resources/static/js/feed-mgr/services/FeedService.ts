@@ -158,7 +158,27 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 roleMembershipsUpdated: false,
                 tableOption: {},
                 cloned: false,
-                usedByFeeds: []
+                usedByFeeds: [],
+                view: {
+                    generalInfo: {disabled: false},
+                    feedDetails: {disabled: false},
+                    table: {disabled: false},
+                    dataPolicies:{disabled: false},
+                    properties: {
+                        disabled: false,
+                        dataOwner:{disabled:false},
+                        tags:{disabled:false}
+                    },
+                    accessControl: {disabled: false},
+                    schedule: {
+                        disabled: false,
+                        schedulingPeriod: {disabled: false},
+                        schedulingStrategy: {disabled: false},
+                        active: {disabled: false},
+                        executionNode: {disabled: false},
+                        preconditions: {disabled: false}
+                    }
+                }
             } as any;
         },
         cloneFeed: function () {
@@ -189,6 +209,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         updateFeed: function (feedModel: any) {
             var self = this;
+            this.editFeedModel.totalPreSteps = 0;
             this.editFeedModel.inputProcessorName = null;
             this.editFeedModel.usedByFeeds = [];
             this.editFeedModel.description = '';
@@ -207,6 +228,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     }
                 });
             }
+
+            //add in the view states
+            var defaultView = self.getNewCreateFeedModel().view;
+            this.editFeedModel.view = defaultView;
 
         },
         /**

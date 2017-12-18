@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.thinkbiganalytics.feedmgr.rest.ImportSection;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 
@@ -89,6 +91,11 @@ public class UploadProgressService {
 
     public UploadProgress getUploadStatus(String key) {
         return uploadProgress.getIfPresent(key);
+    }
+
+    public void completeSection(ImportOptions options, ImportSection.Section section) {
+        UploadProgress progress = getUploadStatus(options.getUploadKey());
+        progress.completeSection(section.name());
     }
 
     public void removeMessage(String uploadKey, UploadProgressMessage message) {

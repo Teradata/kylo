@@ -50,4 +50,18 @@ public interface NiFiPortsRestClient {
      */
     @Nonnull
     PortDTO updateOutputPort(@Nonnull String processGroupId, @Nonnull PortDTO outputPort);
+
+    /**
+     * Returns the port matching the portId
+     * @param portId the port id
+     * @return the port
+     */
+    PortDTO getInputPort(@Nonnull String portId);
+
+    /**
+     * Returns the port matching the portId
+     * @param portId the port id
+     * @return the port
+     */
+    PortDTO getOutputPort(@Nonnull String portId);
 }

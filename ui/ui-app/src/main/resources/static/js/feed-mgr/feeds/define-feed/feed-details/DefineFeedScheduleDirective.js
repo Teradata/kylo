@@ -219,6 +219,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     }
                     self.model.schedule.schedulingStrategyTouched = true;
                 }
+                else if(self.model.schedule.schedulingPeriod != ''){
+                    var split = self.model.schedule.schedulingPeriod.split(' ');
+                    self.timerAmount = split[0];
+                    self.timerUnits = split[1];
+                }
             } else {
                 var split = self.model.schedule.schedulingPeriod.split(' ');
                 self.timerAmount = split[0];

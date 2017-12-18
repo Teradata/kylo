@@ -29,4 +29,13 @@ public class ImportTemplateOptions extends ImportOptions {
         YES, NO, NOT_SET
     }
 
+    private boolean deferCleanup;
+
+    public boolean isDeferCleanup() {
+        return deferCleanup;
+    }
+
+    public void setDeferCleanup(boolean deferCleanup) {
+        this.deferCleanup = deferCleanup;
+    }
 }
