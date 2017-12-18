@@ -513,7 +513,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .build());
 
         //copy the registered template properties it a new list so it doest get updated
-        List<NifiProperty> templateProperties = new ArrayList<>(registeredTemplate.getProperties());
+        List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
