@@ -1,5 +1,5 @@
-define(['angular','common/module-name'], function (angular,moduleName) {
-    var directive = function ($interval) {
+define(['angular','common/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+    var directive = function ($interval, $filter) {
         return {
             restrict: "EA",
             scope: {
@@ -39,7 +39,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 function format() {
 
                     var ms = $scope.time;
-                    var displayStr = DateTimeUtils.formatMillisAsText(ms,$scope.truncatedFormat,false);
+                    var displayStr = DateTimeUtils($filter('translate')).formatMillisAsText(ms,$scope.truncatedFormat,false);
                     if($scope.addAgoSuffix) {
                         displayStr += " ago";
                     }
@@ -67,6 +67,6 @@ define(['angular','common/module-name'], function (angular,moduleName) {
     };
 
     return angular.module(moduleName)
-        .directive('kyloTimer', ['$interval', directive]);
+        .directive('kyloTimer', ['$interval','$filter', directive]);
 });
 

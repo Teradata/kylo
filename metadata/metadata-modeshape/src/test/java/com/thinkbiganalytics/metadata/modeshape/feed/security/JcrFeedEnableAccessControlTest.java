@@ -103,6 +103,10 @@ public class JcrFeedEnableAccessControlTest {
             if (idC != null) this.feedProvider.deleteFeed(idC);
             if (idB != null) this.feedProvider.deleteFeed(idB);
             if (idA != null) this.feedProvider.deleteFeed(idA);
+            Category cat = categoryProvider.findBySystemName("test");
+            if(cat != null) {
+                categoryProvider.deleteById(cat.getId());
+            }
         }, MetadataAccess.SERVICE);
     }
     

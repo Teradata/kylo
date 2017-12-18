@@ -17,6 +17,13 @@ define([
     'dirPagination',
     'ng-fx',
     'ng-text-truncate',
+    'pascalprecht.translate',
+    'angular-translate-loader-static-files',
+    'angular-translate-storage-local',
+    'angular-translate-handler-log',
+    'angular-translate-storage-cookie',
+    'angular-cookies',
+    'tmh.dynamicLocale',
     'ocLazyLoad',
     'kylo-common',
     'kylo-services',
@@ -34,13 +41,33 @@ define([
                                           'ui.grid.resizeColumns',
                                           'ui.grid.autoResize',
                                           'ui.grid.moveColumns',
-                                          'ui.grid.pagination', 'ngMessages']);
+                                          'ui.grid.pagination', 'ngMessages',
+                                          'pascalprecht.translate', 'tmh.dynamicLocale', 'ngCookies']);
+    module.constant('LOCALES', {
+           'locales': {
+               'ru_RU': 'Русский',
+               'en_US': 'English'
+            },
+            'preferredLocale': 'ru_RU'
+        });
 
-    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider,$qProvider){
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', , '$translateProvider', 'tmhDynamicLocaleProvider',
+           function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider,$qProvider, $translateProvider, tmhDynamicLocaleProvider){
        //disable the aria-label warnings in the console
         $mdAriaProvider.disableWarnings();
 
         $qProvider.errorOnUnhandledRejections(false);
+        $translateProvider.useStaticFilesLoader({
+                prefix: 'locales/locale-',// path to translations files
+                suffix: '.json'// suffix, currently- extension of the translations
+        });
+
+        console.log($translateProvider);
+        $translateProvider.preferredLanguage('ru_RU');// is applied on first load
+        $translateProvider.fallbackLanguage('en_US');
+        $translateProvider.useLocalStorage();// saves selected language to localStorage
+
+        tmhDynamicLocaleProvider.localeLocationPattern('../bower_components/angular-i18n/angular-locale_{{locale}}.js');
 
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',
@@ -76,7 +103,8 @@ define([
 
 
 
-    module.run(['$ocLazyLoad',function($ocLazyLoad){
+    module.run(['$ocLazyLoad', '$translate', function($ocLazyLoad, $translate){
+        //$translate.use('ru_RU');
         $ocLazyLoad.load({name:'kylo',files:['bower_components/angular-material-icons/angular-material-icons.css',
                                              'bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css',
                                              'bower_components/angular-material-data-table/dist/md-data-table.css',

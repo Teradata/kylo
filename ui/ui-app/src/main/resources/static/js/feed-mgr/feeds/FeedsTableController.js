@@ -1,6 +1,6 @@
-define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
     var controller = function($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService,
-                              EntityAccessControlService) {
+                              EntityAccessControlService, $filter) {
 
         var self = this;
 
@@ -19,7 +19,8 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
          */
         var loaded = false;
 
-        this.cardTitle = 'Feeds';
+        this.cardTitle = $filter('translate')('views.main.feeds-title');
+
 
         // Register Add button
         AccessControlService.getUserAllowedActions()
@@ -191,6 +192,6 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
 
 
     angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService",
-                                                                  "FeedService","StateService", "EntityAccessControlService", controller]);
+                                                                  "FeedService","StateService", "EntityAccessControlService", "$filter", controller]);
 
 });

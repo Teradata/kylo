@@ -1,12 +1,12 @@
 <div>
     <md-button ng-click="cancelStepper()"  ng-if="showCancel()" >
-        Cancel
+        {{"views.step-buttons.Cancel-btn" | translate}}
     </md-button>
     <md-button ng-click="gotoPreviousStep()" ng-if="showPrevious()" >
-        Previous Step
+        {{"views.step-buttons.Previous-btn" | translate}}
     </md-button>
     <md-button ng-click="gotoNextStep()"  class="md-raised md-primary" ng-if="showNext()" ng-disabled="canContinue == false">
-        Continue to Step {{nextStepNumber}}
+        {{"views.step-buttons.Continue-btn" | translate}} {{nextStepNumber}}
     </md-button>
     <md-button ng-click="finalButtonClick()" class="md-raised md-primary" ng-if="finalStep == true" ng-disabled="canContinue == false">
         {{finalStepText}}

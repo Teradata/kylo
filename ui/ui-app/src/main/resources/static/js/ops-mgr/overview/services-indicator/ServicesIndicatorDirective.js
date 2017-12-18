@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http,$mdDialog,$mdPanel, $interval, $timeout,ServicesStatusData,OpsManagerDashboardService,BroadcastService) {
+    var controller = function ($scope, $element, $http,$mdDialog,$mdPanel, $interval, $timeout,ServicesStatusData,OpsManagerDashboardService,BroadcastService, $filter) {
         var self = this;
         this.dataLoaded = false;
 
@@ -104,7 +104,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
         this.updateChart = function(){
-            var title = (self.indicator.counts.allCount)+" Total";
+            var title = (self.indicator.counts.allCount)+" " + $filter('translate')('Total');
             self.chartOptions.chart.title=title
             if(self.chartApi.update) {
                 self.chartApi.update();
@@ -215,7 +215,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                 angular.forEach(self.chartData,function(item,i) {
                     item.value = self.indicator.grouped[item.key].count;
                 })
-                self.chartOptions.chart.title = this.counts.allCount+" Total ";
+                self.chartOptions.chart.title = this.counts.allCount+" "+ $filter('translate')('Total');
             },
             updatePercent: function () {
                 if (this.counts.upCount > 0) {
@@ -246,7 +246,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
         function init(){
             watchDashboard();
-        }
+                }
         init();
 
     };
@@ -291,7 +291,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$mdDialog","$mdPanel","$interval","$timeout","ServicesStatusData","OpsManagerDashboardService","BroadcastService",controller]);
+    angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http","$mdDialog","$mdPanel","$interval","$timeout","ServicesStatusData","OpsManagerDashboardService","BroadcastService",'$filter',controller]);
 
 
     angular.module(moduleName)

@@ -17,7 +17,13 @@ require.config({
         "ocLazyLoad":"../bower_components/oclazyload/dist/ocLazyLoad.require",
         "requirejs": "../bower_components/requirejs/require",
         "underscore":"../bower_components/underscore/underscore",
-    "urlParams":"jquery.urlParam"},
+        "urlParams":"jquery.urlParam",
+        "pascalprecht.translate":"../bower_components/angular-translate/angular-translate",
+        "angular-translate-loader-static-files": "../bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min",
+        "angular-translate-storage-local": "../bower_components/angular-translate-storage-local/angular-translate-storage-local.min",
+        "angular-translate-handler-log": "../bower_components/angular-translate-handler-log/angular-translate-handler-log.min",
+        "angular-translate-storage-cookie": "../bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min"
+},
     shim: {
         "angular": {deps:["jquery"],exports: "angular"},
         'angularAria': ['angular'],
@@ -27,7 +33,15 @@ require.config({
         'angular-material-icons':['angular'],
         'ocLazyLoad':['angular'],
         'urlParams':['jquery'],
-        'login-app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery'], exports:'login-app'}
+
+        'pascalprecht.translate':['angular'],
+        'angular-translate-loader-static-files':['pascalprecht.translate'],
+        'angular-translate-storage-local': {deps: ['pascalprecht.translate']},
+        'angular-translate-handler-log': {deps: ['pascalprecht.translate']},
+        'angular-translate-storage-cookie': {deps: ['pascalprecht.translate']},
+
+        'login-app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery'
+        ], exports:'login-app'}
     },
     deps: ['login-app']
 });

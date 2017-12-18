@@ -1,4 +1,4 @@
-define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, moduleName) {
+define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -21,7 +21,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService) {
+    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService, $filter) {
         var self = this;
         this.dataLoaded = false;
 
@@ -181,7 +181,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         var feedChartLegendState = [];
         this.feedChartData = [];
         this.feedChartApi = {};
-        this.feedChartOptions = {};
+        this.feedChartOptions ={};
 
         self.processorChartApi = {};
         self.processorChartData = [];
@@ -194,7 +194,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * @type {{displayStatus: string}}
          */
         self.feed = {
-            displayStatus: ''
+            displayStatus:''
         };
 
         /**
@@ -204,28 +204,28 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         self.summaryStatsData = {};
 
         self.eventSuccessKpi = {
-            value: 0,
-            icon: '',
-            color: ''
+            value:0,
+            icon:'',
+            color:''
         };
 
         self.flowRateKpi = {
-            value: 0,
+            value:0,
             icon: 'tune',
             color: '#1f77b4'
         };
 
         self.avgDurationKpi = {
-            value: 0,
+            value:0,
             icon: 'access_time',
             color: '#1f77b4'
         };
 
         self.feedProcessorErrorsTable = {
-            sortOrder: '-errorMessageTimestamp',
-            filter: '',
-            rowLimit: 5,
-            page: 1
+            sortOrder:'-errorMessageTimestamp',
+            filter:'',
+            rowLimit:5,
+            page:1
         };
 
         /**
@@ -256,8 +256,8 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
          * Navigate to the Feed Manager Feed Details
          * @param ev
          */
-        self.gotoFeedDetails = function (ev) {
-            if (self.feed.feedId != undefined) {
+        self.gotoFeedDetails = function(ev){
+            if(self.feed.feedId != undefined) {
                 StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
             }
         };
@@ -265,17 +265,17 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         /**
          * Show detailed Errors
          */
-        self.viewNewFeedProcessorErrors = function () {
+        self.viewNewFeedProcessorErrors = function() {
             self.feedProcessorErrors.viewAllData();
         };
 
-        self.toggleFeedProcessorErrorsRefresh = function (autoRefresh) {
-            if (autoRefresh) {
+        self.toggleFeedProcessorErrorsRefresh = function(autoRefresh){
+            if(autoRefresh){
                 self.feedProcessorErrors.viewAllData();
-                self.feedProcessorErrors.autoRefreshMessage = 'enabled';
+                self.feedProcessorErrors.autoRefreshMessage ='enabled';
             }
             else {
-                self.feedProcessorErrors.autoRefreshMessage = 'disabled';
+                self.feedProcessorErrors.autoRefreshMessage ='disabled';
             }
         };
 
@@ -317,41 +317,42 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         /**
          * Initialize the Charts
          */
-        function setupChartOptions() {
-            self.processorChartOptions = {
-                chart: {
-                    type: 'multiBarHorizontalChart',
-                    height: 400,
-                    margin: {
-                        top: 5, //otherwise top of numeric value is cut off
-                        right: 50,
-                        bottom: 50, //otherwise bottom labels are not visible
-                        left: 150
-                    },
-                    duration: 500,
-                    x: function (d) {
-                        return d.label.length > 60 ? d.label.substr(0, 60) + "..." : d.label;
-                    },
-                    y: function (d) {
-                        return d.value;
-                    },
-                    showControls: false,
-                    showValues: true,
-                    xAxis: {
-                        showMaxMin: false
-                    },
-                    interactiveLayer: {tooltip: {gravity: 's'}},
-                    yAxis: {
-                        axisLabel: FeedStatsService.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].axisLabel,
-                        tickFormat: function (d) {
-                            return d3.format(',.2f')(d);
-                        }
-                    },
-                    valueFormat: function (d) {
-                        return d3.format(',.2f')(d);
-                    }
-                }
-            };
+         function setupChartOptions(){
+             self.processorChartOptions = {
+                 chart: {
+                     type: 'multiBarHorizontalChart',
+                     height: 400,
+                     margin: {
+                         top: 5, //otherwise top of numeric value is cut off
+                         right: 50,
+                         bottom: 50, //otherwise bottom labels are not visible
+                         left: 150
+                     },
+                     duration: 500,
+                     x: function (d) {
+                         return d.label.length > 60 ? d.label.substr(0, 60) + "..." : d.label;
+                     },
+                     y: function (d) {
+                         return d.value;
+                     },
+                     showControls: false,
+                     showValues: true,
+                     xAxis: {
+                         showMaxMin: false
+                     },
+                     interactiveLayer: {tooltip: {gravity: 's'}},
+                     yAxis: {
+                         axisLabel: FeedStatsService.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].axisLabel,
+                         tickFormat: function (d) {
+                             return d3.format(',.2f')(d);
+                         }
+                     },
+                     valueFormat: function (d) {
+                         return d3.format(',.2f')(d);
+                     },
+                     noData: $filter('translate')('view.feed-stats-charts.noData')
+                 }
+             };
 
             /**
              * Help adjust the x axis label depending on time window
@@ -401,49 +402,49 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
             }
 
-            self.feedChartOptions = {
-                chart: {
-                    type: 'lineChart',
-                    height: 450,
-                    margin: {
-                        top: 10,
-                        right: 20,
+             self.feedChartOptions = {
+                 chart: {
+                     type: 'lineChart',
+                     height: 450,
+                     margin: {
+                         top: 10,
+                         right: 20,
                         bottom: 110,
-                        left: 65
-                    },
-                    x: function (d) {
-                        return d[0];
-                    },
-                    y: function (d) {
+                         left: 65
+                     },
+                     x: function (d) {
+                         return d[0];
+                     },
+                     y: function (d) {
                         return d3.format('.2f')(d[1]);
-                    },
-                    showTotalInTooltip: true,
-                    interpolate: 'linear',
-                    useVoronoi: false,
+                     },
+                     showTotalInTooltip:true,
+                     interpolate:'linear',
+                     useVoronoi: false,
                     duration: 250,
-                    clipEdge:false,
-                    useInteractiveGuideline: true,
-                    interactiveLayer: {tooltip: {gravity: 's'}},
-                    valueFormat: function (d) {
-                        return d3.format(',')(parseInt(d))
-                    },
-                    xAxis: {
-                        axisLabel: '',
-                        showMaxMin: false,
+                     clipEdge: false,
+                     useInteractiveGuideline: true,
+                     interactiveLayer: {tooltip: {gravity: 's'}},
+                     valueFormat: function (d) {
+                         return d3.format(',')(parseInt(d))
+                     },
+                     xAxis: {
+                         axisLabel: $filter('translate')('view.feed-stats-charts.Time'),
+                         showMaxMin: false,
                         tickFormat: timeSeriesXAxisLabel,
-                        rotateLabels: -45
-                    },
-                    yAxis: {
-                        axisLabel: 'Flows Per Second',
-                        axisLabelDistance: -10
-                    },
-                    legend: {
-                        dispatch: {
-                            stateChange: function (e) {
-                                feedChartLegendState = e.disabled;
-                            }
-                        }
-                    },
+                         rotateLabels: -45
+                     },
+                     yAxis: {
+                         axisLabel: $filter('translate')('view.feed-stats-charts.FPS'),
+                         axisLabelDistance: -10
+                     },
+                     legend: {
+                         dispatch: {
+                             stateChange: function (e) {
+                                 feedChartLegendState = e.disabled;
+                             }
+                         }
+                     },
                     //https://github.com/krispo/angular-nvd3/issues/548
                     zoom: {
                         enabled: false,
@@ -477,17 +478,17 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         }
                         },
                     interactiveLayer: {
-                        dispatch: {
+                     dispatch: {
                             elementClick: function (t, u) {}
-                        }
+                         }
                     },
                     dispatch: {
 
-                    }
-                }
+                     }
+                 }
 
-            };
-        }
+             };
+         }
 
         /**
          * Reset the Zoom and return the x,y values pertaining to the min/max of the complete dataset
@@ -523,7 +524,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
                 var y = self.zoomMaxY > 0 ? self.zoomMaxY : self.maxY;
                 self.feedChartOptions.chart.yDomain = [0,self.maxY]
-            }
+        }
             else  {
                 self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
                 self.feedChartOptions.chart.yDomain = [0,self.maxY]
@@ -647,7 +648,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 resetZoom();
             }
             self.isAtInitialZoom = true;
-            self.timeFrame = timeFrame;
+             self.timeFrame = timeFrame;
             var millis = self.timeFrameOptions[self.timeFrameOptionIndex].properties.millis;
             if(millis >= self.minZoomTime){
               enableZoom();
@@ -668,10 +669,10 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     self.autoRefresh = true;
                 }
                 else {
-                    setRefreshInterval();
+            setRefreshInterval();
 
                 }
-            }
+        }
 
 
         }
@@ -693,10 +694,10 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
 
         function onProcessorChartFunctionChanged() {
-            FeedStatsService.setSelectedChartFunction(self.selectedProcessorStatisticFunction);
-            var chartData = FeedStatsService.changeProcessorChartDataFunction(self.selectedProcessorStatisticFunction);
-            self.processorChartData[0].values = chartData.data;
-            FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi, chartData.data.length, self.selectedProcessorStatisticFunction);
+             FeedStatsService.setSelectedChartFunction(self.selectedProcessorStatisticFunction);
+         var chartData=    FeedStatsService.changeProcessorChartDataFunction(self.selectedProcessorStatisticFunction);
+         self.processorChartData[0].values = chartData.data;
+            FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,chartData.data.length,self.selectedProcessorStatisticFunction);
         }
 
         function buildChartData(timeIntervalChange) {
@@ -711,10 +712,10 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             getFeedHealth();
         }
 
-        function updateSuccessEventsPercentKpi() {
-            if (self.summaryStatsData.totalEvents == 0) {
+        function updateSuccessEventsPercentKpi(){
+            if(self.summaryStatsData.totalEvents == 0){
                 self.eventSuccessKpi.icon = 'remove';
-                self.eventSuccessKpi.color = "#1f77b4"
+                self.eventSuccessKpi.color= "#1f77b4"
                 self.eventSuccessKpi.value = "--";
             }
             else {
@@ -730,20 +731,20 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             }
         }
 
-        function updateFlowRateKpi() {
+        function updateFlowRateKpi(){
             self.flowRateKpi.value = self.summaryStatistics.flowsStartedPerSecond;
         }
 
-        function updateAvgDurationKpi() {
+        function updateAvgDurationKpi(){
             var avgMillis = self.summaryStatistics.avgFlowDurationMilis;
-            self.avgDurationKpi.value = DateTimeUtils.formatMillisAsText(avgMillis, false, true);
+            self.avgDurationKpi.value = DateTimeUtils($filter('translate')).formatMillisAsText(avgMillis,false,true);
         }
 
-        function formatSecondsToMinutesAndSeconds(s) {   // accepts seconds as Number or String. Returns m:ss
-            return ( s - ( s %= 60 )) / 60 + (9 < s ? ':' : ':0' ) + s;
+        function formatSecondsToMinutesAndSeconds(s){   // accepts seconds as Number or String. Returns m:ss
+            return( s - ( s %= 60 )) / 60 + (9 < s ? ':' : ':0' ) + s ;
         }
 
-        function updateSummaryKpis() {
+        function updateSummaryKpis(){
             updateFlowRateKpi();
             updateSuccessEventsPercentKpi();
             updateAvgDurationKpi();
@@ -761,14 +762,14 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             }
             $q.when(FeedStatsService.fetchProcessorStatistics(minTime,maxTime)).then(function (response) {
                 self.summaryStatsData = FeedStatsService.summaryStatistics;
-                updateSummaryKpis();
-                self.processorChartData = FeedStatsService.buildProcessorDurationChartData();
+               updateSummaryKpis();
+                self.processorChartData =  FeedStatsService.buildProcessorDurationChartData();
 
-                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi, self.processorChartData[0].values.length, self.selectedProcessorStatisticFunction);
+                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi,self.processorChartData[0].values.length,self.selectedProcessorStatisticFunction);
                 self.processChartLoading = false;
                 self.lastProcessorChartRefresh = new Date().getTime();
                 self.lastRefreshTime = new Date();
-            }, function () {
+            },function() {
                 self.processChartLoading = false;
                 self.lastProcessorChartRefresh = new Date().getTime();
             });
@@ -785,12 +786,12 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
                 var chartArr = [];
                 chartArr.push({
-                    label: 'Completed', color: '#3483BA', valueFn: function (item) {
+                    label: $filter('translate')('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item) {
                             return item.jobsFinishedPerSecond;
                     }
                 });
                 chartArr.push({
-                    label: 'Started', area: true, color: "#F08C38", valueFn: function (item) {
+                    label: $filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item) {
                             return item.jobsStartedPerSecond;
                     }
                 });
@@ -814,11 +815,11 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                 }
 
 
-                self.feedChartOptions.chart.forceY = [0, max];
-                if (self.feedChartOptions.chart.yAxis.ticks != max) {
+                self.feedChartOptions.chart.forceY = [0,max];
+                if(self.feedChartOptions.chart.yAxis.ticks != max) {
                     self.feedChartOptions.chart.yDomain = [0, max];
                     var ticks = max;
-                    if (ticks > 8) {
+                    if(ticks > 8){
                         ticks = 8;
                     }
                     if(angular.isUndefined(ticks) || ticks <5){
@@ -845,8 +846,8 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                           self.forceChartRefresh = false;
                       }
                       else {
-                            self.feedChartApi.update();
-                      }
+                    self.feedChartApi.update();
+                }
                 }
 
                 self.feedTimeChartLoading = false;
@@ -866,7 +867,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
             self.feedProcessorErrorsLoading = true;
             $q.when(FeedStatsService.fetchFeedProcessorErrors(resetWindow)).then(function (feedProcessorErrors) {
                 self.feedProcessorErrorsLoading = false;
-            }, function (err) {
+            },function(err) {
                 self.feedProcessorErrorsLoading = false;
             });
 
@@ -875,28 +876,28 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
         /**
          * Gets the Feed Health
          */
-        function getFeedHealth() {
-            var successFn = function (response) {
-                if (response.data) {
-                    //transform the data for UI
-                    if (response.data.feedSummary) {
-                        angular.extend(self.feed, response.data.feedSummary[0]);
-                        self.feed.feedId = self.feed.feedHealth.feedId;
-                        if (self.feed.running) {
-                            self.feed.displayStatus = 'RUNNING';
+         function getFeedHealth(){
+                var successFn = function (response) {
+                    if (response.data) {
+                        //transform the data for UI
+                        if(response.data.feedSummary){
+                            angular.extend(self.feed,response.data.feedSummary[0]);
+                            self.feed.feedId = self.feed.feedHealth.feedId;
+                            if (self.feed.running) {
+                                self.feed.displayStatus = 'RUNNING';
+                            }
+                            else {
+                                self.feed.displayStatus = 'STOPPED';
+                            }
                         }
-                        else {
-                            self.feed.displayStatus = 'STOPPED';
-                        }
+
                     }
-
                 }
-            }
-            var errorFn = function (err) {
-            }
+                var errorFn = function (err) {
+                }
 
-            $http.get(OpsManagerFeedService.SPECIFIC_FEED_HEALTH_URL(self.feedName)).then(successFn, errorFn);
-        }
+                $http.get(OpsManagerFeedService.SPECIFIC_FEED_HEALTH_URL(self.feedName)).then( successFn, errorFn);
+            }
 
 
         function clearRefreshInterval() {
@@ -918,11 +919,11 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     var refreshInterval = option.properties.millis / 60;
                     self.refreshIntervalTime = refreshInterval < 5000 ? 5000 : refreshInterval;
                 }
-                if (self.refreshIntervalTime) {
-                    self.refreshInterval = $interval(function () {
+            if (self.refreshIntervalTime) {
+                self.refreshInterval = $interval(function() {
                         refresh();
                         }, self.refreshIntervalTime
-                    );
+                );
                 }
             }
         }
@@ -978,7 +979,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
     };
 
     angular.module(moduleName).controller('FeedStatsChartsController',
-        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", controller]);
+        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", "$filter", controller]);
 
     angular.module(moduleName)
         .directive('kyloFeedStatsCharts', directive);

@@ -34,7 +34,7 @@
                    </span>
                   <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                        <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{vm.jobData.displayStatus}}</span>
+                                                       </ng-md-icon>{{vm.jobData.displayStatus | translate}}</span>
 
 
             </div>
@@ -42,7 +42,7 @@
             <div flex="30" layout="column">
                                                <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
-              <span class="column-title column-title-bottom">Start Time</span>
+              <span class="column-title column-title-bottom">{{"views.job-details-template.ST" | translate}}</span>
             </div>
             <div flex="30" layout="column">
                                                <span class="item-title">
@@ -50,11 +50,11 @@
                                                               start-time="vm.jobData.runTime"></kylo-timer>
                                                    <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
                                                </span>
-              <span class="column-title column-title-bottom">Run Time</span>
+              <span class="column-title column-title-bottom">{{"views.job-details-template.RT" | translate}}</span>
             </div>
           </div>
 
-          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
+          <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
           <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre-wrap;" ng-text-truncate="vm.jobData.exitDescription"
                ng-tt-chars-threshold="150">
           </div>
@@ -66,7 +66,7 @@
             <md-tab-label>
                    <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                        <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
-                                                       </ng-md-icon>Job Details</span>
+                                                       </ng-md-icon>{{'views.job-details-template.JD' | translate}}</span>
             </md-tab-label>
             <md-tab-body>
               <md-divider></md-divider>
@@ -76,11 +76,11 @@
                 <div layout="row" layout-align="end center">
                                     <span class="md-button-group" layout="row" layout-align="end center">
                                           <span flex></span>
-                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == true}" ng-click="vm.toggleJobParameters('JobParameters')">Job
-                                      Parameters
+                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == true}" ng-click="vm.toggleJobParameters('JobParameters')">
+                                        {{'views.job-details-template.JP' | translate}}
                                     </md-button>
                                     <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == false}" ng-click="vm.toggleJobParameters('ExecutionContext')">
-                                      Execution Context Data
+                                      {{'views.job-details-template.ECD' | translate}}
                                     </md-button>
                                         </span>
 
@@ -89,10 +89,10 @@
                   <md-divider></md-divider>
                   <md-list-item ng-if="vm.showJobParameters == true">
                     <div flex="30" class="item-column md-list-item-text accent-color-3">
-                      Parameters
+                        {{'views.job-details-template.Parameters' | translate}}
                     </div>
                     <div flex="70" class="item-column md-list-item-text accent-color-3">
-                      Values
+                        {{'views.job-details-template.Values' | translate}}
                     </div>
                     <md-divider></md-divider>
                   </md-list-item>
@@ -108,10 +108,10 @@
                   </md-list-item>
                   <md-list-item ng-if="vm.showJobParameters == false">
                     <div flex="30" class="item-column md-list-item-text accent-color-3">
-                      Context Parameters
+                        {{'views.job-details-template.CP' | translate}}
                     </div>
                     <div flex="70" class="item-column md-list-item-text accent-color-3">
-                      Values
+                        {{'views.job-details-template.Values' | translate}}
                     </div>
                     <md-divider></md-divider>
                   </md-list-item>
@@ -136,7 +136,7 @@
 
           <md-tab flex>
             <md-tab-label>
-              <span class="column-title-bottom">Step Details</span>
+              <span class="column-title-bottom">{{'views.job-details-template.SD' | translate}}</span>
             </md-tab-label>
             <md-tab-body>
               <md-divider></md-divider>
@@ -155,7 +155,7 @@
                    </span>
                   <span class="column-title-bottom {{step.content.cssStatusClass}}">
                                                        <ng-md-icon ng-if="step.content.statusIcon" class="{{step.content.tabIconStyle}}" icon="{{step.content.statusIcon}}" size="20">
-                                                       </ng-md-icon>{{step.content.displayStatus}}</span>
+                                                       </ng-md-icon>{{step.content.displayStatus | translate}}</span>
 
 
                       </div>
@@ -163,18 +163,18 @@
                       <div flex="30" layout="column">
                                                <span class="item-title">{{step.content.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
-                        <span class="column-title column-title-bottom">Start Time</span>
+                        <span class="column-title column-title-bottom">{{'views.job-details-template.ST' | translate}}</span>
                       </div>
                       <div flex="30" layout="column">
                         <div layout="row">
                           <div>
-                            <span class="item-title">
-                             <kylo-timer ng-if="step.content.running"
-                                         start-time="step.content.runTime"></kylo-timer>
-                             <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
-                            </span>
-                              <span class="column-title column-title-bottom">Run Time</span>
-                          </div>
+                                               <span class="item-title">
+                                                   <kylo-timer ng-if="step.content.running"
+                                                              start-time="step.content.runTime"></kylo-timer>
+                                                   <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
+                                               </span>
+                        <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
+                      </div>
                           <div>
                             <md-button md-no-ink ng-show="vm.logUiEnabled && step.content.displayStatus =='FAILED'" class="border-btn action-btn md-warn" ng-click="vm.navigateToLogsForStep(step)">Search Logs</md-button>
                           </div>
@@ -184,7 +184,7 @@
 
                     <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16">
 
-                      <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
+                      <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
                       <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
@@ -192,10 +192,10 @@
                         <md-divider></md-divider>
                         <md-list-item>
                           <div flex="30" class="item-column md-list-item-text accent-color-3">
-                            Context Parameters
+                              {{'views.job-details-template.CP' | translate}}
                           </div>
                           <div flex="70" class="item-column md-list-item-text accent-color-3">
-                            Values
+                              {{'views.job-details-template.Values' | translate}}
                           </div>
                           <md-divider></md-divider>
                         </md-list-item>
@@ -225,7 +225,7 @@
       <md-content ng-if="vm.unableToFindJob == true" style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
         <span class="md-subhead">
-        Unable to find the job.  This job either doesn't exist or you do not have access to view this job.
+          {{'views.job-details-template.Utftj' | translate}}
           </span>
         </div>
       </md-content>
@@ -234,7 +234,7 @@
 
   <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body" ng-if="vm.unableToFindJob == false">
     <header-section transclude-to="head" flex layout>
-      <div style="white-space:nowrap" class="card-title">Job Details</div>
+      <div style="white-space:nowrap" class="card-title">{{'views.job-details-template.JD' | translate}}</div>
       <span flex></span>
     </header-section>
     <body-section transclude-to="body">
@@ -252,10 +252,10 @@
             -->
           <md-button class="border-btn action-btn"
                      ng-if="!vm.jobData.stream && vm.jobData.status  && vm.jobData.status !='COMPLETED' && vm.jobData.status !='FAILED' && vm.allowAdmin"
-                     ng-click="vm.failJob($event)">FAIL
+                     ng-click="vm.failJob($event)">{{'views.job-details-template.FAIL' | translate}}
           </md-button>
           <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin"
-                     ng-click="vm.abandonJob($event)">ABANDON
+                     ng-click="vm.abandonJob($event)">{{'views.job-details-template.ABANDON' | translate}}
           </md-button>
           <md-button md-no-ink ng-class="vm.jobData.status =='FAILED' ? 'border-btn action-btn md-warn': 'border-btn action-btn' " ng-show="vm.logUiEnabled" ng-click="vm.navigateToLogs(vm.jobData.startTime, vm.jobData.endTime)" >
             Search Logs
@@ -277,7 +277,7 @@
                                                                    icon="{{vm.jobData.statusIcon}}"
                                                                    class="{{vm.jobData.tabIconStyle}}"
                                                                    size="20">
-                                                               </ng-md-icon>{{vm.jobData.displayStatus}}</span>
+                                                               </ng-md-icon>{{vm.jobData.displayStatus | translate}}</span>
 
             </div>
           </md-list-item>
@@ -285,9 +285,9 @@
           <md-list-item>
 
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.jobType}}
+                                               <span class="item-title">{{vm.jobData.jobType | translate}}
                                                </span>
-              <span class="column-title column-title-bottom">Type</span>
+              <span class="column-title column-title-bottom">{{'views.job-details-template.Type' | translate}}</span>
             </div>
           </md-list-item>
           <md-divider></md-divider>
@@ -295,7 +295,7 @@
             <div layout="column" class="item-column md-list-item-text ">
                                                <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
-              <span class="column-title column-title-bottom">Start Time</span>
+              <span class="column-title column-title-bottom">{{'views.job-details-template.ST' | translate}}</span>
             </div>
           </md-list-item>
           <md-divider></md-divider>
@@ -303,7 +303,7 @@
             <div layout="column" class="item-column md-list-item-text ">
                                                <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
-              <span class="column-title column-title-bottom">End Time</span>
+              <span class="column-title column-title-bottom">{{'views.job-details-template.ET' | translate}}</span>
             </div>
           </md-list-item>
           <md-divider></md-divider>
@@ -314,15 +314,15 @@
                                                               start-time="vm.jobData.runTime"></kylo-timer>
                                                    <span ng-if="vm.jobData.running == false">{{vm.jobData.runTime | time }}</span>
                                                </span>
-              <span class="column-title column-title-bottom">Run Time</span>
+              <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
             </div>
           </md-list-item>
           <md-divider></md-divider>
           <md-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.exitCode}}
+                                               <span class="item-title">{{vm.jobData.exitCode | translate}}
                                                </span>
-              <span class="column-title column-title-bottom">Exit Code</span>
+              <span class="column-title column-title-bottom">{{'views.job-details-template.EC' | translate}}</span>
             </div>
           </md-list-item>
           <!--

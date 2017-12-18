@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/feeds/feed-stats/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/feeds/feed-stats/module-name','pascalprecht.translate'], function (angular,moduleName) {
 
     angular.module(moduleName).factory('FeedStatsService', ["$q","ProvenanceEventStatsService", function ($q,ProvenanceEventStatsService) {
 

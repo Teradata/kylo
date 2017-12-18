@@ -20,12 +20,12 @@
 <card-layout body-css="md-padding">
   <header-section>
     <div layout="row" layout-align="space-between-center" flex>
-      <div class="card-title" flex>Schedule</div>
+      <div class="card-title" flex> {{"views.define-feed-schedule.Schedule" | translate}} </div>
 
-      <div class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</div>
+      <div class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-general-info.of" | translate}} {{vm.totalSteps}}</div>
     </div>
     <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-      <div class="card-sub-header" flex>Schedule and enable the feed</div>
+      <div class="card-sub-header" flex> {{"views.define-feed-schedule.SAETF" | translate}} </div>
       <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </div>
   </header-section>
@@ -34,14 +34,14 @@
       <div layout-gt-sm="row" style="margin-bottom: 18px">
 
         <md-input-container class="md-block" flex>
-          <label>Strategy</label>
+          <label>{{"views.define-feed-schedule.Strategy" | translate}}</label>
           <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled">
             <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
           </md-select>
         </md-input-container>
 
         <md-input-container class="md-block" flex ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
-          <label>Expression</label>
+          <label>{{"views.define-feed-schedule.Expression" | translate}}</label>
           <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingPeriod.disabled"
                  cron-expression-validator
                  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
@@ -49,10 +49,10 @@
           <div ng-show="vm.defineFeedScheduleForm.cronExpression.$touched && vm.defineFeedScheduleForm.cronExpression.$invalid"
                ng-messages="vm.defineFeedScheduleForm.cronExpression.$error">
             <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.cronExpression"
-                 ng-message="cronExpression">Invalid cron expression.
+                 ng-message="cronExpression"> {{"views.define-feed-schedule.ICE" | translate}}
             </div>
             <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.required" ng-message="required">
-              Required.
+              {{"views.define-feed-general-info.Req" | translate}}
             </div>
           </div>
           <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"
@@ -60,17 +60,17 @@
         </md-input-container>
         <div flex ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.model.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" style="margin-bottom:-18px">
           <md-input-container class="md-block" flex>
-            <label>Run Schedule</label>
+            <label>{{"views.define-feed-schedule.RS" | translate}}</label>
             <input ng-model="vm.timerAmount" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled" required string-to-number type="number" ng-change="vm.timerChanged()"  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
           </md-input-container>
 
           <md-input-container class="md-block" flex >
-            <label>Units</label>
+            <label>{{"views.define-feed-schedule.Units" | translate}}</label>
             <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.schedulingStrategy.disabled">
-              <md-option value="days">Days</md-option>
-              <md-option value="hrs">Hours</md-option>
-              <md-option value="min">Minutes</md-option>
-              <md-option value="sec">Seconds</md-option>
+              <md-option value="days"> {{"views.define-feed-schedule.Days" | translate}} </md-option>
+              <md-option value="hrs"> {{"views.define-feed-schedule.Hours" | translate}} </md-option>
+              <md-option value="min"> {{"views.define-feed-schedule.Minutes" | translate}} </md-option>
+              <md-option value="sec"> {{"views.define-feed-schedule.Seconds" | translate}} </md-option>
             </md-select>
           </md-input-container>
         </div>
@@ -78,25 +78,25 @@
       </div>
       <!--
           <md-input-container class="md-block" >
-              <label>Concurrent Tasks</label>
+              <label> {{"views.define-feed-schedule.CT" | translate}} </label>
               <input type="number" ng-model="vm.model.schedule.concurrentTasks">
               </input>
           </md-input-container>
           -->
       <div ng-if="vm.isClustered && vm.supportsExecutionNode" style="margin:18px 0">
         <md-input-container class="md-block">
-          <label>Execution Node</label>
+          <label> {{"views.define-feed-schedule.EN" | translate}} </label>
           <md-select ng-model="vm.model.schedule.executionNode" required ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.executionNode.disabled">
-            <md-option value="ALL">All nodes</md-option>
-            <md-option value="PRIMARY">Primary node</md-option>
+            <md-option value="ALL"> {{"views.define-feed-schedule.AN" | translate}} </md-option>
+            <md-option value="PRIMARY"> {{"views.define-feed-schedule.PN" | translate}} </md-option>
           </md-select>
         </md-input-container>
       </div>
 
       <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
         <div layout="column">
-          <div class="md-subhead">Run Preconditions</div>
-          <div class="hint">Specify execution dependencies</div>
+          <div class="md-subhead"> {{"views.define-feed-schedule.RP" | translate}} </div>
+          <div class="hint"> {{"views.define-feed-schedule.SED" | translate}} </div>
         </div>
         <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
 
@@ -117,20 +117,20 @@
             </md-list>
           </div>
           <md-button class="md-primary" ng-click="vm.showPreconditionDialog()" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.preconditions.disabled">
-            Add Precondition
+            {{"views.define-feed-schedule.AP" | translate}}
           </md-button>
         </div>
 
       </div>
 
       <div layout="column">
-        <md-checkbox ng-model="vm.model.active" style="margin-top:18px" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.active.disabled"> Enable feed immediately</md-checkbox>
-        <span class="hint fade" ng-show="vm.model.active" ng-hide="!vm.model.active">The feed will be scheduled and running when it is saved.</span>
-        <span class="hint fade" ng-show="!vm.model.active" ng-hide="vm.model.active">The feed will be disabled when it is saved.  You will need to enable the feed later.</span>
+        <md-checkbox ng-model="vm.model.active" style="margin-top:18px" ng-disabled="vm.model.view.schedule.disabled || vm.model.view.schedule.active.disabled"> {{"views.define-feed-schedule.EFI" | translate}}</md-checkbox>
+        <span class="hint fade" ng-show="vm.model.active" ng-hide="!vm.model.active">{{"views.define-feed-schedule.TFW" | translate}}</span>
+        <span class="hint fade" ng-show="!vm.model.active" ng-hide="vm.model.active">{{"views.define-feed-schedule.TFW2" | translate}}</span>
       </div>
 
 
-      <thinkbig-step-buttons can-continue="vm.isValid && vm.defineFeedScheduleForm.$valid &&  !vm.savingFeed" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
+      <thinkbig-step-buttons can-continue="vm.isValid && vm.defineFeedScheduleForm.$valid &&  !vm.savingFeed" step-index="{{::vm.stepIndex}}" final-step='{{"views.define-feed-schedule.Create" | translate}}' on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 
     </ng-form>
   </body-section>

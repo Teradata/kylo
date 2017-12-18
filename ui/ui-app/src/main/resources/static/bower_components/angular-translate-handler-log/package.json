@@ -1,0 +1,23 @@
+{
+  "name": "angular-translate-handler-log",
+  "version": "2.16.0",
+  "description": "Uses angular's $log service to give a warning when trying to translate a translation id which doesn't exist.",
+  "main": "angular-translate-handler-log.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angular-translate/bower-angular-translate-handler-log.git"
+  },
+  "keywords": [
+    "angular",
+    "translate"
+  ],
+  "author": "Pascal Precht",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/angular-translate/angular-translate/issues"
+  },
+  "homepage": "https://angular-translate.github.io",
+  "dependencies": {
+    "angular-translate": "~2.16.0"
+  }
+}

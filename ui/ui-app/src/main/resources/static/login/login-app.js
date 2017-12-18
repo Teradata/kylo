@@ -5,15 +5,42 @@ define([
     'angularAnimate',
     'angularAria',
     'angularCookies',
+
+    'pascalprecht.translate',
+    'angular-translate-loader-static-files',
+    'angular-translate-storage-local',
+    'angular-translate-handler-log',
+    'angular-translate-storage-cookie',
+
     'angularMessages','urlParams'], function (angular) {
 
     var module = angular.module('app', [
         'ngMaterial',
         'ngMdIcons',
+        'pascalprecht.translate',
         'ngCookies']);
 
-    module.config(['$mdThemingProvider','$mdIconProvider','$locationProvider',function($mdThemingProvider, $mdIconProvider, $locationProvider){
+    module.constant('LOCALES', {
+        'locales': {
+            'ru_RU': 'Русский',
+            'en_US': 'English'
+        },
+        'preferredLocale': 'ru_RU'
+    });
+
+
+    module.config(['$mdThemingProvider','$mdIconProvider','$locationProvider','$translateProvider',function($mdThemingProvider, $mdIconProvider, $locationProvider,$translateProvider){
         $locationProvider.html5Mode(true);
+
+        $translateProvider.useStaticFilesLoader({
+            prefix: 'locales/locale-',// path to translations files
+            suffix: '.json'// suffix, currently- extension of the translations
+        });
+
+        //console.log($translateProvider);
+        $translateProvider.preferredLanguage('ru_RU');// is applied on first load
+        $translateProvider.fallbackLanguage('en_US');
+        $translateProvider.useLocalStorage();// saves selected language to localStorage
 
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',
@@ -38,7 +65,7 @@ define([
 
     }]);
 
-    var controller = function($location, LoginService){
+    var controller = function($location, LoginService, $translate, $scope){
         this.username;
         this.password;
         this.error = '';
@@ -55,6 +82,10 @@ define([
         }
         LoginService.setTargetUrl(self.targetUrl);
 
+        $scope.changeLanguage = function (langKey) {
+            $translate.use(langKey);
+        };
+
         this.init = function() {
             // reset login status
             this.error = '';
@@ -70,7 +101,7 @@ define([
 
     };
 
-    module.controller('LoginController',['$location','LoginService',controller]);
+    module.controller('LoginController',['$location','LoginService','$translate', '$scope',controller]);
 
 
     var loginService = function($cookies){

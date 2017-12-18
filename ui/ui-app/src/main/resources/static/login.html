@@ -22,7 +22,7 @@
 <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   <base href="/" />
-    <title>Kylo Login</title>
+    <title>{{"view.login.KL" | translate}}</title>
   <link rel="stylesheet" href="bower_components/angular-material/angular-material.min.css">
   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
 
@@ -64,31 +64,34 @@
     <md-card ng-controller="LoginController as vm" md-padding style="width:400px;max-width:400px;z-index: 999999;"  flex="nogrow" md-whiteframe="4">
           <img src="assets/images/kylo-logo-orange-200.png" style="width: 200px;align-self: center" class="md-card-image">
               <md-card-title layout-align="center center">
-                <span class="md-headline">Login</span>
+                  <span class="md-headline">{{"view.login.Login" | translate}}</span>
             </md-card-title>
         <md-card-content>
 
-        <div ng-show="vm.error" class="alert alert-danger">{{vm.error}}</div>
+        <div ng-show="vm.error" class="alert alert-danger">{{"view.login-app.Iuop" | translate}}</div>
         <form name="form" action="/login" role="form" method="post">
             <div layout="column" flex layout-fill>
                 <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
-                    <label for="username">Username</label>
+                    <label for="username">{{"view.login.Username" | translate}}</label>
                     <input type="text" name="username" id="username" class="form-control" ng-model="vm.username" required />
-                    <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">Username is required</span>
+                    <span ng-show="form.username.$dirty && form.username.$error.required" class="help-block">{{"view.login.Uir" | translate}}</span>
                 </md-input-container>
                 <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
-                   <label for="password">Password</label>
+                   <label for="password">{{"view.login.Password" | translate}}</label>
                     <input type="password" name="password" id="password" class="form-control" ng-model="vm.password" required />
-                    <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
+                    <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">{{"view.login.Pir" | translate}}</span>
                 </md-input-container>
                 <div class="form-actions">
-                    <md-button type="submit" class="md-raised md-primary" ng-disabled="form.$invalid || vm.dataLoading" >Login</md-button>
+                    <md-button type="submit" class="md-raised md-primary" ng-disabled="form.$invalid || vm.dataLoading" >{{"view.login.Login-btn" | translate}}</md-button>
                 </div>
             </div>
           <input type="hidden" name="targetUrl" value="{{vm.targetUrl}}">
         </form>
             </md-card-content>
-        </md-card>
+        <!-- For demo only -->
+        <button ng-click="changeLanguage('ru_RU')">Rus</button>
+        <button ng-click="changeLanguage('en_US')">Eng</button>
+    </md-card>
   </div>
 </md-content>
 </div>

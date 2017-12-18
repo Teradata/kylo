@@ -15,7 +15,7 @@
     "bower_components"
   ],
   "dependencies": {
-    "core.js": "~2.4.1",
+    "core.js":"~2.4.1",
     "angular": "~1.6.2",
     "angular-cookies": "~1.4.1",
     "angular-sanitize": "latest",
@@ -46,7 +46,13 @@
     "svg-morpheus": "latest",
     "underscore": "1.8.3",
     "fattable": "fulmicoton/fattable",
-    "mdPickers": "^0.7.5"
+    "mdPickers": "^0.7.5",
+    "angular-translate": "^2.16.0",
+    "angular-translate-loader-static-files": "^2.16.0",
+    "angular-translate-storage-local": "^2.16.0",
+    "angular-translate-handler-log": "^2.16.0",
+    "angular-dynamic-locale": "^0.1.32",
+    "angular-i18n": "^1.6.6"
   },
   "resolutions": {
     "angular": "~1.6.2",

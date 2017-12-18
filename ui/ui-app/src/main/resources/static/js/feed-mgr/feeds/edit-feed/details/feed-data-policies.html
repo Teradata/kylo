@@ -17,13 +17,13 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+<vertical-section-layout section-title='{{"views.feed-data-policies.TS&DP" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDataPoliciesForm">
 
   <readonly-section>
 
     <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
-      <span flex="25" class="property-name">Source Feed Record Format</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF" | translate}}</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
@@ -31,7 +31,7 @@
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Destination Table Name</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.DTN" | translate}}</span>
 
       <div flex layout="column">
         <span>{{vm.model.category.systemName}}.{{vm.model.table.tableSchema.name}}</span>
@@ -44,45 +44,45 @@
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text hint">
-            Field Name
+            {{"views.feed-data-policies.FN" | translate}}
           </div>
           <div flex="10" class="md-list-item-text hint">
-            Domain<br/>Type
+            {{"views.feed-data-policies.Domain" | translate}}<br/>{{"views.feed-data-policies.Type" | translate}}
           </div>
           <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
             <div class="data-policy-item-check-box">
-              Primary
-              <md-tooltip md-direction="top">
-                Indicate this column is the Primary Key for the row
-              </md-tooltip>
-            </div>
+            {{"views.feed-data-policies.Primary" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.ItcitPKftr" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              <span>Created<br/>Date</span>
-              <md-tooltip md-direction="top">
-                Is this field an indicator of when the row was created?
-              </md-tooltip>
-            </div>
+            <span>{{"views.feed-data-policies.Created" | translate}}<br/>{{"views.feed-data-policies.Date" | translate}}</span>
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Itfaiowtrwc" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              <span>Updated<br/>Date</span>
-              <md-tooltip md-direction="top">
-                Is this field an indicator of when the row was updated?
-              </md-tooltip>
-            </div>
+            <span>{{"views.feed-data-policies.Updated" | translate}}<br/>{{"views.feed-data-policies.UDate" | translate}}</span>
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Itfaiowtrwu" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              Index
-              <md-tooltip md-direction="top">
-                Define what should be sent to "Global Search"
-              </md-tooltip>
-            </div>
+            {{"views.feed-data-policies.Index" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.DwsbstGS" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              Profile
-              <md-tooltip md-direction="top">
-                Should this field be profiled?
-              </md-tooltip>
+            {{"views.feed-data-policies.Profile" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Stfbp" | translate}}
+            </md-tooltip>
             </div>
           </div>
           <div flex="25" class="md-list-item-text hint layout-margin-left-10">
-            Standardize & Validate
+            {{"views.feed-data-policies.Standardize" | translate}} <br/>{{"views.feed-data-policies.Validate" | translate}}
           </div>
         </div>
       </md-list-item>
@@ -105,7 +105,7 @@
           <ng-include
               layout="row" layout-fill
               src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-readonly.html'"></ng-include>
-        </div>
+           </div>
       </md-virtual-repeat-container>
 
 
@@ -113,7 +113,7 @@
 
 
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex class="property-name">Partitions</span>
+      <span flex class="property-name">{{"views.feed-data-policies.Partitions" | translate}}</span>
     </div>
 
     <md-list flex layout-fill class="list-item-table list-condensed" ng-if="vm.model.table.partitions.length >0">
@@ -121,13 +121,13 @@
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="50" class="md-list-item-text hint">
-            Partition Name
+            {{"views.feed-data-policies.PN" | translate}}
           </div>
           <div flex="30" class="md-list-item-text hint">
-            Source Field
+            {{"views.feed-data-policies.SF" | translate}}
           </div>
           <div flex="20" class="md-list-item-text hint">
-            Partition Formula
+            {{"views.feed-data-policies.PF" | translate}}
           </div>
         </div>
       </md-list-item>
@@ -150,35 +150,35 @@
     </md-list>
 
     <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.partitions.length ==0">
-      <span flex class="property-name">No Partition Information Exists</span>
+      <span flex class="property-name">{{"views.feed-data-policies.NPIE" | translate}}</span>
     </div>
 
     <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
-      <span flex="25" class="property-name">Merge Strategy</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.MS" | translate}}</span>
 
       <div flex layout="column">
         <span>{{vm.mergeStrategyDisplayName()}}</span>
       </div>
     </div>
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Target Format</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.TF" | translate}}</span>
       <span>{{vm.model.table.targetFormat}}</span>
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Compression options</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.Co" | translate}}</span>
       <span>{{vm.model.table.options.compressionFormat}}</span>
     </div>
 
 
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Options</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.Options" | translate}}</span>
 
       <div flex layout="row" layout-align="start start" layout-wrap="true">
         <div layout="row">
           <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.options.skipHeader"></ng-md-icon>
           <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.options.skipHeader"></ng-md-icon>
-          <span class="property-name">Skip header</span>
+          <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
         </div>
       </div>
     </div>
@@ -188,7 +188,7 @@
   <editable-section>
     <ng-form name="vm.editFeedDataPoliciesForm">
     <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
-      <span flex="25" class="property-name">Source Feed Record Format</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF2" | translate}}</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
@@ -196,7 +196,7 @@
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">Destination Table Name</span>
+      <span flex="25" class="property-name">{{"views.feed-data-policies.DTN2" | translate}}</span>
 
       <div flex layout="column">
         <span>{{vm.model.category.systemName}}.{{vm.model.table.tableSchema.name}}</span>
@@ -210,60 +210,59 @@
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text hint">
-            Field Name
+            {{"views.feed-data-policies.FN2" | translate}}
           </div>
           <div flex="10" class="md-list-item-text hint">
-            Domain<br/>Type
+            {{"views.feed-data-policies.Domain2" | translate}}<br/>{{"views.feed-data-policies.Type2" | translate}}
           </div>
           <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
             <div class="data-policy-item-check-box">
-              Primary
-              <md-tooltip md-direction="top">
-                Indicate this column is the Primary Key for the row
-              </md-tooltip>
-            </div>
+            {{"views.feed-data-policies.Primary2" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.ItcitPKftr2" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              <span>Created<br/>Date</span>
-              <md-tooltip md-direction="top">
-                Is this field an indicator of when the row was created?
-              </md-tooltip>
-            </div>
+              <span>{{"views.feed-data-policies.Created2" | translate}}<br/>{{"views.feed-data-policies.Date2" | translate}}</span>            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Itfaiowtrwc2" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              <span>Updated<br/>Date</span>
-              <md-tooltip md-direction="top">
-                Is this field an indicator of when the row was updated?
-              </md-tooltip>
-            </div>
+            <span>{{"views.feed-data-policies.Updated2" | translate}}<br/>{{"views.feed-data-policies.UDate2" | translate}}</span>
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Itfaiowtrwu2" | translate}}
+            </md-tooltip>
+          </div>
             <div class="data-policy-item-check-box">
-              Index
-              <md-tooltip md-direction="top">
-                Define what should be sent to "Global Search"
-              </md-tooltip>
+            {{"views.feed-data-policies.Index2" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.DwsbstGS2" | translate}}
+            </md-tooltip>
               <md-input-container class="md-block">
-                <md-checkbox aria-label="Select All"
-                             ng-checked="vm.indexCheckAll.isChecked"
-                             md-indeterminate="vm.indexCheckAll.isIndeterminate"
-                             ng-click="vm.indexCheckAll.toggleAll()"
-                             style="margin-left:-1px;"></md-checkbox>
-              </md-input-container>
-            </div>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.indexCheckAll.isChecked"
+                           md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                           ng-click="vm.indexCheckAll.toggleAll()"
+                           style="margin-left:-1px;"></md-checkbox>
+            </md-input-container>
+          </div>
             <div class="data-policy-item-check-box">
-              Profile
-              <md-tooltip md-direction="top">
-                Should this field be profiled?
-              </md-tooltip>
+            {{"views.feed-data-policies.Profile2" | translate}}
+            <md-tooltip md-direction="top">
+              {{"views.feed-data-policies.Stfbp2" | translate}}
+            </md-tooltip>
               <md-input-container class="md-block">
-                <md-checkbox aria-label="Select All"
-                             ng-checked="vm.profileCheckAll.isChecked"
-                             md-indeterminate="vm.profileCheckAll.isIndeterminate"
-                             ng-click="vm.profileCheckAll.toggleAll()"
-                style="margin-left:-1px;">
-                </md-checkbox>
-              </md-input-container>
-            </div>
+              <md-checkbox aria-label="Select All"
+                           ng-checked="vm.profileCheckAll.isChecked"
+                           md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                           ng-click="vm.profileCheckAll.toggleAll()"
+              style="margin-left:-1px;">
+              </md-checkbox>
+            </md-input-container>
+          </div>
           </div>
           <div flex="25" class="md-list-item-text hint layout-margin-left-10">
-            Standardize & Validate
+            {{"views.feed-data-policies.Standardize2" | translate}} <br/>{{"views.feed-data-policies.Validate2" | translate}}
           </div>
         </div>
       </md-list-item>
@@ -292,7 +291,7 @@
           <ng-include
               layout="row" layout-fill
               src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-editable.html'"></ng-include>
-        </div>
+          </div>
       </md-virtual-repeat-container>
 
 
@@ -300,7 +299,7 @@
 
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-      <label class="label-small md-container-ignore">Merge Strategy</label>
+      <label class="label-small md-container-ignore">{{"views.feed-data-policies.MS2" | translate}}</label>
       <md-radio-group ng-model="vm.editModel.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy" ng-change="vm.onChangeMergeStrategy()">
         <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
                          ng-value="strategy.type"
@@ -311,14 +310,14 @@
         </md-radio-button>
       </md-radio-group>
       <div ng-messages="vm.editFeedDataPoliciesForm['targetMergeStrategy'].$error" md-auto-hide="false">
-        <div ng-message="invalidPKOption">A Primary Key must be selected to use this strategy</div>
-        <div ng-message="invalidRollingSyncOption">A Partition must be added to use this strategy</div>
+        <div ng-message="invalidPKOption">{{"views.feed-data-policies.APKmbstuts" | translate}}</div>
+        <div ng-message="invalidRollingSyncOption">{{"views.feed-data-policies.APmbatuts" | translate}}</div>
       </div>
     </md-input-container>
 
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-      <label class="label-small md-container-ignore">Target Format</label>
+      <label class="label-small md-container-ignore">{{"views.feed-data-policies.TF2" | translate}}</label>
       <md-select ng-model="vm.editModel.table.targetFormat" disabled="true">
         <md-option ng-repeat="opt in vm.targetFormatOptions" ng-value="opt.value">
           {{opt.label}}
@@ -328,7 +327,7 @@
 
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-      <label class="label-small md-container-ignore">Compression options</label>
+      <label class="label-small md-container-ignore">{{"views.feed-data-policies.Co2" | translate}}</label>
       <md-select ng-model="vm.editModel.table.options.compressionFormat" disabled="true">
         <md-option ng-repeat="opt in vm.compressionOptions track by $index" ng-value="opt">
           {{opt}}
@@ -338,18 +337,18 @@
 
 
     <md-input-container class="md-block layout-padding-top-bottom condensed" style="padding-left:0px;padding-right:0px;">
-      <label class="label-small md-container-ignore">Options</label>
+      <label class="label-small md-container-ignore">{{"views.feed-data-policies.Options" | translate}}</label>
 
       <div layout="row" class="layout-padding-top ">
         <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header">
-          Skip header row
+          {{"views.feed-data-policies.Shr" | translate}}
         </md-checkbox>
         <!--
         <md-checkbox ng-model="vm.editModel.table.options.auditLogging" aria-label="Audit Logging">
-          Audit Logging
+          {{"views.feed-data-policies.AL2" | translate}}
         </md-checkbox>
         <md-checkbox ng-model="vm.editModel.table.options.encrypt" aria-label="Encrypt">
-          Encrypt
+          {{"views.feed-data-policies.Encrypt2" | translate}}
         </md-checkbox>
         -->
       </div>

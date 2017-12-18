@@ -1,4 +1,4 @@
-<div ng-if="!vm.enabled">
+  <div ng-if="!vm.enabled">
   <span>Entity access control is not enabled for Kylo.</span>
 </div>
 <div layout-padding ng-if="vm.enabled">
@@ -15,7 +15,7 @@
                        md-items="item in vm.queryUsers(vm.ownerAutoComplete.searchText)"
                        md-item-text="item.displayName"
                        md-min-length="1"
-                       md-floating-label="Owner">
+                       md-floating-label='{{"views.entity-access-control.Owner" | translate}}'>
         <md-item-template>
                   <span class="item-title">
                     <span> {{item.displayName}} </span>
@@ -24,7 +24,7 @@
         <md-not-found>
           No users matching "{{vm.ownerAutoComplete.searchText}}" were found.
         </md-not-found>
-        <div class="hint">Define a user who owns this entity</div>
+        <div class="hint"> {{"views.entity-access-control.DefAUser" | translate}} </div>
         <div ng-messages="vm.theForm.owner.$error">
           <div ng-message="required">Required.</div>
         </div>
@@ -37,18 +37,18 @@
 
   <div layout="row" style="border-bottom: 1px solid rgba(0,0,0,0.12);">
     <div flex="40" style="align-self:center;">
-      <span class="item-title" style="color:grey">Roles</span>
+      <span class="item-title" style="color:grey"> {{"views.entity-access-control.Roles" | translate}} </span>
     </div>
     <div flex class="">
-      <span class="item-title" style="color:grey">Members</span>
+      <span class="item-title" style="color:grey"> {{"views.entity-access-control.Members" | translate}} </span>
     </div>
   </div>
   <div layout="column" ng-repeat="roleMembership in vm.entityRoleMemberships">
     <div layout="row">
       <div flex="40" style="align-self:center;" layout="column">
-        <span>{{roleMembership.role.title}}</span>
-        <div class="hint" ng-if="roleMembership.role.description" class="layout-padding-top" ng-bind-html="roleMembership.role.description">
-        </div>
+        <span>{{roleMembership.role.title | translate}}</span>
+        <!--div class="hint" ng-if="roleMembership.role.description" class="layout-padding-top" ng-bind-html="roleMembership.role.description">
+        </div -->
 
 
       </div>
@@ -68,7 +68,7 @@
               md-item-text="item.title"
               md-no-cache="true"
               md-clear-button="true"
-              placeholder="Add User/Group access">
+              placeholder='{{"views.entity-access-control.AUGa" | translate}}'>
             <span md-highlight-text="roleMembership.ui.members.searchText">{{item.title}}</span>
             <md-item-template>
                   <span class="item-title">
@@ -82,11 +82,11 @@
                   ng-if="$chip.editable == undefined || $chip.editable == true"
                   class="md-chip-remove ng-scope"
                   md-chip-remove 
-                  type="button" 
+                  type="button"
                   aria-hidden="true" 
                   tabindex="-1">
               <ng-md-icon icon="close"></ng-md-icon>
-              <span class="md-visually-hidden ng-binding">Remove</span>
+              <span class="md-visually-hidden ng-binding"> {{"views.entity-access-control.Remove" | translate}} </span>
           </button>
           <md-chip-template>
             <span>
@@ -104,8 +104,4 @@
   </div>
     <br/>
     <br/>
-
-
-
-
 </div>

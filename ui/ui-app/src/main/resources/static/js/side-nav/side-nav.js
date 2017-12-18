@@ -1,6 +1,6 @@
-define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav/module','kylo-services'], function (angular,moduleName,AccessConstants) {
+define(['angular','side-nav/module-name',  'constants/AccessConstants', 'side-nav/module','kylo-services', 'pascalprecht.translate'], function (angular,moduleName,AccessConstants) {
 
-    var directive = function ($mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService, AngularModuleExtensionService) {
+    var directive = function ($mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService, AngularModuleExtensionService, $filter) {
         return {
             restrict: "E",
             scope:{},
@@ -40,9 +40,9 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
 
                 $scope.expandCollapseSideNavList = expandCollapseSideNavList;
 
-                $scope.adminTitle = "Admin";
-                $scope.feedManagerTitle = "Feed Manager";
-                $scope.opsManagerTitle = "Operations";
+                $scope.adminTitle = $filter('translate')('views.main.adminTitle');
+                $scope.feedManagerTitle = $filter('translate')('views.main.feedManagerTitle');
+                $scope.opsManagerTitle = $filter('translate')('views.main.opsManagerTitle');
 
                 /**
                  * A map with the sref,parent menu toggle text
@@ -86,13 +86,13 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                  * @param allowed
                  */
                 function buildFeedManagerMenu() {
-                    var menu = ({type:'toggle', text: "Feed Manager",narrowText:'Feed',expanded:true,elementId:'toggle_feed_manager'});
+                    var menu = ({type:'toggle', text: $filter('translate')('views.main.feed-manage'),narrowText:$filter('translate')('views.main.feed-manage-narrow'),expanded:true,elementId:'toggle_feed_manager'});
                     var links = [];
-                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: "Feeds", permission: AccessConstants.UI_STATES.FEEDS.permissions});
-                    links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
-                    links.push({sref: "tables",type:'link', icon: "grid_on", text: "Tables", permission: AccessConstants.UI_STATES.TABLES.permissions});
-                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
-                    links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
+                    links.push({sref: "feeds",type:'link', icon: "linear_scale", text: $filter('translate')('views.main.feeds'), permission: AccessConstants.UI_STATES.FEEDS.permissions});
+                    links.push({sref: "categories",type:'link', icon: "folder_special", text: $filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
+                    links.push({sref: "tables",type:'link', icon: "grid_on", text: $filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
+                    links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: $filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
+                    links.push({sref: "visual-query",type:'link', icon: "transform", text: $filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
                     addExtensionLinks(MENU_KEY.FEED_MGR, links);
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;
@@ -106,15 +106,15 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                  * @param allowed
                  */
                 function buildOpsManagerMenu() {
-                       var menu = ({type:'toggle', text: "Operations",narrowText:'Ops',expanded:false});
+                       var menu = ({type:'toggle', text: $filter('translate')('views.main.operations'),narrowText:$filter('translate')('views.main.operations-narrow'),expanded:false});
                        var links = [];
-                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: "Dashboard", defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions});
-                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: "Services", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions});
-                       links.push({sref: "jobs",type:'link', icon: "settings", text: "Jobs", defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
-                       links.push({sref: "alerts", icon: "notifications", text: "Alerts", defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
-                       links.push({sref: "service-level-assessments",type:'link', icon: "work", text: "SLA", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
-                       links.push({sref: "scheduler",type:'link', icon: "today", text: "Tasks", defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
-                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: "Charts", defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
+                       links.push({sref: "dashboard",type:'link', icon: "dashboard", text: $filter('translate')('views.main.dashboard'), defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions});
+                       links.push({sref: "service-health",type:'link', icon: "vector_triangle", text: $filter('translate')('views.main.services'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions});
+                       links.push({sref: "jobs",type:'link', icon: "settings", text: $filter('translate')('views.main.jobs'), defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions});
+                       links.push({sref: "alerts", icon: "notifications", text: $filter('translate')('views.main.alerts'), defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions});
+                       links.push({sref: "service-level-assessments",type:'link', icon: "work", text: $filter('translate')('views.main.sla-assessments'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions});
+                       links.push({sref: "scheduler",type:'link', icon: "today", text: $filter('translate')('views.main.sla-schedule'), defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions});
+                       links.push({sref: "charts",type:'link', icon: "insert_chart", text: $filter('translate')('views.main.charts'), defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions});
                       addExtensionLinks(MENU_KEY.OPS_MGR, links);
                        menu.links = links;
                     menuMap[MENU_KEY.OPS_MGR] = menu;
@@ -127,15 +127,15 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                  */
                 function buildAdminMenu() {
 
-                    var menu = ({type:'toggle', text: "Admin",narrowText:'Admin',expanded:false});
+                    var menu = ({type:'toggle', text: $filter('translate')('views.main.admin'),narrowText:$filter('translate')('views.main.admin-narrow'),expanded:false});
                     var links = [];
-                    links.push({sref: "datasources", type: "link", icon: "storage", text: "Data Sources", defaultActive: false, permission: AccessControlService.DATASOURCE_ACCESS});
-                    links.push({sref: "domain-types", type: "link", icon: "local_offer", text: "Domain Types", defaultActive: false, permission: AccessControlService.FEEDS_ADMIN});
-                    links.push({sref: "business-metadata", type:'link', icon: "business", text: "Properties", defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
-                    links.push({sref: "registered-templates",type:'link', icon: "layers", text: "Templates", defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
-                    links.push({sref: "users",type:'link', icon: "account_box", text: "Users", defaultActive: false, permission: AccessConstants.USERS_ACCESS});
-                    links.push({sref: "groups",type:'link', icon: "group", text: "Groups", defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
-                    links.push({sref: "sla-email-templates",type:'link', icon: "email", text: "SLA Email", defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions});
+                    links.push({sref: "datasources", type: "link", icon: "storage", text: $filter('translate')('views.main.data-sources'), defaultActive: false, permission: AccessControlService.DATASOURCE_ACCESS});
+                    links.push({sref: "domain-types", type: "link", icon: "local_offer", text: $filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessControlService.FEEDS_ADMIN});
+                    links.push({sref: "business-metadata", type:'link', icon: "business", text: $filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
+                    links.push({sref: "registered-templates",type:'link', icon: "layers", text: $filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
+                    links.push({sref: "users",type:'link', icon: "account_box", text: $filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});
+                    links.push({sref: "groups",type:'link', icon: "group", text: $filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
+                    //links.push({sref: "sla-email-templates",type:'link', icon: "email", text: $filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
                     addExtensionLinks(MENU_KEY.ADMIN, links);
                     menu.links = links;
                     menuMap[MENU_KEY.ADMIN] = menu;
@@ -250,8 +250,8 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                             .clickOutsideToClose(true)
                             .title(title)
                             .textContent(content)
-                            .ariaLabel('Access Deined')
-                            .ok('Got it!')
+                            .ariaLabel($filter('translate')('views.main.access-denied'))
+                            .ok($filter('translate')('views.main.got-it'))
                     );
                 }
 
@@ -362,5 +362,5 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
         }
     };
 
-    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService','AccordionMenuService','AngularModuleExtensionService', directive]);
+    angular.module(moduleName).directive('kyloSideNav', ['$mdSidenav','$mdDialog','$rootScope','$transitions','$timeout','SideNavService','AccessControlService','StateService','AccordionMenuService','AngularModuleExtensionService', '$filter', directive]);
 });

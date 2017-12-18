@@ -1,0 +1,26 @@
+{
+  "name": "angular-translate-storage-local",
+  "version": "2.16.0",
+  "description": "Abstraction layer for localStorage. This service is used when telling angular-translate to use localStorage as storage.",
+  "main": "angular-translate-storage-local.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/angular-translate/bower-angular-translate-storage-local.git"
+  },
+  "keywords": [
+    "angular",
+    "translate",
+    "storage",
+    "localStorage"
+  ],
+  "author": "Pascal Precht",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/angular-translate/angular-translate/issues"
+  },
+  "homepage": "https://angular-translate.github.io",
+  "dependencies": {
+    "angular-translate": "~2.16.0",
+    "angular-translate-storage-cookie": "~2.16.0"
+  }
+}

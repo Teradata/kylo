@@ -1,5 +1,5 @@
-define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
-angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($timeout) {
+define(['angular','ops-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+angular.module(moduleName).service('Nvd3ChartService', ["$timeout","$filter",function ($timeout, $filter) {
 
     var self = this;
     this.renderEndUpdated = {};
@@ -265,7 +265,8 @@ angular.module(moduleName).service('Nvd3ChartService', ["$timeout",function ($ti
                 var color = colorForSeriesFn != undefined ? colorForSeriesFn(label) : labelColorMap[label];
                 var disabled = labelDisabledMap[label] != undefined ? labelDisabledMap[label] : false;
                 var area =  (configMap[label] != undefined && configMap[label]['area'] != undefined) ? configMap[label]['area'] : true;
-                data.push({key: label, values: valuesArray, area: area, color: color, disabled: disabled});
+                var displayLabel = $filter('translate')(label);
+                data.push({key: displayLabel, values: valuesArray, area: area, color: color, disabled: disabled});
             })
 
         }

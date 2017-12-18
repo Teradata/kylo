@@ -1,4 +1,4 @@
-define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, moduleName) {
+define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular, moduleName) {
 
     var directive = function () {
         return {
@@ -16,7 +16,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
     };
 
     var controller = function ($scope, $mdDialog, $timeout, $q, $compile, $sce, AccessControlService, EntityAccessControlService, FeedService, StateService, FeedFieldPolicyRuleService,
-                               DomainTypesService) {
+                               DomainTypesService, $filter) {
 
         var self = this;
 
@@ -292,7 +292,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
 
         this.onSave = function (ev) {
             //save changes to the model
-            FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
+            FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-data-policies.Saving'), self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
 
             copy.table.targetFormat = self.editModel.table.targetFormat;
@@ -527,7 +527,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
 
     angular.module(moduleName)
         .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
-                                                   "FeedFieldPolicyRuleService", "DomainTypesService", controller])
+                                                   "FeedFieldPolicyRuleService", "DomainTypesService", "$filter", controller])
         .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
         .directive('thinkbigFeedDataPolicies', directive);
 });

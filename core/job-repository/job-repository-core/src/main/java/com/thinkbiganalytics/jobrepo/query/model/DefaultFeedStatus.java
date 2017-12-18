@@ -21,9 +21,12 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Locale;
 
 /**
  * Feed Status built from the transform class
@@ -82,7 +85,12 @@ public class DefaultFeedStatus implements FeedStatus {
         }
         if (percent > 0f) {
             DecimalFormat twoDForm = new DecimalFormat("##.##");
-            this.percent = Float.valueOf(twoDForm.format(this.percent)) * 100;
+//            this.percent = Float.valueOf(twoDForm.format(this.percent)) * 100;
+            try {
+                this.percent = twoDForm.parse(twoDForm.format(this.percent)).floatValue() * 100;
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
 
     }

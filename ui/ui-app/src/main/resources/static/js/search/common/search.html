@@ -3,8 +3,8 @@
 
       <card-layout class="centered" body-css="md-padding">
         <header-section layout="row" layout-align="space-between-center" flex>
-          <span class="md-subhead">Search results from {{vm.searchResult.from}} to {{vm.searchResult.to}} of {{vm.searchResult.totalHits}}  <span
-              class="hint">({{(vm.searchResult.tookInMillis/1000).toFixed(3)}} seconds)</span></span>
+          <span class="md-subhead">{{"view.search.Srf" | translate}} {{vm.searchResult.from}} {{"view.search.to" | translate}} {{vm.searchResult.to}} {{"view.search.of" | translate}} {{vm.searchResult.totalHits}}  <span
+              class="hint">({{(vm.searchResult.tookInMillis/1000).toFixed(3)}} {{"view.search.seconds" | translate}})</span></span>
         </header-section>
 
         <body-section>
@@ -16,11 +16,11 @@
                   <div flex="10" style="z-index: 1" layout="column" layout-xs="row">
                   <span style="z-index: 1">
                     <md-tooltip md-direction="left">
-                      <span ng-if="searchHit.type == 'KYLO_DATA'">Data from table {{searchHit.schemaName}}.{{searchHit.tableName}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_SCHEMA'">Schema for table {{searchHit.databaseName}}.{{searchHit.tableName}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_FEEDS'">Feed metadata for {{searchHit.feedTitle}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_CATEGORIES'">Category metadata for {{searchHit.categoryTitle}}</span>
-                      <span ng-if="searchHit.type == 'KYLO_UNKNOWN'">Unknown result type</span>
+                      <span ng-if="searchHit.type == 'KYLO_DATA'">{{"view.search.Dft" | translate}} {{searchHit.schemaName}}.{{searchHit.tableName}}</span>
+                      <span ng-if="searchHit.type == 'KYLO_SCHEMA'">{{"view.search.Sft" | translate}} {{searchHit.databaseName}}.{{searchHit.tableName}}</span>
+                      <span ng-if="searchHit.type == 'KYLO_FEEDS'">{{"view.search.Fmf" | translate}} {{searchHit.feedTitle}}</span>
+                      <span ng-if="searchHit.type == 'KYLO_CATEGORIES'">{{"view.search.Cmf" | translate}} {{searchHit.categoryTitle}}</span>
+                      <span ng-if="searchHit.type == 'KYLO_UNKNOWN'">{{"view.search.Urt" | translate}}</span>
                     </md-tooltip>
                     <ng-md-icon icon="{{searchHit.icon}}" style="fill:rgba(240,140,56,0.54);" size="48"></ng-md-icon>
                   </span>
@@ -36,8 +36,8 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights">
-                                <td style="text-align:left; padding-left: 3px;">{{highlight.key}}</td>
+                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
                                 <td style="text-align:left; padding-left: 50px;" ng-bind-html="highlight.value"></td>
                               </tr>
                             </table>
@@ -65,8 +65,8 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights">
-                                <td style="text-align:left; padding-left: 3px;">{{highlight.key}}</td>
+                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
                                 <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
@@ -101,8 +101,8 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights">
-                                <td style="text-align:left; padding-left: 3px;">{{highlight.key}}</td>
+                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
                                 <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
@@ -132,8 +132,8 @@
 
                           <div style="overflow-x:auto; padding-bottom: 10px;">
                             <table style="border-collapse:collapse; border-spacing:0;">
-                              <tr ng-repeat="highlight in searchHit.highlights">
-                                <td style="text-align:left; padding-left: 3px;">{{highlight.key}}</td>
+                              <tr ng-repeat="highlight in searchHit.highlights" ng-init="vKey = 'view.search.' + highlight.key">
+                                <td style="text-align:left; padding-left: 3px;">{{vKey | translate}}</td>
                                 <td style="text-align:left; padding-left: 50px;" ng-bind-html="vm.renderHtml(highlight.value)"></td>
                               </tr>
                             </table>
@@ -159,7 +159,7 @@
                         <div layout="column" layout-wrap="true">
                           <div layout-align="start center" style="padding-bottom: 10px;">
                             <ul style="list-style-type: none; margin:0; padding:0">
-                              <li>Details not available.</li>
+                              <li>{{"view.search.Dna" | translate}}</li>
                             </ul>
                           </div>
                         </div>
@@ -178,7 +178,7 @@
                                            boundary-links="false"
                                            template-url="js/common/dir-pagination/dirPagination.tpl.html"
                                            on-page-change="vm.onPaginationChange(newPageNumber)"
-                                           label="Rows per page"
+                                           label='{{"views.all-page.Rows_per_page" | translate}}'
                                            rows-per-page="vm.paginationData.rowsPerPage"
                                            rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                            class="pagination-row">
@@ -188,7 +188,7 @@
             </div>
           </div>
           <div ng-if="vm.searchResult == null && !vm.searching">
-            No results found
+            {{"view.search.Nrf" | translate}}
           </div>
           <div ng-if="vm.searching">
             <md-progress-circular md-mode="indeterminate"></md-progress-circular>

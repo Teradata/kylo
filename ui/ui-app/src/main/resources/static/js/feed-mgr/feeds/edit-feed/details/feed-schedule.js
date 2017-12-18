@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -16,7 +16,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $q,AccessControlService, EntityAccessControlService,FeedService, RestUrlService) {
+    var controller = function ($scope, $http, $mdDialog, $q,AccessControlService, EntityAccessControlService,FeedService, RestUrlService, $filter) {
 
         var self = this;
 
@@ -92,7 +92,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * All possible schedule strategies
          * @type {*[]}
          */
-        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"},
+        var allScheduleStrategies = [{label: $filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.TE'), value: "TRIGGER_DRIVEN"},
             {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
         /**
@@ -273,7 +273,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             var isValid = validate();
             if (isValid) {
                 //save changes to the model
-                FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
+                FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-schedule.Saving'), self.model.feedName);
                 var copy = angular.copy(FeedService.editFeedModel);
                 copy.schedule = self.editModel.schedule;
                 copy.userProperties = null;
@@ -338,7 +338,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
     };
 
 
-    angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService",controller]);
+    angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService","$filter",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedSchedule', directive);

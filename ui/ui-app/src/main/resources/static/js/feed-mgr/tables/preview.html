@@ -20,7 +20,7 @@
 <div class="layout-padding">
 
   <md-input-container>
-    <label>Limit</label>
+    <label>{{"views.preview.Limit" | translate}}</label>
     <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
       <md-option ng-repeat="opt in vm.limitOptions track by $index" ng-value="opt">
         {{opt}}

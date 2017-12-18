@@ -42,9 +42,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                  if(matchingTemplate != null) {
                      if(mode == 'create') {
                          processor.feedPropertiesUrl = matchingTemplate.stepperTemplateUrl;
+                         processor.feedDetailsReadOnlyTemplateUrl = matchingTemplate.feedDetailsReadOnlyTemplateUrl;
                      }
                      else {
                          processor.feedPropertiesUrl = matchingTemplate.feedDetailsTemplateUrl;
+                         processor.feedDetailsReadOnlyTemplateUrl = matchingTemplate.feedDetailsReadOnlyTemplateUrl;
                      }
                  }
 

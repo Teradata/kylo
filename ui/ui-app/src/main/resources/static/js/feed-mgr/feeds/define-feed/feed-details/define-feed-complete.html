@@ -24,13 +24,13 @@
 
         <div layout="row">
         <ng-md-icon icon="done_all" size="50" style="fill:#EF8E43"></ng-md-icon>
-        <div class="md-headline" style="padding-left:40px;padding-top:40px;">Congratulations! Your feed has been successfully created.</div>
+        <div class="md-headline" style="padding-left:40px;padding-top:40px;">{{"views.define-feed-complete" | translate}}</div>
         </div>
-        <div class="md-subhead" style="padding-left:40px;">You can augment your feed by adding the following enhancements</div>
+        <div class="md-subhead" style="padding-left:40px;">{{"views.define-feed-complete2" | translate}}</div>
         <div layout="column" layout-align="center start">
             <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="vm.onAddServiceLevelAgreement()">
                 <ng-md-icon icon="note_add" size="50" style="fill:#3782B8;"></ng-md-icon>
-                <span class="md-subhead" style="padding-top:40px;padding-left:30px;"> Add a Service Level Agreement</span>
+                <span class="md-subhead" style="padding-top:40px;padding-left:30px;">{{"views.define-feed-complete3" | translate}}</span>
             </div>
             <!--
             <div layout="row" style="cursor:pointer;outline:none;" >
@@ -40,13 +40,13 @@
             -->
             <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="vm.onViewDetails()">
                 <ng-md-icon icon="pageview" size="50" style="fill:#3782B8;"></ng-md-icon>
-                <span class="md-subhead" style="padding-top:40px;padding-left:30px;">View Details</span>
+                <span class="md-subhead" style="padding-top:40px;padding-left:30px;">{{"views.define-feed-complete4" | translate}}</span>
             </div>
 
         </div>
         <span flex style="padding-top:40px;"></span>
         <div flex layout="row" style="padding-left:520px;">
-            <md-button class="md-primary md-raised" ng-click="vm.gotIt()">Got It</md-button>
+            <md-button class="md-primary md-raised" ng-click="vm.gotIt()">{{"views.define-feed-complete5" | translate}}</md-button>
         </div>
     </div>
 

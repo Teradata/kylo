@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','feed-mgr/feeds/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','@uirouter/angularjs','kylo-feedmgr', 'pascalprecht.translate'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
 
 

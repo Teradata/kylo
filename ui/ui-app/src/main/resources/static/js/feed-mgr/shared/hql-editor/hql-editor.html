@@ -20,28 +20,28 @@
 <div class="md-padding">
 
             <div ng-if="vm.loadingHiveSchemas">
-                <span class="hint">Initializing autocomplete data</span>
+                <span class="hint">{{"views.hql-editor.Iad" | translate}}</span>
             <md-progress-linear md-mode="indeterminate" ></md-progress-linear>
             </div>
             <div id="hqlEditorContainer">
-                <span class="md-input-label">Enter Query</span>
+                <span class="md-input-label">{{"views.hql-editor.EQ" | translate}}</span>
                 <div class="hql-editor" ui-codemirror ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
                 </div>
             </div>
                 <span class="hint">{{vm.metadataMessage}}</span>
 <div layout="row" layout-fill layout-align="space-between center">
             <md-button class="md-primary md-raised" ng-disabled="vm.sql == ''" ng-click="vm.query()" ng-if="vm.allowExecuteQuery">
-                Execute Query
+                {{"views.hql-editor.ExecuteQ" | translate}}
             </md-button>
     <span flex></span>
     <md-button ng-if="vm.allowFullscreen" class="md-raised" ng-if="vm.mode != 'fullscreen'" ng-click="vm.fullscreen()" >
-        Full Screen
+        {{"views.hql-editor.FS" | translate}}
     </md-button>
 </div>
               <div ng-if="vm.allowDatabaseBrowse" class="layout-padding-top">
-                <div class="md-title">Browse Hive</div>
+                <div class="md-title">{{"views.hql-editor.BH" | translate}}</div>
                 <md-input-container>
-                    <label>Database</label>
+                    <label>{{"views.hql-editor.Database" | translate}}</label>
                     <md-select ng-model="vm.browseDatabaseName" >
                         <md-option ng-repeat="databaseName in vm.databaseNames" value="{{::databaseName}}">
                             {{::databaseName}}
@@ -49,7 +49,7 @@
                     </md-select>
                 </md-input-container>
                 <md-input-container>
-                    <label>Table</label>
+                    <label>{{"views.hql-editor.Table" | translate}}</label>
                     <md-select ng-model="vm.browseTableName" ng-change="vm.browseTable()" >
                         <md-option ng-repeat="(tableName,fields) in vm.databaseMetadata[vm.browseDatabaseName]" value="{{::tableName}}">
                             {{::tableName}}

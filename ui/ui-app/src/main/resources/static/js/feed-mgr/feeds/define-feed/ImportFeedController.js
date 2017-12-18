@@ -1,6 +1,6 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/define-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
-    var controller = function ($scope, $http, $interval,$timeout, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService, ImportService, DatasourcesService) {
+    var controller = function ($scope, $http, $interval,$timeout, $mdDialog, FileUpload, RestUrlService, FeedCreationErrorService, CategoriesService, ImportService, DatasourcesService, $filter) {
 
         /**
          * reference to the controller
@@ -204,7 +204,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         self.importResultIcon = "check_circle";
                         self.importResultIconColor = "#009933";
 
-                        self.message = "Successfully imported the feed " + feedName + ".";
+                        self.message = $filter('translate')('views.ImportFeedController.succes') + feedName + ".";
 
                         resetImportOptions();
 
@@ -220,7 +220,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         else {
                             self.importResultIcon = "error";
                             self.importResultIconColor = "#FF0000";
-                            self.message = "Unable to import and register the feed.  Errors were found. ";
+                            self.message = $filter('translate')('views.ImportFeedController.error2');
                         }
                     }
                 }
@@ -237,7 +237,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 //set error indicators and messages
                 self.importResultIcon = "error";
                 self.importResultIconColor = "#FF0000";
-                var msg =  "Unable to import and register the feed.  Errors were found. Ensure you are trying to upload a valid feed export file and not a template export file. ";
+                var msg = $filter('translate')('views.ImportFeedController.error');
                 if(data.developerMessage){
                     msg += data.developerMessage;
                 }
@@ -438,7 +438,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
     };
 
-    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService","DatasourcesService",controller]);
+    angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService","DatasourcesService", "$filter",controller]);
 
 });
 

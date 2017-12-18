@@ -27,7 +27,7 @@
     <body-section>
       <div ng-if="vm.loading">
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-        <span class="md-body-2 layout-padding-left">Loading Tables</span>
+        <span class="md-body-2 layout-padding-left">{{"views.define-feed-mgr-tables.tables" | translate}}</span>
       </div>
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
         <md-list flex layout-fill class="list-item-table">
@@ -43,7 +43,7 @@
                 <div layout="row" class="column-title column-title-bottom">
                   <ng-md-icon icon="grid_on" size="20" hide-xs style="fill:orange">
                   </ng-md-icon>
-                  <span>Table</span>
+                  <span>{{"views.define-feed-mgr-tables.tables2" | translate}}</span>
                 </div>
 
               </div>
@@ -51,14 +51,14 @@
                                    <span class="item-title">{{table.schema}}
                                    </span>
                               <span class="column-title column-title-bottom">
-                                    Schema
+                                    {{"views.define-feed-mgr-tables.tables3" | translate}}
                                    </span>
               </div>
             </div>
             <md-divider ng-if="!$last"></md-divider>
           </md-list-item>
           <md-list-item ng-show="vm.loading == false && vm.selectedTables.length ==0" class="md-list-item with-padding">
-            No results found
+            {{"views.define-feed-mgr-tables.tables4" | translate}}
           </md-list-item>
           <md-divider></md-divider>
           <md-list-item layout-align="end center" layout-row class="pagination-list-item">
@@ -69,7 +69,7 @@
                                      boundary-links="false"
                                      template-url="js/common/dir-pagination/dirPagination.tpl.html"
                                      on-page-change="vm.onPaginationChange(newPageNumber)"
-                                     label="Rows per page"
+                                     label='{{"views.all-page.Rows_per_page" | translate}}'
                                      rows-per-page="vm.paginationData.rowsPerPage"
                                      rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                      class="pagination-row">
@@ -82,8 +82,8 @@
           <table md-table md-progress="vm.deferred.promise">
             <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
             <tr md-row>
-              <th md-column name="Table" md-order-by="feedName">Table</th>
-              <th md-column name="Schema" md-order-by="state">Schema</th>
+              <th md-column name="Table" md-order-by="feedName">{{"views.define-feed-mgr-tables.tables2" | translate}}</th>
+              <th md-column name="Schema" md-order-by="state">{{"views.define-feed-mgr-tables.tables3" | translate}}</th>
             </tr>
             </thead>
             <tbody md-body>
