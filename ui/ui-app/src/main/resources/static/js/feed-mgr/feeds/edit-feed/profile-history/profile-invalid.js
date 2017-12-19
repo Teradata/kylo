@@ -118,7 +118,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         function setupTable() {
             FattableService.setupTable({
-                tableContainerId:"#invalidProfile",
+                tableContainerId: "invalidProfile",
                 headers: self.headers,
                 rows: self.rows,
                 cellText: function(row, column) {

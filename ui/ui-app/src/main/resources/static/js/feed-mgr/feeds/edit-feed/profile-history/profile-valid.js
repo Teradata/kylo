@@ -60,7 +60,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         function setupTable() {
             FattableService.setupTable({
-                tableContainerId:"#validProfile",
+                tableContainerId: "validProfile",
                 headers: self.headers,
                 rows: self.rows
             });
