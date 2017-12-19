@@ -106,12 +106,12 @@ public class TemplateExporter {
                 List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
 
                 //Get flow information for the 'reusable_templates' process group in NiFi
-                String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateCategoryProcessGroup().getId();
-                ProcessGroupFlowDTO reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+                String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+                if(reusableTemplateProcessGroupId != null) {
+                    ProcessGroupFlowDTO reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
 
-
-                gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds,outputPortConnectionMetadata, reusableTemplateConnectionInfos, reusableTemplateFlow);
-                //TODO include file indicating the correct order to import
+                    gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, outputPortConnectionMetadata, reusableTemplateConnectionInfos, reusableTemplateFlow);
+                }
 
             }
             String templateXml = null;
@@ -142,7 +142,7 @@ public class TemplateExporter {
 
     private void gatherConnectedReusableTemplates(List<String> connectingReusableTemplates, Set<String> connectedTemplateIds, Set<ReusableTemplateConnectionInfo> connectingOutputPortConnectionMetadata,List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos,
                                                   ProcessGroupFlowDTO reusableTemplateFlow) {
-        for (ReusableTemplateConnectionInfo reusableTemplateConnectionInfo : reusableTemplateConnectionInfos) {
+        for (ReusableTemplateConnectionInfo reusableTemplateConnectionInfo : reusableTemplateConnectionInfos ) {
             String inputName = reusableTemplateConnectionInfo.getReusableTemplateInputPortName();
             //find the process group instance in the 'reusable_templates' group in NiFi for this input port
             Optional<ProcessGroupDTO> processGroupDTO =

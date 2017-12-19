@@ -361,43 +361,45 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
      */
     public Set<PortDTO> getReusableFeedInputPorts() {
         Set<PortDTO> ports = new HashSet<>();
-        String reusableProcessGroupId = templateConnectionUtil.getReusableTemplateCategoryProcessGroup().getId();
-        ProcessGroupFlowDTO processGroup = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
-        if (processGroup != null) {
+        String reusableProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+        if(reusableProcessGroupId != null) {
+            ProcessGroupFlowDTO processGroup = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
+            if (processGroup != null) {
 
-            //fetch the ports
-            Set<PortDTO> inputPortsEntity = processGroup.getFlow().getInputPorts().stream()
-                .map(portEntity -> {
-                    PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
-                    //find the connection destination processgroup id
+                //fetch the ports
+                Set<PortDTO> inputPortsEntity = processGroup.getFlow().getInputPorts().stream()
+                    .map(portEntity -> {
+                        PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
+                        //find the connection destination processgroup id
 
-                   List<ConnectionDTO> connList = processGroup.getFlow().getConnections().stream()
-                        .map(connectionEntity -> connectionEntity.getComponent()).collect(Collectors.toList());
+                        List<ConnectionDTO> connList = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent()).collect(Collectors.toList());
 
-                    Optional<ConnectionDTO> connection = processGroup.getFlow().getConnections().stream()
-                        .map(connectionEntity -> connectionEntity.getComponent())
-                        .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                        .findFirst();
+                        Optional<ConnectionDTO> connection = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent())
+                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
+                            .findFirst();
 
-                    Optional<ProcessGroupDTO> pg1 = processGroup.getFlow().getProcessGroups().stream()
+                        Optional<ProcessGroupDTO> pg1 = processGroup.getFlow().getProcessGroups().stream()
                             .map(processGroupEntity -> processGroupEntity.getComponent())
                             .filter(processGroupDTO -> processGroupDTO.getId().equals(connection.get().getDestination().getGroupId()))
                             .findFirst();
 
-                                 Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
-                        .map(connectionEntity -> connectionEntity.getComponent())
-                        .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                        .flatMap(connectionDTO -> processGroup.getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent() )
-                        .filter(processGroupDTO -> processGroupDTO.getId().equals(connectionDTO.getDestination().getGroupId())))
-                        .findFirst();
-                    if(destinationGroup.isPresent()){
-                        portDTOWithGroupInfo.setDestinationProcessGroupName(destinationGroup.get().getName());
-                    }
+                        Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent())
+                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
+                            .flatMap(connectionDTO -> processGroup.getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent())
+                                .filter(processGroupDTO -> processGroupDTO.getId().equals(connectionDTO.getDestination().getGroupId())))
+                            .findFirst();
+                        if (destinationGroup.isPresent()) {
+                            portDTOWithGroupInfo.setDestinationProcessGroupName(destinationGroup.get().getName());
+                        }
 
-                    return portDTOWithGroupInfo;
-                }).collect(Collectors.toSet());
-            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
-                ports.addAll(inputPortsEntity);
+                        return portDTOWithGroupInfo;
+                    }).collect(Collectors.toSet());
+                if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                    ports.addAll(inputPortsEntity);
+                }
             }
         }
         return ports;

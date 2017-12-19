@@ -45,6 +45,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -66,10 +67,15 @@ public class TemplateConnectionUtil {
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
+    @Nullable
     public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
         return niFiObjectCache.getReusableTemplateCategoryProcessGroup();
     }
 
+    @Nullable
+    public String getReusableTemplateProcessGroupId() {
+        return niFiObjectCache.getReusableTemplateProcessGroupId();
+    }
 
     public void connectFeedToReusableTemplate(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup, List<InputOutputPort> inputOutputPorts) throws NifiComponentNotFoundException {
 
