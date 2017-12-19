@@ -91,9 +91,7 @@ public class FeedPreconditionService {
             log.debug("Checking precondition of feed: {} ({})", feed.getName(), feed.getId());
 
             ServiceLevelAgreement sla = precond.getAgreement();
-            boolean isAssess = sla.getObligationGroups().stream()
-                .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
-                .flatMap(obligation -> obligation.getMetrics().stream())
+            boolean isAssess = sla.getAllMetrics().stream()
                 .anyMatch(metric -> isMetricDependentOnStatus(metric, operationStatus));
 
             if (isAssess) {
@@ -126,7 +124,7 @@ public class FeedPreconditionService {
             // check all preconditions of feeds that have them.
             if (state == FeedOperation.State.SUCCESS) {
                 metadata.read(() -> {
-                    for (Feed feed : feedProvider.getFeeds()) {
+                    for (Feed feed : feedProvider.findPreconditionedFeeds()) {
                         // Don't check the precondition of the feed that that generated this change event.
                         // TODO: this might not be the correct behavior but none of our current metrics
                         // need to be assessed when the feed itself containing the precondition has changed state.
@@ -134,7 +132,6 @@ public class FeedPreconditionService {
                             checkPrecondition(feed, event.getData());
                         }
                     }
-                    return null;
                 }, MetadataAccess.SERVICE);
             }
         }

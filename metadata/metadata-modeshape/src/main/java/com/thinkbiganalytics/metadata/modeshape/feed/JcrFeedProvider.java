@@ -560,6 +560,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
 
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findPreconditionedFeeds()
+     */
+    @Override
+    public List<? extends Feed> findPreconditionedFeeds() {
+        StringBuilder query = new StringBuilder("SELECT e.* from [tba:feed] as e ")
+                        .append("JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e) ")
+                        .append("JOIN [tba:feedDetails] AS fdetail ON ISCHILDNODE(fdetail, fs) ")
+                        .append("JOIN [tba:feedPrecondition] AS precond ON ISCHILDNODE(precond, fdetail) ");
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query.toString());
+            return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
+        }
+    }
 
 //
 //    @Override

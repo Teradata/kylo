@@ -51,6 +51,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -371,6 +372,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             }
 
             return list;
+        }
+        @Override
+        public Set<Metric> getAllMetrics() {
+            return this.getObligationGroups().stream()
+                .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
+                .flatMap(obligation -> obligation.getMetrics().stream())
+                .collect(Collectors.toSet());
         }
 
         @Override

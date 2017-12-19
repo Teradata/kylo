@@ -141,6 +141,11 @@ public class TestEmail {
                     public List<Obligation> getObligations() {
                         return null;
                     }
+                    
+                    @Override
+                    public Set<Metric> getAllMetrics() {
+                        return null;
+                    }
 
                     @Override
                     public List<ServiceLevelAgreementCheck> getSlaChecks() {

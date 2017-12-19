@@ -58,6 +58,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
     Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics);
 
     PreconditionBuilder buildPrecondition(Feed.ID feedId);
+    
+    List<? extends Feed> findPreconditionedFeeds();
 
     Feed findBySystemName(String systemName);
 

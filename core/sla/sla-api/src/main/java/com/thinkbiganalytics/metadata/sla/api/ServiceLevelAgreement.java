@@ -29,6 +29,7 @@ import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Describes an SLA, which is a collection of obligations that must be met when assessed.
@@ -73,6 +74,13 @@ public interface ServiceLevelAgreement {
      * @return all obligations that make up this SLA
      */
     List<Obligation> getObligations();
+    
+    /**
+     * Convenience method to get all metrics of all obligations found in this SLA regardless of 
+     * which obligations they are organized under.
+     * @return the set of all metrics
+     */
+    Set<Metric> getAllMetrics();
 
     List<ServiceLevelAgreementCheck> getSlaChecks();
 
