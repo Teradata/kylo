@@ -28,7 +28,7 @@
  *
  */
 define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleName) {
-    angular.module(moduleName).service('FattableService', function () {
+    angular.module(moduleName).service('FattableService', ["$window", function ($window) {
 
         var self = this;
 
@@ -49,6 +49,7 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
             rowFontFamily: FONT_FAMILY,
             rowFontSize: "14px",
             rowFontWeight: "normal",
+            setupRefreshDebounce: 300,
             headerText: function(header) {
                 return header.displayName;
             },
@@ -150,8 +151,9 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 return settings.getHeaderSync(j);
             };
 
+            var selector = "#" + settings.tableContainerId;
             var table = fattable({
-                "container": settings.tableContainerId,
+                "container": selector,
                 "model": tableData,
                 "nbRows": rows.length,
                 "rowHeight": settings.rowHeight,
@@ -160,16 +162,20 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 "columnWidths": columnWidths
             });
 
-            // angular.element($window).on('resize.invalidTable', function() {
-            //     console.log("resizing");
-            //     table.setup();
-            // });
-            // $scope.$on('destroy', function() {
-            //     console.log('on destroy'); //todo this is not being called
-            //     angular.element($window).unbind('resize.invalidTable');
-            // });
             table.setup();
+
+
+            var eventId = "resize.fattable." + settings.tableContainerId;
+            angular.element($window).unbind(eventId);
+            var debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
+            angular.element($window).on(eventId, function() {
+                debounced(settings);
+            });
+
+            angular.element(selector).on('$destroy', function() {
+                angular.element($window).unbind(eventId);
+            });
         }
 
-    });
+    }]);
 });
