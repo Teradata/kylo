@@ -224,10 +224,15 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
 
+            OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(event);
             log.debug("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
             //ensure the job is there
-            BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, provenanceEventFeedUtil.getFeed(event)),
+            BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, feed),
                                                                    MetadataAccess.SERVICE);
+
+            if(jobExecution != null){
+                batchJobExecutionProvider.updateFeedJobStartTime(jobExecution, feed);
+            }
 
             if (jobExecution != null && !event.isStream()) {
                 metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),

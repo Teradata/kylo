@@ -120,6 +120,11 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
     BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
 
     /**
+     * after a job execution is committed and returned this is called to store the job and its id back in a map for future reference
+     */
+    void updateFeedJobStartTime(BatchJobExecution jobExecution,OpsManagerFeed feed);
+
+    /**
      * find the job execution from the provenance event
      *
      * @param event a provenance event
