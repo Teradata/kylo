@@ -19,7 +19,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller =  function($scope,$http, FeedService, RestUrlService, HiveService, Utils,BroadcastService) {
+    var controller =  function($scope,$http, FeedService, RestUrlService, HiveService, Utils,BroadcastService,FattableService) {
 
         var self = this;
 
@@ -30,14 +30,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         //noinspection JSUnusedGlobalSymbols
         this.onLimitChange = function() {
-            getProfileValidation();
-        };
-
-        $scope.gridOptions = {
-            columnDefs: [],
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true
+            getProfileValidation().then(setupTable);
         };
 
         function getProfileValidation(){
@@ -45,10 +38,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
             var successFn = function (response) {
                 var result = self.queryResults = HiveService.transformResultsToUiGridModel(response);
-
-                $scope.gridOptions.columnDefs = result.columns;
-                $scope.gridOptions.data = result.rows;
-
+                self.headers = result.columns;
+                self.rows = result.rows;
                 self.loading = false;
 
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','valid');
@@ -67,12 +58,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             return promise;
         }
 
-        getProfileValidation();
+        function setupTable() {
+            FattableService.setupTable({
+                tableContainerId:"#validProfile",
+                headers: self.headers,
+                rows: self.rows
+            });
+        }
+
+        getProfileValidation().then(setupTable);
     };
 
 
-    angular.module(moduleName).controller('FeedProfileValidResultsController', ["$scope","$http","FeedService","RestUrlService","HiveService","Utils","BroadcastService",controller]);
-    angular.module(moduleName)
-        .directive('thinkbigFeedProfileValid', directive);
+    angular.module(moduleName).controller('FeedProfileValidResultsController', ["$scope","$http","FeedService","RestUrlService","HiveService","Utils","BroadcastService","FattableService",controller]);
+    angular.module(moduleName).directive('thinkbigFeedProfileValid', directive);
 
 });

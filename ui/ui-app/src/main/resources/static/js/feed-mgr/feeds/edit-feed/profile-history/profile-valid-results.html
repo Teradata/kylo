@@ -17,12 +17,12 @@
   limitations under the License.
   #L%
   -->
-<div class="layout-padding-left">
+<div class="profile profile-valid layout-padding-left">
   <div ng-if="vm.loading" layout="column" layout-fill layout-align="space-between center">
     <md-progress-linear md-mode="indeterminate"></md-progress-linear>
     <span> Loading ...</span>
   </div>
-  <div ng-if="!vm.loading">
+  <div>
 
     <md-input-container>
         <label>Limit</label>
@@ -33,13 +33,11 @@
         </md-select>
     </md-input-container>
 
-    <div ui-grid-auto-resize
+    <div id="validProfile"
+         flex
          browser-height
          browser-height-scroll-y="false"
-         browser-height-offset="284"
-         ui-grid="gridOptions"
-         ui-grid-move-columns
-         flex>
+         browser-height-offset="284"></div>
 
     </div>
   </div>
