@@ -1,3 +1,32 @@
+/**
+ * Service which sets up fattable.
+ * In the simplest form, create a div on a page with an id and then initialise table in javascript providing div selector and arrays of headers and rows, e.g.
+ *
+ * HTML:
+ *  <div id="table-id">
+ *
+ * JS:
+ *   FattableService.setupTable({
+ *      tableContainerId:"#table-id",
+ *      headers: self.headers,
+ *      rows: self.rows
+ *  });
+ *
+ *  Default implementation expects each header to have "displayName" property and each row to have a property matching display name, e.g.
+ *  var headers = [{displayName: column1}, {displayName: column2}, ... ]
+ *  var rows = [{column1: value1, column2: value2}, ... ]
+ *
+ *  Default behaviour can be overridden by implementing headerText, cellText, fillCell, getCellSync, fillHeader, getHeaderSync methods on options passed to setupTable method, e.g.
+ *   FattableService.setupTable({
+ *      tableContainerId:"#table-id",
+ *      headers: self.headers,
+ *      rows: self.rows,
+ *      headerText: function(header) {...},
+ *      cellText: function(row, column) {...}
+ *      ...
+ *  });
+ *
+ */
 define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleName) {
     angular.module(moduleName).service('FattableService', function () {
 
@@ -20,8 +49,34 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
             rowHeight: ROW_HEIGHT,
             headerHeight: HEADER_HEIGHT,
             padding: PADDING,
-            headerFont: HEADER_HEIGHT,
-            rowFont: ROW_FONT
+            headerFont: HEADER_FONT,
+            rowFont: ROW_FONT,
+            headerText: function(header) {
+                return header.displayName;
+            },
+            cellText: function(row, column) {
+                return row[column.displayName];
+            },
+            fillCell: function(cellDiv, data) {
+                cellDiv.innerHTML = data.value;
+            },
+            getCellSync: function(i, j) {
+                var displayName = this.headers[j].displayName;
+                var row = this.rows[i];
+                if (row === undefined) {
+                    //occurs when filtering table
+                    return undefined;
+                }
+                return {
+                    "value": row[displayName]
+                }
+            },
+            fillHeader: function(headerDiv, header) {
+                headerDiv.innerHTML = '<div>' + header + '</div>';
+            },
+            getHeaderSync: function(j) {
+                return this.headers[j].displayName;
+            }
         };
 
         self.setupTable = function(options) {
@@ -42,85 +97,62 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 return context;
             }
 
-            var headerContext = get2dContext(HEADER_FONT);
-            var rowContext = get2dContext(ROW_FONT);
+            var headerContext = get2dContext(settings.headerFont);
+            var rowContext = get2dContext(settings.rowFont);
 
             tableData.columnHeaders = [];
             var columnWidths = [];
             _.each(headers, function(column) {
-                var headerTextWidth = headerContext.measureText(column.displayName).width;
-                var rowTextWidth = _.reduce(rows, function (previousMax, row) {
-                    var textWidth = rowContext.measureText(row[column.displayName]).width;
-                    var validationError = row.invalidFieldMap[column.displayName];
-                    var ruleTextWidth = 0;
-                    var reasonTextWidth = 0;
-                    if (validationError !== undefined) {
-                        ruleTextWidth = rowContext.measureText(validationError.rule).width;
-                        reasonTextWidth = rowContext.measureText(validationError.reason).width;
-                    }
-                    return Math.max(previousMax, textWidth, ruleTextWidth, reasonTextWidth);
-                }, MIN_COLUMN_WIDTH);
+                var headerText = settings.headerText(column);
+                var headerTextWidth = headerContext.measureText(headerText).width;
+                var longestColumnText = _.reduce(rows, function (previousMax, row) {
+                    var cellText = settings.cellText(row, column);
+                    var cellTextLength = cellText === undefined || cellText === null ? 0 : cellText.length;
+                    return previousMax.length < cellTextLength ? cellText : previousMax;
+                }, "");
 
-                columnWidths.push(Math.min(MAX_COLUMN_WIDTH, Math.max(headerTextWidth, rowTextWidth)) + PADDING);
-                tableData.columnHeaders.push(column.displayName);
+                var columnTextWidth = rowContext.measureText(longestColumnText).width;
+                columnWidths.push(Math.min(settings.maxColumnWidth, Math.max(settings.minColumnWidth, headerTextWidth, columnTextWidth)) + settings.padding);
+                tableData.columnHeaders.push(headerText);
             });
 
             painter.fillCell = function (cellDiv, data) {
                 if (data === undefined) {
                     return;
                 }
-                var classname = "";
-                if (data.rowId % 2 === 0) {
-                    classname = "even";
+                cellDiv.className = "layout-column layout-align-center-start ";
+                if (data["rowId"] % 2 === 0) {
+                    cellDiv.className += "even";
                 }
                 else {
-                    classname = "odd";
+                    cellDiv.className += "odd";
                 }
-
-                var html = data.value;
-                if (data.isInvalid) {
-                    html += '<br><span class="violation hint">' + data.rule + '</span>';
-                    html += '<br><span class="violation hint">' + data.reason + '</span>';
-                    classname += " warn";
-                }
-                cellDiv.innerHTML = html;
-                cellDiv.className = classname;
+                settings.fillCell(cellDiv, data);
             };
 
             painter.fillHeader = function(headerDiv, header) {
-                headerDiv.innerHTML = '<div>' + header + '</div>';
+                settings.fillHeader(headerDiv, header);
             };
 
             tableData.getCellSync = function (i, j) {
-                var displayName = headers[j].displayName;
-                var row = rows[i];
-                if (row === undefined) {
-                    //occurs when filtering table
-                    return undefined;
+                var data = settings.getCellSync(i, j);
+                if (data !== undefined) {
+                    //add row id so that we can add odd/even classes to rows
+                    data.rowId = i;
                 }
-                var invalidFieldMap = row.invalidFieldMap[displayName];
-                var isInvalid = invalidFieldMap !== undefined;
-                var rule = isInvalid ? invalidFieldMap.rule : "";
-                var reason = isInvalid ? invalidFieldMap.reason : "";
-                return {
-                    "value": row[displayName],
-                    "isInvalid": isInvalid,
-                    "rule": rule,
-                    "reason": reason,
-                    "rowId": i
-                };
+                return data;
             };
 
             tableData.getHeaderSync = function(j) {
-                return tableData.columnHeaders[j];
+                return settings.getHeaderSync(j);
             };
 
             var table = fattable({
-                "container": options.tableContainerId,
+                "container": settings.tableContainerId,
                 "model": tableData,
                 "nbRows": rows.length,
-                "rowHeight": ROW_HEIGHT,
-                "headerHeight": HEADER_HEIGHT,
+                "rowHeight": settings.rowHeight,
+                "headerHeight": settings.headerHeight,
                 "painter": painter,
                 "columnWidths": columnWidths
             });

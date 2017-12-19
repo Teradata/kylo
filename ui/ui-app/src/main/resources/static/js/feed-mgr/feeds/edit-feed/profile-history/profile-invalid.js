@@ -120,7 +120,46 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             FattableService.setupTable({
                 tableContainerId:"#invalidProfile",
                 headers: self.headers,
-                rows: self.rows
+                rows: self.rows,
+                cellText: function(row, column) {
+                    //return the longest text out of cell value and its validation errors
+                    var textArray = [];
+                    textArray.push(row[column.displayName]);
+                    var validationError = row.invalidFieldMap[column.displayName];
+                    if (validationError !== undefined) {
+                        textArray.push(validationError.rule);
+                        textArray.push(validationError.reason);
+                    }
+                    return textArray.sort(function(a,b) { return b.length - a.length })[0];
+                },
+                fillCell: function(cellDiv, data) {
+                    var html = data.value;
+                    if (data.isInvalid) {
+                        html += '<span class="violation hint">' + data.rule + '</span>';
+                        html += '<span class="violation hint">' + data.reason + '</span>';
+                        cellDiv.className += " warn";
+                    }
+                    cellDiv.innerHTML = html;
+                },
+                getCellSync: function(i, j) {
+                    var displayName = this.headers[j].displayName;
+                    var row = this.rows[i];
+                    if (row === undefined) {
+                        //occurs when filtering table
+                        return undefined;
+                    }
+                    var invalidFieldMap = row.invalidFieldMap[displayName];
+                    var isInvalid = invalidFieldMap !== undefined;
+                    var rule = isInvalid ? invalidFieldMap.rule : "";
+                    var reason = isInvalid ? invalidFieldMap.reason : "";
+                    return {
+                        "value": row[displayName],
+                        "isInvalid": isInvalid,
+                        "rule": rule,
+                        "reason": reason
+                    };
+
+                }
                 });
         }
 
@@ -131,7 +170,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
     angular.module(moduleName).controller('FeedProfileInvalidResultsController', ["$scope","$http","$window","FeedService","RestUrlService","HiveService","Utils","BroadcastService","FattableService",controller]);
 
-    angular.module(moduleName)
-        .directive('thinkbigFeedProfileInvalid', directive);
+    angular.module(moduleName).directive('thinkbigFeedProfileInvalid', directive);
 
 });
