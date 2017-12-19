@@ -73,7 +73,8 @@ public class KyloUpgradeService {
               "0.8.3.1",
               "0.8.3.2",
               "0.8.3.3",
-              "0.8.4"
+              "0.8.4",
+              "0.8.4.1"
         };
         
         UPGRADE_SEQUENCE = Collections.unmodifiableList(Arrays.stream(versions)
