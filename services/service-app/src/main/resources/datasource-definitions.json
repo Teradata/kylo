@@ -32,10 +32,97 @@
   {
     "processorType": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka",
     "datasourcePropertyKeys": [
-      "Topic Name(s)"
+      "topic",
+      "Group ID"
     ],
     "datasourceType": "KafkaDatasource",
-    "connectionType": "SOURCE"
+    "connectionType": "SOURCE",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.PublishKafka",
+    "datasourcePropertyKeys": [
+      "topic"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "title": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_0_10",
+    "datasourcePropertyKeys": [
+      "topic",
+      "Group ID"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.PublishKafka_0_10",
+    "datasourcePropertyKeys": [
+      "topic"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_0_10",
+    "datasourcePropertyKeys": [
+      "topic",
+      "Group ID"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.PublishKafkaRecord_0_10",
+    "datasourcePropertyKeys": [
+      "topic"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafka_0_11",
+    "datasourcePropertyKeys": [
+      "topic",
+      "Group ID"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.PublishKafka_0_11",
+    "datasourcePropertyKeys": [
+      "topic"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.ConsumeKafkaRecord_0_11",
+    "datasourcePropertyKeys": [
+      "topic",
+      "Group ID"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${topic}"
+  },
+  {
+    "processorType": "org.apache.nifi.processors.kafka.pubsub.PublishKafkaRecord_0_11",
+    "datasourcePropertyKeys": [
+      "topic"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "identityString": "${topic}"
   },
   {
     "processorType": "org.apache.nifi.amqp.processors.ConsumeAMQP",
@@ -71,6 +158,15 @@
     "connectionType": "SOURCE"
   },
   {
+    "processorType": "org.apache.nifi.processors.standard.FetchFTP",
+    "datasourcePropertyKeys": [
+      "Hostname",
+      "Remote File"
+    ],
+    "datasourceType": "FTPDatasource",
+    "connectionType": "SOURCE"
+  },
+  {
     "processorType": "org.apache.nifi.processors.standard.FetchSFTP",
     "datasourcePropertyKeys": [
       "Hostname",
@@ -81,11 +177,14 @@
   },
   {
     "processorType": "org.apache.nifi.processors.standard.GetFile",
-    "datasourcePropertyKeys":["Input Directory","File Filter"],
-    "datasourceType":"DirectoryDatasource",
-    "connectionType":"SOURCE",
-    "identityString":"${Input Directory}/${File Filter}",
-    "description":" Directory or File source"
+    "datasourcePropertyKeys": [
+      "Input Directory",
+      "File Filter"
+    ],
+    "datasourceType": "DirectoryDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${Input Directory}/${File Filter}",
+    "description": " Directory or File source"
   },
   {
     "processorType": "org.apache.nifi.processors.standard.GetFTP",
@@ -160,6 +259,16 @@
     "title": "${Topic Name}"
   },
   {
+    "processorType": "org.apache.nifi.processors.kafka.PutKafka",
+    "datasourcePropertyKeys": [
+      "ZooKeeper Connection String",
+      "Topic Name"
+    ],
+    "datasourceType": "KafkaDatasource",
+    "connectionType": "DESTINATION",
+    "title": "${Topic Name}"
+  },
+  {
     "processorType": "org.apache.nifi.processors.standard.GetSFTP",
     "datasourcePropertyKeys": [
       "Hostname",
@@ -171,12 +280,16 @@
     "title": "${Hostname}"
   },
   {
-    "processorType":"com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
-    "datasourcePropertyKeys":["Source Table","Source Database Connection","{Source Database Connection:Database Connection URL}"],
-    "datasourceType":"DatabaseDatasource",
-    "connectionType":"SOURCE",
-    "identityString":"${Source Table} - ${Source Database Connection}",
-    "title":"${Source Table}"
+    "processorType": "com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
+    "datasourcePropertyKeys": [
+      "Source Table",
+      "Source Database Connection",
+      "{Source Database Connection:Database Connection URL}"
+    ],
+    "datasourceType": "DatabaseDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${Source Table} - ${Source Database Connection}",
+    "title": "${Source Table}"
   },
   {
     "processorType": "org.apache.nifi.processors.standard.ListenHTTP",
@@ -196,11 +309,14 @@
     "connectionType": "SOURCE"
   },
   {
-    "processorType":"com.thinkbiganalytics.nifi.v2.ingest.MergeTable",
-    "datasourcePropertyKeys":["Target schema","Target table"],
-    "datasourceType":"HiveDatasource",
-    "connectionType":"DESTINATION",
-    "identityString":"${Target schema}.${Target table}"
+    "processorType": "com.thinkbiganalytics.nifi.v2.ingest.MergeTable",
+    "datasourcePropertyKeys": [
+      "Target schema",
+      "Target table"
+    ],
+    "datasourceType": "HiveDatasource",
+    "connectionType": "DESTINATION",
+    "identityString": "${Target schema}.${Target table}"
   },
   {
     "processorType": "org.apache.nifi.processors.standard.PutFile",
