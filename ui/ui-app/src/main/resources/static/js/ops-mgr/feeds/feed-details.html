@@ -75,7 +75,7 @@
                 <md-list-item >
                     <div layout="column"  class="item-column md-list-item-text ">
                         <span class="item-title">{{vm.feed.runTimeString}}</span>
-                        <span class="column-title column-title-bottom">Last Run Time</span>
+                        <span class="column-title column-title-bottom">{{"views.feeds.feed-details.LRT" | translate}}</span>
                         </div>
                 </md-list-item>
                     </md-list>
@@ -85,7 +85,7 @@
                   <div layout="column" class="layout-padding-top-bottom layout-padding-left-right"  layout-align="space-between start">
                     <div class="md-subhead layout-padding-bottom">Links</div>
                     <div class="layout-padding-left ">
-                    <md-button class="md-primary md-link" ng-click="vm.gotoFeedDetails($event)">Feed Details</md-button>
+                    <md-button class="md-primary md-link" ng-click="vm.gotoFeedDetails($event)">{{"views.feeds.feed-details.FeedD" | translate}}</md-button>
                     </div>
                   </div>
 
@@ -102,7 +102,7 @@
 <div layout="row" layout-sm="column" layout-xs="column"   ng-if="vm.loading == true">
       <md-card layout-fill>
         <div layout="column" layout-align="center center" flex>
-          <h2 class="md-title">Loading Feed ...</h2>
+          <h2 class="md-title">{{"views.feeds.feed-details.LF" | translate}}</h2>
         <div layout-align="center center" layout="column">
           <md-progress-circular md-mode="indeterminate" md-diameter="30"></md-progress-circular>
         </div>
