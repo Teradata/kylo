@@ -76,11 +76,6 @@ public class OperationalMetadataServiceSpringConfiguration {
     }
 
     @Bean
-    public StreamingFeedService streamingFeedService() {
-        return new StreamingFeedService();
-    }
-
-    @Bean
     @Profile("!kyloUpgrade")
     public RetryProvenanceEventWithDelay retryProvenanceEventWithDelay() {
             return new RetryProvenanceEventWithDelay();
