@@ -278,11 +278,6 @@ md-sidenav .collapse-btn {
   max-width: 960px;
 }
 
-.layout-v-align-center {
-  display: flex;
-  align-items: center;
-}
-
 .hint {
   left: 2px;
   right: auto;

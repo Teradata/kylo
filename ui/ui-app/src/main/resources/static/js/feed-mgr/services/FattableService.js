@@ -32,25 +32,23 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
 
         var self = this;
 
-        var MIN_COLUMN_WIDTH = 50;
-        var MAX_COLUMN_WIDTH = 300;
-        var ROW_HEIGHT = 53;
-        var HEADER_HEIGHT = 40;
-        var PADDING = 40;
-        var HEADER_FONT = "bold 12px Roboto, \"Helvetica Neue\", sans-serif";
-        var ROW_FONT = "14px Roboto, \"Helvetica Neue\", sans-serif";
+        var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
 
         var optionDefaults = {
             tableContainerId: "",
             headers: [],
             rows: [],
-            minColumnWidth: MIN_COLUMN_WIDTH,
-            maxColumnWidth: MAX_COLUMN_WIDTH,
-            rowHeight: ROW_HEIGHT,
-            headerHeight: HEADER_HEIGHT,
-            padding: PADDING,
-            headerFont: HEADER_FONT,
-            rowFont: ROW_FONT,
+            minColumnWidth: 50,
+            maxColumnWidth: 300,
+            rowHeight: 53,
+            headerHeight: 40,
+            padding: 40,
+            headerFontFamily: FONT_FAMILY,
+            headerFontSize: "12px",
+            headerFontWeight: "bold",
+            rowFontFamily: FONT_FAMILY,
+            rowFontSize: "14px",
+            rowFontWeight: "normal",
             headerText: function(header) {
                 return header.displayName;
             },
@@ -97,8 +95,8 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 return context;
             }
 
-            var headerContext = get2dContext(settings.headerFont);
-            var rowContext = get2dContext(settings.rowFont);
+            var headerContext = get2dContext(settings.headerFontWeight + " " + settings.headerFontSize + " " + settings.headerFontFamily);
+            var rowContext = get2dContext(settings.rowFontWeight + " " + settings.rowFontSize + " " + settings.rowFontFamily);
 
             tableData.columnHeaders = [];
             var columnWidths = [];
@@ -116,22 +114,27 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 tableData.columnHeaders.push(headerText);
             });
 
-            painter.fillCell = function (cellDiv, data) {
+            painter.fillCell = function (div, data) {
                 if (data === undefined) {
                     return;
                 }
-                cellDiv.className = "layout-column layout-align-center-start ";
+                div.style.fontSize = settings.rowFontSize;
+                div.style.fontFamily = settings.rowFontFamily;
+                div.className = "layout-column layout-align-center-start ";
                 if (data["rowId"] % 2 === 0) {
-                    cellDiv.className += "even";
+                    div.className += "even";
                 }
                 else {
-                    cellDiv.className += "odd";
+                    div.className += "odd";
                 }
-                settings.fillCell(cellDiv, data);
+                settings.fillCell(div, data);
             };
 
-            painter.fillHeader = function(headerDiv, header) {
-                settings.fillHeader(headerDiv, header);
+            painter.fillHeader = function(div, header) {
+                div.style.fontSize = settings.headerFontSize;
+                div.style.fontFamily = settings.headerFontFamily;
+                div.style.fontWeight = "bold";
+                settings.fillHeader(div, header);
             };
 
             tableData.getCellSync = function (i, j) {
