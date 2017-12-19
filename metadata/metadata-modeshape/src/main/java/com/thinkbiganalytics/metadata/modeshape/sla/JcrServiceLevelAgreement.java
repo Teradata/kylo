@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -39,6 +40,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -149,6 +152,17 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         }
 
         return list;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getAllMetrics()
+     */
+    @Override
+    public Set<Metric> getAllMetrics() {
+        return this.getObligationGroups().stream()
+            .flatMap(obligationGroup -> obligationGroup.getObligations().stream())
+            .flatMap(obligation -> obligation.getMetrics().stream())
+            .collect(Collectors.toSet());
     }
 
     public JcrObligationGroup getDefaultGroup() {
