@@ -44,7 +44,10 @@ import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/17/17.
+ * This is not used anymore.
+ * The NiFiStatsJmsReceiver takes care of setting the streaming job as started/stopped
  */
+@Deprecated
 public class StreamingFeedService {
 
     @Inject
