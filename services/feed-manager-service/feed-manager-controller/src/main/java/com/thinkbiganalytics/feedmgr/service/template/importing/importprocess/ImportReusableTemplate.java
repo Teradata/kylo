@@ -310,34 +310,60 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
     }
 
 
-    private ProcessGroupFlowDTO getReusableTemplatesProcessGroup() {
+    private Optional<ProcessGroupFlowDTO> getReusableTemplatesProcessGroup() {
         if (reusableTemplateFlow == null) {
-            String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateCategoryProcessGroup().getId();
-            reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+            String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+            if(reusableTemplateProcessGroupId != null) {
+                reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+            }
         }
-        return reusableTemplateFlow;
+        if(reusableTemplateFlow == null) {
+            return Optional.empty();
+        }
+        return Optional.of(reusableTemplateFlow);
     }
 
     private Set<PortDTO> getReusableTemplateInputPorts() {
-        return getReusableTemplatesProcessGroup().getFlow().getInputPorts().stream().map(portEntity -> portEntity.getComponent()).collect(Collectors.toSet());
+        if(getReusableTemplatesProcessGroup().isPresent()) {
+            return getReusableTemplatesProcessGroup().get().getFlow().getInputPorts().stream().map(portEntity -> portEntity.getComponent()).collect(Collectors.toSet());
+        }
+        else {
+            return Collections.emptySet();
+        }
 
     }
 
     private Set<ConnectionDTO> getReusableTemplateConnections() {
-        return getReusableTemplatesProcessGroup().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent()).collect(
-            Collectors.toSet());
+        if(getReusableTemplatesProcessGroup().isPresent()) {
+            return getReusableTemplatesProcessGroup().get().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent()).collect(
+                Collectors.toSet());
+        }
+        else {
+            return Collections.emptySet();
+        }
     }
 
     private Optional<ProcessGroupDTO> findReusableTemplateProcessGroup(String groupId) {
-        return getReusableTemplatesProcessGroup().getFlow().getProcessGroups().stream()
-            .map(processGroupEntity -> processGroupEntity.getComponent())
-            .filter(processGroupDTO -> processGroupDTO.getId().equals(groupId))
-            .findFirst();
+
+      if(getReusableTemplatesProcessGroup().isPresent()){
+        return  getReusableTemplatesProcessGroup().get().getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent())
+              .filter(processGroupDTO -> processGroupDTO.getId().equals(groupId))
+              .findFirst();
+      }
+      else {
+          return Optional.empty();
+      }
     }
 
 
+    @Nullable
     private String getReusableTemplatesProcessGroupId() {
-        return getReusableTemplatesProcessGroup().getId();
+        if(getReusableTemplatesProcessGroup().isPresent()) {
+            return getReusableTemplatesProcessGroup().get().getId();
+        }
+        else {
+            return null;
+        }
     }
 
 
@@ -349,13 +375,15 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         ConnectionDTO reusableTemplateInputPortConnection = null;
         //attempt to prefill it with the previous connection if it existed
         //1 find the connection going from this output port to the other process group under the 'reusableTemplates'
-        ConnectionDTO otherConnection = getReusableTemplatesProcessGroup().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent())
-            .filter(conn -> conn.getSource().getName().equalsIgnoreCase(outputPort.getName())).findFirst().orElse(null);
-        if (otherConnection != null) {
-            //2 find the connection whose destination is the destination of 'otherConnection' and whose source is an 'INPUT_PORT' residing under the 'reusableTemplate' process group
-            reusableTemplateInputPortConnection = getReusableTemplatesProcessGroup().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent())
-                .filter(conn -> conn.getDestination().getId().equals(otherConnection.getDestination().getId()) && conn.getSource().getType().equals(NifiConstants.INPUT_PORT)
-                                && conn.getSource().getGroupId().equalsIgnoreCase(getReusableTemplatesProcessGroupId())).findFirst().orElse(null);
+        if(getReusableTemplatesProcessGroup().isPresent()) {
+            ConnectionDTO otherConnection = getReusableTemplatesProcessGroup().get().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent())
+                .filter(conn -> conn.getSource().getName().equalsIgnoreCase(outputPort.getName())).findFirst().orElse(null);
+            if (otherConnection != null) {
+                //2 find the connection whose destination is the destination of 'otherConnection' and whose source is an 'INPUT_PORT' residing under the 'reusableTemplate' process group
+                reusableTemplateInputPortConnection = getReusableTemplatesProcessGroup().get().getFlow().getConnections().stream().map(connectionEntity -> connectionEntity.getComponent())
+                    .filter(conn -> conn.getDestination().getId().equals(otherConnection.getDestination().getId()) && conn.getSource().getType().equals(NifiConstants.INPUT_PORT)
+                                    && conn.getSource().getGroupId().equalsIgnoreCase(getReusableTemplatesProcessGroupId())).findFirst().orElse(null);
+            }
         }
         return reusableTemplateInputPortConnection;
     }
@@ -368,36 +396,39 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         //Source == output port in some other group
         //Dest == input port in versioned off process group
         if (versionedProcessGroup != null) {
-            for (ConnectionDTO connectionDTO : versionedProcessGroup.getDeletedInputPortConnections()) {
-                if (connectionDTO.getSource().getType().equals(NifiConstants.OUTPUT_PORT)) {
-                    //connect
-                    PortDTO
-                        destPort =
-                        newTemplateInstance.getProcessGroupEntity().getContents().getInputPorts().stream().filter(
-                            portDTO -> portDTO.getName().equalsIgnoreCase(connectionDTO.getDestination().getName()) && connectionDTO.getDestination().getGroupId()
-                                .equalsIgnoreCase(newTemplateInstance.getVersionedProcessGroup().getProcessGroupPriorToVersioning().getId())).findFirst().orElse(null);
-                    if (destPort != null) {
-                        //make the connection now from the output port to the 'connectionToUse' destination
-                        ConnectableDTO source = NifiConnectionUtil.asNewConnectable(connectionDTO.getSource());
-                        ConnectableDTO dest = NifiConnectionUtil.asConnectable(destPort);
-                        ConnectionDTO newConnection = nifiRestClient.getNiFiRestClient().processGroups().createConnection(getReusableTemplatesProcessGroupId(), source, dest);
-                        connections.add(newConnection);
-                        //possibly store the ports too?
+            String reusableTemplateProcessGroupId = getReusableTemplatesProcessGroupId();
+            if(reusableTemplateProcessGroupId != null) {
+                for (ConnectionDTO connectionDTO : versionedProcessGroup.getDeletedInputPortConnections()) {
+                    if (connectionDTO.getSource().getType().equals(NifiConstants.OUTPUT_PORT)) {
+                        //connect
+                        PortDTO
+                            destPort =
+                            newTemplateInstance.getProcessGroupEntity().getContents().getInputPorts().stream().filter(
+                                portDTO -> portDTO.getName().equalsIgnoreCase(connectionDTO.getDestination().getName()) && connectionDTO.getDestination().getGroupId()
+                                    .equalsIgnoreCase(newTemplateInstance.getVersionedProcessGroup().getProcessGroupPriorToVersioning().getId())).findFirst().orElse(null);
+                        if (destPort != null) {
+                            //make the connection now from the output port to the 'connectionToUse' destination
+                            ConnectableDTO source = NifiConnectionUtil.asNewConnectable(connectionDTO.getSource());
+                            ConnectableDTO dest = NifiConnectionUtil.asConnectable(destPort);
+                            ConnectionDTO newConnection = nifiRestClient.getNiFiRestClient().processGroups().createConnection(reusableTemplateProcessGroupId, source, dest);
+                            connections.add(newConnection);
+                            //possibly store the ports too?
 
-                        log.info("Reconnected output port {} ({}) to this new process group input port:  {} {{}) ", source.getName(), source.getId(), dest.getName(), dest.getId());
-                    } else {
-                        //ERROR cant recreate previous connections that were going into this reusable template
-                        String
-                            msg =
-                            "Unable to recreate the connection for template: " + templateName
-                            + " that was previously connected to this template prior to the update. The following connection is missing:  Connecting ['" + connectionDTO.getSource().getName()
-                            + "' to '" + connectionDTO.getDestination().getName() + "'].";
-                        log.error(msg);
-                        importTemplate.getTemplateResults().addError(NifiError.SEVERITY.FATAL, msg, "");
-                        importStatusMessage.update(
-                            "Unable to establish prior connection for reusable template: " + templateName + ".  Connection:  ['" + connectionDTO.getSource().getName() + "' to '" + connectionDTO
-                                .getDestination().getName() + "']", false);
-                        break;
+                            log.info("Reconnected output port {} ({}) to this new process group input port:  {} {{}) ", source.getName(), source.getId(), dest.getName(), dest.getId());
+                        } else {
+                            //ERROR cant recreate previous connections that were going into this reusable template
+                            String
+                                msg =
+                                "Unable to recreate the connection for template: " + templateName
+                                + " that was previously connected to this template prior to the update. The following connection is missing:  Connecting ['" + connectionDTO.getSource().getName()
+                                + "' to '" + connectionDTO.getDestination().getName() + "'].";
+                            log.error(msg);
+                            importTemplate.getTemplateResults().addError(NifiError.SEVERITY.FATAL, msg, "");
+                            importStatusMessage.update(
+                                "Unable to establish prior connection for reusable template: " + templateName + ".  Connection:  ['" + connectionDTO.getSource().getName() + "' to '" + connectionDTO
+                                    .getDestination().getName() + "']", false);
+                            break;
+                        }
                     }
                 }
             }
@@ -526,54 +557,57 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
             //follow the input port destination connection to its internal process group port
             Set<ConnectionDTO> newConnections = new HashSet<>();
+            String reusableTemplateProcessGroupId = getReusableTemplatesProcessGroupId();
+            if(reusableTemplateProcessGroupId != null) {
+                for (ReusableTemplateConnectionInfo connectionInfo : componentOption.getConnectionInfo()) {
+                    String reusableTemplateInputPortName = connectionInfo.getReusableTemplateInputPortName();
+                    //find the portdto matching this name in the reusable template group
 
-            for (ReusableTemplateConnectionInfo connectionInfo : componentOption.getConnectionInfo()) {
-                String reusableTemplateInputPortName = connectionInfo.getReusableTemplateInputPortName();
-                //find the portdto matching this name in the reusable template group
+                    /**
+                     * The connection coming from the 'reusableTemplateInputPortName' to the next input port
+                     */
+                    Optional<ConnectionDTO> connectionToUse = Optional.empty();
 
-                /**
-                 * The connection coming from the 'reusableTemplateInputPortName' to the next input port
-                 */
-                Optional<ConnectionDTO> connectionToUse = Optional.empty();
+                    /**
+                     * The port that matches the 'reusableTemplateInputPortName connection destination
+                     */
+                    Optional<PortDTO> sourcePort = Optional.empty();
 
-                /**
-                 * The port that matches the 'reusableTemplateInputPortName connection destination
-                 */
-                Optional<PortDTO> sourcePort = Optional.empty();
+                    connectionToUse = inputPorts.stream().filter(portDTO -> portDTO.getName().equalsIgnoreCase(reusableTemplateInputPortName))
+                        .findFirst()
+                        .flatMap(portToInspect ->
+                                     reusableTemplateConnections.stream()
+                                         .filter(connectionDTO -> connectionDTO.getDestination().getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())
+                                                                  && connectionDTO.getSource().getId().equalsIgnoreCase(portToInspect.getId())).findFirst()
+                        );
 
-                connectionToUse = inputPorts.stream().filter(portDTO -> portDTO.getName().equalsIgnoreCase(reusableTemplateInputPortName))
-                    .findFirst()
-                    .flatMap(portToInspect ->
-                                 reusableTemplateConnections.stream()
-                                     .filter(connectionDTO -> connectionDTO.getDestination().getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())
-                                                              && connectionDTO.getSource().getId().equalsIgnoreCase(portToInspect.getId())).findFirst()
-                    );
+                    if (connectionToUse.isPresent()) {
+                        sourcePort =
+                            newTemplateInstance.getProcessGroupEntity().getContents().getOutputPorts().stream()
+                                .filter(portDTO -> portDTO.getName().equalsIgnoreCase(connectionInfo.getFeedOutputPortName())).findFirst();
 
-                if (connectionToUse.isPresent()) {
-                    sourcePort =
-                        newTemplateInstance.getProcessGroupEntity().getContents().getOutputPorts().stream()
-                            .filter(portDTO -> portDTO.getName().equalsIgnoreCase(connectionInfo.getFeedOutputPortName())).findFirst();
+                    }
 
-                }
-
-                if (sourcePort.isPresent()) {
-                    //make the connection now from the output port to the 'connectionToUse' destination
-                    ConnectableDTO source = NifiConnectionUtil.asConnectable(sourcePort.get());
-                    ConnectableDTO dest = NifiConnectionUtil.asNewConnectable(connectionToUse.get().getDestination());
-                    ConnectionDTO newConnection = nifiRestClient.getNiFiRestClient().processGroups().createConnection(getReusableTemplatesProcessGroupId(), source, dest);
-                    newConnections.add(newConnection);
-                    connections.add(newConnection);
-                    log.info("Connected the output port {} ({}) to another reusable template input port: {} {{}).  The public reusable template port name is: {} ", source.getName(), source.getId(),
-                             dest.getName(), dest.getId(), reusableTemplateInputPortName);
-                    uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(),
-                                                          "Connected this template '" + templateName + "' with '" + reusableTemplateInputPortName + "' connected to '" + sourcePort.get().getName()
-                                                          + "'", true, true);
-                } else {
-                    //    log.error("Unable to find a connection to connect the reusable template together.  Please verify the Input Port named '{}' under the 'reusable_templates' group has a connection going to another input port",reusableTemplateInputPortName);
-                    //    importTemplate.getTemplateResults().addError(NifiError.SEVERITY.FATAL, "Unable to connect the reusable template to the designated input port: '" + reusableTemplateInputPortName + "'. Please verify the Input Port named '" + reusableTemplateInputPortName + "' under the 'reusable_templates' group has a connection going to another input port.  You may need to re-import the template with this input port. ", "");
-                    //   importStatusMessage.update("Unable to connect the reusable template to the designated input port: "+reusableTemplateInputPortName, false);
-                    //  uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Unable to connect this template '"+templateName+"' with '"+reusableTemplateInputPortName,true,false);
-                    //   break;
+                    if (sourcePort.isPresent()) {
+                        //make the connection now from the output port to the 'connectionToUse' destination
+                        ConnectableDTO source = NifiConnectionUtil.asConnectable(sourcePort.get());
+                        ConnectableDTO dest = NifiConnectionUtil.asNewConnectable(connectionToUse.get().getDestination());
+                        ConnectionDTO newConnection = nifiRestClient.getNiFiRestClient().processGroups().createConnection(reusableTemplateProcessGroupId, source, dest);
+                        newConnections.add(newConnection);
+                        connections.add(newConnection);
+                        log.info("Connected the output port {} ({}) to another reusable template input port: {} {{}).  The public reusable template port name is: {} ", source.getName(),
+                                 source.getId(),
+                                 dest.getName(), dest.getId(), reusableTemplateInputPortName);
+                        uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(),
+                                                              "Connected this template '" + templateName + "' with '" + reusableTemplateInputPortName + "' connected to '" + sourcePort.get().getName()
+                                                              + "'", true, true);
+                    } else {
+                        //    log.error("Unable to find a connection to connect the reusable template together.  Please verify the Input Port named '{}' under the 'reusable_templates' group has a connection going to another input port",reusableTemplateInputPortName);
+                        //    importTemplate.getTemplateResults().addError(NifiError.SEVERITY.FATAL, "Unable to connect the reusable template to the designated input port: '" + reusableTemplateInputPortName + "'. Please verify the Input Port named '" + reusableTemplateInputPortName + "' under the 'reusable_templates' group has a connection going to another input port.  You may need to re-import the template with this input port. ", "");
+                        //   importStatusMessage.update("Unable to connect the reusable template to the designated input port: "+reusableTemplateInputPortName, false);
+                        //  uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Unable to connect this template '"+templateName+"' with '"+reusableTemplateInputPortName,true,false);
+                        //   break;
+                    }
                 }
             }
 

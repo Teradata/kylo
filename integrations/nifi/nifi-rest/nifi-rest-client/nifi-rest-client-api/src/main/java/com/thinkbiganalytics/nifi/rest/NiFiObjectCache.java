@@ -111,6 +111,15 @@ public class NiFiObjectCache {
                 }
             }
         }
+
+        if(reusableTemplateCategory == null){
+            //create it
+            reusableTemplateCategory = restClient.createProcessGroup("root", reusableTemplateCategoryName);
+        }
+
+        if(reusableTemplateCategory != null && reusableTemplateProcessGroupId == null) {
+            reusableTemplateProcessGroupId = reusableTemplateCategory.getId();
+        }
         return reusableTemplateCategory;
     }
 
@@ -268,6 +277,9 @@ public class NiFiObjectCache {
     }
 
     public String getReusableTemplateProcessGroupId() {
+        if(reusableTemplateProcessGroupId == null){
+            getReusableTemplateCategoryProcessGroup();
+        }
         return reusableTemplateProcessGroupId;
     }
 
