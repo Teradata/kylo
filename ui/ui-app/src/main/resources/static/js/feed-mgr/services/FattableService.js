@@ -7,7 +7,7 @@
  *
  * JS:
  *   FattableService.setupTable({
- *      tableContainerId:"#table-id",
+ *      tableContainerId:"table-id",
  *      headers: self.headers,
  *      rows: self.rows
  *  });
@@ -18,7 +18,7 @@
  *
  *  Default behaviour can be overridden by implementing headerText, cellText, fillCell, getCellSync, fillHeader, getHeaderSync methods on options passed to setupTable method, e.g.
  *   FattableService.setupTable({
- *      tableContainerId:"#table-id",
+ *      tableContainerId:"table-id",
  *      headers: self.headers,
  *      rows: self.rows,
  *      headerText: function(header) {...},
