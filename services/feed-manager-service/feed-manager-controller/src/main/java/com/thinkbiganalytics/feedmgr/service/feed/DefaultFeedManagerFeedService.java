@@ -631,17 +631,23 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (StringUtils.isBlank(feed.getId())) {
             feed.setIsNew(true);
         }
-        metadataAccess.commit(() -> {
-            Stopwatch stopwatch = Stopwatch.createStarted();
-            List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
-            // Store the old security groups before saving beccause we need to compare afterward
-            if (feed.isNew()) {
+        //Read all the feeds as System Service account to ensure the feed name is unique
+        if (feed.isNew()) {
+            metadataAccess.read(() -> {
                 Feed existing = feedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 // Since we know this is expected to be new check if the category/feed name combo is already being used.
                 if (existing != null) {
                     throw new DuplicateFeedNameException(feed.getCategoryName(), feed.getFeedName());
                 }
-            } else {
+            }, MetadataAccess.SERVICE);
+        }
+
+
+        metadataAccess.commit(() -> {
+            Stopwatch stopwatch = Stopwatch.createStarted();
+            List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
+            // Store the old security groups before saving beccause we need to compare afterward
+            if (!feed.isNew()) {
                 Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
