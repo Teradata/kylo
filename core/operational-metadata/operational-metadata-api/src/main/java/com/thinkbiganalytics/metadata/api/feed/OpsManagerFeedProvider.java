@@ -80,6 +80,12 @@ public interface OpsManagerFeedProvider {
     List<? extends OpsManagerFeed> findAllWithoutAcl();
 
     /**
+     * Find Feeds that have the same system name in the kylo.FEED table
+     * @return
+     */
+    List<? extends OpsManagerFeed> findFeedsWithSameName();
+
+    /**
      *  Returns a list of all the feed categorySystemName.feedSystemName
      * NOTE: This is Access Controlled and will show only those feeds a user has access to
      * @return Returns a list of all the feed categorySystemName.feedSystemName

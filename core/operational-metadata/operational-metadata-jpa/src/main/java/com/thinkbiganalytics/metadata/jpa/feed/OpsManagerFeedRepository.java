@@ -52,8 +52,24 @@ public interface OpsManagerFeedRepository extends JpaRepository<JpaOpsManagerFee
     JpaOpsManagerFeed findByNameWithoutAcl(@Param("feedName") String feedName);
 
     @Query("select distinct feed from JpaOpsManagerFeed as feed "
+           + " where feed.name = :feedName ")
+    List<JpaOpsManagerFeed> findFeedsByNameWithoutAcl(@Param("feedName") String feedName);
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
+           + " where feed.name in (:feedNames) ")
+    List<JpaOpsManagerFeed> findFeedsByNameWithoutAcl(@Param("feedNames") List<String> feedNames);
+
+
+    @Query("select new com.thinkbiganalytics.metadata.jpa.feed.JpaFeedNameCount(feed.name ,count(feed.name) ) "
+           + "from JpaOpsManagerFeed as feed "
+           + " group by feed.name"
+           + " having count(feed.name) >1")
+    List<JpaFeedNameCount> findFeedsWithSameName();
+
+
+    @Query("select distinct feed from JpaOpsManagerFeed as feed "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
-           + " where feed.id = :id"
+           + " where feed.id = :id "
            + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     JpaOpsManagerFeed findByIdWithAcl(@Param("id") OpsManagerFeed.ID id);
 
