@@ -1,8 +1,5 @@
 package com.thinkbiganalytics.server.upgrade;
 
-import com.google.common.io.CharStreams;
-import com.google.common.io.Resources;
-
 /*-
  * #%L
  * kylo-operational-metadata-upgrade-service
@@ -23,35 +20,25 @@ import com.google.common.io.Resources;
  * #L%
  */
 
+import com.google.common.io.Resources;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
-import org.apache.commons.lang.CharSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.URI;
-import java.net.URL;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -66,46 +53,6 @@ public class KyloUpgradeService {
     private static final String UPGRADE_VERSIONS_FILE = "upgrade-versions.txt";
 
     private static final Logger log = LoggerFactory.getLogger(KyloUpgradeService.class);
-
-//    public static final List<KyloVersion> UPGRADE_SEQUENCE;
-//    static {
-//        String[] versions = {
-//              "0.4.0",
-//              "0.4.1",
-//              "0.4.2",
-//              "0.4.3",
-//              "0.5.0",
-//              "0.6.0",
-//              "0.6.1",
-//              "0.6.2",
-//              "0.6.3",
-//              "0.6.4",
-//              "0.7.0",
-//              "0.7.1",
-//              "0.7.2",
-//              "0.7.2.1",
-//              "0.8.0",
-//              "0.8.0.1",
-//              "0.8.1",
-//              "0.8.2",
-//              "0.8.2.2",
-//              "0.8.2.3",
-//              "0.8.2.4",
-//              "0.8.2.5",
-//              "0.8.2.6",
-//              "0.8.3",
-//              "0.8.3.1",
-//              "0.8.3.2",
-//              "0.8.3.3",
-//              "0.8.4",
-//              "0.9.0"
-//        };
-//        
-//        UPGRADE_SEQUENCE = Collections.unmodifiableList(Arrays.stream(versions)
-//                                                            .map(KyloVersionUtil::parseVersion)
-//                                                            .sorted()
-//                                                            .collect(Collectors.toList()));
-//    }
 
     @Inject
     private MetadataAccess metadataAccess;
