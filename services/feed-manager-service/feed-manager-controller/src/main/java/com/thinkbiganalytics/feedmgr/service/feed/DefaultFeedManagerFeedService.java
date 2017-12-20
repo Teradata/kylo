@@ -433,6 +433,20 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         }
 
+        if (StringUtils.isBlank(feedMetadata.getId())) {
+            feedMetadata.setIsNew(true);
+        }
+
+        //Read all the feeds as System Service account to ensure the feed name is unique
+        if (feedMetadata.isNew()) {
+            metadataAccess.read(() -> {
+                Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+                if (existing != null) {
+                    throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
+                }
+            }, MetadataAccess.SERVICE);
+        }
+
         NifiFeed feed = createAndSaveFeed(feedMetadata);
         //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
@@ -624,19 +638,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
 
     private void saveFeed(final FeedMetadata feed) {
-        if (StringUtils.isBlank(feed.getId())) {
-            feed.setIsNew(true);
-        }
-        //Read all the feeds as System Service account to ensure the feed name is unique
-        if (feed.isNew()) {
-            metadataAccess.read(() -> {
-                Feed existing = feedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                // Since we know this is expected to be new check if the category/feed name combo is already being used.
-                if (existing != null) {
-                    throw new DuplicateFeedNameException(feed.getCategoryName(), feed.getFeedName());
-                }
-            }, MetadataAccess.SERVICE);
-        }
 
 
         metadataAccess.commit(() -> {
