@@ -26,6 +26,7 @@ import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -71,7 +72,6 @@ public class KyloUpgradeService {
             if (args.length < 2) {
                 throw new IllegalArgumentException("Current source directory and build version required as arguments");
             }
-            
             String resourcesDir = args[0];
             Resource versionsResource = new FileSystemResource(new File(resourcesDir, UPGRADE_VERSIONS_FILE));
             KyloVersion projectVersion = KyloVersionUtil.parseVersion(args[1]).withoutTag();
@@ -80,7 +80,6 @@ public class KyloUpgradeService {
                             .sorted()
                             .distinct()
                             .collect(Collectors.toList());
-            
             writeUpgradeVersions(upgradeVersions, versionsResource.getFile());
         } catch (Exception e) {
             throw new UpgradeException("Failed to update versions file: " + UPGRADE_VERSIONS_FILE, e);
@@ -99,6 +98,7 @@ public class KyloUpgradeService {
         }
         
         return Resources.readLines(versionsResource.getURL(), Charset.forName("UTF-8")).stream()
+            .filter(v -> StringUtils.isNotBlank(v))
             .map(KyloVersionUtil::parseVersion)
             .collect(Collectors.toCollection(ArrayList::new));
     }
