@@ -22,12 +22,12 @@
 <databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
 
   <changeSet id="ensure_batch_nifi_job_pk" author="sr186054">
-    <preConditions onFail="MARK_RAN"><not><primaryKeyExists/></not></preConditions>
+    <preConditions onFail="MARK_RAN"><not><primaryKeyExists tableName="BATCH_NIFI_JOB"/></not></preConditions>
     <addPrimaryKey columnNames="FLOW_FILE_ID" tableName="BATCH_NIFI_JOB"/>
   </changeSet>
 
   <changeSet id="create_feed_name_index" author="sr186054">
-  <createIndex indexName="FEED_IDX1" unique="true" tableName="FEED">
+  <createIndex indexName="FEED_IDX1" unique="false" tableName="FEED">
     <column name="NAME"  />
   </createIndex>
   </changeSet>

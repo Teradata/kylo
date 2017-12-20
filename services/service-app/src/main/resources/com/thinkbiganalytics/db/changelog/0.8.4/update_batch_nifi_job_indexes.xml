@@ -80,7 +80,7 @@
   </changeSet>
 
   <changeSet id="drop_batch_nifi_job_pk" author="sr186054"  onValidationFail="MARK_RAN" failOnError="false">
-      <preConditions onFail="MARK_RAN"><not><primaryKeyExists/></not></preConditions>
+      <preConditions onFail="MARK_RAN"><not><primaryKeyExists tableName="BATCH_NIFI_JOB"/></not></preConditions>
       <dropPrimaryKey tableName="BATCH_NIFI_JOB" />
   </changeSet>
 
