@@ -492,9 +492,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     public List<? extends OpsManagerFeed> findFeedsWithSameName() {
         List<JpaFeedNameCount> feedNameCounts = repository.findFeedsWithSameName();
-        if (feedNameCounts != null) {
+        if (feedNameCounts != null && !feedNameCounts.isEmpty()) {
             List<String> feedNames = feedNameCounts.stream().map(c -> c.getFeedName()).collect(Collectors.toList());
-            return repository.findFeedsByNameWithoutAcl(feedNames);
+            if(feedNames != null && !feedNames.isEmpty()) {
+                return repository.findFeedsByNameWithoutAcl(feedNames);
+            }
         }
         return Collections.emptyList();
     }
