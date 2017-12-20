@@ -195,6 +195,9 @@ public class FeedModelTransform {
 
         }
         domain.setDisplayName(feedMetadata.getFeedName());
+        if(feedMetadata.getDescription() == null){
+            feedMetadata.setDescription("");
+        }
         domain.setDescription(feedMetadata.getDescription());
 
         feedMetadata.setId(domain.getId().toString());
