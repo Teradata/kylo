@@ -258,7 +258,7 @@ public class DBCPConnectionPoolService {
                     .collect(Collectors.toList());
             }, MetadataAccess.SERVICE);
 
-            if (matchingDatasources != null) {
+            if (matchingDatasources != null && !matchingDatasources.isEmpty()) {
                 JdbcDatasource
                     userDatasource =
                     (JdbcDatasource) matchingDatasources.stream().filter(ds -> ((JdbcDatasource) ds).getDatabaseUser().equalsIgnoreCase(dataSourceProperties.getUser())).findFirst().orElse(null);
@@ -275,7 +275,7 @@ public class DBCPConnectionPoolService {
             if (!valid) {
                 String propertyKey = nifiControllerServiceProperties.getEnvironmentControllerServicePropertyPrefix(serviceProperties.getControllerServiceName()) + ".password";
                 String example = propertyKey + "=PASSWORD";
-                log.error("Unable to connect to Controller Service {}, {}.  You need to specifiy a configuration property as {} with the password for user: {}. ",
+                log.error("Unable to connect to Controller Service {}, {}.  You need to specify a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
             }
         }
@@ -290,9 +290,10 @@ public class DBCPConnectionPoolService {
     private String parseValidationQueryFromConnectionString(String connectionString) {
         String validationQuery = null;
         try {
-            DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
-            validationQuery = databaseType.getValidationQuery();
-
+            if(StringUtils.isNotBlank(connectionString)) {
+                DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
+                validationQuery = databaseType.getValidationQuery();
+            }
         } catch (IllegalArgumentException e) {
             //if we cant find it in the map its ok.
         }
@@ -344,7 +345,7 @@ public class DBCPConnectionPoolService {
         }
 
         String validationQuery = nifiControllerServiceProperties.getEnvironmentPropertyValueForControllerService(serviceProperties.getControllerServiceName(), "validationQuery");
-        if (StringUtils.isBlank(validationQuery)) {
+        if (StringUtils.isBlank(validationQuery) && StringUtils.isNotBlank(uri)) {
             //attempt to get it from parsing the connection string
             validationQuery = parseValidationQueryFromConnectionString(uri);
         }
