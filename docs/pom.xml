@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4.1-SNAPSHOT</version>
+    <version>0.8.4.1</version>
   </parent>
   <artifactId>kylo-docs</artifactId>
   <packaging>pom</packaging>
