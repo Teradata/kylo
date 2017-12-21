@@ -647,7 +647,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
-            // Store the old security groups before saving beccause we need to compare afterward
+            // Store the old security groups before saving because we need to compare afterward
             if (!feed.isNew()) {
                 Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
