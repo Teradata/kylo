@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-search</artifactId>
-    <version>0.8.4.1</version>
+    <version>0.8.4.2-SNAPSHOT</version>
   </parent>
   <properties>
     <modeshape.search.version>5.2.0.Final</modeshape.search.version>
