@@ -42,7 +42,7 @@ if [ $offline = true ]
 then
     cp $KYLO_SETUP_FOLDER/java/jce_policy-8.zip .
 else
-    curl -L -O -H -k "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip"
+    curl -L -O -H  "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jce/8/jce_policy-8.zip"
 fi
 
 if ! [ -f jce_policy-8.zip ]
