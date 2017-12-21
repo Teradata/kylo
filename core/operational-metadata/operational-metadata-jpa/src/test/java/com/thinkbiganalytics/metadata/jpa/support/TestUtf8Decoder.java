@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.support;
  * #L%
  */
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.nio.charset.Charset;
@@ -31,15 +32,27 @@ public class TestUtf8Decoder {
 
 
     @Test
-    public void testInvaildStrings() throws Exception{
+    public void testInvalidStrings() throws Exception{
 
         String invalidStr = "This is an invalid string test öäü 有效地针 \u040A \u0404 \ufeff0021 \uD83D\uDC95 \u25E2  rl moe \uD83D\uDCAF https://t.co/tOaZ01kVup'with some other strings";
         String newStr = NormalizeAndCleanString.normalizeAndClean(invalidStr);
         Charset charset = Charset.forName("UTF-8");
         String s = new String(invalidStr.getBytes(), charset);
         int i = 0;
+        Assert.assertNotNull(newStr);
 
 
     }
+
+    @Test
+    public void testNullStrings() throws Exception{
+
+        String invalidStr = null;
+        String newStr = NormalizeAndCleanString.normalizeAndClean(invalidStr);
+        Assert.assertNull(newStr);
+
+
+    }
+
 
 }
