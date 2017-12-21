@@ -331,14 +331,21 @@ define(['angular'], function (angular) {
                    var deferred = $q.defer();
                    var tableNameQuery = "%" + query + "%";
                    var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId), {params: {serviceName: serviceName, tableName: tableNameQuery}}).then(function (response) {
-                       self.databaseConnectionError = false;
-                       var tables = parseTableResponse(response.data);
-                       // Dont cache .. uncomment to cache results
-                       // self.allTables[serviceId] = parseTableResponse(response.data);
-                       var results = query ? tables.filter(createFilterForTable(query)) : tables;
-                       deferred.resolve(results);
+                       if(_.isArray(response.data)) {
+                           self.databaseConnectionError = false;
+                           var tables = parseTableResponse(response.data);
+                           // Dont cache .. uncomment to cache results
+                           // self.allTables[serviceId] = parseTableResponse(response.data);
+                           var results = query ? tables.filter(createFilterForTable(query)) : tables;
+                           deferred.resolve(results);
+                       }
+                       else {
+                           self.databaseConnectionError = true;
+                           deferred.reject(response);
+                       }
                    }, function (err) {
                        self.databaseConnectionError = true;
+                       deferred.reject(err);
 
                    });
                    return deferred.promise;
