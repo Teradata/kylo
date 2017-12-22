@@ -27,39 +27,36 @@
     <body-section>
       <div ng-if="vm.loading">
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-        <span class="md-body-2 layout-padding-left">Loading Tables</span>
+        <span class="md-body-2 layout-padding-left">Loading Schemas</span>
       </div>
+
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
         <md-list flex layout-fill class="list-item-table">
-          <md-list-item class="md-secondary" dir-paginate="table in vm.selectedTables |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
-                        pagination-id="tables"
+          <md-list-item class="md-secondary" dir-paginate="schema in vm.schemas |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
+                        pagination-id="schemas"
                         current-page="vm.currentPage">
             <div layout="row" layout-fill>
-              <div flex="50" layout="column" class="item-column md-list-item-text " ng-click="vm.onClickTable(table)" title="{{table.schema}}.{{table.tableName}}">
-                                    <span class="item-title" title="{{table.schema}}.{{table.tableName}}">
-                                      {{table.tableName}}
+              <div flex="50" layout="column" class="item-column md-list-item-text " ng-click="vm.onClickSchema(schema)" title="{{schema}}">
+                                    <span class="item-title" title="{{schema}}">
+                                      {{schema}}
                                     </span>
 
                 <div layout="row" class="column-title column-title-bottom">
                   <ng-md-icon icon="grid_on" size="20" hide-xs style="fill:orange">
                   </ng-md-icon>
-                  <span>Table</span>
+                  <span>Schema</span>
                 </div>
 
-              </div>
-              <div flex="30" layout="column" class="item-column md-list-item-text ">
-                                   <span class="item-title">{{table.schema}}
-                                   </span>
               </div>
             </div>
             <md-divider ng-if="!$last"></md-divider>
           </md-list-item>
-          <md-list-item ng-show="vm.loading == false && vm.selectedTables.length ==0" class="md-list-item with-padding">
+          <md-list-item ng-show="vm.loading == false && vm.schemas.length ==0" class="md-list-item with-padding">
             No results found
           </md-list-item>
           <md-divider></md-divider>
           <md-list-item layout-align="end center" layout-row class="pagination-list-item">
-            <dir-pagination-controls pagination-id="tables"
+            <dir-pagination-controls pagination-id="schemas"
                                      auto-hide="false"
                                      max-size="5"
                                      direction-links="true"
@@ -79,24 +76,24 @@
           <table md-table md-progress="vm.deferred.promise">
             <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
             <tr md-row>
-              <th md-column name="Table" md-order-by="feedName">Table</th>
-              <th md-column name="Schema" md-order-by="state">Schema</th>
+              <th md-column name="Schema" md-order-by="schema">Schema</th>
             </tr>
             </thead>
             <tbody md-body>
             <tr md-row
-                ng-repeat="table in vm.selectedTables | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
-                ng-click="vm.onClickTable(table)">
-              <td md-cell>{{table.tableName}}</td>
+                ng-repeat="schema in vm.schemas | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
+                ng-click="vm.onClickSchema(schema)">
+              <td md-cell>{{schema}}</td>
             </tr>
             </tbody>
           </table>
         </md-table-container>
 
-        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.selectedTables.length}}" md-on-paginate="vm.onPaginationChange"
+        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.schemas.length}}" md-on-paginate="vm.onPaginationChange"
                              md-limit-options="[5,10,20,50]"></md-table-pagination>
 
       </div>
+
 
     </body-section>
 

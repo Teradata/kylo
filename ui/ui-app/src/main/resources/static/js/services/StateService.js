@@ -149,10 +149,10 @@ define(['angular', 'services/module-name'], function (angular, moduleName) {
         var TableStates = function () {
             var data = {};
             data.navigateToTable = function (schema, table) {
-                $state.go('table', {schema: schema, tableName: table});
+                $state.go('schemas-schema-table', {schema: schema, tableName: table});
             }
-            data.navigateToTables = function () {
-                $state.go('tables');
+            data.navigateToTables = function (schema) {
+                $state.go('schemas-schema', {schema: schema});
             }
             return data;
         }

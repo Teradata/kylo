@@ -210,22 +210,38 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
         });
 
         $stateProvider.state({
-            name: 'tables.**',
-            url: '/tables',
+            name: 'schemas.**',
+            url: '/schemas',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('tables')
+                    $stateProvider.stateService.go('schemas')
                     return args;
                 }, function error(err) {
-                    console.log("Error loading tables ", err);
+                    console.log("Error loading schemas ", err);
                     return err;
                 });
                 ;
             }
         }).state({
-            name: 'table.**',
-            url: '/tables/{schema}/{tableName}',
+            name: 'schemas-schema.**',
+            url: '/schemas/{schema}',
+            params: {
+                schema: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas-schema', transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading tables ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas-schema-table.**',
+            url: '/schemas/{schema}/{tableName}',
             params: {
                 schema: null,
                 tableName: null
@@ -233,7 +249,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('table', transition.params())
+                    $stateProvider.stateService.go('schemas-schema-table', transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading table ", err);

@@ -21,9 +21,6 @@ package com.thinkbiganalytics.hive.service;
  */
 
 
-import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
-import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
-import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.hive.util.HiveUtils;
@@ -97,7 +94,7 @@ public class HiveService {
     /**
      * returns a list of all the schema.tablename
      */
-    public List<String> getAllTablesForImpersonatedUser() {
+    public List<String> getAllTablesForImpersonatedUser(String schema) {
         long start = System.currentTimeMillis();
         List<String> allTables = new ArrayList<>();
         QueryResult result = query("show databases");
