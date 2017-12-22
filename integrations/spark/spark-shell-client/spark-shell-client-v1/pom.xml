@@ -180,7 +180,6 @@
           <artifactSet>
             <excludes>
               <exclude>log4j:*</exclude>
-              <exclude>org.slf4j:*</exclude>
             </excludes>
           </artifactSet>
           <filters>
@@ -189,6 +188,12 @@
               <excludes>
                 <exclude>javax/servlet/**</exclude>
               </excludes>
+            </filter>
+            <filter>
+              <artifact>org.slf4j:*</artifact>
+              <includes>
+                <include>org/slf4j/ext/**</include>
+              </includes>
             </filter>
           </filters>
         </configuration>

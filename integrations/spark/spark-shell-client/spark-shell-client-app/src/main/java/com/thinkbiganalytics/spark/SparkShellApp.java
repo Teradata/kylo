@@ -32,11 +32,16 @@ import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
-import com.thinkbiganalytics.spark.service.TransformJobTracker;
+import com.thinkbiganalytics.spark.service.JobTrackerService;
+import com.thinkbiganalytics.spark.service.SparkListenerService;
+import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.jdbc.JdbcDialect;
 import org.apache.spark.sql.jdbc.JdbcDialects;
@@ -81,7 +86,6 @@ import io.swagger.jaxrs.listing.SwaggerSerializers;
  */
 @ComponentScan("com.thinkbiganalytics.spark")
 @PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
-@PropertySource(value = {"classpath:sparkDefaults.properties", "classpath:spark.properties", "classpath:sparkDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {SecurityCoreConfig.class, VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
 
@@ -123,6 +127,14 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the Hadoop File System.
+     */
+    @Bean
+    public FileSystem fileSystem() throws IOException {
+        return FileSystem.get(new Configuration());
+    }
+
+    /**
      * Creates a service to stop this app after a period of inactivity.
      */
     @Bean
@@ -138,17 +150,29 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig jerseyConfig(final TransformService transformService) {
+    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem, final SparkLocatorService sparkLocatorService) {
         final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
         config.packages("com.thinkbiganalytics.spark.rest");
         config.register(new AbstractBinder() {
             @Override
             protected void configure() {
+                bind(fileSystem).to(FileSystem.class);
                 bind(transformService).to(TransformService.class);
+                bind(sparkLocatorService).to(SparkLocatorService.class);
             }
         });
 
         return config;
+    }
+
+    /**
+     * Creates the job tracker service.
+     */
+    @Bean
+    public JobTrackerService jobTrackerService(@Nonnull final SparkScriptEngine sparkScriptEngine, @Nonnull final SparkListenerService sparkListenerService) {
+        final JobTrackerService jobTrackerService = new JobTrackerService(sparkScriptEngine.getClassLoader());
+        sparkListenerService.addSparkListener(jobTrackerService);
+        return jobTrackerService;
     }
 
     /**
@@ -263,6 +287,24 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the Spark context.
+     */
+    @Bean
+    public SparkContext sparkContext(@Nonnull final SparkScriptEngine engine) {
+        return engine.getSparkContext();
+    }
+
+    /**
+     * Creates a Spark locator service.
+     */
+    @Bean
+    public SparkLocatorService sparkLocatorService(final SparkContext sc) {
+        final SparkLocatorService service = new SparkLocatorService();
+        service.setSparkClassLoader(sc.getClass().getClassLoader());
+        return service;
+    }
+
+    /**
      * Gets the Spark SQL context.
      *
      * @param engine the Spark script engine
@@ -292,9 +334,11 @@ public class SparkShellApp {
      */
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
-                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator) {
+                                             final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
+                                             final FileSystem fileSystem) {
         final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
+        service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
         service.setValidator(validator);
         return service;

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.metadata;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,23 +21,22 @@ package com.thinkbiganalytics.spark.metadata;
  */
 
 import com.google.common.base.Supplier;
-import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.google.common.base.Suppliers;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
-import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.spark.SparkContextService;
-import com.thinkbiganalytics.spark.jdbc.Converter;
-import com.thinkbiganalytics.spark.jdbc.Converters;
-import com.thinkbiganalytics.spark.jdbc.Dialect;
+import com.thinkbiganalytics.spark.jdbc.DataSourceSupplier;
+import com.thinkbiganalytics.spark.jdbc.JdbcUtil;
+import com.thinkbiganalytics.spark.jdbc.RowTransform;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.util.ScalaUtil;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.spark.SparkContext;
-import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.rdd.JdbcRDD;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Row;
-import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SQLContext;
 import org.apache.spark.sql.jdbc.JdbcDialect;
 import org.apache.spark.sql.jdbc.JdbcDialects$;
@@ -52,12 +51,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,9 +64,9 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.sql.DataSource;
 
+import scala.Function0;
+import scala.Function1;
 import scala.Option;
-import scala.collection.JavaConverters;
-import scala.collection.Seq;
 import scala.reflect.ClassTag;
 import scala.reflect.ClassTag$;
 
@@ -79,16 +78,16 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
     private static final Logger log = LoggerFactory.getLogger(SqlTransformStage.class);
 
     /**
-     * Result set converters
-     */
-    @Nonnull
-    private List<Converter> converters = Collections.emptyList();
-
-    /**
      * SQL data source.
      */
     @Nonnull
-    private final JdbcDatasource datasource;
+    private final Supplier<DataSource> dataSource;
+
+    /**
+     * JDBC dialect
+     */
+    @Nonnull
+    private final JdbcDialect dialect;
 
     /**
      * Spark context service.
@@ -112,27 +111,20 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
      * Constructs a {@code SqlTransformStage}.
      */
     public SqlTransformStage(@Nonnull final String sql, @Nonnull final JdbcDatasource datasource, @Nonnull final SQLContext sqlContext, @Nonnull final SparkContextService sparkContextService) {
-        this.datasource = datasource;
+        this.dataSource = new DataSourceSupplier(datasource);
+        this.dialect = JdbcDialects$.MODULE$.get(datasource.getDatabaseConnectionUrl());
         this.sparkContextService = sparkContextService;
         this.sql = sql;
         this.sqlContext = sqlContext;
     }
 
+    /**
+     * Executes the SQL query and returns the result.
+     */
     @Nonnull
     @Override
     public TransformResult get() {
-        // Build data source
-        final DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(datasource.getDatabaseConnectionUrl());
-        final String validationQuery = databaseType.getValidationQuery();
-
-        final PoolingDataSourceService.DataSourceProperties dataSourceProperties = new PoolingDataSourceService.DataSourceProperties(
-            datasource.getDatabaseUser(), datasource.getPassword(), datasource.getDatabaseConnectionUrl(), datasource.getDatabaseDriverClassName(),
-            (validationQuery != null), validationQuery);
-        dataSourceProperties.setDriverLocation(datasource.getDatabaseDriverLocation());
-        final DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
-
-        // Execute query
-        return new JdbcTemplate(dataSource).query(sql, this);
+        return new JdbcTemplate(dataSource.get()).query(sql, this);
     }
 
     @Override
@@ -141,21 +133,14 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
         final TransformResult result = new TransformResult();
         final StructType schema = extractSchema(metaData, result);
 
-        // Map rows
-        final int columnCount = metaData.getColumnCount();
-        final List<Row> rows = new ArrayList<>();
-
-        while (rs.next()) {
-            rows.add(mapRow(rs, columnCount));
-        }
-
         // Create data set
-        final Seq rowSeq = JavaConverters.asScalaBufferConverter(rows).asScala();
+        final Function0<Connection> getConnection = ScalaUtil.wrap(Suppliers.compose(JdbcUtil.getDataSourceConnection(), dataSource));
+        final Function1<ResultSet, Row> mapRow = ScalaUtil.wrap(new RowTransform());
+        //noinspection RedundantCast,unchecked
+        final ClassTag<Row> classTag = (ClassTag) ClassTag$.MODULE$.apply(Row.class);
 
-        final ClassTag ctag = ClassTag$.MODULE$.AnyRef();
-        final SparkContext sparkContext = sqlContext.sparkContext();
-        @SuppressWarnings("unchecked") final JavaRDD<Row> rowRDD = JavaRDD.fromRDD(sparkContext.parallelize(rowSeq, sparkContext.defaultParallelism(), ctag), ctag);
-        result.setDataSet(sparkContextService.toDataSet(sqlContext, rowRDD, schema));
+        final RDD<Row> rdd = new JdbcRDD<Row>(sqlContext.sparkContext(), getConnection, "SELECT * FROM (" + sql + ") rdd WHERE ? = ?", 1, 1, 1, mapRow, classTag);
+        result.setDataSet(sparkContextService.toDataSet(sqlContext, rdd.toJavaRDD(), schema));
 
         return result;
     }
@@ -167,9 +152,7 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
     private StructType extractSchema(@Nonnull final ResultSetMetaData rsmd, @Nonnull final TransformResult result) throws SQLException {
         final int columnCount = rsmd.getColumnCount();
         final List<QueryResultColumn> columns = new ArrayList<>(columnCount);
-        final List<Converter> converters = new ArrayList<>(columnCount);
         final Map<String, Integer> displayNameMap = new HashMap<>();
-        final JdbcDialect dialect = JdbcDialects$.MODULE$.get(datasource.getDatabaseConnectionUrl());
         final StructField[] fields = new StructField[columnCount];
 
         for (int i = 0; i < columnCount; ++i) {
@@ -212,16 +195,9 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
                 catalystType = getCatalystType(columnType, precision, scale, isSigned);
             }
             fields[i] = new StructField(columnLabel, catalystType, isNullable, metadata.build());
-
-            if (dialect instanceof Dialect) {
-                converters.add(((Dialect) dialect).getConverter(columnType));
-            } else {
-                converters.add(Converters.identity());
-            }
         }
 
         result.setColumns(columns);
-        this.converters = converters;
         return new StructType(fields);
     }
 
@@ -294,19 +270,5 @@ public class SqlTransformStage implements Supplier<TransformResult>, ResultSetEx
                 log.debug("Unsupported SQL type: {}", sqlType);
                 return DataTypes.StringType;
         }
-    }
-
-    /**
-     * Maps the specified JDBC row to a Spark SQL row.
-     */
-    @Nonnull
-    private Row mapRow(@Nonnull final ResultSet rs, final int columnCount) throws SQLException {
-        final Object[] values = new Object[columnCount];
-
-        for (int i = 0; i < columnCount; ++i) {
-            values[i] = converters.get(i).convert(rs, i + 1);
-        }
-
-        return RowFactory.create(values);
     }
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.service;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,7 +23,7 @@ package com.thinkbiganalytics.spark.service;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
-import com.thinkbiganalytics.spark.metadata.TransformJob;
+import com.thinkbiganalytics.spark.metadata.Job;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
@@ -74,7 +74,7 @@ public class TransformServiceTest {
         final TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
 
-        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockTransformJobTracker());
+        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService());
         final TransformResponse response = service.execute(request);
         Assert.assertEquals(TransformResponse.Status.PENDING, response.getStatus());
 
@@ -134,7 +134,7 @@ public class TransformServiceTest {
         request.setDatasources(Collections.singletonList(Mockito.mock(Datasource.class)));
         request.setScript("sqlContext.range(1,10)");
 
-        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockTransformJobTracker());
+        final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService());
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setProfiler(profiler);
 
@@ -172,7 +172,7 @@ public class TransformServiceTest {
 
         // Test converting request to script
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
-                                                              Mockito.mock(TransformJobTracker.class));
+                                                              Mockito.mock(JobTrackerService.class));
 
         final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
         Assert.assertEquals(expected, service.toScript(request));
@@ -194,31 +194,26 @@ public class TransformServiceTest {
 
         // Test converting request to script
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
-                                                              Mockito.mock(TransformJobTracker.class));
+                                                              Mockito.mock(JobTrackerService.class));
 
         final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
         Assert.assertEquals(expected, service.toScript(request));
     }
 
     /**
-     * A mock implementation of {@link TransformJobTracker} for testing.
+     * A mock implementation of {@link JobTrackerService} for testing.
      */
-    private static class MockTransformJobTracker extends TransformJobTracker {
+    private static class MockJobTrackerService extends JobTrackerService {
 
         /**
-         * Constructs a {@code MockTransformJobTracker}.
+         * Constructs a {@code MockJobTrackerService}.
          */
-        MockTransformJobTracker() {
+        MockJobTrackerService() {
             super(Thread.currentThread().getContextClassLoader());
         }
 
         @Override
-        public void addSparkListener(@Nonnull SparkScriptEngine engine) {
-            // ignored
-        }
-
-        @Override
-        public void submitJob(@Nonnull TransformJob job) {
+        public <T> void submitJob(@Nonnull Job<T> job) {
             // ignored
         }
     }
