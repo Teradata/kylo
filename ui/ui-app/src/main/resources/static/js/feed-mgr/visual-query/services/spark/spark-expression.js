@@ -4,7 +4,7 @@ define(["require", "exports", "../../wrangler/parse-exception", "./spark-constan
     /**
      * An expression in a Spark script.
      */
-    var SparkExpression = (function () {
+    var SparkExpression = /** @class */ (function () {
         /**
          * Constructs a {@code SparkExpression}
          *
@@ -296,14 +296,14 @@ define(["require", "exports", "../../wrangler/parse-exception", "./spark-constan
             }
             return "\"" + expression.source + "\"";
         };
+        /** Regular expression for conversion strings */
+        SparkExpression.FORMAT_REGEX = /%([?*,@]*)([bcdfors])/g;
+        /** TernJS directive for the Spark code */
+        SparkExpression.SPARK_DIRECTIVE = "!spark";
+        /** TernJS directive for the return type */
+        SparkExpression.TYPE_DIRECTIVE = "!sparkType";
         return SparkExpression;
     }());
-    /** Regular expression for conversion strings */
-    SparkExpression.FORMAT_REGEX = /%([?*,@]*)([bcdfors])/g;
-    /** TernJS directive for the Spark code */
-    SparkExpression.SPARK_DIRECTIVE = "!spark";
-    /** TernJS directive for the return type */
-    SparkExpression.TYPE_DIRECTIVE = "!sparkType";
     exports.SparkExpression = SparkExpression;
 });
 //# sourceMappingURL=spark-expression.js.map

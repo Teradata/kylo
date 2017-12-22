@@ -1,7 +1,7 @@
 define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var WindowUnloadService = (function () {
+    var WindowUnloadService = /** @class */ (function () {
         function WindowUnloadService($transitions, $window) {
             var _this = this;
             this.$transitions = $transitions;
@@ -47,9 +47,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 return false;
             }
         };
+        WindowUnloadService.$inject = ["$transitions", "$window"];
         return WindowUnloadService;
     }());
-    WindowUnloadService.$inject = ["$transitions", "$window"];
     exports.WindowUnloadService = WindowUnloadService;
     angular.module(require("services/module-name")).service("WindowUnloadService", WindowUnloadService);
 });

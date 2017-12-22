@@ -37,7 +37,7 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../wran
      *
      * - Advanced Mode - A textarea is provided for the user to input their query.
      */
-    var QueryBuilderComponent = (function () {
+    var QueryBuilderComponent = /** @class */ (function () {
         /**
          * Constructs a {@code BuildQueryComponent}.
          */
@@ -652,16 +652,16 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../wran
             var searchText = this.tablesAutocomplete.searchText.trim();
             angular.element('#tables-auto-complete').focus().val(searchText).trigger('change');
         };
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", query_engine_1.QueryEngine)
+        ], QueryBuilderComponent.prototype, "engine", void 0);
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", Object)
+        ], QueryBuilderComponent.prototype, "model", void 0);
         return QueryBuilderComponent;
     }());
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", query_engine_1.QueryEngine)
-    ], QueryBuilderComponent.prototype, "engine", void 0);
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object)
-    ], QueryBuilderComponent.prototype, "model", void 0);
     exports.QueryBuilderComponent = QueryBuilderComponent;
     angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
         bindings: {

@@ -16,7 +16,7 @@ define(["require", "exports", "underscore", "../../wrangler/query-parser", "./sp
     /**
      * Handles transformations from a visual query model to Spark.
      */
-    var SparkQueryParser = (function (_super) {
+    var SparkQueryParser = /** @class */ (function (_super) {
         __extends(SparkQueryParser, _super);
         /**
          * Constructs a {@code SparkQueryParser}.

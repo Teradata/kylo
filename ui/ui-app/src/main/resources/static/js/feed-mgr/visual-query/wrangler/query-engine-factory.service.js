@@ -16,7 +16,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     /**
      * A factory for creating {@code QueryEngine} objects.
      */
-    var QueryEngineFactory = (function () {
+    var QueryEngineFactory = /** @class */ (function () {
         /**
          * Constructs a {@code QueryEngineFactory}.
          */

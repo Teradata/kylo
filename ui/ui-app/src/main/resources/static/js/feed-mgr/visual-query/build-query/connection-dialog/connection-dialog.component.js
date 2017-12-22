@@ -5,7 +5,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * Controls the connection dialog for creating a join between two nodes in the Build Query flow chart.
      */
-    var ConnectionDialog = (function () {
+    var ConnectionDialog = /** @class */ (function () {
         /**
          * Constructs a {@code ConnectionDialog}.
          */

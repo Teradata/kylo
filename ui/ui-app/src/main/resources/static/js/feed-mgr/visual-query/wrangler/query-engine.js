@@ -4,7 +4,7 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
     /**
      * Provides the ability to query and transform data.
      */
-    var QueryEngine = (function () {
+    var QueryEngine = /** @class */ (function () {
         /**
          * Construct a {@code QueryEngine}.
          */
