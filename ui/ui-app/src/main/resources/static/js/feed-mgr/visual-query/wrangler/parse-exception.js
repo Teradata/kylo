@@ -14,7 +14,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * Thrown to indicate that the abstract syntax tree could not be parsed.
      */
-    var ParseException = (function (_super) {
+    var ParseException = /** @class */ (function (_super) {
         __extends(ParseException, _super);
         /**
          * Constructs a {@code ParseException}.

@@ -30,7 +30,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
      * @param $timeout the Angular timeout service
      * @param uiGridConstants the ui-grid constants
      */
-    var VisualQueryTable = (function () {
+    var VisualQueryTable = /** @class */ (function () {
         function VisualQueryTable($scope_, $element, $timeout_, painter, dataService, tableService, uiGridConstants_) {
             var _this = this;
             this.$scope_ = $scope_;
@@ -295,17 +295,17 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
         VisualQueryTable.prototype.onValidationResultsChange = function () {
             this.dataService.validationResults = this.validationResults;
         };
+        VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
+        /**
+         * Indicates a column should be sorted in ascending order.
+         */
+        VisualQueryTable.ASC = "asc";
+        /**
+         * Indicates a column should be sorted in descending order.
+         */
+        VisualQueryTable.DESC = "desc";
         return VisualQueryTable;
     }());
-    VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
-    /**
-     * Indicates a column should be sorted in ascending order.
-     */
-    VisualQueryTable.ASC = "asc";
-    /**
-     * Indicates a column should be sorted in descending order.
-     */
-    VisualQueryTable.DESC = "desc";
     exports.VisualQueryTable = VisualQueryTable;
     angular.module(moduleName).directive("visualQueryTable", function () {
         return {

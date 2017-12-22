@@ -14,7 +14,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
     /**
      * Transform Data step of the Visual Query page.
      */
-    var TransformDataComponent = (function () {
+    var TransformDataComponent = /** @class */ (function () {
         /**
          * Constructs a {@code TransformDataComponent}.
          */
@@ -414,7 +414,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 // Display error message
                 self.$mdDialog.show({
                     clickOutsideToClose: true,
-                    controller: (_a = (function () {
+                    controller: (_a = /** @class */ (function () {
                             function class_1($mdDialog) {
                                 this.$mdDialog = $mdDialog;
                                 /**
@@ -750,16 +750,16 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 });
             }
         };
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", query_engine_1.QueryEngine)
+        ], TransformDataComponent.prototype, "engine", void 0);
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", Object)
+        ], TransformDataComponent.prototype, "model", void 0);
         return TransformDataComponent;
     }());
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", query_engine_1.QueryEngine)
-    ], TransformDataComponent.prototype, "engine", void 0);
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object)
-    ], TransformDataComponent.prototype, "model", void 0);
     exports.TransformDataComponent = TransformDataComponent;
     angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         bindings: {

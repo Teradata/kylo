@@ -1,7 +1,7 @@
 define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var WranglerEvent = (function () {
+    var WranglerEvent = /** @class */ (function () {
         /**
          * Constructs a new WranglerEvent of the specified type.
          */

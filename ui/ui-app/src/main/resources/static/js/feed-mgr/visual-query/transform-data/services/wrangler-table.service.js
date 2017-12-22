@@ -5,7 +5,7 @@ define(["require", "exports", "angular", "rxjs/Subject", "./wrangler-event", "./
     /**
      * Handles communication between UI components and the wrangler table.
      */
-    var WranglerTableService = (function () {
+    var WranglerTableService = /** @class */ (function () {
         function WranglerTableService() {
             this.init();
         }

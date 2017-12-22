@@ -4,7 +4,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * Parses a query and generates a transform script.
      */
-    var QueryParser = (function () {
+    var QueryParser = /** @class */ (function () {
         /**
          * Constructs a {@code QueryParser}.
          */
