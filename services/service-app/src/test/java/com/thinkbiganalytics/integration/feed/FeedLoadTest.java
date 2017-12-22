@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Test to load multiple feeds in a loop
  */
-//@Ignore
+@Ignore
 public class FeedLoadTest extends FeedIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedLoadTest.class);
@@ -60,7 +60,7 @@ public class FeedLoadTest extends FeedIT {
      * Load the simple template with just 3 processors
      * @throws Exception
      */
-    @Test
+   // @Test
    // @Ignore
     public void loadSimpleFeed() throws Exception {
         // the num of categories to use

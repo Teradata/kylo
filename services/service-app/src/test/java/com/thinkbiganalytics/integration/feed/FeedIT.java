@@ -91,6 +91,10 @@ public class FeedIT extends IntegrationTestBase {
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
     private static String CATEGORY_NAME = "Functional Tests";
 
+    private String sampleFeedsPath;
+    protected String sampleTemplatesPath;
+    private String usersDataPath;
+
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
     private FieldValidationRule lookup = new FieldValidationRule();
@@ -101,11 +105,6 @@ public class FeedIT extends IntegrationTestBase {
     private FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
     private FieldValidationRule length = new FieldValidationRule();
     private FieldValidationRule ipAddress = new FieldValidationRule();
-
-    private String sampleFeedsPath;
-    protected String sampleTemplatesPath;
-    private String usersDataPath;
-
 
     @Override
     protected void configureObjectMapper(ObjectMapper om) {
