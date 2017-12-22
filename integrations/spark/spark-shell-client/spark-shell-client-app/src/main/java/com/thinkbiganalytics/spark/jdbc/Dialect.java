@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.jdbc;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,6 +30,17 @@ import javax.annotation.Nonnull;
  * Provides compatibility with a JDBC database.
  */
 public abstract class Dialect extends JdbcDialect {
+
+    /**
+     * Generates the {@code CREATE TABLE AS SELECT} query into the specified table with the specified {@code SELECT} query.
+     *
+     * @param table  the target table name
+     * @param select the {@code SELECT} query
+     * @return the {@code CREATE TABLE AS SELECT} query
+     */
+    public String createTableAs(@Nonnull final String table, @Nonnull final String select) {
+        return "CREATE TABLE " + table + " AS (" + select + ")";
+    }
 
     /**
      * Gets the converter for the specified SQL type.

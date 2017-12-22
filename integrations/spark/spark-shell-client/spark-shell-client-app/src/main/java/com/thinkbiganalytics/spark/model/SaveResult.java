@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.metadata;
+package com.thinkbiganalytics.spark.model;
 
 /*-
  * #%L
@@ -20,24 +20,23 @@ package com.thinkbiganalytics.spark.metadata;
  * #L%
  */
 
-import com.google.common.base.Supplier;
-import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-
-import org.apache.spark.SparkContext;
-
-import javax.annotation.Nonnull;
+import org.apache.hadoop.fs.Path;
 
 /**
- * A Spark transformation job.
- *
- * <p>This class is thread-safe but {@link #run()} should only be invoked once.</p>
+ * Result of saving a transformation.
  */
-public class TransformJob extends Job<TransformResponse> {
+public class SaveResult {
 
     /**
-     * Constructs a {@code TransformJob}.
+     * Destination path
      */
-    public TransformJob(@Nonnull final String groupId, @Nonnull final Supplier<TransformResponse> supplier, @Nonnull final SparkContext sparkContext) {
-        super(groupId, supplier, sparkContext);
+    private Path path;
+
+    public Path getPath() {
+        return path;
+    }
+
+    public void setPath(Path path) {
+        this.path = path;
     }
 }

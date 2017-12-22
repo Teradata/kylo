@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.metadata;
+package com.thinkbiganalytics.spark.service;
 
 /*-
  * #%L
@@ -20,24 +20,17 @@ package com.thinkbiganalytics.spark.metadata;
  * #L%
  */
 
-import com.google.common.base.Supplier;
-import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-
-import org.apache.spark.SparkContext;
+import com.thinkbiganalytics.spark.metadata.StandardSparkListener;
 
 import javax.annotation.Nonnull;
 
 /**
- * A Spark transformation job.
- *
- * <p>This class is thread-safe but {@link #run()} should only be invoked once.</p>
+ * Manages Spark listeners.
  */
-public class TransformJob extends Job<TransformResponse> {
+public interface SparkListenerService {
 
     /**
-     * Constructs a {@code TransformJob}.
+     * Register a listener to receive calls from events that happen during execution.
      */
-    public TransformJob(@Nonnull final String groupId, @Nonnull final Supplier<TransformResponse> supplier, @Nonnull final SparkContext sparkContext) {
-        super(groupId, supplier, sparkContext);
-    }
+    void addSparkListener(@Nonnull StandardSparkListener listener);
 }

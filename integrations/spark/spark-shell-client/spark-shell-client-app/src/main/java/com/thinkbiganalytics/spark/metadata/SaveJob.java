@@ -21,23 +21,21 @@ package com.thinkbiganalytics.spark.metadata;
  */
 
 import com.google.common.base.Supplier;
-import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.model.SaveResult;
 
 import org.apache.spark.SparkContext;
 
 import javax.annotation.Nonnull;
 
 /**
- * A Spark transformation job.
- *
- * <p>This class is thread-safe but {@link #run()} should only be invoked once.</p>
+ * Monitors a Spark job that produces a {@link SaveResult}.
  */
-public class TransformJob extends Job<TransformResponse> {
+public class SaveJob extends Job<SaveResult> {
 
     /**
-     * Constructs a {@code TransformJob}.
+     * Constructs a {@code SaveJob} with the specified job configuration.
      */
-    public TransformJob(@Nonnull final String groupId, @Nonnull final Supplier<TransformResponse> supplier, @Nonnull final SparkContext sparkContext) {
+    public SaveJob(@Nonnull final String groupId, @Nonnull final Supplier<SaveResult> supplier, @Nonnull final SparkContext sparkContext) {
         super(groupId, supplier, sparkContext);
     }
 }
