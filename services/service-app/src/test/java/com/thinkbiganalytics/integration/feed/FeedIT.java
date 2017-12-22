@@ -91,10 +91,6 @@ public class FeedIT extends IntegrationTestBase {
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
     private static String CATEGORY_NAME = "Functional Tests";
 
-    private String sampleFeedsPath;
-    protected String sampleTemplatesPath;
-    private String usersDataPath;
-
     private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
     private FieldValidationRule email = new FieldValidationRule();
     private FieldValidationRule lookup = new FieldValidationRule();
@@ -116,14 +112,6 @@ public class FeedIT extends IntegrationTestBase {
         SimpleModule m = new SimpleModule();
         m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
         om.registerModule(m);
-    }
-
-    protected void prepare() throws Exception {
-        String path = getClass().getResource(".").toURI().getPath();
-        String basedir = path.substring(0, path.indexOf("services"));
-        sampleFeedsPath = basedir + FEED_SAMPLES_DIR;
-        sampleTemplatesPath = basedir + TEMPLATE_SAMPLES_DIR;
-        usersDataPath = basedir + DATA_SAMPLES_DIR;
     }
 
     @Test
