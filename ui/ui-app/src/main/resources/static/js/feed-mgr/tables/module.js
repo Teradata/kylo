@@ -5,9 +5,32 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
      * LAZY loaded in from /app.js
      */
     module.config(['$stateProvider',function ($stateProvider) {
-        $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
-            url:'/tables',
+        $stateProvider.state(AccessConstants.UI_STATES.SCHEMAS.state,{
+            url:'/schemas',
             params: {
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/feed-mgr/tables/schemas.html',
+                    controller:"SchemasController",
+                    controllerAs:"vm"
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['feed-mgr/tables/SchemasController'])
+            },
+            data:{
+                breadcrumbRoot:true,
+                displayName:'Schemas',
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.SCHEMAS.permissions
+            }
+        });
+
+        $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
+            url:'/schemas/{schema}',
+            params: {
+                schema:null
             },
             views: {
                 'content': {
@@ -20,7 +43,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
                 loadMyCtrl: lazyLoadController(['feed-mgr/tables/TablesController'])
             },
             data:{
-                breadcrumbRoot:true,
+                breadcrumbRoot:false,
                 displayName:'Tables',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.TABLES.permissions
@@ -28,7 +51,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
-            url:'/tables/{schema}/{tableName}',
+            url:'/schemas/{schema}/{tableName}',
             params: {
                 schema:null,
                 tableName:null
@@ -49,7 +72,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.TABLE.permissions
             }
-        })
+        });
 
 
         function lazyLoadController(path){
