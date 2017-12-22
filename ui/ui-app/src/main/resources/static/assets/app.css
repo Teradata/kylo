@@ -580,9 +580,7 @@ md-tab-content.md-no-scroll {
   z-index: 60;
 }
 
-.md-button.md-fab.md-fab-top-right {
-  right: 50px;
-  top: 30px;
+.md-button.md-kylo-theme.md-fab.kylo-add-button {
   z-index: 61;
   color: white;
 }
@@ -1259,4 +1257,34 @@ md-input-container.global-search .md-input {
   width: 25px;
   background-color: lightgray;
   border-radius: 2px;
+}
+
+/* Notification Menu */
+.kylo-notification-button .td-loading-wrapper.td-overlay .td-loading {
+  background: none;
+}
+.kylo-notification-button.loading mat-icon {
+  align-content: center;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #2B6C9A;
+  border-radius: 50%;
+  color: #3483BA;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+.mat-menu-panel.kylo-notification-menu {
+  width: 280px;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list .mat-list-item.not-clickable:hover {
+  background: inherit;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list .mat-list-item.not-clickable .mat-list-item-content {
+  cursor: default;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list[dense] .mat-list-item mat-progress-spinner.mat-list-icon {
+  margin: 4px;
+  padding: 0;
 }

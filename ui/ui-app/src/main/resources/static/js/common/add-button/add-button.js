@@ -4,7 +4,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         return {
             restrict: "EA",
             scope:{},
-            template: '<md-button class="md-fab md-fab-top-right" aria-label="Add" ng-click="onClickAddButton($event)"><ng-md-icon icon="add"></ng-md-icon></md-button>',
+            template: '<md-button class="md-fab md-fab-bottom-right kylo-add-button" aria-label="Add" ng-click="onClickAddButton($event)"><ng-md-icon icon="add"></ng-md-icon></md-button>',
             link: function ($scope, element, attrs) {
 
                 $scope.currentState = '';
