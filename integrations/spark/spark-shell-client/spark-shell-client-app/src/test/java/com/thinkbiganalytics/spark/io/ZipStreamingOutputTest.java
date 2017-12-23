@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.io;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -36,9 +36,13 @@ import org.apache.hadoop.fs.permission.FsPermission;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -63,7 +67,14 @@ public class ZipStreamingOutputTest {
         Mockito.when(fs.open(file1.getPath())).thenReturn(fileStream);
         Mockito.when(fs.open(file2.getPath())).thenReturn(fileStream);
 
-        Mockito.when(fs.delete(source, true)).thenReturn(true);
+        final CountDownLatch deleteLatch = new CountDownLatch(1);
+        Mockito.when(fs.delete(source, true)).then(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(final InvocationOnMock invocation) {
+                deleteLatch.countDown();
+                return true;
+            }
+        });
 
         // Write ZIP to output stream
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -85,6 +96,7 @@ public class ZipStreamingOutputTest {
         Assert.assertNull("Unexpected entry", entry);
 
         // Verify path deleted
+        deleteLatch.await(1, TimeUnit.SECONDS);
         Mockito.verify(fs).delete(source, true);
     }
 
