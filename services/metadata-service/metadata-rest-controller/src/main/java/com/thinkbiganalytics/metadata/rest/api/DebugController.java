@@ -246,8 +246,8 @@ public class DebugController {
                 
                 try {
                     Node node = Strings.isNullOrEmpty(abspath)  ? session.getRootNode() : session.getRootNode().getNode(abspath);
-                JcrTools tools = new JcrTool(true, pw);
-                tools.printSubgraph(node);
+                    JcrTools tools = new JcrTool(true, pw);
+                    tools.printSubgraph(node);
                 } catch (PathNotFoundException pnf) {
                     try {
                         java.nio.file.Path path = JcrPath.get(abspath);

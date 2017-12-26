@@ -408,15 +408,15 @@ public class CreateFeedBuilder {
                     //align items
                     if (this.autoAlign) {
                         eventTime.start();
-                    log.info("Aligning Feed flows in NiFi ");
-                    AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
-                    alignProcessGroupComponents.autoLayout();
-                    //if this is a new feedProcessGroup (i.e. new category), align the root level items also
-                    //fetch the parent to get that id to align
+                        log.info("Aligning Feed flows in NiFi ");
+                        AlignProcessGroupComponents alignProcessGroupComponents = new AlignProcessGroupComponents(restClient.getNiFiRestClient(), entity.getParentGroupId());
+                        alignProcessGroupComponents.autoLayout();
+                        //if this is a new feedProcessGroup (i.e. new category), align the root level items also
+                        //fetch the parent to get that id to align
                         if (newCategory) {
-                        log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
-                        new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
-                    }
+                            log.info("This is the first feed created in the category {}.  Aligning the categories. ", feedMetadata.getCategory().getSystemName());
+                            new AlignProcessGroupComponents(restClient.getNiFiRestClient(), this.categoryGroup.getParentGroupId()).autoLayout();
+                        }
                         log.info("Time align feed process groups.  ElapsedTime: {} ms", eventTime(eventTime));
 
                     } else {
@@ -424,8 +424,8 @@ public class CreateFeedBuilder {
                                  entity.getParentGroupId());
                         if (newCategory) {
                             log.info("To re align the categories: /v1/feedmgr/nifi/auto-align/{}", this.categoryGroup.getParentGroupId());
-                }
-            }
+                        }
+                    }
 
 
                 }
@@ -445,12 +445,12 @@ public class CreateFeedBuilder {
     /**
      * update feed metadata to point to the valid controller services
      */
-    private void updateFeedMetadataControllerServiceReferences(List<NifiProperty>updatedControllerServiceProperties){
+    private void updateFeedMetadataControllerServiceReferences(List<NifiProperty> updatedControllerServiceProperties) {
         //map of the previous to new service values
         Map<String, String>
             controllerServiceChangeMap =
             updatedControllerServiceProperties.stream().collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p.getValue(), (service1, service2) -> service1));
-        if(!updatedControllerServiceProperties.isEmpty()){
+        if (!updatedControllerServiceProperties.isEmpty()) {
             feedMetadata.getProperties().stream().filter(property -> controllerServiceChangeMap.containsKey(property.getProcessorNameTypeKey())).forEach(
                 (NifiProperty p) -> p.setValue(controllerServiceChangeMap.get(p.getProcessorNameTypeKey())));
         }

@@ -322,10 +322,10 @@ public class TemplateCreationHelper {
                         Optional<ControllerServiceDTO> cs = restClient.getNiFiRestClient().controllerServices().findById(serviceToAdd.getId());
                         if(cs.isPresent()){
                             return cs.get();
-            }
+                        }
                         else {
                             return serviceToAdd;
-            }
+                        }
                     }
                     catch(Exception e){
                         return serviceToAdd;
@@ -342,7 +342,7 @@ public class TemplateCreationHelper {
             newlyCreatedControllerServices = newlyCreatedControllerServices.stream().map(controllerServiceDTO -> {
                 if(map.containsKey(controllerServiceDTO.getId())){
                     return updatedServices.get(controllerServiceDTO.getId());
-            }
+                }
                 else {
                     return controllerServiceDTO;
                 }
@@ -378,7 +378,7 @@ public class TemplateCreationHelper {
             .filter(cs -> NifiProcessUtil.SERVICE_STATE.ENABLED.name().equalsIgnoreCase(cs.getState()))
             .collect(Collectors.groupingBy(cs -> cs.getName()));
 
-                }
+    }
 
     private boolean hasMatchingService(Map<String,List<ControllerServiceDTO>> nameMap, String name){
         return nameMap.containsKey(name) && !nameMap.get(name).isEmpty();

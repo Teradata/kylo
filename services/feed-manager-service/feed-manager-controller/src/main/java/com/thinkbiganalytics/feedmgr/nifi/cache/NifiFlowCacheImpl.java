@@ -193,8 +193,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     @Override
     public void onStartup(DateTime startTime) {
-            checkAndInitializeCache();
-        }
+        checkAndInitializeCache();
+    }
 
     /**
      * NiFi has made a connection
@@ -356,13 +356,13 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             if (completionCallback.getReusableTemplateProcessGroupId() != null) {
                 niFiObjectCache.setReusableTemplateProcessGroupId(completionCallback.getReusableTemplateProcessGroupId());
             }
-        lastUpdated = DateTime.now();
-        loaded = true;
-        reloadCount.incrementAndGet();
+            lastUpdated = DateTime.now();
+            loaded = true;
+            reloadCount.incrementAndGet();
             log.info("Successfully built NiFi Flow Cache");
-        if (notify) {
-            notifyCacheAvailable();
-        }
+            if (notify) {
+                notifyCacheAvailable();
+            }
         } else {
             throw new NiFiFlowCacheException("Error inspecting and building the NiFi flow cache.");
         }
@@ -397,30 +397,30 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     public boolean rebuildCacheWithRetry(int retries, int waitTime) {
         boolean updated = false;
         if (rebuildWithRetryInProgress.compareAndSet(false, true)) {
-        Exception lastError = null;
+            Exception lastError = null;
 
-        for (int count = 1; count <= retries; ++count) {
-            try {
-                log.info("Attempting to build the NiFiFlowCache");
+            for (int count = 1; count <= retries; ++count) {
+                try {
+                    log.info("Attempting to build the NiFiFlowCache");
                     rebuildAllCache();
-                if (loaded) {
-                    log.info("Successfully built the NiFiFlowCache");
+                    if (loaded) {
+                        log.info("Successfully built the NiFiFlowCache");
                         updated = true;
-                    break;
-                }
-            } catch (final Exception e) {
+                        break;
+                    }
+                } catch (final Exception e) {
                     log.error("Error attempting to build cache.  The system will attempt to retry {} more times.  Next attempt to rebuild in {} seconds.  The error was: {}. ", (retries - count),
                               waitTime,
-                          e.getMessage());
-                lastError = e;
-                Uninterruptibles.sleepUninterruptibly(waitTime, TimeUnit.SECONDS);
+                              e.getMessage());
+                    lastError = e;
+                    Uninterruptibles.sleepUninterruptibly(waitTime, TimeUnit.SECONDS);
+                }
             }
-        }
-        if (!loaded) {
-            log.error(
-                "Unable to build the NiFi Flow Cache!  You will need to manually rebuild the cache using the following url:  http://KYLO_HOST:PORT/proxy/v1/metadata/nifi-provenance/nifi-flow-cache/reset-cache ",
-                lastError);
-        }
+            if (!loaded) {
+                log.error(
+                    "Unable to build the NiFi Flow Cache!  You will need to manually rebuild the cache using the following url:  http://KYLO_HOST:PORT/proxy/v1/metadata/nifi-provenance/nifi-flow-cache/reset-cache ",
+                    lastError);
+            }
             rebuildWithRetryInProgress.set(false);
         }
         return updated;

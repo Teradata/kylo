@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular, moduleName) {
 
     var controller = function ($scope, $http, $mdDialog, $q, $transition$, AccessControlService, FeedService, FeedSecurityGroups, RestUrlService, StateService, UiComponentsService) {
 
@@ -176,7 +176,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                         UiComponentsService.startStepperTemplateRender(tableOption);
 
                         //add the template steps + 5 (general, feedDetails, properties, access, schedule)
-                        self.model.totalSteps = tableOption.totalSteps + 5;
+                        self.model.totalSteps = tableOption.totalSteps +  5;
                     }, function () {
                         $mdDialog.show(
                             $mdDialog.alert()
@@ -205,15 +205,15 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * After the stepper is initialized this will get called to setup access control
          * @param stepper
          */
-        self.onStepperInitialized = function(stepper) {
+        self.onStepperInitialized = function (stepper) {
             var accessChecks = {entityAccess: AccessControlService.checkEntityAccessControlled(), securityGroups: FeedSecurityGroups.isEnabled()};
             $q.all(accessChecks).then(function (response) {
                 var entityAccess = AccessControlService.isEntityAccessControlled();
                 var securityGroupsAccess = response.securityGroups;
                 //disable the access control step
-                if(!entityAccess && !securityGroupsAccess) {
+                if (!entityAccess && !securityGroupsAccess) {
                     //Access Control is second to last step 0 based array indexc
-                    stepper.deactivateStep(self.model.totalSteps -2);
+                    stepper.deactivateStep(self.model.totalSteps - 2);
                 }
                 if (self.cloning) {
                     hideCloningDialog();
@@ -246,11 +246,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             if (self.cloning) {
                 showCloningDialog(cloneFeedName);
             }
-        // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
-            .then(function (actionSet) {
-                self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
-            });
+            // Fetch the allowed actions
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                    self.allowImport = AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
+                });
 
         }
 
@@ -294,6 +294,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
     angular.module(moduleName).controller('DefineFeedController',
         ["$scope", "$http", "$mdDialog", "$q", "$transition$", "AccessControlService", "FeedService", "FeedSecurityGroups", "RestUrlService", "StateService",
-                                                                   "UiComponentsService", controller]);
+         "UiComponentsService", controller]);
 
 });

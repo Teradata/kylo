@@ -111,7 +111,7 @@ public class KyloUpgradeService {
             
             if (nextVersion != null) {
                 // Invoke any upgrade actions targeted for this next version in its own transaction.
-                    this.upgradeActions.get().stream()
+                this.upgradeActions.get().stream()
                     .filter(action -> action.isTargetVersion(nextVersion))
                     .forEach(action -> {
                         metadataAccess.commit(() -> {
@@ -123,10 +123,10 @@ public class KyloUpgradeService {
                 metadataAccess.commit(() -> {
                     versionProvider.setCurrentVersion(nextVersion);
                 }, MetadataAccess.SERVICE);
-                    
-                    log.info("=================================");
-                    log.info("Finished upgrade through v{}", nextVersion);
-                    
+                
+                log.info("=================================");
+                log.info("Finished upgrade through v{}", nextVersion);
+                
                 isComplete = nextVersion.equals(this.buildVersion);
 //                
                 // If upgrades are complete and this was starting from a fresh install then invoke any

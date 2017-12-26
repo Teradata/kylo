@@ -634,12 +634,12 @@ public class FeedRestController {
                       @ApiResponse(code = 200, message = "Returns the role memberships.", response = ActionGroup.class),
                       @ApiResponse(code = 404, message = "A feed with the given ID does not exist.", response = RestResponseStatus.class)
                   })
-    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr, 
+    public Response getRoleMemberships(@PathParam("feedId") String feedIdStr,
                                        @QueryParam("verbose") @DefaultValue("false") boolean verbose) {
         // TODO: No longer using verbose; all results are verbose now.
         return this.securityService.getFeedRoleMemberships(feedIdStr)
-                        .map(m -> Response.ok(m).build())
-                        .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
+            .map(m -> Response.ok(m).build())
+            .orElseThrow(() -> new WebApplicationException("A feed with the given ID does not exist: " + feedIdStr, Status.NOT_FOUND));
     }
 
 

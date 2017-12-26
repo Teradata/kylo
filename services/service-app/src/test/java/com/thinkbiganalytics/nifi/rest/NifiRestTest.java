@@ -127,7 +127,7 @@ public class NifiRestTest {
         try {
             TemplateDTO template = restClient.getTemplateByName(templateName);
 
-            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId(),true);
+            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId(), true);
             NifiProperty inputDirectory = NifiPropertyUtil
                 .getProperty(GET_FILE_PROCESSOR_NAME, INPUT_DIRECTORY_PROPERTY, propertyList);
             NifiProperty entity = NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, SOURCE_PROPERTY, propertyList);
@@ -202,7 +202,7 @@ public class NifiRestTest {
         int i = 0;
     }
 
-    //   @Test
+    // @Test
     public void testOrder() throws Exception {
 
         NifiVisitableProcessGroup g = restClient.getFlowOrder("63de0732-015e-1000-f198-dcd76ac2942e", null);

@@ -127,7 +127,7 @@ public class DerivedDatasourceFactory {
             if (noneMatch(template.getRegisteredDatasourceDefinitions(), DatasourceDefinition.ConnectionType.DESTINATION)) {
                 dest.addAll(ensureDataTransformationDestinationDatasources(feedMetadata));
             }
-            }
+        }
 
         //see if its in the cache first
         List<RegisteredTemplate.Processor> processors = registeredTemplateCache.getProcessors(feedMetadata.getTemplateId());
@@ -246,7 +246,7 @@ public class DerivedDatasourceFactory {
                 properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,datasource.getName()));
 
             }
-            if (datasourceDefinition != null) {
+            if(datasourceDefinition != null) {
                 // Create the derived data source
                 final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
                 final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
@@ -254,8 +254,8 @@ public class DerivedDatasourceFactory {
 
                 final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
                 datasources.add(datasource.getId());
-                    }
-                });
+            }
+        });
 
         // Build the data sources from the data source ids
         final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
