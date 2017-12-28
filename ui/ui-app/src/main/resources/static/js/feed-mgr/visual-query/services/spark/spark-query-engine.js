@@ -215,6 +215,12 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
                 });
             });
         };
+        /**
+         * Saves the results to the specified destination.
+         *
+         * @param request - save target
+         * @returns an observable tracking the save status
+         */
         SparkQueryEngine.prototype.saveResults = function (request) {
             var _this = this;
             // Build the request body

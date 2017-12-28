@@ -4,7 +4,7 @@
  * attribute, however Chrome handles high contrast differently.
  */
 /* Theme for the ripple elements.*/
-/** The mixins below are shared between md-menu and md-select */
+/** The mixins below are shared between mat-menu and mat-select */
 /**
  * This mixin adds the correct panel transform styles based
  * on the direction that the menu panel opens.
@@ -57,6 +57,12 @@ thinkbig-visual-query-transform .visual-query-sample-menu {
 
 thinkbig-visual-query-transform .visual-query-sample-menu.ng-hide {
   opacity: 0; }
+
+thinkbig-visual-query-transform thinkbig-step-buttons {
+  padding-bottom: 0;
+  padding-left: inherit;
+  padding-right: 0;
+  padding-top: 0; }
 
 thinkbig-visual-query-transform visual-query-table {
   position: absolute;

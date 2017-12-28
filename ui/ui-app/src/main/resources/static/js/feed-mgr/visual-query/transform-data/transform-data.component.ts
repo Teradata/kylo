@@ -11,7 +11,6 @@ import {TransformValidationResult} from "../wrangler/model/transform-validation-
 import {QueryEngine} from "../wrangler/query-engine";
 
 declare const CodeMirror: any;
-declare const StringUtils: any;
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
@@ -308,9 +307,9 @@ export class TransformDataComponent implements OnInit {
         //assign the editor to a variable on this object for future reference
         this.codemirrorEditor = _editor;
         //Set the width,height of the editor. Code mirror needs an explicit width/height
-        _editor.setSize(625, 25);
-        _editor.on("focus", () => _editor.setSize(625, "auto"));
-        _editor.on("blur", () => _editor.setSize(625, 25));
+        _editor.setSize(585, 25);
+        _editor.on("focus", () => _editor.setSize(585, "auto"));
+        _editor.on("blur", () => _editor.setSize(585, 25));
 
         //disable users ability to add new lines.  The Formula bar is only 1 line
         _editor.on("beforeChange", function (instance: any, change: any) {
