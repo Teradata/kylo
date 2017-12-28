@@ -1,5 +1,13 @@
 import * as angular from "angular";
 import {Program} from "estree";
+import "rxjs/add/observable/empty";
+import "rxjs/add/observable/fromPromise";
+import "rxjs/add/observable/interval";
+import "rxjs/add/operator/catch";
+import "rxjs/add/operator/expand";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/mergeMap";
+import "rxjs/add/operator/take";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
 import * as _ from "underscore";
@@ -9,6 +17,7 @@ import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
+import {SaveRequest, SaveResponse, SaveResponseStatus} from "../../wrangler/api/rest-model";
 import {QueryResultColumn} from "../../wrangler/model/query-result-column";
 import {ScriptState} from "../../wrangler/model/script-state";
 import {TransformResponse} from "../../wrangler/model/transform-response";
@@ -211,6 +220,72 @@ export class SparkQueryEngine extends QueryEngine<string> {
                     reject(err);
                 });
         });
+    }
+
+    /**
+     * Saves the results to the specified destination.
+     *
+     * @param request - save target
+     * @returns an observable tracking the save status
+     */
+    saveResults(request: SaveRequest): Observable<SaveResponse> {
+        // Build the request body
+        let body = {
+            async: true,
+            datasources: (this.datasources_ !== null) ? this.datasources_.filter(datasource => datasource.id !== SparkConstants.HIVE_DATASOURCE) : null,
+            script: this.getFeedScript()
+        };
+
+        // Send the request
+        let transformId: string;
+
+        return Observable
+        // Send transform script
+            .fromPromise(this.$http<TransformResponse>({
+                method: "POST",
+                url: this.apiUrl + "/transform",
+                data: JSON.stringify(body),
+                headers: {"Content-Type": "application/json"},
+                responseType: "json"
+            }))
+            // Send save request
+            .mergeMap(response => {
+                transformId = response.data.table;
+                return this.$http<SaveResponse>({
+                    method: "POST",
+                    url: this.apiUrl + "/transform/" + transformId + "/save",
+                    data: JSON.stringify(request),
+                    headers: {"Content-Type": "application/json"},
+                    responseType: "json"
+                });
+            })
+            // Wait for save to complete
+            .expand(response => {
+                if (response.data.status === SaveResponseStatus.PENDING) {
+                    return Observable.interval(1000)
+                        .take(1)
+                        .mergeMap(() => this.$http<SaveResponse>({
+                            method: "GET",
+                            url: this.apiUrl + "/transform/" + transformId + "/save/" + response.data.id,
+                            responseType: "json"
+                        }));
+                } else if (response.data.status === SaveResponseStatus.SUCCESS) {
+                    return Observable.empty();
+                } else {
+                    throw response;
+                }
+            })
+            // Map result to SaveResponse
+            .map(response => {
+                const save = response.data;
+                if (save.location !== null && save.location.startsWith("./")) {
+                    save.location = this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
+                }
+                return save;
+            })
+            .catch((response: angular.IHttpResponse<SaveResponse>): Observable<SaveResponse> => {
+                throw response.data;
+            });
     }
 
     /**

@@ -250,9 +250,9 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             //assign the editor to a variable on this object for future reference
             this.codemirrorEditor = _editor;
             //Set the width,height of the editor. Code mirror needs an explicit width/height
-            _editor.setSize(625, 25);
-            _editor.on("focus", function () { return _editor.setSize(625, "auto"); });
-            _editor.on("blur", function () { return _editor.setSize(625, 25); });
+            _editor.setSize(585, 25);
+            _editor.on("focus", function () { return _editor.setSize(585, "auto"); });
+            _editor.on("blur", function () { return _editor.setSize(585, 25); });
             //disable users ability to add new lines.  The Formula bar is only 1 line
             _editor.on("beforeChange", function (instance, change) {
                 var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !

@@ -1,16 +1,18 @@
 import {Observable} from "rxjs/Observable";
-import {ColumnDelegate} from "./column-delegate";
 
+import {SaveRequest, SaveResponse} from "./api/rest-model";
+import {WranglerEngine} from "./api/wrangler-engine";
+import {ColumnController} from "./column-controller";
+import {ColumnDelegate} from "./column-delegate";
 import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaField, SqlDialect, TableSchema, UserDatasource} from "./index";
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
-import {ColumnController} from "./column-controller";
 
 /**
  * Provides the ability to query and transform data.
  */
-export abstract class QueryEngine<T> {
+export abstract class QueryEngine<T> implements WranglerEngine {
 
     /**
      * List of required data source ids.
@@ -430,6 +432,14 @@ export abstract class QueryEngine<T> {
             return {context: state.context, script: state.script};
         });
     }
+
+    /**
+     * Saves the results to the specified destination.
+     *
+     * @param request - save target
+     * @returns an observable tracking the save status
+     */
+    abstract saveResults(request: SaveRequest): Observable<SaveResponse>;
 
     /**
      * Searches for table names matching the specified query.

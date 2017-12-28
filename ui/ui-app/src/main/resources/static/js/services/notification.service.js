@@ -5,6 +5,9 @@ define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/audi
      * A notification about an event or task in Kylo.
      */
     var KyloNotification = /** @class */ (function () {
+        /**
+         * Constructs a {@code KyloNotification} with the specified unique identifier and subject for property changes.
+         */
         function KyloNotification(id, subject) {
             this.createTime_ = new Date();
             this.subject = new Subject_1.Subject();
@@ -30,17 +33,6 @@ define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/audi
             },
             set: function (value) {
                 this.callback_ = value;
-                this.trigger();
-            },
-            enumerable: true,
-            configurable: true
-        });
-        Object.defineProperty(KyloNotification.prototype, "href", {
-            get: function () {
-                return this.href_;
-            },
-            set: function (value) {
-                this.href_ = value;
                 this.trigger();
             },
             enumerable: true,
@@ -98,6 +90,9 @@ define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/audi
             enumerable: true,
             configurable: true
         });
+        /**
+         * Triggers a property change event.
+         */
         KyloNotification.prototype.trigger = function () {
             this.subject.next(this);
         };
@@ -115,6 +110,9 @@ define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/audi
              * List of notifications.
              */
             this.kyloNotifications = [];
+            /**
+             * Subject for notification property changes.
+             */
             this.kyloNotificationSubject = new Subject_1.Subject();
             /**
              * Callbacks for notification events.
