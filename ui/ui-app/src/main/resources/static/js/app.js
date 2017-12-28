@@ -51,7 +51,7 @@ define([
             'preferredLocale': 'ru_RU'
         });
 
-    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', , '$translateProvider', 'tmhDynamicLocaleProvider',
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', '$translateProvider', 'tmhDynamicLocaleProvider',
            function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider,$qProvider, $translateProvider, tmhDynamicLocaleProvider){
        //disable the aria-label warnings in the console
         $mdAriaProvider.disableWarnings();
