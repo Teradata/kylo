@@ -33,8 +33,8 @@ public class SimpleAuthenticationService implements AuthenticationService {
 
     protected char[] password;
 
-    public boolean authenticate(String username, String password) {
-        if (username.equalsIgnoreCase(this.username) && Arrays.equals(password.toCharArray(), this.password)) {
+    public boolean authenticate(String username, char[] password) {
+        if (username.equalsIgnoreCase(this.username) && Arrays.equals(password, this.password)) {
             return true;
         }
         return false;
