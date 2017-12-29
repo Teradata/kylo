@@ -71,13 +71,14 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
 
         handle(nameCb, passwordCb);
 
-        if (this.authService.authenticate(nameCb.getName(), new String(passwordCb.getPassword()))) {
+        if (this.authService.authenticate(nameCb.getName(), passwordCb.getPassword())) {
             log.debug("Login success for: {}", nameCb.getName());
 
             this.user = new UsernamePrincipal(nameCb.getName());
         } else {
             log.debug("Login failure for: {}", nameCb.getName());
         }
+        passwordCb.clearPassword();
 
         return true;
     }
