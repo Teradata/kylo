@@ -2187,9 +2187,9 @@
   "!COLLECTION_FUNCTIONS": "Functions for collections.",
 
   "array_contains": {
-    "!type": "fn(column: Column, value: Column) -> Column",
+    "!type": "fn(column: Column, value: Object) -> Column",
     "!doc": "Returns true if the array contain the value.",
-    "!spark": "functions.array_contains(%c, %c)",
+    "!spark": "functions.array_contains(%c, %o)",
     "!sparkType": "column"
   },
   "explode": {
