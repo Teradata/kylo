@@ -109,7 +109,7 @@ public class SparkShellTransformController extends AbstractTransformController {
     public Response save(@Nonnull @PathParam("table") final String id,
                          @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
         // Validate request
-        if (request == null || request.getFormat() == null) {
+        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
             return error(Response.Status.BAD_REQUEST, "save.missingFormat");
         }
 

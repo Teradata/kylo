@@ -39,28 +39,44 @@
 
           <md-input-container ng-if="$st.destination == 'TABLE'">
             <label>Data Source</label>
-            <md-select name="datasource" ng-model="$st.target.jdbc" placeholder="Data Source" required>
+            <md-select name="datasource" ng-model="$st.target.jdbc" placeholder="Data Source" required ng-change="$st.form.datasource.$setValidity('connectionError', true)">
               <md-option ng-repeat="datasource in $st.kyloDataSources track by datasource.id" ng-value="datasource">{{datasource.name}}</md-option>
             </md-select>
-            <div ng-messages="$st.form.datasource.$error">
+            <div ng-messages="$st.form.datasource.$error" ng-if="$st.form.datasource.$touched">
+              <div ng-message="connectionError">Unable to connect to selected data source.</div>
               <div ng-message="required">Required</div>
             </div>
           </md-input-container>
 
-          <md-input-container ng-if="$st.destination == 'TABLE'">
-            <label>Table Name</label>
-            <input name="tableName" ng-model="$st.target.tableName" required>
-            <div ng-messages="$st.form.tableName.$error">
+          <md-autocomplete ng-if="$st.destination == 'TABLE'" required md-input-name="tableName" md-input-minlength="1" md-no-cache="true" md-search-text="$st.target.tableName"
+                           md-items="item in $st.findTables($st.target.tableName)" md-item-text="item.fullName" md-floating-label="Table Name" md-menu-class="autocomplete-hive-table-template">
+            <md-item-template>
+              <span class="item-title">
+                <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i" style="padding-left:5px;">{{item.fullName}}</span>
+              </span>
+              <span class="item-metadata">
+                <span class="item-metastat">
+                  <span style="color:grey;">Schema:</span>
+                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.schema}}</span>
+                </span>
+                <span class="item-metastat">
+                  <span style="color:grey;">Table:</span>
+                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.tableName}}</span>
+                </span>
+              </span>
+            </md-item-template>
+            <div ng-messages="$st.form.tableName.$error" ng-if="$st.form.tableName.$touched">
               <div ng-message="required">Required</div>
             </div>
-          </md-input-container>
+          </md-autocomplete>
 
-          <md-input-container ng-if="$st.destination">
+          <md-input-container ng-if="$st.destination == 'DOWNLOAD' || ($st.destination == 'TABLE' && $st.target.jdbc['@type'] != 'JdbcDatasource')">
             <label>File Format</label>
             <md-select name="format" ng-model="$st.target.format" placeholder="Format" required>
               <md-option ng-repeat="format in $st.formats" ng-value="format">{{format}}</md-option>
             </md-select>
-            <div ng-messages="$st.form.format.$error">
+            <div ng-messages="$st.form.format.$error" ng-if="$st.form.format.$touched">
               <div ng-message="required">Required</div>
             </div>
           </md-input-container>
@@ -73,7 +89,7 @@
               <md-option value="Ignore">Skip existing table</md-option>
               <md-option value="Overwrite">Overwrite existing table</md-option>
             </md-select>
-            <div ng-messages="$st.form.mode.$error">
+            <div ng-messages="$st.form.mode.$error" ng-if="$st.form.mode.$touched">
               <div ng-message="required">Required</div>
             </div>
           </md-input-container>

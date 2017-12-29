@@ -236,6 +236,10 @@ export class SparkQueryEngine extends QueryEngine<string> {
             script: this.getFeedScript()
         };
 
+        if (request.jdbc && request.jdbc.id === SparkConstants.HIVE_DATASOURCE) {
+            request.jdbc = null;
+        }
+
         // Send the request
         let transformId: string;
 
