@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.spark.launcher.SparkAppHandle;
 import org.junit.Assert;
 import org.junit.Test;
@@ -89,7 +90,8 @@ public class SparkLauncherSparkShellProcessTest {
         objectOutStream.writeObject(new SparkLauncherSparkShellProcess(Mockito.mock(SparkAppHandle.class), CLIENT_ID, CLIENT_SECRET, 0, TimeUnit.MILLISECONDS));
 
         final ByteArrayInputStream byteInStream = new ByteArrayInputStream(byteOutStream.toByteArray());
-        final ObjectInputStream objectInStream = new ObjectInputStream(byteInStream);
+        final ValidatingObjectInputStream objectInStream = new ValidatingObjectInputStream(byteInStream);
+        objectInStream.accept(SparkLauncherSparkShellProcess.class);
         final SparkLauncherSparkShellProcess process = (SparkLauncherSparkShellProcess) objectInStream.readObject();
 
         // Test default process state
