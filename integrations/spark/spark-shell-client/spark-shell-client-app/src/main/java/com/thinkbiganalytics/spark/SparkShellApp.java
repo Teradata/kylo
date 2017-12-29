@@ -70,6 +70,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -298,9 +299,18 @@ public class SparkShellApp {
      * Creates a Spark locator service.
      */
     @Bean
-    public SparkLocatorService sparkLocatorService(final SparkContext sc) {
+    public SparkLocatorService sparkLocatorService(final SparkContext sc, @Value("${spark.shell.datasources.exclude}") final String excludedDataSources,
+                                                   @Value("${spark.shell.datasources.include}") final String includedDataSources) {
         final SparkLocatorService service = new SparkLocatorService();
         service.setSparkClassLoader(sc.getClass().getClassLoader());
+        if (excludedDataSources != null && !excludedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(excludedDataSources.split(","));
+            service.excludeDataSources(dataSources);
+        }
+        if (includedDataSources != null && !includedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(includedDataSources.split(","));
+            service.includeDataSources(dataSources);
+        }
         return service;
     }
 
