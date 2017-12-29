@@ -73,6 +73,29 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             window.open(this.downloadUrl, "_blank");
         };
         /**
+         * Find tables matching the specified name.
+         */
+        VisualQueryStoreComponent.prototype.findTables = function (name) {
+            var _this = this;
+            var tables = [];
+            if (this.target.jdbc) {
+                tables = this.engine.searchTableNames(name, this.target.jdbc.id);
+                if (tables instanceof Promise) {
+                    tables = tables.then(function (response) {
+                        _this.form.datasource.$setValidity("connectionError", true);
+                        return response;
+                    }, function () {
+                        _this.form.datasource.$setValidity("connectionError", false);
+                        return [];
+                    });
+                }
+                else {
+                    this.form.datasource.$setValidity("connectionError", true);
+                }
+            }
+            return tables;
+        };
+        /**
          * Saves the results.
          */
         VisualQueryStoreComponent.prototype.save = function () {

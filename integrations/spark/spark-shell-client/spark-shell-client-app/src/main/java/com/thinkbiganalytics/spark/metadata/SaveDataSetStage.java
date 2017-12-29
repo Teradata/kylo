@@ -82,7 +82,7 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
         if (request.getJdbc() != null) {
             final Properties properties = new Properties();
             properties.setProperty("driver", request.getJdbc().getDatabaseDriverClassName());
-            properties.setProperty("username", request.getJdbc().getDatabaseUser());
+            properties.setProperty("user", request.getJdbc().getDatabaseUser());
             properties.setProperty("password", request.getJdbc().getPassword());
 
             writer.jdbc(request.getJdbc().getDatabaseConnectionUrl(), request.getTableName(), properties);

@@ -102,6 +102,7 @@ System.config({
         '@angular/upgrade/static': 'npm:@angular/upgrade/bundles/upgrade-static.umd',
         '@covalent/core': 'npm:@covalent/core/bundles/core.umd',
         '@kylo/wrangler': 'feed-mgr/visual-query/wrangler/index',
+        '@kylo/wrangler/api': 'feed-mgr/visual-query/wrangler/api/index',
         '@uirouter/angular': 'npm:@uirouter/angular/_bundles/ui-router-ng2',
         '@uirouter/angular-hybrid': 'npm:@uirouter/angular-hybrid/_bundles/ui-router-angular-hybrid',
         '@uirouter/angularjs': 'npm:@uirouter/angularjs/release/angular-ui-router',

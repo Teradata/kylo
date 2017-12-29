@@ -9,6 +9,7 @@ import {SaveRequest, SaveResponseStatus} from "../wrangler/api/rest-model";
 import {QueryEngine} from "../wrangler/query-engine";
 import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
 import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
+import TableReference = DatasourcesServiceStatic.TableReference;
 
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
@@ -125,6 +126,30 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     download(): void {
         window.open(this.downloadUrl, "_blank");
+    }
+
+    /**
+     * Find tables matching the specified name.
+     */
+    findTables(name: any): TableReference[] | Promise<TableReference[]> {
+        let tables: TableReference[] | Promise<TableReference[]> = [];
+
+        if (this.target.jdbc) {
+            tables = this.engine.searchTableNames(name, this.target.jdbc.id);
+            if (tables instanceof Promise) {
+                tables = tables.then(response => {
+                    this.form.datasource.$setValidity("connectionError", true);
+                    return response;
+                }, () => {
+                    this.form.datasource.$setValidity("connectionError", false);
+                    return [];
+                });
+            } else {
+                this.form.datasource.$setValidity("connectionError", true);
+            }
+        }
+
+        return tables;
     }
 
     /**

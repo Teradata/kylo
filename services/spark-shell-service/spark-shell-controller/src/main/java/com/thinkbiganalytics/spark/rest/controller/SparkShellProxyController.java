@@ -327,7 +327,7 @@ public class SparkShellProxyController {
     public Response saveQuery(@Nonnull @PathParam("query") final String queryId,
                               @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
         // Validate request
-        if (request == null || request.getFormat() == null) {
+        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 
@@ -356,7 +356,7 @@ public class SparkShellProxyController {
                                   @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable
                                   final SaveRequest request) {
         // Validate request
-        if (request == null || request.getFormat() == null) {
+        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
             throw transformError(Response.Status.BAD_REQUEST, SparkShellProxyResources.SAVE_MISSING_FORMAT, null);
         }
 

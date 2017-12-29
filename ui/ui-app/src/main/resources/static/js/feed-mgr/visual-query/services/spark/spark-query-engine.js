@@ -229,6 +229,9 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
                 datasources: (this.datasources_ !== null) ? this.datasources_.filter(function (datasource) { return datasource.id !== spark_constants_1.SparkConstants.HIVE_DATASOURCE; }) : null,
                 script: this.getFeedScript()
             };
+            if (request.jdbc && request.jdbc.id === spark_constants_1.SparkConstants.HIVE_DATASOURCE) {
+                request.jdbc = null;
+            }
             // Send the request
             var transformId;
             return Observable_1.Observable
