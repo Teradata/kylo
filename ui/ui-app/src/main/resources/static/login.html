@@ -78,7 +78,7 @@
                 </md-input-container>
                 <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">
                    <label for="password">Password</label>
-                    <input type="password" name="password" id="password" class="form-control" ng-model="vm.password" required />
+                    <input type="password" name="password" id="password" class="form-control" ng-model="vm.password" autocomplete="off" required />
                     <span ng-show="form.password.$dirty && form.password.$error.required" class="help-block">Password is required</span>
                 </md-input-container>
                 <div class="form-actions">
