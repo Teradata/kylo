@@ -29,6 +29,7 @@ import com.google.common.cache.RemovalNotification;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
@@ -258,7 +259,8 @@ public class FeedEventStatistics implements Serializable {
 
             FileInputStream fin = new FileInputStream(location);
             GZIPInputStream gis = new GZIPInputStream(fin);
-            ObjectInputStream ois = new ObjectInputStream(gis);
+            ValidatingObjectInputStream ois = new ValidatingObjectInputStream(gis);
+            ois.accept(FeedEventStatisticsData.class);
             inStats = (FeedEventStatisticsData) ois.readObject();
             ois.close();
 
