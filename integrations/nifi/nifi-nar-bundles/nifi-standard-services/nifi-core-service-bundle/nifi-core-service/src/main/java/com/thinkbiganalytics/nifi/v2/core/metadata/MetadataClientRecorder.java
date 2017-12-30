@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
+import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -46,7 +47,7 @@ import java.util.Optional;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-public class MetadataClientRecorder implements MetadataRecorder {
+public class MetadataClientRecorder extends AbstractControllerService implements MetadataRecorder {
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
 

@@ -25,6 +25,8 @@ import com.thinkbiganalytics.nifi.core.api.metadata.KyloNiFiFlowProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
+import com.thinkbiganalytics.nifi.v2.core.watermark.CancelActiveWaterMarkEventConsumer;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -60,6 +62,16 @@ import javax.net.ssl.SSLContext;
  *
  */
 public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
+
+    /**
+     * Property provides the service for loading spring a spring context and providing bean lookup
+     */
+    public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
+        .name("Spring Context Service")
+        .description("Service for loading spring a spring context and providing bean lookup")
+        .required(true)
+        .identifiesControllerService(SpringContextService.class)
+        .build();
 
     public static final PropertyDescriptor CLIENT_URL = new PropertyDescriptor.Builder()
         .name("rest-client-url")
@@ -112,6 +124,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         props.add(CLIENT_URL);
         props.add(CLIENT_USERNAME);
         props.add(CLIENT_PASSWORD);
+        props.add(SPRING_SERVICE);
         props.add(SSL_CONTEXT_SERVICE);
         properties = Collections.unmodifiableList(props);
     }
@@ -121,6 +134,9 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     private volatile MetadataRecorder recorder;
     private volatile KyloProvenanceClientProvider kyloProvenanceClientProvider;
 
+    private SpringContextService springService;
+    private CancelActiveWaterMarkEventConsumer cancelWaterMarkConsumer;
+    
     /**
      * The Service holding the SSL Context information
      */
@@ -141,6 +157,10 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             String password = context.getProperty(CLIENT_PASSWORD).getValue();
             MetadataClient client;
             SSLContext sslContext = null;
+            
+            if (context.getProperty(SPRING_SERVICE) != null && context.getProperty(SPRING_SERVICE).isSet()) {
+                this.springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
+            }
 
             if (context.getProperty(SSL_CONTEXT_SERVICE) != null && context.getProperty(SSL_CONTEXT_SERVICE).isSet()) {
                 this.sslContextService = context.getProperty(SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
@@ -156,6 +176,12 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             this.provider = new MetadataClientProvider(client);
             this.recorder = new MetadataClientRecorder(client);
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
+//            this.cancelWaterMarkConsumer = this.springService != null ? this.springService.getBean(CancelActiveWaterMarkEventConsumer.class, this.recorder) : null;
+            
+            if (this.springService != null) {
+                CancelActiveWaterMarkEventConsumer consumer = this.springService.getBean(CancelActiveWaterMarkEventConsumer.class);
+                consumer.setMetadataRecorder(this.recorder);
+            }
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }

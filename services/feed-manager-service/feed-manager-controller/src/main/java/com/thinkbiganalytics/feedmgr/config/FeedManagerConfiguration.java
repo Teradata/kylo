@@ -47,6 +47,8 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedHiveTableService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.feed.exporting.FeedExporter;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
@@ -80,7 +82,6 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
@@ -196,6 +197,9 @@ public class FeedManagerConfiguration {
         return new FeedPreconditionService();
     }
 
+    @Bean FeedWaterMarkService feedWaterMarkCancelService() {
+        return new FeedWaterMarkService();
+    }
 
     @Bean
     public DatasourceService datasourceService() {

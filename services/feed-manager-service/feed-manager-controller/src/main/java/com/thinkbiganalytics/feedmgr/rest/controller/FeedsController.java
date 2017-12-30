@@ -26,15 +26,17 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
@@ -46,7 +48,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -60,7 +61,6 @@ import org.springframework.stereotype.Component;
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,10 +113,10 @@ public class FeedsController {
     private DatasourceService datasourceService;
 
     @Inject
-    private AllowedEntityActionsProvider actionsProvider;
-
-    @Inject
     private FeedPreconditionService preconditionService;
+    
+    @Inject
+    private FeedWaterMarkService waterMerkService;
 
     @Inject
     private SecurityService securityService;
@@ -308,21 +308,12 @@ public class FeedsController {
                   })
     public List<String> getHighWaterMarks(@PathParam("id") String feedIdStr) {
         LOG.debug("Get feed watermarks {}", feedIdStr);
-
-        return this.metadata.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
-
-            if (feed != null) {
-                List<String> list = feed.getWaterMarkNames().stream().collect(Collectors.toList());
-                Collections.sort(list);
-                return list;
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
-            }
-        });
+        
+        try {
+            return this.waterMerkService.getWaterMarks(feedIdStr);
+        } catch (FeedNotFoundExcepton e) {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
+        }
     }
 
     @GET
@@ -336,20 +327,13 @@ public class FeedsController {
     public String getHighWaterMark(@PathParam("id") String feedIdStr,
                                    @PathParam("name") String waterMarkName) {
         LOG.debug("Get feed watermark {}: {}", feedIdStr, waterMarkName);
-
-        return this.metadata.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
-
-            if (feed != null) {
-                return feed.getWaterMarkValue(waterMarkName)
-                    .orElseThrow(() -> new WebApplicationException("A feed high-water mark with the given name does not exist: " + waterMarkName, Status.NOT_FOUND));
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
-            }
-        });
+        
+        try {
+            return this.waterMerkService.getWaterMark(feedIdStr, waterMarkName)
+                  .orElseThrow(() -> new WebApplicationException("A feed high-water mark with the given name does not exist: " + waterMarkName, Status.NOT_FOUND));
+        } catch (FeedNotFoundExcepton e) {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
+        }
     }
 
     @PUT
@@ -363,21 +347,36 @@ public class FeedsController {
                   })
     public void putHighWaterMark(@PathParam("id") String feedIdStr,
                                  @PathParam("name") String waterMarkName,
+                                 @QueryParam("cancel") @DefaultValue("false") boolean cancelActive,
                                  String value) {
-        LOG.debug("Get feed watermark {}: {}", feedIdStr, waterMarkName);
-
-        this.metadata.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
-            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
-
-            if (feed != null) {
-                feed.setWaterMarkValue(waterMarkName, value);
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
-            }
-        });
+        LOG.debug("Update feed watermark {}: {}", feedIdStr, waterMarkName);
+        
+        try {
+            this.waterMerkService.updateWaterMark(feedIdStr, waterMarkName, value, cancelActive);
+        } catch (FeedNotFoundExcepton e) {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
+        }
+    }
+    
+    @POST
+    @Path("{id}/watermark/{name}")
+    @Consumes(MediaType.TEXT_PLAIN)
+    @ApiOperation("Sets the value for a specific HighWaterMark.")
+    @ApiResponses({
+        @ApiResponse(code = 204, message = "The HighWaterMark value has been changed."),
+        @ApiResponse(code = 404, message = "The feed could not be found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "The HighWaterMark value could not be changed.", response = RestResponseStatus.class)
+    })
+    public void cancelHighWaterMark(@PathParam("id") String feedIdStr,
+                                 @PathParam("name") String waterMarkName,
+                                 @QueryParam("cancel") boolean cancelActive) {
+        LOG.debug("Cancel active feed watermark {}: {}", feedIdStr, waterMarkName);
+        
+        try {
+            this.waterMerkService.cancelActiveWaterMark(feedIdStr, waterMarkName);
+        } catch (FeedNotFoundExcepton e) {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
+        }
     }
 
     @DELETE

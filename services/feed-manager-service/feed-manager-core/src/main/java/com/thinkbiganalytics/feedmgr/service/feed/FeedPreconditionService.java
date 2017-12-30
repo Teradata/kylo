@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.metadata.core.feed;
+package com.thinkbiganalytics.feedmgr.service.feed;
 
 /*-
  * #%L

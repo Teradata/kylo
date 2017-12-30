@@ -94,6 +94,14 @@ public class SpringContextLoaderService extends AbstractControllerService implem
     public <T> T getBean(Class<T> requiredType) throws BeansException {
         return this.context.getBean(requiredType);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.spring.SpringContextService#getBean(java.lang.Class, java.lang.Object[])
+     */
+    @Override
+    public <T> T getBean(Class<T> requiredType, Object... args) throws BeansException {
+        return this.context.getBean(requiredType, args);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.controller.SpringContextService#getBean(java.lang.String, java.lang.Class)

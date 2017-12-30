@@ -46,7 +46,7 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
      * default constructor
      */
     public JmsPreconditionEventConsumer() {
-        LOG.debug("New JmsPreconditionEventConsumer {}", this);
+        LOG.debug("New CancelActiveWaterMarkEventConsumer {}", this);
     }
 
     @JmsListener(destination = MetadataQueues.PRECONDITION_TRIGGER, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
