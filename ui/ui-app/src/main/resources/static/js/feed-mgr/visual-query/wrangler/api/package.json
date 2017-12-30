@@ -1,7 +1,7 @@
 {
-  "name": "@kylo/wrangler",
+  "name": "@kylo/wrangler/api",
   "version": "0.9.0-SNAPSHOT",
-  "description": "Data wrangler services for Kylo UI",
+  "description": "Data wrangler API for Kylo UI",
   "module": "index.js",
   "typings": "index.d.ts",
   "scripts": {},
