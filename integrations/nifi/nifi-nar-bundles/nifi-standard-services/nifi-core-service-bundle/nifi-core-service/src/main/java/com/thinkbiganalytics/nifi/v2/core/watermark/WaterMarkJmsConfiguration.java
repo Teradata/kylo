@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.event.jms;
+package com.thinkbiganalytics.nifi.v2.core.watermark;
 
 /*-
  * #%L
- * thinkbig-metadata-jms
+ * thinkbig-nifi-core-service
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,24 +20,22 @@ package com.thinkbiganalytics.metadata.event.jms;
  * #L%
  */
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 /**
- * JMS topics for communicating with NiFi.
+ * Bean configuration for water mark management.
  */
-public interface MetadataTopics {
-    
-    /**
-     * Indicates changes to a data source
-     */
-    String CANCEL_ACTIVE_WATER_MARK = "cancelActiveWaterMark";
+@Configuration
+public class WaterMarkJmsConfiguration {
 
     /**
-     * Indicates changes to a data source
+     * Constructs the consumer for water mark cancel events.
+     *
+     * @return the cancel event consumer
      */
-    String DATASOURCE_CHANGE = "datasourceChange";
-
-    /**
-     * Indicates changes to a savepoint
-     */
-    String SAVEPOINT_CHANGE = "savepointChange";
-
+    @Bean
+    public CancelActiveWaterMarkEventConsumer cancelEventConsumer() {
+        return new CancelActiveWaterMarkEventConsumer();
+    }
 }

@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jms.Queue;
+import javax.jms.Topic;
 
 /**
  * Initialize JMS objects.
@@ -59,6 +60,17 @@ public class MetadataJmsConfig {
     @Nonnull
     public Queue preconditionTriggerQueue() {
         return jmsService.getQueue(MetadataQueues.PRECONDITION_TRIGGER);
+    }
+    
+    /**
+     * Gets the topic for triggering the canceling of active water marks.
+     *
+     * @return the water mark cancel even topic
+     */
+    @Bean(name = MetadataTopics.CANCEL_ACTIVE_WATER_MARK)
+    @Nonnull
+    public Topic cancelActiveWaterMarkTopic() {
+        return jmsService.getTopic(MetadataTopics.CANCEL_ACTIVE_WATER_MARK);
     }
 
 

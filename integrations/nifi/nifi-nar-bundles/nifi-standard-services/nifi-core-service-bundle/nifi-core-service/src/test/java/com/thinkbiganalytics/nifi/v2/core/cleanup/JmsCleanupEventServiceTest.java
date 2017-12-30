@@ -164,6 +164,11 @@ public class JmsCleanupEventServiceTest {
             }
             throw new IllegalArgumentException();
         }
+        
+        @Override
+        public <T> T getBean(Class<T> requiredType, Object... args) throws BeansException {
+            throw new UnsupportedOperationException();
+        }
 
         @Override
         public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
