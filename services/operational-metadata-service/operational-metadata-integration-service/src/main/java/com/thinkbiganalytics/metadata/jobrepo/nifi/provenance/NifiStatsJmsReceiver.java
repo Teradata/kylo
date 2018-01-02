@@ -240,7 +240,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                                                                                     && ((RetryAggregatedFeedProcessorStatisticsHolder) stats).shouldRetry());
     }
 
-    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
+    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
         if (readyToProcess(stats)) {
 
