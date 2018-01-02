@@ -35,6 +35,17 @@ import javax.inject.Inject;
 
 /**
  * Spring configuration for the Kylo Groups Login Module.
+ * This module is created as a workaround for a problem described in KYLO-1266, i.e.
+ * if a user is part of very many Active Directory groups it causes JWT token to be over 4kb size limit.
+ * When this module is added, it will create an intersection of Kylo and other (e.g. AD) groups,
+ * thus limiting the number of groups stored in JWT token.
+ * <pre>
+ * For example, if user is part of following groups:
+ * AD: Group A, Group B, Group C, Group D
+ * Kylo: Group B, Group D, Group E
+ * having this profile will limit groups to following intersection:
+ * Result: Group B, Group D
+ * </pre>
  */
 @Configuration
 @Profile("auth-kylo-groups")
