@@ -910,13 +910,13 @@ public class FeedRestController {
 
         } catch (AccessDeniedException e) {
             String errTemplate = "Permission denied attempting to write file [%s] to [%s]. Check with system administrator to ensure this application has write permissions to folder";
-            String err = String.format(errTemplate, fileName, dropzone);
+            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
             log.error(err);
             throw new InternalServerErrorException(err);
 
         } catch (Exception e) {
             String errTemplate = "Unexpected exception writing file [%s] to [%s].";
-            String err = String.format(errTemplate, fileName, dropzone);
+            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
             log.error(err);
             throw new InternalServerErrorException(err, e);
         }
