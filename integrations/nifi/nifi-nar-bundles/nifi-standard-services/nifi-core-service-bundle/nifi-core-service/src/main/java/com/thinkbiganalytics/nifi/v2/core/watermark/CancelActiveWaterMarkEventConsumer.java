@@ -50,7 +50,7 @@ public class CancelActiveWaterMarkEventConsumer {
         this.metadataRecorder = recorder;
     }
 
-    @JmsListener(destination = MetadataTopics.CANCEL_ACTIVE_WATER_MARK, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
+    @JmsListener(destination = MetadataTopics.CANCEL_ACTIVE_WATER_MARK, containerFactory = JmsConstants.TOPIC_LISTENER_CONTAINER_FACTORY)
     public void receiveEvent(FeedWaterMarkCancelEvent event) {
         LOG.debug("{} Received JMS message - topic: {}, message: {}", this, MetadataTopics.CANCEL_ACTIVE_WATER_MARK, event);
         LOG.info("{} Received cancel active water mark event: {}", this, event);

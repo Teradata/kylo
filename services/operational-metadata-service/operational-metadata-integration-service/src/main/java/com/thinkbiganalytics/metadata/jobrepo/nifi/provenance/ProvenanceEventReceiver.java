@@ -177,7 +177,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      *
      * @param events The events obtained from JMS
      */
-    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
+    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to {} batch: {},  {} events from the {} queue ", (events instanceof RetryProvenanceEventRecordHolder) ? "RETRY" : "process", events.getBatchId(), events.getEvents().size(),
                  Queues.FEED_MANAGER_QUEUE);
