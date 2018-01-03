@@ -117,6 +117,17 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             getRegExp: getRegExp,
 
             /**
+             * Indicates if the specified field properties match the specified domain type.
+             *
+             * @param domainType - the domain type
+             * @param field - the field
+             * @returns {boolean} true if the field and domain type match, otherwise false
+             */
+            matchesField: function (domainType, field) {
+                return (domainType.field == null || domainType.field.derivedDataType == null || domainType.field.derivedDataType === field.derivedDataType);
+            },
+
+            /**
              * Creates a new domain type.
              *
              * @returns {DomainType} the domain type

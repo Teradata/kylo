@@ -97,6 +97,15 @@ declare class DomainTypesService {
     getRegExp(domainType: DomainType): RegExp | null;
 
     /**
+     * Indicates if the specified field properties match the specified domain type.
+     *
+     * @param domainType - the domain type
+     * @param field - the field
+     * @returns {boolean} true if the field and domain type match, otherwise false
+     */
+    matchesField(domainType: DomainType, field: any): boolean;
+
+    /**
      * Creates a new domain type.
      *
      * @returns {DomainType} the domain type
