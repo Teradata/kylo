@@ -502,7 +502,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
     var FeedUploadFileDialogController = function ($scope, $mdDialog, $http, RestUrlService, FileUpload, feedId){
         var self = this;
         $scope.uploading = false;
-        $scope.uploadFile = null;
+        $scope.uploadFiles = null;
 
         /**
          * Upload file
@@ -522,7 +522,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 $scope.uploading = false;
                 $scope.errorMessage = 'Failed to submit file.';
             }
-            FileUpload.uploadFileToUrl($scope.uploadFile, uploadUrl, successFn, errorFn, params);
+            FileUpload.uploadFileToUrl($scope.uploadFiles, uploadUrl, successFn, errorFn, params);
         };
 
 
