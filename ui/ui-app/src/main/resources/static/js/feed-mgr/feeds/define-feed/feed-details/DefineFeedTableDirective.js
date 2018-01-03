@@ -465,6 +465,42 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             FeedService.syncTableFieldPolicyNames();
         };
 
+        /**
+         * Called when a data type field changes.
+         * - Ensures that the field data type matches the domain data type.
+         */
+        this.onDataTypeFieldChange = function(columnDef, index) {
+            self.onNameFieldChange(columnDef);
+
+            // Check if column data type matches domain data type
+            var policy = self.model.table.fieldPolicies[index];
+            var domainType = policy.$currentDomainType;
+
+            if (policy.domainTypeId && domainType.field && domainType.field.derivedDataType && columnDef.derivedDataType !== domainType.field.derivedDataType) {
+                $mdDialog.show({
+                    controller: "DomainDataTypeConflictDialog",
+                    escapeToClose: false,
+                    fullscreen: true,
+                    parent: angular.element(document.body),
+                    templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-data-type-conflict.component.html",
+                    locals: {
+                        data: {
+                            columnDef: columnDef,
+                            domainType: domainType
+                        }
+                    }
+                })
+                    .then(function (keep) {
+                        if (keep === false) {
+                            delete policy.$currentDomainType;
+                            delete policy.domainTypeId;
+                        }
+                    }, function () {
+                        self.undoColumn(index);
+                    });
+            }
+        };
+
         function isDeleted(columnDef) {
             return columnDef.deleted === true;
         }
