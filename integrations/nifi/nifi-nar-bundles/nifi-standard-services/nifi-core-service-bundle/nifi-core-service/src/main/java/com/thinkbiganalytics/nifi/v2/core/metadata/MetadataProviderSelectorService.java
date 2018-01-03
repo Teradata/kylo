@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
+import com.google.common.util.concurrent.UncheckedExecutionException;
+
 /*-
  * #%L
  * thinkbig-nifi-core-service
@@ -29,6 +31,8 @@ import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 import com.thinkbiganalytics.nifi.v2.core.watermark.CancelActiveWaterMarkEventConsumer;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.FieldUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
@@ -37,14 +41,18 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
+import org.apache.nifi.controller.service.StandardControllerServiceProvider;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.ssl.SSLContextService;
+import org.springframework.beans.BeansException;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.security.KeyManagementException;
 import java.security.KeyStore;
@@ -55,6 +63,7 @@ import java.security.cert.CertificateException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 
@@ -63,15 +72,15 @@ import javax.net.ssl.SSLContext;
  */
 public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
 
-    /**
-     * Property provides the service for loading spring a spring context and providing bean lookup
-     */
-    public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
-        .name("Spring Context Service")
-        .description("Service for loading spring a spring context and providing bean lookup")
-        .required(true)
-        .identifiesControllerService(SpringContextService.class)
-        .build();
+//    /**
+//     * Property provides the service for loading spring a spring context and providing bean lookup
+//     */
+//    public static final PropertyDescriptor SPRING_SERVICE = new PropertyDescriptor.Builder()
+//        .name("Spring Context Service")
+//        .description("Service for loading spring a spring context and providing bean lookup")
+//        .required(true)
+//        .identifiesControllerService(SpringContextService.class)
+//        .build();
 
     public static final PropertyDescriptor CLIENT_URL = new PropertyDescriptor.Builder()
         .name("rest-client-url")
@@ -124,7 +133,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         props.add(CLIENT_URL);
         props.add(CLIENT_USERNAME);
         props.add(CLIENT_PASSWORD);
-        props.add(SPRING_SERVICE);
+//        props.add(SPRING_SERVICE);
         props.add(SSL_CONTEXT_SERVICE);
         properties = Collections.unmodifiableList(props);
     }
@@ -134,8 +143,6 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     private volatile MetadataRecorder recorder;
     private volatile KyloProvenanceClientProvider kyloProvenanceClientProvider;
 
-    private SpringContextService springService;
-    private CancelActiveWaterMarkEventConsumer cancelWaterMarkConsumer;
     
     /**
      * The Service holding the SSL Context information
@@ -146,7 +153,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return properties;
     }
-
+    
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
@@ -157,10 +164,6 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             String password = context.getProperty(CLIENT_PASSWORD).getValue();
             MetadataClient client;
             SSLContext sslContext = null;
-            
-            if (context.getProperty(SPRING_SERVICE) != null && context.getProperty(SPRING_SERVICE).isSet()) {
-                this.springService = context.getProperty(SPRING_SERVICE).asControllerService(SpringContextService.class);
-            }
 
             if (context.getProperty(SSL_CONTEXT_SERVICE) != null && context.getProperty(SSL_CONTEXT_SERVICE).isSet()) {
                 this.sslContextService = context.getProperty(SSL_CONTEXT_SERVICE).asControllerService(SSLContextService.class);
@@ -176,17 +179,15 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             this.provider = new MetadataClientProvider(client);
             this.recorder = new MetadataClientRecorder(client);
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
-//            this.cancelWaterMarkConsumer = this.springService != null ? this.springService.getBean(CancelActiveWaterMarkEventConsumer.class, this.recorder) : null;
             
-            if (this.springService != null) {
-                CancelActiveWaterMarkEventConsumer consumer = this.springService.getBean(CancelActiveWaterMarkEventConsumer.class);
-                consumer.setMetadataRecorder(this.recorder);
-            }
+            SpringContextService springService = getSpringContextService();
+            CancelActiveWaterMarkEventConsumer consumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
+            
+            consumer.addMetadataRecorder(this.recorder);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
     }
-
 
     @Override
     public MetadataProvider getProvider() {
@@ -200,6 +201,56 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
 
     public KyloNiFiFlowProvider getKyloNiFiFlowProvider() {
         return this.kyloProvenanceClientProvider;
+    }
+
+    
+    
+    private SpringContextService getSpringContextService() throws InitializationException {
+        try {
+            // There appears to be a bug in NiFi where the ControllerServiceLookup implementation (StandardControllerServiceInitializationContext)
+            // is hard-coded with a ControlerServiceProvider that does not implement getControllerServiceIdentifiers(Class), UnsupportedOperationException is thrown, 
+            // but StandardControllerServiceInitializationContext only calls that method on that provider.  Getting around it by accessing the private 
+            // field of StandardControllerServiceInitializationContext to get the provider so that getControllerServiceIdentifiers(Class, String)
+            // can be called instead.
+            Object serviceProvider = FieldUtils.readField(getControllerServiceLookup(), "serviceProvider", true);
+            Set<String> ids = getSpringContextServiceIdentifiers(serviceProvider);
+            return ids.stream()
+                .filter(id -> isControllerServiceEnabled(serviceProvider, id))
+                .map(id -> getSpringContextService(serviceProvider, id))
+                .findAny()
+                .orElseThrow(() -> new IllegalStateException("No SpringContextService available"));
+        } catch (BeansException | IllegalAccessException | IllegalArgumentException e) {
+            throw new InitializationException("Failed to lookup SpringContextService", e);
+        } catch (UncheckedExecutionException e) {
+            throw new InitializationException("Failed to lookup SpringContextService", e.getCause());
+        }
+    }
+
+    private Set<String> getSpringContextServiceIdentifiers(Object serviceProvider) {
+        try {
+            @SuppressWarnings("unchecked")
+            Set<String> set = (Set<String>) MethodUtils.invokeMethod(serviceProvider, "getControllerServiceIdentifiers", SpringContextService.class, "root");
+            return set;
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new UncheckedExecutionException(e);
+        }
+    }
+    
+    private SpringContextService getSpringContextService(Object serviceProvider, String id) {
+        try {
+            return (SpringContextService) MethodUtils.invokeMethod(serviceProvider, "getControllerService", id);
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new UncheckedExecutionException(e);
+        }
+    }
+    
+    private boolean isControllerServiceEnabled(Object serviceProvider, String id) {
+        try {
+            boolean result = (boolean) MethodUtils.invokeMethod(serviceProvider, "isControllerServiceEnabled", id);
+            return result;
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+            throw new UncheckedExecutionException(e);
+        }
     }
 
 

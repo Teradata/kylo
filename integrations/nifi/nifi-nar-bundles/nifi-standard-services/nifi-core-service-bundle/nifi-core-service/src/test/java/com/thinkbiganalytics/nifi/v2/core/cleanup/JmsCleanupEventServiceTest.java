@@ -174,5 +174,13 @@ public class JmsCleanupEventServiceTest {
         public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
             throw new UnsupportedOperationException();
         }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.nifi.core.api.spring.SpringContextService#isInitialized()
+         */
+        @Override
+        public boolean isInitialized() {
+            return true;
+        }
     }
 }
