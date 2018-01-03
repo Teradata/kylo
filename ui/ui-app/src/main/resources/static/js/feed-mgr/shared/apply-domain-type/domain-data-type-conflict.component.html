@@ -1,0 +1,15 @@
+<md-dialog arial-label="Data type conflict" style="max-width:600px;">
+  <md-dialog-content class="md-dialog-content">
+    <h2 class="md-title">Remove domain type from column?</h2>
+    <div class="md-dialog-content-body">
+      <p>The '{{columnDef.name}}' column uses the '{{domainType.title}}' domain type and is expected to be a '{{domainType.field.derivedDataType}}'. You can keep the domain type associated with this
+        column or remove it.</p>
+    </div>
+  </md-dialog-content>
+
+  <md-dialog-actions layout="row">
+    <md-button ng-click="cancel()">Cancel</md-button>
+    <md-button ng-click="keep()">Keep</md-button>
+    <md-button class="md-raised md-primary" ng-click="remove()">Remove</md-button>
+  </md-dialog-actions>
+</md-dialog>

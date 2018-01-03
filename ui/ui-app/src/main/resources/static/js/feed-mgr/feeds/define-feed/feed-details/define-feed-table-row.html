@@ -53,7 +53,7 @@
   <div layout="row">
     <md-input-container class="md-block md-dense condensed" flex-gt-sm>
       <md-select ng-model="columnDef.derivedDataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required
-                 ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onNameFieldChange(columnDef)">
+                 ng-disabled="vm.dataTypeLocked || columnDef.deleted" ng-change="vm.onDataTypeFieldChange(columnDef, $index)">
         <md-option ng-repeat="dataType in vm.availableDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
           {{dataType}}
         </md-option>
