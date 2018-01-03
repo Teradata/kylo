@@ -93,7 +93,7 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
         .name("Max Yield Count Strategy")
         .description("Specifies what strategy should be followed when the maximum yield count (if used) is reached")
         .allowableValues(MAX_YIELD_STRATEGY_VALUES)
-        .defaultValue("ROUTE_ACTIVE")
+        .defaultValue("CANCEL_PREVIOUS")
         .required(true)
         .build();
     protected static final PropertyDescriptor INITIAL_VALUE = new PropertyDescriptor.Builder()
