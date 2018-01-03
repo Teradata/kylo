@@ -30,6 +30,12 @@ import org.springframework.beans.BeansException;
 @Tags({"thinkbig", "spring", "bean", "context"})
 @CapabilityDescription("Provides access to spring beans loaded from a spring configuration")
 public interface SpringContextService extends ControllerService {
+    
+    /**
+     * Indicates whether the Spring application context loading has completed successfully.
+     * @return true if the Spring context loading is complete
+     */
+    boolean isInitialized();
 
     /**
      * used to fetch a bean from the spring context of the given type, expects there is only one bean matching the type given

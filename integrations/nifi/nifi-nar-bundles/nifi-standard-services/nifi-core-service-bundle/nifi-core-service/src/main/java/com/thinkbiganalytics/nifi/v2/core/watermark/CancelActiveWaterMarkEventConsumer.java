@@ -29,6 +29,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 /**
  * Consumes the precondition events in JMS
  */
@@ -36,7 +39,7 @@ public class CancelActiveWaterMarkEventConsumer {
 
     private static final Logger LOG = LoggerFactory.getLogger(CancelActiveWaterMarkEventConsumer.class);
 
-    private MetadataRecorder metadataRecorder;
+    private Queue<MetadataRecorder> metadataRecorders = new ConcurrentLinkedQueue<>();
 
     /**
      * default constructor
@@ -47,7 +50,7 @@ public class CancelActiveWaterMarkEventConsumer {
     }
     
     public CancelActiveWaterMarkEventConsumer(MetadataRecorder recorder) {
-        this.metadataRecorder = recorder;
+        this.metadataRecorders.add(recorder);
     }
 
     @JmsListener(destination = MetadataTopics.CANCEL_ACTIVE_WATER_MARK, containerFactory = JmsConstants.TOPIC_LISTENER_CONTAINER_FACTORY)
@@ -55,17 +58,18 @@ public class CancelActiveWaterMarkEventConsumer {
         LOG.debug("{} Received JMS message - topic: {}, message: {}", this, MetadataTopics.CANCEL_ACTIVE_WATER_MARK, event);
         LOG.info("{} Received cancel active water mark event: {}", this, event);
 
-        if (this.metadataRecorder != null) {
-            this.metadataRecorder.cancelWaterMark(event.getFeedId(), event.getWaterMarkName());
-        } else {
+        if (this.metadataRecorders.isEmpty()) {
             LOG.debug("No metadata recorder registerd yet - ingoring event: {}", event);
+        } else {
+            this.metadataRecorders.forEach(r -> r.cancelWaterMark(event.getFeedId(), event.getWaterMarkName()));
         }
     }
 
-    /**
-     * @param recorder
-     */
-    public void setMetadataRecorder(MetadataRecorder recorder) {
-        this.metadataRecorder = recorder;
+    public boolean addMetadataRecorder(MetadataRecorder recorder) {
+        return this.metadataRecorders.add(recorder);
+    }
+    
+    public boolean removeMetadataRecorder(MetadataRecorder recorder) {
+        return this.metadataRecorders.remove(recorder);
     }
 }
