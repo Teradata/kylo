@@ -49,6 +49,7 @@
     "@types/jasmine": "2.5.38",
     "@types/jquery": "^2.0.48",
     "@types/requirejs": "^2.1.31",
+    "@types/ui-grid": "0.0.38",
     "@types/underscore": "^1.8.5",
     "angular-mocks": "^1.6.7",
     "concurrently": "^3.5.1",

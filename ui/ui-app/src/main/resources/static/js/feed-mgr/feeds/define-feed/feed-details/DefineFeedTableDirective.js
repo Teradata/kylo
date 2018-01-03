@@ -283,7 +283,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Detect domain type and select sample value
             var policy = newColumnPolicy();
-            if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
+            if (syncFieldPolicies && columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
                 columnDef.selectedSampleValue = columnDef.sampleValues[0];
                 var domainType = DomainTypesService.detectDomainType(columnDef.sampleValues, self.availableDomainTypes);
                 if (domainType !== null) {
@@ -304,6 +304,22 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.validateColumn(columnDef);
             if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                 FeedService.syncTableFieldPolicyNames();
+            }
+        };
+
+        /**
+         * Detect the domain type for the specified column.
+         *
+         * @param columnDef - the column
+         * @returns the domain type or null
+         */
+        this.detectDomainType = function (columnDef) {
+            if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
+                columnDef.selectedSampleValue = columnDef.sampleValues[0];
+                return DomainTypesService.detectDomainType(columnDef.sampleValues, self.availableDomainTypes);
+            } else {
+                columnDef.selectedSampleValue = null;
+                return null;
             }
         };
 
@@ -790,6 +806,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.addColumn(col, false);
                 });
                 FeedService.syncTableFieldPolicyNames();
+                applyDomainTypes();
                 //set the feedFormat property
                 self.model.table.feedFormat = responseData.hiveFormat;
                 self.model.table.structured = responseData.structured;
@@ -824,6 +841,55 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
             FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
+
+        /**
+         * Detects and applies domain types to all columns.
+         */
+        function applyDomainTypes() {
+            // Detect domain types
+            var data = {domainTypes: [], fields: []};
+
+            self.model.table.tableSchema.fields.forEach(function (field, index) {
+                var domainType = self.detectDomainType(field);
+                if (domainType !== null) {
+                    if (DomainTypesService.matchesField(domainType, field)) {
+                        // Domain type can be applied immediately
+                        FeedService.setDomainTypeForField(field, self.model.table.fieldPolicies[index], domainType);
+                    } else {
+                        // Domain type needs user confirmation
+                        data.domainTypes.push(domainType);
+                        data.fields.push(field);
+                    }
+                }
+            });
+
+            // Get user confirmation for domain type changes to field data types
+            if (data.fields.length > 0) {
+                $mdDialog.show({
+                    controller: "ApplyTableDomainTypesDialog",
+                    escapeToClose: false,
+                    fullscreen: true,
+                    parent: angular.element(document.body),
+                    templateUrl: "js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.html",
+                    locals: {
+                        data: data
+                    }
+                })
+                    .then(function (selected) {
+                        selected.forEach(function (selection) {
+                            var fieldIndex = data.fields.findIndex(function (element) {
+                                return element.name === selection.name;
+                            });
+                            var policyIndex = self.model.table.tableSchema.fields.findIndex(function (element) {
+                                return element.name === selection.name;
+                            });
+                            FeedService.setDomainTypeForField(data.fields[fieldIndex], self.model.table.fieldPolicies[policyIndex], data.domainTypes[fieldIndex]);
+                        });
+                    }, function () {
+                        // ignore cancel
+                    });
+            }
+        }
 
         function touchErrorFields() {
             var errors = self.defineFeedTableForm.$error;
