@@ -414,6 +414,8 @@ public class FeedIT extends IntegrationTestBase {
         properties.add(inputDir);
 
         NifiProperty loadStrategy = new NifiProperty("305363d8-015a-1000-0000-000000000000", "6aeabec7-ec36-4ed5-0000-000000000000", "Load Strategy", "FULL_LOAD");
+        loadStrategy.setProcessGroupName("NiFi Flow");
+        loadStrategy.setProcessorName("GetTableData");
         loadStrategy.setProcessorType("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         properties.add(loadStrategy);
 

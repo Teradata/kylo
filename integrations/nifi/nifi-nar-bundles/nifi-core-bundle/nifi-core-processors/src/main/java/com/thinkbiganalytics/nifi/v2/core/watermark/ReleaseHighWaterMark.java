@@ -23,8 +23,11 @@ package com.thinkbiganalytics.nifi.v2.core.watermark;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.core.api.metadata.ActiveWaterMarksCancelledException;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
+import com.thinkbiganalytics.nifi.provenance.NiFiProvenanceConstants;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -36,9 +39,11 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Releases the high-water mark (commits or rolls back).
@@ -71,6 +76,13 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
         .required(true)
         .build();
 
+    Relationship CANCELLED_WATER_MARK = new Relationship.Builder()
+        .name("cancelledWaterMark")
+        .description("The active water mark for the flowfile was cancelled")
+        .autoTerminateDefault(true)
+        .build();
+
+
     /* (non-Javadoc)
      * @see org.apache.nifi.processor.AbstractProcessor#onTrigger(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
      */
@@ -90,29 +102,44 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
             String mode = context.getProperty(MODE).toString();
 
             try {
-                if (context.getProperty(RELEASE_ALL).asBoolean()) {
-                    if (mode.equals("COMMIT")) {
+                if (mode.equals("COMMIT")) {
+                    if (context.getProperty(RELEASE_ALL).asBoolean()) {
                         ff = recorder.commitAllWaterMarks(session, ff, getFeedId(context, ff));
                     } else {
-                        ff = recorder.releaseAllWaterMarks(session, ff, getFeedId(context, ff));
+                        String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
+                        ff = recorder.commitWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     }
                 } else {
-                    String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
-
-                    if (mode.equals("COMMIT")) {
-                        ff = recorder.commitWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
+                    if (context.getProperty(RELEASE_ALL).asBoolean()) {
+                        ff = recorder.releaseAllWaterMarks(session, ff, getFeedId(context, ff));
                     } else {
+                        String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
                         ff = recorder.releaseWaterMark(session, ff, getFeedId(context, ff), waterMarkName);
                     }
                 }
 
                 session.transfer(ff, CommonProperties.REL_SUCCESS);
+            } catch (ActiveWaterMarksCancelledException e) {
+                transferForCancelledWaterMarks(context, session, ff, e);
             } catch (Exception e) {
                 getLog().warn("Failure during release of high-water mark(s)", e);
                 session.transfer(ff, CommonProperties.REL_FAILURE);
             }
         }
 
+    }
+
+    private void transferForCancelledWaterMarks(ProcessContext context, ProcessSession session, FlowFile ff, ActiveWaterMarksCancelledException ex) {
+        FlowFile resultFF = session.putAttribute(ff, NiFiProvenanceConstants.NiFiKyloJobExecutionState, KyloProcessorFlowType.WARNING.toString());
+        resultFF = session.putAttribute(ff, "kylo.waterMarksCancelled", ex.getWaterMarkNames().toString());
+        
+        if (context.hasConnection(CANCELLED_WATER_MARK)) {
+            getLog().info("Active high-water mark(s) were canceled for feed: {}, water mark name(s): {}", new Object[]{ex.getFeedId(), ex.getWaterMarkNames()});
+            session.transfer(resultFF, CANCELLED_WATER_MARK);
+        } else {
+            getLog().warn("Active high-water mark(s) were canceled for feed: {}, water mark name(s): {}", new Object[]{ex.getFeedId(), ex.getWaterMarkNames()});
+            session.transfer(resultFF, CommonProperties.REL_FAILURE);
+        }
     }
 
     /* (non-Javadoc)
@@ -123,5 +150,14 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
         super.addProperties(list);
         list.add(MODE);
         list.add(RELEASE_ALL);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.v2.core.watermark.HighWaterMarkProcessor#addRelationships(java.util.Set)
+     */
+    @Override
+    protected void addRelationships(Set<Relationship> set) {
+        super.addRelationships(set);
+        set.add(CANCELLED_WATER_MARK);
     }
 }
