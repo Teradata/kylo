@@ -79,7 +79,7 @@ public class HiveService {
     }
 
     public List<String> getTables(String schema) {
-        return KerberosUtil.runWithOrWithoutKerberos(() -> getDBSchemaParser().listTables(schema, null), kerberosHiveConfiguration);
+        return KerberosUtil.runWithOrWithoutKerberos(() -> getDBSchemaParser().listTables(schema), kerberosHiveConfiguration);
     }
 
     /**

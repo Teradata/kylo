@@ -296,6 +296,43 @@ public class DatasourceController {
      * Gets the table names from the specified data source.
      *
      * @param idStr  the data source id
+     * @return the list of schema names
+     */
+    @GET
+    @Path("{id}/schemas")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the table names from the data source.", notes = "Connects to the database specified by the data source.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the schema names.", response = String.class, responseContainer = "List"),
+                      @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getSchemaNames(@PathParam("id") final String idStr) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+
+        // Retrieve table names using system user
+        return metadata.read(() -> {
+            final List<String> tables = id.map(datasetProvider::getDatasource)
+                .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                .filter(JdbcDatasource.class::isInstance)
+                .map(JdbcDatasource.class::cast)
+                .map(datasource -> dbcpConnectionPoolTableInfo.getSchemaNamesForDatasource(datasource))
+                .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(tables).build();
+        }, MetadataAccess.SERVICE);
+    }
+
+    /**
+     * Gets the table names from the specified data source.
+     *
+     * @param idStr  the data source id
      * @param schema the schema name, or {@code null} for all schemas
      * @return the list of table names
      */

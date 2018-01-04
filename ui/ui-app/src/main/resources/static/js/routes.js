@@ -210,29 +210,45 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
         });
 
         $stateProvider.state({
-            name: 'schemas.**',
-            url: '/schemas',
+            name: 'catalog.**',
+            url: '/catalog',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('schemas')
+                    $stateProvider.stateService.go('catalog');
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading catalog data sources ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas.**',
+            url: '/schemas',
+            params: {
+                datasource: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas', transition.params());
                     return args;
                 }, function error(err) {
                     console.log("Error loading schemas ", err);
                     return err;
                 });
-                ;
             }
         }).state({
             name: 'schemas-schema.**',
             url: '/schemas/{schema}',
             params: {
+                datasource: null,
                 schema: null
             },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('schemas-schema', transition.params())
+                    $stateProvider.stateService.go('schemas-schema', transition.params());
                     return args;
                 }, function error(err) {
                     console.log("Error loading tables ", err);
@@ -243,6 +259,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             name: 'schemas-schema-table.**',
             url: '/schemas/{schema}/{tableName}',
             params: {
+                datasource: null,
                 schema: null,
                 tableName: null
             },

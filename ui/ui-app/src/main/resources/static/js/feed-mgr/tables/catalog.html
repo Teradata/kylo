@@ -1,0 +1,53 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div >
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <div layout="row" layout-align="center start" ng-if="!vm.loading">
+        <div layout="column" class="layout-max-width">
+            <div style="width:100%" class="" layout="row" layout-align="center start">
+                <md-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
+                    <span style="width:40px;max-width:40px;"></span>
+                    <md-input-container class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
+                        <input ng-model="vm.searchQuery" placeholder="Filter Catalog Datasources">
+                    </md-input-container>
+                    <div style="padding:5px 5px 5px 40px;margin-top:12px;">
+                        <ng-md-icon icon="more_vert" style="fill:#676767"></ng-md-icon>
+                    </div>
+                </md-content>
+            </div>
+        </div>
+    </div>
+    <div layout="row" flex class="md-padding feed-categories" layout-align="start start" layout-wrap ng-if="!vm.loading">
+        <md-card style="width:400px;max-width:400px;max-height:121px;height:121px" ng-repeat="datasource in vm.datasources | orderBy:'name' | filter: vm.searchQuery track by $index" flex="initial" flex-md="initial" flex-sm="50"
+                 ng-click="vm.navigateToSchemas(datasource)">
+            <md-card-title>
+                <md-card-title-text>
+                    <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{datasource.name}}</span>
+                </md-card-title-text>
+                <md-card-title-media>
+                    <ng-md-icon icon="{{datasource.icon}}" size="40" ng-style="{'fill': datasource.iconColor}" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>
+                </md-card-title-media>
+            </md-card-title>
+            <md-card-content>
+                <div style="word-wrap:break-word;color:rgba(0,0,0,0.54);">{{datasource.description | characters:100}}</div>
+            </md-card-content>
+        </md-card>
+    </div>
+</div>

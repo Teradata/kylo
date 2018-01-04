@@ -266,6 +266,7 @@ define([], function () {
             VISUAL_QUERY: {state: "visual-query", permissions: [this.VISUAL_QUERY_ACCESS]},
             SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [this.SLA_ACCESS]},
             SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: [this.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE]},
+            CATALOG: {state: "catalog", permissions: [this.TABLES_ACCESS]},
             SCHEMAS: {state: "schemas", permissions: [this.TABLES_ACCESS]},
             TABLES: {state: "schemas-schema", permissions: [this.TABLES_ACCESS]},
             TABLE: {state: "schemas-schema-table", permissions: [this.TABLES_ACCESS]},
