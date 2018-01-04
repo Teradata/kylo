@@ -1,11 +1,12 @@
 define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$http,$q,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService){
+    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,DatasourcesService){
 
         var self = this;
         this.schemas = [];
         this.loading = true;
-        this.cardTitle = "Schemas";
+        self.datasource = $transition$.params().datasource;
+        this.cardTitle = this.datasource.name + " schemas";
         this.pageName = 'Schemas';
         self.filterInternal = true;
 
@@ -68,17 +69,12 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         }
 
         function getSchemas() {
-            var deferred = $q.defer();
-
             var successFn = function (response) {
-                self.schemas = response.hive.data;
+                self.schemas = response.data;
                 self.loading = false;
-                deferred.resolve();
-
             };
             var errorFn = function (err) {
                 self.loading = false;
-                deferred.reject(err);
             };
 
             var limit = PaginationDataService.rowsPerPage(self.pageName);
@@ -87,23 +83,26 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             var filter = self.paginationData.filter;
             var params = {start: start, limit: limit, sort: sort, filter: filter};
 
-            var promises = {
-                "hive": $http.get(RestUrlService.HIVE_SERVICE_URL+"/schemas", {params: params})
-            };
+            var promise;
+            if (self.datasource.isHive) {
+                promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas", {params: params});
+            } else {
+                promise = $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + self.datasource.id + "/schemas", {params: params});
+            }
 
-            $q.all(promises).then(successFn,errorFn);
-
-            return deferred.promise;
+            promise.then(successFn,errorFn);
+            return promise;
         }
 
         self.onClickSchema = function(schema){
-            StateService.FeedManager().Table().navigateToTables(schema);
+            StateService.FeedManager().Table().navigateToTables(self.datasource, schema);
         };
+
         getSchemas();
 
     };
 
-    angular.module(moduleName).controller('SchemasController',["$scope","$http","$q","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService",controller]);
+    angular.module(moduleName).controller('SchemasController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","DatasourcesService",controller]);
 
 
 

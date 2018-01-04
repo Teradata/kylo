@@ -18,6 +18,10 @@ export declare namespace DatasourcesServiceStatic {
         newJdbcDatasource(): JdbcDatasource;
 
         save(datasource: JdbcDatasource): angular.IPromise<JdbcDatasource>;
+
+        defaultIconName(): string;
+
+        defaultIconColor(): string;
     }
 
     interface JdbcDatasource {
