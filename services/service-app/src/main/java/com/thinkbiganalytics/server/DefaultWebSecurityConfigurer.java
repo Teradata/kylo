@@ -2,6 +2,7 @@ package com.thinkbiganalytics.server;
 
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+import com.thinkbiganalytics.security.core.KyloDefaultLogoutSuccessHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,14 +52,19 @@ import javax.inject.Named;
 @Profile("!auth-krb-spnego")  // TODO find a better way than just disabling due to the presence of SPNEGO config (adjust order?)
 public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
 
-    public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
+
+    public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
+
     @Inject
     @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
     private AuthenticationProvider authenticationProvider;
 
     @Autowired
     private JwtRememberMeServices rememberMeServices;
+
+    @Inject
+    private KyloDefaultLogoutSuccessHandler kyloDefaultLogoutSuccessHandler;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
@@ -74,6 +80,10 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                     .and()
                 .rememberMe()
                     .rememberMeServices(rememberMeServices)
+                    .and()
+                .logout()
+                    .permitAll()
+                    .logoutSuccessHandler(kyloDefaultLogoutSuccessHandler)
                     .and()
                 .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
                 .httpBasic();

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.ui.config;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
+import com.thinkbiganalytics.security.core.KyloDefaultLogoutSuccessHandler;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +70,12 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Inject
     private JwtRememberMeServices rememberMeServices;
 
+    @Inject
+    private KyloDefaultLogoutSuccessHandler kyloDefaultLogoutSuccessHandler;
+
     @Override
     public void configure(WebSecurity web) throws Exception {
-        web.ignoring().antMatchers("/proxy/**", "/ui-common/**", "/assets/**","/bower_components/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
-
+        web.ignoring().antMatchers("/proxy/**", "/ui-common/**", "/assets/**", "/bower_components/**", "/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
     }
 
     @Override
@@ -94,10 +97,12 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .loginPage("/login.html")
                 .loginProcessingUrl("/login")
                 .failureUrl("/login.html?error=true").permitAll()
-               .successHandler(kyloTargetUrlLoginSuccessHandler)
+                .successHandler(kyloTargetUrlLoginSuccessHandler)
                 .and()
-            .logout() 
+            .logout()
                 .permitAll()
+                .logoutSuccessHandler(kyloDefaultLogoutSuccessHandler)
+                .logoutSuccessUrl("/login.html")
                 .and()
             .rememberMe()
                 .rememberMeServices(rememberMeServices)
@@ -112,7 +117,5 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(uiAuthenticationProvider);
     }
-
-
 
 }

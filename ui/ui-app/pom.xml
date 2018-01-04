@@ -37,6 +37,12 @@
   </dependencyManagement>
 
   <dependencies>
+    <!-- TODO: temporary dont check in -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>jupyter-plugin-ui</artifactId>
+      <version>${project.version}</version>
+    </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>

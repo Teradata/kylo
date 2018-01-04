@@ -27,7 +27,6 @@ import com.thinkbiganalytics.security.rest.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -164,6 +163,8 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
     @Override
     protected boolean doLogout() throws Exception {
+        log.debug("doLogout() called");
+
         getSubject().getPrincipals().removeAll(getAllPrincipals());
         return true;
     }
