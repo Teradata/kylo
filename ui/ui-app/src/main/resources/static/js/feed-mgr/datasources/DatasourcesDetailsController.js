@@ -84,6 +84,27 @@ define(["angular", "feed-mgr/datasources/module-name"], function (angular, modul
         self.model = DatasourcesService.newJdbcDatasource();
 
         /**
+         * Shows the icon picker dialog.
+         */
+        self.showIconPicker = function () {
+            $mdDialog.show({
+                controller: "IconPickerDialog",
+                templateUrl: "js/common/icon-picker-dialog/icon-picker-dialog.html",
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {
+                    iconModel: self.editModel
+                }
+            }).then(function (msg) {
+                if (msg) {
+                    self.editModel.icon = msg.icon;
+                    self.editModel.iconColor = msg.color;
+                }
+            });
+        };
+
+        /**
          * Indicates if the data source is new and has not been saved.
          *
          * @returns {boolean} {@code true} if the data source is new, or {@code false} otherwise

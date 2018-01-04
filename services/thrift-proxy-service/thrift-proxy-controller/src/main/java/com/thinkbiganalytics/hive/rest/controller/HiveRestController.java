@@ -103,7 +103,7 @@ public class HiveRestController {
         try {
             boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
             if (userImpersonationEnabled) {
-                List<String> tables = hiveService.getAllTablesForImpersonatedUser();
+                List<String> tables = hiveService.getAllTablesForImpersonatedUser(null);
                 list = hiveMetadataService.getTableColumns(tables);
             } else {
                 list = hiveMetadataService.getTableColumns(null);
@@ -237,14 +237,14 @@ public class HiveRestController {
                       @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
                   })
-    public Response getTables() {
+    public Response getTables(@QueryParam("schema") String schema) {
         List<String> tables;
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
         if (userImpersonationEnabled) {
-            tables = hiveService.getAllTablesForImpersonatedUser();
+            tables = hiveService.getAllTablesForImpersonatedUser(schema);
         } else {
             try {
-                tables = hiveMetadataService.getAllTables();
+                tables = hiveMetadataService.getAllTables(schema);
             } catch (DataAccessException e) {
                 log.error("Error listing Hive Tables from the metastore ", e);
                 throw e;

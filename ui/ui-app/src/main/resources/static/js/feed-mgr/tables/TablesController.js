@@ -1,16 +1,14 @@
 define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$http,$q,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils){
+    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils){
 
         var self = this;
+
+        self.datasource = $transition$.params().datasource;
+        self.schema = $transition$.params().schema;
         this.tables =[];
-        var ALL_DATABASES = '(All)';
-        this.schemas = [ALL_DATABASES];
-        this.schemaTables = {};
-        this.selectedDatabase = ALL_DATABASES;
-        this.selectedTables = [];
         this.loading = true;
-        this.cardTitle = "Tables";
+        this.cardTitle = self.datasource.name + " " + self.schema + " tables";
         this.pageName = 'Tables';
         self.filterInternal = true;
 
@@ -27,17 +25,17 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             return self.viewType;
         }, function(newVal) {
             self.onViewTypeChange(newVal);
-        })
+        });
 
         $scope.$watch(function () {
             return self.filter;
         }, function (newVal) {
             PaginationDataService.filter(self.pageName, newVal)
-        })
+        });
 
         this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
-        }
+        };
 
         this.onOrderChange = function(order) {
             PaginationDataService.sort(self.pageName, order);
@@ -49,6 +47,10 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             self.currentPage = page;
         };
 
+        this.onClickTable = function(table){
+            StateService.FeedManager().Table().navigateToTable(self.datasource, self.schema, table.tableName);
+        };
+
         /**
          * Called when a user Clicks on a table Option
          * @param option
@@ -58,73 +60,90 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             var savedSort = PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
-        }
+        };
 
         /**
          * Build the possible Sorting Options
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Schema': 'schema', 'Table': 'tableName'};
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'schema', 'asc');
+            var options = {'Table': 'tableName'};
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'tableName', 'asc');
             TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
         }
 
-        function getTables(){
+        function endsWithReservedWord(t) {
+            return Utils.endsWith(t.tableName, "_valid") || Utils.endsWith(t.tableName, "_invalid") || Utils.endsWith(t.tableName, "_profile") || Utils.endsWith(t.tableName, "_feed");
+        }
+
+        function isKnownFeedTable(feedNames, schema) {
+            return _.find(feedNames, function(feedName) {
+                return feedName.startsWith(schema + ".");
+            }) !== undefined;
+        }
+
+        var successFn = function (response) {
+            var _tables = response.hive.data;
+            var feedNames = response.feedNames.data;
+            if (_tables) {
+                angular.forEach(_tables, function (table) {
+                    var tableName = table.substr(table.indexOf(".") + 1);
+                    self.tables.push({tableName: tableName, fullName: table, lowerFullName: table.toLowerCase()});
+                })
+            }
+            self.selectedTables = _.filter(self.tables, function (t) {
+                var isKnown = isKnownFeedTable(feedNames, self.schema.toLowerCase());
+                return !isKnown || (isKnown && !endsWithReservedWord(t));
+            });
+            self.loading = false;
+            deferred.resolve();
+        };
+        var errorFn = function (err) {
+            self.loading = false;
+            deferred.reject(err);
+        };
+
+        function getNonHiveTables() {
             var deferred = $q.defer();
 
-            var successFn = function (response) {
-              var _tables = response.hive.data;
-              var feedNames = response.feedNames.data;
-                var arr = [];
-                if(_tables) {
-                    angular.forEach(_tables,function(table){
-                        var schema = table.substr(0,table.indexOf("."));
-                        var tableName= table.substr(table.indexOf(".")+1);
-                        arr.push({schema:schema,tableName:tableName,fullName:table, lowerFullName:table.toLowerCase()});
-                        if(self.schemaTables[schema] == undefined){
-                            self.schemaTables[schema] = [];
-                            self.schemas.push(schema);
-                        }
-                        self.schemaTables[schema].push({schema:schema,tableName:tableName});
-                    })
-                }
-                self.tables = arr;
-                var filteredTables = self.selectedTables = _.filter(arr,function(t) {
-                    return _.indexOf(feedNames,t.lowerFullName) >0 || (!(Utils.endsWith(t.tableName, "_valid") || Utils.endsWith(t.tableName,"_invalid") || Utils.endsWith(t.tableName, "_profile") || Utils.endsWith(t.tableName,"_feed")))});
-                self.loading = false;
-                deferred.resolve(filteredTables);
+            var limit = PaginationDataService.rowsPerPage(self.pageName);
+            var start = limit == 'All' ? 0 : (limit * self.currentPage) - limit;
+            var sort = self.paginationData.sort;
+            var filter = self.paginationData.filter;
+            var params = {schema: self.schema, start: start, limit: limit, sort: sort, filter: filter};
 
-            }
-            var errorFn = function (err) {
-                self.loading = false;
-                deferred.reject(err);
-            }
-            var promises = {"hive":$http.get(RestUrlService.HIVE_SERVICE_URL+"/tables"),
-                "feedNames": FeedService.getFeedNames() };
-            $q.all(promises).then(successFn,errorFn);
+            var promises = {
+                "hive": $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + self.datasource.id + "/tables", {params: params}),
+                "feedNames": FeedService.getFeedNames()
+            };
+
+            $q.all(promises).then(successFn, errorFn);
 
             return deferred.promise;
         }
 
-        self.onDatabaseChange = function(){
-            if(self.selectedDatabase == ALL_DATABASES){
-                self.selectedTables = self.tables;
-            }
-            else {
-                self.selectedTables = self.schemaTables[self.selectedDatabase];
-            }
+        function getHiveTables() {
+            var deferred = $q.defer();
+
+            var promises = {
+                "hive": $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas/" + self.schema + "/tables"),
+                "feedNames": FeedService.getFeedNames()
+            };
+            $q.all(promises).then(successFn, errorFn);
+
+            return deferred.promise;
         }
 
-        self.onClickTable = function(table){
-            StateService.FeedManager().Table().navigateToTable(table.schema,table.tableName);
+        if (self.datasource.isHive) {
+            getHiveTables();
+        } else {
+            getNonHiveTables();
         }
-        getTables();
 
     };
 
-    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils",controller]);
+    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils",controller]);
 
 
 
