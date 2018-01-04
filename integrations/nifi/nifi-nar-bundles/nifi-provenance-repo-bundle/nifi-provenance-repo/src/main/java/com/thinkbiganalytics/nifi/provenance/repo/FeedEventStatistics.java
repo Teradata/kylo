@@ -230,14 +230,11 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean backup(String location) {
 
-        try {
+        try (FileOutputStream fos = new FileOutputStream(location);
+             GZIPOutputStream gz = new GZIPOutputStream(fos);
+             ObjectOutputStream oos = new ObjectOutputStream(gz)){
             //cleanup any files that should be removed before backup
             detailedTrackingFlowFilesToDelete.cleanUp();
-
-            FileOutputStream fos = new FileOutputStream(location);
-            GZIPOutputStream gz = new GZIPOutputStream(fos);
-
-            ObjectOutputStream oos = new ObjectOutputStream(gz);
 
             oos.writeObject(new FeedEventStatisticsData(this));
             oos.close();
@@ -255,11 +252,10 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean loadBackup(String location) {
         FeedEventStatisticsData inStats = null;
-        try {
+        try (FileInputStream fin = new FileInputStream(location);
+             GZIPInputStream gis = new GZIPInputStream(fin);
+             ValidatingObjectInputStream ois = new ValidatingObjectInputStream(gis)){
 
-            FileInputStream fin = new FileInputStream(location);
-            GZIPInputStream gis = new GZIPInputStream(fin);
-            ValidatingObjectInputStream ois = new ValidatingObjectInputStream(gis);
             ois.accept(FeedEventStatisticsData.class);
             inStats = (FeedEventStatisticsData) ois.readObject();
             ois.close();

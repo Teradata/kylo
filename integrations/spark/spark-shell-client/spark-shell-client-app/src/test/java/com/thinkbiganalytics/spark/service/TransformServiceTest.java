@@ -146,7 +146,9 @@ public class TransformServiceTest {
         final ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
         Mockito.verify(engine).eval(evalScript.capture(), evalBindings.capture());
 
-        final String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        InputStream inputStream = getClass().getResourceAsStream("transform-service-script1.scala");
+        final String expectedScript = IOUtils.toString(inputStream, "UTF-8");
+        inputStream.close();
         Assert.assertEquals(expectedScript, evalScript.getValue());
 
         final List<NamedParam> bindings = evalBindings.getValue();
@@ -174,7 +176,9 @@ public class TransformServiceTest {
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
                                                               Mockito.mock(JobTrackerService.class));
 
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
+        InputStream inputStream = getClass().getResourceAsStream("transform-service-script1.scala");
+        final String expected = IOUtils.toString(inputStream, "UTF-8");
+        inputStream.close();
         Assert.assertEquals(expected, service.toScript(request));
     }
 
@@ -196,7 +200,8 @@ public class TransformServiceTest {
         final TransformService service = new TransformService(TransformScript.class, Mockito.mock(SparkScriptEngine.class), Mockito.mock(SparkContextService.class),
                                                               Mockito.mock(JobTrackerService.class));
 
-        final String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
+        InputStream inputStream = getClass().getResourceAsStream("transform-service-script2.scala");
+        final String expected = IOUtils.toString(inputStream, "UTF-8");
         Assert.assertEquals(expected, service.toScript(request));
     }
 
