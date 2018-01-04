@@ -117,26 +117,27 @@ public class JerseyRestClient {
             byte[] keyStoreFile = null;
             byte[] truststoreFile = null;
 
-            try {
-                if (StringUtils.isNotBlank(config.getKeystorePath())) {
-                    InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
+            if (StringUtils.isNotBlank(config.getKeystorePath())) {
+                try (InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath())) {
+
                     if (keystore != null) {
                         keyStoreFile = ByteStreams.toByteArray(keystore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
-                log.error( "Encountered IOException attempting to get keystore: ", e );
             }
 
-            try {
-                if (StringUtils.isNotBlank(config.getTruststorePath())) {
-                    InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath());
+            if (StringUtils.isNotBlank(config.getTruststorePath())) {
+                try (InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath())) {
                     if (truststore != null) {
                         truststoreFile = ByteStreams.toByteArray(truststore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
-                log.error( "Encountered IOException attempting to get keystore: ", e );
             }
 
             if( config.getTruststorePassword()==null && config.getKeystorePassword() == null ) {

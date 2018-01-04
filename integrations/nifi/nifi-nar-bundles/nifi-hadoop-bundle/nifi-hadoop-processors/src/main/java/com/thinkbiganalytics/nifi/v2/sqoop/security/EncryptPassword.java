@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.v2.sqoop.security;
  */
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -107,9 +108,12 @@ public class EncryptPassword {
         }
 
         /* Write the encrypted password to output file */
-        FileOutputStream output = new FileOutputStream(new File(encryptedFileLocation));
-        output.write(encryptedBytes);
-        output.close();
+        try (FileOutputStream output = new FileOutputStream(new File(encryptedFileLocation))) {
+            output.write(encryptedBytes);
+        }
+        catch(FileNotFoundException e) {
+            throw new RuntimeException("File not found", e);
+        }
 
         /* Encoded Base64 string that can be used for configuration */
         String base64EncodedEncryptedPassword = Base64.getEncoder().encodeToString(encryptedBytes);

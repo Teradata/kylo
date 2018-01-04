@@ -79,10 +79,6 @@ public class ConfigurationProperties {
         return  System.getProperty("kylo.nifi.configPath");
     }
 
-    private FileInputStream getConfigFileInputStream(String location) throws Exception{
-        return new FileInputStream(location + "/config.properties");
-    }
-
     private File getConfigFile(String location){
         return new File(location + "/config.properties");
     }
@@ -95,10 +91,14 @@ public class ConfigurationProperties {
             location = getConfigLocation();
             properties.clear();
             File file = getConfigFile(getConfigLocation());
-            properties.load(getConfigFileInputStream(location));
-            setValues();
-            if(file.exists()) {
-                lastModified = file.lastModified();
+            try(FileInputStream fileInputStream = new FileInputStream(location + "/config.properties")) {
+                properties.load(fileInputStream);
+                setValues();
+                if (file.exists()) {
+                    lastModified = file.lastModified();
+                }
+            } catch(Exception e) {
+                log.error("Error loading file from inputstream", e);
             }
         } catch (Exception e) {
             log.error("Unable to load properties for location: {} , {} ", location, e.getMessage(), e);
