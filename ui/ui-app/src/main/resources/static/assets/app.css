@@ -208,7 +208,11 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-right-16 {
-  padding-left: 16px;
+  padding-right: 16px;
+}
+
+.layout-padding-left-25 {
+  padding-left: 25px;
 }
 
 .layout-padding-indent {
@@ -238,6 +242,10 @@ md-sidenav .collapse-btn {
 
 .layout-padding-bottom {
   padding-bottom: 10px;
+}
+
+.layout-padding-bottom-15 {
+  padding-bottom: 15px;
 }
 
 .layout-margin-left-right-0 {

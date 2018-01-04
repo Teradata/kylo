@@ -4,10 +4,11 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
 
         var self = this;
 
+        self.datasource = $transition$.params().datasource;
         self.schema = $transition$.params().schema;
         this.tables =[];
         this.loading = true;
-        this.cardTitle = "Tables";
+        this.cardTitle = self.datasource.name + " " + self.schema + " tables";
         this.pageName = 'Tables';
         self.filterInternal = true;
 
@@ -46,6 +47,10 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             self.currentPage = page;
         };
 
+        this.onClickTable = function(table){
+            StateService.FeedManager().Table().navigateToTable(self.datasource, self.schema, table.tableName);
+        };
+
         /**
          * Called when a user Clicks on a table Option
          * @param option
@@ -78,29 +83,49 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             }) !== undefined;
         }
 
-        function getTables() {
+        var successFn = function (response) {
+            var _tables = response.hive.data;
+            var feedNames = response.feedNames.data;
+            if (_tables) {
+                angular.forEach(_tables, function (table) {
+                    var tableName = table.substr(table.indexOf(".") + 1);
+                    self.tables.push({tableName: tableName, fullName: table, lowerFullName: table.toLowerCase()});
+                })
+            }
+            self.selectedTables = _.filter(self.tables, function (t) {
+                var isKnown = isKnownFeedTable(feedNames, self.schema.toLowerCase());
+                return !isKnown || (isKnown && !endsWithReservedWord(t));
+            });
+            self.loading = false;
+            deferred.resolve();
+        };
+        var errorFn = function (err) {
+            self.loading = false;
+            deferred.reject(err);
+        };
+
+        function getNonHiveTables() {
             var deferred = $q.defer();
 
-            var successFn = function (response) {
-                var _tables = response.hive.data;
-                var feedNames = response.feedNames.data;
-                if (_tables) {
-                    angular.forEach(_tables, function (table) {
-                        var tableName = table.substr(table.indexOf(".") + 1);
-                        self.tables.push({tableName: tableName, fullName: table, lowerFullName: table.toLowerCase()});
-                    })
-                }
-                self.selectedTables = _.filter(self.tables, function (t) {
-                    var isKnown = isKnownFeedTable(feedNames, self.schema.toLowerCase());
-                    return !isKnown || (isKnown && !endsWithReservedWord(t));
-                });
-                self.loading = false;
-                deferred.resolve();
+            var limit = PaginationDataService.rowsPerPage(self.pageName);
+            var start = limit == 'All' ? 0 : (limit * self.currentPage) - limit;
+            var sort = self.paginationData.sort;
+            var filter = self.paginationData.filter;
+            var params = {schema: self.schema, start: start, limit: limit, sort: sort, filter: filter};
+
+            var promises = {
+                "hive": $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + self.datasource.id + "/tables", {params: params}),
+                "feedNames": FeedService.getFeedNames()
             };
-            var errorFn = function (err) {
-                self.loading = false;
-                deferred.reject(err);
-            };
+
+            $q.all(promises).then(successFn, errorFn);
+
+            return deferred.promise;
+        }
+
+        function getHiveTables() {
+            var deferred = $q.defer();
+
             var promises = {
                 "hive": $http.get(RestUrlService.HIVE_SERVICE_URL + "/schemas/" + self.schema + "/tables"),
                 "feedNames": FeedService.getFeedNames()
@@ -110,11 +135,11 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             return deferred.promise;
         }
 
-        self.onClickTable = function(table){
-            StateService.FeedManager().Table().navigateToTable(self.schema, table.tableName);
-        };
-
-        getTables();
+        if (self.datasource.isHive) {
+            getHiveTables();
+        } else {
+            getNonHiveTables();
+        }
 
     };
 

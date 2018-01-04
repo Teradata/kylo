@@ -126,6 +126,26 @@ public class DBCPConnectionPoolService {
     }
 
     /**
+     * Returns a list of schema names for the specified data source.
+     *
+     * @param datasource the data source
+     * @return a list of schema names, or {@code null} if not accessible
+     */
+    @Nullable
+    public List<String> getSchemaNamesForDatasource(@Nonnull final JdbcDatasource datasource) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService.get());
+            final DescribeTableControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            return getSchemaNamesForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot get table names for data source: {}", datasource);
+            return null;
+        }
+    }
+
+    /**
      * Returns a list of table names for the specified data source.
      *
      * @param datasource the data source
@@ -223,6 +243,35 @@ public class DBCPConnectionPoolService {
      * @param serviceProperties properties describing where and what to look for
      * @return a list of schema.table_name
      */
+    private List<String> getSchemaNamesForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
+
+        if (serviceProperties != null) {
+            Map<String, String> properties = serviceProperties.useEnvironmentProperties()
+                                             ? nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
+                                                                                                         serviceProperties.getControllerServiceName())
+                                             : serviceProperties.getControllerServiceDTO().getProperties();
+
+            PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
+
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+
+            if (valid) {
+                log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
+                         dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.listCatalogs();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return a list of schema.table_name
+     *
+     * @param serviceProperties properties describing where and what to look for
+     * @return a list of schema.table_name
+     */
     private List<String> getTableNamesForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
 
         if (serviceProperties != null) {
@@ -240,7 +289,7 @@ public class DBCPConnectionPoolService {
                          dataSourceProperties.getUrl());
                 DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-                return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+                return schemaParser.listTables(serviceProperties.getSchemaName());
             }
         }
         return null;

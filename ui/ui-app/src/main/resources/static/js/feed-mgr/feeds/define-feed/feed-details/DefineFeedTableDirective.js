@@ -145,11 +145,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
         function initFeedColumn(columnDef){
+            // console.log('init feed column');
             if (columnDef.origName == undefined) {
                 columnDef.origName = columnDef.name;
                 columnDef.origDataType = columnDef.derivedDataType;
                 columnDef.deleted = false;
                 columnDef.history = [];
+                initValidationErrors(columnDef); //this is required when schema is created from db connection
                 self.addHistoryItem(columnDef);
             }
         }
@@ -181,6 +183,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @returns {*|{name, description, dataType, precisionScale, dataTypeDisplay, primaryKey, nullable, sampleValues, selectedSampleValue, isValid, _id}}
          */
         function newColumnDefinition() {
+            // console.log('new column def');
             return FeedService.newTableFieldDefinition();
         }
 
@@ -478,6 +481,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             }
         }
 
+        function initValidationErrors(columnDef) {
+            columnDef.validationErrors = {
+                name: {},
+                precision: {}
+            };
+        }
+
         this.validateColumn = function(columnDef) {
             if (!isDeleted(columnDef)) {
                 columnDef.validationErrors.name.reserved = columnDef.name === "processing_dttm";
@@ -486,10 +496,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 columnDef.validationErrors.name.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
                 columnDef.validationErrors.precision.pattern = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
             } else {
-                columnDef.validationErrors = {
-                    name: {},
-                    precision: {}
-                };
+                initValidationErrors(columnDef);
             }
 
             //update all columns at all times, because column removal may fix not unique name error on other columns
@@ -652,7 +659,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
         function validate(validForm) {
-            // console.log("validate valid ? " + validForm);
+            console.log("validate valid ? " + validForm);
             if (_.isUndefined(self.defineFeedTableForm.invalidColumns)) {
                 self.defineFeedTableForm.invalidColumns = [];
             }

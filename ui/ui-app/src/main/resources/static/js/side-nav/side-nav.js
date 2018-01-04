@@ -92,7 +92,7 @@ define(['angular','side-nav/module-name', 'constants/AccessConstants', 'side-nav
                     links.push({sref: "categories",type:'link', icon: "folder_special", text: "Categories", permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
                     links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: "SLA", permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                     links.push({sref: "visual-query",type:'link', icon: "transform", text: "Visual Query", fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
-                    links.push({sref: "schemas",type:'link', icon: "grid_on", text: "Catalog", permission: AccessConstants.UI_STATES.TABLES.permissions});
+                    links.push({sref: "catalog",type:'link', icon: "grid_on", text: "Catalog", permission: AccessConstants.UI_STATES.TABLES.permissions});
                     addExtensionLinks(MENU_KEY.FEED_MGR, links);
                     menu.links = links;
                     menuMap[MENU_KEY.FEED_MGR] = menu;

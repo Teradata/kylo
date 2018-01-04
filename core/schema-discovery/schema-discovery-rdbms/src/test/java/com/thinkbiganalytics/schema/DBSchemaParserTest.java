@@ -46,10 +46,8 @@ public class DBSchemaParserTest {
 
     @Test
     public void test() {
-        final String TABLE_SEARCH_PATTERN = "DBCInfo%";
-
         DBSchemaParser schemaParser = new DBSchemaParser(dataSource, new KerberosTicketConfiguration());
-        List<String> tables = schemaParser.listTables(null, TABLE_SEARCH_PATTERN);
+        List<String> tables = schemaParser.listTables(null);
         for (final String table : tables) {
             System.out.println(table);
         }

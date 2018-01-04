@@ -5,9 +5,32 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
      * LAZY loaded in from /app.js
      */
     module.config(['$stateProvider',function ($stateProvider) {
+        $stateProvider.state(AccessConstants.UI_STATES.CATALOG.state,{
+            url:'/catalog',
+            params: {
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/feed-mgr/tables/catalog.html',
+                    controller:"CatalogController",
+                    controllerAs:"vm"
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['feed-mgr/tables/CatalogController'])
+            },
+            data:{
+                breadcrumbRoot:true,
+                displayName:'Catalog',
+                module:moduleName,
+                permissions:AccessConstants.UI_STATES.CATALOG.permissions
+            }
+        });
+
         $stateProvider.state(AccessConstants.UI_STATES.SCHEMAS.state,{
             url:'/schemas',
             params: {
+                datasource: null
             },
             views: {
                 'content': {
@@ -20,7 +43,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
                 loadMyCtrl: lazyLoadController(['feed-mgr/tables/SchemasController'])
             },
             data:{
-                breadcrumbRoot:true,
+                breadcrumbRoot:false,
                 displayName:'Schemas',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.SCHEMAS.permissions
@@ -30,7 +53,8 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
             url:'/schemas/{schema}',
             params: {
-                schema:null
+                datasource: null,
+                schema: null
             },
             views: {
                 'content': {
@@ -53,8 +77,9 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
             url:'/schemas/{schema}/{tableName}',
             params: {
-                schema:null,
-                tableName:null
+                datasource: null,
+                schema: null,
+                tableName: null
             },
             views: {
                 'content': {

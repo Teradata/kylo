@@ -20,8 +20,10 @@
 <div >
 
   <card-layout header-css="filter-header" class="centered">
-    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                    on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+    <header-section layout="row">
+      <div tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+           on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+      </div>
     </header-section>
 
     <body-section>
@@ -31,6 +33,7 @@
       </div>
 
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
+        <md-divider></md-divider>
         <md-list flex layout-fill class="list-item-table">
           <md-list-item class="md-secondary" dir-paginate="schema in vm.schemas |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
                         pagination-id="schemas"
