@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.nifi.core.api.metadata.ActiveWaterMarksCancelledException;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
@@ -44,6 +45,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -149,9 +151,9 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         } else if (param.timestamp != activeTimestamp) {
             // If the water mark timestamp does not match the one recorded as an active water mark this means 
             // this flowfile's water mark has been canceled and another flow file should be considered the active one.  
-            // In this case this water mark value has been superseded and its value should not be committed.
-            log.warn("Received request to commit a water mark version that is no longer active: {}/{}", waterMarkName, param.timestamp);
-            return resultFF;
+            // So this water mark value has been superseded and its value should not be committed and a canceled exception thrown.
+            log.info("Received request to commit a water mark version that is no longer active: {}/{}", waterMarkName, param.timestamp);
+            throw new ActiveWaterMarksCancelledException(feedId, waterMarkName);
         } 
 
         try {
@@ -171,13 +173,22 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     @Override
     public FlowFile commitAllWaterMarks(ProcessSession session, FlowFile ff, String feedId) {
         FlowFile resultFF = ff;
+        Set<String> cancelledWaterMarks = new HashSet<>();
 
         // TODO do more efficiently
         for (String waterMarkName : new HashSet<String>(getCurrentWaterMarksAttr(ff).keySet())) {
-            resultFF = commitWaterMark(session, resultFF, feedId, waterMarkName);
+            try {
+                resultFF = commitWaterMark(session, resultFF, feedId, waterMarkName);
+            } catch (ActiveWaterMarksCancelledException e) {
+                cancelledWaterMarks.addAll(e.getWaterMarkNames());
+            }
         }
 
-        return resultFF;
+        if (cancelledWaterMarks.size() > 0) {
+            throw new ActiveWaterMarksCancelledException(feedId, cancelledWaterMarks);
+        } else {
+            return resultFF;
+        }
     }
 
     /* (non-Javadoc)
