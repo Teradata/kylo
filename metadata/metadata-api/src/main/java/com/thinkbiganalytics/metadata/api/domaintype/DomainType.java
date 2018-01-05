@@ -53,6 +53,26 @@ public interface DomainType extends Serializable {
     void setFieldJson(String value);
 
     /**
+     * Gets the regular expression flags for matching field names.
+     */
+    String getFieldNameFlags();
+
+    /**
+     * Sets the regular expression flags for matching field names.
+     */
+    void setFieldNameFlags(String value);
+
+    /**
+     * Gets the regular expression pattern for matching field names.
+     */
+    String getFieldNamePattern();
+
+    /**
+     * Sets the regular expression pattern for matching field names.
+     */
+    void setFieldNamePattern(String value);
+
+    /**
      * Gets the field policy as a JSON document.
      */
     String getFieldPolicyJson();
@@ -83,22 +103,22 @@ public interface DomainType extends Serializable {
     void setIconColor(String value);
 
     /**
-     * Gets the flags for the regular expression.
+     * Gets the regular expression flags for matching sample data.
      */
     String getRegexFlags();
 
     /**
-     * Sets the flags for the regular expression.
+     * Sets the regular expression flags for matching sample data.
      */
     void setRegexFlags(String value);
 
     /**
-     * Gets the regular expression for matching sample data.
+     * Gets the regular expression pattern for matching sample data.
      */
     String getRegexPattern();
 
     /**
-     * Sets the regular expression for matching sample data.
+     * Sets the regular expression pattern for matching sample data.
      */
     void setRegexPattern(String value);
 

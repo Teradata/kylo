@@ -1,0 +1,35 @@
+<form name="$ctrl.form">
+  <vertical-section-layout section-title="Patterns" on-save-edit="$ctrl.onSave()" on-edit="$ctrl.onEdit()" on-cancel-edit="$ctrl.onCancel()" editable="$ctrl.isEditable" is-valid="$ctrl.form.$valid"
+                           allow-edit="$ctrl.allowEdit">
+    <readonly-section>
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Column Name</span>
+        <regexp-editor flex ng-model="$ctrl.columnNameValue" readonly></regexp-editor>
+      </div>
+
+      <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Sample Values</span>
+        <regexp-editor flex ng-model="$ctrl.sampleDataValue" readonly></regexp-editor>
+      </div>
+    </readonly-section>
+    <editable-section>
+      <p style="margin: 0 0 32px 0;">This domain type will be automatically applied to columns of new feeds if those columns match the regular expressions below:</p>
+
+      <md-input-container class="md-block">
+        <label>Column Name</label>
+        <regexp-editor flex name="columnNameRegex" ng-model="$ctrl.columnNameEditValue" on-syntax-error="$ctrl.columnNameSyntaxError = error"></regexp-editor>
+        <div ng-messages="$ctrl.form.columnNameRegex.$error" md-auto-hide="false">
+          <div ng-message="syntaxError">{{$ctrl.columnNameSyntaxError}}</div>
+        </div>
+      </md-input-container>
+
+      <md-input-container class="md-block">
+        <label>Sample Values</label>
+        <regexp-editor flex name="sampleDataRegex" ng-model="$ctrl.sampleDataEditValue" on-syntax-error="$ctrl.sampleDataSyntaxError = error"></regexp-editor>
+        <div ng-messages="$ctrl.form.sampleDataRegex.$error" md-auto-hide="false">
+          <div ng-message="syntaxError">{{$ctrl.sampleDataSyntaxError}}</div>
+        </div>
+      </md-input-container>
+    </editable-section>
+  </vertical-section-layout>
+</form>

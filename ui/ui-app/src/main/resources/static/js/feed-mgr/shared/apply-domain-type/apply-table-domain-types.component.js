@@ -17,6 +17,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 columnDefs: [
                     { name: "name", displayName: "Column" },
                     { name: "domainType", displayName: "Domain Type", cellTemplate: ApplyTableDomainTypesDialog.DOMAIN_TYPE_CELL_TEMPLATE },
+                    { name: "newName", displayName: "New Name" },
                     { name: "dataType", displayName: "Original Type" },
                     { name: "newType", displayName: "New Type" }
                 ],
@@ -46,7 +47,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     name: field.name,
                     dataType: field.derivedDataType,
                     domainType: domainType,
-                    newType: domainType.field.derivedDataType
+                    newName: domainType.field.name ? domainType.field.name : field.name,
+                    newType: domainType.field.derivedDataType ? domainType.field.derivedDataType : field.derivedDataType
                 };
             });
         }

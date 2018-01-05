@@ -35,6 +35,8 @@ public class DomainType {
     private String description;
     @JsonDeserialize(as = DefaultField.class)
     private Field field;
+    private String fieldNameFlags;
+    private String fieldNamePattern;
     private FieldPolicy fieldPolicy;
     private String icon;
     private String iconColor;
@@ -57,6 +59,22 @@ public class DomainType {
 
     public void setField(Field field) {
         this.field = field;
+    }
+
+    public String getFieldNameFlags() {
+        return fieldNameFlags;
+    }
+
+    public void setFieldNameFlags(String fieldNameFlags) {
+        this.fieldNameFlags = fieldNameFlags;
+    }
+
+    public String getFieldNamePattern() {
+        return fieldNamePattern;
+    }
+
+    public void setFieldNamePattern(String fieldNamePattern) {
+        this.fieldNamePattern = fieldNamePattern;
     }
 
     public FieldPolicy getFieldPolicy() {

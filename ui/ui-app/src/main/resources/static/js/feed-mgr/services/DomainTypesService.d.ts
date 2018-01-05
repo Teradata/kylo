@@ -21,6 +21,16 @@ declare interface DomainType {
     field: any;
 
     /**
+     * Regular expression flags for matching field names.
+     */
+    fieldNameFlags: string;
+
+    /**
+     * Regular expression pattern for matching field names.
+     */
+    fieldNamePattern: string;
+
+    /**
      * The field policy.
      */
     fieldPolicy: any;
@@ -36,12 +46,12 @@ declare interface DomainType {
     iconColor: string;
 
     /**
-     * The flags for the regular expression.
+     * Regular expression flags for matching sample values.
      */
     regexFlags: string;
 
     /**
-     * The regular expression for matching sample data.
+     * Regular expression pattern for matching sample values.
      */
     regexPattern: string;
 
@@ -67,11 +77,11 @@ declare class DomainTypesService {
     /**
      * Detects the appropriate domain type for the specified values.
      *
-     * @param {(string|string[])} values the values to test
-     * @param {DomainType[]} domainTypes the list of domain types
-     * @returns {DomainType|null} the matching domain type or null if none match
+     * @param {{name: string, sampleValues: (string|string[])}} columnDef - the column definition
+     * @param {DomainType[]} domainTypes - the list of domain types
+     * @returns {DomainType|null} - the matching domain type or null if none match
      */
-    detectDomainType(values: string | string[], domainTypes: DomainType[]): DomainType | null;
+    detectDomainType(columnDef: { name: string, sampleValues: string | string[] }, domainTypes: DomainType[]): DomainType | null;
 
     /**
      * Finds all domain types.
@@ -89,7 +99,7 @@ declare class DomainTypesService {
     findById(id: string): angular.IPromise<DomainType>;
 
     /**
-     * Gets the RegExp for the specified domain type.
+     * Gets the specified domain type's regular expression for matching sample values.
      *
      * @param {DomainType} domainType the domain type
      * @returns {(RegExp|null)} the regular expression

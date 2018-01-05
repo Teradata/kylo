@@ -34,13 +34,18 @@ define(["angular", "feed-mgr/domain-types/module-name", "kylo-utils/LazyLoadUtil
                 },
                 views: {
                     content: {
-                        templateUrl: "js/feed-mgr/domain-types/domain-type-details.html",
-                        controller: "DomainTypeDetailsController",
-                        controllerAs: "vm"
+                        component: "domainTypeDetailsComponent"
                     }
                 },
                 resolve: {
-                    loadMyCtrl: lazyLoadController(["feed-mgr/domain-types/DomainTypeDetailsController"])
+                    model: function ($transition$, DomainTypesService) {
+                        if (angular.isString($transition$.params().domainTypeId)) {
+                            return DomainTypesService.findById($transition$.params().domainTypeId);
+                        } else {
+                            return DomainTypesService.newDomainType();
+                        }
+                    },
+                    loadMyCtrl: lazyLoadController(["feed-mgr/domain-types/details/details.component"])
                 },
                 data: {
                     breadcrumbRoot: false,
@@ -57,7 +62,7 @@ define(["angular", "feed-mgr/domain-types/module-name", "kylo-utils/LazyLoadUtil
                 name: 'kylo',
                 files: [
                     "js/feed-mgr/domain-types/codemirror-regex.css",
-                    "js/feed-mgr/domain-types/domain-types.css"
+                    "js/feed-mgr/domain-types/details/matchers/regexp-editor.component.css"
                 ]
             });
         }]);
