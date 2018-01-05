@@ -362,6 +362,8 @@
 
 [tba:domainType] > mix:referenceable, mix:title
 	- tba:fieldJson (STRING)
+	- tba:fieldNameFlags (STRING)
+	- tba:fieldNamePattern (STRING)
 	- tba:fieldPolicyJson (STRING)
 	- tba:icon (STRING)
 	- tba:iconColor (STRING)

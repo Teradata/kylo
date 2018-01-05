@@ -48,7 +48,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         var self = this;
 
-        var NAME_PATTERN = /^[a-zA-Z0-9_-\s\)\(]*$/;
+        var NAME_PATTERN = /^[a-zA-Z0-9_\s\)\(-]*$/;
         var PRECISION_SCALE_PATTERN = /^\d+,\d+$/;
         var MAX_COLUMN_LENGTH = 767;
 
@@ -286,12 +286,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
             // Detect domain type and select sample value
             var policy = newColumnPolicy();
-            if (syncFieldPolicies && columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
+            if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
                 columnDef.selectedSampleValue = columnDef.sampleValues[0];
-                var domainType = DomainTypesService.detectDomainType(columnDef.sampleValues, self.availableDomainTypes);
-                if (domainType !== null) {
-                    FeedService.setDomainTypeForField(columnDef, policy, domainType);
-                }
             } else {
                 columnDef.selectedSampleValue = null;
             }
@@ -307,22 +303,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.validateColumn(columnDef);
             if (syncFieldPolicies == undefined || syncFieldPolicies == true) {
                 FeedService.syncTableFieldPolicyNames();
-            }
-        };
-
-        /**
-         * Detect the domain type for the specified column.
-         *
-         * @param columnDef - the column
-         * @returns the domain type or null
-         */
-        this.detectDomainType = function (columnDef) {
-            if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
-                columnDef.selectedSampleValue = columnDef.sampleValues[0];
-                return DomainTypesService.detectDomainType(columnDef.sampleValues, self.availableDomainTypes);
-            } else {
-                columnDef.selectedSampleValue = null;
-                return null;
             }
         };
 
@@ -443,7 +423,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          *  - ensure that partition names are unique since the new field name could clash with an existing partition
          * @param columnDef
          */
-        this.onNameFieldChange = function(columnDef) {
+        this.onNameFieldChange = function(columnDef, index) {
             // console.log("onNameFieldChange, columnDef", columnDef);
 
             if (self.useUnderscoreInsteadOfSpaces) {
@@ -466,41 +446,39 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.validateColumn(columnDef);
             partitionNamesUnique();
             FeedService.syncTableFieldPolicyNames();
-        };
-
-        /**
-         * Called when a data type field changes.
-         * - Ensures that the field data type matches the domain data type.
-         */
-        this.onDataTypeFieldChange = function(columnDef, index) {
-            self.onNameFieldChange(columnDef);
 
             // Check if column data type matches domain data type
             var policy = self.model.table.fieldPolicies[index];
             var domainType = policy.$currentDomainType;
 
-            if (policy.domainTypeId && domainType.field && domainType.field.derivedDataType && columnDef.derivedDataType !== domainType.field.derivedDataType) {
-                $mdDialog.show({
-                    controller: "DomainDataTypeConflictDialog",
-                    escapeToClose: false,
-                    fullscreen: true,
-                    parent: angular.element(document.body),
-                    templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-data-type-conflict.component.html",
-                    locals: {
-                        data: {
-                            columnDef: columnDef,
-                            domainType: domainType
+            if (policy.domainTypeId && domainType.field && columnDef.$allowDomainTypeConflict !== true) {
+                var nameChanged = (domainType.field.name && columnDef.name !== domainType.field.name);
+                var dataTypeChanged = (domainType.field.derivedDataType && columnDef.derivedDataType !== domainType.field.derivedDataType);
+                if (nameChanged || dataTypeChanged) {
+                    $mdDialog.show({
+                        controller: "DomainTypeConflictDialog",
+                        escapeToClose: false,
+                        fullscreen: true,
+                        parent: angular.element(document.body),
+                        templateUrl: "js/feed-mgr/shared/apply-domain-type/domain-type-conflict.component.html",
+                        locals: {
+                            data: {
+                                columnDef: columnDef,
+                                domainType: domainType
+                            }
                         }
-                    }
-                })
-                    .then(function (keep) {
-                        if (keep === false) {
-                            delete policy.$currentDomainType;
-                            delete policy.domainTypeId;
-                        }
-                    }, function () {
-                        self.undoColumn(index);
-                    });
+                    })
+                        .then(function (keep) {
+                            if (keep) {
+                                columnDef.$allowDomainTypeConflict = true;
+                            } else {
+                                delete policy.$currentDomainType;
+                                delete policy.domainTypeId;
+                            }
+                        }, function () {
+                            self.undoColumn(index);
+                        });
+                }
             }
         };
 
@@ -893,11 +871,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             var data = {domainTypes: [], fields: []};
 
             self.model.table.tableSchema.fields.forEach(function (field, index) {
-                var domainType = self.detectDomainType(field);
+                var domainType = DomainTypesService.detectDomainType(field, self.availableDomainTypes);
                 if (domainType !== null) {
                     if (DomainTypesService.matchesField(domainType, field)) {
                         // Domain type can be applied immediately
                         FeedService.setDomainTypeForField(field, self.model.table.fieldPolicies[index], domainType);
+                        field.history = [];
+                        self.addHistoryItem(field);
                     } else {
                         // Domain type needs user confirmation
                         data.domainTypes.push(domainType);
@@ -927,6 +907,8 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                                 return element.name === selection.name;
                             });
                             FeedService.setDomainTypeForField(data.fields[fieldIndex], self.model.table.fieldPolicies[policyIndex], data.domainTypes[fieldIndex]);
+                            data.fields[fieldIndex].history = [];
+                            self.addHistoryItem(data.fields[fieldIndex]);
                         });
                     }, function () {
                         // ignore cancel
