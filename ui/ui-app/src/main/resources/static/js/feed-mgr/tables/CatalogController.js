@@ -15,7 +15,10 @@ define(['angular', 'feed-mgr/tables/module-name'], function (angular, moduleName
 
         function getDataSources() {
             var successFn = function (response) {
-                self.datasources.push.apply(self.datasources, response);
+                var jdbcSources = _.filter(response, function(ds) {
+                    return ds['@type'] === 'JdbcDatasource';
+                });
+                self.datasources.push.apply(self.datasources, jdbcSources);
                 self.loading = false;
             };
             var errorFn = function (err) {
