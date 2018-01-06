@@ -28,18 +28,18 @@ import com.thinkbiganalytics.metadata.api.MetadataException;
 /**
  *
  */
-public class FeedNotFoundExcepton extends MetadataException {
+public class FeedNotFoundException extends MetadataException {
 
     private static final long serialVersionUID = 3867336790441208367L;
 
     private Feed.ID id;
 
-    public FeedNotFoundExcepton(Feed.ID id) {
+    public FeedNotFoundException(Feed.ID id) {
         super();
         this.id = id;
     }
 
-    public FeedNotFoundExcepton(String message, Feed.ID id) {
+    public FeedNotFoundException(String message, Feed.ID id) {
         super(message);
         this.id = id;
     }
