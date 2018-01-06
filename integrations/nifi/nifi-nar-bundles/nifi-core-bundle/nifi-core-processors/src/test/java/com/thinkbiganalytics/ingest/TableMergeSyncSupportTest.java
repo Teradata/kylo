@@ -432,6 +432,65 @@ public class TableMergeSyncSupportTest {
 
     @Test
     /**
+     * Tests that dedupe and merge works correctly when the input data contains duplicated rows
+     */
+    public void testMergeNonPartitionedWithDuplicatedInputRows() throws Exception {
+        String targetTableNP = "employeepd_np";
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // should have 4 records from the valid table inserted
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(4, results.size());
+
+        // Now create a new record that is duplicated in the valid table
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974360') values "
+                          + "(200, '1', 'Helen', 'ABC', '94611', '555-1212', 'helen@acme.org', '2016-01-02', 'USA'),"
+                          + "(200, '1', 'Helen', 'ABC', '94611', '555-1212', 'helen@acme.org', '2016-01-02', 'USA');");
+
+
+        // Now merge the records into the table
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974360", true);
+
+        // there should now be 5 records in the table
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // only one record from the source table should have been inserted
+
+        results =  hiveShell.executeQuery("select count(*) from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 200");
+        assertEquals(1, results.size());
+        assertEquals("1", results.get(0));
+
+        // Now create a new record that is a duplicate of one already in the table and is duplicated in the source table
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974390') values "
+                          + "(2,'1','Joe','ABC','94550','555-1212','sally@acme.org','2016-01-01','USA'),"
+                          + "(2,'1','Joe','ABC','94550','555-1212','sally@acme.org','2016-01-01','USA');");
+
+        // Now merge the records into the table
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974390", true);
+
+        // there should still be just 5 records in the table
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // there should be only one row for the inserted employee
+        results =  hiveShell.executeQuery("select count(*) from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 2");
+        assertEquals(1, results.size());
+        assertEquals("1", results.get(0));
+
+        // the processing_dttm of that row should be the original one in the target table
+
+        results =  hiveShell.executeQuery("select processing_dttm from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 2");
+        assertEquals(1, results.size());
+        assertEquals("20160119074340", results.get(0));
+    }
+
+
+    @Test
+    /**
      * Test Rolling Sync.
      */
     public void testRollingSync() throws Exception {
