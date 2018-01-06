@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -225,6 +226,15 @@ public class InMemoryFeedManagerFeedService implements FeedManagerFeedService {
         }
         
         return Optional.ofNullable(version);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService#getFeedVersionDifference(java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override

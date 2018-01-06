@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.flipkart.zjsonpatch.JsonDiff;
+import com.flipkart.zjsonpatch.JsonPatch;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -24,6 +31,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -53,6 +61,7 @@ import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.User;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -508,5 +517,29 @@ public class FeedModelTransform {
     private Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
         final Set<UserFieldDescriptor> userFields = feedProvider.getUserFields();
         return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId()).orElse(Collections.emptySet())) : userFields;
+    }
+
+    /**
+     * @param ev1
+     * @param ev2
+     */
+    public EntityVersionDifference generateDifference(com.thinkbiganalytics.feedmgr.rest.model.EntityVersion ev1, 
+                                                      com.thinkbiganalytics.feedmgr.rest.model.EntityVersion ev2) {
+        try {
+            ObjectMapper om = new ObjectMapper();
+            ObjectWriter ow = om.writer();
+            ObjectReader or = om.reader();
+            String ent1Str = ow.writeValueAsString(ev1.getEntity());
+            String ent2Str = ow.writeValueAsString(ev2.getEntity());
+            JsonNode node1 = or.readTree(ent1Str);
+            JsonNode node2 = or.readTree(ent2Str);
+            JsonNode diff = JsonDiff.asJson(node2, node1);
+            com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(ev2.getId(), ev2.getName(), ev2.getCreatedDate());
+            
+            return new EntityVersionDifference(fromNoContent, ev2, diff);
+        } catch (IOException e) {
+            throw new ModelTransformException("Failed to generate entity difference between entity versions " + ev1.getId() + " and " + ev2.getId());
+        }
     }
 }

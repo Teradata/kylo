@@ -27,6 +27,7 @@ import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -47,6 +48,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -502,6 +504,25 @@ public class FeedRestController {
             return getMetadataService().getFeedVersion(feedId, versionId, includeContent)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
+    @GET
+    @Path("/{feedId}/versions/{versionId1}/diff/{versionId2}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFeedVersionDifference(@PathParam("feedId") String feedId,
+                                             @PathParam("versionId1") String versionId1,
+                                             @PathParam("versionId2") String versionId2) {
+        try {
+            EntityVersionDifference diff = getMetadataService().getFeedVersionDifference(feedId, versionId1, versionId2);
+            return Response.ok(diff).build();
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {

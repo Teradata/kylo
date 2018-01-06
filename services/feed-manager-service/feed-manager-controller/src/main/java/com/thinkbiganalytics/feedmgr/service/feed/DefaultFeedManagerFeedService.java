@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -63,6 +64,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -325,6 +327,28 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
                 .map(version -> feedModelTransform.domainToFeedVersion(version));
+        });
+    }
+    
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVerId1 = feedProvider.resolveVersion(versionId1);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVerId2 = feedProvider.resolveVersion(versionId2);
+            
+            Optional<EntityVersion> firstVer = feedProvider.findVersion(domainFeedId, domainVerId1, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            Optional<EntityVersion> secondVer = feedProvider.findVersion(domainFeedId, domainVerId2, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            
+            return firstVer.map(ev1 -> {
+                return secondVer.map(ev2 -> {
+                    return feedModelTransform.generateDifference(ev1, ev2);
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
         });
     }
 

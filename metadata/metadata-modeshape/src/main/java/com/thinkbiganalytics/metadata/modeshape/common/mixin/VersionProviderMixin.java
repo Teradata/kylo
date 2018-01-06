@@ -83,7 +83,7 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
 
     /**
      * Implementers should return an optional containing the node considered to be the one
-     * that is the root of the versionable hierarch of the entity.
+     * that is the root of the versionable hierarchy of the entity.
      * @param id the entity ID
      * @return an optional containing the versionable node, or an empty optional if no entity exists with the given ID
      */
