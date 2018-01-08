@@ -71,7 +71,6 @@ public class ElasticSearchRestService implements Search {
     private final static String VERSION_TWO = "2";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
-    private RestClient restClient;
 
     public ElasticSearchRestService(ElasticSearchRestClientConfiguration config) {
         this.restClientConfig = config;
@@ -80,8 +79,7 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull String schema, @Nonnull String table) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()) {
             //Delete schema
             restClient.performRequest(
                 DELETE_METHOD,
@@ -118,15 +116,12 @@ public class ElasticSearchRestService implements Search {
             log.error("Http protocol error for delete document for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", clientProtocolException);
         } catch (IOException ioException) {
             log.error("IO Error in rest client", ioException);
-        } finally {
-            closeRestClient();
         }
     }
 
     @Override
     public void commit(@Nonnull String indexName) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()){
             restClient.performRequest(
                 POST_METHOD,
                 getIndexRefreshEndPoint(indexName)
@@ -138,15 +133,12 @@ public class ElasticSearchRestService implements Search {
             log.error("Http protocol error for refresh for index name {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
             log.error("IO Error in rest client", ioException);
-        } finally {
-            closeRestClient();
         }
     }
 
     @Override
     public void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()){
             JSONObject jsonContent = new JSONObject(fields);
             HttpEntity httpEntity = new NStringEntity(jsonContent.toString(), ContentType.APPLICATION_JSON);
             restClient.performRequest(
@@ -161,8 +153,6 @@ public class ElasticSearchRestService implements Search {
             log.debug("Http protocol error for write for index {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
             log.error("IO Error in rest client", ioException);
-        } finally {
-            closeRestClient();
         }
     }
 
@@ -205,18 +195,15 @@ public class ElasticSearchRestService implements Search {
         return elasticSearchRestSearchResultTransform.transformRestResult(query, size, start, restSearchResponse);
     }
 
-    private void buildRestClient() {
-        if (this.restClient == null) {
-            restClient = RestClient.builder(
+    private RestClient buildRestClient() {
+        return RestClient.builder(
                 new HttpHost(restClientConfig.getHost(),
                              restClientConfig.getPort(),
-                             HTTP_PROTOCOL))
-                .build();
-        }
+                             HTTP_PROTOCOL)).build();
     }
 
     private ElasticSearchRestSearchResponse executeRestSearch(String query, int size, int start) {
-        try {
+        try (RestClient restClient = buildRestClient()) {
             Response response = restClient.performRequest(getHttpMethod(),
                                                           getSearchEndpoint(),
                                                           getParamsMap(),
@@ -226,10 +213,7 @@ public class ElasticSearchRestService implements Search {
 
         } catch (IOException ioe) {
             log.error("An error occurred during submitting search request for query: {" + query + "}, start: {" + start + "}, size: {" + size + "}", ioe);
-        } finally {
-            closeRestClient();
         }
-
         return null;
     }
 
@@ -345,18 +329,6 @@ public class ElasticSearchRestService implements Search {
         }
 
         return null;
-    }
-
-    private void closeRestClient() {
-        try {
-            if (restClient != null) {
-                restClient.close();
-                restClient = null;
-            }
-        } catch (IOException ioe) {
-            log.error("An error occurred during closing rest client");
-            ioe.printStackTrace();
-        }
     }
 
     private Map<String, String> getParamsMap() {
