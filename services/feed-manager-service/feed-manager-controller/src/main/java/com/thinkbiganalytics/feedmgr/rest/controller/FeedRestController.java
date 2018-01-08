@@ -986,7 +986,7 @@ public class FeedRestController {
         return new FileUploadContext(dropzone, regexFileFilter);
     }
 
-    private List<NifiProperty> getNifiProperties(@PathParam("feedId") String feedId) {
+    private List<NifiProperty> getNifiProperties(String feedId) {
         FeedMetadata feed = getMetadataService().getFeedById(feedId, false);
         // Derive path and file
         feed = registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
