@@ -19,7 +19,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     };
 
-    var controller =  function($scope,$http,FeedService, RestUrlService, HiveService, Utils,BroadcastService) {
+    var controller =  function($scope,$http,$window,FeedService, RestUrlService, HiveService, Utils,BroadcastService,FattableService) {
 
         var self = this;
 
@@ -38,21 +38,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         //noinspection JSUnusedGlobalSymbols
         this.onLimitChange = function() {
-            getProfileValidation();
+            getProfileValidation().then(setupTable);
         };
 
         //noinspection JSUnusedGlobalSymbols
         this.onFilterChange = function() {
-            getProfileValidation();
-        };
-
-        $scope.gridOptions = {
-            columnDefs: [],
-            rowHeight: 70,
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true,
-            useExternalSorting: false
+            getProfileValidation().then(setupTable);
         };
 
         var transformFn = function(row,columns,displayColumns){
@@ -83,26 +74,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         };
 
-        var addCellTemplate = function(columns) {
-            var cellTemplate =
-                '<div layout="column" class="ui-grid-cell-contents">' +
-                '        <div flex="100" ng-class="{ \'warn\': row.entity.invalidField(col.colDef.name) != undefined }">' +
-                '            {{row.entity[col.colDef.name]}}' +
-                '        </div>' +
-                '        <div flex="100" class="violation hint">' +
-                '                {{row.entity.invalidField(col.colDef.name).rule}}' +
-                '                <br>' +
-                '                {{row.entity.invalidField(col.colDef.name).reason}}' +
-                '        </div>' +
-                '</div>';
-
-            angular.forEach(columns, function(column) {
-                column.cellTemplate = cellTemplate;
-            });
-
-            return columns;
-        };
-
         var errorFn = function (err) {
             self.loadingData = false;
         };
@@ -111,11 +82,11 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
             var successFn = function (response) {
                 var result = self.queryResults = HiveService.transformResultsToUiGridModel(response, [], transformFn);
-                $scope.gridOptions.columnDefs = addCellTemplate(result.columns);
-                $scope.gridOptions.columnDefs = _.reject($scope.gridOptions.columnDefs, function(col) {
+                self.headers = result.columns;
+                self.headers = _.reject(self.headers, function(col) {
                     return col.name == 'dlp_reject_reason'
                 });
-                $scope.gridOptions.data = result.rows;
+                self.rows = result.rows;
 
                 self.loadingData = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','invalid');
@@ -145,14 +116,60 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             return promise;
         }
 
+        function setupTable() {
+            FattableService.setupTable({
+                tableContainerId: "invalidProfile",
+                headers: self.headers,
+                rows: self.rows,
+                cellText: function(row, column) {
+                    //return the longest text out of cell value and its validation errors
+                    var textArray = [];
+                    textArray.push(row[column.displayName]);
+                    var validationError = row.invalidFieldMap[column.displayName];
+                    if (validationError !== undefined) {
+                        textArray.push(validationError.rule);
+                        textArray.push(validationError.reason);
+                    }
+                    return textArray.sort(function(a,b) { return b.length - a.length })[0];
+                },
+                fillCell: function(cellDiv, data) {
+                    var html = data.value;
+                    if (data.isInvalid) {
+                        html += '<span class="violation hint">' + data.rule + '</span>';
+                        html += '<span class="violation hint">' + data.reason + '</span>';
+                        cellDiv.className += " warn";
+                    }
+                    cellDiv.innerHTML = html;
+                },
+                getCellSync: function(i, j) {
+                    var displayName = this.headers[j].displayName;
+                    var row = this.rows[i];
+                    if (row === undefined) {
+                        //occurs when filtering table
+                        return undefined;
+                    }
+                    var invalidFieldMap = row.invalidFieldMap[displayName];
+                    var isInvalid = invalidFieldMap !== undefined;
+                    var rule = isInvalid ? invalidFieldMap.rule : "";
+                    var reason = isInvalid ? invalidFieldMap.reason : "";
+                    return {
+                        "value": row[displayName],
+                        "isInvalid": isInvalid,
+                        "rule": rule,
+                        "reason": reason
+                    };
+
+                }
+                });
+        }
+
+
         getFilterOptions();
-        getProfileValidation();
+        getProfileValidation().then(setupTable);
     };
 
+    angular.module(moduleName).controller('FeedProfileInvalidResultsController', ["$scope","$http","$window","FeedService","RestUrlService","HiveService","Utils","BroadcastService","FattableService",controller]);
 
-    angular.module(moduleName).controller('FeedProfileInvalidResultsController', ["$scope","$http","FeedService","RestUrlService","HiveService","Utils","BroadcastService",controller]);
-
-    angular.module(moduleName)
-        .directive('thinkbigFeedProfileInvalid', directive);
+    angular.module(moduleName).directive('thinkbigFeedProfileInvalid', directive);
 
 });

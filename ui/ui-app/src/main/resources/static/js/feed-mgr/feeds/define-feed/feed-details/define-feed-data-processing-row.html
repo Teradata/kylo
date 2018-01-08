@@ -1,0 +1,55 @@
+<div flex="30" class="md-list-item-text layout-margin-top-3">
+  <md-input-container class="md-block" flex-gt-sm>
+    <div>{{policy.name | characters:30}}</div>
+    <div class="hint">{{policy.field.dataTypeDisplay}}</div>
+  </md-input-container>
+</div>
+<div flex="20" class="md-list-item-text " style="padding-left:5px;">
+  <md-input-container class="md-block md-dense condensed">
+    <md-select ng-model="policy.domainTypeId" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
+      <md-option ng-value=""><em>None</em></md-option>
+      <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
+        <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
+      </md-option>
+    </md-select>
+  </md-input-container>
+</div>
+<div flex="10" class="md-list-item-text" layout="column" layout-align="center center">
+    <md-checkbox
+        style="margin-bottom: 0"
+        ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex"
+        ng-click="vm.indexCheckAll.clicked(!policy.index)">
+    </md-checkbox>
+</div>
+<div flex="10" class="md-list-item-text" layout="column" layout-align="center center">
+    <md-checkbox
+        style="margin-bottom: 0"
+        ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex"
+        ng-click="vm.profileCheckAll.clicked(!policy.profile)">
+    </md-checkbox>
+</div>
+<!--  rules -->
+<div flex="10" class="md-list-item-text hint">
+  <div>
+    <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
+      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
+        <ng-md-icon icon="add_circle_outline"></ng-md-icon>
+      </md-button>
+      ADD
+    </div>
+
+    <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
+      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
+        <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
+      </md-button>
+      ADD
+    </div>
+  </div>
+</div>
+<div flex="20" class="md-list-item-text hint" style="margin-top: -2px;">
+  <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)"
+       class="orange" layout="column" layout-align="center none">
+    <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
+    <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
+  </div>
+</div>

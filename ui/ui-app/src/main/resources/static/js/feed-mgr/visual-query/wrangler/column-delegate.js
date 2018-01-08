@@ -51,7 +51,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     /**
      * Handles operations on columns.
      */
-    var ColumnDelegate = (function () {
+    var ColumnDelegate = /** @class */ (function () {
         /**
          * Constructs a column delegate.
          */

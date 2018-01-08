@@ -168,6 +168,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     private BatchStatusChangeReceiver batchStatusChangeReceiver = new BatchStatusChangeReceiver();
 
 
+    /**
+     * Latest start time for feed.
+     * This is used to speed up the findLatestJobForFeed query limiting the result set by the last known start time
+     */
+    private Map<String, Long> latestStartTimeByFeedName = new ConcurrentHashMap<>();
+
+
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
@@ -403,24 +410,41 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+        JpaBatchJobExecution jobExecution = null;
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
             if (event.isStartOfJob() || event.isFinalJobEvent()) {
-                return getOrCreateStreamJobExecution(event, feed);
-            } else {
-                return null;
+                jobExecution = getOrCreateStreamJobExecution(event, feed);
             }
         } else {
             if (feed == null) {
                 feed = opsManagerFeedRepository.findByName(event.getFeedName());
             }
             if (isProcessBatchEvent(event, feed)) {
-                return getOrCreateBatchJobExecution(event, feed);
-            } else {
-                return null;
+                jobExecution = getOrCreateBatchJobExecution(event, feed);
             }
         }
 
+        return jobExecution;
+
+    }
+
+    @Override
+    public void updateFeedJobStartTime(BatchJobExecution jobExecution,OpsManagerFeed feed){
+        if(jobExecution != null){
+            //add the starttime to the map
+            Long startTime = jobExecution.getStartTime().getMillis();
+            if(startTime != null) {
+                if (!latestStartTimeByFeedName.containsKey(startTime)) {
+                    latestStartTimeByFeedName.put(feed.getName(), startTime);
+                } else {
+                    Long previousStartTime = latestStartTimeByFeedName.get(startTime);
+                    if (startTime > previousStartTime) {
+                        latestStartTimeByFeedName.put(feed.getName(), startTime);
+                    }
+                }
+            }
+        }
     }
 
     private BatchRelatedFlowFile getOtherBatchJobFlowFile(ProvenanceEventRecordDTO event) {
@@ -593,7 +617,6 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     save(latestJobExecution);
 
                 }
-
                 jobExecution = createNewJobExecution(event, feed);
                 jobExecution.setStream(true);
                 latestStreamingJobByFeedName.put(event.getFeedName(), jobExecution);
@@ -697,7 +720,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Override
     public BatchJobExecution findLatestJobForFeed(String feedName) {
-        List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
+        List<JpaBatchJobExecution> jobExecutions = null;
+        Long latestStartTime = latestStartTimeByFeedName.get(feedName);
+        if(latestStartTime != null) {
+            jobExecutions = jobExecutionRepository.findLatestJobForFeedWithStartTimeLimit(feedName,latestStartTime);
+        }
+        if(jobExecutions == null) {
+            jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
+        }
         if (jobExecutions != null && !jobExecutions.isEmpty()) {
             return jobExecutions.get(0);
         } else {

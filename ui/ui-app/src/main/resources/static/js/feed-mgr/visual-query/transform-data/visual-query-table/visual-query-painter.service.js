@@ -23,7 +23,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
      * Pixel unit.
      */
     var PIXELS = "px";
-    var VisualQueryPainterService = (function (_super) {
+    var VisualQueryPainterService = /** @class */ (function (_super) {
         __extends(VisualQueryPainterService, _super);
         /**
          * Constructs a {@code VisualQueryPainterService}.
@@ -385,29 +385,29 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 this.delegate.unsort();
             }
         };
+        /**
+         * Left and right padding for normal columns.
+         */
+        VisualQueryPainterService.COLUMN_PADDING = 28;
+        /**
+         * Left padding for the first column.
+         */
+        VisualQueryPainterService.COLUMN_PADDING_FIRST = 24;
+        /**
+         * Height of header row.
+         */
+        VisualQueryPainterService.HEADER_HEIGHT = 56;
+        /**
+         * Height of data rows.
+         */
+        VisualQueryPainterService.ROW_HEIGHT = 48;
+        /**
+         * Class for selected cells.
+         */
+        VisualQueryPainterService.SELECTED_CLASS = "selected";
+        VisualQueryPainterService.$inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
         return VisualQueryPainterService;
     }(fattable.Painter));
-    /**
-     * Left and right padding for normal columns.
-     */
-    VisualQueryPainterService.COLUMN_PADDING = 28;
-    /**
-     * Left padding for the first column.
-     */
-    VisualQueryPainterService.COLUMN_PADDING_FIRST = 24;
-    /**
-     * Height of header row.
-     */
-    VisualQueryPainterService.HEADER_HEIGHT = 56;
-    /**
-     * Height of data rows.
-     */
-    VisualQueryPainterService.ROW_HEIGHT = 48;
-    /**
-     * Class for selected cells.
-     */
-    VisualQueryPainterService.SELECTED_CLASS = "selected";
-    VisualQueryPainterService.$inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
     exports.VisualQueryPainterService = VisualQueryPainterService;
     angular.module(require("feed-mgr/visual-query/module-name")).service("VisualQueryPainterService", VisualQueryPainterService);
 });

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.rest.model;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,7 +27,12 @@ import javax.annotation.Nonnull;
  */
 public class UserDatasource extends Datasource implements com.thinkbiganalytics.metadata.datasource.UserDatasource {
 
+    private static final long serialVersionUID = -1995038633214108566L;
+
     private String type;
+    private String icon;
+    private String iconColor;
+
 
     /**
      * Constructs a {@code UserDatasource} with null values.
@@ -54,5 +59,25 @@ public class UserDatasource extends Datasource implements com.thinkbiganalytics.
     @Override
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public String getIcon() {
+        return icon;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    @Override
+    public String getIconColor() {
+        return iconColor;
+    }
+
+    @Override
+    public void setIconColor(String iconColor) {
+        this.iconColor = iconColor;
     }
 }

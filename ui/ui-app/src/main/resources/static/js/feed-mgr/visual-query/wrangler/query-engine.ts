@@ -1,16 +1,18 @@
 import {Observable} from "rxjs/Observable";
-import {ColumnDelegate} from "./column-delegate";
 
+import {SaveRequest, SaveResponse} from "./api/rest-model";
+import {WranglerEngine} from "./api/wrangler-engine";
+import {ColumnController} from "./column-controller";
+import {ColumnDelegate} from "./column-delegate";
 import {DatasourcesServiceStatic, ProfileOutputRow, QueryResultColumn, SchemaField, SqlDialect, TableSchema, UserDatasource} from "./index";
 import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
-import {ColumnController} from "./column-controller";
 
 /**
  * Provides the ability to query and transform data.
  */
-export abstract class QueryEngine<T> {
+export abstract class QueryEngine<T> implements WranglerEngine {
 
     /**
      * List of required data source ids.
@@ -432,6 +434,14 @@ export abstract class QueryEngine<T> {
     }
 
     /**
+     * Saves the results to the specified destination.
+     *
+     * @param request - save target
+     * @returns an observable tracking the save status
+     */
+    abstract saveResults(request: SaveRequest): Observable<SaveResponse>;
+
+    /**
      * Searches for table names matching the specified query.
      *
      * @param query - search query
@@ -464,14 +474,11 @@ export abstract class QueryEngine<T> {
      */
     setState(state: any[]): void {
         this.redo_ = [];
-        this.states_ = [];
-
-        const self = this;
-        state.forEach(function (src) {
-            const state = self.newState();
+        state.forEach((src) => {
+            const state = this.newState();
             state.context = src.context;
             state.script = src.script;
-            self.states_.push(state);
+            this.states_.push(state);
         });
     }
 

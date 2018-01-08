@@ -25,6 +25,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
+import com.thinkbiganalytics.feedmgr.util.UniqueIdentifier;
 import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
@@ -54,7 +55,6 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,7 +62,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -120,9 +119,13 @@ public class CreateFeedBuilder {
 
     private boolean autoAlign = true;
 
+    private TemplateConnectionUtil templateConnectionUtil;
+
+    private Long timestamp;
+
 
     protected CreateFeedBuilder(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver,
-                                NiFiPropertyDescriptorTransform propertyDescriptorTransform, NiFiObjectCache niFiObjectCache) {
+                                NiFiPropertyDescriptorTransform propertyDescriptorTransform, NiFiObjectCache niFiObjectCache, TemplateConnectionUtil templateConnectionUtil) {
         this.restClient = restClient;
         this.nifiFlowCache = nifiFlowCache;
         this.feedMetadata = feedMetadata;
@@ -134,13 +137,15 @@ public class CreateFeedBuilder {
         this.propertyExpressionResolver = propertyExpressionResolver;
         this.propertyDescriptorTransform = propertyDescriptorTransform;
         this.niFiObjectCache = niFiObjectCache;
+        timestamp = System.currentTimeMillis();
+        this.templateConnectionUtil = templateConnectionUtil;
     }
 
 
     public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, NifiFlowCache nifiFlowCache, FeedMetadata feedMetadata, String templateId,
                                             PropertyExpressionResolver propertyExpressionResolver, NiFiPropertyDescriptorTransform propertyDescriptorTransform,
-                                            NiFiObjectCache createFeedBuilderCache) {
-        return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver, propertyDescriptorTransform, createFeedBuilderCache);
+                                            NiFiObjectCache createFeedBuilderCache, TemplateConnectionUtil templateConnectionUtil) {
+        return new CreateFeedBuilder(restClient, nifiFlowCache, feedMetadata, templateId, propertyExpressionResolver, propertyDescriptorTransform, createFeedBuilderCache, templateConnectionUtil);
     }
 
     public CreateFeedBuilder feedSchedule(NifiProcessorSchedule feedSchedule) {
@@ -206,18 +211,21 @@ public class CreateFeedBuilder {
         return elapsedTime;
     }
 
-    public CreateFeedBuilder withNiFiTemplateCache(NiFiTemplateCache niFiTemplateCache){
+    public CreateFeedBuilder withNiFiTemplateCache(NiFiTemplateCache niFiTemplateCache) {
         this.niFiTemplateCache = niFiTemplateCache;
         return this;
     }
 
-    private TemplateDTO getTemplate(){
-        if(niFiTemplateCache != null){
-            return niFiTemplateCache.geTemplate(templateId,null);
+    private TemplateDTO getTemplate() {
+        if (niFiTemplateCache != null) {
+            return niFiTemplateCache.geTemplate(templateId, null);
+        } else {
+            return restClient.getTemplateById(templateId);
         }
-        else {
-           return restClient.getTemplateById(templateId);
-        }
+    }
+
+    private String versionIdentifier() {
+        return UniqueIdentifier.encode(timestamp);
     }
 
     /**
@@ -293,7 +301,7 @@ public class CreateFeedBuilder {
                         updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input), instance));
                     }
                     if (cleanupProcessor != null) {
-                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor),instance));
+                        updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor), instance));
                     }
                     updatedControllerServiceProperties.addAll(templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, instance));
                     log.debug("Time to updatedControllerServiceProperties.  ElapsedTime: {} ms", eventTime(eventTime));
@@ -429,10 +437,9 @@ public class CreateFeedBuilder {
 
 
                 }
-            }
-            else {
-                log.error("Unable to create/save the feed {}.  Unable to find a template for id {}",feedName,templateId);
-                throw new FeedCreationException("Unable to create the feed [" + feedName + "]. Unable to find a template with id "+templateId);
+            } else {
+                log.error("Unable to create/save the feed {}.  Unable to find a template for id {}", feedName, templateId);
+                throw new FeedCreationException("Unable to create the feed [" + feedName + "]. Unable to find a template with id " + templateId);
             }
             log.info("Time save Feed flow in NiFi.  ElapsedTime: {} ms", eventTime(totalTime));
             return newProcessGroup;
@@ -522,8 +529,13 @@ public class CreateFeedBuilder {
         return null;
     }
 
+    private void connectFeedToReusableTemplate(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup) {
 
-    private void connectFeedToReusableTemplate(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup) throws NifiComponentNotFoundException {
+        templateConnectionUtil.connectFeedToReusableTemplate(feedProcessGroup, categoryProcessGroup, inputOutputPorts);
+    }
+
+
+    private void connectFeedToReusableTemplatexx(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup) throws NifiComponentNotFoundException {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
         String categoryProcessGroupId = categoryProcessGroup.getId();
@@ -712,13 +724,13 @@ public class CreateFeedBuilder {
     private ProcessGroupDTO createProcessGroupForFeed() throws FeedCreationException {
         Stopwatch stopwatch = Stopwatch.createStarted();
         //create Category Process group
-        this.categoryGroup =  niFiObjectCache.getCategoryProcessGroup(category);
+        this.categoryGroup = niFiObjectCache.getCategoryProcessGroup(category);
         if (categoryGroup == null) {
             try {
                 ProcessGroupDTO group = restClient.createProcessGroup(category);
                 this.categoryGroup = group;
                 this.newCategory = true;
-                if(this.categoryGroup != null){
+                if (this.categoryGroup != null) {
                     niFiObjectCache.addCategoryProcessGroup(this.categoryGroup);
                 }
             } catch (Exception e) {
@@ -731,7 +743,7 @@ public class CreateFeedBuilder {
                                             + feedName);
         }
         stopwatch.stop();
-        log.debug("Time to get/create Category Process Group:{} was: {} ms",category,stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.debug("Time to get/create Category Process Group:{} was: {} ms", category, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
 
         stopwatch.start();
@@ -739,12 +751,12 @@ public class CreateFeedBuilder {
         //check to see if the feed exists... if so version off the old group and create a new group with this feed
         ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(this.categoryGroup.getId(), feedName);
         stopwatch.stop();
-        log.debug("Time to find feed Process Group: {} was: {} ms",feedName,stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.debug("Time to find feed Process Group: {} was: {} ms", feedName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
         stopwatch.reset();
         if (feedGroup != null) {
             try {
                 previousFeedProcessGroup = feedGroup;
-                templateCreationHelper.versionProcessGroup(feedGroup);
+                templateCreationHelper.versionProcessGroup(feedGroup, versionIdentifier());
             } catch (Exception e) {
                 throw new FeedCreationException("Previous version of the feed " + feedName
                                                 + " was found.  Error in attempting to version the previous feed.  Please go into Nifi and address any issues with the Feeds Process Group", e);
@@ -771,30 +783,7 @@ public class CreateFeedBuilder {
      * Removes a given processGroup from NiFi if nothing is in its queue
      */
     private void removeProcessGroup(ProcessGroupDTO processGroupDTO) {
-        if (processGroupDTO != null) {
-            try {
-                //validate if nothing is in the queue then remove it
-                Optional<ProcessGroupStatusDTO> statusDTO = restClient.getNiFiRestClient().processGroups().getStatus(processGroupDTO.getId());
-                if (statusDTO.isPresent() && propertyDescriptorTransform.getQueuedCount(statusDTO.get()).equalsIgnoreCase("0")) {
-                    //get connections linking to this group, delete them
-                    Set<ConnectionDTO> connectionDTOs = restClient.getProcessGroupConnections(processGroupDTO.getParentGroupId());
-                    if (connectionDTOs == null) {
-                        connectionDTOs = new HashSet<>();
-                    }
-                    Set<ConnectionDTO>
-                        versionedConnections =
-                        connectionDTOs.stream().filter(connectionDTO -> connectionDTO.getDestination().getGroupId().equalsIgnoreCase(processGroupDTO.getId()) || connectionDTO.getSource().getGroupId()
-                            .equalsIgnoreCase(processGroupDTO.getId()))
-                            .collect(Collectors.toSet());
-                    restClient.deleteProcessGroupAndConnections(processGroupDTO, versionedConnections);
-                    log.info("removed the versioned processgroup {} ", processGroupDTO.getName());
-                } else {
-                    log.info("Unable to remove the versioned processgroup {} ", processGroupDTO.getName());
-                }
-            } catch (Exception e) {
-                log.error("Unable to remove the versioned processgroup {} ", processGroupDTO.getName(), e);
-            }
-        }
+        templateConnectionUtil.removeProcessGroup(processGroupDTO);
     }
 
 

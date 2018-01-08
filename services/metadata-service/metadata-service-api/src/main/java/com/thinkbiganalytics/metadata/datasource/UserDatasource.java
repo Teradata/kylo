@@ -38,4 +38,26 @@ public interface UserDatasource extends Datasource {
      * @param type the type name
      */
     void setType(String type);
+
+
+    /**
+     * @return icon name
+     */
+    String getIcon();
+
+    /**
+     * @param icon icon name
+     */
+    void setIcon(String icon);
+
+    /**
+     * @return icon colour
+     */
+    String getIconColor();
+
+    /**
+     * @param iconColor icon colour
+     */
+    void setIconColor(String iconColor);
+
 }

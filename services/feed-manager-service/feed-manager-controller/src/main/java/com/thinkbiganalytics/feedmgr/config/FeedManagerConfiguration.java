@@ -23,10 +23,14 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheClusterManager;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportFeedOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.service.DefaultJobService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataModelTransform;
@@ -39,17 +43,34 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.domaintype.DomainTypeTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedHiveTableService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.exporting.FeedExporter;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.security.DefaultSecurityService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.feedmgr.service.template.exporting.TemplateExporter;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportReusableTemplateFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.validation.AbstractValidateImportTemplate;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportFeedTemplateXml;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportReusableTemplate;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportTemplateArchive;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportTemplateRoutine;
+import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportTemplateRoutineFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplateFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplateXml;
+import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplatesArchive;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
@@ -61,7 +82,6 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.jobrepo.service.JobService;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.SpringEnvironmentProperties;
@@ -70,6 +90,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.env.Environment;
 import org.springframework.security.crypto.encrypt.TextEncryptor;
 
@@ -155,16 +176,6 @@ public class FeedManagerConfiguration {
     }
 
     @Bean
-    public ExportImportTemplateService exportImportTemplateService() {
-        return new ExportImportTemplateService();
-    }
-
-    @Bean
-    public ExportImportFeedService exportImportFeedService() {
-        return new ExportImportFeedService();
-    }
-
-    @Bean
     public PropertyExpressionResolver propertyExpressionResolver() {
         return new PropertyExpressionResolver();
     }
@@ -186,6 +197,9 @@ public class FeedManagerConfiguration {
         return new FeedPreconditionService();
     }
 
+    @Bean FeedWaterMarkService feedWaterMarkCancelService() {
+        return new FeedWaterMarkService();
+    }
 
     @Bean
     public DatasourceService datasourceService() {
@@ -290,4 +304,101 @@ public class FeedManagerConfiguration {
     public RegisteredTemplateCache registeredTemplateCache() {
         return new RegisteredTemplateCache();
     }
+
+    @Bean
+    public TemplateConnectionUtil templateConnectionUtil() {
+        return new TemplateConnectionUtil();
+    }
+
+    @Bean
+    public FeedExporter feedExporter(){
+        return new FeedExporter();
+    }
+
+    @Bean
+    public TemplateExporter templateExporter(){
+        return new TemplateExporter();
+    }
+
+
+    @Bean
+    public ValidateImportTemplateFactory<ImportTemplate,ImportTemplateOptions, ImportTemplate.TYPE,AbstractValidateImportTemplate> validateImportTemplateFactory() {
+        return (importTemplate, importTemplateOptions, importType) -> validateImportTemplate(importTemplate, importTemplateOptions, importType);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public AbstractValidateImportTemplate validateImportTemplate(ImportTemplate importTemplate, ImportTemplateOptions importTemplateOptions,ImportTemplate.TYPE importType) {
+        if(importType == ImportTemplate.TYPE.ARCHIVE) {
+            return new ValidateImportTemplatesArchive(importTemplate, importTemplateOptions);
+        }
+        else {
+            return new ValidateImportTemplateXml(importTemplate, importTemplateOptions);
+        }
+    }
+
+
+
+    @Bean
+    public TemplateImporterFactory<ImportOptions,TemplateImporter> templateImporterFactory() {
+        return (fileName, content, importOptions) -> templateImporter(fileName,content, importOptions);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public TemplateImporter templateImporter(String fileName, byte[] content, ImportOptions importOptions) {
+        return new TemplateImporter(fileName,content, importOptions);
+    }
+
+    @Bean
+    public FeedImporterFactory<ImportFeedOptions,FeedImporter> feedImporterFactory() {
+        return (fileName, content, importFeedOptions) -> feedImporter(fileName,content, importFeedOptions);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public FeedImporter feedImporter(String fileName, byte[] content, ImportFeedOptions importFeedOptions) {
+        return new FeedImporter(fileName,content, importFeedOptions);
+    }
+
+
+
+
+    @Bean
+    public ImportReusableTemplateFactory<ImportTemplateOptions,ImportReusableTemplate> importReusableTemplateArchiveFactory() {
+        return (fileName, content, importTemplateOptions) -> importReusableTemplate(fileName,content, importTemplateOptions);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public ImportReusableTemplate importReusableTemplate(String fileName, byte[] content, ImportTemplateOptions importTemplateOptions) {
+        return new ImportReusableTemplate(fileName,content, importTemplateOptions);
+    }
+
+
+    @Bean
+    public ImportTemplateRoutineFactory<ImportTemplate,ImportTemplateOptions,ImportTemplate.TYPE,ImportTemplateRoutine> importTemplateRoutineFactory() {
+        return (importTemplate, importTemplateOptions, importType) -> importTemplateRoutine(importTemplate, importTemplateOptions, importType);
+    }
+
+    @Bean
+    @Scope(value = "prototype")
+    public ImportTemplateRoutine importTemplateRoutine(ImportTemplate importTemplate, ImportTemplateOptions importTemplateOptions, ImportTemplate.TYPE importType) {
+        if(importType == ImportTemplate.TYPE.ARCHIVE) {
+            return new ImportTemplateArchive(importTemplate,importTemplateOptions);
+        }
+        else if(importType == ImportTemplate.TYPE.REUSABLE_TEMPLATE) {
+            return new ImportReusableTemplate(importTemplate, importTemplateOptions);
+        }
+        else {
+            return new ImportFeedTemplateXml(importTemplate, importTemplateOptions);
+        }
+
+    }
+
+
+
+
+
+
 }

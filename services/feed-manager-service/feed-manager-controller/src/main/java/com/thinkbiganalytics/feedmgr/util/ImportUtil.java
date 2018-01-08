@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.util;
  * #L%
  */
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.ImportType;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
@@ -28,19 +29,24 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
+import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -66,13 +72,16 @@ public class ImportUtil {
         ZipInputStream zis = new ZipInputStream(inputStream);
         ZipEntry entry;
         while ((entry = zis.getNextEntry()) != null) {
-            if (entry.getName().startsWith(ExportImportTemplateService.NIFI_TEMPLATE_XML_FILE)) {
+            if (entry.getName().startsWith(ImportTemplate.NIFI_TEMPLATE_XML_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.NIFI_TEMPLATE, importType.equals(ImportType.TEMPLATE) ? true : false));
-            } else if (entry.getName().startsWith(ExportImportTemplateService.TEMPLATE_JSON_FILE)) {
+            } else if (entry.getName().startsWith(ImportTemplate.TEMPLATE_JSON_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_DATA, importType.equals(ImportType.TEMPLATE) ? true : false));
-            } else if (entry.getName().startsWith(ExportImportTemplateService.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
+            } else if (entry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.REUSABLE_TEMPLATE, false));
-            } else if (importType.equals(ImportType.FEED) && entry.getName().startsWith(ExportImportFeedService.FEED_JSON_FILE)) {
+            }
+            else if(entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)){
+                options.add(new ImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION,true));
+            } else if (importType.equals(ImportType.FEED) && entry.getName().startsWith(ImportFeed.FEED_JSON_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.FEED_DATA, true));
                 options.add(new ImportComponentOption(ImportComponent.USER_DATASOURCES, true));
             }
@@ -99,7 +108,7 @@ public class ImportUtil {
     }
 
 
-    public static boolean applyImportPropertiesToTemplate(RegisteredTemplate template, ExportImportTemplateService.ImportTemplate importTemplate, ImportComponent component) {
+    public static boolean applyImportPropertiesToTemplate(RegisteredTemplate template, ImportTemplate importTemplate, ImportComponent component) {
         ImportComponentOption option = importTemplate.getImportOptions().findImportComponentOption(component);
 
         if (!option.getProperties().isEmpty() && option.getProperties().stream().anyMatch(importProperty -> StringUtils.isBlank(importProperty.getPropertyValue()))) {
@@ -130,13 +139,13 @@ public class ImportUtil {
         }
     }
 
-    public static boolean applyImportPropertiesToFeed(FeedMetadata metadata, ExportImportFeedService.ImportFeed importFeed, ImportComponent component) {
+    public static boolean applyImportPropertiesToFeed(FeedMetadata metadata, ImportFeed importFeed, ImportComponent component) {
         ImportComponentOption option = importFeed.getImportOptions().findImportComponentOption(component);
 
         if (!option.getProperties().isEmpty() && option.getProperties().stream().anyMatch(importProperty -> StringUtils.isBlank(importProperty.getPropertyValue()))) {
             importFeed.setSuccess(false);
             if (importFeed.getTemplate() == null) {
-                ExportImportTemplateService.ImportTemplate importTemplate = new ExportImportTemplateService.ImportTemplate(importFeed.getFileName());
+                ImportTemplate importTemplate = new ImportTemplate(importFeed.getFileName());
                 importFeed.setTemplate(importTemplate);
             }
             String feedCategory = importFeed.getImportOptions().getCategorySystemName() != null ? importFeed.getImportOptions().getCategorySystemName() : metadata.getSystemCategoryName();
@@ -212,5 +221,61 @@ public class ImportUtil {
         byte[] content = baos.toByteArray();
         return content;
     }
+
+    public static ImportTemplate getNewNiFiTemplateImport(String fileName, InputStream inputStream) throws IOException {
+        ImportTemplate template = new ImportTemplate(fileName);
+        template.setValid(true);
+        StringWriter writer = new StringWriter();
+        IOUtils.copy(inputStream, writer, "UTF-8");
+        String xmlTemplate = writer.toString();
+        template.setNifiTemplateXml(xmlTemplate);
+        return template;
+    }
+
+    public static ImportTemplate getNewNiFiTemplateImport(String fileName, byte[] xmlFile) throws IOException {
+        InputStream inputStream = new ByteArrayInputStream(xmlFile);
+        return getNewNiFiTemplateImport(fileName,inputStream);
+    }
+
+    /**
+     * Open the zip file and populate the {@link ImportTemplate} object with the components in the file/archive
+     *
+     * @param fileName    the file name
+     * @param inputStream the file
+     * @return the template data to import
+     */
+    public static ImportTemplate openZip(String fileName, InputStream inputStream) throws IOException {
+        byte[] buffer = new byte[1024];
+        ZipInputStream zis = new ZipInputStream(inputStream);
+        ZipEntry zipEntry;
+        ImportTemplate importTemplate = new ImportTemplate(fileName);
+        while ((zipEntry = zis.getNextEntry()) != null) {
+            String zipEntryContents = ZipFileUtil.zipEntryToString(buffer, zis, zipEntry);
+            if (zipEntry.getName().startsWith(ImportTemplate.NIFI_TEMPLATE_XML_FILE)) {
+                importTemplate.setNifiTemplateXml(zipEntryContents);
+            } else if (zipEntry.getName().startsWith(ImportTemplate.TEMPLATE_JSON_FILE)) {
+                importTemplate.setTemplateJson(zipEntryContents);
+            } else if (zipEntry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
+                importTemplate.addNifiConnectingReusableTemplateXml(zipEntryContents);
+            }
+            else if (zipEntry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)) {
+                String json = zipEntryContents;
+                List<ReusableTemplateConnectionInfo> connectionInfos = ObjectMapperSerializer.deserialize(json,new TypeReference<List<ReusableTemplateConnectionInfo>>(){});
+                importTemplate.addReusableTemplateConnectionInformation(connectionInfos);
+            }
+        }
+        zis.closeEntry();
+        zis.close();
+        if (!importTemplate.hasValidComponents()) {
+            throw new UnsupportedOperationException(
+                " The file you uploaded is not a valid archive.  Please ensure the Zip file has been exported from the system and has 2 valid files named: " + ImportTemplate.NIFI_TEMPLATE_XML_FILE + ", and "
+                + ImportTemplate.TEMPLATE_JSON_FILE);
+        }
+        importTemplate.setZipFile(true);
+        return importTemplate;
+
+    }
+
+
 
 }

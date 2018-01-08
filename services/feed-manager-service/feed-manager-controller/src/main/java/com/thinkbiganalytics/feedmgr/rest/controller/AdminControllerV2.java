@@ -29,8 +29,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.UploadProgress;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporterFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
+import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -87,12 +91,6 @@ public class AdminControllerV2 {
     public static final String IMPORT_FEED = "/import-feed";
 
     @Inject
-    ExportImportTemplateService exportImportTemplateService;
-
-    @Inject
-    ExportImportFeedService exportImportFeedService;
-
-    @Inject
     UploadProgressService uploadProgressService;
 
     @Inject
@@ -121,6 +119,12 @@ public class AdminControllerV2 {
 
     @Inject
     ServiceLevelAgreementDescriptionCache serviceLevelAgreementDescriptionCache;
+
+    @Inject
+    TemplateImporterFactory templateImporterFactory;
+
+    @Inject
+    FeedImporterFactory feedImporterFactory;
 
     @Inject
     private AccessController accessController;
@@ -152,7 +156,7 @@ public class AdminControllerV2 {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a feed zip file.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ExportImportFeedService.ImportFeed.class),
+                      @ApiResponse(code = 200, message = "Returns the feed metadata.", response = ImportFeed.class),
                       @ApiResponse(code = 500, message = "There was a problem importing the feed.", response = RestResponseStatus.class)
                   })
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
@@ -165,7 +169,7 @@ public class AdminControllerV2 {
         ImportFeedOptions options = new ImportFeedOptions();
         options.setUploadKey(uploadKey);
         options.setDisableUponImport(disableFeedUponImport);
-        ExportImportFeedService.ImportFeed importFeed = null;
+        ImportFeed importFeed = null;
 
         options.setCategorySystemName(categorySystemName);
 
@@ -173,19 +177,24 @@ public class AdminControllerV2 {
         boolean overwriteTemplate = true;
         uploadProgressService.newUpload(uploadKey);
 
+        FeedImporter feedImporter = null;
+
         if (importComponents == null) {
             byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-            importFeed = exportImportFeedService.validateFeedForImport(fileMetaData.getFileName(), content, options);
+            feedImporter = feedImporterFactory.apply(fileMetaData.getFileName(), content, options);
+            importFeed = feedImporter.validate();
             importFeed.setSuccess(false);
         } else {
             options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
             }));
             byte[] content = ImportUtil.streamToByteArray(fileInputStream);
-            importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), content, options);
+            feedImporter = feedImporterFactory.apply(fileMetaData.getFileName(), content, options);
+            importFeed = feedImporter.validateAndImport();
         }
         uploadProgressService.removeUpload(uploadKey);
         return Response.ok(importFeed).build();
     }
+
 
     @POST
     @Path(IMPORT_TEMPLATE)
@@ -193,7 +202,7 @@ public class AdminControllerV2 {
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Imports a template xml or zip file.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ExportImportTemplateService.ImportTemplate.class),
+                      @ApiResponse(code = 200, message = "Returns the template metadata.", response = ImportTemplate.class),
                       @ApiResponse(code = 500, message = "There was a problem importing the template.", response = RestResponseStatus.class)
                   })
     public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
@@ -203,21 +212,24 @@ public class AdminControllerV2 {
         throws Exception {
         ImportTemplateOptions options = new ImportTemplateOptions();
         options.setUploadKey(uploadKey);
-        ExportImportTemplateService.ImportTemplate importTemplate = null;
+        ImportTemplate importTemplate = null;
         byte[] content = ImportUtil.streamToByteArray(fileInputStream);
 
         uploadProgressService.newUpload(uploadKey);
-
+        TemplateImporter templateImporter = null;
         if (importComponents == null) {
-            importTemplate = exportImportTemplateService.validateTemplateForImport(fileMetaData.getFileName(), content, options);
+            templateImporter = templateImporterFactory.apply(fileMetaData.getFileName(), content, options);
+            importTemplate = templateImporter.validate();
             importTemplate.setSuccess(false);
         } else {
             options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
             }));
-            importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), content, options);
+            templateImporter = templateImporterFactory.apply(fileMetaData.getFileName(), content, options);
+            importTemplate = templateImporter.validateAndImport();
         }
         return Response.ok(importTemplate).build();
     }
+
 
     @GET
     @Path("/cache-summary")
@@ -240,9 +252,9 @@ public class AdminControllerV2 {
     public Response refreshCache() {
         accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
         log.info("RESET Feed, FeedAcl, and SLA description caches");
-        metadataAccess.read(() ->((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache(), MetadataAccess.SERVICE);
-        metadataAccess.read(() ->((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache(), MetadataAccess.SERVICE);
-        metadataAccess.read(() ->  serviceLevelAgreementDescriptionCache.refreshCache(), MetadataAccess.SERVICE);
+        metadataAccess.read(() -> ((AbstractCacheBackedProvider) feedOpsAccessControlProvider).refreshCache(), MetadataAccess.SERVICE);
+        metadataAccess.read(() -> ((AbstractCacheBackedProvider) opsManagerFeedProvider).refreshCache(), MetadataAccess.SERVICE);
+        metadataAccess.read(() -> serviceLevelAgreementDescriptionCache.refreshCache(), MetadataAccess.SERVICE);
         return getCacheSizes();
     }
 
@@ -258,7 +270,7 @@ public class AdminControllerV2 {
 
         }
 
-        public CacheSummary(Long feedAclSize, Long feedByNameSize, Long feedByIdSize,Long slaDescriptionSize) {
+        public CacheSummary(Long feedAclSize, Long feedByNameSize, Long feedByIdSize, Long slaDescriptionSize) {
             this.feedAclSize = feedAclSize;
             this.feedByNameSize = feedByNameSize;
             this.feedByIdSize = feedByIdSize;

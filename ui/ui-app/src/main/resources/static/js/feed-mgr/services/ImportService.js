@@ -6,7 +6,9 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             TEMPLATE_DATA:"TEMPLATE_DATA",
             FEED_DATA:"FEED_DATA",
             REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE",
-            USER_DATASOURCES: "USER_DATASOURCES"
+            USER_DATASOURCES: "USER_DATASOURCES",
+            TEMPLATE_CONNECTION_INFORMATION:"TEMPLATE_CONNECTION_INFORMATION"
+
         };
 
         function guid() {
@@ -36,6 +38,11 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
             newReusableTemplateImportOption: function(){
                 return data.newImportComponentOption(importComponentTypes.REUSABLE_TEMPLATE);
             },
+
+            newTemplateConnectionInfoImportOption: function(){
+                return data.newImportComponentOption(importComponentTypes.TEMPLATE_CONNECTION_INFORMATION);
+            },
+
             newTemplateDataImportOption: function(){
                 return data.newImportComponentOption(importComponentTypes.TEMPLATE_DATA);
             },

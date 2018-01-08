@@ -32,12 +32,19 @@ import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
-import com.thinkbiganalytics.spark.service.TransformJobTracker;
+import com.thinkbiganalytics.spark.service.JobTrackerService;
+import com.thinkbiganalytics.spark.service.SparkListenerService;
+import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.jdbc.JdbcDialect;
+import org.apache.spark.sql.jdbc.JdbcDialects;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -63,6 +70,7 @@ import org.springframework.core.io.support.ResourcePropertySource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -120,6 +128,14 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the Hadoop File System.
+     */
+    @Bean
+    public FileSystem fileSystem() throws IOException {
+        return FileSystem.get(new Configuration());
+    }
+
+    /**
      * Creates a service to stop this app after a period of inactivity.
      */
     @Bean
@@ -135,17 +151,29 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig jerseyConfig(final TransformService transformService) {
+    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem, final SparkLocatorService sparkLocatorService) {
         final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
         config.packages("com.thinkbiganalytics.spark.rest");
         config.register(new AbstractBinder() {
             @Override
             protected void configure() {
+                bind(fileSystem).to(FileSystem.class);
                 bind(transformService).to(TransformService.class);
+                bind(sparkLocatorService).to(SparkLocatorService.class);
             }
         });
 
         return config;
+    }
+
+    /**
+     * Creates the job tracker service.
+     */
+    @Bean
+    public JobTrackerService jobTrackerService(@Nonnull final SparkScriptEngine sparkScriptEngine, @Nonnull final SparkListenerService sparkListenerService) {
+        final JobTrackerService jobTrackerService = new JobTrackerService(sparkScriptEngine.getClassLoader());
+        sparkListenerService.addSparkListener(jobTrackerService);
+        return jobTrackerService;
     }
 
     /**
@@ -260,13 +288,46 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the Spark context.
+     */
+    @Bean
+    public SparkContext sparkContext(@Nonnull final SparkScriptEngine engine) {
+        return engine.getSparkContext();
+    }
+
+    /**
+     * Creates a Spark locator service.
+     */
+    @Bean
+    public SparkLocatorService sparkLocatorService(final SparkContext sc, @Value("${spark.shell.datasources.exclude}") final String excludedDataSources,
+                                                   @Value("${spark.shell.datasources.include}") final String includedDataSources) {
+        final SparkLocatorService service = new SparkLocatorService();
+        service.setSparkClassLoader(sc.getClass().getClassLoader());
+        if (excludedDataSources != null && !excludedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(excludedDataSources.split(","));
+            service.excludeDataSources(dataSources);
+        }
+        if (includedDataSources != null && !includedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(includedDataSources.split(","));
+            service.includeDataSources(dataSources);
+        }
+        return service;
+    }
+
+    /**
      * Gets the Spark SQL context.
      *
      * @param engine the Spark script engine
      * @return the Spark SQL context
      */
     @Bean
-    public SQLContext sqlContext(final SparkScriptEngine engine) {
+    public SQLContext sqlContext(final SparkScriptEngine engine, @Nonnull final List<JdbcDialect> jdbcDialects) {
+        // Register JDBC dialects
+        for (final JdbcDialect dialect : jdbcDialects) {
+            JdbcDialects.registerDialect(dialect);
+        }
+
+        // Create SQL Context
         return engine.getSQLContext();
     }
 
@@ -283,9 +344,11 @@ public class SparkShellApp {
      */
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
-                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator) {
+                                             final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
+                                             final FileSystem fileSystem) {
         final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
+        service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
         service.setValidator(validator);
         return service;

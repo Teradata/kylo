@@ -44,15 +44,46 @@ public class ImmutableAllowedActions implements AllowedActions {
     
     private final List<AllowableAction> availableActions;
     
-    public ImmutableAllowedActions(AllowedActions allowed) {
-        this(allowed.getAvailableActions());
-    }
-    
-    public ImmutableAllowedActions(List<AllowableAction> actions) {
-        List<AllowableAction> newActions = actions.stream()
-                        .map(ImmutableAllowableAction::new)
+    public ImmutableAllowedActions(final AllowedActions allowed) {
+        List<AllowableAction> newActions = allowed.getAvailableActions().stream()
+                        .map(action -> new ImmutableAllowableAction(allowed, action))
                         .collect(Collectors.toList());
         this.availableActions = Collections.unmodifiableList(newActions);
+    }
+    
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAll(Action action, Action... more) {
+        return getPrincipalsAllowedAll(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAll(Set<Action> actions) {
+        Set<Principal> results = Collections.emptySet();
+        this.availableActions.stream()
+            .filter(actions::contains)
+            .findAny()
+            .map(ImmutableAllowableAction.class::cast)
+            .ifPresent(ia -> results.addAll(ia.getPrincipals()));
+        this.availableActions.stream()
+            .filter(actions::contains)
+            .map(ImmutableAllowableAction.class::cast)
+            .forEach(ia -> results.retainAll(ia.getPrincipals()));
+        return results;
+    }
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAny(Action action, Action... more) {
+        return getPrincipalsAllowedAny(Stream.concat(Stream.of(action), Stream.of(more)).collect(Collectors.toSet()));
+    }
+
+    @Override
+    public Set<Principal> getPrincipalsAllowedAny(Set<Action> actions) {
+        return this.availableActions.stream()
+                        .filter(actions::contains)
+                        .map(ImmutableAllowableAction.class::cast)
+                        .flatMap(ia -> ia.getPrincipals().stream())
+                        .collect(Collectors.toSet());
     }
 
     /* (non-Javadoc)
@@ -62,7 +93,6 @@ public class ImmutableAllowedActions implements AllowedActions {
     public List<AllowableAction> getAvailableActions() {
         return availableActions;
     }
-
 
     @Override
     public boolean hasPermission(Action action, Action... more) {

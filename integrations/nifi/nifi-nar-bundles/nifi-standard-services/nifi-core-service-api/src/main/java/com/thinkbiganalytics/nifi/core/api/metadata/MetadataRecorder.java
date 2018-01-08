@@ -38,7 +38,14 @@ public interface MetadataRecorder {
                            String feedId,
                            String waterMarkName,
                            String parameterName,
-                           String defaultValue) throws WaterMarkActiveException;
+                           String initialValue) throws WaterMarkActiveException;
+
+    FlowFile cancelAndLoadWaterMark(ProcessSession session, 
+                                    FlowFile outputFF, 
+                                    String feedId, 
+                                    String waterMark, 
+                                    String parameterName, 
+                                    String initialValue) throws WaterMarkActiveException;
 
     FlowFile recordWaterMark(ProcessSession session,
                              FlowFile ff,
@@ -54,6 +61,8 @@ public interface MetadataRecorder {
     FlowFile releaseWaterMark(ProcessSession session, FlowFile ff, String feedId, String waterMarkName);
 
     FlowFile releaseAllWaterMarks(ProcessSession session, FlowFile ff, String feedId);
+    
+    boolean cancelWaterMark(String feedId, String waterMark);
 
 
     Optional<InitializationStatus> getInitializationStatus(String feedId);

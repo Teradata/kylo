@@ -40,10 +40,11 @@ public interface SecurityRole {
     String CATEGORY = "category";
     String TEMPLATE = "template";
     String DATASOURCE = "datasource";
-    List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE, DATASOURCE));
+    String PROJECT = "project";
+    List<String> ENTITIES = Collections.unmodifiableList(Arrays.asList(SERVICES, FEED, CATEGORY, TEMPLATE, DATASOURCE, PROJECT));
 
     enum ENTITY_TYPE {
-        FEED,CATEGORY,DATASOURCE,TEMPLATE,SLA
+        FEED,CATEGORY,DATASOURCE,TEMPLATE,SLA,PROJECT
     }
 
 

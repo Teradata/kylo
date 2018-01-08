@@ -1,0 +1,13 @@
+form[name=overwriteFieldsForm] .ui-grid {
+  border-color: white; }
+  form[name=overwriteFieldsForm] .ui-grid .ui-grid-pinned-container.ui-grid-pinned-container-left .ui-grid-header-cell:last-child {
+    border: white; }
+  form[name=overwriteFieldsForm] .ui-grid .ui-grid-top-panel {
+    background: inherit; }
+  form[name=overwriteFieldsForm] .ui-grid .ui-grid-header-cell {
+    border-color: white; }
+  form[name=overwriteFieldsForm] .ui-grid .ui-grid-cell, form[name=overwriteFieldsForm] .ui-grid .ui-grid-cell.ui-grid-row-header-cell {
+    background-color: inherit;
+    border-color: white; }
+  form[name=overwriteFieldsForm] .ui-grid .ui-grid-cell, form[name=overwriteFieldsForm] .ui-grid .ui-grid-row:last-child .ui-grid-cell {
+    border-bottom: 1px solid white; }

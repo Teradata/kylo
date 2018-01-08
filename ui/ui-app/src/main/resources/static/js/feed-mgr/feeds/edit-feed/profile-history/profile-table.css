@@ -1,0 +1,42 @@
+.profile .fattable {
+  position: relative;
+  top: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-style: normal;
+  font-variant: normal;
+  font-stretch: normal;
+  white-space: nowrap;
+}
+
+.profile .fattable .fattable-header-container {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  border-bottom: 1px solid lightgray;
+}
+
+.profile .fattable .fattable-header-container .fattable-viewport div {
+  padding-left: 15px;
+  font-weight: bold;
+  font-size: 12px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.profile .fattable .fattable-body-container .fattable-viewport div {
+  font-weight: 400;
+  font-size: 14px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.profile .fattable .fattable-body-container .fattable-viewport > div {
+  padding-left: 25px;
+  box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  border-bottom: 1px solid lightgray;
+}
+
+.profile .fattable .fattable-body-container > div > div.even {
+  background-color: rgba(0,0,0, 0.01);
+}
+

@@ -14,7 +14,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
     /**
      * Transform Data step of the Visual Query page.
      */
-    var TransformDataComponent = (function () {
+    var TransformDataComponent = /** @class */ (function () {
         /**
          * Constructs a {@code TransformDataComponent}.
          */
@@ -250,9 +250,9 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             //assign the editor to a variable on this object for future reference
             this.codemirrorEditor = _editor;
             //Set the width,height of the editor. Code mirror needs an explicit width/height
-            _editor.setSize(625, 25);
-            _editor.on("focus", function () { return _editor.setSize(625, "auto"); });
-            _editor.on("blur", function () { return _editor.setSize(625, 25); });
+            _editor.setSize(585, 25);
+            _editor.on("focus", function () { return _editor.setSize(585, "auto"); });
+            _editor.on("blur", function () { return _editor.setSize(585, 25); });
             //disable users ability to add new lines.  The Formula bar is only 1 line
             _editor.on("beforeChange", function (instance, change) {
                 var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
@@ -414,7 +414,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 // Display error message
                 self.$mdDialog.show({
                     clickOutsideToClose: true,
-                    controller: (_a = (function () {
+                    controller: (_a = /** @class */ (function () {
                             function class_1($mdDialog) {
                                 this.$mdDialog = $mdDialog;
                                 /**
@@ -750,16 +750,16 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 });
             }
         };
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", query_engine_1.QueryEngine)
+        ], TransformDataComponent.prototype, "engine", void 0);
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", Object)
+        ], TransformDataComponent.prototype, "model", void 0);
         return TransformDataComponent;
     }());
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", query_engine_1.QueryEngine)
-    ], TransformDataComponent.prototype, "engine", void 0);
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object)
-    ], TransformDataComponent.prototype, "model", void 0);
     exports.TransformDataComponent = TransformDataComponent;
     angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         bindings: {

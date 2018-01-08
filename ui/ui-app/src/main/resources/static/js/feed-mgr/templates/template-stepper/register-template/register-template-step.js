@@ -159,7 +159,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                     self.inputPortList = [];
                     if (response.data) {
                         angular.forEach(response.data, function (port, i) {
-                            self.inputPortList.push({label: port.name, value: port.name});
+                            self.inputPortList.push({label: port.name, value: port.name, description:port.destinationProcessGroupName});
                             self.connectionMap[port.name] = port;
                         });
                     }

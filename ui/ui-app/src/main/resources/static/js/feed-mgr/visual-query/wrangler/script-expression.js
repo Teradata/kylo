@@ -4,7 +4,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * An expression in a script.
      */
-    var ScriptExpression = (function () {
+    var ScriptExpression = /** @class */ (function () {
         function ScriptExpression() {
         }
         return ScriptExpression;

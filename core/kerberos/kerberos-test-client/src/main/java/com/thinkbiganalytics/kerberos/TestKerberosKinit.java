@@ -27,6 +27,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.hive.jdbc.HiveConnection;
+import org.springframework.jdbc.support.JdbcUtils;
 
 import java.io.IOException;
 import java.security.PrivilegedExceptionAction;
@@ -238,7 +239,9 @@ public class TestKerberosKinit {
 
         HiveConnection realUserConnection = (HiveConnection) realugi.doAs(new PrivilegedExceptionAction<Connection>() {
             public Connection run() {
-                Connection connection;
+                Connection connection = null;
+                Statement stmt = null;
+                ResultSet res = null;
                 try {
                     Class.forName(DRIVER_NAME);
                     String url = hiveHostName;
@@ -251,10 +254,10 @@ public class TestKerberosKinit {
                     Class.forName(DRIVER_NAME);
 
                     System.out.println("creating statement");
-                    Statement stmt = connection.createStatement();
+                    stmt = connection.createStatement();
 
                     String sql = "show databases";
-                    ResultSet res = stmt.executeQuery(sql);
+                    res = stmt.executeQuery(sql);
                     System.out.println(" \n");
                     System.out.println("Executing the Hive Query:");
                     System.out.println(" ");
@@ -266,6 +269,12 @@ public class TestKerberosKinit {
 
                 } catch (Exception e) {
                     throw new RuntimeException("Error creating connection with proxy user", e);
+                }
+                finally {
+                    JdbcUtils.closeResultSet(res);
+                    JdbcUtils.closeStatement(stmt);
+                    JdbcUtils.closeConnection(connection);
+
                 }
                 return connection;
             }

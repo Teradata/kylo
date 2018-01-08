@@ -24,7 +24,7 @@ package com.thinkbiganalytics.auth;
  */
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
-import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.ServiceAdminPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import org.slf4j.Logger;
@@ -71,13 +71,14 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
 
         handle(nameCb, passwordCb);
 
-        if (this.authService.authenticate(nameCb.getName(), new String(passwordCb.getPassword()))) {
+        if (this.authService.authenticate(nameCb.getName(), passwordCb.getPassword())) {
             log.debug("Login success for: {}", nameCb.getName());
 
             this.user = new UsernamePrincipal(nameCb.getName());
         } else {
             log.debug("Login failure for: {}", nameCb.getName());
         }
+        passwordCb.clearPassword();
 
         return true;
     }
@@ -86,7 +87,7 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     public boolean doCommit() throws Exception {
         getSubject().getPrincipals().add(this.user);
         // For now assume everyone who authenticates in this simple implementation are administrators.
-        getSubject().getPrincipals().add(new GroupPrincipal("admin"));
+        getSubject().getPrincipals().add(new ServiceAdminPrincipal());
         return true;
     }
 
@@ -98,7 +99,7 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     @Override
     public boolean doLogout() throws Exception {
         getSubject().getPrincipals().remove(this.user);
-        getSubject().getPrincipals().remove(new GroupPrincipal("admin"));
+        getSubject().getPrincipals().remove(new ServiceAdminPrincipal());
         return true;
     }
 }

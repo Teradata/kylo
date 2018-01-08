@@ -58,7 +58,7 @@
         <div rows="1" class="formula-editor" ui-codemirror="$td.codeMirrorConfig" ng-model="$td.currentFormula" ui-codemirror-opts="$td.codemirrorOptions" style="height: 25px;"></div>
         <md-button class="md-raised md-accent" ng-click="$td.onAddFunction()" ng-disabled="!$td.currentFormula">Add</md-button>
         <span flex></span>
-        <thinkbig-step-buttons style="padding:inherit" can-continue="$td.isValid" step-index="{{::$td.stepIndex}}"></thinkbig-step-buttons>
+        <thinkbig-step-buttons can-continue="$td.isValid" step-index="{{::$td.stepIndex}}"></thinkbig-step-buttons>
       </div>
     </md-toolbar>
 

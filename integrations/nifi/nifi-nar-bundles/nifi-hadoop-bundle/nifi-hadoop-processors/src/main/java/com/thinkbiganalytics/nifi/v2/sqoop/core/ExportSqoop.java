@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.sqoop.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -89,10 +89,54 @@ public class ExportSqoop extends AbstractNiFiProcessor {
      */
     public static final PropertyDescriptor SOURCE_HDFS_DIRECTORY = new PropertyDescriptor.Builder()
         .name("Source HDFS Directory")
-        .description("Source HDFS directory to get the data from for export.")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .description("Source HDFS directory to get the data from for export. (--export-dir) ")
         .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
+     * Property to provide source Hive schema/database name
+     */
+    public static final PropertyDescriptor HCATALOG_DATABASE = new PropertyDescriptor.Builder()
+        .name("HCatalog Database")
+        .description("HCatalog Database (--hcatalog-database) use this if you don't supply the 'Source HDFS Directory'")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
+     * Property to provide source Hive Table name
+     */
+    public static final PropertyDescriptor HCATALOG_TABLE = new PropertyDescriptor.Builder()
+        .name("HCatalog Table")
+        .description("HCatalog Table name (--hcatalog-table) use this if you don't supply the 'Source HDFS Directory'")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
+     * Property to provide additional -D properties for Sqoop.  Note user needs to add the -D
+     */
+    public static final PropertyDescriptor SQOOP_SYSTEM_PROPERTIES = new PropertyDescriptor.Builder()
+        .name("Sqoop System Properties")
+        .description("Add -D properties here. Example: ' -Dsqoop.export.records.per.statement=1 '")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
+     * Property to provide any additional sqoop arguments not explicitly provided by this processor
+     */
+    public static final PropertyDescriptor SQOOP_ADDITIONAL_ARGUMENTS = new PropertyDescriptor.Builder()
+        .name("Additional Sqoop arguments")
+        .description("Add any additional arguments here:  Example '--create-hcatalog-table=true --update-mode allowinsert --update-key id '")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
     /**
@@ -101,8 +145,6 @@ public class ExportSqoop extends AbstractNiFiProcessor {
     public static final PropertyDescriptor SOURCE_HDFS_FILE_DELIMITER = new PropertyDescriptor.Builder()
         .name("Source HDFS File Delimiter")
         .description("Delimiter for source data on HDFS.")
-        .required(true)
-        .expressionLanguageSupported(true)
         .defaultValue(",")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
@@ -219,6 +261,10 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         properties.add(SOURCE_NULL_INTERPRETATION_STRATEGY);
         properties.add(SOURCE_NULL_CUSTOM_STRING_IDENTIFIER);
         properties.add(SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER);
+        properties.add(HCATALOG_DATABASE);
+        properties.add(HCATALOG_TABLE);
+        properties.add(SQOOP_SYSTEM_PROPERTIES);
+        properties.add(SQOOP_ADDITIONAL_ARGUMENTS);
         properties.add(TARGET_TABLE_NAME);
         properties.add(CLUSTER_MAP_TASKS);
 
@@ -263,6 +309,10 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         final String sourceNullCustomNonStringIdentifier = context.getProperty(SOURCE_NULL_CUSTOM_NON_STRING_IDENTIFIER).evaluateAttributeExpressions(flowFile).getValue();
         final String targetTableName = context.getProperty(TARGET_TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();
         final Integer clusterMapTasks = context.getProperty(CLUSTER_MAP_TASKS).evaluateAttributeExpressions(flowFile).asInteger();
+        final String systemProperties = context.getProperty(SQOOP_SYSTEM_PROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
+        final String additionalArguments = context.getProperty(SQOOP_ADDITIONAL_ARGUMENTS).evaluateAttributeExpressions(flowFile).getValue();
+        final String hcatalogDatabase = context.getProperty(HCATALOG_DATABASE).evaluateAttributeExpressions(flowFile).getValue();
+        final String hcatalogTable = context.getProperty(HCATALOG_TABLE).evaluateAttributeExpressions(flowFile).getValue();
 
         final String COMMAND_SHELL = "/bin/bash";
         final String COMMAND_SHELL_FLAGS = "-c";
@@ -277,6 +327,10 @@ public class ExportSqoop extends AbstractNiFiProcessor {
         SqoopExportBuilder sqoopExportBuilder = new SqoopExportBuilder();
         String sqoopExportCommand = sqoopExportBuilder
             .setLogger(logger)
+            .setHcatalogDatabase(hcatalogDatabase)
+            .setHcatalogTable(hcatalogTable)
+            .setSystemProperties(systemProperties)
+            .setAdditionalArguments(additionalArguments)
             .setTargetConnectionString(sqoopConnectionService.getConnectionString())
             .setTargetUserName(sqoopConnectionService.getUserName())
             .setPasswordMode(sqoopConnectionService.getPasswordMode())

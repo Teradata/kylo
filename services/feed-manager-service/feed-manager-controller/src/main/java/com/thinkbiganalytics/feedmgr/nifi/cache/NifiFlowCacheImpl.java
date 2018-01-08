@@ -522,10 +522,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     }
 
     public NifiFlowCacheSnapshot getLatest() {
-        if (!isAvailable()) {
-            return NifiFlowCacheSnapshot.EMPTY;
-        }
-        return latest;
+     return latest;
     }
 
     private void initializeLatestSnapshot() {

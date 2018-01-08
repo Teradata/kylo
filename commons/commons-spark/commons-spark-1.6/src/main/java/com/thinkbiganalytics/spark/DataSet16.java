@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
@@ -108,5 +109,10 @@ public class DataSet16 implements DataSet {
     @Override
     public DataSet unpersist(final boolean blocking) {
         return new DataSet16(dataframe.unpersist(blocking));
+    }
+
+    @Override
+    public DataFrameWriter write() {
+        return dataframe.write();
     }
 }

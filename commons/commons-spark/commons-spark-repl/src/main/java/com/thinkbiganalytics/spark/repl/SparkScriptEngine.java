@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.repl;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -209,33 +209,39 @@ public class SparkScriptEngine extends ScriptEngine {
         if (denyPatterns == null) {
             // Load custom or default deny patterns
             String resourceName = "spark-deny-patterns.conf";
-            InputStream resourceStream = getClass().getResourceAsStream("/" + resourceName);
-            if (resourceStream == null) {
-                resourceName = "spark-deny-patterns.default.conf";
-                resourceStream = getClass().getResourceAsStream(resourceName);
-            }
-
-            // Parse lines
-            final List<String> denyPatternLines;
-            if (resourceStream != null) {
-                try {
-                    denyPatternLines = IOUtils.readLines(resourceStream, "UTF-8");
-                    log.info("Loaded Spark deny patterns from {}.", resourceName);
-                } catch (final IOException e) {
-                    throw new IllegalStateException("Unable to load " + resourceName, e);
+            try {
+                InputStream resourceStream = getClass().getResourceAsStream("/" + resourceName);
+                if (resourceStream == null) {
+                    resourceName = "spark-deny-patterns.default.conf";
+                    resourceStream = getClass().getResourceAsStream(resourceName);
                 }
-            } else {
-                log.info("Missing default Spark deny patterns.");
-                denyPatternLines = Collections.emptyList();
-            }
 
-            // Compile patterns
-            denyPatterns = new ArrayList<>();
-            for (final String line : denyPatternLines) {
-                final String trimLine = line.trim();
-                if (!line.startsWith("#") && !trimLine.isEmpty()) {
-                    denyPatterns.add(Pattern.compile(line));
+                // Parse lines
+                final List<String> denyPatternLines;
+                if (resourceStream != null) {
+                    try {
+                        denyPatternLines = IOUtils.readLines(resourceStream, "UTF-8");
+                        log.info("Loaded Spark deny patterns from {}.", resourceName);
+                    } catch (final IOException e) {
+                        throw new IllegalStateException("Unable to load " + resourceName, e);
+                    }
+                } else {
+                    log.info("Missing default Spark deny patterns.");
+                    denyPatternLines = Collections.emptyList();
                 }
+
+                resourceStream.close();
+
+                // Compile patterns
+                denyPatterns = new ArrayList<>();
+                for (final String line : denyPatternLines) {
+                    final String trimLine = line.trim();
+                    if (!line.startsWith("#") && !trimLine.isEmpty()) {
+                        denyPatterns.add(Pattern.compile(line));
+                    }
+                }
+            } catch (IOException ioe) {
+                throw new RuntimeException("Error handling resource", ioe);
             }
         }
         return denyPatterns;

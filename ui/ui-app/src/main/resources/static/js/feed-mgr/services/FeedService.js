@@ -145,7 +145,27 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     roleMembershipsUpdated: false,
                     tableOption: {},
                     cloned: false,
-                    usedByFeeds: []
+                    usedByFeeds: [],
+                    view: {
+                        generalInfo: { disabled: false },
+                        feedDetails: { disabled: false },
+                        table: { disabled: false },
+                        dataPolicies: { disabled: false },
+                        properties: {
+                            disabled: false,
+                            dataOwner: { disabled: false },
+                            tags: { disabled: false }
+                        },
+                        accessControl: { disabled: false },
+                        schedule: {
+                            disabled: false,
+                            schedulingPeriod: { disabled: false },
+                            schedulingStrategy: { disabled: false },
+                            active: { disabled: false },
+                            executionNode: { disabled: false },
+                            preconditions: { disabled: false }
+                        }
+                    }
                 };
             },
             cloneFeed: function () {
@@ -175,6 +195,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             updateFeed: function (feedModel) {
                 var self = this;
+                this.editFeedModel.totalPreSteps = 0;
                 this.editFeedModel.inputProcessorName = null;
                 this.editFeedModel.usedByFeeds = [];
                 this.editFeedModel.description = '';
@@ -192,6 +213,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         }
                     });
                 }
+                //add in the view states
+                var defaultView = self.getNewCreateFeedModel().view;
+                this.editFeedModel.view = defaultView;
             },
             /**
              * Shows the Feed Error Dialog
@@ -247,7 +271,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var newField = {
                     name: '',
                     description: '',
-                    derivedDataType: '',
+                    derivedDataType: 'string',
                     precisionScale: null,
                     dataTypeDisplay: '',
                     primaryKey: false,
@@ -257,6 +281,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     sampleValues: [],
                     selectedSampleValue: '',
                     tags: [],
+                    validationErrors: {
+                        name: {},
+                        precision: {}
+                    },
                     isValid: function () {
                         return this.name != '' && this.derivedDataType != '';
                     },
@@ -730,6 +758,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 policy.domainTypeId = domainType.id;
                 if (angular.isObject(domainType.field)) {
                     field.tags = angular.copy(domainType.field.tags);
+                    if (angular.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                        field.name = domainType.field.name;
+                    }
                     if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
                         field.derivedDataType = domainType.field.derivedDataType;
                         field.precisionScale = domainType.field.precisionScale;

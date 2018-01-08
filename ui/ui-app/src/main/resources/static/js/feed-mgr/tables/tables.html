@@ -50,9 +50,6 @@
               <div flex="30" layout="column" class="item-column md-list-item-text ">
                                    <span class="item-title">{{table.schema}}
                                    </span>
-                              <span class="column-title column-title-bottom">
-                                    Schema
-                                   </span>
               </div>
             </div>
             <md-divider ng-if="!$last"></md-divider>
@@ -91,7 +88,6 @@
                 ng-repeat="table in vm.selectedTables | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
                 ng-click="vm.onClickTable(table)">
               <td md-cell>{{table.tableName}}</td>
-              <td md-cell>{{table.schema}}</td>
             </tr>
             </tbody>
           </table>

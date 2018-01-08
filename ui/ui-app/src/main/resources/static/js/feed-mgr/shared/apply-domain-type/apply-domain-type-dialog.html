@@ -15,6 +15,7 @@
         Applying the domain type {{domainType.title}} will overwrite the current field with the following properties:
 
         <ul>
+          <li ng-if="domainType.field.name">Field Name: {{domainType.field.name}}</li>
           <li ng-if="domainType.field.derivedDataType != null">Data Type: {{domainType.field.derivedDataType}}</li>
           <li>Standardizers: {{standardizerList}}</li>
           <li>Validators: {{validatorList}}</li>

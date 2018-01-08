@@ -24,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 
@@ -69,6 +70,11 @@ public class ImportComponentOption {
      * list of errors
      */
     private List<String> errorMessages;
+
+    /**
+     * connection information describing the output port to input port mapping
+     */
+    private List<ReusableTemplateConnectionInfo> connectionInfo;
 
 
     /**
@@ -173,5 +179,25 @@ public class ImportComponentOption {
 
     public void setValidForImport(boolean validForImport) {
         this.validForImport = validForImport;
+    }
+
+    public List<ReusableTemplateConnectionInfo> getConnectionInfo() {
+        if(connectionInfo == null){
+            connectionInfo = new ArrayList<>();
+        }
+        return connectionInfo;
+    }
+
+    private boolean hasReusableConnection(ReusableTemplateConnectionInfo connection){
+       return getConnectionInfo().stream().anyMatch(conn -> conn.getFeedOutputPortName().equalsIgnoreCase(connection.getFeedOutputPortName()));
+    }
+
+    public void addConnectionInfo(List<ReusableTemplateConnectionInfo> connectionInfo) {
+        if(connectionInfo != null){
+            connectionInfo.stream().filter(connectionInfo1 -> !hasReusableConnection(connectionInfo1)).forEach(connectionInfo1 -> getConnectionInfo().add(connectionInfo1));
+        }
+    }
+    public void setConnectionInfo(List<ReusableTemplateConnectionInfo> connectionInfo) {
+        this.connectionInfo = connectionInfo;
     }
 }

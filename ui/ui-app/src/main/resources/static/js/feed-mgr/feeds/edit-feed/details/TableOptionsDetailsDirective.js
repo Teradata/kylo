@@ -2,17 +2,36 @@ define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, m
     /**
      * Displays a table option feed details template.
      */
-    var kyloTableOptionsDetails = function ($compile, $mdDialog, $templateRequest, StateService, UiComponentsService) {
+    var kyloTableOptionsDetails = function ($compile, $mdDialog, $templateRequest, $injector,$ocLazyLoad, StateService, UiComponentsService) {
         return {
             restrict: "E",
             scope: {
-                type: "@"
+                type: "@",
+                stepperTemplateType:'@?'
             },
             link: function ($scope, $element) {
+
+                if(angular.isUndefined($scope.stepperTemplateType)){
+                    $scope.stepperTemplateType = 'stepper';
+                }
+
+                /**
+                 * The table option metadata
+                 * @type {null}
+                 */
+                $scope.tableOption = null;
+
                 // Loads the table option template
                 UiComponentsService.getTemplateTableOption($scope.type)
                     .then(function (tableOption) {
-                        return (tableOption.feedDetailsTemplateUrl !== null) ? $templateRequest(tableOption.feedDetailsTemplateUrl) : null;
+                        $scope.tableOption = tableOption;
+
+                        //Determine if we are loading pre-steps or feed steps
+                        var property = 'feedDetailsTemplateUrl';
+                        if($scope.stepperTemplateType == 'pre-step') {
+                            property = 'preFeedDetailsTemplateUrl';
+                        }
+                        return (tableOption[property] !== null) ? $templateRequest(tableOption[property]) : null;
                     })
                     .then(function (html) {
                         if (html !== null) {
@@ -20,6 +39,7 @@ define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, m
                             $element.append(template);
                             $compile(template)($scope);
                         }
+
                     }, function () {
                         $mdDialog.show(
                             $mdDialog.alert()
@@ -35,5 +55,5 @@ define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, m
         };
     };
 
-    angular.module(moduleName).directive("kyloTableOptionsDetails", ["$compile", "$mdDialog", "$templateRequest", "StateService", "UiComponentsService", kyloTableOptionsDetails]);
+    angular.module(moduleName).directive("kyloTableOptionsDetails", ["$compile", "$mdDialog", "$templateRequest", "$injector","$ocLazyLoad","StateService", "UiComponentsService", kyloTableOptionsDetails]);
 });

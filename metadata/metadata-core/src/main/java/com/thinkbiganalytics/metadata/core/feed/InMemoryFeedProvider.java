@@ -436,6 +436,15 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#findPreconditionedFeeds()
+     */
+    @Override
+    public List<? extends Feed> findPreconditionedFeeds() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();

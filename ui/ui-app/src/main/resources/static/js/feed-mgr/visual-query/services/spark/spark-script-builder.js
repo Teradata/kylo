@@ -14,7 +14,7 @@ define(["require", "exports", "../../wrangler/script-builder", "./spark-constant
     /**
      * Parses an abstract syntax tree into a Spark script.
      */
-    var SparkScriptBuilder = (function (_super) {
+    var SparkScriptBuilder = /** @class */ (function (_super) {
         __extends(SparkScriptBuilder, _super);
         /**
          * Constructs a {@code SparkScriptBuilder}.

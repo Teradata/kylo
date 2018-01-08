@@ -50,7 +50,7 @@ public class AuthServiceAuthenticationProvider implements AuthenticationProvider
     public Authentication authenticate(Authentication authentication)
         throws AuthenticationException {
         String name = authentication.getName();
-        String password = authentication.getCredentials().toString();
+        char[] password = (char[])authentication.getCredentials();
 
         if (authenticationService.authenticate(name, password)) {
             List<GrantedAuthority> grantedAuths = new ArrayList<>();

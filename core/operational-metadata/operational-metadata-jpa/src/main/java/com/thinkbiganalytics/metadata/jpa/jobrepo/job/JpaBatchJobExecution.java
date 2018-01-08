@@ -344,10 +344,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
 
     @Override
     public Map<String, String> getJobExecutionContextAsMap() {
+        Map<String,String> map = new HashMap<>();
         if (getJobExecutionContext() != null && !getJobExecutionContext().isEmpty()) {
-            return getJobExecutionContext().stream().collect(Collectors.toMap(ctx -> ctx.getKeyName(), ctx -> ctx.getStringVal()));
+             getJobExecutionContext().forEach(ctx -> map.put(ctx.getKeyName(),ctx.getStringVal()));
         }
-        return new HashMap<>();
+        return map;
     }
 
     public Map<String, BatchJobExecutionContextValue> getJobExecutionContextKeyMap() {

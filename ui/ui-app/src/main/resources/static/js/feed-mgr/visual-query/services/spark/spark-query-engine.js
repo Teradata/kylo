@@ -8,13 +8,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder"], function (require, exports, angular, Subject_1, _, VisualQueryService_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
+define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, angular, Observable_1, Subject_1, _, VisualQueryService_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Generates a Scala script to be executed by Kylo Spark Shell.
      */
-    var SparkQueryEngine = (function (_super) {
+    var SparkQueryEngine = /** @class */ (function (_super) {
         __extends(SparkQueryEngine, _super);
         /**
          * Constructs a {@code SparkQueryEngine}.
@@ -213,6 +213,71 @@ define(["require", "exports", "angular", "rxjs/Subject", "underscore", "../../..
                 }, function (err) {
                     reject(err);
                 });
+            });
+        };
+        /**
+         * Saves the results to the specified destination.
+         *
+         * @param request - save target
+         * @returns an observable tracking the save status
+         */
+        SparkQueryEngine.prototype.saveResults = function (request) {
+            var _this = this;
+            // Build the request body
+            var body = {
+                async: true,
+                datasources: (this.datasources_ !== null) ? this.datasources_.filter(function (datasource) { return datasource.id !== spark_constants_1.SparkConstants.HIVE_DATASOURCE; }) : null,
+                script: this.getFeedScript()
+            };
+            if (request.jdbc && request.jdbc.id === spark_constants_1.SparkConstants.HIVE_DATASOURCE) {
+                request.jdbc = null;
+            }
+            // Send the request
+            var transformId;
+            return Observable_1.Observable
+                .fromPromise(this.$http({
+                method: "POST",
+                url: this.apiUrl + "/transform",
+                data: JSON.stringify(body),
+                headers: { "Content-Type": "application/json" },
+                responseType: "json"
+            }))
+                .mergeMap(function (response) {
+                transformId = response.data.table;
+                return _this.$http({
+                    method: "POST",
+                    url: _this.apiUrl + "/transform/" + transformId + "/save",
+                    data: JSON.stringify(request),
+                    headers: { "Content-Type": "application/json" },
+                    responseType: "json"
+                });
+            })
+                .expand(function (response) {
+                if (response.data.status === rest_model_1.SaveResponseStatus.PENDING) {
+                    return Observable_1.Observable.interval(1000)
+                        .take(1)
+                        .mergeMap(function () { return _this.$http({
+                        method: "GET",
+                        url: _this.apiUrl + "/transform/" + transformId + "/save/" + response.data.id,
+                        responseType: "json"
+                    }); });
+                }
+                else if (response.data.status === rest_model_1.SaveResponseStatus.SUCCESS) {
+                    return Observable_1.Observable.empty();
+                }
+                else {
+                    throw response;
+                }
+            })
+                .map(function (response) {
+                var save = response.data;
+                if (save.location !== null && save.location.startsWith("./")) {
+                    save.location = _this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
+                }
+                return save;
+            })
+                .catch(function (response) {
+                throw response.data;
             });
         };
         /**

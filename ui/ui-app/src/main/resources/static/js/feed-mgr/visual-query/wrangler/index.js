@@ -27,7 +27,7 @@ define(["require", "exports", "./column-delegate", "./parse-exception", "./query
     /**
      * Field of a schema object such as a table or file.
      */
-    var SchemaField = (function () {
+    var SchemaField = /** @class */ (function () {
         function SchemaField() {
         }
         return SchemaField;

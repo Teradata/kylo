@@ -158,7 +158,27 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 roleMembershipsUpdated: false,
                 tableOption: {},
                 cloned: false,
-                usedByFeeds: []
+                usedByFeeds: [],
+                view: {
+                    generalInfo: {disabled: false},
+                    feedDetails: {disabled: false},
+                    table: {disabled: false},
+                    dataPolicies:{disabled: false},
+                    properties: {
+                        disabled: false,
+                        dataOwner:{disabled:false},
+                        tags:{disabled:false}
+                    },
+                    accessControl: {disabled: false},
+                    schedule: {
+                        disabled: false,
+                        schedulingPeriod: {disabled: false},
+                        schedulingStrategy: {disabled: false},
+                        active: {disabled: false},
+                        executionNode: {disabled: false},
+                        preconditions: {disabled: false}
+                    }
+                }
             } as any;
         },
         cloneFeed: function () {
@@ -189,6 +209,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         updateFeed: function (feedModel: any) {
             var self = this;
+            this.editFeedModel.totalPreSteps = 0;
             this.editFeedModel.inputProcessorName = null;
             this.editFeedModel.usedByFeeds = [];
             this.editFeedModel.description = '';
@@ -207,6 +228,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     }
                 });
             }
+
+            //add in the view states
+            var defaultView = self.getNewCreateFeedModel().view;
+            this.editFeedModel.view = defaultView;
 
         },
         /**
@@ -270,7 +295,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             var newField: any = {
                 name: '',
                 description: '',
-                derivedDataType: '',
+                derivedDataType: 'string',
                 precisionScale: null,
                 dataTypeDisplay: '',
                 primaryKey: false,
@@ -280,6 +305,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 sampleValues: [],
                 selectedSampleValue: '',
                 tags: [],
+                validationErrors: {
+                    name: {},
+                    precision: {}
+                },
                 isValid: function () {
                     return this.name != '' && this.derivedDataType != '';
                 },
@@ -795,6 +824,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
 
             if (angular.isObject(domainType.field)) {
                 field.tags = angular.copy(domainType.field.tags);
+                if (angular.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                    field.name = domainType.field.name;
+                }
                 if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
                     field.derivedDataType = domainType.field.derivedDataType;
                     field.precisionScale = domainType.field.precisionScale;

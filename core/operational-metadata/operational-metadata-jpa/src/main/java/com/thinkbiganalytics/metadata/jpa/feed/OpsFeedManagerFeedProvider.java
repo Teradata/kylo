@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,6 +63,7 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -132,6 +133,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Inject
     private MetadataAccess metadataAccess;
+
+    @Value("${kylo.ops.mgr.ensure-unique-feed-name:true}")
+    private boolean ensureUniqueFeedName = true;
 
     private static String CLUSTER_MESSAGE_KEY = "OPS_MANAGER_FEED_CACHE";
 
@@ -232,10 +236,30 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         saveList(feeds);
     }
 
+    /**
+     *
+     * @param systemName
+     * @param feedId
+     */
+    private void ensureAndRemoveDuplicateFeedsWithTheSameName(String systemName, OpsManagerFeed.ID feedId) {
+        List<JpaOpsManagerFeed> feeds = repository.findFeedsByNameWithoutAcl(systemName);
+        if (feeds != null) {
+            feeds.stream().filter(feed -> !feed.getId().toString().equalsIgnoreCase(feedId.toString())).forEach(feed -> {
+                log.warn(
+                    "Attempting to create a new Feed for {} with id {}, but found an existing Feed in the kylo.FEED table with id {} that has the same name {}.  Kylo will remove the previous feed with id: {} ",
+                    systemName, feedId, feed.getId(), feed.getName(), feed.getId());
+                delete(feed.getId());
+            });
+        }
+    }
+
     @Override
     public OpsManagerFeed save(OpsManagerFeed.ID feedId, String systemName, boolean isStream, Long timeBetweenBatchJobs) {
         OpsManagerFeed feed = repository.findByIdWithoutAcl(feedId);
         if (feed == null) {
+            if (ensureUniqueFeedName) {
+                ensureAndRemoveDuplicateFeedsWithTheSameName(systemName, feedId);
+            }
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedId);
@@ -247,6 +271,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
                 newStats.setRunningFeedFlows(0L);
                 feedStatisticsProvider.saveLatestFeedStats(Lists.newArrayList(newStats));
             }
+
         } else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
@@ -465,6 +490,17 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
 
+    public List<? extends OpsManagerFeed> findFeedsWithSameName() {
+        List<JpaFeedNameCount> feedNameCounts = repository.findFeedsWithSameName();
+        if (feedNameCounts != null && !feedNameCounts.isEmpty()) {
+            List<String> feedNames = feedNameCounts.stream().map(c -> c.getFeedName()).collect(Collectors.toList());
+            if(feedNames != null && !feedNames.isEmpty()) {
+                return repository.findFeedsByNameWithoutAcl(feedNames);
+            }
+        }
+        return Collections.emptyList();
+    }
+
     public List<? extends FeedSummary> findFeedSummary() {
         return feedSummaryRepository.findAllWithoutAcl();
     }
@@ -486,6 +522,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         }
         return lastFeedTime;
     }
+
 
     @Override
     protected Collection<OpsManagerFeed> populateCache() {

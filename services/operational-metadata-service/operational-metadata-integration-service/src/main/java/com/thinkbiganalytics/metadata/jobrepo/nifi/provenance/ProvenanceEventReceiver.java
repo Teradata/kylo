@@ -177,7 +177,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      *
      * @param events The events obtained from JMS
      */
-    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY, concurrency = "3-10")
+    @JmsListener(id = JMS_LISTENER_ID, destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to {} batch: {},  {} events from the {} queue ", (events instanceof RetryProvenanceEventRecordHolder) ? "RETRY" : "process", events.getBatchId(), events.getEvents().size(),
                  Queues.FEED_MANAGER_QUEUE);
@@ -224,10 +224,15 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
     private void processEvent(ProvenanceEventRecordDTO event, int retryAttempt) {
         try {
 
+            OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(event);
             log.debug("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
             //ensure the job is there
-            BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, provenanceEventFeedUtil.getFeed(event)),
+            BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, feed),
                                                                    MetadataAccess.SERVICE);
+
+            if(jobExecution != null){
+                batchJobExecutionProvider.updateFeedJobStartTime(jobExecution, feed);
+            }
 
             if (jobExecution != null && !event.isStream()) {
                 metadataAccess.commit(() -> receiveBatchEvent(jobExecution, event),

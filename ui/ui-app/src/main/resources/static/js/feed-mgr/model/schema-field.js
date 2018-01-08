@@ -4,7 +4,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * Field of a schema object such as a table or file.
      */
-    var SchemaField = (function () {
+    var SchemaField = /** @class */ (function () {
         function SchemaField() {
         }
         return SchemaField;

@@ -2,7 +2,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
-    var WranglerDataService = (function () {
+    var WranglerDataService = /** @class */ (function () {
         function WranglerDataService() {
             /**
              * The sort direction.

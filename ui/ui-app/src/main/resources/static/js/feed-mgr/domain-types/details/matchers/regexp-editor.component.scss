@@ -1,0 +1,8 @@
+regexp-editor {
+  &[readonly] .CodeMirror {
+    border: none;
+  }
+  .CodeMirror-line {
+    padding-left: 0;
+  }
+}

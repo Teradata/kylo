@@ -1,0 +1,25 @@
+{
+  "description": "Custom feed stepper with table definition",
+  "displayName": "Example Table Feed Stepper",
+  "resourceContext":"/example-plugin-1.0",
+  "feedDetailsTemplateUrl": "/example-plugin-1.0/feed-details-templates/table-feed-details.html",
+  "stepperTemplateUrl": "/example-plugin-1.0/stepper-templates/table-steps.html",
+  "preStepperTemplateUrl":"/example-plugin-1.0/stepper-templates/pre-steps.html",
+  "preFeedDetailsTemplateUrl":"/example-plugin-1.0/feed-details-templates/pre-step-feed-details.html",
+  "metadataProperties": [
+    {
+      "name": "examplePluginProperty",
+      "description": "Example Plugin property"
+    },
+    {
+      "name": "anotherProperty",
+      "description": "This is another property"
+    }
+  ],
+  "totalCoreSteps": 3,
+  "totalPreSteps":1,
+  "type": "EXAMPLE_TABLE_FEED_STEPPER",
+  "initializeServiceName":"ExampleFeedStepperInitializerService",
+  "initializeScript": "/example-plugin-1.0/initialize.js"
+
+}

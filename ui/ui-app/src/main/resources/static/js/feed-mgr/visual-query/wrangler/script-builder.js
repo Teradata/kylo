@@ -4,7 +4,7 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
     /**
      * Builds a script from an abstract syntax tree.
      */
-    var ScriptBuilder = (function () {
+    var ScriptBuilder = /** @class */ (function () {
         /**
          * Constructs a {@code ScriptBuilder}.
          *

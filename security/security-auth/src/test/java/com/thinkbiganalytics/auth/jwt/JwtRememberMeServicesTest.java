@@ -21,6 +21,7 @@ package com.thinkbiganalytics.auth.jwt;
  */
 
 import com.thinkbiganalytics.auth.config.JwtProperties;
+import com.thinkbiganalytics.security.GroupPrincipal;
 
 import org.joda.time.DateTimeUtils;
 import org.jose4j.jws.AlgorithmIdentifiers;
@@ -30,13 +31,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.rememberme.InvalidCookieException;
 
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -76,20 +83,20 @@ public class JwtRememberMeServicesTest {
     @Test
     public void decodeCookie() {
         // Test with no groups
-        String[] actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6InVzZXIiLCJncm91cHMiOltdfQ.NKAD4m4bn1eDMGA9HSihOsLwrSUcDhBYfXIL7uJPWdo");
+        String[] actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6InVzZXIiLCJwcmluY2lwYWxzIjpbXX0.q76UatxiKI95uDZtCL1Oc48dBjXfhSgb1SpBkMAjP_E");
         String[] expected = new String[]{"user"};
         Assert.assertArrayEquals(expected, actual);
 
         // Test with one group
-        actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiYWRtaW4iXX0."
-                                      + "3RX9hsmfNA1rtWMs309N5MV5_gd4FUtU_odFIIOqsoY");
-        expected = new String[]{"dladmin", "admin"};
+        actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJwcmluY2lwYWxzIjpbIntcImNvbS50aGlua2J"
+                        + "pZ2FuYWx5dGljcy5zZWN1cml0eS5Hcm91cFByaW5jaXBhbFwiOltcImFkbWluXCJdfSJdfQ.DH4pxE8eWCmqPlhFMiEAbBja5k833gg0guE6m8DXvIA");
+        expected = new String[]{"dladmin", groupPrincipalsJson("admin")};
         Assert.assertArrayEquals(expected, actual);
 
         // Test with multiple groups
-        actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiZGVzaWduZXJzIiwib3BlcmF0b3JzIl19."
-                                      + "fRxn00QbHAjL-R0DI1DmYfLEi3F7eMb3V2vTvgcFOy8");
-        expected = new String[]{"dladmin", "designers", "operators"};
+        actual = service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJwcmluY2lwYWxzIjpbIntcImNvbS50aGlua2J"
+                        + "pZ2FuYWx5dGljcy5zZWN1cml0eS5Hcm91cFByaW5jaXBhbFwiOltcImRlc2lnbmVyc1wiLFwib3BlcmF0b3JzXCJdfSJdfQ.kESqgybFd5uyOn1Mjy5dUgwjE24-MstYZjysXS58G8s");
+        expected = new String[]{"dladmin", groupPrincipalsJson("designers", "operators")};
         Assert.assertArrayEquals(expected, actual);
     }
 
@@ -98,6 +105,7 @@ public class JwtRememberMeServicesTest {
      */
     @Test(expected = InvalidCookieException.class)
     public void decodeCookieWithBlankSubject() {
+        String e2 = service.encodeCookie(new String[] {"", groupPrincipalsJson("designers", "operators")});
         service.decodeCookie("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6IiIsImdyb3VwcyI6W119.TZlPnjJgAW5oP9DztgE9r10rZhMv0GAnhlbGhRiMtmA");
     }
 
@@ -133,17 +141,19 @@ public class JwtRememberMeServicesTest {
     public void encodeCookie() {
         // Test with no groups
         String actual = service.encodeCookie(new String[]{"user"});
-        String expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6InVzZXIiLCJncm91cHMiOltdfQ.NKAD4m4bn1eDMGA9HSihOsLwrSUcDhBYfXIL7uJPWdo";
+        String expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6InVzZXIiLCJwcmluY2lwYWxzIjpbXX0.q76UatxiKI95uDZtCL1Oc48dBjXfhSgb1SpBkMAjP_E";
         Assert.assertEquals(expected, actual);
 
         // Test with one group
-        actual = service.encodeCookie(new String[]{"dladmin", "admin"});
-        expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiYWRtaW4iXX0.3RX9hsmfNA1rtWMs309N5MV5_gd4FUtU_odFIIOqsoY";
+        actual = service.encodeCookie(new String[]{"dladmin", groupPrincipalsJson("admin")});
+        expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJwcmluY2lwYWxzIjpbIntcImNvbS50aGlua2J"
+                        + "pZ2FuYWx5dGljcy5zZWN1cml0eS5Hcm91cFByaW5jaXBhbFwiOltcImFkbWluXCJdfSJdfQ.DH4pxE8eWCmqPlhFMiEAbBja5k833gg0guE6m8DXvIA";
         Assert.assertEquals(expected, actual);
 
         // Test with multiple groups
-        actual = service.encodeCookie(new String[]{"dladmin", "designers", "operators"});
-        expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiZGVzaWduZXJzIiwib3BlcmF0b3JzIl19.fRxn00QbHAjL-R0DI1DmYfLEi3F7eMb3V2vTvgcFOy8";
+        actual = service.encodeCookie(new String[]{"dladmin", groupPrincipalsJson("designers", "operators")});
+        expected = "eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJwcmluY2lwYWxzIjpbIntcImNvbS50aGlua2J"
+                        + "pZ2FuYWx5dGljcy5zZWN1cml0eS5Hcm91cFByaW5jaXBhbFwiOltcImRlc2lnbmVyc1wiLFwib3BlcmF0b3JzXCJdfSJdfQ.kESqgybFd5uyOn1Mjy5dUgwjE24-MstYZjysXS58G8s";
         Assert.assertEquals(expected, actual);
     }
 
@@ -161,11 +171,12 @@ public class JwtRememberMeServicesTest {
         final HttpServletRequest request = Mockito.mock(HttpServletRequest.class);
         Mockito.when(request.getContextPath()).thenReturn("");
 
-        final Authentication auth = new UsernamePasswordAuthenticationToken("dladmin", "thinkbig", Collections.singletonList(new SimpleGrantedAuthority("admin")));
+        final Authentication auth = new UsernamePasswordAuthenticationToken("dladmin", "thinkbig", groupAuthorities("admin"));
 
         // Test cookie set by login
         service.onLoginSuccess(request, response, auth);
-        Assert.assertEquals("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJncm91cHMiOlsiYWRtaW4iXX0.3RX9hsmfNA1rtWMs309N5MV5_gd4FUtU_odFIIOqsoY",
+        Assert.assertEquals("eyJhbGciOiJIUzI1NiIsImtpZCI6IkhNQUMifQ.eyJleHAiOjE0NjMxNTE5MDAsInN1YiI6ImRsYWRtaW4iLCJwcmluY2lwYWxzIjpbIntcImNvbS50aGlua2J"
+                        + "pZ2FuYWx5dGljcy5zZWN1cml0eS5Hcm91cFByaW5jaXBhbFwiOltcImFkbWluXCJdfSJdfQ.DH4pxE8eWCmqPlhFMiEAbBja5k833gg0guE6m8DXvIA",
                             cookie.get().getValue());
     }
 
@@ -174,8 +185,26 @@ public class JwtRememberMeServicesTest {
      */
     @Test
     public void processAutoLoginCookie() throws Exception {
-        final UserDetails user = service.processAutoLoginCookie(new String[]{"dladmin", "admin"}, Mockito.mock(HttpServletRequest.class), Mockito.mock(HttpServletResponse.class));
+        final UserDetails user = service.processAutoLoginCookie(new String[]{"dladmin", groupPrincipalsJson("admin")}, Mockito.mock(HttpServletRequest.class), Mockito.mock(HttpServletResponse.class));
         Assert.assertEquals("dladmin", user.getUsername());
-        Assert.assertEquals(Collections.singletonList("admin").toString(), user.getAuthorities().toString());
+        
+        Principal group = user.getAuthorities().stream()
+                        .findAny()
+                        .map(JaasGrantedAuthority.class::cast)
+                        .map(ja -> ja.getPrincipal())
+                        .orElseThrow(() -> new AssertionError("No group principal found"));
+        Assert.assertEquals(new GroupPrincipal("admin"), group);
+    }
+    
+    private String groupPrincipalsJson(String... names) {
+        return service.generatePrincipalsToken(groupAuthorities(names));
+    }
+    
+    private Collection<? extends GrantedAuthority> groupAuthorities(String... names) {
+        return Arrays.stream(names).map(this::groupAuthority).collect(Collectors.toList());
+    }
+    
+    private JaasGrantedAuthority groupAuthority(String name) {
+        return new JaasGrantedAuthority(name, new GroupPrincipal(name));
     }
 }

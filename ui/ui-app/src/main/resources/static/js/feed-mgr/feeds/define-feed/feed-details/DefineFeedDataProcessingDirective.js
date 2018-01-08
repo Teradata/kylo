@@ -306,11 +306,13 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
             });
 
             // Apply domain type to field
+            var promise;
+
             if ((domainType.field.derivedDataType !== null && (domainType.field.derivedDataType !== policy.field.derivedDataType || domainType.field.precisionScale !== policy.field.precisionScale))
                 || (angular.isArray(policy.standardization) && policy.standardization.length > 0)
                 || (angular.isArray(policy.field.tags) && policy.field.tags.length > 0)
                 || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
-                $mdDialog.show({
+                promise = $mdDialog.show({
                     controller: "ApplyDomainTypeDialogController",
                     escapeToClose: false,
                     fullscreen: true,
@@ -320,15 +322,22 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                         domainType: domainType,
                         field: policy.field
                     }
-                })
-                    .then(function () {
-                        FeedService.setDomainTypeForField(policy.field, policy, domainType);
-                    }, function () {
-                        policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
-                    });
+                });
             } else {
-                FeedService.setDomainTypeForField(policy.field, policy, domainType);
+                promise = Promise.resolve();
             }
+
+            promise.then(function () {
+                // Set domain type
+                FeedService.setDomainTypeForField(policy.field, policy, domainType);
+                // Update field properties
+                delete policy.field.$allowDomainTypeConflict;
+                policy.field.dataTypeDisplay = FeedService.getDataTypeDisplay(policy.field);
+                policy.name = policy.field.name;
+            }, function () {
+                // Revert domain type
+                policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
+            });
         };
 
         /**

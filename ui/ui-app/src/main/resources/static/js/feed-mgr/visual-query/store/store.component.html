@@ -1,0 +1,103 @@
+<div class="visual-query-loading-wrapper">
+  <div class="visual-query-loading" flex layout="row" layout-align="center center" ng-show="$st.loading">
+    <md-progress-circular md-mode="indeterminate" md-diameter="80"></md-progress-circular>
+  </div>
+
+  <card-layout body-css="md-padding">
+    <header-section>
+      <div class="card-title">Save</div>
+    </header-section>
+    <body-section md-content>
+      <div ng-if="$st.downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
+        <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>
+        <div layout="column" flex>
+          <div style="font-weight:500;line-height:24px;">Download Ready</div>
+          <div style="line-height:20px;">The file is ready to be downloaded.</div>
+        </div>
+        <md-button ng-click="$st.download()">Download</md-button>
+      </div>
+      <div ng-if="$st.error != null" style="color:#e53935;background-color:rgba(229,57,53,.15);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
+        <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
+        <div layout="column" flex>
+          <div style="font-weight:500;line-height:24px;">Error!</div>
+          <div style="line-height:20px;">{{$st.error}}</div>
+        </div>
+      </div>
+
+      <ng-form name="$st.form">
+        <div layout="column">
+
+          <div style="padding-bottom:10px;">
+            <div class="md-subhead">Choose the destination</div>
+            <div class="layout-padding-indent" style="padding-top:8px;">
+              <md-radio-group ng-model="$st.destination" layout="row" required>
+                <md-radio-button value="DOWNLOAD">Download as a file</md-radio-button>
+                <md-radio-button value="TABLE">Save to a table</md-radio-button>
+              </md-radio-group>
+            </div>
+          </div>
+
+          <md-input-container ng-if="$st.destination == 'TABLE'">
+            <label>Data Source</label>
+            <md-select name="datasource" ng-model="$st.target.jdbc" placeholder="Data Source" required ng-change="$st.form.datasource.$setValidity('connectionError', true)">
+              <md-option ng-repeat="datasource in $st.kyloDataSources track by datasource.id" ng-value="datasource">{{datasource.name}}</md-option>
+            </md-select>
+            <div ng-messages="$st.form.datasource.$error" ng-if="$st.form.datasource.$touched">
+              <div ng-message="connectionError">Unable to connect to selected data source.</div>
+              <div ng-message="required">Required</div>
+            </div>
+          </md-input-container>
+
+          <md-autocomplete ng-if="$st.destination == 'TABLE'" required md-input-name="tableName" md-input-minlength="1" md-no-cache="true" md-search-text="$st.target.tableName"
+                           md-items="item in $st.findTables($st.target.tableName)" md-item-text="item.fullName" md-floating-label="Table Name" md-menu-class="autocomplete-hive-table-template">
+            <md-item-template>
+              <span class="item-title">
+                <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i" style="padding-left:5px;">{{item.fullName}}</span>
+              </span>
+              <span class="item-metadata">
+                <span class="item-metastat">
+                  <span style="color:grey;">Schema:</span>
+                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.schema}}</span>
+                </span>
+                <span class="item-metastat">
+                  <span style="color:grey;">Table:</span>
+                  <span md-highlight-text="$st.target.tableName" md-highlight-flags="^i">{{item.tableName}}</span>
+                </span>
+              </span>
+            </md-item-template>
+            <div ng-messages="$st.form.tableName.$error" ng-if="$st.form.tableName.$touched">
+              <div ng-message="required">Required</div>
+            </div>
+          </md-autocomplete>
+
+          <md-input-container ng-if="$st.destination == 'DOWNLOAD' || ($st.destination == 'TABLE' && $st.target.jdbc['@type'] != 'JdbcDatasource')">
+            <label>File Format</label>
+            <md-select name="format" ng-model="$st.target.format" placeholder="Format" required>
+              <md-option ng-repeat="format in $st.formats" ng-value="format">{{format}}</md-option>
+            </md-select>
+            <div ng-messages="$st.form.format.$error" ng-if="$st.form.format.$touched">
+              <div ng-message="required">Required</div>
+            </div>
+          </md-input-container>
+
+          <md-input-container ng-if="$st.destination == 'TABLE'">
+            <label>Save mode</label>
+            <md-select name="mode" ng-model="$st.target.mode" placeholder="Mode" required>
+              <md-option value="Append">Append to existing data</md-option>
+              <md-option value="ErrorIfExists">Fail if table exists</md-option>
+              <md-option value="Ignore">Skip existing table</md-option>
+              <md-option value="Overwrite">Overwrite existing table</md-option>
+            </md-select>
+            <div ng-messages="$st.form.mode.$error" ng-if="$st.form.mode.$touched">
+              <div ng-message="required">Required</div>
+            </div>
+          </md-input-container>
+
+        </div>
+      </ng-form>
+
+      <thinkbig-step-buttons can-continue="$st.form.$valid" step-index="{{::$st.stepIndex}}" final-step="Save" on-click-final-button="$st.save()"></thinkbig-step-buttons>
+    </body-section>
+  </card-layout>
+</div>

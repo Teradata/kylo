@@ -1,0 +1,25 @@
+{
+  "description": "Example feed stepper with data transformation",
+  "displayName": "Example Data Transformation Feed Stepper",
+  "resourceContext":"/example-plugin-1.0",
+  "feedDetailsTemplateUrl": "/example-plugin-1.0/feed-details-templates/data-transform-feed-details.html",
+  "stepperTemplateUrl": "/example-plugin-1.0/stepper-templates/data-transform-steps.html",
+  "preStepperTemplateUrl":"/example-plugin-1.0/stepper-templates/pre-steps.html",
+  "preFeedDetailsTemplateUrl":"/example-plugin-1.0/feed-details-templates/pre-step-feed-details.html",
+  "metadataProperties": [
+    {
+      "name": "examplePluginProperty",
+      "description": "Example Plugin property"
+    },
+    {
+      "name": "anotherProperty",
+      "description": "This is another property"
+    }
+  ],
+  "totalCoreSteps": 5,
+  "totalPreSteps":1,
+  "type": "EXAMPLE_DATA_TRANSFORM_FEED_STEPPER",
+  "initializeServiceName":"ExampleFeedStepperInitializerService",
+  "initializeScript": "/example-plugin-1.0/initialize.js"
+
+}

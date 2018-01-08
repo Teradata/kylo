@@ -25,12 +25,15 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.flow.FlowDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -369,6 +372,7 @@ public class NifiProcessUtil {
         Pattern pattern = Pattern.compile("^" + Pattern.quote(feedName) + "( - \\d+)?$", Pattern.CASE_INSENSITIVE);
         return processGroups.stream().filter(processGroup -> pattern.matcher(processGroup.getName()).matches()).collect(Collectors.toSet());
     }
+
 
 
     /**

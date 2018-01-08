@@ -1,0 +1,26 @@
+
+
+<kylo-define-feed-step title="Build Query" step="getStep(0)" kylo-init-query-engine="spark">
+  <thinkbig-visual-query-builder engine="queryEngine" height-offset="144" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(0)}}" ng-if="isStepSelected(0)">
+  </thinkbig-visual-query-builder>
+</kylo-define-feed-step>
+
+<kylo-define-feed-step title="Transform Data" step="getStep(1)">
+  <thinkbig-visual-query-transform engine="queryEngine" field-policies="coreDataModel.table.fieldPolicies" height-offset="144" model="coreDataModel.dataTransformation" step-index="{{getStepIndex(1)}}"
+                                   ng-if="isStepSelected(1) || isStepVisited(1)">
+  </thinkbig-visual-query-transform>
+</kylo-define-feed-step>
+
+<kylo-define-feed-step title="Table" step="getStep(2)">
+  <thinkbig-define-feed-table ng-if="isStepSelected(2)" step-index="{{getStepIndex(2)}}" can-remove-fields="false" table-locked="true" type-locked="true"></thinkbig-define-feed-table>
+</kylo-define-feed-step>
+
+<kylo-define-feed-step title="Data Processing" step="getStep(3)">
+  <thinkbig-define-feed-data-processing step-index="{{getStepIndex(3)}}" default-merge-strategy="SYNC"></thinkbig-define-feed-data-processing>
+</kylo-define-feed-step>
+
+<kylo-define-feed-step title="Example Step" step="getStep(4)">
+  <div lazy-load-retain-order="['/example-plugin-1.0/module.js','/example-plugin-1.0/example-feed-stepper-core-step/example-feed-stepper-core-step.js']">
+    <example-feed-stepper-core-step step-index="{{getStepIndex(4)}}" ng-if="isStepSelected(4)"></example-feed-stepper-core-step>
+  </div>
+</kylo-define-feed-step>

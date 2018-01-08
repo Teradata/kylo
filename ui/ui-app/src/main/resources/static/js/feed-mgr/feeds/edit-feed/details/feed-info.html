@@ -17,7 +17,11 @@
   limitations under the License.
   #L%
   -->
-<div class="md-padding">
+<div class="md-padding" ng-if="vm.initialized">
+
+  <kylo-table-options-details ng-if="vm.renderPreStepTemplates" stepper-template-type="pre-step" type="{{vm.model.registeredTemplate.templateTableOption}}"></kylo-table-options-details>
+
+
   <thinkbig-feed-definition></thinkbig-feed-definition>
   <thinkbig-feed-nifi-properties ng-if="vm.model.inputProcessor.properties.length > 0 || vm.model.nonInputProcessors.length > 0"></thinkbig-feed-nifi-properties>
 

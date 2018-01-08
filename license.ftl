@@ -94,6 +94,8 @@
 <#-- -->
 <#if project.groupId == "antlr">
   <@publicDomain/>
+<#elseif project.groupId == "ch.qos.cal10n">
+  <@cal10nLicense/>
 <#elseif project.groupId == "com.google.protobuf">
   <@protobufLicense/>
 <#elseif project.groupId == "com.h2database">
@@ -122,6 +124,8 @@
   <@antlrLicense/>
 <#elseif project.groupId == "org.bouncycastle">
   <@bouncyCastleLicense/>
+<#elseif project.groupId == "org.codehaus.mojo" && project.artifactId == "animal-sniffer-annotations">
+  <@animalSnifferLicense/>
 <#elseif project.groupId == "org.codehaus.jettison">
   <@apache2License/>
 <#elseif project.groupId == "org.codehaus.woodstox">
@@ -130,6 +134,8 @@
   <@jgitLicense/>
 <#elseif project.groupId == "org.fusesource.leveldbjni">
   <@leveldbjniLicense/>
+<#elseif project.groupId == "org.hashids">
+  <@mitLicense/>
 <#elseif project.groupId == "org.jvnet">
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "org.ow2.asm" || project.groupId == "asm">
@@ -224,6 +230,16 @@ Copyright (c) 2000 - 2016 The Legion of the Bouncy Castle Inc. (https://www.boun
   <@mitLicense/>
 </#macro>
 
+<#-- Bouncy Castle License -->
+<#macro animalSnifferLicense>
+  <@projectInfo project/>
+
+Copyright (c) 2009 codehaus.org.
+
+  <@mitLicense/>
+</#macro>
+
+
 <#-- BSD 3-Clause License -->
 <#macro bsd3License>
 Redistribution and use in source and binary forms, with or without
@@ -247,6 +263,16 @@ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
 LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
 OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+</#macro>
+
+<#-- cal10n License -->
+<#macro cal10nLicense>
+  <@projectInfo project/>
+
+Copyright (c) 2009 QOS.ch
+All rights reserved.
+
+  <@mitLicense/>
 </#macro>
 
 <#-- dom4j License -->

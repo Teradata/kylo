@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.sqoop.utils;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.thinkbiganalytics.nifi.v2.sqoop.PasswordMode;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.ExportNullInterpretationStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.security.DecryptPassword;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.logging.ComponentLog;
 
 /**
@@ -54,6 +55,8 @@ public class SqoopExportBuilder {
     private final static String sourceNullInterpretationStrategyCustomNullNonStringLabel = "--input-null-non-string";
     private final static String sourceNullInterpretationStrategyHiveDefaultNullStringLabelAndValue = "--input-null-string '\\\\N'";
     private final static String sourceNullInterpretationStrategyHiveDefaultNullNonStringLabelAndValue = "--input-null-non-string '\\\\N'";
+    private final static String hcatalogDatabaseLabel = "--hcatalog-database";
+    private final static String hcatalogTableLabel = "--hcatalog-table";
     private final static String clusterMapTasksLabel = "--num-mappers";
     private final static String operationName = "sqoop";
     private final static String operationType = "export";
@@ -69,6 +72,10 @@ public class SqoopExportBuilder {
     private String targetTableName;
     private String sourceHdfsDirectory;
     private String sourceHdfsFileDelimiter;
+    private String hcatalogDatabase;
+    private String hcatalogTable;
+    private String systemProperties;
+    private String additionalArguments;
     private ExportNullInterpretationStrategy sourceNullInterpretationStrategy = ExportNullInterpretationStrategy.HIVE_DEFAULT;
     private String sourceNullInterpretationStrategyCustomNullString;
     private String sourceNullInterpretationStrategyCustomNullNonString;
@@ -299,6 +306,38 @@ public class SqoopExportBuilder {
         return this;
     }
 
+    public SqoopExportBuilder setSystemProperties(String systemProperties) {
+        this.systemProperties = systemProperties;
+        if (logger != null) {
+            logger.info("systemProperties set to: {}", new Object[]{this.systemProperties});
+        }
+        return this;
+    }
+
+    public SqoopExportBuilder setAdditionalArguments(String additionalArguments) {
+        this.additionalArguments = additionalArguments;
+        if (logger != null) {
+            logger.info("additionalArguments set to: {}", new Object[]{this.additionalArguments});
+        }
+        return this;
+    }
+
+    public SqoopExportBuilder setHcatalogDatabase(String hcatalogDatabase) {
+        this.hcatalogDatabase = hcatalogDatabase;
+        if (logger != null) {
+            logger.info("HCatalog Database set to: {}", new Object[]{this.hcatalogDatabase});
+        }
+        return this;
+    }
+
+    public SqoopExportBuilder setHcatalogTable(String hcatalogTable) {
+        this.hcatalogTable = hcatalogTable;
+        if (logger != null) {
+            logger.info("HCatalog Table set to: {}", new Object[]{this.hcatalogTable});
+        }
+        return this;
+    }
+
     /**
      * Build a sqoop export command
      *
@@ -319,6 +358,12 @@ public class SqoopExportBuilder {
             .append(SPACE_STRING)
             .append(operationType)                                                              //export
             .append(SPACE_STRING);
+
+        if (StringUtils.isNotBlank(systemProperties)) {
+            commandStringBuffer.append(systemProperties) //"-Dsqoop.export.records.per.statement=1 ");
+                .append(SPACE_STRING);
+        }
+
 
         /* Handle encrypted password file */
         if (passwordMode == PasswordMode.ENCRYPTED_ON_HDFS_FILE) {
@@ -390,39 +435,54 @@ public class SqoopExportBuilder {
             .append(targetTableName)                                                            //"user provided"
             .append(END_QUOTE_SPACE);
 
-        /* Handle HDFS source data parameters */
-        commandStringBuffer.append(sourceHdfsDirectoryLabel)                                    //--export-dir
-            .append(START_SPACE_QUOTE)
-            .append(sourceHdfsDirectory)                                                        //"user provided"
-            .append(END_QUOTE_SPACE)
-            .append(sourceHdfsFileDelimiterLabel)                                               //--input-fields-terminated-by
-            .append(START_SPACE_QUOTE)
-            .append(sourceHdfsFileDelimiter)                                                    //"user provided"
-            .append(END_QUOTE_SPACE);
+        if (StringUtils.isBlank(hcatalogTable)) {
+            /* Handle HDFS source data parameters */
+            commandStringBuffer.append(sourceHdfsDirectoryLabel)                                    //--export-dir
+                .append(START_SPACE_QUOTE)
+                .append(sourceHdfsDirectory)                                                        //"user provided"
+                .append(END_QUOTE_SPACE)
+                .append(sourceHdfsFileDelimiterLabel)                                               //--input-fields-terminated-by
+                .append(" '")
+                .append(sourceHdfsFileDelimiter)                                                    //"user provided"
+                .append("' ");
 
-        /* Handle HDFS source null interpretation strategy */
-        if (sourceNullInterpretationStrategy != ExportNullInterpretationStrategy.SQOOP_DEFAULT) {
-            if (sourceNullInterpretationStrategy == ExportNullInterpretationStrategy.HIVE_DEFAULT) {
-                commandStringBuffer
-                    .append(sourceNullInterpretationStrategyHiveDefaultNullStringLabelAndValue)     //--input-null-string '\\\\N'
-                    .append(SPACE_STRING)
-                    .append(sourceNullInterpretationStrategyHiveDefaultNullNonStringLabelAndValue)  //--input-null-non-string '\\\\N'
-                    .append(SPACE_STRING);
-            } else if (sourceNullInterpretationStrategy == ExportNullInterpretationStrategy.CUSTOM_VALUES) {
-                commandStringBuffer
-                    .append(sourceNullInterpretationStrategyCustomNullStringLabel)              //--input-null-string
-                    .append(SPACE_STRING)
-                    .append("'")
-                    .append(sourceNullInterpretationStrategyCustomNullString)                   //"user provided"
-                    .append("'")
-                    .append(SPACE_STRING)
-                    .append(sourceNullInterpretationStrategyCustomNullNonStringLabel)           //--input-null-non-string
-                    .append(SPACE_STRING)
-                    .append("'")
-                    .append(sourceNullInterpretationStrategyCustomNullNonString)                //"user provided"
-                    .append("'")
-                    .append(SPACE_STRING);
+            /* Handle HDFS source null interpretation strategy */
+            if (sourceNullInterpretationStrategy != ExportNullInterpretationStrategy.SQOOP_DEFAULT) {
+                if (sourceNullInterpretationStrategy == ExportNullInterpretationStrategy.HIVE_DEFAULT) {
+                    commandStringBuffer
+                        .append(sourceNullInterpretationStrategyHiveDefaultNullStringLabelAndValue)     //--input-null-string '\\\\N'
+                        .append(SPACE_STRING)
+                        .append(sourceNullInterpretationStrategyHiveDefaultNullNonStringLabelAndValue)  //--input-null-non-string '\\\\N'
+                        .append(SPACE_STRING);
+                } else if (sourceNullInterpretationStrategy == ExportNullInterpretationStrategy.CUSTOM_VALUES) {
+                    commandStringBuffer
+                        .append(sourceNullInterpretationStrategyCustomNullStringLabel)              //--input-null-string
+                        .append(SPACE_STRING)
+                        .append("'")
+                        .append(sourceNullInterpretationStrategyCustomNullString)                   //"user provided"
+                        .append("'")
+                        .append(SPACE_STRING)
+                        .append(sourceNullInterpretationStrategyCustomNullNonStringLabel)           //--input-null-non-string
+                        .append(SPACE_STRING)
+                        .append("'")
+                        .append(sourceNullInterpretationStrategyCustomNullNonString)                //"user provided"
+                        .append("'")
+                        .append(SPACE_STRING);
+                }
             }
+        } else {
+            if (StringUtils.isNotBlank(hcatalogDatabase)) {
+                commandStringBuffer.append(hcatalogDatabaseLabel)
+                    .append(START_SPACE_QUOTE)
+                    .append(hcatalogDatabase)
+                    .append(END_QUOTE_SPACE);
+            }
+
+            commandStringBuffer.append(hcatalogTableLabel)
+                .append(START_SPACE_QUOTE)
+                .append(hcatalogTable)
+                .append(END_QUOTE_SPACE);
+
         }
 
         /* Handle other job parameters */
@@ -430,6 +490,11 @@ public class SqoopExportBuilder {
             .append(START_SPACE_QUOTE)
             .append(clusterMapTasks)                                                            //"user provided"
             .append(END_QUOTE_SPACE);
+
+        if (StringUtils.isNotBlank(additionalArguments)) {
+            commandStringBuffer.append(additionalArguments)
+                .append(SPACE_STRING);
+        }
 
         return commandStringBuffer.toString();
     }

@@ -24,6 +24,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -251,5 +252,23 @@ public class NifiConnectionUtil {
         }
     }
 
+
+    public static ConnectableDTO asConnectable(PortDTO port){
+        ConnectableDTO connectable = new ConnectableDTO();
+        connectable.setGroupId(port.getParentGroupId());
+        connectable.setId(port.getId());
+        connectable.setName(port.getName());
+        connectable.setType(port.getType());
+        return connectable;
+    }
+
+    public static ConnectableDTO asNewConnectable(ConnectableDTO connectableDTO){
+        ConnectableDTO connectable = new ConnectableDTO();
+        connectable.setGroupId(connectableDTO.getGroupId());
+        connectable.setId(connectableDTO.getId());
+        connectable.setName(connectableDTO.getName());
+        connectable.setType(connectableDTO.getType());
+        return connectable;
+    }
 
 }

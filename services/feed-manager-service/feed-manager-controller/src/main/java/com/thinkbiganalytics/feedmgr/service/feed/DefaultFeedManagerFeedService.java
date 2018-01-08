@@ -26,6 +26,7 @@ import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -203,6 +204,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private FeedHiveTableService feedHiveTableService;
+
+    @Inject
+    private TemplateConnectionUtil templateConnectionUtil;
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -433,6 +437,20 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         }
 
+        if (StringUtils.isBlank(feedMetadata.getId())) {
+            feedMetadata.setIsNew(true);
+        }
+
+        //Read all the feeds as System Service account to ensure the feed name is unique
+        if (feedMetadata.isNew()) {
+            metadataAccess.read(() -> {
+                Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+                if (existing != null) {
+                    throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
+                }
+            }, MetadataAccess.SERVICE);
+        }
+
         NifiFeed feed = createAndSaveFeed(feedMetadata);
         //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
@@ -513,7 +531,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .build());
 
         //copy the registered template properties it a new list so it doest get updated
-        List<NifiProperty> templateProperties = new ArrayList<>(registeredTemplate.getProperties());
+        List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
@@ -550,7 +568,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder
-                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache)
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache, templateConnectionUtil)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)
@@ -624,20 +642,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
 
     private void saveFeed(final FeedMetadata feed) {
-        if (StringUtils.isBlank(feed.getId())) {
-            feed.setIsNew(true);
-        }
+
+
         metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
-            // Store the old security groups before saving beccause we need to compare afterward
-            if (feed.isNew()) {
-                Feed existing = feedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                // Since we know this is expected to be new check if the category/feed name combo is already being used.
-                if (existing != null) {
-                    throw new DuplicateFeedNameException(feed.getCategoryName(), feed.getFeedName());
-                }
-            } else {
+            // Store the old security groups before saving because we need to compare afterward
+            if (!feed.isNew()) {
                 Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();

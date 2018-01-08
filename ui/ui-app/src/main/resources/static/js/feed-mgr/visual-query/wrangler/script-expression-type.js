@@ -4,7 +4,7 @@ define(["require", "exports"], function (require, exports) {
     /**
      * Type of script expressions.
      */
-    var ScriptExpressionType = (function () {
+    var ScriptExpressionType = /** @class */ (function () {
         /**
          * Constructs a {@code ScriptExpressionType} with the specified string value.
          */
@@ -41,20 +41,20 @@ define(["require", "exports"], function (require, exports) {
         ScriptExpressionType.prototype.toString = function () {
             return this.value;
         };
+        /**
+         * Represents an array of objects.
+         */
+        ScriptExpressionType.ARRAY = new ScriptExpressionType("array");
+        /**
+         * Represents a SQL column.
+         */
+        ScriptExpressionType.COLUMN = new ScriptExpressionType("column");
+        /**
+         * Represents a number or string literal.
+         */
+        ScriptExpressionType.LITERAL = new ScriptExpressionType("literal");
         return ScriptExpressionType;
     }());
-    /**
-     * Represents an array of objects.
-     */
-    ScriptExpressionType.ARRAY = new ScriptExpressionType("array");
-    /**
-     * Represents a SQL column.
-     */
-    ScriptExpressionType.COLUMN = new ScriptExpressionType("column");
-    /**
-     * Represents a number or string literal.
-     */
-    ScriptExpressionType.LITERAL = new ScriptExpressionType("literal");
     exports.ScriptExpressionType = ScriptExpressionType;
 });
 //# sourceMappingURL=script-expression-type.js.map
