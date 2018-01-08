@@ -912,13 +912,13 @@ public class FeedRestController {
                       @ApiResponse(code = 200, message = "Files are ready to be ingested."),
                       @ApiResponse(code = 500, message = "Files could not be saved.", response = RestResponseStatus.class)
                   })
-    public Response uploadFile(@PathParam("feedId") String feedId, FormDataMultiPart multiPart) throws Exception {
+    public Response uploadFile(@PathParam("feedId") String feedId, FormDataMultiPart multiPart) {
 
         List<NifiProperty> properties = getNifiProperties(feedId);
         FileUploadContext context = getFileUploadContext(properties);
 
         if (!context.isValid()) {
-            throw new IOException("Unable to upload file with empty dropzone and file");
+            throw new InternalServerErrorException("Unable to upload file with empty dropzone or file");
         }
 
         List<BodyPart> bodyParts = multiPart.getBodyParts();
