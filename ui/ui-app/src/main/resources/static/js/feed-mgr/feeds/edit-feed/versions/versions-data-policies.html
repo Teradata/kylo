@@ -1,0 +1,361 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+                         editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDataPoliciesForm">
+
+  <readonly-section>
+
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+      <span flex="25" class="property-name">Source Feed Record Format</span>
+
+      <div flex layout="column">
+        <span>{{vm.model.table.feedFormat}}</span>
+      </div>
+    </div>
+
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Destination Table Name</span>
+
+      <div flex layout="column">
+        <span>{{vm.model.category.systemName}}.{{vm.model.table.tableSchema.name}}</span>
+      </div>
+    </div>
+
+
+    <md-list flex layout-fill class="list-item-table list-condensed data-policy-header">
+
+      <md-list-item>
+        <div layout="row" layout-fill>
+          <div flex="25" class="md-list-item-text hint">
+            Field Name
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            Domain<br/>Type
+          </div>
+          <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
+            <div class="data-policy-item-check-box">
+              Primary
+              <md-tooltip md-direction="top">
+                Indicate this column is the Primary Key for the row
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Created<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was created?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Updated<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was updated?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              Index
+              <md-tooltip md-direction="top">
+                Define what should be sent to "Global Search"
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              Profile
+              <md-tooltip md-direction="top">
+                Should this field be profiled?
+              </md-tooltip>
+            </div>
+          </div>
+          <div flex="25" class="md-list-item-text hint layout-margin-left-10">
+            Standardize & Validate
+          </div>
+        </div>
+      </md-list-item>
+
+      <md-list-item
+          style="height: 55px"
+          ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30"
+          ng-repeat="policy in vm.model.table.fieldPolicies">
+        <ng-include
+            layout="row" layout-fill
+            src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-readonly.html'"></ng-include>
+      </md-list-item>
+      <md-virtual-repeat-container
+          ng-if="vm.model.table.fieldPolicies.length >= 30"
+          style="min-height: 700px"
+          class="virtual-repeat-scroller-overlay">
+        <div
+            style="height: 40px;"
+            md-virtual-repeat="policy in vm.model.table.fieldPolicies">
+          <ng-include
+              layout="row" layout-fill
+              src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-readonly.html'"></ng-include>
+        </div>
+      </md-virtual-repeat-container>
+
+
+    </md-list>
+
+
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex class="property-name">Partitions</span>
+    </div>
+
+    <md-list flex layout-fill class="list-item-table list-condensed" ng-if="vm.model.table.partitions.length >0">
+
+      <md-list-item>
+        <div layout="row" layout-fill>
+          <div flex="50" class="md-list-item-text hint">
+            Partition Name
+          </div>
+          <div flex="30" class="md-list-item-text hint">
+            Source Field
+          </div>
+          <div flex="20" class="md-list-item-text hint">
+            Partition Formula
+          </div>
+        </div>
+      </md-list-item>
+
+
+      <md-list-item ng-repeat="field in vm.model.table.partitions">
+        <div layout="row" layout-fill>
+          <div flex="50" class="md-list-item-text">
+            <div>{{field.field}}</div>
+          </div>
+          <div flex="30" class="md-list-item-text">
+            <div>{{field.sourceField}}</div>
+          </div>
+          <div flex="20" class="md-list-item-text">
+            <div>{{field.formula}}</div>
+          </div>
+        </div>
+        <md-divider></md-divider>
+      </md-list-item>
+    </md-list>
+
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.partitions.length ==0">
+      <span flex class="property-name">No Partition Information Exists</span>
+    </div>
+
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+      <span flex="25" class="property-name">Merge Strategy</span>
+
+      <div flex layout="column">
+        <span>{{vm.mergeStrategyDisplayName()}}</span>
+      </div>
+    </div>
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Target Format</span>
+      <span>{{vm.model.table.targetFormat}}</span>
+    </div>
+
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Compression options</span>
+      <span>{{vm.model.table.options.compressionFormat}}</span>
+    </div>
+
+
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Options</span>
+
+      <div flex layout="row" layout-align="start start" layout-wrap="true">
+        <div layout="row">
+          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.options.skipHeader"></ng-md-icon>
+          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.options.skipHeader"></ng-md-icon>
+          <span class="property-name">Skip header</span>
+        </div>
+      </div>
+    </div>
+
+
+  </readonly-section>
+  <editable-section>
+    <ng-form name="vm.editFeedDataPoliciesForm">
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+      <span flex="25" class="property-name">Source Feed Record Format</span>
+
+      <div flex layout="column">
+        <span>{{vm.model.table.feedFormat}}</span>
+      </div>
+    </div>
+
+    <div layout="row" class="layout-padding-top-bottom">
+      <span flex="25" class="property-name">Destination Table Name</span>
+
+      <div flex layout="column">
+        <span>{{vm.model.category.systemName}}.{{vm.model.table.tableSchema.name}}</span>
+      </div>
+    </div>
+
+    <md-list flex
+             layout-fill
+             class="list-item-table list-condensed data-policy-header">
+
+      <md-list-item>
+        <div layout="row" layout-fill>
+          <div flex="25" class="md-list-item-text hint">
+            Field Name
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            Domain<br/>Type
+          </div>
+          <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
+            <div class="data-policy-item-check-box">
+              Primary
+              <md-tooltip md-direction="top">
+                Indicate this column is the Primary Key for the row
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Created<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was created?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              <span>Updated<br/>Date</span>
+              <md-tooltip md-direction="top">
+                Is this field an indicator of when the row was updated?
+              </md-tooltip>
+            </div>
+            <div class="data-policy-item-check-box">
+              Index
+              <md-tooltip md-direction="top">
+                Define what should be sent to "Global Search"
+              </md-tooltip>
+              <md-input-container class="md-block">
+                <md-checkbox aria-label="Select All"
+                             ng-checked="vm.indexCheckAll.isChecked"
+                             md-indeterminate="vm.indexCheckAll.isIndeterminate"
+                             ng-click="vm.indexCheckAll.toggleAll()"
+                             style="margin-left:-1px;"></md-checkbox>
+              </md-input-container>
+            </div>
+            <div class="data-policy-item-check-box">
+              Profile
+              <md-tooltip md-direction="top">
+                Should this field be profiled?
+              </md-tooltip>
+              <md-input-container class="md-block">
+                <md-checkbox aria-label="Select All"
+                             ng-checked="vm.profileCheckAll.isChecked"
+                             md-indeterminate="vm.profileCheckAll.isIndeterminate"
+                             ng-click="vm.profileCheckAll.toggleAll()"
+                style="margin-left:-1px;">
+                </md-checkbox>
+              </md-input-container>
+            </div>
+          </div>
+          <div flex="25" class="md-list-item-text hint layout-margin-left-10">
+            Standardize & Validate
+          </div>
+        </div>
+      </md-list-item>
+      <div layout="row" layout-fill flex>
+        <span style="margin-top:-10px;" layout-fill flex>
+           <md-divider style="border-top-color:grey"></md-divider>
+        </span>
+      </div>
+
+
+      <md-list-item
+          style="height: 55px"
+          ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30"
+          ng-repeat="policy in vm.editModel.fieldPolicies">
+        <ng-include
+            layout="row" layout-fill
+            src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-editable.html'"></ng-include>
+      </md-list-item>
+      <md-virtual-repeat-container
+          ng-if="vm.model.table.fieldPolicies.length >= 30"
+          style="min-height: 700px;"
+          class="virtual-repeat-scroller-overlay">
+        <div
+            style="height: 50px;"
+            md-virtual-repeat="policy in vm.editModel.fieldPolicies">
+          <ng-include
+              layout="row" layout-fill
+              src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-editable.html'"></ng-include>
+        </div>
+      </md-virtual-repeat-container>
+
+
+    </md-list>
+
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+      <label class="label-small md-container-ignore">Merge Strategy</label>
+      <md-radio-group ng-model="vm.editModel.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy" ng-change="vm.onChangeMergeStrategy()">
+        <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
+                         ng-value="strategy.type"
+                         aria-label="{{strategy.name}}"
+                         ng-disabled="strategy.disabled">
+          {{strategy.name}}
+          <div class="hint">{{strategy.hint}}</div>
+        </md-radio-button>
+      </md-radio-group>
+      <div ng-messages="vm.editFeedDataPoliciesForm['targetMergeStrategy'].$error" md-auto-hide="false">
+        <div ng-message="invalidPKOption">A Primary Key must be selected to use this strategy</div>
+        <div ng-message="invalidRollingSyncOption">A Partition must be added to use this strategy</div>
+      </div>
+    </md-input-container>
+
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+      <label class="label-small md-container-ignore">Target Format</label>
+      <md-select ng-model="vm.editModel.table.targetFormat" disabled="true">
+        <md-option ng-repeat="opt in vm.targetFormatOptions" ng-value="opt.value">
+          {{opt.label}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+      <label class="label-small md-container-ignore">Compression options</label>
+      <md-select ng-model="vm.editModel.table.options.compressionFormat" disabled="true">
+        <md-option ng-repeat="opt in vm.compressionOptions track by $index" ng-value="opt">
+          {{opt}}
+        </md-option>
+      </md-select>
+    </md-input-container>
+
+
+    <md-input-container class="md-block layout-padding-top-bottom condensed" style="padding-left:0px;padding-right:0px;">
+      <label class="label-small md-container-ignore">Options</label>
+
+      <div layout="row" class="layout-padding-top ">
+        <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header">
+          Skip header row
+        </md-checkbox>
+        <!--
+        <md-checkbox ng-model="vm.editModel.table.options.auditLogging" aria-label="Audit Logging">
+          Audit Logging
+        </md-checkbox>
+        <md-checkbox ng-model="vm.editModel.table.options.encrypt" aria-label="Encrypt">
+          Encrypt
+        </md-checkbox>
+        -->
+      </div>
+    </md-input-container>
+
+    </ng-form>
+  </editable-section>
+
+</vertical-section-layout>

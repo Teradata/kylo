@@ -1,0 +1,96 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<vertical-section-layout section-title="Properties" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()" allow-edit="vm.allowEdit"
+                         editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid">
+
+    <readonly-section>
+        <div layout="column">
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Data Owner</span>
+
+                <div flex>
+                    {{vm.model.dataOwner}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Tags</span>
+
+                <div flex>
+                    {{vm.model.tags | join: ',':'name'}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
+                <span flex="25" class="property-name">Hadoop Security Groups</span>
+
+                <div flex>
+                    {{vm.model.securityGroups | join: ',':'name'}}
+                </div>
+            </div>
+            <thinkbig-property-list properties="vm.model.userProperties"></thinkbig-property-list>
+        </div>
+    </readonly-section>
+
+    <editable-section>
+        <md-input-container class="md-block" flex-gt-sm>
+            <label>Data Owner</label>
+            <input ng-model="vm.editModel.dataOwner">
+        </md-input-container>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm" flex-gt-sm="" style="">
+            <label class="label-small md-container-ignore">Tags</label>
+            <md-chips ng-model="vm.editModel.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+                <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
+                        md-item-text="item.name" placeholder="Add a Tag">
+                    <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+                </md-autocomplete>
+                <md-chip-template>
+                    <span>
+                        <strong>{{$chip.name}}</strong>
+                    </span>
+                </md-chip-template>
+            </md-chips>
+            <span class="hint">Type in a tag and press enter</span>
+        </md-input-container>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.securityGroupsEnabled == true">
+            <label class="label-small md-container-ignore">Hadoop Security Groups</label>
+            <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
+                      md-transform-chip="vm.transformChip($chip)"
+                      md-require-match="true" class="layout-padding-top-bottom">
+                <md-autocomplete
+                    md-min-length="0"
+                    md-selected-item="vm.securityGroupChips.selectedItem"
+                    md-search-text="vm.securityGroupChips.searchText"
+                    md-items="item in vm.feedSecurityGroups.querySearch(vm.securityGroupChips.searchText)"
+                    md-item-text="item.name"
+                    placeholder="Add a Hadoop Security Group">
+                    <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
+                </md-autocomplete>
+                <md-chip-template>
+                            <span>
+                              <strong>{{$chip.name}}</strong>
+                            </span>
+                </md-chip-template>
+            </md-chips>
+        </md-input-container>
+
+        <thinkbig-property-list-editor properties="vm.editModel.userProperties" is-valid="vm.isValid"></thinkbig-property-list-editor>
+    </editable-section>
+</vertical-section-layout>

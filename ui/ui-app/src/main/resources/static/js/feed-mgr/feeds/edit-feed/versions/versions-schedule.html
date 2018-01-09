@@ -1,0 +1,167 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
+                         allow-edit="!vm.model.reusableFeed && vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid"
+                         the-form="vm.scheduleFeedForm">
+
+    <readonly-section>
+        <div ng-if="vm.model.reusableFeed == false">
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Strategy</span>
+
+            <div flex>
+                {{vm.model.schedule.schedulingStrategy}}
+            </div>
+        </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
+            <span flex="25" class="property-name">Period</span>
+
+            <div flex>
+                {{vm.model.schedule.schedulingPeriod}}
+            </div>
+        </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.isClustered && vm.supportsExecutionNode">
+                <span flex="25" class="property-name">Execution Node</span>
+
+                <div flex>
+                    {{vm.model.schedule.executionNode}}
+                </div>
+            </div>
+            <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+                <div layout="column">
+                    <div class="md-subhead">Run Preconditions</div>
+                </div>
+                <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
+                    <md-list class="md-2-line">
+                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding layout-padding-top-bottom">
+                            <div layout="column" flex="75" class="md-list-item-text">
+                                <span>{{rule.propertyValuesDisplayString}}</span>
+                                <span class="hint">{{rule.name}}</span>
+                            </div>
+                            <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                    </md-list>
+                </div>
+            </div>
+        </div>
+        <div ng-if="vm.model.reusableFeed == true">
+            This is an abstract Reusable Feed. No Schedule is applied to this Feed.  Other Templates that reference this feed will supply their schedule
+        </div>
+    </readonly-section>
+    <editable-section>
+
+        <ng-form name="vm.scheduleFeedForm">
+            <div layout-gt-sm="row" style="margin-bottom:18px">
+
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>Strategy</label>
+                    <md-select ng-model="vm.editModel.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
+                        <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
+                    </md-select>
+                </md-input-container>
+
+
+                <md-input-container class="md-block" flex-gt-sm ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN'">
+                    <label>Expression</label>
+                    <input required ng-model="vm.editModel.schedule.schedulingPeriod" name="cronExpression"
+                           cron-expression-validator
+                           ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
+
+                    <div ng-show="vm.scheduleFeedForm.cronExpression.$touched && vm.scheduleFeedForm.cronExpression.$invalid"
+                         ng-messages="vm.scheduleFeedForm.cronExpression.$error">
+                        <div ng-show="vm.scheduleFeedForm.cronExpression.$error.cronExpression"
+                             ng-message="cronExpression">Invalid Cron Expression.
+                        </div>
+                        <div ng-show="vm.scheduleFeedForm.cronExpression.$error.required" ng-message="required">
+                            Required.
+                        </div>
+                    </div>
+                    <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"
+                                             ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.scheduleFeedForm.cronExpression.$valid"></cron-expression-preview>
+                </md-input-container>
+
+                <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.editModel.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" style="margin-bottom:-18px">
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Run Schedule</label>
+                        <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"
+                               ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
+                    </md-input-container>
+
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Units</label>
+                        <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()">
+                            <md-option value="days">Days</md-option>
+                            <md-option value="hrs">Hours</md-option>
+                            <md-option value="min">Minutes</md-option>
+                            <md-option value="sec">Seconds</md-option>
+                        </md-select>
+                    </md-input-container>
+                </div>
+            <!--
+            <md-input-container class="md-block" flex-gt-sm>
+                <label>Concurrent Tasks</label>
+                <input type="number" ng-model="vm.editModel.schedule.concurrentTasks">
+                </input>
+            </md-input-container>
+
+            -->
+            </div>
+            <div ng-if="vm.isClustered && vm.supportsExecutionNode" style="margin:18px 0">
+                <md-input-container class="md-block">
+                    <label>Execution Node</label>
+                    <md-select ng-model="vm.editModel.schedule.executionNode" required>
+                        <md-option value="ALL">All nodes</md-option>
+                        <md-option value="PRIMARY">Primary node</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+            <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+                <div layout="column">
+                    <div class="md-subhead">Run Preconditions</div>
+                    <div class="hint">Specify execution dependencies</div>
+                </div>
+                <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
+
+                    <div ng-if="vm.editModel.schedule.preconditions != null && vm.editModel.schedule.preconditions.length >0 " layout-fill>
+                        <md-list>
+                            <md-list-item ng-repeat="rule in vm.editModel.schedule.preconditions track by $index" layout-fill class="layout-padding-top-bottom">
+                                <div layout="column" flex="75" class="md-list-item-text">
+                                    <span>{{rule.propertyValuesDisplayString}}</span>
+                                    <span class="hint">{{rule.name}}</span>
+                                </div>
+                           <span class="md-secondary">
+                                  <md-button class="md-icon-button" ng-click="vm.showPreconditionDialog($index)">
+                                      <ng-md-icon icon="edit"></ng-md-icon>
+                                  </md-button>
+                            </span>
+                                <md-divider ng-if="!$last"></md-divider>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                    <md-button class="md-primary" ng-click="vm.showPreconditionDialog()">
+                        Add Precondition
+                    </md-button>
+                </div>
+
+            </div>
+
+        </ng-form>
+    </editable-section>
+</vertical-section-layout>
