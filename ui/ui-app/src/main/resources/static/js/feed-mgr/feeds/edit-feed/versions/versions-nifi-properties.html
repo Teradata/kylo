@@ -1,0 +1,107 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+                         editable="vm.editableSection" keep-editable-after-save="true"
+                         the-form="vm.feedDetailsForm">
+    <readonly-section>
+        <div layout="column">
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Source</span>
+
+                <div flex>
+                    {{vm.model.inputProcessor.name}}
+                </div>
+            </div>
+
+            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
+                <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
+                 <md-tooltip md-direction="right" ng-if="property.sensitive">
+                   This is a sensitive property.
+                </md-tooltip>
+                </div>
+
+                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
+
+                <div flex>
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
+                    <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
+                </div>
+            </div>
+
+            <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="layout-padding-top-bottom" ng-if="processor.userEditable">
+                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">{{property.key}}</span>
+
+                    <div flex>
+                        {{property.displayValue}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </readonly-section>
+    <editable-section>
+        <ng-form name="vm.feedDetailsForm">
+
+        <div layout="column">
+            <div style="padding-bottom:10px;">
+                <div class="md-subhead">Choose a Feed Input</div>
+                <div class="layout-padding-indent" style="padding-top:8px;">
+                    <md-radio-group ng-model="vm.editModel.inputProcessorId" layout="row" disabled="true">
+                        <md-radio-button ng-repeat="inputProcessor in vm.model.inputProcessors" ng-value="inputProcessor.processorId" aria-label="{{inputProcessor.name}}" disabled>
+                            {{inputProcessor.name}}
+                            <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
+                        </md-radio-button>
+                        <md-tooltip>
+                            You cannot change the input processor after the feed has been created
+                        </md-tooltip>
+                    </md-radio-group>
+                </div>
+            </div>
+
+            <div ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
+                <div class="layout-padding-indent">
+                    <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom" property="property" flex-gt-sm
+                                        ng-repeat="property in vm.editModel.inputProcessor.properties " track by property.key/>
+                </div>
+            </div>
+            <div ng-if="vm.editModel.inputProcessor != null && vm.editModel.inputProcessor.feedPropertiesUrl != null">
+                <custom-processor-rendering template-url="{{vm.editModel.inputProcessor.feedPropertiesUrl}}" processor="vm.editModel.inputProcessor" mode="edit"></custom-processor-rendering>
+            </div>
+
+            <div ng-repeat="processor in vm.editModel.nonInputProcessors track by processor.processorId" ng-if="processor.userEditable">
+                <div class="md-subhead">{{processor.name}}</div>
+                <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
+                    <div ng-repeat="property in processor.properties track by property.key">
+                        <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" property="property" class="md-block layout-padding-top-bottom" flex-gt-sm/>
+                    </div>
+                </div>
+                <div ng-if="processor.feedPropertiesUrl != null">
+                    <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" mode="edit"></custom-processor-rendering>
+                </div>
+
+            </div>
+        </div>
+
+        </ng-form>
+    </editable-section>
+</vertical-section-layout>
