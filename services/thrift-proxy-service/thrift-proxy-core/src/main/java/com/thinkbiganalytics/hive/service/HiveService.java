@@ -21,6 +21,9 @@ package com.thinkbiganalytics.hive.service;
  */
 
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.hive.util.HiveUtils;
@@ -31,16 +34,23 @@ import com.thinkbiganalytics.schema.QueryRunner;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.core.env.Environment;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.sql.DataSource;
 
@@ -52,6 +62,8 @@ import javax.sql.DataSource;
 public class HiveService {
 
     private static final Logger log = LoggerFactory.getLogger(HiveService.class);
+    private static final long DEFAULT_EXPIRY_DURATION = 4;
+    private static final TimeUnit DEFAULT_EXPIRY_TIME_NIT = TimeUnit.HOURS;
 
     @Inject
     @Qualifier("hiveJdbcTemplate")
@@ -63,11 +75,88 @@ public class HiveService {
 
     private DBSchemaParser schemaParser = null;
 
-    public DataSource getDataSource() {
+    /**
+     * Maps current user to his Hive access cache
+     */
+    private LoadingCache<String, UserHiveAccessCache> perUserAccessCache;
+
+    @Autowired
+    private Environment env;
+
+    @PostConstruct
+    public void postConstruct() {
+        long duration = env.getProperty("hive.userImpersonation.cache.expiry.duration") != null ? Long.valueOf(env.getProperty("hive.userImpersonation.cache.expiry.duration")) : DEFAULT_EXPIRY_DURATION;
+        TimeUnit timeUnit = env.getProperty("hive.userImpersonation.cache.expiry.time-unit") != null ? TimeUnit.valueOf(env.getProperty("hive.userImpersonation.cache.expiry.time-unit")) : DEFAULT_EXPIRY_TIME_NIT;
+
+        perUserAccessCache = CacheBuilder.newBuilder().expireAfterWrite(duration, timeUnit).build(new CacheLoader<String, UserHiveAccessCache>() {
+            @Override
+            public UserHiveAccessCache load(@Nonnull String user) throws Exception {
+                return new UserHiveAccessCache(user);
+            }
+        });
+    }
+
+    /**
+     * Caches Hive schemas and tables accessible by current user
+     */
+    class UserHiveAccessCache {
+        /**
+         * List of schemas to which user has access
+         */
+        private List<String> schemas;
+        /**
+         * Holds tables in each schema
+         */
+        private LoadingCache<String, List<String>> schemaTables = CacheBuilder.newBuilder().build(new CacheLoader<String, List<String>>() {
+            @Override
+            public List<String> load(@Nonnull String schemaName) throws Exception {
+                return isSchemaAccessibleByUser(schemaName) ? loadTablesForImpersonatedUser(schemaName) : Collections.emptyList();
+            }
+        });
+
+        UserHiveAccessCache(String user) {
+            try {
+                this.schemas = loadDatabasesForImpersonatedUser();
+            } catch (Exception e) {
+                this.schemas = Collections.emptyList();
+                log.warn(String.format("Failed to load Hive databases for user %s. User may not have access to Hive. %s", user, e.getMessage()));
+            }
+        }
+
+        private boolean isSchemaAccessibleByUser(@Nonnull String schemaName) {
+            return schemas.contains(schemaName);
+        }
+
+        List<String> getTables(@Nonnull String schema) throws ExecutionException {
+            return schemaTables.get(schema);
+        }
+
+        List<String> getSchemas() {
+            return schemas;
+        }
+
+        /**
+         * returns a list of all the scheam.tablename for a given schema
+         */
+        private List<String> loadTablesForImpersonatedUser(String schema) {
+            QueryResult tables = query("show tables in `" + schema + "`");
+            return tables.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> schema + "." + e.getValue().toString()).collect(Collectors.toList());
+        }
+        /**
+         * returns a list of all the scheam.tablename for a given schema
+         */
+        private List<String> loadDatabasesForImpersonatedUser() {
+            QueryResult databases = query("show databases");
+            return databases.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> e.getValue().toString()).collect(Collectors.toList());
+        }
+
+    }
+
+    private DataSource getDataSource() {
         return jdbcTemplate.getDataSource();
     }
 
-    public DBSchemaParser getDBSchemaParser() {
+    private DBSchemaParser getDBSchemaParser() {
         if (schemaParser == null) {
             schemaParser = new DBSchemaParser(getDataSource(), kerberosHiveConfiguration);
         }
@@ -83,23 +172,38 @@ public class HiveService {
     }
 
     /**
-     * returns a list of all the scheam.tablename for a given schema
+     * @return cached list of tables in given schema to which user has access
      */
     public List<String> getTablesForImpersonatedUser(String schema) {
-        QueryResult tables = query("show tables in " + schema);
-        return tables.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> schema + "." + e.getValue().toString()).collect(Collectors.toList());
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            UserHiveAccessCache cache = this.perUserAccessCache.get(currentUser);
+            return cache.getTables(schema);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(String.format("Failed to get Hive tables in schema %s accessible by user %s", schema, currentUser));
+        }
     }
 
+    /**
+     * @return cached list of databases to which user has access
+     */
+    private List<String> getDatabasesForImpersonatedUser() {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        try {
+            UserHiveAccessCache cache = this.perUserAccessCache.get(currentUser);
+            return cache.getSchemas();
+        } catch (ExecutionException e) {
+            throw new RuntimeException(String.format("Failed to get Hive schemas accessible by user %s", currentUser));
+        }
+    }
 
     /**
      * returns a list of all the schema.tablename
      */
-    public List<String> getAllTablesForImpersonatedUser(String schema) {
+    public List<String> getAllTablesForImpersonatedUser() {
         long start = System.currentTimeMillis();
         List<String> allTables = new ArrayList<>();
-        QueryResult result = query("show databases");
-        List<Object> databases = result.getRows().stream().flatMap(row -> row.entrySet().stream()).map(e -> e.getValue()).collect(Collectors.toList());
-        databases.stream().forEach(database -> allTables.addAll(getTablesForImpersonatedUser(database.toString())));
+        getDatabasesForImpersonatedUser().forEach(database -> allTables.addAll(getTablesForImpersonatedUser(database)));
         log.debug("time to get all tables " + (System.currentTimeMillis() - start) + " ms");
         return allTables;
     }
@@ -149,4 +253,23 @@ public class HiveService {
     public int update(@Nonnull final String query) {
         return KerberosUtil.runWithOrWithoutKerberos(() -> jdbcTemplate.update(query), kerberosHiveConfiguration);
     }
+
+
+    public boolean isTableAccessibleByImpersonatedUser(String table) {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        String schemaName = table.substring(0, table.indexOf("."));
+        try {
+            UserHiveAccessCache cache = this.perUserAccessCache.get(currentUser);
+            List<String> tables = cache.getTables(schemaName);
+            return tables != null && tables.contains(table);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(String.format("Failed to determine if Hive table %s is accessible by user %s", table, currentUser));
+        }
+    }
+
+    public void refreshHiveAccessCacheForImpersonatedUser() {
+        String currentUser = SecurityContextHolder.getContext().getAuthentication().getName();
+        this.perUserAccessCache.refresh(currentUser);
+    }
+
 }

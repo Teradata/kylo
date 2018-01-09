@@ -146,7 +146,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         selectedTable: null,
         noCache: true,
         querySearch: this.onAutocompleteQuerySearch.bind(this),
-        refreshCache: this.onAutocompleteRefreshCache.bind(this)
+        refreshCache: this.onAutocompleteRefreshCache.bind(this),
+        delay: 900
     };
 
     /**
@@ -742,9 +743,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     }
 
     onAutocompleteRefreshCache() {
-        this.HiveService.init();
-        let searchText = this.tablesAutocomplete.searchText.trim();
-        angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
+        const successFn = function() {
+            let searchText = this.tablesAutocomplete.searchText.trim();
+            angular.element('#tables-auto-complete').focus().val(searchText).trigger('change')
+        };
+        const errorFn = function() {
+        };
+        this.HiveService.refreshTableCache().then(successFn, errorFn);
     }
 }
 
