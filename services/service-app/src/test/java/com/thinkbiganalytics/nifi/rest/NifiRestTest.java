@@ -56,6 +56,8 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.junit.Assert.*;
+
 /**
  */
 public class NifiRestTest {
@@ -252,13 +254,16 @@ public class NifiRestTest {
 
     // @Test
     public void testFile() throws IOException {
-        InputStream in = NifiRestTest.class
-            .getResourceAsStream("/template.xml");
-        StringWriter writer = new StringWriter();
-        IOUtils.copy(in, writer, "UTF-8");
-        String theString = writer.toString();
+        try (InputStream in = NifiRestTest.class
+            .getResourceAsStream("/template.xml")) {
+            StringWriter writer = new StringWriter();
+            IOUtils.copy(in, writer, "UTF-8");
+            String theString = writer.toString();
 
-        restClient.importTemplate("test", theString);
+            restClient.importTemplate("test", theString);
+        } catch(Exception e) {
+            fail("Error testing file");
+        }
     }
 
 }

@@ -30,6 +30,12 @@ import org.springframework.beans.BeansException;
 @Tags({"thinkbig", "spring", "bean", "context"})
 @CapabilityDescription("Provides access to spring beans loaded from a spring configuration")
 public interface SpringContextService extends ControllerService {
+    
+    /**
+     * Indicates whether the Spring application context loading has completed successfully.
+     * @return true if the Spring context loading is complete
+     */
+    boolean isInitialized();
 
     /**
      * used to fetch a bean from the spring context of the given type, expects there is only one bean matching the type given
@@ -40,6 +46,17 @@ public interface SpringContextService extends ControllerService {
      * @throws BeansException if more than one bean found of the given type, or bean not found
      */
     <T> T getBean(Class<T> requiredType) throws BeansException;
+    
+    /**
+     * used to fetch a bean from the spring context of the given type and arguments, expects there is only one bean matching the type given
+     *
+     * @param <T>          the type of the bean to fetch
+     * @param requiredType the class instance representing the required type
+     * @param args arguments for the bean
+     * @return the bean
+     * @throws BeansException if more than one bean found of the given type, or bean not found
+     */
+    <T> T getBean(Class<T> requiredType, Object... args) throws BeansException;
 
     /**
      * used to fetch a bean from the spring context of the given name and type, expects there is only one bean matching the name and type given

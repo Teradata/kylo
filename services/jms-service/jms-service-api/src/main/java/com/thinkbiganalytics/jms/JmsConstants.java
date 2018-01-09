@@ -25,6 +25,8 @@ package com.thinkbiganalytics.jms;
  */
 public interface JmsConstants {
 
-    String JMS_CONTAINER_FACTORY = "jmsContainerFactory";
+    String QUEUE_LISTENER_CONTAINER_FACTORY = "queueListenerContainerFactory";
+    
+    String TOPIC_LISTENER_CONTAINER_FACTORY = "topicListenerContainerFactory";
 
 }

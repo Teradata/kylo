@@ -30,14 +30,9 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.security.JcrCategoryAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
-import com.thinkbiganalytics.metadata.modeshape.security.role.JcrAbstractRoleMembership;
-import com.thinkbiganalytics.metadata.modeshape.security.role.JcrEntityRoleMembership;
-import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRole;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
 import java.io.Serializable;
@@ -93,7 +88,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
         return this.opsAccessProvider;
     }
-
 
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> catRoles, List<SecurityRole> feedRoles) {
         // Setup default access control for this entity

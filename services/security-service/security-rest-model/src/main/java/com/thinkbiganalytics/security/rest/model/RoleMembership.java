@@ -84,8 +84,6 @@ public class RoleMembership {
         addUser(userPrincipal);
     }
 
-
-
     public void addGroup(UserGroup group){
         getGroups().add(group);
     }
@@ -94,5 +92,15 @@ public class RoleMembership {
         UserGroup groupPrincipal = new UserGroup();
         groupPrincipal.setSystemName(systemName);
         addGroup(groupPrincipal);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("RoleMembership{");
+        sb.append("role=").append(role);
+        sb.append(", users=").append(users);
+        sb.append(", groups=").append(groups);
+        sb.append('}');
+        return sb.toString();
     }
 }

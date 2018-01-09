@@ -758,6 +758,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 policy.domainTypeId = domainType.id;
                 if (angular.isObject(domainType.field)) {
                     field.tags = angular.copy(domainType.field.tags);
+                    if (angular.isString(domainType.field.name) && domainType.field.name.length > 0) {
+                        field.name = domainType.field.name;
+                    }
                     if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
                         field.derivedDataType = domainType.field.derivedDataType;
                         field.precisionScale = domainType.field.precisionScale;

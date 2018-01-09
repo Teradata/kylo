@@ -123,21 +123,22 @@ public class HiveMetastoreService {
         return results;
     }
 
-    public List<String> getAllTables() throws DataAccessException {
+    public List<String> getAllTables(final String schema) throws DataAccessException {
 
-        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME FROM TBLS t JOIN DBS d on d.DB_ID = t.DB_ID ORDER BY d.NAME, t.TBL_NAME";
+        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME FROM TBLS t JOIN DBS d on d.DB_ID = t.DB_ID"
+                       + " WHERE d.NAME LIKE ? "
+                       + " ORDER BY t.TBL_NAME";
         if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
-            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" "
+                    + " WHERE d.\"NAME\" LIKE ? "
+                    + " ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
-        List<String> allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
-            @Override
-            public String mapRow(ResultSet rs, int i) throws SQLException {
-                String dbName = rs.getString("DATABASE_NAME");
-                String tableName = rs.getString("TBL_NAME");
-                return dbName + "." + tableName;
-            }
+
+        return hiveMetatoreJdbcTemplate.query(query, ps -> ps.setString(1, schema == null ? "%" : schema), (rs, i) -> {
+            String dbName = rs.getString("DATABASE_NAME");
+            String tableName = rs.getString("TBL_NAME");
+            return dbName + "." + tableName;
         });
-        return allTables;
     }
 
 

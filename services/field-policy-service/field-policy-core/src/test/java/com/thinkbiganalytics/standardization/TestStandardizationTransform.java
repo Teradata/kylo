@@ -20,8 +20,8 @@ package com.thinkbiganalytics.standardization;
  * #L%
  */
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.guava.PredicateImpl;
 import com.thinkbiganalytics.policy.AvailablePolicies;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
@@ -115,9 +115,9 @@ public class TestStandardizationTransform {
     @Test
     public void testUiCreation() {
         List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
-        FieldStandardizationRule defaultValue = Iterables.tryFind(standardizationRules, new Predicate<FieldStandardizationRule>() {
+        FieldStandardizationRule defaultValue = Iterables.tryFind(standardizationRules, new PredicateImpl<FieldStandardizationRule>() {
             @Override
-            public boolean apply(FieldStandardizationRule fieldStandardizationRule) {
+            public boolean test(FieldStandardizationRule fieldStandardizationRule) {
                 return fieldStandardizationRule.getName().equalsIgnoreCase("Default Value");
             }
         }).orNull();

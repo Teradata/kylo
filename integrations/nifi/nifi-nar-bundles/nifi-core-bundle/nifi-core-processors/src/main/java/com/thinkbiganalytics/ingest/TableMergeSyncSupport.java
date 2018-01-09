@@ -543,7 +543,7 @@ public class TableMergeSyncSupport implements Serializable {
 
         return "insert into table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
                "select " + selectAggregateSQL + " from (" +
-               " select " + selectSQL +
+               " select distinct " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) + " " +
                " union all " +
                " select " + selectSQL +

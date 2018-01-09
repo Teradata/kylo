@@ -210,30 +210,63 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
         });
 
         $stateProvider.state({
-            name: 'tables.**',
-            url: '/tables',
+            name: 'catalog.**',
+            url: '/catalog',
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('tables')
+                    $stateProvider.stateService.go('catalog');
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading catalog data sources ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas.**',
+            url: '/schemas',
+            params: {
+                datasource: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas', transition.params());
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading schemas ", err);
+                    return err;
+                });
+            }
+        }).state({
+            name: 'schemas-schema.**',
+            url: '/schemas/{schema}',
+            params: {
+                datasource: null,
+                schema: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('schemas-schema', transition.params());
                     return args;
                 }, function error(err) {
                     console.log("Error loading tables ", err);
                     return err;
                 });
-                ;
             }
         }).state({
-            name: 'table.**',
-            url: '/tables/{schema}/{tableName}',
+            name: 'schemas-schema-table.**',
+            url: '/schemas/{schema}/{tableName}',
             params: {
+                datasource: null,
                 schema: null,
                 tableName: null
             },
             lazyLoad: function (transition) {
                 transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args) {
                     //upon success go back to the state
-                    $stateProvider.stateService.go('table', transition.params())
+                    $stateProvider.stateService.go('schemas-schema-table', transition.params())
                     return args;
                 }, function error(err) {
                     console.log("Error loading table ", err);
@@ -559,7 +592,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         }).state({
             name: "domain-type-details.**",
-            url: "/domain-type-details",
+            url: "/domain-type-details/{domainTypeId}",
             lazyLoad: function (transition) {
                 transition.injector().get("$ocLazyLoad")
                     .load("feed-mgr/domain-types/module")
@@ -667,6 +700,36 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
                     return args;
                 }, function error(err) {
                     console.log("Error loading admin cluster ", err);
+                    return err;
+                });
+            }
+        });
+
+        $stateProvider.state({
+            name: 'projects.**',
+            url: '/projects',
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('projects')
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading projects ", err);
+                    return err;
+                });
+            }
+        }).state('project-details.**', {
+            url: '/project-details/{projectId}',
+            params: {
+                projectId: null
+            },
+            lazyLoad: function (transition) {
+                transition.injector().get('$ocLazyLoad').load('plugin/projects/module').then(function success(args) {
+                    //upon success go back to the state
+                    $stateProvider.stateService.go('project-details', transition.params())
+                    return args;
+                }, function error(err) {
+                    console.log("Error loading projects ", err);
                     return err;
                 });
             }

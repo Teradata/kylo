@@ -28,6 +28,8 @@
  *                  extensibleEntity
  *          "security"
  *              "prototypes"
+ *                  "projects"
+ *                      allowedActions
  *                  "services"
  *                      allowedActions
  *                  "feed"
@@ -43,6 +45,10 @@
  *              "roles"
  *                  "services"
  *                      "roles"
+ *                          role*
+ *                              allowedActions
+ *                  "projects"
+ *                     "roles"
  *                          role*
  *                              allowedActions
  *                  "feed"
@@ -85,6 +91,10 @@
 	+ security (tba:securityFolder) = tba:securityFolder autocreated mandatory
 	+ hadoopSecurityGroups (tba:hadoopSecurityGroupFolder) = tba:hadoopSecurityGroupFolder autocreated mandatory
 	+ domainTypes (tba:domainTypesFolder) = tba:domainTypesFolder autocreated mandatory
+    + projects (tba:projectFolder) = tba:projectFolder autocreated mandatory
+
+[tba:projectFolder] > nt:folder  // <== represents the "/projects" path
+    + * (tba:project) sns
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
@@ -207,7 +217,6 @@
     
 [tba:initStatus] > nt:hierarchyNode, mix:created
     - tba:state (STRING)
-    
 
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
@@ -353,11 +362,18 @@
 
 [tba:domainType] > mix:referenceable, mix:title
 	- tba:fieldJson (STRING)
+	- tba:fieldNameFlags (STRING)
+	- tba:fieldNamePattern (STRING)
 	- tba:fieldPolicyJson (STRING)
 	- tba:icon (STRING)
 	- tba:iconColor (STRING)
 	- tba:regexFlags (STRING)
 	- tba:regexPattern (STRING)
+
+[tba:project] > tba:entity, tba:accessControlled, tba:propertied
+    - tba:icon (STRING)
+    - tba:iconColor (STRING)
+    - tba:containerImage (STRING)
 
 /**
 * [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable

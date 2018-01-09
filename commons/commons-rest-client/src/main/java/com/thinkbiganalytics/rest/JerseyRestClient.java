@@ -117,24 +117,31 @@ public class JerseyRestClient {
             byte[] keyStoreFile = null;
             byte[] truststoreFile = null;
 
-            try {
-                if (StringUtils.isNotBlank(config.getKeystorePath())) {
-                    InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
+            if (StringUtils.isNotBlank(config.getKeystorePath())) {
+                try (InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath())) {
+
                     if (keystore != null) {
                         keyStoreFile = ByteStreams.toByteArray(keystore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
             }
 
-            try {
-                if (StringUtils.isNotBlank(config.getTruststorePath())) {
-                    InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath());
+            if (StringUtils.isNotBlank(config.getTruststorePath())) {
+                try (InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath())) {
                     if (truststore != null) {
                         truststoreFile = ByteStreams.toByteArray(truststore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
+            }
+
+            if( config.getTruststorePassword()==null && config.getKeystorePassword() == null ) {
+                log.warn("keystorePassword and truststorePassword should not both be null, check application.properties");
             }
 
             if (keyStoreFile != null) {
@@ -575,6 +582,27 @@ public class JerseyRestClient {
     public <T> T delete(String path, Map<String, Object> params, Class<T> returnType) {
         WebTarget target = buildTarget(path, params);
         return target.request().delete(returnType);
+    }
+
+
+    /**
+     * call a GET request
+     *
+     * @param path    the path to call.
+     * @param headers key, list parameters to add http request headers to the request
+     * @param clazz   the class type to return as the response from the GET request
+     * @param params  key,value parameters to add to the request
+     * @param <T>     the class to return
+     * @return the response of class type T
+     */
+    public <T> T deleteWithHeaders(String path, MultivaluedMap<String, Object> headers, Map<String, Object> params, Class<T> clazz) {
+        WebTarget target = buildTarget(path, params);
+
+        Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
+            .headers(headers)
+            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+
+        return builder.delete(clazz);
     }
 
     /**

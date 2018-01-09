@@ -31,19 +31,20 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
             }
         }
 
+        roleUrlsMap = {
+            "feed" : RestUrlService.FEED_ROLES_URL,
+            "category" : RestUrlService.CATEGORY_ROLES_URL,
+            "category-feed" : RestUrlService.CATEGORY_FEED_ROLES_URL,
+            "template" : RestUrlService.TEMPLATE_ROLES_URL,
+            "datasource" : RestUrlService.DATASOURCE_ROLES_URL
+        }
+
         function queryForRoleAssignments(entity, membersType) {
             if (entity && entity.id && entity.id != null) {
                 var url = '';
-                if (membersType === 'feed') {
-                    url = RestUrlService.FEED_ROLES_URL(entity.id);
-                } else if (membersType === 'category') {
-                    url = RestUrlService.CATEGORY_ROLES_URL(entity.id);
-                } else if (membersType === 'category-feed') {
-                	url = RestUrlService.CATEGORY_FEED_ROLES_URL(entity.id);
-                } else if (membersType === 'template') {
-                    url = RestUrlService.TEMPLATE_ROLES_URL(entity.id);
-                } else if (membersType === "datasource") {
-                    url = RestUrlService.DATASOURCE_ROLES_URL(entity.id);
+                if (membersType in roleUrlsMap ) {
+                    var f = roleUrlsMap[membersType];
+                    url = f(entity.id);
                 }
                 return $http.get(url);
             }
@@ -61,6 +62,12 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
 
         var data = angular.extend(svc, {
             entityRoleTypes: {CATEGORY: "category", CATEGORY_FEED: "category-feed", FEED: "feed", TEMPLATE: "template", DATASOURCE: "datasource"},
+
+            // may be called by plugins
+            addRoleAssignment: function(type,urlFunc) {
+                roleUrlsMap[type] = urlFunc;
+            },
+
             /**
              * Ensure the entity's roleMemberships.members are pushed back into the proper entity.roleMemberships.users and entity.roleMemberships.groups
              * @param entity the entity to save
@@ -199,6 +206,8 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
                 var url = '';
                 if (entityType === 'feed') {
                     url = RestUrlService.FEED_ROLES_URL(entityId);
+                } else if (entityType === 'project') {
+                    url = RestUrlService.PROJECT_ROLES_URL(entityId);
                 } else if (entityType === 'category') {
                     url = RestUrlService.CATEGORY_ROLES_URL(entityId);
                 } else if (entityType === 'template') {

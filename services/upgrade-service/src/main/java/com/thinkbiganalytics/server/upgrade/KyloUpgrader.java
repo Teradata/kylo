@@ -35,6 +35,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Properties;
 
@@ -97,14 +98,14 @@ public class KyloUpgrader {
 
     private void loadProfileProperties(ClassPathXmlApplicationContext ctx) {
         Arrays.asList(ctx.getEnvironment().getActiveProfiles()).stream().filter(p -> !"native".equalsIgnoreCase(p)).forEach(p -> {
-            try {
-                Properties properties = new Properties();
-                properties.load(this.getClass().getClassLoader().getResourceAsStream("application-" + p + ".properties"));
-
+            Properties properties = new Properties();
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            try (InputStream inputStream = classLoader.getResourceAsStream("application-" + p + ".properties")) {
+                properties.load(inputStream);
                 PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(p, properties);
                 ctx.getEnvironment().getPropertySources().addLast(propertiesPropertySource);
-            } catch (Exception e) {
-                log.warn("Unable to load properties for profile " + p);
+            } catch(Exception e) {
+                log.error("Error loading properties for profile " + p, e);
             }
         });
     }

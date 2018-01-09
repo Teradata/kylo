@@ -19,6 +19,13 @@
       <artifactId>kylo-commons-rest-model</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-util</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-ui-annotation-api</artifactId>

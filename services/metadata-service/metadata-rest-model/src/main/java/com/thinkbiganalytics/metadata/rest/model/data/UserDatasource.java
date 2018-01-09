@@ -34,6 +34,8 @@ public class UserDatasource extends Datasource implements com.thinkbiganalytics.
      * Type name of this data source
      */
     private String type;
+    private String icon;
+    private String iconColor;
 
     @Override
     public String getType() {
@@ -43,5 +45,25 @@ public class UserDatasource extends Datasource implements com.thinkbiganalytics.
     @Override
     public void setType(String type) {
         this.type = type;
+    }
+
+    @Override
+    public String getIcon() {
+        return icon;
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        this.icon = icon;
+    }
+
+    @Override
+    public String getIconColor() {
+        return iconColor;
+    }
+
+    @Override
+    public void setIconColor(String iconColor) {
+        this.iconColor = iconColor;
     }
 }

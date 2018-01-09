@@ -290,6 +290,8 @@ public class DatasourceModelTransform {
     private void updateDatasource(@Nonnull final UserDatasource ds, @Nonnull final com.thinkbiganalytics.metadata.api.datasource.UserDatasource domain, @Nonnull final Level level) {
         updateDatasource((Datasource) ds, domain, level);
         ds.setType(domain.getType());
+        ds.setIcon(domain.getIcon());
+        ds.setIconColor(domain.getIconColor());
     }
 
     /**
@@ -370,6 +372,8 @@ public class DatasourceModelTransform {
         domain.setDescription(ds.getDescription());
         domain.setName(ds.getName());
         domain.setType(ds.getType());
+        domain.setIcon(ds.getIcon());
+        domain.setIconColor(ds.getIconColor());
 
         // Update access control
         if (domain.getAllowedActions().hasPermission(DatasourceAccessControl.CHANGE_PERMS)) {
