@@ -105,7 +105,8 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../wran
                 selectedTable: null,
                 noCache: true,
                 querySearch: this.onAutocompleteQuerySearch.bind(this),
-                refreshCache: this.onAutocompleteRefreshCache.bind(this)
+                refreshCache: this.onAutocompleteRefreshCache.bind(this),
+                delay: 900
             };
             /**
              * List of native data sources to exclude from the model.
@@ -648,9 +649,13 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../wran
             }
         };
         QueryBuilderComponent.prototype.onAutocompleteRefreshCache = function () {
-            this.HiveService.init();
-            var searchText = this.tablesAutocomplete.searchText.trim();
-            angular.element('#tables-auto-complete').focus().val(searchText).trigger('change');
+            var successFn = function () {
+                var searchText = this.tablesAutocomplete.searchText.trim();
+                angular.element('#tables-auto-complete').focus().val(searchText).trigger('change');
+            };
+            var errorFn = function () {
+            };
+            this.HiveService.refreshTableCache().then(successFn, errorFn);
         };
         __decorate([
             core_1.Input(),

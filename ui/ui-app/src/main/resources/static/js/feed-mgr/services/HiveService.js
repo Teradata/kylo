@@ -83,26 +83,16 @@ define(['angular','services/module-name'], function (angular,moduleName) {
         }
 
         var data = {
-            init: function () {
-                this.allTables = undefined;
+            refreshTableCache: function () {
+                return $http.get(RestUrlService.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache");
             },
             queryTablesSearch: function (query) {
                 var self = this;
-                if (self.allTables == undefined) {
-                    var deferred = $q.defer();
-                    var tables = self.getTables().then(function (response) {
-
-                        self.allTables = self.parseTableResponse(response.data);
-
-                        var results = query ? self.allTables.filter(createFilterForTable(query)) : self.allTables;
-                        deferred.resolve(results);
-                    });
-                    return deferred.promise;
-                }
-                else {
-                    var results = query ? self.allTables.filter(createFilterForTable(query)) : [];
-                    return results;
-                }
+                var deferred = $q.defer();
+                self.getTables(null, query).then(function (response) {
+                    deferred.resolve(self.parseTableResponse(response.data));
+                });
+                return deferred.promise;
             },
             parseTableResponse: function (response) {
                 var schemaTables = {};
@@ -119,18 +109,16 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 }
                 return allTables;
             },
-            getTables: function () {
+            getTables: function (schema, table) {
                 var self = this;
-
                 var successFn = function (response) {
                     return self.parseTableResponse(response.data);
-
-                }
+                };
                 var errorFn = function (err) {
                     self.loading = false;
-
-                }
-                var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/tables");
+                };
+                var params = {schema: schema, table: table, refreshCache: self.refreshCache};
+                var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/tables", {params: params});
                 promise.then(successFn, errorFn);
                 return promise;
             },
