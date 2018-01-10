@@ -104,7 +104,7 @@ public class RemoteClientRunner implements ApplicationRunner {
         Preconditions.checkNotNull(clientSecret, "Environment variable is not defined: KYLO_CLIENT_SECRET");
 
         // Register with server
-        final JerseyClientConfig config = new JerseyClientConfig(url.getHost(), clientId, clientSecret, url.getProtocol().equalsIgnoreCase("https"), false, keystorePath, keystorePassword);
+        final JerseyClientConfig config = new JerseyClientConfig(url.getHost(), clientId, clientSecret.toCharArray(), url.getProtocol().equalsIgnoreCase("https"), false, keystorePath, keystorePassword.toCharArray());
         config.setPort(url.getPort() > 0 ? url.getPort() : url.getDefaultPort());
 
         final JerseyRestClient client = getRestClient(config);

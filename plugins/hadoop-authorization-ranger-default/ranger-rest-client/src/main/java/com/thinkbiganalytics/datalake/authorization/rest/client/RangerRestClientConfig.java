@@ -43,11 +43,11 @@ public class RangerRestClientConfig extends JerseyClientConfig {
 
     }
 
-    public RangerRestClientConfig(String host, String username, String password) {
+    public RangerRestClientConfig(String host, String username, char[] password) {
         super(host, username, password);
     }
 
-    public RangerRestClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, String apiPath) {
+    public RangerRestClientConfig(String host, String username, char[] password, boolean https, boolean keystoreOnClasspath, String keystorePath, char[] keystorePassword, String apiPath) {
         super(host, username, password, https, keystoreOnClasspath, keystorePath, keystorePassword);
         this.apiPath = apiPath;
     }

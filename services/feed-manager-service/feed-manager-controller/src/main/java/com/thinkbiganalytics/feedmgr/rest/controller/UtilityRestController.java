@@ -31,13 +31,11 @@ import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.spring.FileResourceService;
 
 import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -51,10 +49,8 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
