@@ -55,7 +55,7 @@ public class GetTableDataSupportTest {
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Los_Angeles")));
     }
 
-    @Test //uncomment to run this integration test
+    //@Test //uncomment to run this integration test
     public void testFullLoad() throws ClassNotFoundException, SQLException {
 
         Class.forName("org.mariadb.jdbc.Driver");
