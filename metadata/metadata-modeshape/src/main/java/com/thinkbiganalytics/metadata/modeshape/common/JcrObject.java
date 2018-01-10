@@ -240,7 +240,13 @@ public class JcrObject {
             if (o instanceof Node && JcrObject.class.isAssignableFrom(type)) {
                 return JcrUtil.constructNodeObject((Node) o, type, null);
             } else {
-                throw new MetadataRepositoryException("Unable to convert Property " + name + " to type " + type);
+                if(name.toLowerCase().contains("password")) {
+                    throw new MetadataRepositoryException("Unable to convert Property \"UNKNOWN\" to type " + type);
+                }
+                else {
+                    throw new MetadataRepositoryException("Unable to convert Property " + name + " to type " + type);
+                }
+
             }
         } else {
             return (T) o;
@@ -251,8 +257,13 @@ public class JcrObject {
         try {
             JcrPropertyUtil.setProperty(this.node, name, value);
         } catch (AccessControlException e) {
-            // Re-throw with possibly a better message
-            throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            // Re-throw with possibly a better message. Filter out passwords
+            if(name.toLowerCase().contains("password")) {
+                throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
+            }
+            else {
+                throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            }
         }
     }
 
