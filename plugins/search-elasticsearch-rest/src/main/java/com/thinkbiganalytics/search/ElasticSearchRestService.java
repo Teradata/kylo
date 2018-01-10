@@ -63,12 +63,12 @@ public class ElasticSearchRestService implements Search {
 
     private static final Logger log = LoggerFactory.getLogger(ElasticSearchRestService.class);
 
-    private final static String HTTP_PROTOCOL = "http";
-    private final static String POST_METHOD = "POST";
-    private final static String PUT_METHOD = "PUT";
-    private final static String DELETE_METHOD = "DELETE";
-    private final static String SEARCH_ENDPOINT = "_search";
-    private final static String VERSION_TWO = "2";
+    private static final String HTTP_PROTOCOL = "http";
+    private static final String POST_METHOD = "POST";
+    private static final String PUT_METHOD = "PUT";
+    private static final String DELETE_METHOD = "DELETE";
+    private static final String SEARCH_ENDPOINT = "_search";
+    private static final String VERSION_TWO = "2";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
 
@@ -111,9 +111,9 @@ public class ElasticSearchRestService implements Search {
             }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
-            log.error("Index document deletion encountered issues in Elasticsearch for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", responseException);
+            log.error("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}",indexName, typeName, responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.error("Http protocol error for delete document for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", clientProtocolException);
+            log.error("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id, clientProtocolException);
         } catch (IOException ioException) {
             log.error("IO Error in rest client", ioException);
         }
