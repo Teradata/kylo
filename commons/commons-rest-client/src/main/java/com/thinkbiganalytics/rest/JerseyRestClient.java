@@ -147,7 +147,7 @@ public class JerseyRestClient {
             if (keyStoreFile != null) {
                 sslConfig = SslConfigurator.newInstance()
                     .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
-                    .trustStorePassword(config.getTruststorePassword() != null ? config.getTruststorePassword() : config.getKeystorePassword())
+                    .trustStorePassword(config.getTruststorePassword() != null ? String.valueOf(config.getTruststorePassword()) : String.valueOf(config.getKeystorePassword()))
                     .trustStoreType(config.getTrustStoreType())
                     .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
                     .keyStorePassword(config.getKeystorePassword());
@@ -156,7 +156,7 @@ public class JerseyRestClient {
                     .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
                     .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
                     .trustStoreFile(config.getTruststorePath() == null ? config.getKeystorePath() : config.getTruststorePath())
-                    .trustStorePassword(config.getTruststorePassword() == null ? config.getKeystorePassword() : config.getTruststorePassword())
+                    .trustStorePassword(config.getTruststorePassword() == null ? String.valueOf(config.getKeystorePassword()) : String.valueOf(config.getTruststorePassword()))
                     .trustStoreType(config.getTrustStoreType());
             }
 
@@ -229,7 +229,7 @@ public class JerseyRestClient {
 
         // Configure authentication
         if (StringUtils.isNotBlank(config.getUsername())) {
-            HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
+            HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), String.valueOf(config.getPassword()));
             client.register(feature);
         }
         this.uri = config.getUrl();
