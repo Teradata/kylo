@@ -20,47 +20,19 @@ package com.thinkbiganalytics.nifi.v2.ingest;
  * #L%
  */
 
-import com.thinkbiganalytics.ingest.TableMergeSyncSupport;
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
-import com.thinkbiganalytics.util.ColumnSpec;
-import com.thinkbiganalytics.util.PartitionSpec;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.dbcp.hive.HiveDBCPService;
-import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.ProcessContext;
-import org.apache.nifi.processor.ProcessSession;
-import org.apache.nifi.processor.Relationship;
-import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.StopWatch;
 
 import java.sql.Connection;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_PARTITION;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.SOURCE_SCHEMA;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.SOURCE_TABLE;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_SCHEMA;
-import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TABLE;
 import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
 @EventDriven
