@@ -54,6 +54,8 @@ public class DomainTypeTransform {
 
         domainModel.setDescription(restModel.getDescription());
         domainModel.setFieldJson(ObjectMapperSerializer.serialize(restModel.getField()));
+        domainModel.setFieldNameFlags(restModel.getFieldNameFlags());
+        domainModel.setFieldNamePattern(restModel.getFieldNamePattern());
         domainModel.setFieldPolicyJson(ObjectMapperSerializer.serialize(restModel.getFieldPolicy()));
         domainModel.setIcon(restModel.getIcon());
         domainModel.setIconColor(restModel.getIconColor());
@@ -71,6 +73,8 @@ public class DomainTypeTransform {
         final com.thinkbiganalytics.feedmgr.rest.model.DomainType restModel = new com.thinkbiganalytics.feedmgr.rest.model.DomainType();
         restModel.setDescription(domainModel.getDescription());
         restModel.setField((domainModel.getFieldJson() != null) ? ObjectMapperSerializer.deserialize(domainModel.getFieldJson(), DefaultField.class) : null);
+        restModel.setFieldNameFlags(domainModel.getFieldNameFlags());
+        restModel.setFieldNamePattern(domainModel.getFieldNamePattern());
         restModel.setFieldPolicy((domainModel.getFieldPolicyJson() != null) ? ObjectMapperSerializer.deserialize(domainModel.getFieldPolicyJson(), FieldPolicy.class) : null);
         restModel.setIcon(domainModel.getIcon());
         restModel.setIconColor(domainModel.getIconColor());

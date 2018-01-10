@@ -3,9 +3,9 @@ import * as angular from "angular";
 import {DomainType} from "../../services/DomainTypesService";
 
 /**
- * Local data for {@link DomainDataTypeConflictDialog}.
+ * Local data for {@link DomainTypeConflictDialog}.
  */
-export interface DomainDataTypeConflictData {
+export interface DomainTypeConflictData {
 
     /**
      * Field definition.
@@ -21,16 +21,25 @@ export interface DomainDataTypeConflictData {
 /**
  * Dialog for resolving a data type conflict between a column and its domain type.
  */
-export class DomainDataTypeConflictDialog {
+export class DomainTypeConflictDialog {
 
     static readonly $inject: string[] = ["$scope", "$mdDialog", "data"];
 
-    constructor($scope: any, private $mdDialog: angular.material.IDialogService, data: DomainDataTypeConflictData) {
+    constructor($scope: any, private $mdDialog: angular.material.IDialogService, data: DomainTypeConflictData) {
         $scope.cancel = this.cancel.bind(this);
         $scope.columnDef = data.columnDef;
         $scope.domainType = data.domainType;
         $scope.keep = this.keep.bind(this);
         $scope.remove = this.remove.bind(this);
+
+        // Determine conflicting property
+        if (data.domainType.field.name && data.columnDef.name !== data.domainType.field.name) {
+            $scope.propertyName = "field name";
+            $scope.propertyValue = data.domainType.field.name;
+        } else if (data.domainType.field.derivedDataType && data.columnDef.derivedDataType !== data.domainType.field.derivedDataType) {
+            $scope.propertyName = "data type";
+            $scope.propertyValue = data.domainType.field.derivedDataType;
+        }
     }
 
     /**
@@ -56,4 +65,4 @@ export class DomainDataTypeConflictDialog {
 }
 
 angular.module(require("feed-mgr/module-name"))
-    .controller("DomainDataTypeConflictDialog", DomainDataTypeConflictDialog);
+    .controller("DomainTypeConflictDialog", DomainTypeConflictDialog);

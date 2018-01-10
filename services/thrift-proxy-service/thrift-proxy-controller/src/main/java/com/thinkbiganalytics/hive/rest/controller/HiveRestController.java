@@ -38,6 +38,7 @@ import org.springframework.dao.DataAccessException;
 import java.security.AccessControlException;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -103,7 +104,7 @@ public class HiveRestController {
         try {
             boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
             if (userImpersonationEnabled) {
-                List<String> tables = hiveService.getAllTablesForImpersonatedUser(null);
+                List<String> tables = hiveService.getAllTablesForImpersonatedUser();
                 list = hiveMetadataService.getTableColumns(tables);
             } else {
                 list = hiveMetadataService.getTableColumns(null);
@@ -217,7 +218,6 @@ public class HiveRestController {
                       @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getAllTableSchemas() {
-        //  List<TableSchema> schemas = hiveService.getAllTableSchemas();
         List<TableSchema> schemas;
         try {
             schemas = hiveMetadataService.getTableSchemas();
@@ -232,23 +232,25 @@ public class HiveRestController {
     @GET
     @Path("/tables")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists every table in Hive.")
+    @ApiOperation("Lists matching tables in Hive schema. "
+                  + "Will list all tables in schema if 'table' query param is not provided. "
+                  + "Will list matching tables in all schemas if 'schema' query parameter is not provided. "
+                  + "Will list all tables in all schemas if both 'schema' and 'table' parameters are not provided.")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns the table names.", response = String.class, responseContainer = "List"),
                       @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
                   })
-    public Response getTables(@QueryParam("schema") String schema) {
+    public Response getTables(@QueryParam("schema") String schema, @QueryParam("table") String table) {
         List<String> tables;
+        try {
+            tables = hiveMetadataService.getAllTables(schema, table);
+        } catch (DataAccessException e) {
+            log.error("Error listing Hive Tables from the metastore ", e);
+            throw e;
+        }
         boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
         if (userImpersonationEnabled) {
-            tables = hiveService.getAllTablesForImpersonatedUser(schema);
-        } else {
-            try {
-                tables = hiveMetadataService.getAllTables(schema);
-            } catch (DataAccessException e) {
-                log.error("Error listing Hive Tables from the metastore ", e);
-                throw e;
-            }
+            tables = tables.stream().filter(t -> hiveService.isTableAccessibleByImpersonatedUser(t)).collect(Collectors.toList());
         }
         return Response.ok(asJson(tables)).build();
     }
@@ -282,4 +284,21 @@ public class HiveRestController {
         }
         return json;
     }
+
+    @GET
+    @Path("/refreshUserHiveAccessCache")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Refreshes Hive table access cache for current user")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Cache refreshed", response = String.class)
+                  })
+    public Response refreshUserHiveAccessCache() {
+        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
+        if (userImpersonationEnabled) {
+            hiveService.refreshHiveAccessCacheForImpersonatedUser();
+        }
+        return Response.noContent().build();
+    }
+
+
 }

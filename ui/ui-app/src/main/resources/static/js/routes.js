@@ -592,7 +592,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         }).state({
             name: "domain-type-details.**",
-            url: "/domain-type-details",
+            url: "/domain-type-details/{domainTypeId}",
             lazyLoad: function (transition) {
                 transition.injector().get("$ocLazyLoad")
                     .load("feed-mgr/domain-types/module")
