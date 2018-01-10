@@ -322,8 +322,7 @@ public class ElasticSearchRestService implements Search {
                 elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
                 return elasticSearchRestSearchResponse;
             } catch (IOException | JSONException exception) {
-                log.warn("An error occurred during decoding search result");
-                exception.printStackTrace();
+                log.warn("An error occurred during decoding search result e=", exception);
                 return null;
             }
         }
@@ -396,7 +395,7 @@ public class ElasticSearchRestService implements Search {
                 .toString();
 
         } catch (JSONException jsonException) {
-            log.warn("Could not construct request body query dsl for query: {" + query + "}, start: {" + start + "}, size: {" + size + "}",jsonException);
+            log.warn("Could not construct request body query dsl for query: {}, start: {}, size: {}", query, start, size, jsonException);
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
