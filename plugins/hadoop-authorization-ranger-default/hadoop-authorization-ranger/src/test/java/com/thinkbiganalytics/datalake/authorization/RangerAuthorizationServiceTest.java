@@ -46,7 +46,7 @@ public class RangerAuthorizationServiceTest {
         rangerConnection.setHostName("localhost");
         rangerConnection.setPort(6080);
         rangerConnection.setUsername("admin");
-        rangerConnection.setPassword("admin");
+        rangerConnection.setPassword("admin".toCharArray());
 
         rangerAuthorizationService = new RangerAuthorizationService();
         rangerAuthorizationService.initialize(rangerConnection);

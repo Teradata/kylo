@@ -45,7 +45,7 @@ public class RangerConfiguration {
         rangerConnection.setHostName(hostName);
         rangerConnection.setPort(port);
         rangerConnection.setUsername(userName);
-        rangerConnection.setPassword(password);
+        rangerConnection.setPassword(password.toCharArray());
         rangerConnection.setHdfsRepositoryName(hdfsRepositoryName);
         rangerConnection.setHiveRepositoryName(hiveRepositoryName);
         RangerAuthorizationService hadoopAuthorizationService = new RangerAuthorizationService();

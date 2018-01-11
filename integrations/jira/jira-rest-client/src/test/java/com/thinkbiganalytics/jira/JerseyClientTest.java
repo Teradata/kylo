@@ -45,11 +45,11 @@ public class JerseyClientTest {
     public void testJerseyClient() {
         JiraRestClientConfig config = new JiraRestClientConfig("/rest/api/latest/");
         config.setUsername("USERNAME");
-        config.setPassword("PASSWORD");
+        config.setPassword("PASSWORD".toCharArray());
         config.setHttps(true);
         config.setKeystoreOnClasspath(true);
         config.setKeystorePath("/kylo_jira.jks");
-        config.setKeystorePassword("changeit");
+        config.setKeystorePassword("changeit".toCharArray());
         config.setHost("bugs.thinkbiganalytics.com");
         final JiraJerseyClient client = new JiraJerseyClient(config);
         Map<String, String> params = new HashMap<String, String>();
