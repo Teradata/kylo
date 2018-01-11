@@ -75,6 +75,10 @@ public class AugmentableQueryRepositoryImpl<T, ID extends Serializable>
     public long count() {
         LOG.debug("AugmentableQueryRepositoryImpl.count");
         TypedQuery<Long> query = this.getCountQuery(null, getDomainClass());
+
+        if(query == null) {
+            throw new RuntimeException("returned query object is null");
+        }
         return query.getSingleResult();
     }
 
