@@ -77,6 +77,9 @@ public class DataConfidenceSummary {
                 }
             }
             Date now = new Date();
+            if(minCompleteDate == null) {
+                throw new RuntimeException("The minimum complete date was not set as expected");
+            }
             long duration = now.getTime() - minCompleteDate.getTime();
             long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
 
