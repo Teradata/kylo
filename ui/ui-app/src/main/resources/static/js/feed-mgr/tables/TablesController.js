@@ -18,6 +18,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();
+        this.additionalOptions = [{header: "Cache", label: "Cache"}, {label: "Refresh Cache", icon: "refresh"}];
 
         this.filter = PaginationDataService.filter(self.pageName);
 
@@ -60,6 +61,10 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             var savedSort = PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
+        };
+
+        this.selectedAdditionalOption = function(option) {
+            $http.get(RestUrlService.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache").then(init);
         };
 
         /**
@@ -135,11 +140,16 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             return deferred.promise;
         }
 
-        if (self.datasource.isHive) {
-            getHiveTables();
-        } else {
-            getNonHiveTables();
+        function init() {
+            self.tables =[];
+            if (self.datasource.isHive) {
+                getHiveTables();
+            } else {
+                getNonHiveTables();
+            }
         }
+
+        init();
 
     };
 

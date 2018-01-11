@@ -18,7 +18,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         };
     }
 
-    var controller =  function($scope,$http,FeedService, RestUrlService, HiveService) {
+    var controller =  function($scope,$http,FeedService, RestUrlService, HiveService, FattableService) {
 
         var self = this;
 
@@ -52,18 +52,23 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
 
             return HiveService.queryResult(self.sql).then(function(tableData) {
                 self.loading = true;
-                var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);.0
-                self.gridOptions.columnDefs = result.columns;
-                self.gridOptions.data = result.rows;
+                var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
                 self.executingQuery = false;
+
+                FattableService.setupTable({
+                    tableContainerId:"preview-table",
+                    headers: result.columns,
+                    rows: result.rows
+                });
             });
         };
+
 
         self.query();
     };
 
 
-    angular.module(moduleName).controller('PreviewController', ["$scope","$http","FeedService","RestUrlService","HiveService",controller]);
+    angular.module(moduleName).controller('PreviewController', ["$scope","$http","FeedService","RestUrlService","HiveService", "FattableService", controller]);
     angular.module(moduleName)
         .directive('thinkbigPreview', directive);
 

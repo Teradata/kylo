@@ -55,12 +55,12 @@ public class GetTableDataSupportTest {
         DateTimeZone.setDefault(DateTimeZone.forTimeZone(TimeZone.getTimeZone("America/Los_Angeles")));
     }
 
-//    @Test //uncomment to run this integration test
+    //@Test //uncomment to run this integration test
     public void testFullLoad() throws ClassNotFoundException, SQLException {
 
         Class.forName("org.mariadb.jdbc.Driver");
         Connection con = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/hive","root","hadoop");
+            "jdbc:mysql://localhost:3306/hive","","");
         GetTableDataSupport support = new GetTableDataSupport(con, 0);
         support.selectFullLoad("DBS", new String[]{"DESC", "DB_LOCATION_URI"});
 
@@ -72,7 +72,7 @@ public class GetTableDataSupportTest {
 
         Class.forName("org.mariadb.jdbc.Driver");
         Connection con = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/hive","root","hadoop");
+            "jdbc:mysql://localhost:3306/hive","","");
         GetTableDataSupport support = new GetTableDataSupport(con, 0);
         String dateField = "CREATE_TIME";
         String watermarkValue = "2011-12-03T10:15:30";
@@ -89,7 +89,7 @@ public class GetTableDataSupportTest {
 
         Class.forName("org.mariadb.jdbc.Driver");
         Connection con = DriverManager.getConnection(
-            "jdbc:mysql://localhost:3306/kylo","root","hadoop");
+            "jdbc:mysql://localhost:3306/kylo","","");
         GetTableDataSupport support = new GetTableDataSupport(con, 0);
         String dateField = "DATEEXECUTED";
         String watermarkValue = "2011-12-03T10:15:30";

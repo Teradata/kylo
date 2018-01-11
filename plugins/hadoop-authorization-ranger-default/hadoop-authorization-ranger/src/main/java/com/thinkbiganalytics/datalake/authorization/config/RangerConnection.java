@@ -27,7 +27,7 @@ public class RangerConnection implements AuthorizationConfiguration {
     private String hostName;
     private int port;
     private String username;
-    private String password;
+    private char[] password;
     private String hdfsRepositoryName;
     private String hiveRepositoryName;
 
@@ -39,11 +39,11 @@ public class RangerConnection implements AuthorizationConfiguration {
         this.hostName = hostName;
     }
 
-    public String getPassword() {
+    public char[] getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(char[] password) {
         this.password = password;
     }
 

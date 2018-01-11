@@ -29,7 +29,8 @@
             md-min-length="1"
             placeholder="Search tables"
             md-menu-class="autocomplete-hive-table-template"
-            ng-disabled="$bq.error != null">
+            ng-disabled="$bq.error != null"
+            md-delay="$bq.tablesAutocomplete.delay">
           <md-item-template>
           <span class="item-title">
             <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>

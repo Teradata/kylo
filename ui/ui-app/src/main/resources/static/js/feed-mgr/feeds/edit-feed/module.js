@@ -68,7 +68,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 'js/vendor/font-awesome/css/font-awesome.min.css',
                 'js/feed-mgr/feeds/edit-feed/feed-details.css',
                 "bower_components/fattable/fattable.css",
-                'js/feed-mgr/feeds/edit-feed/profile-history/profile-table.css'
+                'js/feed-mgr/services/fattable/fattable.css'
             ],
             serie: true
         });

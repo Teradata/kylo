@@ -209,12 +209,29 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
                 ensurePropertiesObject().ifPresent(obj -> obj.setProperty(name, value));
             }
         } catch (AccessControlException e) {
-            throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            if(name.toLowerCase().contains("password")) {
+                throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
+            }
+            else {
+                throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            }
         } catch (AccessDeniedException e) {
-            log.debug("Unable to set property: \"{}\" on node: {}", name, this.node, e);
-            throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            if(name.toLowerCase().contains("password")) {
+                log.debug("Unable to set property: \"{}\" on node: {}", "UNKNOWN", this.node, e);
+                throw new AccessControlException("You do not have the permission to set property \"UNKNOWN\"");
+            }
+            else {
+                log.debug("Unable to set property: \"{}\" on node: {}", name, this.node, e);
+                throw new AccessControlException("You do not have the permission to set property \"" + name + "\"");
+            }
+
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to set Property " + name + ":" + value);
+            if(name.toLowerCase().contains("password")) {
+                throw new MetadataRepositoryException("Unable to set Property UNKOWN:");
+            }
+            else {
+                throw new MetadataRepositoryException("Unable to set Property " + name + ":" + value);
+            }
         }
     }
 
@@ -247,7 +264,6 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
                 }
             }
         } else {
-            log.debug("Unable to set property: \"{}\" on node: {}", getNode(), this.node);
             throw new AccessControlException("You do not have the permission to set properties");
         }
         return newProps;

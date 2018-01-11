@@ -32,17 +32,17 @@ public class JerseyClientConfig {
 
     private Integer port;
     private String username;
-    private String password;
+    private char[] password;
     private boolean https;
 
     private boolean keystoreOnClasspath;
 
     private String keystorePath;
-    private String keystorePassword;
+    private char[] keystorePassword;
     private String keystoreType;
 
     private String truststorePath;
-    private String truststorePassword;
+    private char[] truststorePassword;
     private String trustStoreType;
 
     //Values are in milliseconds
@@ -64,7 +64,7 @@ public class JerseyClientConfig {
         this.encryptionService = encryptionService;
     }
 
-    public JerseyClientConfig(String host, String username, String password) {
+    public JerseyClientConfig(String host, String username, char[] password) {
         this();
         this.host = host;
         this.username = username;
@@ -75,7 +75,7 @@ public class JerseyClientConfig {
         this.keystorePassword = null;
     }
 
-    public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword) {
+    public JerseyClientConfig(String host, String username, char[] password, boolean https, boolean keystoreOnClasspath, String keystorePath, char[] keystorePassword) {
         this();
         this.host = host;
         this.username = username;
@@ -86,7 +86,7 @@ public class JerseyClientConfig {
         this.keystorePassword = keystorePassword;
     }
 
-    public JerseyClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath, String keystorePath, String keystorePassword, Integer readTimeout,
+    public JerseyClientConfig(String host, String username, char[] password, boolean https, boolean keystoreOnClasspath, String keystorePath, char[] keystorePassword, Integer readTimeout,
                               Integer connectTimeout) {
         this();
         this.host = host;
@@ -108,11 +108,14 @@ public class JerseyClientConfig {
         this.keystorePath = keystorePath;
     }
 
-    public String getKeystorePassword() {
-        return encryptionService.isEncrypted(keystorePassword) ? encryptionService.decrypt(keystorePassword) : keystorePassword;
+    public char[] getKeystorePassword() {
+        if(keystorePassword == null || keystorePassword.length == 0) {
+            return keystorePassword;
+        }
+        return encryptionService.isEncrypted(String.valueOf(keystorePassword)) ? encryptionService.decrypt(String.valueOf(keystorePassword)).toCharArray() : keystorePassword;
     }
 
-    public void setKeystorePassword(String keystorePassword) {
+    public void setKeystorePassword(char[] keystorePassword) {
         this.keystorePassword = keystorePassword;
     }
 
@@ -133,11 +136,14 @@ public class JerseyClientConfig {
         this.username = username;
     }
 
-    public String getPassword() {
-        return encryptionService.isEncrypted(password) ? encryptionService.decrypt(password) : password;
+    public char[] getPassword() {
+        if(password == null || password.length == 0) {
+            return password;
+        }
+        return encryptionService.isEncrypted(String.valueOf(password)) ? encryptionService.decrypt(String.valueOf(password)).toCharArray() : password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(char[] password) {
         this.password = password;
     }
 
@@ -210,11 +216,14 @@ public class JerseyClientConfig {
         this.truststorePath = truststorePath;
     }
 
-    public String getTruststorePassword() {
-        return encryptionService.isEncrypted(truststorePassword) ? encryptionService.decrypt(truststorePassword) : truststorePassword;
+    public char[] getTruststorePassword() {
+        if(truststorePassword == null || truststorePassword.length == 0) {
+            return truststorePassword;
+        }
+        return encryptionService.isEncrypted(String.valueOf(truststorePassword)) ? encryptionService.decrypt(String.valueOf(truststorePassword)).toCharArray() : truststorePassword;
     }
 
-    public void setTruststorePassword(String truststorePassword) {
+    public void setTruststorePassword(char[] truststorePassword) {
         this.truststorePassword = truststorePassword;
     }
 

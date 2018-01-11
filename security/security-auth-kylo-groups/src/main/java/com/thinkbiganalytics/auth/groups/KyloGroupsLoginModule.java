@@ -74,7 +74,7 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
     /**
      * The password to use when a loginUser property is set
      */
-    private String loginPassword = null;
+    private char[] loginPassword = null;
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
@@ -83,8 +83,12 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
         try {
             config = (LoginJerseyClientConfig) options.get(REST_CLIENT_CONFIG);
             loginUser = (String) getOption(LOGIN_USER_FIELD).orElse(null);
-            loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD_FIELD)
-                .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+            if(loginUser != null) {
+                String  returnValue = (String) getOption(LOGIN_PASSWORD_FIELD)
+                    .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+                loginPassword = returnValue.toCharArray();
+            }
+
         } catch (RuntimeException e) {
             log.error("Unhandled exception during initialization", e);
             throw e;
@@ -97,13 +101,13 @@ public class KyloGroupsLoginModule extends AbstractLoginModule implements LoginM
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
         final String username;
-        final String password;
+        final char[] password;
 
         if (loginUser == null) {
             // Use groups's own username and password to access the REST API if a loginUser was not provided.
             handle(nameCallback, passwordCallback);
             username = nameCallback.getName();
-            password = new String(passwordCallback.getPassword());
+            password = passwordCallback.getPassword();
         } else {
             // Using the loginUser to access API so only need the authenticating groups's name.
             handle(nameCallback);
