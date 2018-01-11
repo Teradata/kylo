@@ -69,6 +69,7 @@ public class ElasticSearchRestService implements Search {
     private static final String DELETE_METHOD = "DELETE";
     private static final String SEARCH_ENDPOINT = "_search";
     private static final String VERSION_TWO = "2";
+    private static final String QUERY = "query";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
 
@@ -237,94 +238,95 @@ public class ElasticSearchRestService implements Search {
         }
 
         HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            try {
-                String entityString = EntityUtils.toString(response.getEntity());
-                JSONObject entityStringJsonObject = new JSONObject(entityString);
+        if (entity == null) {
+            return null;
+        }
 
-                String tookInMs = entityStringJsonObject.getString("took");
-                elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
+        try {
+            String entityString = EntityUtils.toString(response.getEntity());
+            JSONObject entityStringJsonObject = new JSONObject(entityString);
 
-                JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
-                elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
+            String tookInMs = entityStringJsonObject.getString("took");
+            elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
 
-                JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
+            JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
+            elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
 
-                List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();
-                for (int i = 0; i < hitsJsonArray.length(); i++) {
-                    ElasticSearchRestSearchHit elasticSearchRestSearchHit = new ElasticSearchRestSearchHit();
+            JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
 
-                    JSONObject currentHitJsonObject = new JSONObject(hitsJsonArray.get(i).toString());
-                    elasticSearchRestSearchHit.setIndexName(currentHitJsonObject.get("_index").toString());
-                    elasticSearchRestSearchHit.setIndexType(currentHitJsonObject.get("_type").toString());
+            List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();
+            for (int i = 0; i < hitsJsonArray.length(); i++) {
+                ElasticSearchRestSearchHit elasticSearchRestSearchHit = new ElasticSearchRestSearchHit();
 
-                    JSONObject currentHitSourceJsonObject = new JSONObject(currentHitJsonObject.get("_source").toString());
-                    elasticSearchRestSearchHit.setRawHit(currentHitJsonObject.get("_source").toString());
+                JSONObject currentHitJsonObject = new JSONObject(hitsJsonArray.get(i).toString());
+                elasticSearchRestSearchHit.setIndexName(currentHitJsonObject.get("_index").toString());
+                elasticSearchRestSearchHit.setIndexType(currentHitJsonObject.get("_type").toString());
 
-                    List<Pair> sourceList = new ArrayList<>();
-                    Iterator sourceIterator = currentHitSourceJsonObject.keys();
-                    while (sourceIterator.hasNext()) {
-                        String sourceKey = (String) sourceIterator.next();
-                        sourceList.add(new Pair(sourceKey, currentHitSourceJsonObject.get(sourceKey)));
+                JSONObject currentHitSourceJsonObject = new JSONObject(currentHitJsonObject.get("_source").toString());
+                elasticSearchRestSearchHit.setRawHit(currentHitJsonObject.get("_source").toString());
 
-                        if (sourceKey.equals("hiveColumns")) {
-                            List<HiveColumn> hiveColumns = new ArrayList<>();
+                List<Pair> sourceList = new ArrayList<>();
+                Iterator sourceIterator = currentHitSourceJsonObject.keys();
+                while (sourceIterator.hasNext()) {
+                    String sourceKey = (String) sourceIterator.next();
+                    sourceList.add(new Pair(sourceKey, currentHitSourceJsonObject.get(sourceKey)));
 
-                            String newHiveColumns = "{\"a\":" + currentHitSourceJsonObject.get(sourceKey).toString() + "}";
-                            JSONObject hiveColumnsJsonObject = new JSONObject(newHiveColumns);
-                            JSONArray hiveColumnsJsonArray = hiveColumnsJsonObject.getJSONArray("a");
-                            for (int x = 0; x < hiveColumnsJsonArray.length(); x++) {
-                                JSONObject hiveColumnJsonObject = new JSONObject(hiveColumnsJsonArray.get(x).toString());
-                                Iterator hiveColumnIterator = hiveColumnJsonObject.keys();
-                                String columnName = "";
-                                String columnType = "";
-                                String columnComment = "";
+                    if (sourceKey.equals("hiveColumns")) {
+                        List<HiveColumn> hiveColumns = new ArrayList<>();
 
-                                while (hiveColumnIterator.hasNext()) {
-                                    String columnKey = (String) hiveColumnIterator.next();
-                                    switch (columnKey) {
-                                        case "columnName":
-                                            columnName = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        case "columnType":
-                                            columnType = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        case "columnComment":
-                                            columnComment = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                        String newHiveColumns = "{\"a\":" + currentHitSourceJsonObject.get(sourceKey).toString() + "}";
+                        JSONObject hiveColumnsJsonObject = new JSONObject(newHiveColumns);
+                        JSONArray hiveColumnsJsonArray = hiveColumnsJsonObject.getJSONArray("a");
+                        for (int x = 0; x < hiveColumnsJsonArray.length(); x++) {
+                            JSONObject hiveColumnJsonObject = new JSONObject(hiveColumnsJsonArray.get(x).toString());
+                            Iterator hiveColumnIterator = hiveColumnJsonObject.keys();
+                            String columnName = "";
+                            String columnType = "";
+                            String columnComment = "";
+
+                            while (hiveColumnIterator.hasNext()) {
+                                String columnKey = (String) hiveColumnIterator.next();
+                                switch (columnKey) {
+                                    case "columnName":
+                                        columnName = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    case "columnType":
+                                        columnType = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    case "columnComment":
+                                        columnComment = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    default:
+                                        break;
                                 }
-                                hiveColumns.add(new HiveColumn(columnName, columnType, columnComment));
                             }
-                            elasticSearchRestSearchHit.setHiveColumns(hiveColumns);
+                            hiveColumns.add(new HiveColumn(columnName, columnType, columnComment));
                         }
-                        sourceIterator.remove();
+                        elasticSearchRestSearchHit.setHiveColumns(hiveColumns);
                     }
-                    elasticSearchRestSearchHit.setSource(sourceList);
-
-                    JSONObject currentHitHighlightJsonObject = new JSONObject(currentHitJsonObject.get("highlight").toString());
-                    List<Pair> highlightsList = new ArrayList<>();
-                    Iterator highlightIterator = currentHitHighlightJsonObject.keys();
-                    while (highlightIterator.hasNext()) {
-                        String highlightKey = (String) highlightIterator.next();
-                        JSONArray highlightArray = currentHitHighlightJsonObject.getJSONArray(highlightKey);
-                        if (highlightArray.length() > 0) {
-                            highlightsList.add(new Pair(highlightKey, highlightArray.get(0)));
-                        }
-                        highlightIterator.remove();
-                    }
-
-                    elasticSearchRestSearchHit.setHighlights(highlightsList);
-                    elasticSearchRestSearchHits.add(elasticSearchRestSearchHit);
+                    sourceIterator.remove();
                 }
-                elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
-                return elasticSearchRestSearchResponse;
-            } catch (IOException | JSONException exception) {
-                log.warn("An error occurred during decoding search result e=", exception);
-                return null;
+                elasticSearchRestSearchHit.setSource(sourceList);
+
+                JSONObject currentHitHighlightJsonObject = new JSONObject(currentHitJsonObject.get("highlight").toString());
+                List<Pair> highlightsList = new ArrayList<>();
+                Iterator highlightIterator = currentHitHighlightJsonObject.keys();
+                while (highlightIterator.hasNext()) {
+                    String highlightKey = (String) highlightIterator.next();
+                    JSONArray highlightArray = currentHitHighlightJsonObject.getJSONArray(highlightKey);
+                    if (highlightArray.length() > 0) {
+                        highlightsList.add(new Pair(highlightKey, highlightArray.get(0)));
+                    }
+                    highlightIterator.remove();
+                }
+
+                elasticSearchRestSearchHit.setHighlights(highlightsList);
+                elasticSearchRestSearchHits.add(elasticSearchRestSearchHit);
             }
+            elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
+            return elasticSearchRestSearchResponse;
+        } catch (IOException | JSONException exception) {
+            log.warn("An error occurred during decoding search result e=", exception);
         }
 
         return null;
@@ -349,7 +351,7 @@ public class ElasticSearchRestService implements Search {
         String jsonBodyString = new JSONObject().toString();
         try {
             JSONObject innerQueryJsonObject = new JSONObject()
-                .put("query", query);
+                .put(QUERY, query);
 
             JSONObject queryStringJsonObject = new JSONObject()
                 .put("query_string", innerQueryJsonObject);
@@ -364,7 +366,7 @@ public class ElasticSearchRestService implements Search {
 
             JSONObject indicesBodyJsonObject = new JSONObject()
                 .put("indices", indicesArray)
-                .put("query", queryStringJsonObject)
+                .put(QUERY, queryStringJsonObject)
                 .put("no_match_query", "none");
 
             JSONObject indicesJsonObject = new JSONObject()
@@ -388,7 +390,7 @@ public class ElasticSearchRestService implements Search {
                 .put("require_field_match", false);
 
             jsonBodyString = new JSONObject()
-                .put("query", indicesJsonObject)
+                .put(QUERY, indicesJsonObject)
                 .put("from", start)
                 .put("size", size)
                 .put("highlight", highlightJsonObject)
@@ -427,7 +429,7 @@ public class ElasticSearchRestService implements Search {
                 .put("bool", shouldObject);
 
             JSONObject queryObject = new JSONObject()
-                .put("query", boolObject);
+                .put(QUERY, boolObject);
 
             jsonBodyString = queryObject.toString();
 
