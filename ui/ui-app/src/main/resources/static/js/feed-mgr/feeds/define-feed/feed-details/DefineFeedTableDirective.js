@@ -237,6 +237,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * If Not add a angular error
          */
         function partitionNamesUnique() {
+            // console.log("partitionNamesUnique");
 
             // Validate the Partition names are unique respective to other partition names
             _.chain(self.model.table.partitions).groupBy(function (partition) {
@@ -519,6 +520,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.validateColumn = function(columnDef) {
+            // console.log("validateColumn");
             if (!isDeleted(columnDef)) {
                 columnDef.validationErrors.name.reserved = columnDef.name === "processing_dttm";
                 columnDef.validationErrors.name.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
@@ -549,6 +551,20 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     updateFormValidation(column);
                 });
             });
+
+            //reset partition formula if data type has changed from date/timestamp to another type
+            _.each(self.model.table.partitions, function (partition) {
+                if (partition.columnDef === columnDef) {
+                    if (columnDef.derivedDataType !== "date" || columnDef.derivedDataType !== "timestamp") {
+                         _.forEach(["to_date", "year", "month", "day", "hour", "minute"], function(formula) {
+                             if (partition.formula === formula) {
+                                 partition.formula = "val"
+                             }
+                         });
+                    }
+                }
+            });
+
         };
 
         this.errorMessage = function(columnDef) {
@@ -584,6 +600,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         }
 
         this.onFieldChange = function (columnDef) {
+            // console.log("onFieldChange");
             self.selectedColumn = columnDef;
             self.addHistoryItem(columnDef);
         };
@@ -596,6 +613,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param partition
          */
         this.onPartitionSourceFieldChange = function (partition) {
+            // console.log("onPartitionSourceFieldChange");
             //set the partition data to match the selected sourceField
             if (partition.columnDef != null) {
                 partition.sourceField = partition.columnDef.name
@@ -619,6 +637,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param partition
          */
         this.onPartitionFormulaChange = function (partition) {
+            // console.log("onPartitionFormulaChange");
             self.updatePartitionFieldName(partition);
             partitionNamesUnique();
         };
@@ -630,6 +649,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param partition
          */
         this.onPartitionNameChange = function (partition) {
+            // console.log("onPartitionNameChange");
             if (self.useUnderscoreInsteadOfSpaces) {
                 partition.field = replaceSpaces(partition.field);
             }
@@ -652,6 +672,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * Ensure that for the partitions the sourceField and sourceDataTypes match the respective schema field data
          */
         function ensurePartitionData() {
+            // console.log("ensurePartitionData");
             var nameMap = {};
             _.each(self.model.table.partitions, function (partition) {
                 if (partition.columnDef == undefined) {
@@ -678,6 +699,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param partition
          */
         this.updatePartitionFieldName = function (partition) {
+            // console.log("updatePartitionFieldName");
             if (partition.formula != 'val') {
                 if (partition.sourceField != null && (partition.field == null || partition.field == '' || partition.field == partition.sourceField + "_")) {
                     partition.field = partition.sourceField + "_" + partition.formula;
@@ -689,7 +711,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
         function validate(validForm) {
-            console.log("validate valid ? " + validForm);
+            // console.log("validate valid ? " + validForm);
             if (_.isUndefined(self.defineFeedTableForm.invalidColumns)) {
                 self.defineFeedTableForm.invalidColumns = [];
             }
