@@ -165,6 +165,14 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.GET_CONTROLLER_SERVICE_URL = function (serviceId) {
             return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
         }
+        
+        this.FEED_VERSIONS_URL = function (feedId) {
+        		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
+        }
+        
+        this.FEED_VERSION_ID_URL = function (feedId, verId) {
+        	return self.FEED_VERSIONS_URL(feedId) + "/" + verId;
+        }
 
         this.FEED_PROFILE_STATS_URL = function (feedId) {
             return self.GET_FEEDS_URL + "/" + feedId + "/profile-stats";

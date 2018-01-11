@@ -1,0 +1,239 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+        
+<!-- Feed definition -->
+        
+<vertical-section-layout section-title="Feed Definition">
+    <readonly-section>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Name</span>
+            
+            <div flex>
+                {{vm.model.feedName}}
+            </div>
+            <div flex>
+                {{vm.model.feedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">System Name</span>
+
+            <div flex>
+                {{vm.model.systemFeedName}}
+            </div>
+            <div flex>
+                {{vm.model.systemFeedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Description</span>
+
+            <div flex>
+                {{vm.model.description}}
+            </div>
+            <div flex>
+                {{vm.model.description}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Type</span>
+
+            <div flex>
+                {{vm.model.templateName}}
+            </div>
+            <div flex>
+                {{vm.model.templateName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Flow Processing</span>
+
+            <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> Stream</span>
+                <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
+            </div>
+
+            <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
+                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> Batch</span>
+                <span class="hint">Kylo will track individual jobs and steps.</span>
+            </div>
+        </div>
+    </readonly-section>
+</vertical-section-layout>
+        
+<!-- NiFi properties -->
+        
+<vertical-section-layout section-title="Feed Details">
+    <readonly-section>
+        <div layout="column">
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Source</span>
+
+                <div flex>
+                    {{vm.model.inputProcessor.name}}
+                </div>
+            </div>
+                <div flex>
+                    {{vm.model.inputProcessor.name}}
+                </div>
+            </div>
+
+            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
+                <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
+                 <md-tooltip md-direction="right" ng-if="property.sensitive">
+                   This is a sensitive property.
+                </md-tooltip>
+                </div>
+
+                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
+
+                <div flex>
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
+                    <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
+                </div>
+
+                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
+
+                <div flex>
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
+                    <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
+                </div>
+            </div>
+
+            <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="layout-padding-top-bottom" ng-if="processor.userEditable">
+                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">{{property.key}}</span>
+
+                    <div flex>
+                        {{property.displayValue}}
+                    </div>
+                    <div flex>
+                        {{property.displayValue}}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </readonly-section>
+</vertical-section-layout>
+        
+<!-- Table options details? -->
+        
+        
+<!-- Additional properties -->
+
+<vertical-section-layout section-title="Properties">
+    <readonly-section>
+        <div layout="column">
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Data Owner</span>
+
+                <div flex>
+                    {{vm.model.dataOwner}}
+                </div>
+                <div flex>
+                    {{vm.model.dataOwner}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Tags</span>
+
+                <div flex>
+                    {{vm.model.tags | join: ',':'name'}}
+                </div>
+                <div flex>
+                    {{vm.model.tags | join: ',':'name'}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
+                <span flex="25" class="property-name">Hadoop Security Groups</span>
+
+                <div flex>
+                    {{vm.model.securityGroups | join: ',':'name'}}
+                </div>
+                <div flex>
+                    {{vm.model.securityGroups | join: ',':'name'}}
+                </div>
+            </div>
+            <thinkbig-property-list properties="vm.model.userProperties"></thinkbig-property-list>
+        </div>
+     </readonly-section>
+</vertical-section-layout>
+        
+<!-- Schedule -->
+        
+<vertical-section-layout section-title="Schedule">
+     <readonly-section>
+        <div ng-if="vm.model.reusableFeed == false">
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Strategy</span>
+    
+                <div flex>
+                    {{vm.model.schedule.schedulingStrategy}}
+                </div>
+                <div flex>
+                    {{vm.model.schedule.schedulingStrategy}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
+                <span flex="25" class="property-name">Period</span>
+    
+                <div flex>
+                    {{vm.model.schedule.schedulingPeriod}}
+                </div>
+                <div flex>
+                    {{vm.model.schedule.schedulingPeriod}}
+                </div>
+            </div>
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.isClustered && vm.supportsExecutionNode">
+                <span flex="25" class="property-name">Execution Node</span>
+
+                <div flex>
+                    {{vm.model.schedule.executionNode}}
+                </div>
+                <div flex>
+                    {{vm.model.schedule.executionNode}}
+                </div>
+            </div>
+            <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+                <div layout="column">
+                    <div class="md-subhead">Run Preconditions</div>
+                </div>
+                <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
+                    <md-list class="md-2-line">
+                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding layout-padding-top-bottom">
+                            <div layout="column" flex="75" class="md-list-item-text">
+                                <span>{{rule.propertyValuesDisplayString}}</span>
+                                <span class="hint">{{rule.name}}</span>
+                            </div>
+                            <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                    </md-list>
+                </div>
+            </div>
+        </div>
+        <div ng-if="vm.model.reusableFeed == true">
+            This is an abstract Reusable Feed. No Schedule is applied to this Feed.  Other Templates that reference this feed will supply their schedule
+        </div>
+    </readonly-section>
+</vertical-section-layout>
