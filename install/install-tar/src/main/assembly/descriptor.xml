@@ -162,7 +162,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch/src/main/resources</directory>
-      <outputDirectory>kylo-services/conf</outputDirectory>
+      <outputDirectory>setup/plugins/search-elasticsearch-transport-client</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>elasticsearch.properties</include>
@@ -171,7 +171,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-elasticsearch/target</directory>
-      <outputDirectory>setup/plugins</outputDirectory>
+      <outputDirectory>setup/plugins/search-elasticsearch-transport-client</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>kylo-search-elasticsearch-${project.version}.jar</include>
@@ -198,7 +198,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-solr/src/main/resources</directory>
-      <outputDirectory>kylo-services/conf</outputDirectory>
+      <outputDirectory>setup/plugins/search-solr</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>solrsearch.properties</include>
@@ -207,7 +207,7 @@
 
     <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/search-solr/target</directory>
-      <outputDirectory>setup/plugins</outputDirectory>
+      <outputDirectory>setup/plugins/search-solr</outputDirectory>
       <fileMode>755</fileMode>
       <includes>
         <include>kylo-search-solr-${project.version}.jar</include>
