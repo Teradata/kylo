@@ -777,6 +777,7 @@
     "Business Metadata":"Бизнес метаданные",
     "JCR Admin":"Администратор запросов",
     "Search":"Поиск",
+    "Alerts":"Оповещения",
     "Alert Details":"Детали оповещения",
     "Charts":"Графики",
     "Ops Feed Details":"Активность Заданий",
@@ -828,68 +829,8 @@
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
-    "dirPagination.tpl.All": "Все",
+    "dirPagination.tpl.All": "Все"
 
-    "views.service-health-template.Component(s)": "Компонент(ов)",
-    "views.service-health-template.Alerts": "Оповещения",
-    "views.service-health-template.Alert": "Оповещение",
-    "views.service-health-template.LC":"Последняя проверка",
-    "views.service-health-template.Nrf":"Результат не найден",
-    "views.service-health-template.Name":"Имя",
-    "views.service-health-template.Status":"Состояние",
-    "views.service-health-template.Components":"Компонентов",
 
-    "views.service-detail.Message":"Сообщение",
-    "views.service-detail.Alerts":"Оповещения",
-    "views.service-detail.Alert":"Оповещение",
-    "views.service-detail.LC":"Последняя проверка",
-    "views.service-detail.Name":"Имя",
-    "views.service-detail.Status":"Состояние",
-    "views.service-detail.SD":"Детали сервиса",
-
-    "views.service-component-detail.Message":"Сообщение",
-    "views.service-component-detail.Time":"Время",
-    "views.service-component-detail.Name":"Имя",
-    "views.service-component-detail.Status":"Состояние",
-    "views.service-component-detail.CD":"Детали компонента",
-    "views.service-component-detail.LC":"Последняя проверка",
-
-    "Service Components":"Сервис компонентов",
-    "Service Component Alerts": "Оповещения компонента сервиса",
-    "Component Name":"Имя компонента",
-    "Components":"Компоненты",
-    "Alerts":"Оповещения",
-    "Update Date":"Дата обновления",
-    "Service Name":"Имя сервиса",
-
-    "Job Name":"Имя задания",
-    "Start Time":"Начальное время",
-    "Status":"Состояние",
-
-    "views.alert-details-template.Level":"Уровень",
-    "views.alert-details-template.Type":"Тип",
-    "views.alert-details-template.ST":"Начальное время",
-    "views.alert-details-template.Description":"Описание",
-    "views.alert-details-template.Comment":"Коментарий",
-    "views.alert-details-template.User":"Пользователь",
-    "views.alert-details-template.CT":"Дата создания",
-
-    "views.alert-type-filter-select.AT":"Тип оповещения",
-    "views.alert-type-filter-select.AlertState":"Состоянеие оповещания",
-
-    "views.alerts-table-template.Level":"Уровень",
-    "views.alerts-table-template.State":"Состояние",
-    "views.alerts-table-template.Type":"Тип",
-    "views.alerts-table-template.Cleared":"Очистка",
-    "views.alerts-table-template.ST":"Начальное время",
-    "views.alerts-table-template.Description":"Описание",
-    "views.alerts-table-template.Nrf":"Результат не найден",
-
-    "views.event-dialog.UAD":"Обновления оповещения",
-    "views.event-dialog.Unhandled":"Необработанно",
-    "views.event-dialog.IP":"В процессе",
-    "views.event-dialog.Handled":"Обработанно",
-    "views.event-dialog.Cancel":"Отмена",
-    "views.event-dialog.Save":"Сохранить"
 }
 

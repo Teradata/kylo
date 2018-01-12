@@ -1,6 +1,6 @@
-define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
+define(['angular',"feed-mgr/tables/module-name", 'pascalprecht.translate'], function (angular,moduleName) {
 
-    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils){
+    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils, $filter){
 
         var self = this;
 
@@ -8,8 +8,8 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         self.schema = $transition$.params().schema;
         this.tables =[];
         this.loading = true;
-        this.cardTitle = self.datasource.name + " " + self.schema + " tables";
-        this.pageName = 'Tables';
+        this.cardTitle = self.datasource.name + " " + self.schema + " " + $filter('translate')('views.TableController.Tables');
+        this.pageName = $filter('translate')('views.TableController.Tables');
         self.filterInternal = true;
 
         this.paginationData = PaginationDataService.paginationData(this.pageName);
@@ -153,7 +153,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
 
     };
 
-    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils",controller]);
+    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils", "$filter", controller]);
 
 
 

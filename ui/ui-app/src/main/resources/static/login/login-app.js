@@ -21,10 +21,10 @@ define([
 
     module.constant('LOCALES', {
         'locales': {
-            'ru_RU': 'Русский',
-            'en_US': 'English'
+            'en_US': 'English',
+            'ru_RU': 'Русский'
         },
-        'preferredLocale': 'ru_RU'
+        'preferredLocale': 'en_US'
     });
 
 
@@ -36,7 +36,7 @@ define([
             suffix: '.json'// suffix, currently- extension of the translations
         });
 
-        $translateProvider.preferredLanguage('ru_RU');// is applied on first load
+        $translateProvider.preferredLanguage('en_US');// is applied on first load
         $translateProvider.fallbackLanguage('en_US');
         $translateProvider.useLocalStorage();// saves selected language to localStorage
 
