@@ -947,7 +947,7 @@ public class FeedRestController {
     }
 
     private String getErrorTemplate(List<String> uploadedFiles, String msg) {
-        return uploadedFiles.size() > 0 ? "Successfully uploaded files: " + String.join(", ", uploadedFiles) + ".\n" + msg : msg;
+        return !uploadedFiles.isEmpty() ? "Successfully uploaded files: " + String.join(", ", uploadedFiles) + ".\n" + msg : msg;
     }
 
     private void saveFile(InputStream stream, FileUploadContext context) throws IOException {
@@ -962,9 +962,12 @@ public class FeedRestController {
         Files.copy(stream, tempTarget.toPath(), StandardCopyOption.REPLACE_EXISTING);
         Files.move(tempTarget.toPath(), dropZoneTarget);
 
-        // Set read, write
-        dropZoneFile.setReadable(true);
-        dropZoneFile.setWritable(true);
+        if (!dropZoneFile.setReadable(true)) {
+            log.error("Failed to set file readable");
+        }
+        if (!dropZoneFile.setWritable(true)) {
+            log.error("Failed to set file writable");
+        }
     }
 
     /**
