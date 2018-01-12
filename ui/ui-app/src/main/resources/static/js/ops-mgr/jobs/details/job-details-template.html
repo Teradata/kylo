@@ -168,13 +168,13 @@
                       <div flex="30" layout="column">
                         <div layout="row">
                           <div>
-                                               <span class="item-title">
-                                                   <kylo-timer ng-if="step.content.running"
-                                                              start-time="step.content.runTime"></kylo-timer>
-                                                   <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
-                                               </span>
-                        <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
-                      </div>
+                            <span class="item-title">
+                             <kylo-timer ng-if="step.content.running"
+                                         start-time="step.content.runTime"></kylo-timer>
+                             <span ng-if="step.content.running == false">{{step.content.runTime | time }}</span>
+                            </span>
+                              <span class="column-title column-title-bottom">{{'views.job-details-template.RT' | translate}}</span>
+                          </div>
                           <div>
                             <md-button md-no-ink ng-show="vm.logUiEnabled && step.content.displayStatus =='FAILED'" class="border-btn action-btn md-warn" ng-click="vm.navigateToLogsForStep(step)">Search Logs</md-button>
                           </div>
@@ -192,10 +192,10 @@
                         <md-divider></md-divider>
                         <md-list-item>
                           <div flex="30" class="item-column md-list-item-text accent-color-3">
-                              {{'views.job-details-template.CP' | translate}}
+                            {{'views.job-details-template.CP' | translate}}
                           </div>
                           <div flex="70" class="item-column md-list-item-text accent-color-3">
-                              {{'views.job-details-template.Values' | translate}}
+                            {{'views.job-details-template.Values' | translate}}
                           </div>
                           <md-divider></md-divider>
                         </md-list-item>
@@ -225,7 +225,7 @@
       <md-content ng-if="vm.unableToFindJob == true" style="min-height:300px">
         <div layout="column" layout-align="center center" flex>
         <span class="md-subhead">
-          {{'views.job-details-template.Utftj' | translate}}
+        {{'views.job-details-template.Utftj' | translate}}
           </span>
         </div>
       </md-content>

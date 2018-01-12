@@ -33,15 +33,13 @@ require.config({
         'angular-material-icons':['angular'],
         'ocLazyLoad':['angular'],
         'urlParams':['jquery'],
-
         'pascalprecht.translate':['angular'],
         'angular-translate-loader-static-files':['pascalprecht.translate'],
         'angular-translate-storage-local': {deps: ['pascalprecht.translate']},
         'angular-translate-handler-log': {deps: ['pascalprecht.translate']},
         'angular-translate-storage-cookie': {deps: ['pascalprecht.translate']},
 
-        'login-app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery'
-        ], exports:'login-app'}
+        'login-app':{deps:['ocLazyLoad','underscore','angularMaterial','jquery'], exports:'login-app'}
     },
     deps: ['login-app']
 });

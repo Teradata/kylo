@@ -125,7 +125,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                     data.color = "#969696";
                     break;
                 default:
-                    console.error("unknown icon!!!!!!!!!! status=" + status);
+                    console.error("unknown icon!!!!!!!!!!");
             }
             return data;
         }

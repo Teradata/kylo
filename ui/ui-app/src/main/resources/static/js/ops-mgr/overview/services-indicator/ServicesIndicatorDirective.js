@@ -246,7 +246,7 @@ define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], fun
 
         function init(){
             watchDashboard();
-                }
+        }
         init();
 
     };

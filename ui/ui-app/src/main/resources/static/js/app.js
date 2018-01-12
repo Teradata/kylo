@@ -62,7 +62,6 @@ define([
                 suffix: '.json'// suffix, currently- extension of the translations
         });
 
-        console.log($translateProvider);
         $translateProvider.preferredLanguage('ru_RU');// is applied on first load
         $translateProvider.fallbackLanguage('en_US');
         $translateProvider.useLocalStorage();// saves selected language to localStorage

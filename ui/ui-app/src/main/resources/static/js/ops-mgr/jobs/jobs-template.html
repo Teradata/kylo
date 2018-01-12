@@ -52,7 +52,7 @@
                                        {{job.displayStatus | translate}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'dd/MM/yyyy H:mm:ss'}}</span>
+                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                     <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
                                     <span class="column-title column-title-bottom">{{"views.jobs-template.ST" | translate}}</span>
                                 </div>
@@ -121,7 +121,7 @@
 
                                     </td>
                                     <td md-cell ng-if="vm.hideFeedColumn == false">{{job.feedName}}</td>
-                                    <td md-cell hide show-gt-sm>{{job.startTime | date:'dd/MM/yyyy H:mm:ss'}}</td>
+                                    <td md-cell hide show-gt-sm>{{job.startTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
                                     <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>
@@ -137,7 +137,7 @@
                             </table>
                         </md-table-container>
 
-                        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onPaeginationChange" md-limit-options="[5,10,20,50,100]"></md-table-pagination>
+                        <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50,100]"></md-table-pagination>
 
                     </div>
                         </md-tab-body>

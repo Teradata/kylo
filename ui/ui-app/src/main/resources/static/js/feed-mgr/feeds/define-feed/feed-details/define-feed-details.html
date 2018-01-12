@@ -18,64 +18,64 @@
   #L%
   -->
 <card-layout body-css="md-padding">
-    <header-section>
-        <div layout="row" layout-align="space-between-center" flex>
-          <div class="card-title" flex>{{"views.define-feed-details.DS" | translate}}</div>
-          <h2 class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-general-info.of" | translate}} {{vm.totalSteps}}</h2>
+  <header-section>
+    <div layout="row" layout-align="space-between-center" flex>
+      <div class="card-title" flex>{{"views.define-feed-details.DS" | translate}}</div>
+      <h2 class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-general-info.of" | translate}} {{vm.totalSteps}}</h2>
+    </div>
+    <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
+      <div class="card-sub-header" flex>{{"views.define-feed-details.ChooseDS" | translate}}</div>
+      <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+    </div>
+  </header-section>
+  <body-section>
+    <ng-form name="vm.feedDetailsForm">
+      <div layout="column" ng-if="vm.loading == false">
+        <div style="padding-bottom:10px;" ng-if="vm.model.inputProcessor != null">
+          <div class="md-subhead"> {{"views.define-feed-details.ChooseTS" | translate}} </div>
+          <div class="layout-padding-indent" style="padding-top:8px;">
+            <md-radio-group ng-model="vm.inputProcessorId" layout="row">
+              <md-radio-button ng-repeat="inputProcessor in vm.inputProcessors"
+                               ng-value="inputProcessor.processorId"
+                               aria-label="{{inputProcessor.name}}">
+                {{inputProcessor.name}}
+                <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
+              </md-radio-button>
+            </md-radio-group>
+          </div>
         </div>
-      <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-        <div class="card-sub-header" flex>{{"views.define-feed-details.ChooseDS" | translate}}</div>
-        <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
-      </div>
-    </header-section>
-<body-section>
-  <ng-form name="vm.feedDetailsForm">
-    <div layout="column" ng-if="vm.loading == false">
-                <div style="padding-bottom:10px;" ng-if="vm.model.inputProcessor != null">
-                    <div class="md-subhead"> {{"views.define-feed-details.ChooseTS" | translate}} </div>
-                    <div class="layout-padding-indent" style="padding-top:8px;">
-                    <md-radio-group ng-model="vm.inputProcessorId" layout="row" >
-                        <md-radio-button ng-repeat="inputProcessor in vm.inputProcessors"
-                                         ng-value="inputProcessor.processorId"
-                                         aria-label="{{inputProcessor.name}}">
-                            {{inputProcessor.name}}
-                            <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
-                        </md-radio-button>
-                    </md-radio-group>
-                    </div>
-                </div>
 
 
-            <div flex ng-if="vm.model.inputProcessor != null && (vm.model.inputProcessor.feedPropertiesUrl == null || vm.model.inputProcessor.feedPropertiesUrl == undefined)">
-                <div class="layout-padding-indent">
+        <div flex ng-if="vm.model.inputProcessor != null && (vm.model.inputProcessor.feedPropertiesUrl == null || vm.model.inputProcessor.feedPropertiesUrl == undefined)">
+          <div class="layout-padding-indent">
             <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom"
                                 property="property" flex-gt-sm ng-repeat="property in vm.model.inputProcessor.properties | filter:{userEditable:true}" track by property.key/>
-                    </div>
-            </div>
+          </div>
+        </div>
         <div ng-if="vm.model.inputProcessor != null && vm.model.inputProcessor.feedPropertiesUrl != null">
-          <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedPropertiesUrl}}" processor="vm.model.inputProcessor" the-form="vm.feedDetailsForm" ></custom-processor-rendering>
+          <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedPropertiesUrl}}" processor="vm.model.inputProcessor" the-form="vm.feedDetailsForm"></custom-processor-rendering>
         </div>
 
 
-            <div ng-repeat="processor in vm.model.nonInputProcessors track by processor.processorId" flex ng-if="processor.userEditable">
-              <div class="md-subhead" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">{{processor.name}}</div>
-                <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
-                    <div ng-repeat="property in processor.properties | filter:{userEditable:true} track by property.key">
+        <div ng-repeat="processor in vm.model.nonInputProcessors track by processor.processorId" flex ng-if="processor.userEditable">
+          <div class="md-subhead" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">{{processor.name}}</div>
+          <div class="layout-padding-indent" ng-if="processor.feedPropertiesUrl == null  || processor.feedPropertiesUrl == undefined">
+            <div ng-repeat="property in processor.properties | filter:{userEditable:true} track by property.key">
               <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" property="property"
                                   class="md-block layout-padding-top-bottom" flex-gt-sm/>
-                    </div>
-                </div>
-              <div ng-if="processor.feedPropertiesUrl != null">
-                <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" the-form="vm.feedDetailsForm" ></custom-processor-rendering>
-              </div>
-
             </div>
+          </div>
+          <div ng-if="processor.feedPropertiesUrl != null">
+            <custom-processor-rendering template-url="{{processor.feedPropertiesUrl}}" processor="processor" the-form="vm.feedDetailsForm"></custom-processor-rendering>
+          </div>
 
-    </div>
-    <div ng-if="vm.loading">
-      <md-progress-circular md-diameter="36px"></md-progress-circular>
-    </div>
-    <thinkbig-step-buttons can-continue="vm.isValid && vm.feedDetailsForm.$valid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
-  </ng-form>
-</body-section>
-    </card-layout>
+        </div>
+
+      </div>
+      <div ng-if="vm.loading">
+        <md-progress-circular md-diameter="36px"></md-progress-circular>
+      </div>
+      <thinkbig-step-buttons can-continue="vm.isValid && vm.feedDetailsForm.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
+    </ng-form>
+  </body-section>
+</card-layout>

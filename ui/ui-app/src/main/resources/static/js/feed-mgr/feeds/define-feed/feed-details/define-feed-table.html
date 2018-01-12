@@ -151,11 +151,11 @@
                           style="min-height: 700px">
                         <div
                             md-virtual-repeat="columnDef in vm.model.table.tableSchema.fields"
-                           ng-click="vm.onSelectedColumn(columnDef)">
+                            ng-click="vm.onSelectedColumn(columnDef)">
                           <ng-include
                               layout="row" class="repeated-item no-outline"
                               src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table-row.html'"></ng-include>
-                            </div>
+                        </div>
                       </md-virtual-repeat-container>
                       <div ng-if="vm.model.table.tableSchema.fields.length > 0 && vm.model.table.tableSchema.fields.length < 30">
                         <ng-include

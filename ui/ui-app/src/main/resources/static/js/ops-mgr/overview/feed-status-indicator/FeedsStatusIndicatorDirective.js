@@ -35,11 +35,11 @@ define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], fun
                 self.feedSummaryData = OpsManagerDashboardService.feedSummaryData;
                 updateChartData();
             });
-                }
+        }
 
         function onChartElementClick(key){
             OpsManagerDashboardService.selectFeedHealthTab(key);
-            }
+        }
 
         function updateChartData(){
             angular.forEach(self.chartData,function(row,i){

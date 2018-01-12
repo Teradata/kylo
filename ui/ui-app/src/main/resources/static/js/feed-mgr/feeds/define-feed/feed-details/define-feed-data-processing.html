@@ -117,9 +117,9 @@
                           layout="row"
                           layout-align="start center"
                           ng-repeat="policy in vm.model.table.fieldPolicies"
-                         ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
-                         ng-click="vm.onSelectedColumn($index)"
-                         class="data-processing-row"
+                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
+                          ng-click="vm.onSelectedColumn($index)"
+                          class="data-processing-row"
                           src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
                       </ng-include>
                     </div>

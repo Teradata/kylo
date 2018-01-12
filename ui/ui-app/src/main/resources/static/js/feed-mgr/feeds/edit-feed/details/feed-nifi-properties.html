@@ -23,27 +23,21 @@
     <readonly-section>
         <div layout="column">
             <div layout="row" class="layout-padding-top-bottom">
-                <span flex="40" class="property-name">{{"views.feed-nifi-properties.Source" | translate}}</span>
+                <span flex="25" class="property-name">{{"views.feed-nifi-properties.Source" | translate}}</span>
 
                 <div flex>
                     {{vm.model.inputProcessor.name}}
                 </div>
             </div>
 
-            <!-- Custom templete render -->
-            <div layout="column" ng-if="vm.model.inputProcessor.feedDetailsReadOnlyTemplateUrl != null" class="layout-padding-top-bottom">
-                    <custom-processor-rendering template-url="{{vm.model.inputProcessor.feedDetailsReadOnlyTemplateUrl}}" processor="vm.model.inputProcessor"></custom-processor-rendering>
-            </div>
-
-            <!-- Default render -->
-            <div layout="row" ng-if="vm.model.inputProcessor.feedDetailsReadOnlyTemplateUrl == null" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
-                <div flex="40" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
+            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
+                <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
                  <md-tooltip md-direction="right" ng-if="property.sensitive">
                    {{"views.feed-nifi-properties.Tiasp" | translate}}
                 </md-tooltip>
                 </div>
 
-                <span flex="40" class="property-name" ng-if="property.key == 'Backoff Period'">{{"views.feed-nifi-properties.SRP" | translate}}</span>
+                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">{{"views.feed-nifi-properties.SRP" | translate}}</span>
 
                 <div flex>
                     <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
@@ -53,16 +47,14 @@
             </div>
 
             <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="layout-padding-top-bottom" ng-if="processor.userEditable">
-                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom" ng-if="processor.feedDetailsReadOnlyTemplateUrl == null  || processor.feedDetailsReadOnlyTemplateUrl == undefined">
-                    <span flex="40" class="property-name">{{property.key}}</span>
+                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">{{property.key}}</span>
 
                     <div flex>
                         {{property.displayValue}}
                     </div>
                 </div>
-                <div ng-if="processor.feedDetailsReadOnlyTemplateUrl != null">
-                    <custom-processor-rendering template-url="{{processor.feedDetailsReadOnlyTemplateUrl}}" processor="processor"></custom-processor-rendering>
-                </div>
+
             </div>
         </div>
 
@@ -88,11 +80,7 @@
 
             <div ng-if="vm.editModel.inputProcessor != null && (vm.editModel.inputProcessor.feedPropertiesUrl == null || vm.editModel.inputProcessor.feedPropertiesUrl == undefined)">
                 <div class="layout-padding-indent">
-                    <md-input-container ng-class="{'condensed':property.renderType == 'radio' }"
-                                        nifi-property-input
-                                        the-form="vm.feedDetailsForm"
-                                        class="md-block layout-padding-top-bottom"
-                                        property="property" flex-gt-sm
+                    <md-input-container ng-class="{'condensed':property.renderType == 'radio' }" nifi-property-input the-form="vm.feedDetailsForm" class="md-block layout-padding-top-bottom" property="property" flex-gt-sm
                                         ng-repeat="property in vm.editModel.inputProcessor.properties " track by property.key/>
                 </div>
             </div>

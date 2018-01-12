@@ -67,7 +67,6 @@
         <div flex="10"></div>
         <md-input-container flex="40">
           <label>{{"views.category-definition.SN" | translate}}</label>
-          <input readonly ng-model="vm.editModel.systemName"/>
 
           <input id="systemName" name="systemName" ng-readonly="!vm.isSystemNameEditable() || vm.hasFeeds()" ng-model="vm.editModel.systemName" required/>
 

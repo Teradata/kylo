@@ -126,16 +126,16 @@ define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], fun
                     var data = OpsManagerDashboardService.dashboard.dataConfidenceSummary;
                     if(angular.isDefined(data)) {
                         self.allData = data;
-                    if (self.dataLoaded == false) {
-                        self.dataLoaded = true;
-                    }
-                    self.dataMap.Healthy.count = data.successCount;
-                    self.dataMap.Unhealthy.count = data.failedCount;
+                        if (self.dataLoaded == false) {
+                            self.dataLoaded = true;
+                        }
+                        self.dataMap.Healthy.count = data.successCount;
+                        self.dataMap.Unhealthy.count = data.failedCount;
                     }
                     self.updateChart();
                 }
-                    self.refreshing = false;
-                }
+                 self.refreshing = false;
+        }
 
         function watchDashboard() {
             BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){

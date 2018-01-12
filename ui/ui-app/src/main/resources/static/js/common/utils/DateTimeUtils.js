@@ -51,8 +51,8 @@ var DateTimeUtils = function ($translate) {
         var str = seconds + ' ' + $translate('views.Utils.sec');
         secondsStr = str;
         var truncateFormatStr = str;
-        var truncatedTimeFormat = padLeft(minutes,2,'0')+':'+padLeft(seconds,2,'0');
-        var timeFormat = padLeft(hours,2,'0')+':'+padLeft(minutes,2,'0')+':'+padLeft(seconds,2,'0');
+        var truncatedTimeFormat = padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
+        var timeFormat = padLeft(hours,2,'0')+":"+padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
 
         if(seconds == 0 && minutes ==0){
             millisStr = minutesms/1000 + ' ' + $translate('views.Utils.sec');

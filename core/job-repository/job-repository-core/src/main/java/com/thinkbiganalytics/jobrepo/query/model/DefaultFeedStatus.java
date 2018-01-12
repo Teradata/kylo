@@ -21,12 +21,14 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.Locale;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Feed Status built from the transform class
@@ -34,6 +36,8 @@ import java.util.Locale;
  * @see com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform
  */
 public class DefaultFeedStatus implements FeedStatus {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultFeedStatus.class);
 
     private List<FeedHealth> feeds;
     private Integer healthyCount = 0;
@@ -85,11 +89,10 @@ public class DefaultFeedStatus implements FeedStatus {
         }
         if (percent > 0f) {
             DecimalFormat twoDForm = new DecimalFormat("##.##");
-//            this.percent = Float.valueOf(twoDForm.format(this.percent)) * 100;
             try {
                 this.percent = twoDForm.parse(twoDForm.format(this.percent)).floatValue() * 100;
             } catch (ParseException e) {
-                e.printStackTrace();
+                log.error("Error parsing percent value ", e);
             }
         }
 

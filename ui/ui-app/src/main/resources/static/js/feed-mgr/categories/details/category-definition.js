@@ -368,16 +368,13 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
 
         checkAccessPermissions();
 
-        function init() {
-
+        // Fetch the existing categories
+        CategoriesService.reload().then(function (response) {
             if (self.editModel) {
                 self.validateDisplayName();
                 self.validateSystemName();
             }
-
-        }
-
-        init();
+        });
 
         // Watch for changes to name
         $scope.$watch(
