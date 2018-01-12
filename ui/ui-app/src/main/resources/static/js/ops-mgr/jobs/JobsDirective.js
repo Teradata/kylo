@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function() {
         return {
@@ -26,7 +26,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
     function JobsCardController($scope, $http,$mdDialog,$timeout,$mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService,
                                 TabService,
-                                AccessControlService, BroadcastService) {
+                                AccessControlService, BroadcastService, $filter) {
         var self = this;
 
         /**
@@ -638,7 +638,7 @@ define(['angular','ops-mgr/jobs/module-name'], function (angular,moduleName) {
 
     angular.module(moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef",JobFilterHelpPanelMenuCtrl]);
 
-    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",JobsCardController]);
+    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService","$filter",JobsCardController]);
     angular.module(moduleName).directive('tbaJobs', directive);
 });
 

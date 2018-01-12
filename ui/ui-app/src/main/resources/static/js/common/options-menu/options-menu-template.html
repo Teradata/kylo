@@ -5,7 +5,7 @@
     <md-menu-content width="3" >
         <md-menu-item ng-if="showPagination" >
             <md-input-container>
-                <label>Rows per page</label>
+                <label>{{"views.all-page.Rows_per_page" | translate}}</label>
                 <md-select class="" ng-model="paginationData.rowsPerPage" >
                     <md-option ng-repeat="x in paginationData.rowsPerPageOptions" value="{{x}}">
                         {{x}}
@@ -23,7 +23,7 @@
             </md-button>
         </md-menu-item>
         <md-menu-item class="md-menu-item-header">
-            <span md-menu-align-target  class="md-subheader md-menu-item-header">Sort Options</span>
+            <span md-menu-align-target  class="md-subheader md-menu-item-header"> {{"views.options-menu-template.SO" | translate}}</span>
          </md-menu-item>
         <md-menu-item ng-repeat="item in sortOptions" layout="column">
             <md-button ng-click="selectOption(item)" md-prevent-menu-close="md-prevent-menu-close">

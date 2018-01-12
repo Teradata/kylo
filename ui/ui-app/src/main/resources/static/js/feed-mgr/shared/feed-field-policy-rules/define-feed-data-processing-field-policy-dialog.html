@@ -20,13 +20,13 @@
 <md-dialog aria-label="Validation Results" ng-cloak>
     <ng-form name="policyForm">
         <div  class="md-toolbar-tools">
-            <h4 class="md-title"><span>{{title}} for field {{field.name}}</span></h4>
+            <h4 class="md-title"><span>{{title}} {{"views.define-feed-data-processing-field-policy-dialog.ff" | translate}} {{field.name}}</span></h4>
             <span flex></span>
         </div>
         <md-dialog-content layout="column" style="min-width:500px;padding-top:0px;" layout-padding>
 
             <div ng-if="policyRules != null && policyRules.length >0 ">
-                <span class="hint">Drag policies up and down to reorder</span>
+                <span class="hint">{{"views.define-feed-data-processing-field-policy-dialog.Dpuadtr" | translate}}</span>
 
                 <ul dnd-list="policyRules" class="simple-dnd-list">
                     <li ng-repeat="rule in policyRules"
@@ -90,7 +90,7 @@
 
 
                 <md-input-container class="md-block layout-padding-top-bottom" style="margin-top:0px;">
-                    <label class="md-container-ignore label-small layout-padding-top">Select Rule Type</label>
+                    <label class="md-container-ignore label-small layout-padding-top">{{"views.define-feed-data-processing-field-policy-dialog.SRT" | translate}}</label>
                     <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="Rule Type">
                         <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
                     </md-select>
@@ -109,10 +109,10 @@
         <md-dialog-actions layout="row" layout-align="start stretch" flex>
             <span flex></span>
             <md-button ng-click="cancel($event)">
-                Cancel
+                {{"views.define-feed-data-processing-field-policy-dialog.Cancel" | translate}}
             </md-button>
             <md-button class="md-raised md-primary" ng-click="done($event)" ng-disabled="!pendingEdits || editRule != null || policyForm.$invalid">
-                Done
+                {{"views.define-feed-data-processing-field-policy-dialog.Done" | translate}}
             </md-button>
         </md-dialog-actions>
     </ng-form>

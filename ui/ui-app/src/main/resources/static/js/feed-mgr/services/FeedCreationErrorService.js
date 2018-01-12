@@ -17,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog", function ($mdDialog) {
+define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+    angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog", function ($mdDialog, $filter) {
 
         function parseNifiFeedForErrors(nifiFeed, errorMap) {
             var count = 0;
@@ -66,9 +66,19 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 data.feedError.feedErrorsData = errorMap;
                 data.feedError.feedErrorsCount = count;
 
-                if (data.feedError.feedErrorsCount > 0) {
+                if (data.feedError.feedErrorsCount == 1) {
 
-                    data.feedError.message = data.feedError.feedErrorsCount + " invalid items were found.  Please review and fix these items.";
+                    data.feedError.message = data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf');
+                    data.feedError.isValid = false;
+                }
+                else if (data.feedError.feedErrorsCount >=2  || data.feedError.feedErrorsCount <= 4) {
+
+                    data.feedError.message = $filter('translate')('views.FeedCreationErrorService.Found') + data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf2');
+                    data.feedError.isValid = false;
+                }
+                else if (data.feedError.feedErrorsCount >= 5) {
+
+                    data.feedError.message = $filter('translate')('views.FeedCreationErrorService.Found') + data.feedError.feedErrorsCount + $filter('translate')('views.FeedCreationErrorService.iiwf2');
                     data.feedError.isValid = false;
                 }
                 else {
@@ -174,6 +184,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
 
         };
 
-        angular.module(moduleName).controller('FeedErrorDialogController',["$scope","$mdDialog","FeedCreationErrorService",controller]);
+        angular.module(moduleName).controller('FeedErrorDialogController',["$scope","$mdDialog","FeedCreationErrorService","$filter",controller]);
 
 });

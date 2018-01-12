@@ -19,13 +19,13 @@
   -->
 <card-layout>
     <header-section transclude-to="head" layout="row" style="width:100%;">
-        <div class="card-title" style="white-space:nowrap" flex>Job Activity</div>
+        <div class="card-title" style="white-space:nowrap" flex>{{"views.feed-activity-template.JA" | translate}}</div>
         <span flex  layout-align="end top" class="md-button-group">
-              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-D'}" ng-click="vm.dateSelection = '3-D'">3 Days</md-button>
-          <!--  <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '10-day'}" ng-click="vm.dateSelection = '10-day'">10 Days</md-button> -->
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-M'}" ng-click="vm.dateSelection = '1-M'">1 Month</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-M'}" ng-click="vm.dateSelection = '3-M'">3 Months</md-button>
-            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-Y'}" ng-click="vm.dateSelection = '1-Y'">1 Year</md-button>
+              <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-D'}" ng-click="vm.dateSelection = '3-D'">{{"views.feed-activity-template.3D" | translate}}</md-button>
+          <!--  <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '10-day'}" ng-click="vm.dateSelection = '10-day'">{{"views.feed-activity-template.10D" | translate}}</md-button> -->
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-M'}" ng-click="vm.dateSelection = '1-M'">{{"views.feed-activity-template.1M" | translate}}</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '3-M'}" ng-click="vm.dateSelection = '3-M'">{{"views.feed-activity-template.3M" | translate}}</md-button>
+            <md-button flex="none" class="border-btn small"  ng-class="{'selected': vm.dateSelection == '1-Y'}" ng-click="vm.dateSelection = '1-Y'">{{"views.feed-activity-template.1Y" | translate}}</md-button>
         </span>
     </header-section>
     <body-section transclude-to="body" id="feed-activity-chart" ng-cloak>

@@ -19,9 +19,9 @@
   -->
 <div ng-if="vm.editSla != null"  >
   <div layout="row" layout-align="start start">
-  <!--  <md-button ng-click="vm.onBackToList($event)"  class="md-primary">Back to List</md-button>-->
+  <!--  <md-button ng-click="vm.onBackToList($event)"  class="md-primary">{{"views.service-level-agreement-form.BtL" | translate}}</md-button>-->
     <div flex/>
-    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">SLA Assessments</md-button>
+    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</md-button>
   </div>
 
   <ng-form name="vm.slaForm" >
@@ -74,7 +74,7 @@
               </md-input-container>
               -->
         <md-input-container class="md-block layout-padding-top-bottom">
-          <label class="md-container-ignore label-small layout-padding-top condensed">Select New Condition</label>
+          <label class="md-container-ignore label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SNC" | translate}}</label>
           <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
             <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
           </md-select>
@@ -86,11 +86,11 @@
       </div>
 
       <div>
-        <span class="md-subhead">Actions</span>
+        <span class="md-subhead">{{"views.service-level-agreement-form.SLAA" | translate}}</span>
 
         <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column" class="layout-padding">
-          <span>All SLA violations will generate an alert.</span>
-          <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
+          <span>{{"views.service-level-agreement-form.ASLAvwgaA" | translate}}</span>
+          <span ng-if="vm.showActionOptions">{{"views.service-level-agreement-form.AddAction" | translate}}</span>
         </div>
 
         <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column" class="layout-padding-left-right">
@@ -98,7 +98,7 @@
             <div class="layout-padding-left">
               <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
             </div>
-            <span>Errors found. Saving this SLA will result in loss of configuration data.</span>
+            <span>{{"views.service-level-agreement-form.Errors-found" | translate}}</span>
           </div>
 
           <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left">
@@ -114,7 +114,7 @@
             <div layout="column" flex class="layout-padding-left md-body-2">
               <span>{{rule.name}}</span>
               <span class="hint">{{rule.description}}</span>
-              <span ng-if="rule.validConfiguration == false" class="error"><strong>Warning</strong>  Configuration Error!  You can still assign this action, but it may not fire due to configuration issues. {{rule.validationMessage}}</span>
+              <span ng-if="rule.validConfiguration == false" class="error"><strong>{{"views.service-level-agreement-form.Warning" | translate}}</strong>  {{"views.service-level-agreement-form.Warning2" | translate}} {{rule.validationMessage}}</span>
             </div>
             <div>
               <div>
@@ -132,7 +132,7 @@
 
         <div ng-if="vm.addingSlaAction" class="layout-padding-left-right" layout="row">
           <md-input-container class="md-block layout-padding-top-bottom condensed">
-            <label class="md-container-ignore label-small layout-padding-top">Select New Action</label>
+            <label class="md-container-ignore label-small layout-padding-top">{{"views.service-level-agreement-form.SNA" | translate}}</label>
             <md-select ng-model="vm.slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddSlaActionChange()" aria-label="Rule Type">
               <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
             </md-select>
@@ -143,7 +143,7 @@
         </div>
 
         <div ng-if="vm.addingSlaAction == false" flex layout="row">
-          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">Add Action</md-button>
+          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">{{"views.service-level-agreement-form.AA" | translate}}</md-button>
           <span flex></span>
         </div>
 
@@ -178,10 +178,10 @@
       </div>
 
       <div class="layout-padding-top-bottom" flex layout="row">
-        <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null && vm.allowEdit">Delete</md-button>
+        <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null && vm.allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</md-button>
         <span flex></span>
-        <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">Cancel</md-button>
-        <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.allowEdit" ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">Save SLA</md-button>
+        <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</md-button>
+        <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.allowEdit" ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</md-button>
       </div>
 
     </div>

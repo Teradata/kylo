@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -15,7 +15,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,FeedPropertyService) {
+    var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,FeedPropertyService, $filter) {
 
         var self = this;
 
@@ -196,7 +196,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         }
         this.onSave = function (ev) {
-            FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
+            FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-nifi-properties.Saving'), self.model.feedName);
 
             var copy = angular.copy(FeedService.editFeedModel);
 
@@ -235,7 +235,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 self.model.inputProcessorType = self.editModel.inputProcessorType;
 
                 FeedPropertyService.updateDisplayValueForProcessors(self.model.inputProcessors);
-                FeedPropertyService.updateDisplayValueForProcessors(self.model.nonInputProcessors)
+                FeedPropertyService.updateDisplayValueForProcessors(self.model.nonInputProcessors);
 
                 updateControllerServiceProperties();
                 //update the displayValue
@@ -256,7 +256,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         });
     };
 
-    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","FeedPropertyService",controller]);
+    angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","FeedPropertyService", "$filter",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedNifiProperties', directive);

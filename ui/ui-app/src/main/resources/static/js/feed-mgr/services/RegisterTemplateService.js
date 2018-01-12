@@ -17,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService) {
+define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService, $filter) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -583,13 +583,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 }
             },
 
-            accessDeniedDialog:function() {
+            accessDeniedDialog:function($filter) {
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title("Access Denied")
-                        .textContent("You do not have access to edit templates.")
-                        .ariaLabel("Access denied to edit templates")
+                        .title($filter('translate')('views.main.registerService-accessDenied'))
+                        .textContent($filter('translate')('views.main.registerService-accessDenied2'))
+                        .ariaLabel($filter('translate')('views.main.registerService-accessDenied3'))
                         .ok("OK")
                 );
             },

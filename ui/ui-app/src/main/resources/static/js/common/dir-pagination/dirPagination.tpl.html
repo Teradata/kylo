@@ -1,11 +1,11 @@
 <div>
     <span class="label">{{label}}</span>
     <md-select ng-model="rowsPerPage" md-container-class="md-pagination-select" placeholder="{{rowsPerPage ? rowsPerPageOptions[0] : 5}}">
-        <md-option ng-repeat="x in rowsPerPageOptions" value="{{x}}">
-            {{x}}
+        <md-option ng-repeat="x in rowsPerPageOptions" value="{{x}}" ng-init="dispX = 'dirPagination.tpl.' + x">
+            {{dispX | translate}}
         </md-option>
     </md-select>
-    <span>{{range.lower}} - {{range.upper}} of {{range.total}}</span>
+    <span>{{range.lower}} - {{range.upper}} {{"views.dirPagination.tpl.of" | translate}} {{range.total}}</span>
 </div>
 <div>
         <md-button ng-if="boundaryLinks" type="button" ng-click="setCurrent(1)" ng-disabled="pagination.current == 1" aria-label="First">

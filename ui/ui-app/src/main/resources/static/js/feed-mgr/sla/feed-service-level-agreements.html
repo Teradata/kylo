@@ -19,11 +19,11 @@
   -->
 <div class="md-padding">
 <div>
-  <span ng-if="vm.feed.state != 'ENABLED'">Warning.  This feed is disabled.  Service Level Agreements can be modified, but they will not run until this feed is enabled.</span>
+  <span ng-if="vm.feed.state != 'ENABLED'">{{"views.feed-service-level-agreements.Warning" | translate}}</span>
   <ng-include src="'js/feed-mgr/sla/service-level-agreement-body.html'"></ng-include>
 </div>
   <div flex layout="column" layout-align="center end" ng-if="vm.editSla == null && vm.allowEdit">
-    <md-button class="md-primary" aria-label="Add" ng-click="vm.onNewSla($event)">Add SLA</md-button>
+    <md-button class="md-primary" aria-label="Add" ng-click="vm.onNewSla($event)">{{"views.feed-service-level-agreements.ASLA" | translate}}</md-button>
   </div>
 
 

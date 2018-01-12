@@ -51,7 +51,7 @@
                     <md-list-item layout-align="end center" layout-row class="pagination-list-item">
                         <dir-pagination-controls pagination-id="vm.pageName" auto-hide="false" max-size="5" direction-links="true" boundary-links="false"
                                                  template-url="js/common/dir-pagination/dirPagination.tpl.html" current-page="vm.currentPage" on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                 label="Rows per page" rows-per-page="vm.paginationData.rowsPerPage" rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                                 label='{{"views.all-page.Rows_per_page" | translate}}' rows-per-page="vm.paginationData.rowsPerPage" rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                                  class="pagination-row">
                         </dir-pagination-controls>
                     </md-list-item>

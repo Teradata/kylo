@@ -1,4 +1,4 @@
-define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, moduleName) {
+define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -21,7 +21,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
     };
 
-    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService) {
+    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService, $filter) {
         var self = this;
         this.dataLoaded = false;
 
@@ -349,7 +349,8 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                     },
                     valueFormat: function (d) {
                         return d3.format(',.2f')(d);
-                    }
+                    },
+                     noData: $filter('translate')('view.feed-stats-charts.noData')
                 }
             };
 
@@ -428,13 +429,13 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
                         return d3.format(',')(parseInt(d))
                     },
                     xAxis: {
-                        axisLabel: '',
+                        axisLabel: $filter('translate')('view.feed-stats-charts.Time'),
                         showMaxMin: false,
                         tickFormat: timeSeriesXAxisLabel,
                         rotateLabels: -45
                     },
                     yAxis: {
-                        axisLabel: 'Flows Per Second',
+                        axisLabel: $filter('translate')('view.feed-stats-charts.FPS'),
                         axisLabelDistance: -10
                     },
                     legend: {
@@ -736,7 +737,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
         function updateAvgDurationKpi() {
             var avgMillis = self.summaryStatistics.avgFlowDurationMilis;
-            self.avgDurationKpi.value = DateTimeUtils.formatMillisAsText(avgMillis, false, true);
+            self.avgDurationKpi.value = DateTimeUtils($filter('translate')).formatMillisAsText(avgMillis,false,true);
         }
 
         function formatSecondsToMinutesAndSeconds(s) {   // accepts seconds as Number or String. Returns m:ss
@@ -785,12 +786,12 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
 
                 var chartArr = [];
                 chartArr.push({
-                    label: 'Completed', color: '#3483BA', valueFn: function (item) {
+                    label: $filter('translate')('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item) {
                             return item.jobsFinishedPerSecond;
                     }
                 });
                 chartArr.push({
-                    label: 'Started', area: true, color: "#F08C38", valueFn: function (item) {
+                    label: $filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item) {
                             return item.jobsStartedPerSecond;
                     }
                 });
@@ -978,7 +979,7 @@ define(['angular', 'ops-mgr/feeds/feed-stats/module-name'], function (angular, m
     };
 
     angular.module(moduleName).controller('FeedStatsChartsController',
-        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", controller]);
+        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", "$filter", controller]);
 
     angular.module(moduleName)
         .directive('kyloFeedStatsCharts', directive);

@@ -7,12 +7,12 @@
       <header> <ng-md-icon icon="account_circle"></ng-md-icon>{{username}}</header>
     </md-menu-item>
     <md-menu-item>
-      <md-button ng-click="logout()">Logout</md-button>
+      <md-button ng-click="logout()">{{"views.kylo-options.Logout" | translate}}</md-button>
     </md-menu-item>
     <md-menu-divider></md-menu-divider>
     <md-menu-item layout="column">
       <md-button ng-click="aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
-        <span style="float:left;">About Kylo</span>
+        <span style="float:left;">{{"views.kylo-options.AK" | translate}}</span>
       </md-button>
     </md-menu-item>
   </md-menu-content>

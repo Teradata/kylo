@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3','ops-mgr/alerts/module'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','ops-mgr/overview/module-name', 'kylo-utils/LazyLoadUtil','constants/AccessConstants','kylo-common', 'kylo-services','kylo-opsmgr','angular-nvd3','ops-mgr/alerts/module', 'pascalprecht.translate'], function (angular,moduleName,lazyLoadUtil,AccessConstants, $filter) {
    var module = angular.module(moduleName, []);
 
     module.config(['$compileProvider',function ($compileProvider) {

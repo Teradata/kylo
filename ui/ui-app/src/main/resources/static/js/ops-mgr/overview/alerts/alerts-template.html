@@ -21,21 +21,22 @@
     <header-section layout="row" >
         <ng-md-icon icon="error_outline" size="20"
                    class="error right-card-title-text">
-        </ng-md-icon><div class="card-title right-card-title-text" style="padding-left:5px;">Alerts</div>
+        </ng-md-icon><div class="card-title right-card-title-text" style="padding-left:5px;">{{"views.alerts-template.Alerts" | translate}}</div>
         <span flex></span>
     </header-section>
     <body-section>
         <md-divider></md-divider>
         <md-list  layout-fill layout="column" class="list-item-table">
-            <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)">
+            <md-list-item  ng-repeat="alert in vm.alerts|orderBy:'-lastAlertTimestamp' "  ng-click="vm.navigateToAlerts(alert)" ng-init="vDN = 'views.alerts-template.' + alert.typeDisplayName">
                 <div style="width:100%" class="item-column" >
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>
                         <span class="item-title" >{{alert.groupDisplayName}}</span>
-                        <span class="item-title" style="float:right;">{{alert.typeDisplayName}}</span>
+                        <span class="item-title" style="float:right;">{{vDN | translate}}</span>
                     </div>
                     <div layout="row" layout-align="space-between-stretch" flex layout-fill>
-                        <span class="error column-title-bottom" ng-if="alert.count ==1">{{alert.count}} ALERT</span>
-                        <span class="error column-title-bottom" ng-if="alert.count > 1">{{alert.count}} ALERTS</span>
+                        <span class="error column-title-bottom" ng-if="alert.count ==1">{{alert.count}} {{"views.alerts-template.ALERT1" | translate}}</span>
+                        <span class="error column-title-bottom" ng-if="alert.count > 1 && alert.count < 5">{{alert.count}} {{"views.alerts-template.ALERT2" | translate}}</span>
+                        <span class="error column-title-bottom" ng-if="alert.count > 4">{{alert.count}} {{"views.alerts-template.ALERT5" | translate}}</span>
                         <span class="md-caption column-title-bottom" style="float:right;">{{alert.since}}</span>
                     </div>
                 </div>
@@ -43,7 +44,7 @@
             </md-list-item>
             <md-list-item ng-if="vm.alerts.length == 0">
                 <div style="width:100%" class="item-column" >
-                    <span class="item-title" >No alerts</span>
+                    <span class="item-title" >{{"views.alerts-template.Na" | translate}}</span>
                     </div>
             </md-list-item>
         </md-list>

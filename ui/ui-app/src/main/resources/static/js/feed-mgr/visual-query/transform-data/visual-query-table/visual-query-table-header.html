@@ -18,27 +18,27 @@
   <md-menu-content class="visual-query-column-menu">
     <md-menu-item ng-if="header.sort.direction != 'asc'">
       <md-button ng-click="header.delegate.sortColumn('asc', header, table)">
-        <i class="ui-grid-icon-sort-alt-up">&nbsp;</i> Sort Ascending
+        <i class="ui-grid-icon-sort-alt-up">&nbsp;</i> {{"views.query-table-header.sort-ascending" | translate}}
       </md-button>
     </md-menu-item>
     <md-menu-item ng-if="header.sort.direction != 'desc'">
       <md-button ng-click="header.delegate.sortColumn('desc', header, table)">
-        <i class="ui-grid-icon-sort-alt-down">&nbsp;</i> Sort Descending
+        <i class="ui-grid-icon-sort-alt-down">&nbsp;</i> {{"views.query-table-header.sort-descending" | translate}}
       </md-button>
     </md-menu-item>
     <md-menu-item ng-if="header.sort.direction != null">
       <md-button ng-click="header.delegate.removeSort(header, table)">
-        <i class="ui-grid-icon-cancel">&nbsp;</i> Remove Sort
+        <i class="ui-grid-icon-cancel">&nbsp;</i> {{"views.query-table-header.remove-sort" | translate}}
       </md-button>
     </md-menu-item>
     <md-menu-item>
       <md-button ng-click="header.delegate.hideColumn(header, table)">
-        <i class="material-icons">remove_circle</i> Hide Column
+        <i class="material-icons">remove_circle</i> {{"views.query-table-header.hide-column" | translate}}
       </md-button>
     </md-menu-item>
     <md-menu-item>
       <md-button ng-click="header.delegate.renameColumn(header, table)">
-        <i class="material-icons">mode_edit</i> Rename Column
+        <i class="material-icons">mode_edit</i> {{"views.query-table-header.rename-column" | translate}}
       </md-button>
     </md-menu-item>
     <md-menu-item ng-if="availableDomainTypes != null && availableDomainTypes.length > 0">
@@ -61,7 +61,7 @@
     <md-menu-item ng-if="header.delegate.filters.length !== 0">
       <md-menu>
         <md-button ng-click="$mdOpenMenu()">
-          <i class="material-icons">filter_list</i> Filter
+          <i class="material-icons">filter_list</i> {{"views.query-table-header.filter" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
@@ -79,7 +79,7 @@
     <md-menu-item ng-if="header.delegate.transforms.length !== 0">
       <md-menu>
         <md-button ng-click="$mdOpenMenu()">
-          <i class="material-icons">transform</i> Transform
+          <i class="material-icons">transform</i> {{"views.query-table-header.transform" | translate}}
         </md-button>
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="transform in header.delegate.transforms">

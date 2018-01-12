@@ -1,15 +1,15 @@
 <ng-form name="vm.categoryAccessControlForm">
-<vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew" section-title="Access Control" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" keep-editable-after-save="true" editable="vm.isEditable" is-valid="vm.isValid">
+<vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew" section-title='{{"views.category-access-control.AC" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" keep-editable-after-save="true" editable="vm.isEditable" is-valid="vm.isValid">
   <readonly-section>
-    <div>Category Roles</div>
+    <div>{{"views.category-access-control.CR" | translate}}</div>
     <entity-access-control entity="vm.model" entity-type="category" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
-    <div>Roles Inherited by Feeds</div>
+    <div>{{"views.category-access-control.RIbF" | translate}}</div>
     <entity-access-control entity="vm.model" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="vm.categoryAccessControlForm" read-only="true"></entity-access-control>
   </readonly-section>
   <editable-section>
-    <div>Category Roles</div>
+    <div>{{"views.category-access-control.CR2" | translate}}</div>
     <entity-access-control entity="vm.editModel" entity-type="category" the-form="vm.categoryAccessControlForm"></entity-access-control>
-    <div>Roles Inherited by Feeds</div>
+    <div>{{"views.category-access-control.RIbF2" | translate}}</div>
     <entity-access-control entity="vm.editModel" entity-type="category-feed" allow-owner-change="false" role-memberships-property="feedRoleMemberships" the-form="vm.categoryAccessControlForm"></entity-access-control>
   </editable-section>
 </vertical-section-layout>

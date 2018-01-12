@@ -28,11 +28,11 @@
       <header-section>
 
         <div layout="row" layout-align="space-between-center" flex>
-          <div class="card-title" flex>Table</div>
-          <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+          <div class="card-title" flex> {{"views.define-feed-table.Table" | translate}} </div>
+          <h2 class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-general-info.of" | translate}} {{vm.totalSteps}}</h2>
         </div>
         <div layout="row" class="layout-padding-top-bottom" layout-align="space-between-center" flex>
-          <div class="card-sub-header" flex>Define the target Hive table</div>
+          <div class="card-sub-header" flex> {{"views.define-feed-table.DttHt" | translate}} </div>
           <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
         </div>
       </header-section>
@@ -45,12 +45,12 @@
                 <span ng-if="vm.model.table.method == 'MANUAL'">Choose method: manual </span>
                 <span ng-if="vm.model.table.method != 'MANUAL' && vm.model.table.method != 'SAMPLE_FILE'">Choose method</span>
               </div>
-              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()"> {{"views.define-feed-table.Expand" | translate}} </md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
 
               <md-expansion-panel-header md-no-sticky>
-                <div class="md-subhead layout-padding">Method</div>
+                <div class="md-subhead layout-padding"> {{"views.define-feed-table.Method" | translate}} </div>
               </md-expansion-panel-header>
               <md-expansion-panel-content>
                 <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
@@ -66,19 +66,19 @@
 
                     <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="column" style="margin-left: 40px" layout-align="center stretch">
 
-                      <inline-field-policy-form ng-model="vm.schemaParser" policy-parameter="schemaParser" default-value="CSV" select-label="Choose format"></inline-field-policy-form>
+                      <inline-field-policy-form ng-model="vm.schemaParser" policy-parameter="schemaParser" default-value="CSV" select-label="{{'views.define-feed-table.Cf' | translate}} "></inline-field-policy-form>
 
                       <div layout="row" layout-align="start start">
                         <upload-file upload-file-model="vm.sampleFile" input-size="20"></upload-file>
                       </div>
                       <!--
                       <md-checkbox ng-model="vm.useUnderscoreInsteadOfSpaces" aria-label="Standardize field names">
-                        Standardize field names
+                        {{"views.define-feed-table.Sfn" | translate}}
                       </md-checkbox>
                       -->
                       <md-button aria-label="Upload sample file" id="upload-sample-file-btn" class="md-raised md-block md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null"
                                  ng-disabled="vm.uploadBtnDisabled">
-                        Upload
+                        {{"views.define-feed-table.Upload" | translate}}
                       </md-button>
                     </div>
                   </div>
@@ -87,7 +87,7 @@
 
               <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
-                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()"> {{"views.define-feed-table.Collapse" | translate}} </md-button>
               </md-expansion-panel-footer>
 
             </md-expansion-panel-expanded>
@@ -95,14 +95,14 @@
           <md-expansion-panel md-component-id="panelTwo">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
-                <span ng-if="vm.model.table.tableSchema.fields.length ==0">Define table schema</span>
+                <span ng-if="vm.model.table.tableSchema.fields.length ==0"> {{"views.define-feed-table.Dts" | translate}} </span>
                 <span ng-if="vm.model.table.tableSchema.fields.length >0">Table schema: {{vm.model.table.tableSchema.fields.length}} fields</span>
               </div>
-              <md-button class="md-info" aria-label="Expand panel" ng-click="$panel.collapse()">Expand</md-button>
+              <md-button class="md-info" aria-label="Expand panel" ng-click="$panel.collapse()"> {{"views.define-feed-table.Expand" | translate}} </md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
               <md-expansion-panel-header md-no-sticky>
-                <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top">Table schema
+                <div class="md-subhead layout-padding" layout-fill layout="row" layout-align="start top"> {{"views.define-feed-table.Ts" | translate}}
                   <span flex></span>
                 </div>
               </md-expansion-panel-header>
@@ -116,15 +116,15 @@
 
                     <div layout="row" layout-fill>
                       <div flex="30" class="md-list-item-text hint">
-                        Field Name
+                        {{"views.define-feed-table.FN" | translate}}
                       </div>
                       <div flex="25" class="md-list-item-text hint" style="padding-left:5px;">
-                        Data Type
+                        {{"views.define-feed-table.DT" | translate}}
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
-                        Primary
+                        {{"views.define-feed-table.Primary" | translate}}
                         <md-tooltip md-direction="top">
-                          Indicates field is the primary key for the record
+                          {{"views.define-feed-table.IndicatesFields" | translate}}
                         </md-tooltip>
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">

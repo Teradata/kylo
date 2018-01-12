@@ -37,7 +37,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
     function uploadFile($parse) {
         var directive = {
             restrict: 'E',
-            template: '<input id="fileInput" type="file" class="ng-hide"> <md-button id="uploadButton" class="md-raised md-primary" aria-label="attach_file">    Choose file </md-button><md-input-container class="condensed-no-float" md-no-float  flex>    <input id="textInput" size="40" ng-model="fileName" type="text" placeholder="No file chosen" ng-readonly="true" style="margin-top: 20px;"></md-input-container>',
+            template: '<input id="fileInput" type="file" class="ng-hide"> <md-button id="uploadButton" class="md-raised md-primary" aria-label="attach_file">{{"views.file-upload.btn-Choose" | translate}} </md-button><md-input-container class="condensed-no-float" md-no-float  flex>    <input id="textInput" size="40" ng-model="fileName" type="text" placeholder="{{\'views.file-upload.placeholder\' | translate}}" ng-readonly="true" style="margin-top: 20px;"></md-input-container>',
             link: function (scope, element, attrs) {
                 var input = $(element[0].querySelector('#fileInput'));
                 var button = $(element[0].querySelector('#uploadButton'));
