@@ -23,7 +23,7 @@
 
     <header-section>
       <div layout="row" layout-align="center start">
-        <div class="card-title">Import a Feed</div>
+        <div class="card-title">{{"views.import_feed.Import_a_feed" | translate}}</div>
         <span flex></span>
         <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:36px;" size="30"></ng-md-icon>
       </div>
@@ -35,7 +35,7 @@
 
       <div layout="column" class="md-padding">
         <div>
-          <div class="card-sub-header">Import a Feed Archive.</div>
+          <div class="card-sub-header">{{"views.import_feed.Import_a_Feed_Archive" | translate}}</div>
         </div>
         <div class="layout-padding-indent">
           <md-list layout-fill class="list-item-table list-condensed">
@@ -43,13 +43,13 @@
             <md-list-item>
               <div layout="row" layout-fill>
                 <div flex="20" class="md-list-item-text hint">
-                  Type
+                  {{"views.import_feed.Type" | translate}}
                 </div>
                 <div flex="10" class="md-list-item-text hint">
-                  File type
+                  {{"views.import_feed.File_type" | translate}}
                 </div>
                 <div flex="60" class="md-list-item-text hint">
-                  Description
+                  {{"views.import_feed.Description" | translate}}
                 </div>
 
               </div>
@@ -58,15 +58,15 @@
             <md-list-item>
               <div layout="row" layout-fill>
                 <div flex="20" class="md-list-item-text ">
-                  Archive
+                  {{"views.import_feed.Archive" | translate}}
                 </div>
                 <div flex="10" class="md-list-item-text ">
-                  ZIP
+                  {{"views.import_feed.ZIP" | translate}}
                 </div>
                 <div flex="60" class="md-list-item-text ">
-                  An archive contains both Nifi and Kylo Feed Data.
+                  {{"views.import_feed.NifiKylo" | translate}}
                   <Br/>
-                  This will import into Nifi and register the feed and respective template in Kylo .
+                  {{"views.import_feed.NifiKylo2" | translate}}
                 </div>
               </div>
             </md-list-item>
@@ -89,7 +89,7 @@
                                    md-items="item in vm.categoriesService.querySearch(vm.categorySearchText)"
                                    md-item-text="item.name"
                                    md-min-length="0"
-                                   md-floating-label="Change the Category"
+                                   md-floating-label = "{{'views.import_feed.Change_the_Category' | translate}}"
                                    md-require-match="true"
                                    md-select-on-match="true"
                                    md-menu-class="autocomplete-categories-template">
@@ -105,7 +105,7 @@
                   </span>
                     </md-item-template>
                     <md-not-found>
-                      No categories matching "{{vm.categorySearchText}}" were found.
+                      {{"views.import_feed.no-catigories "{{vm.categorySearchText}}" {{"views.import_feed.were-found" | translate}}
                     </md-not-found>
                   </md-autocomplete>
                 </div>
@@ -122,19 +122,19 @@
                 <div layout="row">
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.feedDataImportOption.overwrite" aria-label="Overwrite if exists">
-                      Overwrite Feed
+                      {{"views.import_feed.Overwrite_Feed" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      Check to replace the feed if it already exists.
+                      {{"views.import_feed.Overwrite_Feed2" | translate}}
                     </div>
                   </md-input-container>
 
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.disableFeedUponImport" aria-label="Disable upon import">
-                      Disable Feed upon import
+                      {{"views.import_feed.Disable_Feed" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      Check to make this feed disabled after importing
+                      {{"views.import_feed.Disable_Feed2" | translate}}
                     </div>
                   </md-input-container>
 
@@ -163,19 +163,19 @@
                 <div layout="row">
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.templateDataImportOption.overwrite" aria-label="Overwrite if exists">
-                      Replace Feed Template
+                      {{"views.ipmort_feed.Replace_Feed" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      Replace and re-register the feed template if it already exists
+                      {{"views.ipmort_feed.Replace_Feed2" | translate}}
                     </div>
                   </md-input-container>
 
                   <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50">
                     <md-checkbox ng-model="vm.reusableTemplateImportOption.overwrite" aria-label="Replace Reusable Template">
-                      Replace Reusable Template
+                      {{"views.ipmort_feed.Replace_Reusable" | translate}}
                     </md-checkbox>
                     <div class="hint" style="margin-top:-10px">
-                      Replace and re-initialize the reusable template, if applicable
+                      {{"views.ipmort_feed.Replace_Reusable2" | translate}}
                     </div>
                   </md-input-container>
 
@@ -185,7 +185,7 @@
                 <!-- Feed properties required -->
 
                 <div ng-if="vm.feedDataImportOption.properties && vm.feedDataImportOption.properties.length >0" flex layout="column">
-                  <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed</div>
+                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.feedDataImportOption.properties" layout="column" layout-align="start start">
                     <span>Processor: {{prop.processorName}}</span>
@@ -200,7 +200,7 @@
 
                 <!-- Data source properties required -->
                 <div ng-if="vm.userDatasourcesOption.properties && vm.userDatasourcesOption.properties.length > 0" flex layout="column">
-                  <div class="layout-padding-bottom">The following data sources need to be supplied before importing this feed:</div>
+                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
 
                   <div ng-repeat="prop in vm.userDatasourcesOption.properties" layout="column" layout-align="start start">
                     <span>Data Source: {{prop.processorName}}</span>
@@ -218,7 +218,7 @@
 
 
                   <div ng-if="vm.templateDataImportOption.properties && vm.templateDataImportOption.properties.length >0 " flex layout="column">
-                    <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+                    <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
 
                     <div ng-repeat="prop in vm.templateDataImportOption.properties" layout="column" layout-align="start start">
                       <span>{{prop.processorName}}</span>
@@ -234,7 +234,7 @@
 
 
                   <div ng-if="vm.reusableTemplateImportOption.properties && vm.reusableTemplateImportOption.properties.length >0" flex layout="column">
-                    <div class="layout-padding-bottom">The following properties need to be supplied before importing this feed template</div>
+                    <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
 
                     <div ng-repeat="prop in vm.reusableTemplateImportOption.properties" layout="column" layout-align="start start">
                       <span>{{prop.processorName}}</span>
@@ -258,7 +258,7 @@
             <div layout="row" class="layout-padding-top">
               <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
                          ng-disabled="(vm.uploadInProgress || vm.importFeedForm.$invalid)">
-                Import Feed
+                {{"views.import_feed.Import_Feed_btn" | translate}}
               </md-button>
               <md-progress-linear flex md-mode="determinate" value="{{vm.uploadProgress}}" ng-if="vm.uploadInProgress"></md-progress-linear>
             </div>

@@ -25,7 +25,7 @@
                 <md-content flex layout="row" class="" layout-align="center start" style="border:2px solid #EEEEEE;overflow:hidden">
                     <span style="width:40px;max-width:40px;"></span>
                     <md-input-container class="condensed-no-float" md-no-float class="md-block" flex style="margin-top:10px;margin-bottom:-10px;">
-                        <input ng-model="vm.searchQuery" placeholder="Filter Categories">
+                        <input ng-model="vm.searchQuery" placeholder='{{"views.categories.FC" | translate}}'>
                     </md-input-container>
                     <div style="padding:5px 5px 5px 40px;margin-top:12px;">
                         <ng-md-icon icon="more_vert" style="fill:#676767"></ng-md-icon>
@@ -40,7 +40,7 @@
             <md-card-title>
                 <md-card-title-text>
                     <span style="font-size: 16px;font-weight:400;letter-spacing: .005em;">{{category.name}}</span>
-                    <!--<span class="md-subhead category-subheader">{{category.relatedFeeds}} Related Feeds</span> -->
+                    <!--<span class="md-subhead category-subheader">{{category.relatedFeeds}} {{"views.categories.RF" | translate}}</span> -->
                 </md-card-title-text>
                 <md-card-title-media>
                     <ng-md-icon icon="{{category.icon}}" size="40" ng-style="getIconColorStyle(category.iconColor)" style="margin-right:-20px;" class="md-media-xs"></ng-md-icon>

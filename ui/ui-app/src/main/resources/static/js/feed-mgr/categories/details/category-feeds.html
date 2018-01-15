@@ -1,16 +1,16 @@
-<vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds">
+<vertical-section-layout allow-edit="false" show-vertical-check="true" section-title='{{"views.category-feeds.RF" | translate}}'>
     <readonly-section>
         <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.relatedFeedSummaries != null && vm.model.relatedFeedSummaries.length > 0">
             <md-list-item>
                 <div layout="row" layout-fill>
                     <div flex="50" class="md-list-item-text hint">
-                        Name
+                        {{"views.category-feeds.Name" | translate}}
                     </div>
                     <div flex="10" class="md-list-item-text hint">
-                        Active
+                        {{"views.category-feeds.Active" | translate}}
                     </div>
                     <div flex="40" class="md-list-item-text hint">
-                        Last Modified
+                        {{"views.category-feeds.LM" | translate}}
                     </div>
                 </div>
             </md-list-item>
@@ -31,11 +31,11 @@
             </md-list-item>
         </md-list>
         <div ng-if="vm.model.loadingRelatedFeeds">
-            Loading ...<br/>
+            {{"views.category-feeds.Loading" | translate}}<br/>
             <md-progress-circular md-mode="indeterminate"  md-diameter="25px"></md-progress-circular>
         </div>
         <div ng-if="!vm.model.loadingRelatedFeeds && (vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length === 0)">
-            There are no feeds associated with this category
+            {{"views.category-feeds.Tanfawtc" | translate}}
         </div>
     </readonly-section>
 </vertical-section-layout>

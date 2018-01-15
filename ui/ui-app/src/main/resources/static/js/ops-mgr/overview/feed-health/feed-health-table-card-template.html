@@ -30,7 +30,7 @@
               ng-disabled="tab.disabled"
               md-on-select="vm.onTabSelected(tab)" flex
       >
-        <md-tab-label> {{tab.title}}</md-tab-label>
+        <md-tab-label> {{tab.title | translate}}</md-tab-label>
         <md-tab-body>
           <md-divider></md-divider>
           <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
@@ -51,10 +51,10 @@
                                     <span ng-class="{'healthy':feed.healthText == 'HEALTHY','error':feed.healthText == 'UNHEALTHY'}">
                                            <ng-md-icon icon="{{feed.icon}}" size="20" hide-xs style="height: inherit">
                                            </ng-md-icon>
-                                      {{feed.healthText}}
+                                      {{feed.healthText | translate}}
                                     </span>
                       <span class="column-title column-title-bottom">
-                               Feed Health
+                               {{"wievs.dashboard.feed-health" | translate}}
                                    </span>
                     </div>
                     <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
@@ -68,9 +68,9 @@
                     <div flex="20" layout="column" class="item-column md-list-item-text " >
 
                                    <span class="item-title-small {{feed.statusStyle}}">
-                                     {{feed.displayStatus}}</span>
+                                     {{feed.displayStatus | translate}}</span>
                       <span class="column-title column-title-bottom">
-                                     Status
+                                     {{"wievs.dashboard.status" | translate}}
                                    </span>
                     </div>
 
@@ -82,19 +82,19 @@
                                    <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">
                                     --
                                    </span>
-                      <span class="column-title column-title-bottom">Since</span>
+                      <span class="column-title column-title-bottom">{{"wievs.dashboard.since" | translate}}</span>
                     </div>
                     <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
                       <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
                       <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
-                      <span class="column-title column-title-bottom">Last Run Time</span>
+                      <span class="column-title column-title-bottom">{{"wievs.dashboard.lastRunTime" | translate}}</span>
                     </div>
                   </div>
                 </div>
                 <md-divider ng-if="!$last"></md-divider>
               </md-list-item>
               <md-list-item ng-show="vm.loading == false && vm.total ==0">
-                No results found
+                {{"wievs.dashboard.noResultsFound" | translate}}
               </md-list-item>
               <md-divider></md-divider>
               <md-list-item layout-align="end center" layout-row class="pagination-list-item">
@@ -105,7 +105,7 @@
                                          boundary-links="false"
                                          template-url="js/common/dir-pagination/dirPagination.tpl.html"
                                          on-page-change="vm.onPaginationChange(newPageNumber)"
-                                         label="Rows per page"
+                                         label='{{"views.all-page.Rows_per_page" | translate}}'
                                          rows-per-page="vm.paginationData.rowsPerPage"
                                          rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                          class="pagination-row">
@@ -118,11 +118,11 @@
               <table md-table md-progress="vm.fetchFeedHealthPromise">
                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
                 <tr md-row>
-                  <th md-column name="Feed" md-order-by="feed">Feed</th>
-                  <th md-column name="Health" md-order-by="healthText">Health</th>
-                  <th md-column name="Status" md-order-by="displayStatus">Status</th>
-                  <th md-column name="Since" md-order-by="timeSinceEndTime">Since</th>
-                  <th md-column name="Last Run Time" md-order-by="runTime">Last Run Time</th>
+                  <th md-column name="Feed" md-order-by="feed">{{"wievs.dashboard.feed" | translate}}</th>
+                  <th md-column name="Health" md-order-by="healthText">{{"wievs.dashboard.feed-health" | translate}}</th>
+                  <th md-column name="Status" md-order-by="displayStatus">{{"wievs.dashboard.status" | translate}}</th>
+                  <th md-column name="Since" md-order-by="timeSinceEndTime">{{"wievs.dashboard.since" | translate}}</th>
+                  <th md-column name="Last Run Time" md-order-by="runTime">{{"wievs.dashboard.lastRunTime" | translate}}</th>
                 </tr>
                 </thead>
                 <tbody md-body>
@@ -135,12 +135,12 @@
                                        <ng-md-icon icon="{{feed.icon}}" size="20"
                                                    style="{{job.iconstyle}}">
                                        </ng-md-icon>
-                                       <span>{{feed.healthText}}</span></span>
+                                       <span>{{feed.healthText | translate}}</span></span>
 
                   </td>
                   <td md-cell>
                                        <span class="{{feed.statusStyle}}">
-                                         {{feed.displayStatus}}
+                                         {{feed.displayStatus | translate}}
                                        </span>
                   </td>
                   <td md-cell>

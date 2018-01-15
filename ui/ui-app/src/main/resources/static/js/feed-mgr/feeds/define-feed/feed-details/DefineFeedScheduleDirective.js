@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/define-feed/module-name','pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function() {
         return {
@@ -40,7 +40,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
     };
 
-    function DefineFeedScheduleController($scope, $http, $mdDialog, $timeout, RestUrlService, FeedService, StateService, StepperService, CategoriesService, BroadcastService,
+    function DefineFeedScheduleController($scope, $http, $mdDialog, $timeout, RestUrlService, FeedService, StateService, StepperService, CategoriesService, BroadcastService,$filter,
                                           FeedCreationErrorService) {
         var self = this;
 
@@ -138,7 +138,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * All possible schedule strategies
          * @type {*[]}
          */
-        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"},
+        var allScheduleStrategies = [{label: $filter('translate')('views.DefineFeedScheduleDirective.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.DefineFeedScheduleDirective.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.DefineFeedScheduleDirective.T/E'), value: "TRIGGER_DRIVEN"},
             {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
         /**

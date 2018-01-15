@@ -30,8 +30,9 @@
                 <md-tab ng-repeat="tab in vm.tabs"
                         ng-disabled="tab.disabled"
                         md-on-select="vm.onTabSelected(tab)" flex
+                        ng-init="vTitle = 'views.jobs-template.' + tab.title"
                         >
-                    <md-tab-label> {{tab.title}} </md-tab-label>
+                    <md-tab-label> {{vTitle | translate}} </md-tab-label>
                     <md-tab-body>
                         <md-divider></md-divider>
                     <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
@@ -48,21 +49,21 @@
                                    </span>
                                    <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}" class="column-title-bottom">
                                        <ng-md-icon icon="{{job.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                       {{job.displayStatus}}</span>
+                                       {{job.displayStatus | translate}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
                                     <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
                                     <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
-                                    <span class="column-title column-title-bottom">Start Time</span>
+                                    <span class="column-title column-title-bottom">{{"views.jobs-template.ST" | translate}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
                                     <span class="item-title">{{job.runTime | time }}</span>
-                                    <span class="column-title column-title-bottom">Run Time</span>
+                                    <span class="column-title column-title-bottom">{{"views.jobs-template.RT" | translate}}</span>
                                 </div>
                                 <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text" ng-if="!job.stream">
-                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL
+                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && job.status !='ABANDONED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}
                                     </md-button>
-                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
+                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
                                     <span ng-if="job.errorMessage != ''">
                                         <br/>
                                         <span class="md-warn md-caption">{{job.errorMessage}}</span>
@@ -73,7 +74,7 @@
 
                         </md-list-item>
                         <md-item  ng-show="vm.showProgress == false && tab.data.content.length ==0" style="padding:10px">
-                            No results found
+                            {{"views.jobs-template.Nrf" | translate}}
                         </md-item >
                         <md-divider></md-divider>
                         <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
@@ -84,7 +85,7 @@
                                                      boundary-links="false"
                                                      template-url="js/common/dir-pagination/dirPagination.tpl.html"
                                                      on-page-change="vm.onPaginationChange(newPageNumber)"
-                                                     label="Rows per page"
+                                                     label='{{"views.all-page.Rows_per_page" | translate}}'
                                                      rows-per-page="vm.paginationData.rowsPerPage"
                                                      rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                                      class="pagination-row">
@@ -100,13 +101,13 @@
                             <table md-table md-progress="vm.deferred.promise">
                                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
                                 <tr md-row>
-                                    <th md-column name="Job Name" md-order-by="jobName">Job Name</th>
-                                    <th md-column  name="State">State</th>
-                                    <th md-column  name="Feed" md-order-by="feedName" ng-if="vm.hideFeedColumn == false">Feed</th>
-                                    <th md-column  name="Start Time" md-order-by="startTime"   hide show-gt-sm >Start Time</th>
-                                    <th md-column  name="Run Time" md-order-by="runTime"  hide show-gt-md>Run Time</th>
-                                    <th md-column  name="Status" md-order-by="status">Status</th>
-                                    <th md-column  name="Action" md-hide show-gt-md >Action</th>
+                                    <th md-column name="Job Name" md-order-by="jobName">{{"views.jobs-template.JN" | translate}}</th>
+                                    <th md-column  name="State">{{"views.jobs-template.State" | translate}}</th>
+                                    <th md-column  name="Feed" md-order-by="feedName" ng-if="vm.hideFeedColumn == false">{{"views.jobs-template.Feed" | translate}}</th>
+                                    <th md-column  name="Start Time" md-order-by="startTime"   hide show-gt-sm >{{"views.jobs-template.ST" | translate}}</th>
+                                    <th md-column  name="Run Time" md-order-by="runTime"  hide show-gt-md>{{"views.jobs-template.RT" | translate}}</th>
+                                    <th md-column  name="Status" md-order-by="status">{{"views.jobs-template.Status" | translate}}</th>
+                                    <th md-column  name="Action" md-hide show-gt-md >{{"views.jobs-template.Action" | translate}}</th>
                                 </tr>
                                 </thead>
                                 <tbody md-body>
@@ -124,8 +125,8 @@
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
                                     <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>
-                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL</md-button>
-                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
                                          <span ng-if="job.errorMessage != ''">
                                         <br/>
                                         <span class="md-warn md-caption">{{job.errorMessage}}</span>

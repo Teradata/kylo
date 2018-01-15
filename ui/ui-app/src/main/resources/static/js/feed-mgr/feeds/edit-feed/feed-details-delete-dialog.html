@@ -19,16 +19,16 @@
   -->
 <md-dialog aria-label="Delete Feed" ng-cloak>
     <md-dialog-content class="md-dialog-content">
-        <h2 class="md-title">Delete {{vm.model.feedName}}?</h2>
-        <div>All data for this feed will be permanently deleted.</div>
+        <h2 class="md-title">{{"views.feed-details-delete-dialogDelete" | translate}} {{vm.model.feedName}}?</h2>
+        <div>{{"views.feed-details-delete-dialogDelete2" | translate}}</div>
         <md-input-container>
-            <label>Enter YES to confirm</label>
+            <label>{{"views.feed-details-delete-dialogDelete3" | translate}}</label>
             <input type="text" maxlength="3" ng-model="confirm" ng-disabled="vm.model.state == 'DELETED'">
         </md-input-container>
     </md-dialog-content>
     <md-dialog-actions>
         <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'"></md-progress-circular>
-        <md-button class="md-warn" ng-click="vm.deleteFeed()" aria-label="Delete" ng-disabled="confirm.toUpperCase() != 'YES'" ng-if="vm.model.state == 'DISABLED'">Delete</md-button>
-        <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">Cancel</md-button>
+        <md-button class="md-warn" ng-click="vm.deleteFeed()" aria-label="Delete" ng-disabled="confirm.toUpperCase() != 'ДА'" ng-if="vm.model.state == 'DISABLED'">{{"views.feed-details-delete-dialogDelete4" | translate}}</md-button>
+        <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">{{"views.feed-details-delete-dialogDelete5" | translate}}</md-button>
     </md-dialog-actions>
 </md-dialog>

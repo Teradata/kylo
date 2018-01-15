@@ -23,7 +23,7 @@
             <div  class="md-toolbar-tools">
                 <h4  ng-if="!isValid">
                     <ng-md-icon size="24" md-icon icon="error_outline" aria-label="Error creating Feed"></ng-md-icon>
-                    <span>Error creating {{feedName | characters:50}}</span>
+                    <span>{{"views.feed-error-dialog.Ec" | translate}} {{feedName | characters:50}}</span>
                 </h4>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
@@ -47,7 +47,7 @@
         </md-dialog-content>
         <md-dialog-actions layout="row">
             <md-button class="md-warn" ng-click="fixErrors()">
-               Okay
+               {{"views.feed-error-dialog.Okay" | translate}}
             </md-button>
         </md-dialog-actions>
     </form>

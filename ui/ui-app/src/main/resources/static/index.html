@@ -61,9 +61,9 @@
         <div layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container" ng-show="mc.allowSearch">
           <ng-md-icon icon="search"></ng-md-icon>
           <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
-            <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" class="global-search-input" placeholder="Global Search" style="color:white">
+            <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" class="global-search-input" placeholder='{{"views.main.search-input" | translate}}' style="color:white">
           </md-input-container>
-          <md-button ng-click="mc.search()">Search</md-button>
+          <md-button ng-click="mc.search()">{{"views.main.search-btn" | translate}}</md-button>
         </div>
 
         <span flex></span>

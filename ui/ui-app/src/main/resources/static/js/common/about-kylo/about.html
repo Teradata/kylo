@@ -4,7 +4,7 @@
 <md-dialog aria-label="About Kylo" flex="35">
   <md-dialog-content>
     <p style="text-align:center;"><img src="/assets/images/kylo-logo-orange.png" style="width:300px;"/></p>
-    <p style="text-align:center;"><b>Version:</b> {{version}}</p>
+    <p style="text-align:center;"><b>{{"views.about.Version" | translate}}</b> {{version}}</p>
 
             <p style="text-align:justify; padding:10px">The Kylo framework simplifies building, configuring, deploying and monitoring data pipelines.
               It enables data profiling, data discovery and data science. Businesses can quickly start leveraging value from their enterprise data lakes.
@@ -24,6 +24,6 @@ Unless required by applicable law or agreed to in writing, software distributed 
 
   </md-dialog-content>
   <md-dialog-actions>
-    <md-button ng-click="cancel();" class="md-primary">Close</md-button>
+    <md-button ng-click="cancel();" class="md-primary">{{"views.about.Close" | translate}}</md-button>
   </md-dialog-actions>
 </md-dialog>

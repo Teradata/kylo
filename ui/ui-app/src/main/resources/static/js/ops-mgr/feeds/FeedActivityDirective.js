@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/feeds/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function (Utils) {
         return {
@@ -22,7 +22,7 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
         };
     }
 
-    var controller = function ($scope,$http, $interval, $timeout, $q,Utils,OpsManagerFeedService, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, BroadcastService) {
+    var controller = function ($scope,$http, $interval, $timeout, $q,Utils,OpsManagerFeedService, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, BroadcastService, $filter) {
         var self = this;
         this.pageName = 'feed-activity';
         this.dataLoaded = false;
@@ -45,15 +45,16 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
                 clipEdge: false,
                 duration: 250,
                 useInteractiveGuideline: true,
+                noData:  $filter('translate')('views.views.FeedActivityDirective.noData'),                
                 xAxis: {
-                    axisLabel: 'Date',
+                    axisLabel: $filter('translate')('views.FeedActivityDirective.Date'),
                     showMaxMin: false,
                     tickFormat: function(d) {
                         return d3.time.format('%x')(new Date(d))
                     }
                 },
                 yAxis: {
-                    axisLabel:'Count',
+                    axisLabel: $filter('translate')('views.FeedActivityDirective.Count'),
                     axisLabelDistance: -10
                 },
                 dispatch: {
@@ -167,7 +168,7 @@ define(['angular','ops-mgr/feeds/module-name'], function (angular,moduleName) {
     };
 
 
-    angular.module(moduleName).controller('FeedActivityController', ["$scope","$http","$interval","$timeout","$q","Utils","OpsManagerFeedService","TableOptionsService","PaginationDataService","AlertsService","StateService","ChartJobStatusService","BroadcastService",controller]);
+    angular.module(moduleName).controller('FeedActivityController', ["$scope","$http","$interval","$timeout","$q","Utils","OpsManagerFeedService","TableOptionsService","PaginationDataService","AlertsService","StateService","ChartJobStatusService","BroadcastService","$filter",controller]);
 
     angular.module(moduleName)
         .directive('tbaFeedActivity', directive);

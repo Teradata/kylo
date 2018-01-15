@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], function (angular,moduleName,$filter) {
     var directive = function() {
         return {
             restrict: "EA",
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
 
 
 
-    function JobDetailsDirectiveController($scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService) {
+    function JobDetailsDirectiveController($scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
         var self = this;
 
         /**
@@ -327,7 +327,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             job.stopping = false;
             job.exitDescription = job.exitStatus;
             if (job.exitDescription == undefined || job.exitDescription == '') {
-                job.exitDescription = 'No description available.'
+                job.exitDescription = $filter('translate')('views.JobDetailsDirective.Nda')
             }
             job.tabIcon = undefined;
 
@@ -378,7 +378,7 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
             step.displayStatus = step.exitCode;
 
             if (step.exitDescription == undefined || step.exitDescription == '') {
-                step.exitDescription = 'No description available.'
+                step.exitDescription = $filter('translate')('views.JobDetailsDirective.Nda')
             }
 
             var style = IconService.iconStyleForJobStatus(step.displayStatus);
@@ -522,6 +522,6 @@ define(['angular','ops-mgr/jobs/details/module-name'], function (angular,moduleN
                 });
     }
 
-    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",JobDetailsDirectiveController]);
+    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService","$filter",JobDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaJobDetails", directive);
 });

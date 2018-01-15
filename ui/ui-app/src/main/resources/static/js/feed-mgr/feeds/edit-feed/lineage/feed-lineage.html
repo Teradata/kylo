@@ -20,8 +20,8 @@
 <div layout="row" layout-align="end center" class="layout-padding-top layout-padding-left" style="margin-left:-10px;">
   <span flex></span>
      <span class="md-button-group" layout-align="end center" layout="row">
-        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">Show Feeds</md-button>
-        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">Show Feeds and Sources</md-button>
+        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'SIMPLE'}" ng-click="vm.onSimpleView()">{{"views.feed-lineage.SF" | translate}}</md-button>
+        <md-button class="border-btn" ng-class="{'selected': vm.graphMode == 'DETAILED'}" ng-click="vm.onDetailedView()">{{"views.feed-lineage.SFaS" | translate}}</md-button>
      </span>
 </div>
 
@@ -29,7 +29,7 @@
 <div style="min-height:700px;height:700px" layout-fill id="feed-lineage-container">
   <div ng-if="vm.loading" layout="column" layout-fill layout-align="start center">
     <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-    <div class="layout-padding-top-bottom">Loading feed lineage ...</div>
+    <div class="layout-padding-top-bottom">{{"views.feed-lineage.Lfl" | translate}}</div>
   </div>
   <vis-network data="vm.data" options="vm.options" events="vm.events"></vis-network>
   <div ng-draggable="{handle:'.dragHandle',containment:'#feed-lineage-container'}" style="width:300px;left: 10px;top: -690px;">
@@ -51,29 +51,29 @@
       <md-expansion-panel-expanded>
 
         <md-expansion-panel-header>
-          <div class="md-summary" ng-if="vm.selectedNode.type == 'FEED'">Feed selected</div>
-          <div class="md-summary" ng-if="vm.selectedNode.type == 'DATASOURCE'">Datasource selected</div>
-          <div class="md-summary" ng-if="vm.selectedNode.type != 'FEED' && vm.selectedNode.type != 'DATASOURCE' ">Select a node</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type == 'FEED'">{{"views.feed-lineage.Fs" | translate}}</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type == 'DATASOURCE'">{{"views.feed-lineage.Ds" | translate}}</div>
+          <div class="md-summary" ng-if="vm.selectedNode.type != 'FEED' && vm.selectedNode.type != 'DATASOURCE' ">{{"views.feed-lineage.San" | translate}}</div>
           <md-expansion-panel-icon></md-expansion-panel-icon>
         </md-expansion-panel-header>
 
         <md-expansion-panel-content>
           <div ng-if="vm.selectedNode.content == null">
-            <p>Select a node</p>
+            <p>{{"views.feed-lineage.San2" | translate}}</p>
           </div>
           <div ng-if="vm.selectedNode.type == 'FEED' && vm.selectedNode.content != null">
             <div>
 
               <div layout="column" class="layout-padding-bottom">
                 <span><a href="" ng-click="vm.navigateToFeed()">{{vm.selectedNode.name}}</a></span>
-                <span class="hint">Feed</span>
+                <span class="hint">{{"views.feed-lineage.Feed" | translate}}</span>
                 <md-divider></md-divider>
               </div>
 
 
               <div layout="column" class="layout-padding-bottom">
                 <span class="card-sub-header">{{vm.selectedNode.content.state}}</span>
-                <span class="hint">State</span>
+                <span class="hint">{{"views.feed-lineage.State" | translate}}</span>
                 <md-divider></md-divider>
               </div>
               <div ng-repeat="(key,value) in vm.selectedNode.content.displayProperties" layout="column" class="layout-padding-bottom">
@@ -96,7 +96,7 @@
 
         <md-expansion-panel-footer>
           <div flex></div>
-          <md-button class="md-warn" ng-click="$panel.collapse()">Collapse</md-button>
+          <md-button class="md-warn" ng-click="$panel.collapse()">{{"views.feed-lineage.Collapse" | translate}}</md-button>
         </md-expansion-panel-footer>
 
       </md-expansion-panel-expanded>
@@ -114,13 +114,13 @@
 
 <!--
 <div class="bottom-left">
-  Display at the bottom left of the screen<br/>
+  {{"views.feed-lineage.Datblots" | translate}}<br/>
 <div ng-if="vm.selectedDatasource != null" layout="column">
-  <span>Datasource</span>
+  <span>{{"views.feed-lineage.Datasource" | translate}}</span>
   <span>{{vm.selectedDatasource.name}}</span>
 </div>
   <div ng-if="vm.selectedFeed != null" layout="column">
-    <span>Feed</span>
+    <span>{{"views.feed-lineage.Feed2" | translate}}</span>
     <span>{{vm.selectedFeed.displayName}}</span>
     <span>vm.selectedFeed.state</span>
   </div>

@@ -35,7 +35,17 @@ System.config({
         "npm:": "../node_modules/",
         "ng-text-truncate":"vendor/ng-text-truncate/ng-text-truncate",
         "routes": "routes.js",
-        "services/module-name":"services/module-name"
+        "services/module-name":"services/module-name",
+        "svg-morpheus":"../bower_components/svg-morpheus/compile/unminified/svg-morpheus",
+        "underscore":"../bower_components/underscore/underscore-min",
+        "vis":"../bower_components/vis/dist/vis.min",
+        "tmh.dynamicLocale": "../bower_components/angular-dynamic-locale/dist/tmhDynamicLocale.min",
+        "pascalprecht.translate":"../bower_components/angular-translate/angular-translate",
+        "angular-translate-loader-static-files": "../bower_components/angular-translate-loader-static-files/angular-translate-loader-static-files.min.js",
+        "angular-translate-storage-local": "../bower_components/angular-translate-storage-local/angular-translate-storage-local.min.js",
+        "angular-translate-handler-log": "../bower_components/angular-translate-handler-log/angular-translate-handler-log.min.js",
+        "angular-translate-storage-cookie": "../bower_components/angular-translate-storage-cookie/angular-translate-storage-cookie.min.js",
+        "angular-cookies": "../bower_components/angular-cookies/angular-cookies.min.js"
     },
     map: {
         '@angular/animations': 'npm:@angular/animations/bundles/animations.umd.min',

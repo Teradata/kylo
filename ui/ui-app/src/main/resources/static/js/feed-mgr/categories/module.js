@@ -1,8 +1,8 @@
-define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','app','@uirouter/angularjs','kylo-feedmgr'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
+define(['angular','feed-mgr/categories/module-name','kylo-utils/LazyLoadUtil','constants/AccessConstants','app','@uirouter/angularjs','kylo-feedmgr', 'pascalprecht.translate'], function (angular,moduleName,lazyLoadUtil,AccessConstants) {
     //LAZY LOADED into the application
     var module = angular.module(moduleName, ['ui.router']);
 
-    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider) {
+    module.config(['$stateProvider','$compileProvider',function ($stateProvider,$compileProvider,$filter) {
         //preassign modules until directives are rewritten to use the $onInit method.
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);

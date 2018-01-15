@@ -20,11 +20,11 @@
 <card-layout body-css="md-padding">
   <header-section>
     <div layout="row" layout-align="space-between-center" flex>
-      <div class="card-title" flex>Data Source</div>
-      <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+      <div class="card-title" flex>{{"views.define-feed-details.DS" | translate}}</div>
+      <h2 class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-general-info.of" | translate}} {{vm.totalSteps}}</h2>
     </div>
     <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-      <div class="card-sub-header" flex>Choose data source and options</div>
+      <div class="card-sub-header" flex>{{"views.define-feed-details.ChooseDS" | translate}}</div>
       <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
     </div>
   </header-section>
@@ -32,7 +32,7 @@
     <ng-form name="vm.feedDetailsForm">
       <div layout="column" ng-if="vm.loading == false">
         <div style="padding-bottom:10px;" ng-if="vm.model.inputProcessor != null">
-          <div class="md-subhead">Choose the source</div>
+          <div class="md-subhead"> {{"views.define-feed-details.ChooseTS" | translate}} </div>
           <div class="layout-padding-indent" style="padding-top:8px;">
             <md-radio-group ng-model="vm.inputProcessorId" layout="row">
               <md-radio-button ng-repeat="inputProcessor in vm.inputProcessors"

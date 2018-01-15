@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService) {
+    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService, $filter) {
         var self = this;
         this.refreshing = false;
         this.dataLoaded = false;
@@ -105,7 +105,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             angular.forEach(self.chartData,function(row,i){
                 row.value = self.dataMap[row.key].count;
             });
-            var title = (self.dataMap.Healthy.count+self.dataMap.Unhealthy.count)+" Total";
+            var title = (self.dataMap.Healthy.count+self.dataMap.Unhealthy.count)+" " + $filter('translate')('Total');
             self.chartOptions.chart.title=title
             self.dataLoaded = true;
             if(self.chartApi.update) {
@@ -196,7 +196,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", controller]);
+    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", "$filter", controller]);
 
 
     angular.module(moduleName)

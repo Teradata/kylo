@@ -18,7 +18,7 @@
  * #L%
  */
 
-var DateTimeUtils = (function () {
+var DateTimeUtils = function ($translate) {
 
     /**
      *
@@ -48,28 +48,28 @@ var DateTimeUtils = (function () {
         var daysStr = '';
 
         var millisStr = '';
-        var str = seconds + ' sec';
+        var str = seconds + ' ' + $translate('views.Utils.sec');
         secondsStr = str;
         var truncateFormatStr = str;
         var truncatedTimeFormat = padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
         var timeFormat = padLeft(hours,2,'0')+":"+padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
 
         if(seconds == 0 && minutes ==0){
-            millisStr = minutesms/1000 + ' sec';
+            millisStr = minutesms/1000 + ' ' + $translate('views.Utils.sec');
         }
         if (hours > 0 || (hours == 0 && minutes > 0)) {
-            minutesStr = minutes + ' min';
+            minutesStr = minutes + ' ' + $translate('views.Utils.min');
             str = minutesStr + ' '+str;
             truncateFormatStr = minutesStr;
         }
         if (days > 0 || days == 0 && hours > 0) {
-            hoursStr = hours + ' hrs';
+            hoursStr = hours + ' ' + $translate('views.Utils.hrs');
             str = hoursStr + ' '+ str;
             truncateFormatStr = hoursStr;
-            truncatedTimeFormat = padLeft(hours,2,'0')+":"+truncatedTimeFormat;
+            truncatedTimeFormat = padLeft(hours,2,'0')+':'+truncatedTimeFormat;
         }
         if (days > 0) {
-            daysStr = days + " days";
+            daysStr = days + ' ' + $translate('views.Utils.days');
             str = daysStr + ' '+str;
             truncateFormatStr = daysStr ;
             truncatedTimeFormat = padLeft(days,2,'0')+":"+truncatedTimeFormat;
@@ -89,7 +89,7 @@ var DateTimeUtils = (function () {
 
     };
 
-    function DateTimeUtils() {
+    function DateTimeUtils($translate) {
     }
 
     /**
@@ -126,5 +126,5 @@ var DateTimeUtils = (function () {
 
 
     return DateTimeUtils;
-})();
+};
 

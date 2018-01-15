@@ -1,4 +1,4 @@
-define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
+define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (angular,moduleName) {
 
     var directive = function() {
         return {
@@ -30,7 +30,7 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
         };
     };
 
-    var controller = function($scope, $element, $mdDialog, $mdToast, $http, RestUrlService, StateService, HiveService) {
+    var controller = function($scope, $element, $mdDialog, $mdToast, $http, RestUrlService, StateService, HiveService, $filter) {
 
         var self = this;
         var init = function() {
@@ -60,9 +60,9 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
         };
         this.loadingHiveSchemas = false;
         this.metadataMessage = "";
-        var metadataLoadedMessage = "Use CTRL + space for autocomplete on table and column names";
-        var metadataLoadingMessage = "Loading table and column metadata"
-        var metadataErrorMessage = "Unable to load table and column metadata.  Autocomplete for tables and columns is disabled."
+        var metadataLoadedMessage = $filter('translate')('views.hql-editor.UseCTRL');
+        var metadataLoadingMessage = $filter('translate')('views.hql-editor.LoadingTable');
+        var metadataErrorMessage = $filter('translate')('views.hql-editor.UnableTlt');
 
         this.codemirrorOptions = {
             lineWrapping: true,
@@ -172,7 +172,7 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
         init();
     };
 
-    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","RestUrlService","StateService","HiveService",controller]);
+    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","RestUrlService","StateService","HiveService","$filter",controller]);
     angular.module(moduleName).directive('thinkbigHqlEditor', directive);
 
 
