@@ -356,7 +356,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<? extends LatestFeedJobExecution> findLatestCheckDataJobs() {
-        return latestFeedJobExectionRepository.findCheckDataJobs();
+        if (accessController.isEntityAccessControlled()) {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithAcl();
+        } else {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithoutAcl();
+        }
     }
 
     public List<JobStatusCount> getJobStatusCountByDateFromNow(String feedName, ReadablePeriod period) {
