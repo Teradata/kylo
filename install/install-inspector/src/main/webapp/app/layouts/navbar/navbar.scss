@@ -2,12 +2,19 @@
 /* ==========================================================================
 Navbar
 ========================================================================== */
-.navbar-version {
-    font-size: 10px;
-    color: #ccc
+.toolbar-title {
+    display: inline-block;
+    vertical-align: middle;
+    color: #ccc;
 }
 
-.jh-navbar {
+.toolbar-version {
+    font-size: 10px;
+    color: #ccc;
+    margin-top: -10px;
+}
+
+.toolbar {
     background-color: #353d47;
     padding: .2em 1em;
     .profile-image {
@@ -53,24 +60,23 @@ Navbar
     }
 }
 
-.navbar-title {
-    display: inline-block;
-    vertical-align: middle;
-}
 
 /* ==========================================================================
 Logo styles
 ========================================================================== */
-.navbar-brand {
-    &.logo {
-        padding: 5px 15px;
-        .logo-img {
-            height: 45px;
-            width: 70px;
-            display: inline-block;
-            vertical-align: middle;
-            background: url("../../../content/images/kylo-logo-rev.png") no-repeat center center;
-            background-size: contain;
-        }
-    }
+.toolbar-logo-img {
+    height: 70px;
+    width: 100px;
+    display: inline-block;
+    vertical-align: middle;
+    background: url("../../../content/images/kylo-logo-rev.png") no-repeat center center;
+    background-size: contain;
+}
+
+.example-icon {
+    padding: 0 14px;
+}
+
+.example-spacer {
+    flex: 1 1 auto;
 }

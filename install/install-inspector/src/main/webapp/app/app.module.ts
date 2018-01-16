@@ -12,6 +12,7 @@ import { InspectorAccountModule } from './account/account.module';
 import { InspectorEntityModule } from './entities/entity.module';
 import { customHttpProvider } from './blocks/interceptor/http.provider';
 import { PaginationConfig } from './blocks/config/uib-pagination.config';
+import {MaterialModule} from './material.module';
 
 // jhipster-needle-angular-add-module-import JHipster will add new module here
 
@@ -28,6 +29,7 @@ import {
 @NgModule({
     imports: [
         BrowserModule,
+        MaterialModule,
         InspectorAppRoutingModule,
         Ng2Webstorage.forRoot({ prefix: 'jhi', separator: '-'}),
         InspectorSharedModule,
