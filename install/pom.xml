@@ -15,6 +15,7 @@
     <module>install-tar</module>
     <module>install-rpm</module>
     <module>install-debian</module>
+    <module>install-inspector</module>
   </modules>
 
   <build>
