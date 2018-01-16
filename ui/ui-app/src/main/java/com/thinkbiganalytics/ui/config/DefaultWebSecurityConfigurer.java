@@ -22,6 +22,7 @@ package com.thinkbiganalytics.ui.config;
 
 import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
+import com.thinkbiganalytics.auth.config.SecurityConfig;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
@@ -38,6 +39,7 @@ import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 
@@ -62,6 +64,10 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     @Inject
     @Named(JaasAuthConfig.UI_AUTH_PROVIDER)
     private AuthenticationProvider uiAuthenticationProvider;
+    
+    @Inject
+    @Named(SecurityConfig.AUTH_LOGOUT_FILTER)
+    private LogoutFilter logoutFilter;
 
     @Inject
     private KyloTargetUrlLoginSuccessHandler kyloTargetUrlLoginSuccessHandler;
@@ -103,6 +109,7 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .rememberMeServices(rememberMeServices)
                 .and()
             .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
+            .addFilterAfter(this.logoutFilter, BasicAuthenticationFilter.class)
             .httpBasic();
 
         // @formatter:on
