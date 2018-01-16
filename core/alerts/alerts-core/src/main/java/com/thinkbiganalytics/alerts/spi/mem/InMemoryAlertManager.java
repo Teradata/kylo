@@ -277,8 +277,8 @@ public class InMemoryAlertManager implements AlertManager {
 
     @Override
     public Alert remove(Alert.ID id) {
-        this.alertsLock.writeLock().lock();
         try {
+            this.alertsLock.writeLock().lock();
             AtomicReference<GenericAlert> ref = this.alertsById.remove(id);
 
             if (ref != null) {
@@ -297,8 +297,8 @@ public class InMemoryAlertManager implements AlertManager {
         AtomicReference<GenericAlert> ref = new AtomicReference<>(alert);
         int count = 0;
 
-        this.alertsLock.writeLock().lock();
         try {
+            this.alertsLock.writeLock().lock();
             this.alertsByTime.put(createdTime, ref);
             this.alertsById.put(alert.getId(), ref);
             count = this.changeCount.incrementAndGet();
