@@ -1,68 +1,41 @@
-<div class="row">
-    <div class="col-md-12">
-        <h2 class="display-6">Welcome to Kylo Configuration Check!</h2>
-        <p>This application will check your Kylo configuration by reading its properties and assessing their values</p>
+<mat-card class="example-card">
+        <div class="header">Welcome to Kylo Configuration Check!</div>
+        <small>This application will check your Kylo configuration by reading its properties and assessing their values</small>
 
-        <div class="row">
-            <div class="col-md-6">
-                <div class="list-group">
-                    <div *ngFor="let check of checks" class="list-group-item list-group-item-action flex-column align-items-start"
-                         [ngClass]="{'active' : check.id === selectedCheckId, 'disabled': check.status.state === 'Disabled'}">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">{{check.name}}</h5>
-                            <i *ngIf="check.status.state === 'Failed'" class="fa fa-2x fa-fw fa-exclamation-triangle text-danger" aria-hidden="true"></i>
-                            <i *ngIf="check.status.state === 'Loading'" class="fa fa-2x fa-fw fa-cog fa-spin text-info" aria-hidden="true"></i>
-                            <span *ngIf="check.status.state === 'Disabled'" class="text-muted small">Disabled</span>
-                        </div>
-                        <small>{{check.description}}</small>
+        <div class="form">
+            <mat-form-field class="path">
+                <input matInput placeholder="Absolute path to Kylo installation, e.g. /opt/kylo" [formControl]="path" required>
+                <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
+            </mat-form-field>
+            <button [disabled]="path.invalid" mat-raised-button
+                    (click)="checkConfig()">Start Configuration Check
+            </button>
+        </div>
+
+
+        <mat-card class="inspection" *ngFor="let check of checks"
+                  [ngClass]="{'active' : check.id === selectedCheckId, 'disabled': check.status.state === 'Disabled'}">
+            <mat-card-content>
+                <div fxLayout="row">
+                    <div fxFlex>
+                        <span class="header">{{check.name}}</span>
+                    </div>
+                    <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-around center">
+                        <!--<i *ngIf="check.status.state === 'Initial'" class="fa fa-search fa-2x"></i>-->
+                        <i *ngIf="check.status.state === 'Loading'" class="fa fa-cog fa-spin fa-2x"></i>
+                        <i *ngIf="check.status.state === 'Failed'" class="fa fa-warning fa-2x"></i>
+                        <span *ngIf="check.status.state === 'Disabled'" class="disabled-notice">Disabled</span>
                     </div>
                 </div>
-            </div>
-                <!--<div>Elasticsearch Connection Check</div>-->
-                <!--<div>UI SSL Check</div>-->
-                <!--<div>Nifi SSL Check</div>-->
-                <!--<div>Nifi Version Check</div>-->
-                <!--<div>Spark Version Check</div>-->
+                <div class="description">{{check.description}}</div>
+            </mat-card-content>
+        </mat-card>
 
-            <div class="col-md-6">
-                <!-- information about selected check -->
-            </div>
+        <!--<div>Elasticsearch Connection Check</div>-->
+        <!--<div>UI SSL Check</div>-->
+        <!--<div>Nifi SSL Check</div>-->
+        <!--<div>Nifi Version Check</div>-->
+        <!--<div>Spark Version Check</div>-->
 
-        </div>
-        <div></div>
-
-        <div [ngSwitch]="isAuthenticated()">
-            <div class="" *ngSwitchCase="true">
-                <!--<span *ngIf="account"> You are logged in as user "{{account.login}}". </span>-->
-                <div *ngIf="!keyMissing" >
-                    <form *ngIf="!success" name="form" role="form" (ngSubmit)="checkConfig()" #pathForm="ngForm">
-                        <div class="form-group">
-                            <label class="form-control-label" for="kylopath">Absolute path to Kylo installation</label>
-                            <input type="text" class="form-control" id=kylopath name="kylopath" #pathInput="ngModel"
-                                   placeholder="e.g. /opt/kylo"
-                                   [(ngModel)]="path" required>
-                            <div *ngIf="pathInput.dirty && pathInput.invalid">
-                                <small class="form-text text-danger"
-                                       *ngIf="pathInput.errors.required">
-                                    Absolute path to Kylo is required
-                                </small>
-                            </div>
-                        </div>
-
-                        <button type="submit" [disabled]="pathForm.form.invalid" class="btn btn-primary">Start Configuration Check</button>
-                    </form>
-                </div>
-
-            </div>
-
-            <div class="alert alert-warning" *ngSwitchCase="false">
-                <span>If you want to </span>
-                <a class="alert-link" (click)="login()">sign in</a><span>, you can try the default accounts:<br/>- Administrator (login="admin" and password="admin") <br/>- User (login="user" and password="user").</span>
-            </div>
-            <div class="alert alert-warning" *ngSwitchCase="false">
-                <span>You don't have an account yet?</span>
-                <a class="alert-link" routerLink="register">Register a new account</a>
-            </div>
-        </div>
-    </div>
-</div>
+    </mat-card-content>
+</mat-card>
