@@ -36,7 +36,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
