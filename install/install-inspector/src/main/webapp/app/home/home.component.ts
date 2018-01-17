@@ -4,6 +4,7 @@ import {JhiEventManager} from 'ng-jhipster';
 
 import {Account, ConfigService, LoginModalService, Principal} from '../shared';
 import {Status, StatusState} from '../shared/config/status.model';
+import {FormControl, Validators} from '@angular/forms';
 
 @Component({
     selector: 'jhi-home',
@@ -16,12 +17,12 @@ import {Status, StatusState} from '../shared/config/status.model';
 export class HomeComponent implements OnInit {
     account: Account;
     modalRef: NgbModalRef;
-    path: String;
     checks: Array<any> = []; // todo make a class
     enabledChecks: Array<any> = []; // todo make a class
     disabledChecks: Array<any> = []; // todo make a class
     isLoading: boolean;
     selectedCheckId = -1;
+    path = new FormControl('', [Validators.required]);
 
     constructor(private principal: Principal,
                 private loginModalService: LoginModalService,
@@ -92,7 +93,7 @@ export class HomeComponent implements OnInit {
 
     checkConfig() {
         console.log('checkConfig for ' + this.path);
-        this.configService.setPath(this.path).toPromise().then((configuration) => {
+        this.configService.setPath(this.path.value).toPromise().then((configuration) => {
             if (configuration) {
                 console.log('created new configuration', configuration);
                 this.isLoading = false;
@@ -135,6 +136,10 @@ export class HomeComponent implements OnInit {
                     console.log('received stats ', status);
                 });
             });
+    };
+
+    getErrorMessage() {
+        return this.path.hasError('required') ? 'You must enter a value' : '';
     }
 
 }

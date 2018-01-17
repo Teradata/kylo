@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRouteSnapshot, NavigationEnd } from '@angular/router';
 
 import { JhiLanguageHelper } from '../../shared';
+import {MaterialModule} from '../../material.module';
 
 @Component({
     selector: 'jhi-main',
@@ -11,7 +12,8 @@ export class JhiMainComponent implements OnInit {
 
     constructor(
         private jhiLanguageHelper: JhiLanguageHelper,
-        private router: Router
+        private router: Router,
+        private matModule: MaterialModule
     ) {}
 
     private getPageTitle(routeSnapshot: ActivatedRouteSnapshot) {

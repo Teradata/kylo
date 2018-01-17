@@ -1,15 +1,46 @@
-
 /* ==========================================================================
 Main page styles
 ========================================================================== */
+
+.inspection {
+    margin-bottom: 10px;
+}
+
+.header {
+    font-size: 20px;
+}
+
+.description {
+    color: dimgray;
+}
 
 .disabled {
     color: lightgray;
 }
 
-form {
-    padding: 1rem;
-    margin: 1rem -15px;
-    border: solid #f7f7f9;
-    border-width: .2rem 0 0;
+.disabled, .disabled .description {
+    color: lightgray;
+}
+
+.disabled-notice {
+    color: dimgray;
+}
+
+.form {
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.form .path {
+    margin-right: 10px;
+    min-width: 400px;
+}
+
+.fa {
+    color: gray;
+    margin-right: 15px;
+}
+
+.fa-warning {
+    color: tomato;
 }
