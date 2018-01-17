@@ -10,7 +10,7 @@ public class JwtTokenSyncInspection extends AbstractInspection {
 
     private final Logger log = LoggerFactory.getLogger(JwtTokenSyncInspection.class);
 
-    class JwtProperties {
+    private class JwtProperties {
         @Value("${security.jwt.key}")
         private String jwtKey;
 
