@@ -28,27 +28,27 @@ import org.slf4j.LoggerFactory;
 /**
  * Test Hashing Utility
  */
-public class HashingUtilTest {
+public class InsecureHashingMessageUtilTest {
 
-    private static final Logger log = LoggerFactory.getLogger(HashingUtilTest.class);
+    private static final Logger log = LoggerFactory.getLogger(InsecureHashingMessageUtilTest.class);
 
     @Test
     public void testHashValue_NormalString() {
-        String hash = HashingUtil.getHashMD5("{\"fname\":\"Mango\",\"fcolor\":\"Yellow\",\"ftaste\":\"Sweet\",\"kylo_schema\":\"fruit_items\",\"kylo_table\":\"fruits_feed_01\"}");
+        String hash = InsecureHashingMessageUtil.getHashMD5("{\"fname\":\"Mango\",\"fcolor\":\"Yellow\",\"ftaste\":\"Sweet\",\"kylo_schema\":\"fruit_items\",\"kylo_table\":\"fruits_feed_01\"}");
         Assert.assertEquals("de66d7905e2c92cb205e4070e101038f", hash);
         log.info("Test hash for normal string: OK");
     }
 
     @Test
     public void testHashValue_NullString() {
-        String hash = HashingUtil.getHashMD5(null);
+        String hash = InsecureHashingMessageUtil.getHashMD5(null);
         Assert.assertNull(hash);
         log.info("Test hash for null string: OK");
     }
 
     @Test
     public void testHashValue_EmptyString() {
-        String hash = HashingUtil.getHashMD5("");
+        String hash = InsecureHashingMessageUtil.getHashMD5("");
         Assert.assertEquals("d41d8cd98f00b204e9800998ecf8427e", hash);
         log.info("Test hash for empty string: OK");
     }
