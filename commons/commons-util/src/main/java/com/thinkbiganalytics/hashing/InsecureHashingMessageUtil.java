@@ -28,11 +28,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 /**
- * Hashing utility class
+ * Hashing utility class for hashing non secure objects such as lists. Never use weak crypto to hash passwords
+ *
+ *
  */
-public class HashingUtil {
+public class InsecureHashingMessageUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger(HashingUtil.class);
+    private static final Logger LOG = LoggerFactory.getLogger(InsecureHashingMessageUtil.class);
     private static final String sourceEncoding = "UTF-8";
     private static final String md5Algorithm = "MD5";
 
