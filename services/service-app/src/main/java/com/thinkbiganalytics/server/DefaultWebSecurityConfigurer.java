@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.server;
 
-import com.thinkbiganalytics.auth.config.MultiHandlerLogoutFilter;
-
 /*-
  * #%L
  * thinkbig-service-app
@@ -22,19 +20,19 @@ import com.thinkbiganalytics.auth.config.MultiHandlerLogoutFilter;
  * #L%
  */
 
-import com.thinkbiganalytics.auth.config.SecurityConfig;
+import com.thinkbiganalytics.auth.config.MultiHandlerLogoutFilter;
 import com.thinkbiganalytics.auth.config.SessionDestroyEventLogoutHandler;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jwt.JwtRememberMeServices;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -62,55 +60,39 @@ import javax.inject.Named;
  */
 @Configuration
 @EnableWebSecurity
-@Order(DefaultWebSecurityConfigurer.ORDER)
+@Order(BaseWebSecurityConfigurer.ORDER)
 @Profile("!auth-krb-spnego")  // TODO find a better way than just disabling due to the presence of SPNEGO config (adjust order?)
-public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
+public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
     
-    public static final int ORDER = SecurityProperties.ACCESS_OVERRIDE_ORDER;
-
     protected static final Logger LOG = LoggerFactory.getLogger(DefaultWebSecurityConfigurer.class);
     
-    @Inject
-    @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
-    private AbstractJaasAuthenticationProvider authenticationProvider;
-
-    @Autowired
-    private JwtRememberMeServices rememberMeServices;
-    
-    @Inject
-    private Optional<List<LogoutSuccessHandler>> logoutSuccessHandlers;
-    
-    @Inject
-    private Optional<List<LogoutHandler>> logoutHandlers;
-    
-    @Bean
-    public LogoutFilter logoutFilter() {
-        return new MultiHandlerLogoutFilter("/api/v1/logout", 
-                                            logoutHandlers.orElse(Collections.emptyList()), 
-                                            logoutSuccessHandlers.orElse(Collections.emptyList()));
-    }
+//    @Bean
+//    public LogoutFilter logoutFilter() {
+//        return super.logoutFilter();
+//    }
 
     /**
      * Defining these beens in an embedded configuration to ensure they are all constructed
-     * before being used by the logout filer.
+     * before being used by the logout filter.
      */
     @Configuration
-    static class HandlersConfig {
+    @Profile("!auth-krb-spnego")
+    static class SvcHandlersConfig {
         @Inject
         @Named(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
         private AbstractJaasAuthenticationProvider authenticationProvider;
 
-        @Bean
-        public LogoutHandler jassLogoutHandler() {
+        @Bean(name="jaasLogoutHandler-svc")
+        public LogoutHandler jassUiLogoutHandler() {
             // Sends a SessionDestroyEvent directly (not through a publisher) to the auth provider.
             return new SessionDestroyEventLogoutHandler(authenticationProvider);
         }
         
-        @Bean
+        @Bean(name="defaultUrlLogoutSuccessHandler-svc")
         public LogoutSuccessHandler defaultUrlLogoutSuccessHandler() {
             SimpleUrlLogoutSuccessHandler handler = new SimpleUrlLogoutSuccessHandler();
             handler.setTargetUrlParameter("redirect");
-            handler.setDefaultTargetUrl("/api/v1/about");
+            handler.setDefaultTargetUrl(API_LOGOUT_REDIRECT_URL);
             return handler;
         }
     }
@@ -134,9 +116,9 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
                 .rememberMe()
                     .rememberMeServices(rememberMeServices)
                     .and()
-                .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
                 .httpBasic()
                     .and()
+                .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
                 .addFilterAfter(logoutFilter(), BasicAuthenticationFilter.class);
 
         // @formatter:on
@@ -146,7 +128,5 @@ public class DefaultWebSecurityConfigurer extends WebSecurityConfigurerAdapter {
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(authenticationProvider);
     }
-    
-
 }
 
