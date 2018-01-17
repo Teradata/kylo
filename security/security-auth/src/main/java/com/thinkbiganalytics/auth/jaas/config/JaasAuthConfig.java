@@ -36,7 +36,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 import org.springframework.core.annotation.Order;
-import org.springframework.security.authentication.AuthenticationProvider;
+import org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 import org.springframework.security.authentication.jaas.DefaultJaasAuthenticationProvider;
 import org.springframework.security.authentication.jaas.memory.InMemoryConfiguration;
@@ -71,8 +71,8 @@ public class JaasAuthConfig {
 
 
     @Bean(name = UI_AUTH_PROVIDER)
-    public AuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
-                                                           List<AuthorityGranter> authorityGranters) {
+    public AbstractJaasAuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                       List<AuthorityGranter> authorityGranters) {
         DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
@@ -81,8 +81,8 @@ public class JaasAuthConfig {
     }
 
     @Bean(name = SERVICES_AUTH_PROVIDER)
-    public AuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
-                                                                 List<AuthorityGranter> authorityGranters) {
+    public AbstractJaasAuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                             List<AuthorityGranter> authorityGranters) {
         DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
@@ -91,8 +91,8 @@ public class JaasAuthConfig {
     }
 
     @Bean(name = UI_TOKEN_AUTH_PROVIDER)
-    public AuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
-                                                                List<AuthorityGranter> authorityGranters) {
+    public AbstractJaasAuthenticationProvider uiTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                            List<AuthorityGranter> authorityGranters) {
         UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
@@ -101,8 +101,8 @@ public class JaasAuthConfig {
     }
 
     @Bean(name = SERVICES_TOKEN_AUTH_PROVIDER)
-    public AuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
-                                                                      List<AuthorityGranter> authorityGranters) {
+    public AbstractJaasAuthenticationProvider servicesTokenAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
+                                                                                  List<AuthorityGranter> authorityGranters) {
         UsernameJaasAuthenticationProvider provider = new UsernameJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
