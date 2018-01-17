@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.install.inspector.repository;
 
-import com.thinkbiganalytics.install.inspector.check.Configuration;
-import com.thinkbiganalytics.install.inspector.check.Path;
+import com.thinkbiganalytics.install.inspector.inspection.Configuration;
+import com.thinkbiganalytics.install.inspector.inspection.Path;
 
 import org.springframework.stereotype.Repository;
 
@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Repository
-public class ConfigRepository {
+public class ConfigurationRepository {
 
     private Map<Integer, Configuration> idToConfiguration = new HashMap<>();
 

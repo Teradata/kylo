@@ -1,5 +1,5 @@
 <mat-card class="example-card">
-        <div class="header">Welcome to Kylo Configuration Check!</div>
+        <div class="header">Welcome to Kylo Configuration Inspector!</div>
         <small>This application will check your Kylo configuration by reading its properties and assessing their values</small>
 
         <div class="form">
@@ -8,7 +8,7 @@
                 <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
             </mat-form-field>
             <button [disabled]="path.invalid" mat-raised-button
-                    (click)="checkConfig()">Start Configuration Check
+                    (click)="checkConfig()">Inspect Configuration
             </button>
         </div>
 
@@ -21,7 +21,6 @@
                         <span class="header">{{check.name}}</span>
                     </div>
                     <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-around center">
-                        <!--<i *ngIf="check.status.state === 'Initial'" class="fa fa-search fa-2x"></i>-->
                         <i *ngIf="check.status.state === 'Loading'" class="fa fa-cog fa-spin fa-2x"></i>
                         <i *ngIf="check.status.state === 'Failed'" class="fa fa-warning fa-2x"></i>
                         <span *ngIf="check.status.state === 'Disabled'" class="disabled-notice">Disabled</span>
@@ -30,12 +29,5 @@
                 <div class="description">{{check.description}}</div>
             </mat-card-content>
         </mat-card>
-
-        <!--<div>Elasticsearch Connection Check</div>-->
-        <!--<div>UI SSL Check</div>-->
-        <!--<div>Nifi SSL Check</div>-->
-        <!--<div>Nifi Version Check</div>-->
-        <!--<div>Spark Version Check</div>-->
-
     </mat-card-content>
 </mat-card>

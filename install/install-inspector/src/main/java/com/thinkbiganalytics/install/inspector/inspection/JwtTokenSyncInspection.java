@@ -1,13 +1,13 @@
-package com.thinkbiganalytics.install.inspector.check;
+package com.thinkbiganalytics.install.inspector.inspection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtTokenSyncCheck extends AbstractConfigCheck {
+public class JwtTokenSyncInspection extends AbstractInspection {
 
-    private final Logger log = LoggerFactory.getLogger(JwtTokenSyncCheck.class);
+    private final Logger log = LoggerFactory.getLogger(JwtTokenSyncInspection.class);
 
     @Override
     public String getName() {

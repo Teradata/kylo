@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.install.inspector.check;
+package com.thinkbiganalytics.install.inspector.inspection;
 
 public class Path {
 

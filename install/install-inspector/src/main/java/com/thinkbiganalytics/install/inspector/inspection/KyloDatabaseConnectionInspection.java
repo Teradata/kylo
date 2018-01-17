@@ -1,13 +1,13 @@
-package com.thinkbiganalytics.install.inspector.check;
+package com.thinkbiganalytics.install.inspector.inspection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class KyloDatabaseConnectionCheck extends DisabledConfigCheck {
+public class KyloDatabaseConnectionInspection extends DisabledInspection {
 
-    private final Logger log = LoggerFactory.getLogger(KyloDatabaseConnectionCheck.class);
+    private final Logger log = LoggerFactory.getLogger(KyloDatabaseConnectionInspection.class);
 
     @Override
     public String getName() {

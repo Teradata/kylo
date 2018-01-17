@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.install.inspector.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import com.thinkbiganalytics.install.inspector.check.ConfigCheck;
-import com.thinkbiganalytics.install.inspector.check.ConfigStatus;
-import com.thinkbiganalytics.install.inspector.check.Configuration;
-import com.thinkbiganalytics.install.inspector.check.Path;
+import com.thinkbiganalytics.install.inspector.inspection.Inspection;
+import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
+import com.thinkbiganalytics.install.inspector.inspection.Configuration;
+import com.thinkbiganalytics.install.inspector.inspection.Path;
 import com.thinkbiganalytics.install.inspector.security.AuthoritiesConstants;
-import com.thinkbiganalytics.install.inspector.service.ConfigCheckService;
+import com.thinkbiganalytics.install.inspector.service.InspectionService;
 import com.thinkbiganalytics.install.inspector.web.rest.util.PaginationUtil;
 
 import org.slf4j.Logger;
@@ -33,15 +33,15 @@ import javax.websocket.server.PathParam;
  */
 @RestController
 @RequestMapping("/api")
-public class ConfigCheckResource {
+public class InspectionResource {
 
-    private final Logger log = LoggerFactory.getLogger(ConfigCheckResource.class);
+    private final Logger log = LoggerFactory.getLogger(InspectionResource.class);
 
-    private final ConfigCheckService configCheckService;
+    private final InspectionService inspectionService;
 
 
-    public ConfigCheckResource(ConfigCheckService configCheckService) {
-        this.configCheckService = configCheckService;
+    public InspectionResource(InspectionService inspectionService) {
+        this.inspectionService = inspectionService;
     }
 
     /**
@@ -49,11 +49,11 @@ public class ConfigCheckResource {
      *
      * @return the ResponseEntity with status 200 (OK) and with body all configuration checks
      */
-    @GetMapping("/check")
+    @GetMapping("/inspection")
     @Timed
-    public ResponseEntity<List<ConfigCheck>> getAllConfigChecks() {
-        final Page<ConfigCheck> page = configCheckService.getAllConfigChecks();
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/config");
+    public ResponseEntity<List<Inspection>> getAllConfigChecks() {
+        final Page<Inspection> page = inspectionService.getAllConfigChecks();
+        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/inspection");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
 
@@ -63,12 +63,12 @@ public class ConfigCheckResource {
      *
      * @param installPath installation path
      */
-    @PostMapping("/config")
+    @PostMapping("/configuration")
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<Configuration> setKyloPath(@Valid @RequestBody Path installPath) throws URISyntaxException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
-        Configuration config = configCheckService.setPath(installPath);
+        Configuration config = inspectionService.setPath(installPath);
         return new ResponseEntity<>(config, HttpStatus.OK);
     }
 
@@ -79,12 +79,12 @@ public class ConfigCheckResource {
      * @param configId configuration id
      * @param checkId configuration check id
      */
-    @GetMapping("/config/{configId}/{checkId}")
+    @GetMapping("/configuration/{configId}/{inspectionId}")
     @Timed
     @Secured(AuthoritiesConstants.ADMIN)
-    public ResponseEntity<ConfigStatus> runConfigCheck(@Valid @PathParam("configId") int configId, @Valid @PathParam("checkId") int checkId) throws URISyntaxException {
+    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathParam("configId") int configId, @Valid @PathParam("inspectionId") int checkId) throws URISyntaxException {
         log.debug("REST request to execute configuration check : {}", checkId);
-        ConfigStatus status = configCheckService.execute(configId, checkId);
+        InspectionStatus status = inspectionService.execute(configId, checkId);
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
