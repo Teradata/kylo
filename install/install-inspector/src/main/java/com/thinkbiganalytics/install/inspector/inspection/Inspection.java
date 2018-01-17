@@ -10,8 +10,9 @@ public interface Inspection {
 
     String getDescription();
 
-    InspectionStatus execute(Configuration configuration);
+    InspectionStatus inspect(Object properties);
 
     InspectionStatus getStatus();
 
+    Object getProperties();
 }

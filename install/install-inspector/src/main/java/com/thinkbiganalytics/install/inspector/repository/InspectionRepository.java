@@ -15,12 +15,16 @@ import javax.annotation.PostConstruct;
 @Repository
 public class InspectionRepository {
 
-    @Autowired
-    private List<Inspection> inspections;
+    private final List<Inspection> inspections;
 
     private Map<Integer, Inspection> idToCheck = new HashMap<>();
 
     private int id = 0;
+
+    @Autowired
+    public InspectionRepository(List<Inspection> inspections) {
+        this.inspections = inspections;
+    }
 
     @PostConstruct
     public void postConstruct() {
