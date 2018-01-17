@@ -2,12 +2,13 @@
         <div class="header">Welcome to Kylo Configuration Inspector!</div>
         <small>This application will check your Kylo configuration by reading its properties and assessing their values</small>
 
-        <div class="form">
+        <div class="form" fxLayout="column" fxLayoutAlign="space-evenly start">
             <mat-form-field class="path">
                 <input matInput placeholder="Absolute path to Kylo installation, e.g. /opt/kylo" [formControl]="path" required>
                 <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
             </mat-form-field>
-            <button [disabled]="path.invalid" mat-raised-button
+            <mat-checkbox [formControl]="devMode">Running from source</mat-checkbox>
+            <button fxFlex="nogrow" [disabled]="path.invalid" mat-raised-button
                     (click)="checkConfig()">Inspect Configuration
             </button>
         </div>
@@ -23,6 +24,8 @@
                     <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-around center">
                         <i *ngIf="check.status.state === 'Loading'" class="fa fa-cog fa-spin fa-2x"></i>
                         <i *ngIf="check.status.state === 'Failed'" class="fa fa-warning fa-2x"></i>
+                        <i *ngIf="check.status.state === 'Valid'" class="fa fa-check fa-2x"></i>
+                        <i *ngIf="check.status.state === 'Invalid'" class="fa fa-warning fa-2x"></i>
                         <span *ngIf="check.status.state === 'Disabled'" class="disabled-notice">Disabled</span>
                     </div>
                 </div>

@@ -11,6 +11,9 @@ import java.lang.reflect.Field;
 
 public class Configuration {
 
+    private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/services/service-app/src/main/resources/application.properties";
+    private static final String KYLO_SERVICES_CONF_APPLICATION_PROPERTIES = "/kylo-services/conf/application.properties";
+
     private Path path;
     private Integer id;
     private ConfigurableListableBeanFactory factory;
@@ -19,7 +22,14 @@ public class Configuration {
         this.path = path;
         this.id = id;
 
-        Resource[] resources = new FileSystemResource[] {new FileSystemResource(path.getUri())};
+        String location = path.getUri();
+        if (path.isDevMode()) {
+            location += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
+        } else {
+            location += KYLO_SERVICES_CONF_APPLICATION_PROPERTIES;
+        }
+
+        Resource[] resources = new FileSystemResource[] {new FileSystemResource(location)};
         factory = new DefaultListableBeanFactory();
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
         ppc.setLocations(resources);
@@ -38,6 +48,13 @@ public class Configuration {
 
     public InspectionStatus execute(Inspection inspection) {
         Object properties = inspection.getProperties();
+        if (properties != null) {
+            injectProperties(properties);
+        }
+        return inspection.inspect(properties);
+    }
+
+    private void injectProperties(Object properties) {
         Field[] fields = properties.getClass().getDeclaredFields();
         for (Field field : fields) {
             Value value = field.getAnnotation(Value.class);
@@ -52,6 +69,5 @@ public class Configuration {
                 }
             }
         }
-        return inspection.inspect(properties);
     }
 }

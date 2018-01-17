@@ -23,6 +23,7 @@ export class HomeComponent implements OnInit {
     isLoading: boolean;
     selectedCheckId = -1;
     path = new FormControl('', [Validators.required]);
+    devMode = new FormControl(false, [Validators.required]);
 
     constructor(private principal: Principal,
                 private loginModalService: LoginModalService,
@@ -93,7 +94,7 @@ export class HomeComponent implements OnInit {
 
     checkConfig() {
         console.log('checkConfig for ' + this.path);
-        this.configService.setPath(this.path.value).toPromise().then((configuration) => {
+        this.configService.setPath(this.path.value, this.devMode.value).toPromise().then((configuration) => {
             if (configuration) {
                 console.log('created new configuration', configuration);
                 this.isLoading = false;
