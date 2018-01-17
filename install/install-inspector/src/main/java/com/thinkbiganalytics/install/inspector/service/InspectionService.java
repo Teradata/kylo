@@ -15,24 +15,27 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Service class for managing users.
+ * Service class for managing inspections.
  */
 @Service
-@Transactional
 public class InspectionService {
 
-    @Autowired
-    private InspectionRepository inspectionRepo;
+    private final InspectionRepository inspectionRepo;
+
+    private final ConfigurationRepository configRepo;
 
     @Autowired
-    private ConfigurationRepository configRepo;
+    public InspectionService(InspectionRepository inspectionRepo, ConfigurationRepository configRepo) {
+        this.inspectionRepo = inspectionRepo;
+        this.configRepo = configRepo;
+    }
 
-    public Page<Inspection> getAllConfigChecks() {
+    public Page<Inspection> getAllInspections() {
         return new PageImpl<>(inspectionRepo.getAll());
     }
 
-    public InspectionStatus execute(int configId, int configCheckId) {
-        return inspectionRepo.get(configCheckId).execute(configRepo.get(configId));
+    public InspectionStatus execute(int configId, int inspectionId) {
+        return configRepo.get(configId).execute(inspectionRepo.get(inspectionId));
     }
 
     public Configuration setPath(Path path) {

@@ -29,7 +29,12 @@ public abstract class AbstractInspection implements Inspection {
     }
 
     @Override
-    public InspectionStatus execute(Configuration configuration) {
+    public InspectionStatus inspect(Object properties) {
         throw new IllegalStateException("Not implemented yet");
+    }
+
+    @Override
+    public Object getProperties() {
+        return new Object();
     }
 }

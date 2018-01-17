@@ -11,12 +11,14 @@ import com.thinkbiganalytics.install.inspector.web.rest.util.PaginationUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,20 +41,20 @@ public class InspectionResource {
 
     private final InspectionService inspectionService;
 
-
+    @Autowired
     public InspectionResource(InspectionService inspectionService) {
         this.inspectionService = inspectionService;
     }
 
     /**
-     * GET /config : get all configuration checks
+     * GET /inspection : get all configuration inspections
      *
-     * @return the ResponseEntity with status 200 (OK) and with body all configuration checks
+     * @return the ResponseEntity with status 200 (OK) and with body having all configuration inspections
      */
     @GetMapping("/inspection")
     @Timed
     public ResponseEntity<List<Inspection>> getAllConfigChecks() {
-        final Page<Inspection> page = inspectionService.getAllConfigChecks();
+        final Page<Inspection> page = inspectionService.getAllInspections();
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/inspection");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }
@@ -65,7 +67,6 @@ public class InspectionResource {
      */
     @PostMapping("/configuration")
     @Timed
-    @Secured(AuthoritiesConstants.ADMIN)
     public ResponseEntity<Configuration> setKyloPath(@Valid @RequestBody Path installPath) throws URISyntaxException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
         Configuration config = inspectionService.setPath(installPath);
@@ -77,14 +78,13 @@ public class InspectionResource {
      * <p>
      *
      * @param configId configuration id
-     * @param checkId configuration check id
+     * @param inspectionId configuration inspection id
      */
     @GetMapping("/configuration/{configId}/{inspectionId}")
     @Timed
-    @Secured(AuthoritiesConstants.ADMIN)
-    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathParam("configId") int configId, @Valid @PathParam("inspectionId") int checkId) throws URISyntaxException {
-        log.debug("REST request to execute configuration check : {}", checkId);
-        InspectionStatus status = inspectionService.execute(configId, checkId);
+    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathVariable("configId") Integer configId, @Valid @PathVariable("inspectionId") Integer inspectionId) throws URISyntaxException {
+        log.debug("REST request to execute configuration inspection : {}", inspectionId);
+        InspectionStatus status = inspectionService.execute(configId, inspectionId);
         return new ResponseEntity<>(status, HttpStatus.OK);
     }
 
