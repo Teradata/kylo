@@ -7,9 +7,9 @@ import { SERVER_API_URL } from '../../app.constants';
 export class ConfigService  {
     constructor(private http: Http) { }
 
-    setPath(path: String): Observable<any> {
+    setPath(path: String, devMode: boolean): Observable<any> {
         console.log('set path');
-        return this.http.post(SERVER_API_URL + 'api/configuration', {uri: path}).map((res: Response) => res.json());
+        return this.http.post(SERVER_API_URL + 'api/configuration', {uri: path, devMode: devMode}).map((res: Response) => res.json());
     }
 
     loadChecks(): Observable<any> {

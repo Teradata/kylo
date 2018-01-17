@@ -31,9 +31,13 @@ Main page styles
     margin-bottom: 10px;
 }
 
+.form > * {
+    margin-bottom: 10px;
+}
+
 .form .path {
     margin-right: 10px;
-    min-width: 400px;
+    min-width: 500px;
 }
 
 .fa {
@@ -43,4 +47,8 @@ Main page styles
 
 .fa-warning {
     color: tomato;
+}
+
+.fa-check {
+    color: seagreen;
 }

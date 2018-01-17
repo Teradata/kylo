@@ -18,6 +18,7 @@ import {
     MatSnackBarModule,
     MatTableModule,
     MatToolbarModule,
+    MatCheckboxModule,
 } from '@angular/material';
 
 import {ReactiveFormsModule} from '@angular/forms';
@@ -44,6 +45,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
         MatDialogModule,
         ReactiveFormsModule,
         FlexLayoutModule,
+        MatCheckboxModule,
     ],
     exports: [
         MatButtonModule,
@@ -65,6 +67,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
         MatDialogModule,
         ReactiveFormsModule,
         FlexLayoutModule,
+        MatCheckboxModule,
     ]
 })
 export class MaterialModule {

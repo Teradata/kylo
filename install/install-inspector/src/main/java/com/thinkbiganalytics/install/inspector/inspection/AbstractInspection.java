@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.install.inspector.inspection;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public abstract class AbstractInspection implements Inspection {
 
     private final InspectionStatus status;
@@ -34,7 +36,8 @@ public abstract class AbstractInspection implements Inspection {
     }
 
     @Override
+    @JsonIgnore
     public Object getProperties() {
-        return new Object();
+        return null;
     }
 }

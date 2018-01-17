@@ -18,4 +18,9 @@ public class UiAndServicesPortSyncInspection extends AbstractInspection {
     public String getDescription() {
         return "Checks whether Kylo UI can connect to to Kylo Services";
     }
+
+    @Override
+    public InspectionStatus inspect(Object properties) {
+        return InspectionStatus.INVALID;
+    }
 }
