@@ -1,13 +1,13 @@
-package com.thinkbiganalytics.install.inspector.check;
+package com.thinkbiganalytics.install.inspector.inspection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class UiAndServicesPortSyncCheck extends AbstractConfigCheck {
+public class UiAndServicesPortSyncInspection extends AbstractInspection {
 
-    private final Logger log = LoggerFactory.getLogger(UiAndServicesPortSyncCheck.class);
+    private final Logger log = LoggerFactory.getLogger(UiAndServicesPortSyncInspection.class);
 
     @Override
     public String getName() {

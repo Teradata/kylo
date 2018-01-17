@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.install.inspector.check;
+package com.thinkbiganalytics.install.inspector.inspection;
 
 
 import org.slf4j.Logger;
@@ -6,9 +6,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ActiveMqConnectionCheck extends DisabledConfigCheck {
+public class ActiveMqConnectionInspection extends DisabledInspection {
 
-    private final Logger log = LoggerFactory.getLogger(ActiveMqConnectionCheck.class);
+    private final Logger log = LoggerFactory.getLogger(ActiveMqConnectionInspection.class);
 
     @Override
     public String getName() {
