@@ -27,7 +27,12 @@ public class JwtTokenSyncInspection extends AbstractInspection<JwtTokenSyncInspe
 
     @Override
     public InspectionStatus inspect(JwtProperties servicesProperties, JwtProperties uiProperties) {
-        return new InspectionStatus(servicesProperties.jwtKey.equals(uiProperties.jwtKey));
+        boolean valid = servicesProperties.jwtKey.equals(uiProperties.jwtKey);
+        InspectionStatus inspectionStatus = new InspectionStatus(valid);
+        if (!valid) {
+            inspectionStatus.setError("'security.jwt.key' property in kylo-services/conf/application.properties does not match 'security.jwt.key' property in kylo-ui/conf/application.properties");
+        }
+        return inspectionStatus;
     }
 
     @Override

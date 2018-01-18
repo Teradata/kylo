@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 
 import {Account, ConfigService} from '../shared';
-import {Status} from '../shared/config/status.model';
 import {FormControl, Validators} from '@angular/forms';
 
 @Component({
@@ -33,7 +32,7 @@ export class HomeComponent implements OnInit {
                     console.log('this', this);
                     console.log('self', self);
                     check.enabled = new FormControl(false);
-                    check.status = new Status('Initial');
+                    check.status = {};
                 });
                 self.checks = checks;
                 if (self.checks.length > 0) {
@@ -83,14 +82,17 @@ export class HomeComponent implements OnInit {
         const checks = this.checks
             .filter((check) => check.enabled.value)
             .map((check) => {
-            check.status = new Status('Loading');
+            check.isLoading = true;
+            check.status = {};
             return this.configService.executeCheck(configuration.id, check.id).toPromise().then((status) => {
                 console.log('check ' + check.id + ' executed with status ' + status, status);
-                check.status = new Status(status.valid === true ? 'Valid' : 'Invalid');
+                check.isLoading = false;
+                check.status = status;
                 return check.status;
             }).catch((err) => {
                 console.log('error executing check ' + check.id);
-                check.status = new Status('Failed');
+                check.isLoading = false;
+                check.status = {valid: false, description: 'Unknown error occurred', error: err};
                 return check.status;
             });
         });

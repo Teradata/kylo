@@ -1,6 +1,6 @@
 <mat-card class="example-card">
         <div class="title">Welcome to Kylo Configuration Inspector!</div>
-        <div class="description">This application will check your Kylo configuration by reading its properties and assessing their values</div>
+        <div class="subtitle">This application will check your Kylo configuration by reading its properties and assessing their values</div>
 
         <div class="form" fxLayout="column" fxLayoutAlign="space-evenly start">
             <mat-form-field class="path">
@@ -20,17 +20,24 @@
             <mat-card-content>
                 <div fxLayout="row">
                     <div fxFlex>
-                        <span class="header">{{check.name}}</span>
+                        <span class="inspection-header">{{check.name}}</span>
                     </div>
                     <div fxFlex="nogrow" fxLayout="row" fxLayoutAlign="space-around center">
-                        <i *ngIf="check.status.state === 'Loading'" class="fa fa-cog fa-spin fa-2x"></i>
-                        <i *ngIf="check.status.state === 'Failed'" class="fa fa-warning fa-2x"></i>
-                        <i *ngIf="check.status.state === 'Valid'" class="fa fa-check fa-2x"></i>
-                        <i *ngIf="check.status.state === 'Invalid'" class="fa fa-warning fa-2x"></i>
-                        <mat-checkbox class="enabled-check" name="check_{{ i }}" [formControl]="check.enabled">Enabled</mat-checkbox>
+                        <i *ngIf="check.isLoading === true" class="fa fa-cog fa-spin fa-larger"></i>
+                        <i *ngIf="check.status.valid === true" class="fa fa-check fa-larger"></i>
+                        <i *ngIf="check.status.valid === false" class="fa fa-warning fa-larger"></i>
+                        <mat-checkbox class="inspection-enabled-check" name="check_{{ i }}" [formControl]="check.enabled">Enabled</mat-checkbox>
                     </div>
                 </div>
-                <div class="description">{{check.description}}</div>
+                <div class="inspection-description">
+                    {{check.description}}
+                </div>
+                <div *ngIf="check.status.description" class="inspection-status-description">
+                    {{check.status.description}}
+                </div>
+                <div *ngIf="check.status.error" class="inspection-status-error">
+                    {{check.status.error}}
+                </div>
             </mat-card-content>
         </mat-card>
     </mat-card-content>
