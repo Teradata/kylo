@@ -1,7 +1,14 @@
-# inspector
-This application was generated using JHipster 4.13.3, you can find documentation and help at [http://www.jhipster.tech/documentation-archive/v4.13.3](http://www.jhipster.tech/documentation-archive/v4.13.3).
+# Kylo Configuration Inspector
+This application will inspect [Kylo][] configuration by looking at its properties and assessing their values.
+
+## Add new Kylo Configuration Inspection
+
+To add new configuration inspection create a subclass of com.thinkbiganalytics.install.inspector.inspection.Inspection and add it to the classpath.
+
 
 ## Development
+
+This application was generated using JHipster 4.13.3, you can find documentation and help at [http://www.jhipster.tech/documentation-archive/v4.13.3](http://www.jhipster.tech/documentation-archive/v4.13.3).
 
 Before you can build this project, you must install and configure the following dependencies on your machine:
 
@@ -144,6 +151,8 @@ For more information refer to [Using Docker and Docker-Compose][], this page als
 ## Continuous Integration (optional)
 
 To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
+
+[Kylo]: https://kylo.io/
 
 [JHipster Homepage and latest documentation]: http://www.jhipster.tech
 [JHipster 4.13.3 archive]: http://www.jhipster.tech/documentation-archive/v4.13.3
