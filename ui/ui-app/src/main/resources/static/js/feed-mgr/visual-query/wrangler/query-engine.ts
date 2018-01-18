@@ -1,5 +1,7 @@
+import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 
+import {DIALOG_SERVICE} from "./api/index";
 import {SaveRequest, SaveResponse} from "./api/rest-model";
 import {WranglerEngine} from "./api/wrangler-engine";
 import {ColumnController} from "./column-controller";
@@ -57,7 +59,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Construct a {@code QueryEngine}.
      */
-    constructor(protected $mdDialog: angular.material.IDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any) {
+    constructor(protected $mdDialog: angular.material.IDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
     }
 
     /**
@@ -110,8 +112,8 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Creates a column delegate of the specified data type.
      */
-    createColumnDelegate(dataType: string, controller: ColumnController): ColumnDelegate {
-        return new ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants);
+    createColumnDelegate(dataType: string, controller: ColumnController, column?: any): ColumnDelegate {
+        return new ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants, this.injector.get(DIALOG_SERVICE));
     }
 
     /**

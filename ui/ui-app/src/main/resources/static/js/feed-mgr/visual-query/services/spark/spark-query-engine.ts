@@ -1,3 +1,5 @@
+import {HttpClient} from "@angular/common/http";
+import {Injector} from "@angular/core";
 import * as angular from "angular";
 import {Program} from "estree";
 import "rxjs/add/observable/empty";
@@ -17,12 +19,17 @@ import {TableSchema} from "../../../model/table-schema";
 import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
+import {DIALOG_SERVICE} from "../../wrangler/api/index";
 import {SaveRequest, SaveResponse, SaveResponseStatus} from "../../wrangler/api/rest-model";
+import {DialogService} from "../../wrangler/api/services/dialog.service";
+import {ColumnController} from "../../wrangler/column-controller";
+import {ColumnDelegate} from "../../wrangler/column-delegate";
 import {QueryResultColumn} from "../../wrangler/model/query-result-column";
 import {ScriptState} from "../../wrangler/model/script-state";
 import {TransformResponse} from "../../wrangler/model/transform-response";
 import {QueryEngine} from "../../wrangler/query-engine";
 import {registerQueryEngine} from "../../wrangler/query-engine-factory.service";
+import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
@@ -38,14 +45,23 @@ export class SparkQueryEngine extends QueryEngine<string> {
     private apiUrl: string;
 
     /**
+     * Wrangler dialog service.
+     */
+    private dialog: DialogService;
+
+    static readonly $inject: string[] = ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", "$$wranglerInjector"];
+
+    /**
      * Constructs a {@code SparkQueryEngine}.
      */
     constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
-                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any) {
-        super($mdDialog, DatasourcesService, uiGridConstants);
+                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any,
+                private $$angularInjector: Injector) {
+        super($mdDialog, DatasourcesService, uiGridConstants, $$angularInjector);
 
         // Initialize properties
         this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
+        this.dialog = $$angularInjector.get(DIALOG_SERVICE);
 
         // Ensure Kylo Spark Shell is running
         $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
@@ -89,6 +105,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     get useNativeDataType(): boolean {
         return false;
+    }
+
+    /**
+     * Creates a column delegate of the specified data type.
+     */
+    createColumnDelegate(dataType: string, controller: ColumnController, column: any): ColumnDelegate {
+        return new SparkColumnDelegate(column, dataType, controller, this.$mdDialog, this.uiGridConstants, this.dialog, this.$$angularInjector.get(HttpClient), this.RestUrlService);
     }
 
     /**
@@ -484,4 +507,4 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 }
 
-registerQueryEngine("spark", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", SparkQueryEngine]);
+registerQueryEngine("spark", SparkQueryEngine);

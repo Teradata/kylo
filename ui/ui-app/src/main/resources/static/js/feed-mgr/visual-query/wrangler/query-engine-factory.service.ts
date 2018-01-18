@@ -1,10 +1,26 @@
+import {Compiler, Injector, NgModuleRef, Type} from "@angular/core";
 import * as angular from "angular";
+import "rxjs/add/observable/fromPromise";
+import "rxjs/add/operator/do";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/mergeMap";
+import "rxjs/add/operator/publishLast";
+import "rxjs/add/operator/toPromise";
+import {Observable} from "rxjs/Observable";
 
+import {WranglerModule} from "./core/wrangler.module";
 import {QueryEngine} from "./query-engine";
 
-const ENGINES: { [name: string]: [string | Function] } = {};
-let moduleName = require("feed-mgr/visual-query/module-name");
-type QueryEngineRef = [string | Function];
+/**
+ * Map of wrangler engine name to implementation.
+ */
+type QueryEngineRef = Type<any> | string;
+const ENGINES: { [name: string]: QueryEngineRef } = {};
+
+/**
+ * Angular 2 injector used by the Wrangler module.
+ */
+let $$wranglerInjector: any = null;
 
 /**
  * Registers the specified query engine with this factory.
@@ -22,9 +38,21 @@ export function registerQueryEngine(name: string, engine: QueryEngineRef) {
 export class QueryEngineFactory {
 
     /**
+     * Wrangler module.
+     */
+    private wrangler: Observable<NgModuleRef<WranglerModule>>;
+
+    static readonly $inject: string[] = ["$$angularInjector", "$ocLazyLoad"];
+
+    /**
      * Constructs a {@code QueryEngineFactory}.
      */
-    constructor(private $injector: angular.auto.IInjectorService, private $ocLazyLoad: ocLazyLoad) {
+    constructor($$angularInjector: Injector, private $ocLazyLoad: ocLazyLoad) {
+        this.wrangler = Observable.fromPromise($$angularInjector.get(Compiler).compileModuleAndAllComponentsAsync(WranglerModule))
+            .map(factories => factories.ngModuleFactory.create($$angularInjector))
+            .do(wrangler => $$wranglerInjector = wrangler.injector)
+            .publishLast()
+            .refCount();
     }
 
     /**
@@ -34,36 +62,48 @@ export class QueryEngineFactory {
      * @returns the query engine
      */
     getEngine(name: string): Promise<QueryEngine<any>> {
+        // Get engine short name
         let standardName = name.toLowerCase();
         if (!standardName.match(/^[a-z]+$/)) {
             throw new Error("Unsupported query engine: " + name);
         }
 
-        if (ENGINES[standardName]) {
-            return Promise.resolve(this.createEngine(ENGINES[standardName]));
-        } else {
-            return new Promise((resolve, reject) => {
-                this.$ocLazyLoad.load("plugin/" + standardName + "/" + standardName + "-query-engine")
-                    .then(() => {
-                        if (ENGINES[standardName]) {
-                            resolve(this.createEngine(ENGINES[standardName]));
-                        } else {
-                            reject("Unsupported query engine: " + name);
-                        }
-                    }, reject);
-            });
-        }
+        // Load the engine
+        return this.wrangler
+            .mergeMap(module => {
+                const $injector = module.injector.get("$injector");
+                if (ENGINES[standardName]) {
+                    return Observable.of(this.createEngine(ENGINES[standardName], $injector));
+                } else {
+                    return Observable.fromPromise(this.$ocLazyLoad.load("plugin/" + standardName + "/" + standardName + "-query-engine"))
+                        .map(() => {
+                            if (ENGINES[standardName]) {
+                                return this.createEngine(ENGINES[standardName], $injector);
+                            } else {
+                                throw "Unsupported query engine: " + name;
+                            }
+                        });
+                }
+            })
+            .toPromise();
     }
 
     /**
      * Instantiates the specified query engine.
      *
      * @param ref - a query engine reference
+     * @param $injector - Angular 1 injector
      * @returns the query engine
      */
-    private createEngine(ref: QueryEngineRef): QueryEngine<any> {
-        return this.$injector.instantiate(ref as any) as QueryEngine<any>;
+    private createEngine(ref: QueryEngineRef, $injector: angular.auto.IInjectorService): QueryEngine<any> {
+        return $injector.instantiate(ref as any) as QueryEngine<any>;
     }
 }
 
-angular.module(moduleName).service("VisualQueryEngineFactory", ["$injector", "$ocLazyLoad", QueryEngineFactory]);
+angular.module(require("feed-mgr/visual-query/module-name"))
+    .service("VisualQueryEngineFactory", QueryEngineFactory)
+    .provider("$$wranglerInjector", {
+        $get: function () {
+            return $$wranglerInjector;
+        }
+    });

@@ -2,4 +2,4 @@ define(["require", "exports"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });
-//# sourceMappingURL=datasource.js.map
+//# sourceMappingURL=data-source.js.map

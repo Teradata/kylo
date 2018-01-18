@@ -41,6 +41,21 @@
         <i class="material-icons">mode_edit</i> {{"views.query-table-header.rename-column" | translate}}
       </md-button>
     </md-menu-item>
+    <md-menu-item ng-if="availableCasts.length > 0">
+      <md-menu>
+        <md-button ng-click="$mdOpenMenu()">
+          <i class="material-icons">font_download</i> Data Type
+        </md-button>
+        <md-menu-content class="visual-query-column-menu">
+          <md-menu-item ng-repeat="type in availableCasts">
+            <md-button ng-click="header.delegate.castTo(type)">
+              <ng-md-icon ng-if="type.icon" icon="{{type.icon}}"></ng-md-icon>
+              {{type.name}}
+            </md-button>
+          </md-menu-item>
+        </md-menu-content>
+      </md-menu>
+    </md-menu-item>
     <md-menu-item ng-if="availableDomainTypes != null && availableDomainTypes.length > 0">
       <md-menu>
         <md-button ng-click="$mdOpenMenu()">
@@ -52,7 +67,8 @@
           </md-menu-item>
           <md-menu-item ng-repeat="domainType in availableDomainTypes">
             <md-button ng-click="header.delegate.setDomainType(header, domainType.id)">
-              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
+              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon>
+              {{domainType.title}}
             </md-button>
           </md-menu-item>
         </md-menu-content>
