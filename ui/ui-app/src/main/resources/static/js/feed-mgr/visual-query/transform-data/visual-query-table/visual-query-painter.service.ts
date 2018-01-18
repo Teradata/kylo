@@ -242,6 +242,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         const $scope: any = angular.element(headerDiv).scope();
 
         if ($scope.header !== header) {
+            $scope.availableCasts = header.delegate.getAvailableCasts();
             $scope.availableDomainTypes = this.domainTypes;
             $scope.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;
             $scope.header = header;

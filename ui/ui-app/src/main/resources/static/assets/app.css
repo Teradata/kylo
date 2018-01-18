@@ -1300,3 +1300,16 @@ md-input-container.global-search .md-input {
   margin: 4px;
   padding: 0;
 }
+
+/* Full-screen dialogs */
+.full-screen-dialog .mat-dialog-container {
+  padding: 0;
+  overflow: hidden;
+}
+.full-screen-dialog .mat-dialog-content {
+  margin: 0;
+}
+.full-screen-dialog .mat-dialog-actions:last-child {
+  margin-bottom: 0;
+  padding: 20px 30px;
+}

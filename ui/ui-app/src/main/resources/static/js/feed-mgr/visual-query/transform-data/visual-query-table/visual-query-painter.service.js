@@ -192,6 +192,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             // Update scope in a separate thread
             var $scope = angular.element(headerDiv).scope();
             if ($scope.header !== header) {
+                $scope.availableCasts = header.delegate.getAvailableCasts();
                 $scope.availableDomainTypes = this.domainTypes;
                 $scope.domainType = header.domainTypeId ? this.domainTypes.find(function (domainType) { return domainType.id === header.domainTypeId; }) : null;
                 $scope.header = header;

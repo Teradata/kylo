@@ -1,4 +1,4 @@
-import {JdbcDatasource} from "./datasource";
+import {JdbcDatasource} from "./data-source";
 
 /**
  * Request to save data wrangler results.
