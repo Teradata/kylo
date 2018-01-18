@@ -1,13 +1,16 @@
 <mat-card class="example-card">
         <div class="title">Welcome to Kylo Configuration Inspector!</div>
-        <div class="subtitle">This application will check your Kylo configuration by reading its properties and assessing their values</div>
+        <div class="subtitle muted">This application will check your Kylo configuration by reading its properties and assessing their values</div>
 
         <div class="form" fxLayout="column" fxLayoutAlign="space-evenly start">
             <mat-form-field class="path">
                 <input matInput placeholder="Absolute path to Kylo installation, e.g. /opt/kylo" [formControl]="path" required>
                 <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
             </mat-form-field>
-            <mat-checkbox [formControl]="devMode">Running from source</mat-checkbox>
+            <div>
+                <mat-checkbox [formControl]="devMode">Running from source</mat-checkbox>
+                <div class="devmode-hint muted">Check this if you are inspecting Kylo configuration checked out from Git</div>
+            </div>
             <button fxFlex="nogrow" [disabled]="path.invalid" mat-raised-button
                     (click)="checkConfig()">Inspect Configuration
             </button>
@@ -26,10 +29,10 @@
                         <i *ngIf="check.isLoading === true" class="fa fa-cog fa-spin fa-larger"></i>
                         <i *ngIf="check.status.valid === true" class="fa fa-check fa-larger"></i>
                         <i *ngIf="check.status.valid === false" class="fa fa-warning fa-larger"></i>
-                        <mat-checkbox class="inspection-enabled-check" name="check_{{ i }}" [formControl]="check.enabled">Enabled</mat-checkbox>
+                        <mat-checkbox class="inspection-enabled-check muted" name="check_{{ i }}" [formControl]="check.enabled">Enabled</mat-checkbox>
                     </div>
                 </div>
-                <div class="inspection-description">
+                <div class="inspection-description muted">
                     {{check.description}}
                 </div>
                 <div *ngIf="check.status.description" class="inspection-status-description">
