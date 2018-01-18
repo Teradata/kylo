@@ -9,9 +9,6 @@ import {
     AccountService,
     UserService,
     StateStorageService,
-    LoginService,
-    LoginModalService,
-    JhiLoginModalComponent,
     Principal,
     HasAnyAuthorityDirective,
     ConfigService,
@@ -23,12 +20,9 @@ import {
         InspectorSharedCommonModule
     ],
     declarations: [
-        JhiLoginModalComponent,
         HasAnyAuthorityDirective
     ],
     providers: [
-        LoginService,
-        LoginModalService,
         AccountService,
         StateStorageService,
         Principal,
@@ -38,10 +32,9 @@ import {
         DatePipe,
         ConfigService,
     ],
-    entryComponents: [JhiLoginModalComponent],
+    entryComponents: [],
     exports: [
         InspectorSharedCommonModule,
-        JhiLoginModalComponent,
         HasAnyAuthorityDirective,
         DatePipe
     ],
