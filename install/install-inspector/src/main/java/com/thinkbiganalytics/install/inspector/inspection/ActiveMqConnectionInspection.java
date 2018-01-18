@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class ActiveMqConnectionInspection extends DisabledInspection {
+public class ActiveMqConnectionInspection extends AbstractInspection {
 
     private final Logger log = LoggerFactory.getLogger(ActiveMqConnectionInspection.class);
 

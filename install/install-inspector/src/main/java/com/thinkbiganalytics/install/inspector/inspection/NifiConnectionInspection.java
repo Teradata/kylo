@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class NifiConnectionInspection extends DisabledInspection {
+public class NifiConnectionInspection extends AbstractInspection {
 
     private final Logger log = LoggerFactory.getLogger(NifiConnectionInspection.class);
 

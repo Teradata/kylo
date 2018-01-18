@@ -27,7 +27,7 @@ public class JwtTokenSyncInspection extends AbstractInspection<JwtTokenSyncInspe
 
     @Override
     public InspectionStatus inspect(JwtProperties servicesProperties, JwtProperties uiProperties) {
-        return InspectionStatus.VALID;
+        return new InspectionStatus(servicesProperties.jwtKey.equals(uiProperties.jwtKey));
     }
 
     @Override
