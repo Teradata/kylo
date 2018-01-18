@@ -1,22 +1,18 @@
 package com.thinkbiganalytics.install.inspector.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
+import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Inspection;
 import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
-import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
-import com.thinkbiganalytics.install.inspector.security.AuthoritiesConstants;
 import com.thinkbiganalytics.install.inspector.service.InspectionService;
-import com.thinkbiganalytics.install.inspector.web.rest.util.PaginationUtil;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -28,7 +24,6 @@ import java.net.URISyntaxException;
 import java.util.List;
 
 import javax.validation.Valid;
-import javax.websocket.server.PathParam;
 
 /**
  * REST controller for configuration checks.
@@ -55,8 +50,7 @@ public class InspectionResource {
     @Timed
     public ResponseEntity<List<Inspection>> getAllConfigChecks() {
         final Page<Inspection> page = inspectionService.getAllInspections();
-        HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/inspection");
-        return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
+        return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
     }
 
     /**

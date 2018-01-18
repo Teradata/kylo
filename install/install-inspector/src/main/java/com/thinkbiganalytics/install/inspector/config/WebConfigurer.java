@@ -40,7 +40,7 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
 
     private final JHipsterProperties jHipsterProperties;
 
-    private MetricRegistry metricRegistry;
+//    private MetricRegistry metricRegistry;
 
     public WebConfigurer(Environment env, JHipsterProperties jHipsterProperties) {
 
@@ -54,7 +54,7 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
             log.info("Web application configuration, using profiles: {}", (Object[]) env.getActiveProfiles());
         }
         EnumSet<DispatcherType> disps = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.ASYNC);
-        initMetrics(servletContext, disps);
+//        initMetrics(servletContext, disps);
         if (env.acceptsProfiles(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
             initCachingHttpHeadersFilter(servletContext, disps);
         }
@@ -131,31 +131,31 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         cachingHttpHeadersFilter.setAsyncSupported(true);
     }
 
-    /**
-     * Initializes Metrics.
-     */
-    private void initMetrics(ServletContext servletContext, EnumSet<DispatcherType> disps) {
-        log.debug("Initializing Metrics registries");
-        servletContext.setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE,
-            metricRegistry);
-        servletContext.setAttribute(MetricsServlet.METRICS_REGISTRY,
-            metricRegistry);
-
-        log.debug("Registering Metrics Filter");
-        FilterRegistration.Dynamic metricsFilter = servletContext.addFilter("webappMetricsFilter",
-            new InstrumentedFilter());
-
-        metricsFilter.addMappingForUrlPatterns(disps, true, "/*");
-        metricsFilter.setAsyncSupported(true);
-
-        log.debug("Registering Metrics Servlet");
-        ServletRegistration.Dynamic metricsAdminServlet =
-            servletContext.addServlet("metricsServlet", new MetricsServlet());
-
-        metricsAdminServlet.addMapping("/management/metrics/*");
-        metricsAdminServlet.setAsyncSupported(true);
-        metricsAdminServlet.setLoadOnStartup(2);
-    }
+//    /**
+//     * Initializes Metrics.
+//     */
+//    private void initMetrics(ServletContext servletContext, EnumSet<DispatcherType> disps) {
+//        log.debug("Initializing Metrics registries");
+//        servletContext.setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE,
+//            metricRegistry);
+//        servletContext.setAttribute(MetricsServlet.METRICS_REGISTRY,
+//            metricRegistry);
+//
+//        log.debug("Registering Metrics Filter");
+//        FilterRegistration.Dynamic metricsFilter = servletContext.addFilter("webappMetricsFilter",
+//            new InstrumentedFilter());
+//
+//        metricsFilter.addMappingForUrlPatterns(disps, true, "/*");
+//        metricsFilter.setAsyncSupported(true);
+//
+//        log.debug("Registering Metrics Servlet");
+//        ServletRegistration.Dynamic metricsAdminServlet =
+//            servletContext.addServlet("metricsServlet", new MetricsServlet());
+//
+//        metricsAdminServlet.addMapping("/management/metrics/*");
+//        metricsAdminServlet.setAsyncSupported(true);
+//        metricsAdminServlet.setLoadOnStartup(2);
+//    }
 
     @Bean
     public CorsFilter corsFilter() {
@@ -195,8 +195,8 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         }
     }
 
-    @Autowired(required = false)
-    public void setMetricRegistry(MetricRegistry metricRegistry) {
-        this.metricRegistry = metricRegistry;
-    }
+//    @Autowired(required = false)
+//    public void setMetricRegistry(MetricRegistry metricRegistry) {
+//        this.metricRegistry = metricRegistry;
+//    }
 }
