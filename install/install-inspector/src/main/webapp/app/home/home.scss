@@ -7,8 +7,11 @@ Main page styles
 }
 
 .subtitle {
-    color: dimgray;
     font-size: 15px;
+}
+
+.devmode-hint {
+    font-size: 0.8em;
 }
 
 .inspection {
@@ -20,13 +23,11 @@ Main page styles
 }
 
 .inspection-description {
-    color: dimgray;
     font-size: 15px;
     margin-bottom: 10px;
 }
 
 .inspection-enabled-check {
-    color: dimgray;
 }
 
 .inspection-status-description {
@@ -37,8 +38,8 @@ Main page styles
 
 }
 
-.disabled {
-    color: lightgray;
+.muted {
+    color: dimgray;
 }
 
 .disabled, .disabled .inspection-description {
