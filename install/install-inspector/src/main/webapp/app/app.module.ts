@@ -20,8 +20,6 @@ import {
     JhiMainComponent,
     NavbarComponent,
     FooterComponent,
-    ProfileService,
-    PageRibbonComponent,
     ActiveMenuDirective,
     ErrorComponent
 } from './layouts';
@@ -45,12 +43,10 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
         JhiMainComponent,
         NavbarComponent,
         ErrorComponent,
-        PageRibbonComponent,
         ActiveMenuDirective,
         FooterComponent
     ],
     providers: [
-        ProfileService,
         customHttpProvider(),
         PaginationConfig,
         UserRouteAccessService
