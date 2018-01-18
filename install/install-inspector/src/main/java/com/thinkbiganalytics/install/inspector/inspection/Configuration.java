@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.install.inspector.inspection;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
@@ -10,6 +12,8 @@ import org.springframework.core.io.Resource;
 import java.lang.reflect.Field;
 
 public class Configuration {
+
+    private final Logger log = LoggerFactory.getLogger(Configuration.class);
 
     private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/services/service-app/src/main/resources/application.properties";
     private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/application.properties";
@@ -57,16 +61,25 @@ public class Configuration {
         return id;
     }
 
-    public InspectionStatus execute(Inspection inspection) {
-        Object servicesProperties = inspection.getServicesProperties();
-        if (servicesProperties != null) {
-            autowireProperties(servicesProperties, servicesFactory);
+    public <SP,UP> InspectionStatus execute(Inspection<SP, UP> inspection) {
+        try {
+            SP servicesProperties = inspection.getServicesProperties();
+            if (servicesProperties != null) {
+                autowireProperties(servicesProperties, servicesFactory);
+            }
+            UP uiProperties = inspection.getUiProperties();
+            if (uiProperties != null) {
+                autowireProperties(uiProperties, uiFactory);
+            }
+            return inspection.inspect(servicesProperties, uiProperties);
+        } catch (Exception e) {
+            String msg = String.format("An error occurred while running configuration inspection '%s'", inspection.getName());
+            log.error(msg, e);
+            InspectionStatus status = new InspectionStatus(false);
+            status.setDescription(msg);
+            status.setError(e.getMessage());
+            return status;
         }
-        Object uiProperties = inspection.getUiProperties();
-        if (uiProperties != null) {
-            autowireProperties(uiProperties, uiFactory);
-        }
-        return inspection.inspect(servicesProperties, uiProperties);
     }
 
     private void autowireProperties(Object properties, ConfigurableListableBeanFactory factory) {

@@ -2,33 +2,47 @@
 Main page styles
 ========================================================================== */
 
-.inspection {
-    margin-bottom: 10px;
-}
-
 .title {
     font-size: 25px;
 }
 
-.header {
+.subtitle {
+    color: dimgray;
+    font-size: 15px;
+}
+
+.inspection {
+    margin-bottom: 10px;
+}
+
+.inspection-header {
     font-size: 18px;
 }
 
-.description {
+.inspection-description {
     color: dimgray;
     font-size: 15px;
+    margin-bottom: 10px;
+}
+
+.inspection-enabled-check {
+    color: dimgray;
+}
+
+.inspection-status-description {
+
+}
+
+.inspection-status-error {
+
 }
 
 .disabled {
     color: lightgray;
 }
 
-.disabled, .disabled .description {
+.disabled, .disabled .inspection-description {
     color: lightgray;
-}
-
-.enabled-check {
-    color: dimgray;
 }
 
 .form {
@@ -56,4 +70,8 @@ Main page styles
 
 .fa-check {
     color: seagreen;
+}
+
+.fa-larger {
+    font-size: 1.7em;
 }
