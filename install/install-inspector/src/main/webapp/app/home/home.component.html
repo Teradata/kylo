@@ -1,6 +1,6 @@
 <mat-card class="example-card">
-        <div class="header">Welcome to Kylo Configuration Inspector!</div>
-        <small>This application will check your Kylo configuration by reading its properties and assessing their values</small>
+        <div class="title">Welcome to Kylo Configuration Inspector!</div>
+        <div class="description">This application will check your Kylo configuration by reading its properties and assessing their values</div>
 
         <div class="form" fxLayout="column" fxLayoutAlign="space-evenly start">
             <mat-form-field class="path">
@@ -14,8 +14,9 @@
         </div>
 
 
-        <mat-card class="inspection" *ngFor="let check of checks"
-                  [ngClass]="{'active' : check.id === selectedCheckId, 'disabled': check.status.state === 'Disabled'}">
+        <mat-card class="inspection" *ngFor="let check of checks; let i = index"
+                  [class.disabled]="check.enabled.value === false"
+                  [class.active]="check.id === selectedCheckId">
             <mat-card-content>
                 <div fxLayout="row">
                     <div fxFlex>
@@ -26,7 +27,7 @@
                         <i *ngIf="check.status.state === 'Failed'" class="fa fa-warning fa-2x"></i>
                         <i *ngIf="check.status.state === 'Valid'" class="fa fa-check fa-2x"></i>
                         <i *ngIf="check.status.state === 'Invalid'" class="fa fa-warning fa-2x"></i>
-                        <span *ngIf="check.status.state === 'Disabled'" class="disabled-notice">Disabled</span>
+                        <mat-checkbox class="enabled-check" name="check_{{ i }}" [formControl]="check.enabled">Enabled</mat-checkbox>
                     </div>
                 </div>
                 <div class="description">{{check.description}}</div>

@@ -6,12 +6,17 @@ Main page styles
     margin-bottom: 10px;
 }
 
+.title {
+    font-size: 25px;
+}
+
 .header {
-    font-size: 20px;
+    font-size: 18px;
 }
 
 .description {
     color: dimgray;
+    font-size: 15px;
 }
 
 .disabled {
@@ -22,7 +27,7 @@ Main page styles
     color: lightgray;
 }
 
-.disabled-notice {
+.enabled-check {
     color: dimgray;
 }
 

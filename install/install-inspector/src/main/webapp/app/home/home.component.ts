@@ -1,9 +1,7 @@
 import {Component, OnInit} from '@angular/core';
-import {NgbModalRef} from '@ng-bootstrap/ng-bootstrap';
-import {JhiEventManager} from 'ng-jhipster';
 
-import {Account, ConfigService, LoginModalService, Principal} from '../shared';
-import {Status, StatusState} from '../shared/config/status.model';
+import {Account, ConfigService} from '../shared';
+import {Status} from '../shared/config/status.model';
 import {FormControl, Validators} from '@angular/forms';
 
 @Component({
@@ -12,31 +10,20 @@ import {FormControl, Validators} from '@angular/forms';
     styleUrls: [
         'home.scss'
     ]
-
 })
 export class HomeComponent implements OnInit {
     account: Account;
-    modalRef: NgbModalRef;
     checks: Array<any> = []; // todo make a class
-    enabledChecks: Array<any> = []; // todo make a class
-    disabledChecks: Array<any> = []; // todo make a class
     isLoading: boolean;
     selectedCheckId = -1;
     path = new FormControl('', [Validators.required]);
     devMode = new FormControl(false, [Validators.required]);
 
-    constructor(private principal: Principal,
-                private loginModalService: LoginModalService,
-                private eventManager: JhiEventManager,
-                private configService: ConfigService) {
+    constructor(private configService: ConfigService) {
     }
 
     ngOnInit() {
         const self = this;
-        this.principal.identity().then((account) => {
-            this.account = account;
-        });
-        this.registerAuthenticationSuccess();
 
         this.loadChecks().toPromise().then((checks) => {
             if (checks) {
@@ -45,51 +32,26 @@ export class HomeComponent implements OnInit {
                     console.log('for each check', check);
                     console.log('this', this);
                     console.log('self', self);
-                    if (check.status.state !== 'Disabled') {
-                        self.enabledChecks.push(check)
-                    } else {
-                        self.disabledChecks.push(check);
-                    }
+                    check.enabled = new FormControl(false);
+                    check.status = new Status('Initial');
                 });
-                if (self.enabledChecks.length > 0) {
-                    self.selectedCheckId = self.enabledChecks[0].id;
-                } else if (self.disabledChecks.length > 0) {
-                    self.selectedCheckId = self.disabledChecks[0].id;
+                self.checks = checks;
+                if (self.checks.length > 0) {
+                    self.selectedCheckId = self.checks[0].id;
                 }
                 self.isLoading = false;
-                self.checks = checks;
             } else {
                 console.log('there are no checks configured on server');
                 self.checks = null;
-                self.enabledChecks = null;
-                self.disabledChecks = null;
                 self.isLoading = false;
             }
             return self.checks;
         }).catch((err) => {
             console.log('error getting configured checks from server');
             self.checks = null;
-            self.enabledChecks = null;
-            self.disabledChecks = null;
             self.isLoading = false;
             return null;
         });
-    }
-
-    registerAuthenticationSuccess() {
-        this.eventManager.subscribe('authenticationSuccess', (message) => {
-            this.principal.identity().then((account) => {
-                this.account = account;
-            });
-        });
-    }
-
-    isAuthenticated() {
-        return this.principal.isAuthenticated();
-    }
-
-    login() {
-        this.modalRef = this.loginModalService.open();
     }
 
     checkConfig() {
@@ -104,11 +66,11 @@ export class HomeComponent implements OnInit {
             }
             return configuration;
         }).then(this.executeChecks)
-        .catch((err) => {
-            console.log('error creating configuration on path ' + this.path);
-            this.isLoading = false;
-            return null;
-        });
+            .catch((err) => {
+                console.log('error creating configuration on path ' + this.path);
+                this.isLoading = false;
+                return null;
+            });
     }
 
     loadChecks() {
@@ -118,7 +80,9 @@ export class HomeComponent implements OnInit {
 
     executeChecks = (configuration: any) => {
         console.log('execute checks for configuration ' + configuration.path.uri);
-        const checks = this.enabledChecks.map((check) => {
+        const checks = this.checks
+            .filter((check) => check.enabled.value)
+            .map((check) => {
             check.status = new Status('Loading');
             return this.configService.executeCheck(configuration.id, check.id).toPromise().then((status) => {
                 console.log('check ' + check.id + ' executed with status ' + status, status);
@@ -141,6 +105,10 @@ export class HomeComponent implements OnInit {
 
     getErrorMessage() {
         return this.path.hasError('required') ? 'You must enter a value' : '';
+    }
+
+    toggleCheckEnabled(check: any) {
+        check.enabled.value = !check.enabled.value;
     }
 
 }

@@ -20,7 +20,7 @@ public class UiAndServicesPortSyncInspection extends AbstractInspection {
     }
 
     @Override
-    public InspectionStatus inspect(Object properties) {
+    public InspectionStatus inspect(Object servicesProperties, Object uiProperties) {
         return InspectionStatus.INVALID;
     }
 }
