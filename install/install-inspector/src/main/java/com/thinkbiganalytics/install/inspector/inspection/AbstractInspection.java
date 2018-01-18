@@ -2,23 +2,9 @@ package com.thinkbiganalytics.install.inspector.inspection;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public abstract class AbstractInspection implements Inspection {
+public abstract class AbstractInspection<SP, UP> implements Inspection<SP, UP> {
 
-    private final InspectionStatus status;
     private int id;
-
-    AbstractInspection() {
-        this(InspectionStatus.INITIAL);
-    }
-
-    AbstractInspection(InspectionStatus status) {
-        this.status = status;
-    }
-
-    @Override
-    public InspectionStatus getStatus() {
-        return status;
-    }
 
     @Override
     public int getId() {
@@ -31,13 +17,19 @@ public abstract class AbstractInspection implements Inspection {
     }
 
     @Override
-    public InspectionStatus inspect(Object properties) {
+    public InspectionStatus inspect(SP servicesProperties, UP uiProperties) {
         throw new IllegalStateException("Not implemented yet");
     }
 
     @Override
     @JsonIgnore
-    public Object getProperties() {
+    public SP getServicesProperties() {
+        return null;
+    }
+
+    @Override
+    @JsonIgnore
+    public UP getUiProperties() {
         return null;
     }
 }

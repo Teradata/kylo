@@ -2,7 +2,6 @@
 export type StatusState
     = 'Initial'
     | 'Loading'
-    | 'Disabled'
     | 'Failed'
     | 'Invalid'
     | 'Valid';

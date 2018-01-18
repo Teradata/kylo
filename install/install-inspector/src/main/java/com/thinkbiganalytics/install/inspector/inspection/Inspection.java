@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.install.inspector.inspection;
 
-public interface Inspection {
+public interface Inspection<SP, UP> {
 
     int getId();
 
@@ -10,9 +10,9 @@ public interface Inspection {
 
     String getDescription();
 
-    InspectionStatus inspect(Object properties);
+    InspectionStatus inspect(SP servicesProperties, UP uiProperties);
 
-    InspectionStatus getStatus();
+    SP getServicesProperties();
 
-    Object getProperties();
+    UP getUiProperties();
 }

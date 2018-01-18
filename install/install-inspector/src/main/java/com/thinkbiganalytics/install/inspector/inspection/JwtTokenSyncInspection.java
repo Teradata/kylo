@@ -6,16 +6,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtTokenSyncInspection extends AbstractInspection {
+public class JwtTokenSyncInspection extends AbstractInspection<JwtTokenSyncInspection.JwtProperties, JwtTokenSyncInspection.JwtProperties> {
 
     private final Logger log = LoggerFactory.getLogger(JwtTokenSyncInspection.class);
 
-    private class JwtProperties {
+    class JwtProperties {
         @Value("${security.jwt.key}")
         private String jwtKey;
-
-//        @Value("${modeshape.datasource.url}")
-//        private String modeshapeUrl;
     }
 
     @Override
@@ -29,12 +26,17 @@ public class JwtTokenSyncInspection extends AbstractInspection {
     }
 
     @Override
-    public InspectionStatus inspect(Object properties) {
+    public InspectionStatus inspect(JwtProperties servicesProperties, JwtProperties uiProperties) {
         return InspectionStatus.VALID;
     }
 
     @Override
-    public Object getProperties() {
+    public JwtProperties getServicesProperties() {
+        return new JwtProperties();
+    }
+
+    @Override
+    public JwtProperties getUiProperties() {
         return new JwtProperties();
     }
 }

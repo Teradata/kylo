@@ -12,30 +12,41 @@ import java.lang.reflect.Field;
 public class Configuration {
 
     private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/services/service-app/src/main/resources/application.properties";
+    private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/application.properties";
     private static final String KYLO_SERVICES_CONF_APPLICATION_PROPERTIES = "/kylo-services/conf/application.properties";
-
-    private Path path;
-    private Integer id;
-    private ConfigurableListableBeanFactory factory;
+    private static final String KYLO_UI_CONF_APPLICATION_PROPERTIES = "/kylo-ui/conf/application.properties";
+    private final ConfigurableListableBeanFactory servicesFactory;
+    private final ConfigurableListableBeanFactory uiFactory;
+    private final Path path;
+    private final Integer id;
 
     public Configuration(int id, Path path) {
         this.path = path;
         this.id = id;
 
-        String location = path.getUri();
+        String servicesLocation = path.getUri();
+        String uiLocation = path.getUri();
         if (path.isDevMode()) {
-            location += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
+            servicesLocation += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
+            uiLocation += UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
         } else {
-            location += KYLO_SERVICES_CONF_APPLICATION_PROPERTIES;
+            servicesLocation += KYLO_SERVICES_CONF_APPLICATION_PROPERTIES;
+            uiLocation += KYLO_UI_CONF_APPLICATION_PROPERTIES;
         }
 
+        uiFactory = createConfiguration(uiLocation);
+        servicesFactory = createConfiguration(servicesLocation);
+    }
+
+    private ConfigurableListableBeanFactory createConfiguration(String location) {
+        DefaultListableBeanFactory factory = new DefaultListableBeanFactory();
         Resource[] resources = new FileSystemResource[] {new FileSystemResource(location)};
-        factory = new DefaultListableBeanFactory();
         PropertyPlaceholderConfigurer ppc = new PropertyPlaceholderConfigurer();
         ppc.setLocations(resources);
         ppc.setIgnoreUnresolvablePlaceholders(true);
         ppc.setSearchSystemEnvironment(false);
         ppc.postProcessBeanFactory(factory);
+        return factory;
     }
 
     public Path getPath() {
@@ -47,14 +58,18 @@ public class Configuration {
     }
 
     public InspectionStatus execute(Inspection inspection) {
-        Object properties = inspection.getProperties();
-        if (properties != null) {
-            injectProperties(properties);
+        Object servicesProperties = inspection.getServicesProperties();
+        if (servicesProperties != null) {
+            autowireProperties(servicesProperties, servicesFactory);
         }
-        return inspection.inspect(properties);
+        Object uiProperties = inspection.getUiProperties();
+        if (uiProperties != null) {
+            autowireProperties(uiProperties, uiFactory);
+        }
+        return inspection.inspect(servicesProperties, uiProperties);
     }
 
-    private void injectProperties(Object properties) {
+    private void autowireProperties(Object properties, ConfigurableListableBeanFactory factory) {
         Field[] fields = properties.getClass().getDeclaredFields();
         for (Field field : fields) {
             Value value = field.getAnnotation(Value.class);
