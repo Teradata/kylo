@@ -9,9 +9,10 @@
     </parent>
     <artifactId>kylo-install-inspector</artifactId>
     <packaging>war</packaging>
-    <name>Inspector</name>
 
     <properties>
+        <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+
         <spring.version>4.3.13.RELEASE</spring.version>
         <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
         <spring.jpa.version>1.11.4.RELEASE</spring.jpa.version>
