@@ -26,6 +26,7 @@ package com.thinkbiganalytics.auth.jaas.config;
 import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.GroupPrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.UserPrincipalAuthorityGranter;
+import com.thinkbiganalytics.auth.jaas.DefaultKyloJaasAuthenticationProvider;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.UsernameJaasAuthenticationProvider;
@@ -73,7 +74,7 @@ public class JaasAuthConfig {
     @Bean(name = UI_AUTH_PROVIDER)
     public AbstractJaasAuthenticationProvider uiAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                        List<AuthorityGranter> authorityGranters) {
-        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        DefaultJaasAuthenticationProvider provider = new DefaultKyloJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_UI);
@@ -83,7 +84,7 @@ public class JaasAuthConfig {
     @Bean(name = SERVICES_AUTH_PROVIDER)
     public AbstractJaasAuthenticationProvider servicesAuthenticationProvider(@Named("jaasConfiguration") javax.security.auth.login.Configuration config,
                                                                              List<AuthorityGranter> authorityGranters) {
-        DefaultJaasAuthenticationProvider provider = new DefaultJaasAuthenticationProvider();
+        DefaultJaasAuthenticationProvider provider = new DefaultKyloJaasAuthenticationProvider();
         provider.setConfiguration(config);
         provider.setAuthorityGranters(authorityGranters.toArray(new AuthorityGranter[authorityGranters.size()]));
         provider.setLoginContextName(JAAS_SERVICES);

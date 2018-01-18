@@ -32,7 +32,7 @@ import org.springframework.security.core.AuthenticationException;
 /**
  * A type of {@link DefaultJaasAuthenticationProvider} that only accepts a UsernameAuthenticationToken.
  */
-public class UsernameJaasAuthenticationProvider extends DefaultJaasAuthenticationProvider {
+public class UsernameJaasAuthenticationProvider extends DefaultKyloJaasAuthenticationProvider {
 
     /* (non-Javadoc)
      * @see org.springframework.security.authentication.jaas.AbstractJaasAuthenticationProvider#supports(java.lang.Class)
