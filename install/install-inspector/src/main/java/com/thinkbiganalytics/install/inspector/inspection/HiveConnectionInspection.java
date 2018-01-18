@@ -5,7 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 @Component
-public class HiveConnectionInspection extends DisabledInspection {
+public class HiveConnectionInspection extends AbstractInspection {
 
     private final Logger log = LoggerFactory.getLogger(HiveConnectionInspection.class);
 

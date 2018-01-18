@@ -2,18 +2,13 @@ package com.thinkbiganalytics.install.inspector.inspection;
 
 public class InspectionStatus {
 
-    static final InspectionStatus INITIAL = new InspectionStatus("Initial");
-    static final InspectionStatus DISABLED = new InspectionStatus("Disabled");
-    static final InspectionStatus VALID = new InspectionStatus("Valid");
-    static final InspectionStatus INVALID = new InspectionStatus("Invalid");
+    private boolean valid;
 
-    private final String state;
-
-    private InspectionStatus(String state) {
-        this.state = state;
+    InspectionStatus(boolean isValid) {
+        this.valid = isValid;
     }
 
-    public String getState() {
-        return state;
+    public boolean isValid() {
+        return valid;
     }
 }

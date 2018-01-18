@@ -86,13 +86,12 @@ export class HomeComponent implements OnInit {
             check.status = new Status('Loading');
             return this.configService.executeCheck(configuration.id, check.id).toPromise().then((status) => {
                 console.log('check ' + check.id + ' executed with status ' + status, status);
-                check.status = status;
-                return status;
+                check.status = new Status(status.valid === true ? 'Valid' : 'Invalid');
+                return check.status;
             }).catch((err) => {
                 console.log('error executing check ' + check.id);
-                const status = new Status('Failed');
-                check.status = status;
-                return status;
+                check.status = new Status('Failed');
+                return check.status;
             });
         });
         return Promise.all(checks)
@@ -106,9 +105,4 @@ export class HomeComponent implements OnInit {
     getErrorMessage() {
         return this.path.hasError('required') ? 'You must enter a value' : '';
     }
-
-    toggleCheckEnabled(check: any) {
-        check.enabled.value = !check.enabled.value;
-    }
-
 }
