@@ -13,11 +13,15 @@
     <properties>
         <plugin.license.parentRelative>../../</plugin.license.parentRelative>
 
+        <!-- Dependency versions -->
         <spring.version>4.3.13.RELEASE</spring.version>
         <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
-        <spring.jpa.version>1.11.4.RELEASE</spring.jpa.version>
-        <!--<spring-data-commons.version>1.13.9.RELEASE</spring-data-commons.version>-->
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
+        <jhipster-dependencies.version>0.1.6</jhipster-dependencies.version>
+        <!-- The spring-boot version should match the one managed by
+        https://mvnrepository.com/artifact/io.github.jhipster/jhipster-dependencies/${jhipster-dependencies.version} -->
+        <spring-boot.version>1.5.9.RELEASE</spring-boot.version>
+        <validation-api.version>1.1.0.Final</validation-api.version>
 
         <!-- Build properties -->
         <maven.version>3.0.0</maven.version>
@@ -34,16 +38,6 @@
         <argLine>-Djava.security.egd=file:/dev/./urandom -Xmx256m</argLine>
         <m2e.apt.activation>jdt_apt</m2e.apt.activation>
         <run.addResources>false</run.addResources>
-
-        <!-- Dependency versions -->
-        <jhipster-dependencies.version>0.1.6</jhipster-dependencies.version>
-        <!-- The spring-boot version should match the one managed by
-        https://mvnrepository.com/artifact/io.github.jhipster/jhipster-dependencies/${jhipster-dependencies.version} -->
-        <spring-boot.version>1.5.9.RELEASE</spring-boot.version>
-        <!-- The javassist version should match the one managed by
-        https://mvnrepository.com/artifact/org.hibernate/hibernate-core/${hibernate.version} -->
-        <javassist.version>3.20.0-GA</javassist.version>
-        <validation-api.version>1.1.0.Final</validation-api.version>
 
         <!-- Plugin versions -->
         <maven-clean-plugin.version>2.6.1</maven-clean-plugin.version>
@@ -73,12 +67,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.data</groupId>
-            <artifactId>spring-data-jpa</artifactId>
-            <version>${spring.jpa.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>io.github.jhipster</groupId>
             <artifactId>jhipster</artifactId>
@@ -124,17 +112,6 @@
             <groupId>io.jsonwebtoken</groupId>
             <artifactId>jjwt</artifactId>
         </dependency>
-        <!-- Spring Cloud -->
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-spring-service-connector</artifactId>
-        </dependency>
-        <!-- Security -->
-        <dependency>
-            <groupId>org.springframework.security</groupId>
-            <artifactId>spring-security-data</artifactId>
-        </dependency>
-        <!-- jhipster-needle-maven-add-dependency -->
     </dependencies>
 
     <build>
@@ -316,7 +293,7 @@
             </build>
             <properties>
                 <!-- default Spring profiles -->
-                <spring.profiles.active>dev${profile.no-liquibase}</spring.profiles.active>
+                <spring.profiles.active>dev</spring.profiles.active>
             </properties>
         </profile>
         <profile>
