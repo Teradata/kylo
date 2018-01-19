@@ -15,12 +15,11 @@
 
         <!-- Dependency versions -->
         <spring.version>4.3.13.RELEASE</spring.version>
-        <spring.boot.version>1.5.4.RELEASE</spring.boot.version>
+        <spring.boot.version>1.5.9.RELEASE</spring.boot.version>
         <spring.security.version>4.2.3.RELEASE</spring.security.version>
         <jhipster-dependencies.version>0.1.6</jhipster-dependencies.version>
         <!-- The spring-boot version should match the one managed by
         https://mvnrepository.com/artifact/io.github.jhipster/jhipster-dependencies/${jhipster-dependencies.version} -->
-        <spring-boot.version>1.5.9.RELEASE</spring-boot.version>
         <validation-api.version>1.1.0.Final</validation-api.version>
 
         <!-- Build properties -->
@@ -197,7 +196,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
+                <version>${spring.boot.version}</version>
                 <executions>
                     <execution>
                         <goals>
@@ -337,7 +336,7 @@
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
-                        <version>${spring-boot.version}</version>
+                        <version>${spring.boot.version}</version>
                         <configuration>
                             <mainClass>${start-class}</mainClass>
                             <executable>true</executable>
