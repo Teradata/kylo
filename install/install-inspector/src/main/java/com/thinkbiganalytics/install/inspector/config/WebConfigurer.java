@@ -20,33 +20,36 @@ package com.thinkbiganalytics.install.inspector.config;
  * #L%
  */
 
-import io.github.jhipster.config.JHipsterConstants;
-import io.github.jhipster.config.JHipsterProperties;
-import io.github.jhipster.web.filter.CachingHttpHeadersFilter;
-
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.servlet.InstrumentedFilter;
-import com.codahale.metrics.servlets.MetricsServlet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.embedded.*;
+import org.springframework.boot.context.embedded.ConfigurableEmbeddedServletContainer;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerCustomizer;
+import org.springframework.boot.context.embedded.MimeMappings;
 import org.springframework.boot.context.embedded.undertow.UndertowEmbeddedServletContainerFactory;
-import io.undertow.UndertowOptions;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.MediaType;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
-import org.springframework.http.MediaType;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.*;
-import javax.servlet.*;
+import java.util.EnumSet;
+
+import javax.servlet.DispatcherType;
+import javax.servlet.FilterRegistration;
+import javax.servlet.Servlet;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRegistration;
+
+import io.github.jhipster.config.JHipsterConstants;
+import io.github.jhipster.config.JHipsterProperties;
+import io.github.jhipster.web.filter.CachingHttpHeadersFilter;
+import io.undertow.UndertowOptions;
 
 /**
  * Configuration of web application with Servlet 3.0 APIs.
@@ -151,32 +154,6 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         cachingHttpHeadersFilter.setAsyncSupported(true);
     }
 
-//    /**
-//     * Initializes Metrics.
-//     */
-//    private void initMetrics(ServletContext servletContext, EnumSet<DispatcherType> disps) {
-//        log.debug("Initializing Metrics registries");
-//        servletContext.setAttribute(InstrumentedFilter.REGISTRY_ATTRIBUTE,
-//            metricRegistry);
-//        servletContext.setAttribute(MetricsServlet.METRICS_REGISTRY,
-//            metricRegistry);
-//
-//        log.debug("Registering Metrics Filter");
-//        FilterRegistration.Dynamic metricsFilter = servletContext.addFilter("webappMetricsFilter",
-//            new InstrumentedFilter());
-//
-//        metricsFilter.addMappingForUrlPatterns(disps, true, "/*");
-//        metricsFilter.setAsyncSupported(true);
-//
-//        log.debug("Registering Metrics Servlet");
-//        ServletRegistration.Dynamic metricsAdminServlet =
-//            servletContext.addServlet("metricsServlet", new MetricsServlet());
-//
-//        metricsAdminServlet.addMapping("/management/metrics/*");
-//        metricsAdminServlet.setAsyncSupported(true);
-//        metricsAdminServlet.setLoadOnStartup(2);
-//    }
-
     @Bean
     public CorsFilter corsFilter() {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
@@ -214,9 +191,4 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
             throw new RuntimeException("Failed to instantiate org.h2.server.web.WebServlet", e);
         }
     }
-
-//    @Autowired(required = false)
-//    public void setMetricRegistry(MetricRegistry metricRegistry) {
-//        this.metricRegistry = metricRegistry;
-//    }
 }
