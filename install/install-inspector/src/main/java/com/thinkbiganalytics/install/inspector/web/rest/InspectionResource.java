@@ -71,15 +71,15 @@ public class InspectionResource {
     }
 
     /**
-     * POST  /config  : Set new configuration path
+     * PUT  /config  : Creates or updates Kylo Configuration at given path
      * <p>
      *
      * @param installPath installation path
      */
     @PostMapping("/configuration")
-    public ResponseEntity<Configuration> setKyloPath(@Valid @RequestBody Path installPath) throws URISyntaxException {
+    public ResponseEntity<Configuration> createConfiguration(@Valid @RequestBody Path installPath) throws URISyntaxException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
-        Configuration config = inspectionService.setPath(installPath);
+        Configuration config = inspectionService.createConfiguration(installPath);
         return new ResponseEntity<>(config, HttpStatus.OK);
     }
 
