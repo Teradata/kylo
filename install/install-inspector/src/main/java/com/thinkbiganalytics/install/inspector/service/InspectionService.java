@@ -20,19 +20,17 @@ package com.thinkbiganalytics.install.inspector.service;
  * #L%
  */
 
+import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Inspection;
 import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
-import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
-import com.thinkbiganalytics.install.inspector.repository.InspectionRepository;
 import com.thinkbiganalytics.install.inspector.repository.ConfigurationRepository;
+import com.thinkbiganalytics.install.inspector.repository.InspectionRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-
-import org.springframework.data.domain.PageImpl;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 /**
  * Service class for managing inspections.
@@ -50,8 +48,8 @@ public class InspectionService {
         this.configRepo = configRepo;
     }
 
-    public Page<Inspection> getAllInspections() {
-        return new PageImpl<>(inspectionRepo.getAll());
+    public List<Inspection> getAllInspections() {
+        return inspectionRepo.getAll();
     }
 
     public InspectionStatus execute(int configId, int inspectionId) {

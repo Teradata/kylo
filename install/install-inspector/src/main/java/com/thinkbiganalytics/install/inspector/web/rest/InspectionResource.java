@@ -29,7 +29,6 @@ import com.thinkbiganalytics.install.inspector.service.InspectionService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -67,8 +66,8 @@ public class InspectionResource {
      */
     @GetMapping("/inspection")
     public ResponseEntity<List<Inspection>> getAllConfigChecks() {
-        final Page<Inspection> page = inspectionService.getAllInspections();
-        return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
+        final List<Inspection> page = inspectionService.getAllInspections();
+        return new ResponseEntity<>(page, HttpStatus.OK);
     }
 
     /**
