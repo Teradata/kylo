@@ -28,11 +28,6 @@ import java.util.List;
 public interface FeedStatus {
 
     /**
-     * set fields on this object
-     */
-    void populate();
-
-    /**
      * Return the list of FeedHealth objects
      */
     List<FeedHealth> getFeeds();

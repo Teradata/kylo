@@ -25,7 +25,7 @@ import javax.annotation.Nonnull;
 /**
  * A JDBC data source that is accessible from Spark.
  */
-public class JdbcDatasource extends UserDatasource implements com.thinkbiganalytics.metadata.datasource.JdbcDatasource {
+public final class JdbcDatasource extends UserDatasource implements com.thinkbiganalytics.metadata.datasource.JdbcDatasource {
 
     private static final long serialVersionUID = 1778772264428622884L;
 

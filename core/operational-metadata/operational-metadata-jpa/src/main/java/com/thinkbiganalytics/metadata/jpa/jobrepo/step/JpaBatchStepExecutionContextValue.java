@@ -65,7 +65,7 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     }
 
     public JpaBatchStepExecutionContextValue(BatchStepExecution stepExecution, String keyName) {
-        setStepExecution(stepExecution);
+        this.stepExecution = stepExecution;
         this.keyName = keyName;
         this.jobExecutionId = stepExecution.getJobExecution().getJobExecutionId();
     }
@@ -73,10 +73,6 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     @Override
     public BatchStepExecution getStepExecution() {
         return stepExecution;
-    }
-
-    public void setStepExecution(BatchStepExecution stepExecution) {
-        this.stepExecution = stepExecution;
     }
 
 

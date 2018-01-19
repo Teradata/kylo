@@ -247,7 +247,7 @@ class CSVAutoDetect {
             return (count == null || count.intValue() % 2 == 0);
         }
 
-        void increment(Character c, boolean delim) {
+        private void increment(Character c, boolean delim) {
             if (delim) {
                 if (lastChar == null || (lastChar != '\\') || (lastChar == '\\' && c == '\\')) {
                     Integer val = delimStats.get(c);

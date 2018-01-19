@@ -258,7 +258,7 @@ public class JerseyRestClient {
      *
      * @param clientConfig the Rest Client Configuration
      */
-    protected void extendClientConfig(ClientConfig clientConfig) {
+    private final void extendClientConfig(ClientConfig clientConfig) {
 
     }
 

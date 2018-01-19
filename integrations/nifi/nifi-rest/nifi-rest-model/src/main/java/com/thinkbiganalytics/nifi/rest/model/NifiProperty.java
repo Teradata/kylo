@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NifiProperty {
+public final class NifiProperty {
 
     /**
      * Nifi property options from the Nifi dto

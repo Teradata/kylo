@@ -54,7 +54,7 @@ public class UIService {
         return supportedCodeMirrorTypes;
     }
 
-    public void registerCodeMirrorType(String type, String name) {
+    private void registerCodeMirrorType(String type, String name) {
         supportedCodeMirrorTypes.put(type, name);
     }
 
