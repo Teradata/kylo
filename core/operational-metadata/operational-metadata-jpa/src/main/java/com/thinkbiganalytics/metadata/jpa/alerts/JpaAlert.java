@@ -195,7 +195,7 @@ public class JpaAlert implements EntityAlert, AuditedEntity {
         return this.description;
     }
 
-    public void setDescription(String descr) {
+    private void setDescription(String descr) {
         this.description = descr == null || descr.length() <= 255 ? descr : descr.substring(0, 252) + "...";
     }
 

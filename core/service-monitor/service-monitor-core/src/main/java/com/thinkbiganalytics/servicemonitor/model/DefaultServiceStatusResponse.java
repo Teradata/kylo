@@ -37,7 +37,7 @@ import java.util.List;
  * This is used by the Kylo user interface
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DefaultServiceStatusResponse implements ServiceStatusResponse {
+public final class DefaultServiceStatusResponse implements ServiceStatusResponse {
 
     List<ServiceComponent> components;
     List<ServiceComponent> healthyComponents;

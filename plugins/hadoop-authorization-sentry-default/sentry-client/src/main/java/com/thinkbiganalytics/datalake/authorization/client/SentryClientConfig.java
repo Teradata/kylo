@@ -83,7 +83,7 @@ public class SentryClientConfig {
     }
 
 
-    public void setSentryJdbcTemplate(JdbcTemplate sentryJdbcTemplate) {
+    private void setSentryJdbcTemplate(JdbcTemplate sentryJdbcTemplate) {
         this.sentryJdbcTemplate = sentryJdbcTemplate;
     }
 
@@ -140,7 +140,7 @@ public class SentryClientConfig {
         return username;
     }
 
-    public void setUsername(String username) {
+    private void setUsername(String username) {
         this.username = username;
     }
 
@@ -148,7 +148,7 @@ public class SentryClientConfig {
         return password;
     }
 
-    public void setPassword(String password) {
+    private void setPassword(String password) {
         this.password = password;
     }
 

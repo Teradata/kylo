@@ -227,7 +227,8 @@ public class FeedModelTransform {
      */
     public static FeedStatus feedStatus(List<FeedHealth> feedHealth) {
 
-        DefaultFeedStatus status = new DefaultFeedStatus(feedHealth);
+        DefaultFeedStatus status = new DefaultFeedStatus();
+        status.populateWithFeedHealth(feedHealth);
         return status;
 
     }
@@ -236,7 +237,7 @@ public class FeedModelTransform {
     public static FeedStatus feedStatusFromFeedSummary(List<com.thinkbiganalytics.jobrepo.query.model.FeedSummary> feedSummaryList) {
 
         DefaultFeedStatus status = new DefaultFeedStatus();
-        status.populate(feedSummaryList);
+        status.populateWithFeedSummary(feedSummaryList);
         return status;
 
     }
@@ -249,7 +250,8 @@ public class FeedModelTransform {
      */
     @Nonnull
     public static FeedStatus feedStatus(@Nonnull final OpsManagerFeed domain) {
-        final DefaultFeedStatus status = new DefaultFeedStatus(null);
+        final DefaultFeedStatus status = new DefaultFeedStatus();
+        status.populateWithFeedHealth(null);
         status.getFeedSummary().add(new DefaultFeedSummary(feedHealth(domain)));
         return status;
     }

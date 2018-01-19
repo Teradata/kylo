@@ -145,7 +145,7 @@ public class Issue extends BasicIssue {
         return assignee;
     }
 
-    public void setAssignee(User assignee) {
+    private void setAssignee(User assignee) {
         this.assignee = assignee;
     }
 
