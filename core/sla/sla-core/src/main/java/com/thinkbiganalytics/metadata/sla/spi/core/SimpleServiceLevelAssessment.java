@@ -224,7 +224,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
             return UUID.fromString(idValue);
         }
 
-        public void setUuid(UUID uuid) {
+        private void setUuid(UUID uuid) {
             this.idValue = uuid.toString();
 
         }

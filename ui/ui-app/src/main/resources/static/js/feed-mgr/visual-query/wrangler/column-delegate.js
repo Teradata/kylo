@@ -55,15 +55,22 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         /**
          * Constructs a column delegate.
          */
-        function ColumnDelegate(dataType, controller, $mdDialog, uiGridConstants) {
+        function ColumnDelegate(dataType, controller, $mdDialog, uiGridConstants, dialog) {
             this.dataType = dataType;
             this.controller = controller;
             this.$mdDialog = $mdDialog;
             this.uiGridConstants = uiGridConstants;
+            this.dialog = dialog;
             this.dataCategory = this.fromDataType(dataType);
             this.filters = this.getFilters(this.dataCategory);
             this.transforms = this.getTransforms(this.dataCategory);
         }
+        /**
+         * Casts this column to the specified type.
+         */
+        ColumnDelegate.prototype.castTo = function (dataType) {
+            // not supported
+        };
         /**
          * Filters for rows where the specified column is not null.
          */
@@ -171,6 +178,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.controller.fieldPolicies = this.controller.fieldPolicies.filter(function (value, index) { return index == column.index; });
             grid.onColumnsChange();
             grid.refresh();
+        };
+        /**
+         * Gets the target data types supported for casting this column.
+         */
+        ColumnDelegate.prototype.getAvailableCasts = function () {
+            // not supported
+            return [];
         };
         /**
          * Unsorts the specified column.

@@ -48,12 +48,13 @@ public class DefaultFeedStatus implements FeedStatus {
 
     private List<FeedSummary> feedSummary;
 
-    public DefaultFeedStatus(List<FeedHealth> feeds) {
+    public void populateWithFeedHealth(List<FeedHealth> feeds) {
         this.feeds = feeds;
         this.populate();
 
     }
-    public void populate(List<FeedSummary> feeds) {
+
+    public void populateWithFeedSummary(List<FeedSummary> feeds) {
         if(feeds != null && !feeds.isEmpty()) {
             this.feeds = feeds.stream().map(f -> f.getFeedHealth()).collect(Collectors.toList());
         }
@@ -66,8 +67,7 @@ public class DefaultFeedStatus implements FeedStatus {
 
     }
 
-    @Override
-    public void populate() {
+    private void populate() {
         this.healthyFeeds = new ArrayList<FeedHealth>();
         this.failedFeeds = new ArrayList<FeedHealth>();
         this.feedSummary = new ArrayList<>();

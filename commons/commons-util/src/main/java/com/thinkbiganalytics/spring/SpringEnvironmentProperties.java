@@ -44,7 +44,7 @@ public class SpringEnvironmentProperties {
 
     private static final Logger log = LoggerFactory.getLogger(SpringEnvironmentProperties.class);
 
-    private Map<String, Object> properties = new HashMap<>();
+    private volatile Map<String, Object> properties = new HashMap<>();
 
     private Map<String, Map<String, Object>> propertiesStartingWith = new HashMap<>();
     @Autowired
@@ -105,20 +105,24 @@ public class SpringEnvironmentProperties {
      */
     public Map<String, Object> getAllProperties() {
         if (properties == null || properties.isEmpty()) {
-            Map<String, Object> map = new HashMap();
-            for (Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
-                PropertySource propertySource = (PropertySource) it.next();
-                if (propertySource instanceof MapPropertySource) {
-                    map.putAll(((MapPropertySource) propertySource).getSource());
+            synchronized (SpringEnvironmentProperties.class) {
+                if (properties == null || properties.isEmpty()) {
+                    Map<String, Object> map = new HashMap();
+                    for (Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
+                        PropertySource propertySource = (PropertySource) it.next();
+                        if (propertySource instanceof MapPropertySource) {
+                            map.putAll(((MapPropertySource) propertySource).getSource());
+                        }
+                    }
+                    //decrypt
+                    Map<String, Object> decryptedMap = new HashMap();
+                    map.keySet().forEach(k -> {
+                        decryptedMap.put(k, env.getProperty(k));
+                    });
+
+                    properties = decryptedMap;
                 }
             }
-            //decrypt
-            Map<String, Object> decryptedMap = new HashMap();
-            map.keySet().forEach(k -> {
-                decryptedMap.put(k, env.getProperty(k));
-            });
-
-            properties = decryptedMap;
         }
         return properties;
     }

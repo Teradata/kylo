@@ -153,7 +153,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         return assessor;
     }
 
-    protected ObligationAssessor<? extends Obligation> createDefaultObligationAssessor() {
+    private final ObligationAssessor<? extends Obligation> createDefaultObligationAssessor() {
         return new DefaultObligationAssessor();
     }
 

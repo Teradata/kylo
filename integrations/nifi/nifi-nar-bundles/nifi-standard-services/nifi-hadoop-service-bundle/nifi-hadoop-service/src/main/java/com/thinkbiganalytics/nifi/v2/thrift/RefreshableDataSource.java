@@ -48,7 +48,7 @@ import javax.sql.DataSource;
 /**
  * a refreshable data source provides additional functionality over a basic data source that allows the connection to be maintained
  */
-public class RefreshableDataSource extends BasicDataSource {
+public final class RefreshableDataSource extends BasicDataSource {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
     private AtomicReference<DataSource> target = new AtomicReference<>();
@@ -90,7 +90,7 @@ public class RefreshableDataSource extends BasicDataSource {
     /**
      * called to refresh the connection if needed
      */
-    public void refresh() {
+    private void refresh() {
         if (isRefreshing.compareAndSet(false, true)) {
             log.info("REFRESHING DATASOURCE for {} ", this.url);
             target.set(create());

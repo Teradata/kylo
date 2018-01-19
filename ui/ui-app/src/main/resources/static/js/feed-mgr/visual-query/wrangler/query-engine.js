@@ -1,4 +1,4 @@
-define(["require", "exports", "./column-delegate", "./query-engine-constants"], function (require, exports, column_delegate_1, query_engine_constants_1) {
+define(["require", "exports", "./api/index", "./column-delegate", "./query-engine-constants"], function (require, exports, index_1, column_delegate_1, query_engine_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -8,10 +8,11 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
         /**
          * Construct a {@code QueryEngine}.
          */
-        function QueryEngine($mdDialog, DatasourcesService, uiGridConstants) {
+        function QueryEngine($mdDialog, DatasourcesService, uiGridConstants, injector) {
             this.$mdDialog = $mdDialog;
             this.DatasourcesService = DatasourcesService;
             this.uiGridConstants = uiGridConstants;
+            this.injector = injector;
             /**
              * Transformation function definitions.
              */
@@ -76,8 +77,8 @@ define(["require", "exports", "./column-delegate", "./query-engine-constants"], 
         /**
          * Creates a column delegate of the specified data type.
          */
-        QueryEngine.prototype.createColumnDelegate = function (dataType, controller) {
-            return new column_delegate_1.ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants);
+        QueryEngine.prototype.createColumnDelegate = function (dataType, controller, column) {
+            return new column_delegate_1.ColumnDelegate(dataType, controller, this.$mdDialog, this.uiGridConstants, this.injector.get(index_1.DIALOG_SERVICE));
         };
         /**
          * Gets the type definitions for the output columns of the current script. These definitions are only available after receiving a {@link #transform} response.

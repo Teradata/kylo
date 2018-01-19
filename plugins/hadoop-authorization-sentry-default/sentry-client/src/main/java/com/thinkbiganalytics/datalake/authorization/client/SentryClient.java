@@ -73,7 +73,7 @@ public class SentryClient {
 
     }
 
-    public void setDriverClass(String driverName) throws ClassNotFoundException {
+    private void setDriverClass(String driverName) throws ClassNotFoundException {
         Class.forName(driverName);
     }
 

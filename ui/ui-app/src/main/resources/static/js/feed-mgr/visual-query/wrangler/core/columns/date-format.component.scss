@@ -1,0 +1,16 @@
+/* Preview field */
+.preview-field {
+  width: 100%;
+
+  &.preview-loading mat-progress-bar {
+    visibility: visible;
+  }
+  mat-progress-bar {
+    top: 11px;
+    visibility: hidden;
+  }
+}
+
+.preview-error {
+  color: red;
+}

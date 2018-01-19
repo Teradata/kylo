@@ -195,7 +195,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
     }
 
-    protected void initializeFormatters() {
+    private final void initializeFormatters() {
         try {
             valid = false;
             if (outputFormat == null) {

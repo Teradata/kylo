@@ -58,6 +58,19 @@ public class AboutKyloController {
     KyloVersionProvider kyloVersionProvider;
 
     /**
+     * Get Kylo v1 REST API info.
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("The root of the v1 REST API.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns a message indicating the root of the v1 REST API.", response = String.class)
+    )
+    public Response getApiInfo() {
+        return Response.ok("Kylo REST API: version 1").build();
+    }
+
+    /**
      * Gets information about the current user.
      */
     @GET

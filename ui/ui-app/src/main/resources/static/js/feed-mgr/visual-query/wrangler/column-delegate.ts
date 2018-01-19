@@ -1,4 +1,7 @@
 import * as angular from "angular";
+
+import {ColumnDelegate as IColumnDelegate, DataType as DT} from "./api/column";
+import {DialogService} from "./api/services/dialog.service";
 import {ColumnController} from "./column-controller";
 
 /**
@@ -56,7 +59,7 @@ const DataType = {
 /**
  * Handles operations on columns.
  */
-export class ColumnDelegate {
+export class ColumnDelegate implements IColumnDelegate {
 
     /**
      * The category for the data in the column.
@@ -76,10 +79,17 @@ export class ColumnDelegate {
     /**
      * Constructs a column delegate.
      */
-    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any) {
+    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog: DialogService) {
         this.dataCategory = this.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
+    }
+
+    /**
+     * Casts this column to the specified type.
+     */
+    castTo(dataType: DT): void {
+        // not supported
     }
 
     /**
@@ -201,6 +211,14 @@ export class ColumnDelegate {
 
         grid.onColumnsChange();
         grid.refresh();
+    }
+
+    /**
+     * Gets the target data types supported for casting this column.
+     */
+    getAvailableCasts(): DT[] {
+        // not supported
+        return [];
     }
 
     /**

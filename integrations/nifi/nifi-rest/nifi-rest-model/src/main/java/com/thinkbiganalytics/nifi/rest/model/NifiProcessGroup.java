@@ -35,7 +35,7 @@ import java.util.List;
 /**
  * Represents a NiFi process group that has been updated in Kylo and holds any error messages resulting from the NiFi update.
  */
-public class NifiProcessGroup {
+public final class NifiProcessGroup {
 
     public static final String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
     private ProcessGroupDTO processGroupEntity;

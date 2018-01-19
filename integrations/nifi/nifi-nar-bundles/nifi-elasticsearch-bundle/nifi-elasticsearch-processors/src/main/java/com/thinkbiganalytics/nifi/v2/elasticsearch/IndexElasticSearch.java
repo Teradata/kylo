@@ -20,7 +20,7 @@ package com.thinkbiganalytics.nifi.v2.elasticsearch;
  * #L%
  */
 
-import com.thinkbiganalytics.hashing.HashingUtil;
+import com.thinkbiganalytics.hashing.InsecureHashingMessageUtil;
 import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
 
 import org.apache.commons.io.IOUtils;
@@ -261,7 +261,7 @@ public class IndexElasticSearch extends AbstractNiFiProcessor {
                 id = jsonObj.getString(idField);
                 logger.debug("Document index id using field " + idField + ": " + id);
             } else if (StringUtils.isNotEmpty(categoryName) && (StringUtils.isNotEmpty(feedName))) {
-                String hash = HashingUtil.getHashMD5(jsonObj.toString());
+                String hash = InsecureHashingMessageUtil.getHashMD5(jsonObj.toString());
                 if (StringUtils.isNotEmpty(hash)) {
                     id = categoryName + "::" + feedName + "::" + hash;
                     logger.debug("Document index id using hash: " + id);
