@@ -14,16 +14,6 @@
 # http://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 # ===================================================================
 
-management:
-    security:
-        roles: ADMIN
-    context-path: /management
-    info:
-        git:
-            mode: full
-    health:
-        mail:
-            enabled: false # When using the MailService, configure an SMTP server and set this to true
 spring:
     application:
         name: inspector
@@ -34,20 +24,8 @@ spring:
         active: #spring.profiles.active#
     jackson:
         serialization.write_dates_as_timestamps: false
-    jpa:
-        open-in-view: false
-        hibernate:
-            ddl-auto: none
-            naming:
-                physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
-                implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     messages:
         basename: i18n/messages
-    mvc:
-        favicon:
-            enabled: false
-    thymeleaf:
-        mode: XHTML
 security:
     basic:
         enabled: false
@@ -80,21 +58,6 @@ jhipster:
         #exposed-headers: "Authorization,Link,X-Total-Count"
         #allow-credentials: true
         #max-age: 1800
-    mail:
-        from: inspector@localhost
-    swagger:
-        default-include-pattern: /api/.*
-        title: inspector API
-        description: inspector API documentation
-        version: 0.0.1
-        terms-of-service-url:
-        contact-name:
-        contact-url:
-        contact-email:
-        license:
-        license-url:
-    ribbon:
-        display-on-active-profiles: dev
 
 # ===================================================================
 # Application specific properties
