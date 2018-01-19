@@ -25,28 +25,17 @@ import com.thinkbiganalytics.install.inspector.inspection.Path;
 
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @Repository
 public class ConfigurationRepository {
 
-    private Map<Integer, Configuration> idToConfiguration = new HashMap<>();
-
-    private int id = 0;
-
-    private int nextId() {
-        return id;
-    }
+    private Configuration configuration;
 
     public Configuration get(int id) {
-        return idToConfiguration.get(id);
+        return configuration;
     }
 
-    public Configuration createConfiguration(Path path) {
-        //use Spring to load configuration and resolve properties
-        Configuration c = new Configuration(nextId(), path);
-        idToConfiguration.put(c.getId(), c);
-        return c;
+    public Configuration create(Path path) {
+        configuration = new Configuration(0, path);
+        return configuration;
     }
 }

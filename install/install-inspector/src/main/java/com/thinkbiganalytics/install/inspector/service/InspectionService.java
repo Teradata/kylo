@@ -56,7 +56,7 @@ public class InspectionService {
         return configRepo.get(configId).execute(inspectionRepo.get(inspectionId));
     }
 
-    public Configuration setPath(Path path) {
-        return configRepo.createConfiguration(path);
+    public Configuration createConfiguration(Path path) {
+        return configRepo.create(path);
     }
 }
