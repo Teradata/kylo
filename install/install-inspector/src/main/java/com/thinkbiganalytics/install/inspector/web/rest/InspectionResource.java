@@ -20,7 +20,6 @@ package com.thinkbiganalytics.install.inspector.web.rest;
  * #L%
  */
 
-import com.codahale.metrics.annotation.Timed;
 import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Inspection;
 import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
@@ -67,7 +66,6 @@ public class InspectionResource {
      * @return the ResponseEntity with status 200 (OK) and with body having all configuration inspections
      */
     @GetMapping("/inspection")
-    @Timed
     public ResponseEntity<List<Inspection>> getAllConfigChecks() {
         final Page<Inspection> page = inspectionService.getAllInspections();
         return new ResponseEntity<>(page.getContent(), HttpStatus.OK);
@@ -80,7 +78,6 @@ public class InspectionResource {
      * @param installPath installation path
      */
     @PostMapping("/configuration")
-    @Timed
     public ResponseEntity<Configuration> setKyloPath(@Valid @RequestBody Path installPath) throws URISyntaxException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
         Configuration config = inspectionService.setPath(installPath);
@@ -95,7 +92,6 @@ public class InspectionResource {
      * @param inspectionId configuration inspection id
      */
     @GetMapping("/configuration/{configId}/{inspectionId}")
-    @Timed
     public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathVariable("configId") Integer configId, @Valid @PathVariable("inspectionId") Integer inspectionId) throws URISyntaxException {
         log.debug("REST request to execute configuration inspection : {}", inspectionId);
         InspectionStatus status = inspectionService.execute(configId, inspectionId);
