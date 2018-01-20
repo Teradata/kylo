@@ -25,6 +25,7 @@ package com.thinkbiganalytics.metadata.modeshape.security.role;
 
 import java.security.Principal;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -92,6 +93,38 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
                         .findFirst();
     }
 
+    /**
+     * A convenience method for enabling only the permissions granted by the role memberships among the passed in set
+     * of which the given principal is a member.  The supplied allowedActions must be compatible with the kinds of actions
+     * that the RoleMemberships control.
+     * 
+     * @param principal the principal involved
+     * @param allMemberships a stream of all potential role memberships that may be involved in enabling permissions for this principal
+     * @param allowed the allowed actions that should be updated to allow the new permissions
+     */
+    public static void enableOnly(Principal principal, Stream<RoleMembership> allMemberships, AllowedActions allowed) {
+        // Get a union of all actions allowed by all role memberships containing the principal as a member.
+        Set<Action> actions = allMemberships
+                        .filter(membership -> membership.getMembers().contains(principal))
+                        .map(membership -> membership.getRole())
+                        .flatMap(role -> role.getAllowedActions().getAvailableActions().stream())
+                        .flatMap(avail -> avail.stream())
+                        .collect(Collectors.toSet());
+        
+        // Update the given allowed actions to enable only the derived set of permitted actions based
+        // on the current set of role memberships of the principal.
+        allowed.enableOnly(principal, actions);
+    }
+
+    public static void enableOnlyForAll(Stream<RoleMembership> allMemberships, AllowedActions allowed) {
+        // Make a snapshot of memberships to re-stream.
+        List<RoleMembership> memberships = allMemberships.collect(Collectors.toList());
+        Set<Principal> principals = memberships.stream()
+                        .flatMap(membership -> membership.getMembers().stream())
+                        .collect(Collectors.toSet());
+        
+        principals.forEach(principal -> enableOnly(principal, memberships.stream(), allowed));
+    }
     
     public JcrAbstractRoleMembership(Node node) {
         super(node);
@@ -185,27 +218,6 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
      * @param principal the removed principal
      */
     protected abstract void disable(Principal principal);
-
-    /**
-     * A convenience method for enabling only the permissions granted by the role memberships among the passed in set
-     * of which the given principal is a member.
-     * @param principal the principal involved
-     * @param allMemberships a stream of all potential role memberships that may be involved in enabling permissions for this principal
-     * @param allowed the allowed actions that should be updated to permit with the new permissions
-     */
-    protected void enableOnly(Principal principal, Stream<RoleMembership> allMemberships, AllowedActions allowed) {
-        // Get a union of all actions allowed by all role memberships containing the principal as a member.
-        Set<Action> actions = allMemberships
-                        .filter(membership -> membership.getMembers().contains(principal))
-                        .map(membership -> membership.getRole())
-                        .flatMap(role -> role.getAllowedActions().getAvailableActions().stream())
-                        .flatMap(avail -> avail.stream())
-                        .collect(Collectors.toSet());
-        
-        // Update the given allowed actions to enable only the derived set of permitted actions based
-        // on the current set of role memberships of the principal.
-        allowed.enableOnly(principal, actions);
-    }
 
     protected Stream<UsernamePrincipal> streamUsers() {
         return JcrPropertyUtil.<String>getSetProperty(getNode(), USERS).stream().map(UsernamePrincipal::new);

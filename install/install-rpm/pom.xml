@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-install</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>kylo-install-rpm</artifactId>
@@ -42,6 +42,8 @@
           <packager>Think Big</packager>
           <defineStatements>
             <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>
+            <defineStatement>_binary_payload w9.gzdio</defineStatement>
+            <defineStatement>_binary_filedigest_algorithm 1</defineStatement>
           </defineStatements>
           <needarch>noarch</needarch>
           <targetOS>linux</targetOS>

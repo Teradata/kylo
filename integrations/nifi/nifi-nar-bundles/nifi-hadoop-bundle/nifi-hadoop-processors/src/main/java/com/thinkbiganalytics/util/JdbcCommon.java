@@ -72,7 +72,7 @@ import static java.sql.Types.VARCHAR;
  */
 public class JdbcCommon {
 
-    public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
+    private static final Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
     /*
       private constructor prevents instantiating this utility class

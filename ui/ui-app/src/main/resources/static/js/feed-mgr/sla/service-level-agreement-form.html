@@ -17,158 +17,176 @@
   limitations under the License.
   #L%
   -->
-<ng-form name="vm.slaForm" ng-if="vm.editSla != null" class="layout-padding-left-right layout-padding-top">
-  <div layout="row" layout-align="space-between start">
-  <md-button ng-click="vm.onBackToList($event)">Back to List</md-button>
-  <a href ng-click="vm.viewSlaAssessments()" ng-if="vm.feed">Sla Assessments</a>
+<div ng-if="vm.editSla != null"  >
+  <div layout="row" layout-align="start start">
+  <!--  <md-button ng-click="vm.onBackToList($event)"  class="md-primary">{{"views.service-level-agreement-form.BtL" | translate}}</md-button>-->
+    <div flex/>
+    <md-button ng-click="vm.viewSlaAssessments($event)"  class="md-primary" ng-if="vm.feed && vm.mode != 'NEW'">{{"views.service-level-agreement-form.SA" | translate}}</md-button>
   </div>
 
-  <div layout="column" class="layout-padding-top" style="padding-top:16px;">
-    <md-input-container class="md-block condensed">
-      <label>Name</label>
-      <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name" ng-disabled="!vm.allowEdit"
-             required/>
+  <ng-form name="vm.slaForm" >
+    <div class="layout-padding-left-right-16">
+      <span class="md-subhead">Conditions</span>
 
-      <div ng-messages="vm.slaForm.slaName.$error " md-auto-hide="false">
-        <div ng-message="required">This field is required.</div>
-      </div>
-    </md-input-container>
-    <md-input-container class="md-block condensed">
-      <label>Description</label>
-      <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description" ng-disabled="!vm.allowEdit"
-             required/>
-
-      <div ng-messages="vm.slaForm.slaDescription.$error " md-auto-hide="false">
-        <div ng-message="required">This field is required.</div>
-      </div>
-    </md-input-container>
-  </div>
-
-
-  <div>
-    <span class="md-body-2">SLA Conditions</span>
-
-    <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding-left-right">
-      <div layout="row">
-        <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
-        <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
-          <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
-            <md-option value="REQUIRED">AND</md-option>
-            <md-option value="SUFFICIENT">OR</md-option>
-          </md-select>
-        </md-input-container>
-
-        <div layout="column" flex class="layout-padding-left md-body-2">
-          <span>{{rule.name}}</span>
-          <span class="hint">{{rule.description}}</span>
-        </div>
-        <div>
-          <div>
-            <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaMetric($index)" ng-if="rule.editable">
-              <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
-            </md-button>
-          </div>
-        </div>
-      </div>
-      <thinkbig-policy-input-form class="layout-padding-top" the-form="vm.slaForm" rule="rule" mode="vm.mode" feed="vm.feed"></thinkbig-policy-input-form>
-
-      <md-divider ng-if="!$last"></md-divider>
-      <div ng-if="vm.addingSlaCondition == false && $last" layout="row">
-        <md-button class="md-primary" ng-click="vm.addNewCondition()">Add Condition</md-button>
-        <span flex></span>
-      </div>
-
-    </div>
-
-    <div ng-if="vm.addingSlaCondition" class="layout-padding-left-right" layout="row" flex>
-
-
-      <md-input-container class="md-block layout-padding-top-bottom" ng-if="vm.editSla != null && vm.editSla.rules.length >0" md-no-float>
-        <label class="md-container-ignore label-small layout-padding-top">Condition</label>
-        <md-select ng-model="vm.ruleTypeCondition" aria-label="Condition">
-          <md-option value="REQUIRED">AND</md-option>
-          <md-option value="SUFFICIENT">OR</md-option>
-        </md-select>
-      </md-input-container>
-      <md-input-container class="md-block layout-padding-top-bottom">
-        <label class="md-container-ignore label-small layout-padding-top">Select New Condition</label>
-        <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
-          <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
-        </md-select>
-      </md-input-container>
-      <span flex></span>
-      <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaCondition = false" ng-if="vm.editSla != null && vm.editSla.rules.length >0">
-        <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
-      </md-button>
-    </div>
-
-    <div>
-      <span class="md-body-2">SLA Actions</span>
-
-      <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column" class="layout-padding-left">
-        <span>All SLA violations will generate an Alert.</span>
-        <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
-      </div>
-      <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column" class="layout-padding-left-right">
-        <div class="error md-title bold layout-padding-left" layout="row">
-          <div class="layout-padding-left">
-            <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
-          </div>
-          <span>Errors found. Saving this SLA will result in loss of configuration data.</span>
-        </div>
-
-        <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left">
-          <span class="error">{{error}}</span>
-        </div>
-      </div>
-      <div ng-repeat="rule in vm.editSla.actionConfigurations" layout="column" class="layout-padding-left-right">
-
-        <div layout="row" class="">
+      <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding">
+        <div layout="row">
           <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
-
+          <!--
+          <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
+            <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
+              <md-option value="REQUIRED">AND</md-option>
+              <md-option value="SUFFICIENT">OR</md-option>
+            </md-select>
+          </md-input-container>
+     -->
           <div layout="column" flex class="layout-padding-left md-body-2">
             <span>{{rule.name}}</span>
             <span class="hint">{{rule.description}}</span>
-            <span ng-if="rule.validConfiguration == false" class="error"><strong>Warning</strong>  Configuration Error!  You can still assign this action, but it may not fire due to configuration issues. {{rule.validationMessage}}</span>
           </div>
           <div>
             <div>
-              <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaAction($index)" ng-if="rule.editable">
+              <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaMetric($index)" ng-if="rule.editable">
                 <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
               </md-button>
             </div>
           </div>
         </div>
+        <thinkbig-policy-input-form class="layout-padding-top" the-form="vm.slaForm" rule="rule" mode="vm.mode" feed="vm.feed" on-property-change="vm.onPropertyChange"></thinkbig-policy-input-form>
 
-
-        <thinkbig-policy-input-form the-form="vm.slaForm" rule="rule" allow-edit="vm.allowEdit"></thinkbig-policy-input-form>
         <md-divider ng-if="!$last"></md-divider>
+
       </div>
-      <div ng-if="vm.addingSlaAction" class="layout-padding-left-right" layout="row">
+
+      <div ng-if="vm.addingSlaCondition == false" layout="row">
+        <md-button class="md-primary" ng-click="vm.addNewCondition()">Add Condition</md-button>
+        <span flex></span>
+      </div>
+
+      <div ng-if="vm.addingSlaCondition" class="layout-padding-left-right" layout="row" flex>
+
+        <!--
+              <md-input-container class="md-block layout-padding-top-bottom" ng-if="vm.editSla != null && vm.editSla.rules.length >0" md-no-float>
+                <label class="md-container-ignore label-small layout-padding-top">Condition</label>
+                <md-select ng-model="vm.ruleTypeCondition" aria-label="Condition">
+                  <md-option value="REQUIRED">AND</md-option>
+                  <md-option value="SUFFICIENT">OR</md-option>
+                </md-select>
+              </md-input-container>
+              -->
         <md-input-container class="md-block layout-padding-top-bottom">
-          <label class="md-container-ignore label-small layout-padding-top">Select New Action</label>
-          <md-select ng-model="vm.slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddSlaActionChange()" aria-label="Rule Type">
-            <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
+          <label class="md-container-ignore label-small layout-padding-top condensed">{{"views.service-level-agreement-form.SNC" | translate}}</label>
+          <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
+            <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
           </md-select>
         </md-input-container>
-        <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaAction = false">
+        <span flex></span>
+        <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaCondition = false" ng-if="vm.editSla != null && vm.editSla.rules.length >0">
           <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
         </md-button>
       </div>
-      <div ng-if="vm.addingSlaAction == false" flex layout="row">
-        <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">Add Action</md-button>
-        <span flex></span>
+
+      <div>
+        <span class="md-subhead">{{"views.service-level-agreement-form.SLAA" | translate}}</span>
+
+        <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column" class="layout-padding">
+          <span>{{"views.service-level-agreement-form.ASLAvwgaA" | translate}}</span>
+          <span ng-if="vm.showActionOptions">{{"views.service-level-agreement-form.AddAction" | translate}}</span>
+        </div>
+
+        <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column" class="layout-padding-left-right">
+          <div class="error md-title bold layout-padding-left" layout="row">
+            <div class="layout-padding-left">
+              <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
+            </div>
+            <span>{{"views.service-level-agreement-form.Errors-found" | translate}}</span>
+          </div>
+
+          <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left">
+            <span class="error">{{error}}</span>
+          </div>
+        </div>
+
+        <div ng-repeat="rule in vm.editSla.actionConfigurations" layout="column" class="layout-padding">
+
+          <div layout="row" class="">
+            <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
+
+            <div layout="column" flex class="layout-padding-left md-body-2">
+              <span>{{rule.name}}</span>
+              <span class="hint">{{rule.description}}</span>
+              <span ng-if="rule.validConfiguration == false" class="error"><strong>{{"views.service-level-agreement-form.Warning" | translate}}</strong>  {{"views.service-level-agreement-form.Warning2" | translate}} {{rule.validationMessage}}</span>
+            </div>
+            <div>
+              <div>
+                <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaAction($index)" ng-if="rule.editable">
+                  <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
+                </md-button>
+              </div>
+            </div>
+          </div>
+
+
+          <thinkbig-policy-input-form the-form="vm.slaForm" rule="rule" allow-edit="vm.allowEdit" on-property-change="vm.onPropertyChange"></thinkbig-policy-input-form>
+          <md-divider ng-if="!$last"></md-divider>
+        </div>
+
+        <div ng-if="vm.addingSlaAction" class="layout-padding-left-right" layout="row">
+          <md-input-container class="md-block layout-padding-top-bottom condensed">
+            <label class="md-container-ignore label-small layout-padding-top">{{"views.service-level-agreement-form.SNA" | translate}}</label>
+            <md-select ng-model="vm.slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddSlaActionChange()" aria-label="Rule Type">
+              <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
+            </md-select>
+          </md-input-container>
+          <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaAction = false">
+            <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
+          </md-button>
+        </div>
+
+        <div ng-if="vm.addingSlaAction == false" flex layout="row">
+          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions" ng-disabled="vm.editSla.rules.length ==0">{{"views.service-level-agreement-form.AA" | translate}}</md-button>
+          <span flex></span>
+        </div>
+
       </div>
+
+      <div layout="column" class="layout-padding-top">
+        <span class="md-subhead">Description</span>
+        <div class="layout-padding-top-bottom">
+
+        </div>
+
+        <div class="layout-padding">
+        <md-input-container class="md-block condensed" >
+          <label>Name</label>
+          <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name" ng-disabled="!vm.allowEdit" ng-change="vm.onNameChange()"
+                 required/>
+
+          <div ng-messages="vm.slaForm.slaName.$error " md-auto-hide="false">
+            <div ng-message="required">This field is required.</div>
+          </div>
+        </md-input-container>
+        <md-input-container class="md-block condensed">
+          <label>Description</label>
+          <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description" ng-disabled="!vm.allowEdit" ng-change="vm.onDescriptionChange()"
+                 required/>
+
+          <div ng-messages="vm.slaForm.slaDescription.$error " md-auto-hide="false">
+            <div ng-message="required">This field is required.</div>
+          </div>
+        </md-input-container>
+        </div>
+      </div>
+
+      <div class="layout-padding-top-bottom" flex layout="row">
+        <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null && vm.allowEdit">{{"views.service-level-agreement-form.Delete" | translate}}</md-button>
+        <span flex></span>
+        <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">{{"views.service-level-agreement-form.Cancel" | translate}}</md-button>
+        <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.allowEdit" ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">{{"views.service-level-agreement-form.SSLA" | translate}}</md-button>
+      </div>
+
     </div>
 
+  </ng-form>
 
-    <div class="layout-padding-top-bottom" flex layout="row">
-      <md-button ng-click="vm.onDeleteSla($event)" ng-if="vm.editSla != null && vm.editSlaIndex != null && vm.allowEdit">Delete</md-button>
-      <span flex></span>
-      <md-button  ng-click="vm.cancelEditSla()" ng-if="vm.editSla != null">Cancel</md-button>
-      <md-button class="md-primary md-raised" ng-click="vm.saveSla()" ng-if="vm.editSla != null && vm.allowEdit" ng-disabled="vm.editSla.rules.length ==0 || vm.slaForm.$invalid">Save SLA</md-button>
-    </div>
+</div>
 
-  </div>
-
-</ng-form>

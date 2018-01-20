@@ -58,6 +58,9 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
              else if ("COMPLETED" == feed.lastExitCode) {
                  feed.displayStatus = 'COMPLETED';
              }
+             else if ("STOPPED" == feed.lastStatus) {
+                 feed.displayStatus = 'STOPPED';
+             }
              else if ("UNKNOWN" == feed.lastStatus) {
                  feed.displayStatus = 'INITIAL';
                  feed.sinceTimeString = '--';

@@ -11,7 +11,7 @@ var __extends = (this && this.__extends) || (function () {
 define(["require", "exports", "fattable"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var WranglerTableModel = (function (_super) {
+    var WranglerTableModel = /** @class */ (function (_super) {
         __extends(WranglerTableModel, _super);
         function WranglerTableModel(data) {
             var _this = _super.call(this) || this;

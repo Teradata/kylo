@@ -61,17 +61,17 @@ import javax.annotation.Nonnull;
  */
 public class ElasticSearchRestService implements Search {
 
-    private static Logger log = LoggerFactory.getLogger(ElasticSearchRestService.class);
+    private static final Logger log = LoggerFactory.getLogger(ElasticSearchRestService.class);
 
-    private final static String HTTP_PROTOCOL = "http";
-    private final static String POST_METHOD = "POST";
-    private final static String PUT_METHOD = "PUT";
-    private final static String DELETE_METHOD = "DELETE";
-    private final static String SEARCH_ENDPOINT = "_search";
-    private final static String VERSION_TWO = "2";
+    private static final String HTTP_PROTOCOL = "http";
+    private static final String POST_METHOD = "POST";
+    private static final String PUT_METHOD = "PUT";
+    private static final String DELETE_METHOD = "DELETE";
+    private static final String SEARCH_ENDPOINT = "_search";
+    private static final String VERSION_TWO = "2";
+    private static final String QUERY = "query";
 
     private ElasticSearchRestClientConfiguration restClientConfig;
-    private RestClient restClient;
 
     public ElasticSearchRestService(ElasticSearchRestClientConfiguration config) {
         this.restClientConfig = config;
@@ -80,8 +80,7 @@ public class ElasticSearchRestService implements Search {
 
     @Override
     public void delete(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull String schema, @Nonnull String table) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()) {
             //Delete schema
             restClient.performRequest(
                 DELETE_METHOD,
@@ -113,44 +112,34 @@ public class ElasticSearchRestService implements Search {
             }
             log.info("Deleted data for index={}, type={}, schema={}, table={}", dataIndexName, dataIndexType, schema, table);
         } catch (ResponseException responseException) {
-            log.warn("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}", indexName, typeName, id);
-            responseException.printStackTrace();
+            log.error("Index document deletion encountered issues in Elasticsearch for index={}, type={}, id={}",indexName, typeName, responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id);
-            clientProtocolException.printStackTrace();
+            log.error("Http protocol error for delete document for index={}, type={}, id={}", indexName, typeName, id, clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } finally {
-            closeRestClient();
+            log.error("IO Error in rest client", ioException);
         }
     }
 
     @Override
     public void commit(@Nonnull String indexName) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()){
             restClient.performRequest(
                 POST_METHOD,
                 getIndexRefreshEndPoint(indexName)
             );
             log.debug("Committed index with name {}", indexName);
         } catch (ResponseException responseException) {
-            log.warn("Index refresh encountered issues in Elasticsearch for index name {}", indexName);
-            responseException.printStackTrace();
+            log.error("Index refresh encountered issues in Elasticsearch for index name {" + indexName + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.trace("Http protocol error for refresh for index name {}", indexName);
-            clientProtocolException.printStackTrace();
+            log.error("Http protocol error for refresh for index name {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } finally {
-            closeRestClient();
+            log.error("IO Error in rest client", ioException);
         }
     }
 
     @Override
     public void index(@Nonnull String indexName, @Nonnull String typeName, @Nonnull String id, @Nonnull Map<String, Object> fields) {
-        buildRestClient();
-        try {
+        try (RestClient restClient = buildRestClient()){
             JSONObject jsonContent = new JSONObject(fields);
             HttpEntity httpEntity = new NStringEntity(jsonContent.toString(), ContentType.APPLICATION_JSON);
             restClient.performRequest(
@@ -160,15 +149,11 @@ public class ElasticSearchRestService implements Search {
                 httpEntity);
             log.debug("Wrote to index with name {}", indexName);
         } catch (ResponseException responseException) {
-            log.warn("Index write encountered issues in Elasticsearch for index name {} of type {} with id {}", indexName, typeName, id);
-            responseException.printStackTrace();
+            log.warn("Index write encountered issues in Elasticsearch for index={" + indexName + "}, type={" + typeName + "}, id={" + id + "}", responseException);
         } catch (ClientProtocolException clientProtocolException) {
-            log.debug("Http protocol error for write for index name {}", indexName);
-            clientProtocolException.printStackTrace();
+            log.debug("Http protocol error for write for index {" + indexName + "}", clientProtocolException);
         } catch (IOException ioException) {
-            ioException.printStackTrace();
-        } finally {
-            closeRestClient();
+            log.error("IO Error in rest client", ioException);
         }
     }
 
@@ -211,18 +196,15 @@ public class ElasticSearchRestService implements Search {
         return elasticSearchRestSearchResultTransform.transformRestResult(query, size, start, restSearchResponse);
     }
 
-    private void buildRestClient() {
-        if (this.restClient == null) {
-            restClient = RestClient.builder(
+    private RestClient buildRestClient() {
+        return RestClient.builder(
                 new HttpHost(restClientConfig.getHost(),
                              restClientConfig.getPort(),
-                             HTTP_PROTOCOL))
-                .build();
-        }
+                             HTTP_PROTOCOL)).build();
     }
 
     private ElasticSearchRestSearchResponse executeRestSearch(String query, int size, int start) {
-        try {
+        try (RestClient restClient = buildRestClient()) {
             Response response = restClient.performRequest(getHttpMethod(),
                                                           getSearchEndpoint(),
                                                           getParamsMap(),
@@ -231,12 +213,8 @@ public class ElasticSearchRestService implements Search {
             return transformElasticSearchRestResponse(response);
 
         } catch (IOException ioe) {
-            log.error("An error occurred during submitting search request for query: {}, start: {}, size: {}", query, start, size);
-            ioe.printStackTrace();
-        } finally {
-            closeRestClient();
+            log.error("An error occurred during submitting search request for query: {" + query + "}, start: {" + start + "}, size: {" + size + "}", ioe);
         }
-
         return null;
     }
 
@@ -260,110 +238,98 @@ public class ElasticSearchRestService implements Search {
         }
 
         HttpEntity entity = response.getEntity();
-        if (entity != null) {
-            try {
-                String entityString = EntityUtils.toString(response.getEntity());
-                JSONObject entityStringJsonObject = new JSONObject(entityString);
+        if (entity == null) {
+            return null;
+        }
 
-                String tookInMs = entityStringJsonObject.getString("took");
-                elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
+        try {
+            String entityString = EntityUtils.toString(response.getEntity());
+            JSONObject entityStringJsonObject = new JSONObject(entityString);
 
-                JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
-                elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
+            String tookInMs = entityStringJsonObject.getString("took");
+            elasticSearchRestSearchResponse.setTookInMillis(Long.parseLong(tookInMs));
 
-                JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
+            JSONObject hitsJsonObject = entityStringJsonObject.getJSONObject("hits");
+            elasticSearchRestSearchResponse.setTotalResults(hitsJsonObject.getLong("total"));
 
-                List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();
-                for (int i = 0; i < hitsJsonArray.length(); i++) {
-                    ElasticSearchRestSearchHit elasticSearchRestSearchHit = new ElasticSearchRestSearchHit();
+            JSONArray hitsJsonArray = hitsJsonObject.getJSONArray("hits");
 
-                    JSONObject currentHitJsonObject = new JSONObject(hitsJsonArray.get(i).toString());
-                    elasticSearchRestSearchHit.setIndexName(currentHitJsonObject.get("_index").toString());
-                    elasticSearchRestSearchHit.setIndexType(currentHitJsonObject.get("_type").toString());
+            List<ElasticSearchRestSearchHit> elasticSearchRestSearchHits = new ArrayList<>();
+            for (int i = 0; i < hitsJsonArray.length(); i++) {
+                ElasticSearchRestSearchHit elasticSearchRestSearchHit = new ElasticSearchRestSearchHit();
 
-                    JSONObject currentHitSourceJsonObject = new JSONObject(currentHitJsonObject.get("_source").toString());
-                    elasticSearchRestSearchHit.setRawHit(currentHitJsonObject.get("_source").toString());
+                JSONObject currentHitJsonObject = new JSONObject(hitsJsonArray.get(i).toString());
+                elasticSearchRestSearchHit.setIndexName(currentHitJsonObject.get("_index").toString());
+                elasticSearchRestSearchHit.setIndexType(currentHitJsonObject.get("_type").toString());
 
-                    List<Pair> sourceList = new ArrayList<>();
-                    Iterator sourceIterator = currentHitSourceJsonObject.keys();
-                    while (sourceIterator.hasNext()) {
-                        String sourceKey = (String) sourceIterator.next();
-                        sourceList.add(new Pair(sourceKey, currentHitSourceJsonObject.get(sourceKey)));
+                JSONObject currentHitSourceJsonObject = new JSONObject(currentHitJsonObject.get("_source").toString());
+                elasticSearchRestSearchHit.setRawHit(currentHitJsonObject.get("_source").toString());
 
-                        if (sourceKey.equals("hiveColumns")) {
-                            List<HiveColumn> hiveColumns = new ArrayList<>();
+                List<Pair> sourceList = new ArrayList<>();
+                Iterator sourceIterator = currentHitSourceJsonObject.keys();
+                while (sourceIterator.hasNext()) {
+                    String sourceKey = (String) sourceIterator.next();
+                    sourceList.add(new Pair(sourceKey, currentHitSourceJsonObject.get(sourceKey)));
 
-                            String newHiveColumns = "{\"a\":" + currentHitSourceJsonObject.get(sourceKey).toString() + "}";
-                            JSONObject hiveColumnsJsonObject = new JSONObject(newHiveColumns);
-                            JSONArray hiveColumnsJsonArray = hiveColumnsJsonObject.getJSONArray("a");
-                            for (int x = 0; x < hiveColumnsJsonArray.length(); x++) {
-                                JSONObject hiveColumnJsonObject = new JSONObject(hiveColumnsJsonArray.get(x).toString());
-                                Iterator hiveColumnIterator = hiveColumnJsonObject.keys();
-                                String columnName = "";
-                                String columnType = "";
-                                String columnComment = "";
+                    if (sourceKey.equals("hiveColumns")) {
+                        List<HiveColumn> hiveColumns = new ArrayList<>();
 
-                                while (hiveColumnIterator.hasNext()) {
-                                    String columnKey = (String) hiveColumnIterator.next();
-                                    switch (columnKey) {
-                                        case "columnName":
-                                            columnName = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        case "columnType":
-                                            columnType = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        case "columnComment":
-                                            columnComment = hiveColumnJsonObject.get(columnKey).toString();
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                        String newHiveColumns = "{\"a\":" + currentHitSourceJsonObject.get(sourceKey).toString() + "}";
+                        JSONObject hiveColumnsJsonObject = new JSONObject(newHiveColumns);
+                        JSONArray hiveColumnsJsonArray = hiveColumnsJsonObject.getJSONArray("a");
+                        for (int x = 0; x < hiveColumnsJsonArray.length(); x++) {
+                            JSONObject hiveColumnJsonObject = new JSONObject(hiveColumnsJsonArray.get(x).toString());
+                            Iterator hiveColumnIterator = hiveColumnJsonObject.keys();
+                            String columnName = "";
+                            String columnType = "";
+                            String columnComment = "";
+
+                            while (hiveColumnIterator.hasNext()) {
+                                String columnKey = (String) hiveColumnIterator.next();
+                                switch (columnKey) {
+                                    case "columnName":
+                                        columnName = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    case "columnType":
+                                        columnType = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    case "columnComment":
+                                        columnComment = hiveColumnJsonObject.get(columnKey).toString();
+                                        break;
+                                    default:
+                                        break;
                                 }
-                                hiveColumns.add(new HiveColumn(columnName, columnType, columnComment));
                             }
-                            elasticSearchRestSearchHit.setHiveColumns(hiveColumns);
+                            hiveColumns.add(new HiveColumn(columnName, columnType, columnComment));
                         }
-                        sourceIterator.remove();
+                        elasticSearchRestSearchHit.setHiveColumns(hiveColumns);
                     }
-                    elasticSearchRestSearchHit.setSource(sourceList);
-
-                    JSONObject currentHitHighlightJsonObject = new JSONObject(currentHitJsonObject.get("highlight").toString());
-                    List<Pair> highlightsList = new ArrayList<>();
-                    Iterator highlightIterator = currentHitHighlightJsonObject.keys();
-                    while (highlightIterator.hasNext()) {
-                        String highlightKey = (String) highlightIterator.next();
-                        JSONArray highlightArray = currentHitHighlightJsonObject.getJSONArray(highlightKey);
-                        if (highlightArray.length() > 0) {
-                            highlightsList.add(new Pair(highlightKey, highlightArray.get(0)));
-                        }
-                        highlightIterator.remove();
-                    }
-
-                    elasticSearchRestSearchHit.setHighlights(highlightsList);
-                    elasticSearchRestSearchHits.add(elasticSearchRestSearchHit);
+                    sourceIterator.remove();
                 }
-                elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
-                return elasticSearchRestSearchResponse;
-            } catch (IOException | JSONException exception) {
-                log.warn("An error occurred during decoding search result");
-                exception.printStackTrace();
-                return null;
+                elasticSearchRestSearchHit.setSource(sourceList);
+
+                JSONObject currentHitHighlightJsonObject = new JSONObject(currentHitJsonObject.get("highlight").toString());
+                List<Pair> highlightsList = new ArrayList<>();
+                Iterator highlightIterator = currentHitHighlightJsonObject.keys();
+                while (highlightIterator.hasNext()) {
+                    String highlightKey = (String) highlightIterator.next();
+                    JSONArray highlightArray = currentHitHighlightJsonObject.getJSONArray(highlightKey);
+                    if (highlightArray.length() > 0) {
+                        highlightsList.add(new Pair(highlightKey, highlightArray.get(0)));
+                    }
+                    highlightIterator.remove();
+                }
+
+                elasticSearchRestSearchHit.setHighlights(highlightsList);
+                elasticSearchRestSearchHits.add(elasticSearchRestSearchHit);
             }
+            elasticSearchRestSearchResponse.setElasticSearchRestSearchHits(elasticSearchRestSearchHits);
+            return elasticSearchRestSearchResponse;
+        } catch (IOException | JSONException exception) {
+            log.warn("An error occurred during decoding search result e=", exception);
         }
 
         return null;
-    }
-
-    private void closeRestClient() {
-        try {
-            if (restClient != null) {
-                restClient.close();
-                restClient = null;
-            }
-        } catch (IOException ioe) {
-            log.error("An error occurred during closing rest client");
-            ioe.printStackTrace();
-        }
     }
 
     private Map<String, String> getParamsMap() {
@@ -385,7 +351,7 @@ public class ElasticSearchRestService implements Search {
         String jsonBodyString = new JSONObject().toString();
         try {
             JSONObject innerQueryJsonObject = new JSONObject()
-                .put("query", query);
+                .put(QUERY, query);
 
             JSONObject queryStringJsonObject = new JSONObject()
                 .put("query_string", innerQueryJsonObject);
@@ -400,7 +366,7 @@ public class ElasticSearchRestService implements Search {
 
             JSONObject indicesBodyJsonObject = new JSONObject()
                 .put("indices", indicesArray)
-                .put("query", queryStringJsonObject)
+                .put(QUERY, queryStringJsonObject)
                 .put("no_match_query", "none");
 
             JSONObject indicesJsonObject = new JSONObject()
@@ -424,15 +390,14 @@ public class ElasticSearchRestService implements Search {
                 .put("require_field_match", false);
 
             jsonBodyString = new JSONObject()
-                .put("query", indicesJsonObject)
+                .put(QUERY, indicesJsonObject)
                 .put("from", start)
                 .put("size", size)
                 .put("highlight", highlightJsonObject)
                 .toString();
 
         } catch (JSONException jsonException) {
-            log.warn("Could not construct request body query dsl for query: {}, start: {}, size: {}", query, start, size);
-            jsonException.printStackTrace();
+            log.warn("Could not construct request body query dsl for query: {}, start: {}, size: {}", query, start, size, jsonException);
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));
@@ -464,13 +429,12 @@ public class ElasticSearchRestService implements Search {
                 .put("bool", shouldObject);
 
             JSONObject queryObject = new JSONObject()
-                .put("query", boolObject);
+                .put(QUERY, boolObject);
 
             jsonBodyString = queryObject.toString();
 
         } catch (JSONException jsonException) {
-            log.warn("Could not construct data deletion request body query dsl for schema {}, table {}", schema, table);
-            jsonException.printStackTrace();
+            log.warn("Could not construct data deletion request body query dsl for schema {" + schema + "}, table {" + table + "}", jsonException);
         }
 
         return new StringEntity(jsonBodyString, ContentType.create("application/json", "UTF-8"));

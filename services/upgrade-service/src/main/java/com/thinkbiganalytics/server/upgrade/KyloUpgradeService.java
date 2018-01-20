@@ -20,60 +20,40 @@ package com.thinkbiganalytics.server.upgrade;
  * #L%
  */
 
+import com.google.common.io.Resources;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.KyloVersionUtil;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 
-import java.util.Arrays;
-import java.util.Collections;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 public class KyloUpgradeService {
 
-    private static final Logger log = LoggerFactory.getLogger(KyloUpgradeService.class);
+    private static final String UPGRADE_VERSIONS_FILE = "upgrade-versions.txt";
 
-    public static final List<KyloVersion> UPGRADE_SEQUENCE;
-    static {
-        String[] versions = {
-              "0.4.0",
-              "0.4.1",
-              "0.4.2",
-              "0.4.3",
-              "0.5.0",
-              "0.6.0",
-              "0.6.1",
-              "0.6.2",
-              "0.6.3",
-              "0.6.4",
-              "0.7.0",
-              "0.8.0",
-              "0.8.0.1",
-              "0.8.1",
-              "0.8.2",
-              "0.8.2.2",
-              "0.8.2.3",
-              "0.8.2.4",
-              "0.8.3",
-              "0.8.3.1",
-              "0.8.4"
-        };
-        
-        UPGRADE_SEQUENCE = Collections.unmodifiableList(Arrays.stream(versions)
-                                                            .map(KyloVersionUtil::parseVersion)
-                                                            .sorted()
-                                                            .collect(Collectors.toList()));
-    }
+    private static final Logger log = LoggerFactory.getLogger(KyloUpgradeService.class);
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -84,8 +64,57 @@ public class KyloUpgradeService {
     
     private KyloVersion buildVersion;
     private boolean freshInstall = false;
+    private List<KyloVersion> upgradeSequence;
     
+    public static void main(String... args) {
+        try {
+            if (args.length < 2) {
+                throw new IllegalArgumentException("Current source directory and build version required as arguments");
+            }
+            String resourcesDir = args[0];
+            Resource versionsResource = new FileSystemResource(new File(resourcesDir, UPGRADE_VERSIONS_FILE));
+            KyloVersion projectVersion = KyloVersionUtil.parseVersion(args[1]).withoutTag();
+
+            List<KyloVersion> upgradeVersions = Stream.concat(readUpgradeVersions(versionsResource).stream(), Stream.of(projectVersion))
+                            .sorted()
+                            .distinct()
+                            .collect(Collectors.toList());
+            writeUpgradeVersions(upgradeVersions, versionsResource.getFile());
+        } catch (Exception e) {
+            throw new UpgradeException("Failed to update versions file: " + UPGRADE_VERSIONS_FILE, e);
+        }
+    }
     
+    /**
+     * Reads the list of versions from the specified resource.
+     * @param versionsResource the versions resource
+     * @return a list of KyloVersions
+     * @throws IOException 
+     */
+    private static List<KyloVersion> readUpgradeVersions(Resource versionsResource) throws IOException {
+        if (! versionsResource.exists()) {
+            throw new UpgradeException("Kylo versions file does not exist: " + versionsResource.getURI());
+        }
+        
+        return Resources.readLines(versionsResource.getURL(), Charset.forName("UTF-8")).stream()
+            .filter(v -> StringUtils.isNotBlank(v))
+            .map(KyloVersionUtil::parseVersion)
+            .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * Writers out the list of versions to the specified file.
+     * @param versions the versions
+     * @param versionsFile the file
+     * @throws FileNotFoundException thrown if the destination file does not exist
+     * @throws UnsupportedEncodingException 
+     */
+    private static void writeUpgradeVersions(List<KyloVersion> versions, File versionsFile) throws FileNotFoundException, UnsupportedEncodingException {
+        try (PrintWriter writer = new PrintWriter(versionsFile, "UTF-8")) {
+            versions.forEach(writer::println);
+        }
+    }
+
     /**
      * Upgrades to the next Kylo version relative to the current version.
      * @return true if after this call upgrades are complete and Kylo is up-to-date.
@@ -154,10 +183,13 @@ public class KyloUpgradeService {
     }
     
     @PostConstruct
-    public void init() {
+    public void init() throws IOException {
+        ClassPathResource versionsResource = new ClassPathResource(UPGRADE_VERSIONS_FILE, KyloUpgradeService.class.getClassLoader());
         KyloVersion current = versionProvider.getCurrentVersion();
+        
         this.freshInstall = current == null;
         this.buildVersion = KyloVersionUtil.getBuildVersion();
+        this.upgradeSequence = readUpgradeVersions(versionsResource);
     }
 
     private KyloVersion getNextVersion() {
@@ -166,17 +198,18 @@ public class KyloUpgradeService {
         if (current == null) {
             return this.buildVersion;
         } else {
-            int idx = IntStream.range(0, UPGRADE_SEQUENCE.size())
+            int idx = IntStream.range(0, upgradeSequence.size())
                 .filter(i -> 
-                        UPGRADE_SEQUENCE.get(i).matches(current.getMajorVersion(), current.getMinorVersion(), current.getPointVersion()) ||
-                        UPGRADE_SEQUENCE.get(i).compareTo(current) > 0)
+                        upgradeSequence.get(i).matches(current.getMajorVersion(), current.getMinorVersion(), current.getPointVersion()) ||
+                        upgradeSequence.get(i).compareTo(current) > 0)
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("The current Kylo version is unrecognized: " + current));
+            
             // If the current version is not the last one in the upgrade sequence then return it, otherwise return null.
-            if (UPGRADE_SEQUENCE.get(idx).compareTo(current) > 0) {
-                return UPGRADE_SEQUENCE.get(idx);
-            } else if (idx < UPGRADE_SEQUENCE.size() - 1) {
-                return UPGRADE_SEQUENCE.get(idx + 1);
+            if (upgradeSequence.get(idx).compareTo(current) > 0) {
+                return upgradeSequence.get(idx);
+            } else if (idx < upgradeSequence.size() - 1) {
+                return upgradeSequence.get(idx + 1);
             } else {
                 return null;
             }

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo</artifactId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../</plugin.license.parentRelative>
@@ -15,6 +15,7 @@
     <module>install-tar</module>
     <module>install-rpm</module>
     <module>install-debian</module>
+    <module>install-inspector</module>
   </modules>
 
   <build>

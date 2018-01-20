@@ -3,7 +3,7 @@
     <card-layout class="not-centered" style="" flex="initial" ng-class="{'card-width':vm.cardWidth, 'card-full-width':!vm.cardWidth }">
         <header-section>
 
-            <div class="card-title" flex>Feed Details</div>
+            <div class="card-title" flex> {{"views.feed-details.FD" | translate}} </div>
 
         </header-section>
 
@@ -12,19 +12,19 @@
             <md-tabs md-dynamic-height md-border-bottom md-selected="vm.selectedTabIndex">
                 <md-tab>
                     <md-tab-label>
-                        <div>Details</div>
+                        <div> {{"views.feed-details.Details" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
                         <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingFeedData"></md-progress-linear>
                         <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
-                        <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;">Loading Feed</div>
+                        <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;"> {{"views.feed-details.LF" | translate}} </div>
                         <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding">{{vm.loadMessage}}</div>
-                      <div ng-if="vm.errorLoadingFeed" class="layout-padding">Unable to find the feed.  Either this feed doesnt exist or you don't have access to view it.</div>
+                      <div ng-if="vm.errorLoadingFeed" class="layout-padding"> {{"views.feed-details.Utftf" | translate}} </div>
                     </md-tab-body>
                 </md-tab>
                 <md-tab ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                     <md-tab-label>
-                        <div>Profile</div>
+                        <div> {{"views.feed-details.Profile" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-feed-profile-history ng-if="vm.selectedTabIndex == 1"></thinkbig-feed-profile-history>
@@ -32,7 +32,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                     <md-tab-label>
-                        <div>Lineage</div>
+                        <div> {{"views.feed-details.Lineage" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
                        <thinkbig-feed-lineage  ng-if="vm.selectedTabIndex == 2"></thinkbig-feed-lineage>
@@ -40,7 +40,7 @@
                 </md-tab>
                 <md-tab ng-disabled="vm.loadingFeedData || !vm.allowSlaAccess || vm.errorLoadingFeed">
                     <md-tab-label>
-                        <div>SLA</div>
+                        <div> {{"views.feed-details.SLA" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
                         <thinkbig-service-level-agreement view="feed" feed="vm.model" ng-if="vm.selectedTabIndex == 3" new-sla="vm.newSla"></thinkbig-service-level-agreement>
@@ -48,10 +48,10 @@
                 </md-tab>
                 <md-tab ng-disabled="true">
                     <md-tab-label>
-                        <div>Versions</div>
+                        <div> {{"views.feed-details.Versions" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
-                        Version History
+                        {{"views.feed-details.VH" | translate}}
                     </md-tab-body>
                 </md-tab>
             </md-tabs>
@@ -62,7 +62,7 @@
     <card-layout style="max-width:350px;width:350px;min-width:350px;" flex="initial" body-css="md-padding">
         <header-section>
           <div layout="row" layout-align="space-between center">
-            <div class="card-title" flex>Feed Summary</div>
+            <div class="card-title" flex> {{"views.feed-details.FS" | translate}} </div>
             <div layout-align="center center" layout="column">
             <md-menu md-position-mode="target-right target">
               <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px;margin-right:-10px" ng-click="vm.openFeedMenu($mdOpenMenu, $event)" ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
@@ -73,13 +73,13 @@
                 <md-menu-item ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()">
                   <md-button ng-disabled="(vm.disabling || !vm.allowEdit)">
                     <ng-md-icon icon="not_interested" class="orange"></ng-md-icon>
-                    Disable
+                    {{"views.feed-details.Disable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'"  ng-click="vm.enableFeed()" >
                   <md-button ng-disabled="(vm.enabling || !vm.allowEdit)">
                     <ng-md-icon icon="check_circle" class="orange" md-menu-align-target=""></ng-md-icon>
-                    Enable
+                    {{"views.feed-details.Enable" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-item ng-click="vm.cloneFeed()" >
@@ -91,28 +91,28 @@
                 <md-menu-item ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()">
                   <md-button ng-disabled="(vm.enabling || !vm.allowAdmin)">
                     <ng-md-icon icon="delete_forever" class="orange" md-menu-align-target=""></ng-md-icon>
-                    Delete...
+                    {{"views.feed-details.Delete" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-divider ng-if="vm.uploadAllowed"></md-menu-divider>
                 <md-menu-item ng-if="vm.uploadAllowed">
                   <md-button ng-click="vm.showFeedUploadDialog()" ng-disabled="vm.model.state != 'ENABLED'">
                     <ng-md-icon icon="file_upload"  class="primary-color-1"  md-menu-align-target=""></ng-md-icon>
-                    Upload...
+                    {{"views.feed-details.Upload" | translate}}
                   </md-button>
                 </md-menu-item>
                 <md-menu-divider ng-if="vm.allowExport"></md-menu-divider>
                 <md-menu-item  ng-if="vm.allowExport">
                   <md-button href="{{vm.exportFeedUrl}}" >
                     <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
-                    <span>Export</span>
+                    <span> {{"views.feed-details.Export" | translate}} </span>
                   </md-button>
                 </md-menu-item>
                 <md-menu-divider  ng-if="vm.allowChangePermissions"></md-menu-divider>
                 <md-menu-item ng-if="vm.allowChangePermissions">
                   <md-button ng-click="vm.showAccessControlDialog()" >
                     <ng-md-icon icon="lock" size="20" style="fill:#F08C38"></ng-md-icon>
-                    <span>Access Control</span>
+                    <span> {{"views.feed-details.AC" | translate}} </span>
                   </md-button>
                 </md-menu-item>
               </md-menu-content>
@@ -127,33 +127,35 @@
 
         <body-section>
             <div layout="column" class="layout-padding-top" ng-if="vm.loadingFeedData">
-                Loading Feed ...
+                {{"views.feed-details.LF..." | translate}}
             </div>
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
 
                 <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
-                    <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> {{vm.model.state}}
+                    <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}">
+                        <span ng-if="vm.model.state == 'ENABLED'">{{"views.feed-details.Enabled" | translate}}</span>
+                        <span ng-if="vm.model.state == 'DISABLED'" >{{"views.feed-details.Disabled" | translate}}</span>
                       <ng-md-icon
                         style="padding-left:10px" icon="{{vm.model.stateIcon}}" size="20"></ng-md-icon>
                     </span>
-                    <span class="hint">State</span>
+                    <span class="hint"> {{"views.feed-details.State" | translate}} </span>
                 </div>
                 <div layout="column" class="layout-padding-top-bottom" ng-if="vm.model.dataOwner">
                     <span>{{vm.model.dataOwner}}</span>
-                    <span class="hint">Data Owner</span>
+                    <span class="hint"> {{"views.feed-details.DO" | translate}} </span>
                 </div>
                 <div layout="column" class="layout-padding-top-bottom">
                     <div class="primary-color-1" style="cursor:pointer;" ng-click="vm.onTableClick()">{{vm.model.table.tableSchema.name}}</div>
-                    <span class="hint">Table</span>
+                    <span class="hint"> {{"views.feed-details.Table" | translate}} </span>
                 </div>
                 <div layout="column" class="layout-padding-top-bottom"  ng-if="vm.model.tags">
                     <span ng-repeat="tag in vm.model.tags">
                         {{tag.name}}
 
                     </span>
-                    <span class="hint">Tags</span>
+                    <span class="hint"> {{"views.feed-details.Tags" | translate}} </span>
                 </div>
                 <div layout="column" class="layout-padding-top-bottom">
                     <div layout="row" layout-align="start center" ng-click="vm.onCategoryClick()" class="primary-color-1" style="cursor: pointer;">
@@ -161,32 +163,28 @@
                         <ng-md-icon icon="{{vm.model.category.icon}}" style="padding-left:10px;" ng-style="{'fill':vm.model.category.iconColor}" ng-if="vm.model.category.icon != null"></ng-md-icon>
                         <span flex></span>
                     </div>
-                    <span class="hint">Category</span>
+                    <span class="hint"> {{"views.feed-details.Category" | translate}} </span>
                 </div>
 
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
-                <div class="md-subheader layout-padding-bottom">Operations Manager</div>
-                <span class="layout-padding-bottom">
-                  <a href ng-click="vm.gotoFeedStats($event)">Operational Statistics</a>
-                </span>
-                <span class="layout-padding-bottom">
-                <a href ng-click="vm.gotoFeedDetails($event)" ng-if="!vm.model.isStream">Operational Job Details</a>
-                </span>
+                <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div>
+                  <md-button class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                  <md-button ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
               </div>
 
               <md-divider ng-if="!vm.isNiFiRunning"></md-divider>
               <div layout="row" class="warn layout-padding-top-bottom" ng-if="!vm.isNiFiRunning">
                  <ng-md-icon style="margin:inherit;" class="error" icon="error" size="20"></ng-md-icon>
-                 <span class="error">NiFi is not running</span>
+                 <span class="error"> {{"views.feed-details.Ninr" | translate}} </span>
               </div>
                 <!--
                     <md-button ng-click="addAlert()" class="md-primary" ng-disabled="true" ng-if="vm.allowEdit">
-                        ADD ALERT
+                        {{"views.feed-details.AA" | translate}}
                     </md-button>
 
                     <md-button ng-click="vm.addSla()" class="md-primary" ng-disabled="vm.model.state != 'ENABLED'  && !vm.loadingFeedData" ng-if="vm.allowEdit">
-                        CREATE SLA
+                         {{"views.feed-details.CSLA" | translate}}
                     </md-button>
                 -->
             </div>

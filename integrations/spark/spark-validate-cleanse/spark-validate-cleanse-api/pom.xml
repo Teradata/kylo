@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
@@ -16,26 +16,41 @@
   <artifactId>kylo-spark-validate-cleanse-api</artifactId>
 
   <dependencies>
+
+    <!-- Kylo Dependencies -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-spark-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-field-policy-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
-      <artifactId>kylo-field-policy-default</artifactId>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-job-profiler-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-validate-cleanse-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 
+    <!-- Apache Spark Dependencies -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-hive_${scala.binary.version}</artifactId>
     </dependency>
 
+    <!-- Spring Dependencies -->
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context</artifactId>
     </dependency>
+
   </dependencies>
 
 </project>

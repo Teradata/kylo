@@ -75,7 +75,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     private static final Logger log = LoggerFactory.getLogger(JcrDatasourceProvider.class);
     private static final Map<Class<? extends Datasource>, Class<? extends JcrDatasource>> DOMAIN_TYPES_MAP;
     private static final Map<String, Class<? extends JcrDatasource>> NODE_TYPES_MAP;
-    public static JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
+    public static final JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
         @Override
         public Class<? extends JcrDatasource> resolve(Node node) {
             try {
@@ -193,7 +193,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
                 try {
                     jcrDerivedDatasource = findDerivedDatasourceByNodeName(nodeName);
                 } catch (RepositoryException e) {
-                    log.warn("An exception ocurred trying to find the DerivedDatasource by node name {}.  {} ", nodeName, e.getMessage());
+                    log.warn("An exception occurred trying to find the DerivedDatasource by node name {}.  {} ", nodeName, e.getMessage());
                 }
                 derivedDatasource = jcrDerivedDatasource;
                 if (jcrDerivedDatasource == null) {

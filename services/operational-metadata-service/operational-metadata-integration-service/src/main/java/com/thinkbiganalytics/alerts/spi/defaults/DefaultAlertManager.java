@@ -113,7 +113,7 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
 
     @PostConstruct
     private void init() {
-        clusterService.subscribe(this);
+        clusterService.subscribe(this,AlertManagerChangedClusterMessage.TYPE);
     }
 
     @Override
@@ -235,10 +235,10 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             principal = new Principal[0];
         }
         if (criteria.isOnlyIfChangesDetected() && !hasAlertsChanged(criteria)) {
-            log.info("Returning cached Alerts data");
+            log.debug("Returning cached Alerts data");
             return new ArrayList(latestAlerts.get(criteria.toString()).getAlertList()).iterator();
         }
-        log.info("Query for Alerts data");
+        log.debug("Query for Alerts data");
         List<Alert> alerts = this.metadataAccess.read(() -> {
             DefaultAlertCriteria critImpl = ensureAlertCriteriaType(criteria);
             return critImpl.createQuery().fetch().stream()
@@ -418,6 +418,8 @@ public class DefaultAlertManager extends QueryDslRepositorySupport implements Al
             JpaAlert alert = findAlert(id).orElseThrow(() -> new AlertNotfoundException(id));
             JpaAlertChangeEvent event = new JpaAlertChangeEvent(state, user, descr, content);
             alert.addEvent(event);
+            //need to save it
+            repository.save(alert);
             return asValue(alert);
         }, MetadataAccess.SERVICE);
         updateLastUpdatedTime();

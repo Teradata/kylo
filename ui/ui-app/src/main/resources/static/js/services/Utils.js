@@ -17,8 +17,8 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('Utils', ["$timeout", function ($timeout) {
+define(['angular','services/module-name','pascalprecht.translate'], function (angular,moduleName) {
+    angular.module(moduleName).factory('Utils', ["$timeout", "$filter", function ($timeout, $filter) {
 
         var waitForDomRetryCounts = {};
 
@@ -133,14 +133,14 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     var minutes = Math.floor((sec_num - (hours * 3600)) / 60);
                     var seconds = sec_num - (hours * 3600) - (minutes * 60);
 
-                    var str = seconds + " sec";
+                    var str = seconds + " " +$filter('translate')('views.Utils.sec');
                     if (hours == 0) {
                         if (minutes != 0) {
-                            str = minutes + " min " + str;
+                            str = minutes + " " + $filter('translate')('views.Utils.min')+ " " + str;
                         }
                     }
                     else {
-                        str = hours + " hrs " + minutes + " min " + str;
+                        str = hours + " " + $filter('translate')('views.Utils.hrs')+ " " + minutes + " " + $filter('translate')('views.Utils.min')+ " " + str;
                     }
                     return str;
                 }

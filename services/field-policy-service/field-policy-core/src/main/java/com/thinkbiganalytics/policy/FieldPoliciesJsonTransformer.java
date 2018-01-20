@@ -22,6 +22,8 @@ package com.thinkbiganalytics.policy;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
+import com.google.common.base.Throwables;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
@@ -35,34 +37,33 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 /**
  * Transform a string of JSON into field policy ({@link FieldPolicy}  objects
  */
 public class FieldPoliciesJsonTransformer {
 
     private static final Logger log = LoggerFactory.getLogger(FieldPoliciesJsonTransformer.class);
-    List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>
-        uiFieldPolicies;
-    /**
-     * JSON array of com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
-     */
-    private String jsonFieldPolicies;
 
-    public FieldPoliciesJsonTransformer(String jsonFieldPolicies) {
-        this.jsonFieldPolicies = jsonFieldPolicies;
-        ObjectMapper mapper = new ObjectMapper();
+    @Nonnull
+    private final List<com.thinkbiganalytics.policy.rest.model.FieldPolicy> uiFieldPolicies;
+
+    @SuppressWarnings("squid:S2637")
+    public FieldPoliciesJsonTransformer(@Nonnull final String jsonFieldPolicies) {
+        final ObjectMapper objectMapper = new ObjectMapper();
         try {
-            uiFieldPolicies =
-                mapper.readValue(jsonFieldPolicies,
-                                 new TypeReference<List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>>() {
-                                 });
-
-        } catch (Exception e) {
-            e.printStackTrace();
+            uiFieldPolicies = objectMapper.readValue(jsonFieldPolicies, new TypeReference<List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>>() {
+            });
+        } catch (final Exception e) {
             log.error("ERROR converting Field Policy JSON to Rest Models : {}", e.getMessage(), e);
+            throw Throwables.propagate(e);
         }
+        Preconditions.checkNotNull(uiFieldPolicies, "Field policies cannot be null");
+    }
 
-
+    public FieldPoliciesJsonTransformer(@Nonnull final List<com.thinkbiganalytics.policy.rest.model.FieldPolicy> fieldPolicies) {
+        this.uiFieldPolicies = fieldPolicies;
     }
 
     /**

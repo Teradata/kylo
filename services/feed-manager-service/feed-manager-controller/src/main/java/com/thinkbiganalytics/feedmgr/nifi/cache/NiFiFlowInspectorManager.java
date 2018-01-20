@@ -60,6 +60,8 @@ public class NiFiFlowInspectorManager {
 
     private Map<String, NiFiFlowInspection> flowsInspected = new ConcurrentHashMap<>();
 
+    private Set<String> processGroupsWithErrors = new HashSet<>();
+
     private NiFiFlowInspectionCallback completionCallback;
 
     private String startingProcessGroupId;
@@ -160,25 +162,46 @@ public class NiFiFlowInspectorManager {
 
     }
 
+    public void addGroupWithError(String processGroupId) {
+        processGroupsWithErrors.add(processGroupId);
+    }
+
     private void flowInspectionComplete(NiFiFlowInspection flowInspection) {
         flowInspection.getGroupsToInspect().stream().forEach(processGroupId -> addGroupToInspect(processGroupId, flowInspection.getLevel(), flowInspection));
         processGroupsToInspect.remove(flowInspection.getProcessGroupId());
         inspectingCount.decrementAndGet();
         flowsInspected.put(flowInspection.getProcessGroupId(), flowInspection);
+        if (!flowInspection.isComplete()) {
+            addGroupWithError(flowInspection.getProcessGroupId());
+            //short circuit and stop the inspection
+            completeInspection();
+        }
 
         if (isFinished()) {
-            log.info("Completed NiFi inspection of process groups");
-            running = false;
-            finished = DateTime.now();
-            totalTime = finished.getMillis() - started.getMillis();
-            if (completionCallback != null) {
-                completionCallback.execute(this);
-            }
-            if (wait) {
-                latch.countDown();
-            }
-            executorService.shutdown();
+            completeInspection();
         }
+    }
+
+    private void completeInspection() {
+        if (hasErrors()) {
+            log.error("Errors were found while inspecting NiFi process groups.");
+        } else {
+            log.info("Completed NiFi inspection of process groups");
+        }
+        running = false;
+        finished = DateTime.now();
+        totalTime = finished.getMillis() - started.getMillis();
+        if (completionCallback != null && !hasErrors()) {
+            completionCallback.execute(this);
+        }
+        if (wait) {
+            latch.countDown();
+        }
+        executorService.shutdown();
+    }
+
+    public boolean hasErrors() {
+        return !processGroupsWithErrors.isEmpty();
     }
 
     public boolean isFinished() {
@@ -197,7 +220,7 @@ public class NiFiFlowInspectorManager {
             try {
                 latch.await();
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                log.error("Error waiting for latch", e);
             }
         }
 

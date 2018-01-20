@@ -22,7 +22,7 @@ package com.thinkbiganalytics.policy.standardization;
 
 
 /**
- * Strips any non-digit value other than decimal
+ * Strips any non-digit value other than decimal and signs
  */
 @Standardizer(name = "Strip Non Numeric", description = "Remove any characters that are not numeric")
 public class StripNonNumeric extends SimpleRegexReplacer {
@@ -30,7 +30,7 @@ public class StripNonNumeric extends SimpleRegexReplacer {
     private static final StripNonNumeric instance = new StripNonNumeric();
 
     private StripNonNumeric() {
-        super("[^\\d.]", "");
+        super("[^-+\\d.]", "");
     }
 
     public static StripNonNumeric instance() {

@@ -205,13 +205,13 @@ public class DebugController {
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteJcrTree(@PathParam("abspath") final String abspath) {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-        
         StringWriter sw = new StringWriter();
         PrintWriter pw = new PrintWriter(sw);
 
         try {
             metadata.commit(() -> {
+                this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+                
                 Session session = JcrMetadataAccess.getActiveSession();
                 session.removeItem("/" + abspath);
                 pw.print("DELETED " + abspath);
@@ -235,9 +235,9 @@ public class DebugController {
     @Path("jcr/{abspath: .*}")
     @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public String printJcrTree(@PathParam("abspath") final String abspath) {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-        
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
 
@@ -270,8 +270,9 @@ public class DebugController {
     @Path("jcr-index")
     @Produces(MediaType.APPLICATION_JSON)
     public List<JcrIndexDefinition> getIndexes(){
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-      return  metadata.read(() -> {
+        return  metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+          
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Workspace workspace = (Workspace) session.getWorkspace();
@@ -309,9 +310,11 @@ public class DebugController {
         });
     }
 
-  private RestResponseStatus reindex() {
+    private RestResponseStatus reindex() {
 
         return  metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Workspace workspace = (Workspace) session.getWorkspace();
@@ -328,8 +331,9 @@ public class DebugController {
     @Path("jcr-index/{indexName}/unregister")
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus unregisterIndex(@PathParam("indexName") String indexName){
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-       return  metadata.commit(() -> {
+        return  metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Workspace workspace = (Workspace) session.getWorkspace();
@@ -351,8 +355,9 @@ public class DebugController {
         @ApiResponse(code = 200, message = "registers an index with modeshape", response = String.class)
     )
     public RestResponseStatus registerIndex(JcrIndexDefinition indexDefinition){
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-       return  metadata.commit(() -> {
+        return  metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Workspace workspace = (Workspace) session.getWorkspace();
@@ -375,9 +380,9 @@ public class DebugController {
     @Path("jcr-sql")
     @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public JcrQueryResult queryJcr(@QueryParam("query") final String query) {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
+            
             List<List<String>> rows = new ArrayList<>();
             Long startTime = System.currentTimeMillis();
             JcrQueryResult jcrQueryResult = new JcrQueryResult();
@@ -448,15 +453,13 @@ public class DebugController {
     @Path("jcr-index/reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus postReindex() {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-      return  reindex();
+        return reindex();
     }
 
     @GET
     @Path("jcr-index/reindex")
     @Produces(MediaType.APPLICATION_JSON)
     public RestResponseStatus getReindex() {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
         return reindex();
     }
 
@@ -470,9 +473,9 @@ public class DebugController {
     @Path("jcr")
     @Produces({ MediaType.TEXT_PLAIN, MediaType.APPLICATION_JSON })
     public String printJcrId(@QueryParam("id") final String jcrId) {
-        this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
-        
         return metadata.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
 
@@ -503,6 +506,8 @@ public class DebugController {
     @Produces(MediaType.TEXT_PLAIN)
     public String deleteJcrId(@QueryParam("id") final String jcrId) {
         return metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ACCESS_METADATA);
+            
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
             

@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -62,9 +63,9 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServiceLevelAgreementScheduler.class);
 
-    public static String QTZ_JOB_SCHEDULED_MESSAGE_TYPE = "QTZ_JOB_SCHEDULED";
+    public static final String QTZ_JOB_SCHEDULED_MESSAGE_TYPE = "QTZ_JOB_SCHEDULED";
 
-    public static String QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE = "QTZ_JOB_UNSCHEDULED";
+    public static final String QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE = "QTZ_JOB_UNSCHEDULED";
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -83,27 +84,38 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
+
+    @PostConstruct
+    private void init() {
+        clusterService.subscribe(this, QTZ_JOB_SCHEDULED_MESSAGE_TYPE, QTZ_JOB_SCHEDULED_MESSAGE_TYPE);
+    }
+
     /**
      * Called on startup as part of the PostMetadataConfigAction.
-     *
      */
     @Override
     public void run() {
-           metadataAccess.read(() -> {
-                 List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+        log.info("PostMetadataConfigAction called for DefaultServiceLevelAgreementScheduler.  About to schedule the SLA's ");
+        metadataAccess.read(() -> {
+            List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
-                 if (agreements != null) {
-                     for (ServiceLevelAgreement agreement : agreements) {
-                         JobIdentifier jobIdentifier = slaJobName(agreement);
-                         QuartzScheduler scheduler = (QuartzScheduler)jobScheduler;
-                         if(!scheduler.jobExists(jobIdentifier)) {
-                             scheduleServiceLevelAgreement(agreement);
-                         }
-                     }
-                 }
+            if (agreements != null) {
+                log.info("About to schedule {} SLA's", agreements.size());
+                for (ServiceLevelAgreement agreement : agreements) {
+                    JobIdentifier jobIdentifier = slaJobName(agreement);
+                    QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+                    if (!scheduler.jobExists(jobIdentifier)) {
+                        scheduleServiceLevelAgreement(agreement);
+                    } else {
+                        scheduledJobNames.put(agreement.getId(), jobIdentifier.getName());
+                    }
+                }
+            } else {
+                log.info("No SLA's found to schedule.");
+            }
 
-                 return null;
-             }, MetadataAccess.SERVICE);
+            return null;
+        }, MetadataAccess.SERVICE);
 
     }
 
@@ -163,13 +175,19 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
         try {
             if (scheduledJobNames.containsKey(slaId)) {
                 scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
-                log.debug("Unscheduling sla job " + scheduledJobId.getName());
+            }
+            QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+            if (scheduledJobId != null && scheduler.jobExists(scheduledJobId)) {
+
+                log.info("Unscheduling sla job " + scheduledJobId.getName());
                 jobScheduler.deleteJob(scheduledJobId);
                 scheduledJobNames.remove(slaId);
                 unscheduled = true;
-                if(clusterService.isClustered()) {
-                    clusterService.sendMessageToOthers(QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE,new ScheduledServiceLevelAgreementClusterMessage(slaId,scheduledJobId));
+                if (clusterService.isClustered()) {
+                    clusterService.sendMessageToOthers(QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE, new ScheduledServiceLevelAgreementClusterMessage(slaId, scheduledJobId));
                 }
+            } else {
+                log.info("Unable to unschedule/delete the SLA job.  Referencing SLA Id: {}.  It doesn't exist. Scheduled Jobs are: {}  ", slaId, scheduledJobNames);
             }
         } catch (JobSchedulerException e) {
             log.error("Unable to delete the SLA Job " + scheduledJobId);
@@ -217,14 +235,23 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
      */
     public void disableServiceLevelAgreement(ServiceLevelAgreement sla) {
         ServiceLevelAgreement.ID slaId = sla.getId();
+        JobIdentifier scheduledJobId = null;
         if (scheduledJobNames.containsKey(slaId)) {
-            JobIdentifier scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+        } else {
+            scheduledJobId = jobIdentifierForName(sla.getName());
+        }
+        QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+        if (scheduledJobId != null && scheduler.jobExists(scheduledJobId)) {
             try {
                 jobScheduler.pauseTriggersOnJob(scheduledJobId);
             } catch (JobSchedulerException e) {
                 log.error("Unable to pause the schedule for the disabled SLA {} ", sla.getName());
             }
+        } else {
+            log.info("Unable to pause the SLA job {} .  The Job does not exist", sla.getName());
         }
+
     }
 
     /**
@@ -235,31 +262,40 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     public void enableServiceLevelAgreement(ServiceLevelAgreement sla) {
 
         ServiceLevelAgreement.ID slaId = sla.getId();
+        JobIdentifier scheduledJobId = null;
         if (scheduledJobNames.containsKey(slaId)) {
-            JobIdentifier scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+            scheduledJobId = jobIdentifierForName(scheduledJobNames.get(slaId));
+        } else {
+            scheduledJobId = jobIdentifierForName(sla.getName());
+        }
+        QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+        if (scheduledJobId != null && scheduler.jobExists(scheduledJobId)) {
             try {
                 jobScheduler.resumeTriggersOnJob(scheduledJobId);
             } catch (JobSchedulerException e) {
-                log.error("Unable to resume the schedule for the enabled SLA {} ", sla.getName());
+                log.error("Unable to resume the schedule for the SLA {} ", sla.getName());
             }
+        } else {
+            log.info("Unable to resume the SLA job {} .  The Job does not exist", sla.getName());
         }
     }
 
     /**
      * Schedule the SlaQuartzJobBean for the given sla
+     *
      * @param jobIdentifier the job identifier for this schedule
-     * @param slaId the SLA id
+     * @param slaId         the SLA id
      */
-    private void scheduleSlaJob(JobIdentifier jobIdentifier, ServiceLevelAgreement.ID slaId){
+    private void scheduleSlaJob(JobIdentifier jobIdentifier, ServiceLevelAgreement.ID slaId) {
 
-        QuartzScheduler scheduler = (QuartzScheduler)jobScheduler;
-        TriggerIdentifier triggerIdentifier =triggerIdentifier(jobIdentifier);
-        Map<String,Object> map = new HashMap<String,Object>();
-        map.put(SlaQuartzJobBean.SLA_ID_PARAM,slaId);
+        QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+        TriggerIdentifier triggerIdentifier = triggerIdentifier(jobIdentifier);
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put(SlaQuartzJobBean.SLA_ID_PARAM, slaId);
         try {
             scheduler.scheduleJob(jobIdentifier, triggerIdentifier, SlaQuartzJobBean.class, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron), map);
-        }catch(SchedulerException e) {
-            e.printStackTrace();
+        } catch (SchedulerException e) {
+            throw new RuntimeException("Error scheduling job", e);
         }
     }
 
@@ -270,19 +306,19 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
      * @param sla The SLA to schedule
      */
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
-            if (scheduledJobNames.containsKey(sla.getId())) {
-                unscheduleServiceLevelAgreement(sla);
-            }
-            JobIdentifier jobIdentifier = slaJobName(sla);
-            ServiceLevelAgreement.ID slaId = sla.getId();
-            //schedule the job
-            scheduleSlaJob(jobIdentifier,slaId);
-            log.debug("Schedule sla job " + jobIdentifier.getName());
-            scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
-            //notify the other schedulers in the cluster of the scheduled job name
-            if(clusterService.isClustered()) {
-                clusterService.sendMessageToOthers(QTZ_JOB_SCHEDULED_MESSAGE_TYPE, new ScheduledServiceLevelAgreementClusterMessage(slaId, jobIdentifier));
-            }
+        if (scheduledJobNames.containsKey(sla.getId())) {
+            unscheduleServiceLevelAgreement(sla);
+        }
+        JobIdentifier jobIdentifier = slaJobName(sla);
+        ServiceLevelAgreement.ID slaId = sla.getId();
+        //schedule the job
+        scheduleSlaJob(jobIdentifier, slaId);
+        log.info("Schedule sla job " + jobIdentifier.getName());
+        scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
+        //notify the other schedulers in the cluster of the scheduled job name
+        if (clusterService.isClustered()) {
+            clusterService.sendMessageToOthers(QTZ_JOB_SCHEDULED_MESSAGE_TYPE, new ScheduledServiceLevelAgreementClusterMessage(slaId, jobIdentifier));
+        }
 
         if (!sla.isEnabled()) {
             disableServiceLevelAgreement(sla);
@@ -364,18 +400,20 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
 
     /**
      * Keep the job name cache in sync across clusters
-     * @param from cluser address sending the message
+     *
+     * @param from    cluser address sending the message
      * @param message the message
      */
     @Override
     public void onMessageReceived(String from, ClusterMessage message) {
 
-        if(QTZ_JOB_SCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())){
+        if (QTZ_JOB_SCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())) {
             ScheduledServiceLevelAgreementClusterMessage msg = (ScheduledServiceLevelAgreementClusterMessage) message.getMessage();
-            scheduledJobNames.put(msg.getSlaId(),msg.getJobIdentifier().getName());
-        }
-        else if(QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())) {
+            log.info("Received message {}, slaId: {}, jobId:{} ", message.getType(), msg.getSlaId(), msg.getJobIdentifier().getName());
+            scheduledJobNames.put(msg.getSlaId(), msg.getJobIdentifier().getName());
+        } else if (QTZ_JOB_UNSCHEDULED_MESSAGE_TYPE.equalsIgnoreCase(message.getType())) {
             ScheduledServiceLevelAgreementClusterMessage msg = (ScheduledServiceLevelAgreementClusterMessage) message.getMessage();
+            log.info("Received message {}, slaId: {}, jobId:{} ", message.getType(), msg.getSlaId(), msg.getJobIdentifier().getName());
             scheduledJobNames.remove(msg.getSlaId());
         }
     }

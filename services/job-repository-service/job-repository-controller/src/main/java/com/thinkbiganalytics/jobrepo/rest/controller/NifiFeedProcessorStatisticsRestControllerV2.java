@@ -37,13 +37,13 @@ import com.thinkbiganalytics.security.AccessController;
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
-import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -60,6 +60,12 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "Operations Manager - Feeds", produces = "application/json")
 @Path("/v2/provenance-stats")
 public class NifiFeedProcessorStatisticsRestControllerV2 {
+
+    /**
+     * Maximum number of processor statistics to be returned to client, otherwise server would do
+     * unnecessary aggregations and clients may get overloaded anyway
+     **/
+    private static final Integer MAX_DATA_POINTS = 6400;
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -95,17 +101,19 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
 
 
     @GET
-    @Path("/{feedName}/processor-duration/{timeframe}")
+    @Path("/{feedName}/processor-duration")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the list of stats for each processor within the given timeframe relative to now")
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now",
                      response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
+    public Response findStats(@PathParam("feedName") String feedName, @QueryParam("from") Long fromMillis, @QueryParam("to") Long toMillis) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+        final DateTime endTime = getToDateTime(toMillis);
+        final DateTime startTime = getFromDateTime(fromMillis);
         return metadataAccess.read(() -> {
-            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
+            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(startTime, endTime);
             List<? extends NifiFeedProcessorStats> list = statsProvider.findFeedProcessorStatisticsByProcessorName(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<? extends NifiFeedProcessorErrors> errors = statsProvider.findFeedProcessorErrors(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
@@ -116,33 +124,35 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
 
 
     @GET
-    @Path("/{feedName}/processor-errors/{timeframe}")
+    @Path("/{feedName}/processor-errors")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Returns the list of stats for each processor within the given timeframe relative to now")
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the list of stats for each processor within the given timeframe relative to now",
                      response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findFeedProcessorErrors(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe,
+    public Response findFeedProcessorErrors(@PathParam("feedName") String feedName, @QueryParam("from") Long fromMillis, @QueryParam("to") Long toMillis,
                                             @QueryParam("after") Long timestamp) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
-        NiFiFeedProcessorErrorsContainer container = new NiFiFeedProcessorErrorsContainer(timeframe);
-        DateTime now = DateTime.now();
-        DateTime startTime = timeframe.startTimeRelativeTo(now);
+
+        final DateTime endTime = getToDateTime(toMillis);
+        final DateTime startTime = getFromDateTime(fromMillis);
+
+        NiFiFeedProcessorErrorsContainer container = new NiFiFeedProcessorErrorsContainer(startTime, endTime);
         List<? extends NifiFeedProcessorErrors> errors = null;
         if (nifiStatsJmsReceiver.isPersistErrors()) {
             errors = metadataAccess.read(() -> {
                 if (timestamp != null && timestamp != 0L) {
                     return statsProvider.findFeedProcessorErrorsAfter(feedName, new DateTime(timestamp));
                 } else {
-                    return statsProvider.findFeedProcessorErrors(feedName, startTime, now);
+                    return statsProvider.findFeedProcessorErrors(feedName, startTime, endTime);
                 }
             });
         } else {
             if (timestamp != null && timestamp != 0L) {
                 errors = nifiStatsJmsReceiver.getErrorsForFeed(feedName, timestamp);
             } else {
-                errors = nifiStatsJmsReceiver.getErrorsForFeed(feedName, startTime.getMillis(), now.getMillis());
+                errors = nifiStatsJmsReceiver.getErrorsForFeed(feedName, startTime.getMillis(), endTime.getMillis());
             }
         }
         List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStatsErrors> errorsModel = NifiFeedProcessorStatsTransform.toErrorsModel(errors);
@@ -152,46 +162,26 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
 
     }
 
+
     @GET
-    @Path("/{feedName}/{timeframe}")
+    @Path("/{feedName}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the statistics for the specified feed.")
     @ApiResponses(
         @ApiResponse(code = 200, message = "Returns the feed statistics.", response = com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats.class, responseContainer = "List")
     )
-    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("THREE_MIN") NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
+    public Response findFeedStats(@PathParam("feedName") String feedName, @QueryParam("from") Long fromMillis, @QueryParam("to") Long toMillis) {
         this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
+        final DateTime endTime = getToDateTime(toMillis);
+        final DateTime startTime = getFromDateTime(fromMillis);
+
         return metadataAccess.read(() -> {
-            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(timeframe);
+            NiFiFeedProcessorStatsContainer statsContainer = new NiFiFeedProcessorStatsContainer(startTime, endTime);
             NifiFeedStats feedStats = nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName);
 
             List<? extends NifiFeedProcessorStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, statsContainer.getStartTime(), statsContainer.getEndTime());
             List<com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats> model = NifiFeedProcessorStatsTransform.toModel(list);
-            Integer timeInterval = 5000;
-            Long diff = statsContainer.getEndTime().getMillis() - statsContainer.getStartTime().getMillis();
-            DateTime start = statsContainer.getStartTime();
-            if (model != null && !model.isEmpty()) {
-                //add in times based
-                Long maxTime = model.stream().map(item -> item.getMaxEventTime().getMillis()).max(Long::compare).get();
-                Long endTime = statsContainer.getEndTime().getMillis();
-                diff = endTime - maxTime;
-                start = new DateTime(maxTime);
-            }
-            Long extraBlankItems = diff / timeInterval;
-            Integer extras = extraBlankItems.intValue();
-            if (model == null) {
-                model = new ArrayList<>();
-            }
-            for (int i = 0; i < extras; i++) {
-                start = start.plus(timeInterval);
-                if (start.isBefore(statsContainer.getEndTime())) {
-                    com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats stats = new com.thinkbiganalytics.metadata.rest.jobrepo.nifi.NifiFeedProcessorStats();
-                    stats.setFeedName(feedName);
-                    stats.setMinEventTime(start);
-                    stats.setMaxEventTime(start);
-                    model.add(stats);
-                }
-            }
 
             statsContainer.setStats(model);
             if (feedStats != null) {
@@ -210,6 +200,26 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
         });
     }
 
+    private DateTime getToDateTime(Long toMillis) {
+        DateTime toDate;
+        if (toMillis == null) {
+            toDate = DateTime.now();
+        } else {
+            toDate = new DateTime(toMillis);
+        }
+        return toDate;
+    }
+
+    private DateTime getFromDateTime(Long fromMillis) {
+        DateTime fromDate;
+        if (fromMillis == null) {
+            fromDate = DateTime.now().minusMinutes(5);
+        } else {
+            fromDate = new DateTime(fromMillis);
+        }
+        return fromDate;
+    }
+
     @GET
     @Path("/time-frame-options")
     @Produces(MediaType.APPLICATION_JSON)
@@ -219,7 +229,13 @@ public class NifiFeedProcessorStatisticsRestControllerV2 {
     )
     public Response getTimeFrameOptions() {
         List<LabelValue> vals = Arrays.stream(NifiFeedProcessorStatisticsProvider.TimeFrame.values())
-            .map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name()))
+            .map(timeFrame -> {
+                LabelValue label = new LabelValue(timeFrame.getDisplayName(), timeFrame.name());
+                Map<String, Object> properties = new HashMap<>(1);
+                properties.put("millis", timeFrame.getMillis());
+                label.setProperties(properties);
+                return label;
+            })
             .collect(Collectors.toList());
         return Response.ok(vals).build();
     }

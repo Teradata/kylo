@@ -32,7 +32,7 @@ public class GroupedStatsV2 extends GroupedStats {
 
     protected String latestFlowFileId;
 
-    public String getLatestFlowFileId() {
+    public final String getLatestFlowFileId() {
         return latestFlowFileId;
     }
 

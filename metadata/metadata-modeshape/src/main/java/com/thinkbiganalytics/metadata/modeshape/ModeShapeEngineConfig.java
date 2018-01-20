@@ -58,7 +58,7 @@ public class ModeShapeEngineConfig {
     public static final String INDEX_DIR_PROP = "modeshape.index.dir";
     public static final File DEFAULT_INDEX_DIR = new File("/opt/kylo/modeshape/modeshape-local-index");
 
-    public static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
+    private static final String[] CONFIG_PROPS = {"modeshape.datasource.driverClassName",
                                                   "modeshape.datasource.url",
                                                   "modeshape.datasource.username",
                                                   "modeshape.datasource.password",
@@ -140,10 +140,17 @@ public class ModeShapeEngineConfig {
     public Repository metadataJcrRepository() throws Exception {
         JcrRepository repo = modeShapeEngine().deploy(metadataRepoConfig());
 
-        Problems problems = repo.getStartupProblems();
-        if (problems.hasErrors()) {
-            log.error("Problems starting the metadata ModeShape repository: {}  \n{}", repo.getName(), problems);
-            throw new RuntimeException("Problems starting the ModeShape metadata repository: " + problems);
+        try {
+            Problems problems = repo.getStartupProblems();
+            if (problems.hasErrors()) {
+                log.error("Problems starting the metadata ModeShape repository: {}  \n{}", repo.getName(), problems);
+                throw new RuntimeException("Problems starting the ModeShape metadata repository: " + problems);
+            }
+        } catch (NullPointerException e) {
+            // This gets thrown sometimes when attempting to retrieve the startup problems.  It looks 
+            // like it is probably a ModeShape bug that can happen even when the repo starts successfully.
+            // Just log a warning about it and proceed as if everything is fine.
+            log.warn("Retrieved a NullPointerException when attempting to check for startup errors - this is likely a ModeShape bug and can usually be ignored");
         }
 
         return repo;

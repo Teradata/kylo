@@ -33,8 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataAccessException;
-import org.springframework.dao.UncategorizedDataAccessException;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
@@ -42,6 +40,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -77,7 +76,7 @@ public class DBSchemaParser {
         }
     }
 
-    private List<String> listCatalogs() {
+    public List<String> listCatalogs() {
         Vector<String> catalogs = new Vector<>();
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
         try ( ResultSet rs = conn.getMetaData().getCatalogs()) {
@@ -217,6 +216,52 @@ public class DBSchemaParser {
 
 
     /**
+     * Lists the tables in the specified catalog or schema
+     * Some databases use the catalog (i.e. MySQL), some don't (i.e. Teradata)
+     * This should work for all cases.
+     *
+     * @param catalog the catalog name
+     * @return the list of table names prepended with the schema or catalog name, like: {@code <schema>.<table>}
+     * @throws RuntimeException if a database access error occurs
+     */
+    @Nonnull
+    public List<String> listTables(@Nullable final String catalog) {
+        final List<String> tables = new ArrayList<>();
+
+        List<String> catalogs = null;
+        try {
+            catalogs = listCatalogs();
+        }
+        catch (Exception e) {
+            //ok to catch exception here
+        }
+        boolean hasCatalogs = catalogs != null && !catalogs.isEmpty();
+        try {
+            if (hasCatalogs) {
+                try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+                    try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
+                        }
+                    }
+                }
+            } else {
+                try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+                    try (final ResultSet result = getTables(conn, null, catalog, "%")) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
+                        }
+                    }
+                }
+            }
+        } catch (final SQLException e) {
+            throw new SchemaParserException("Unable to obtain table list", e);
+        }
+
+        return tables;
+    }
+
+    /**
      * Gets the schema for the specified table.
      *
      * @param schema the schema name
@@ -229,7 +274,16 @@ public class DBSchemaParser {
     public TableSchema describeTable(@Nullable final String schema, @Nonnull final String table) {
         Validate.isTrue(!StringUtils.isEmpty(table), "Table expected");
 
-        final String catalog = StringUtils.isNotBlank(schema) ? listCatalogs().stream().filter(schema::equalsIgnoreCase).findFirst().orElse(null) : null;
+        String catalog = null;
+        if (StringUtils.isNotBlank(schema)) {
+            final Iterator<String> catalogIter = listCatalogs().iterator();
+            while (catalog == null && catalogIter.hasNext()) {
+                final String next = catalogIter.next();
+                if (schema.equalsIgnoreCase(next)) {
+                    catalog = next;
+                }
+            }
+        }
 
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             try (final ResultSet result = getTables(conn, catalog, (catalog == null) ? schema : "%", table)) {
@@ -237,7 +291,7 @@ public class DBSchemaParser {
                     final String cat = result.getString(1);
                     final String schem = result.getString(2);
                     final String tableName = result.getString(3);
-                    if (table.equalsIgnoreCase(tableName) && (schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
+                    if (table.equalsIgnoreCase(tableName) && (catalog != null || schema == null || schem == null || schema.equalsIgnoreCase(schem))) {
                         final DefaultTableSchema tableSchema = new DefaultTableSchema();
                         tableSchema.setFields(listColumns(conn, schema, tableName));
                         tableSchema.setName(tableName);

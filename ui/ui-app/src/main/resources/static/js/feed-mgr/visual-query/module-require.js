@@ -5,12 +5,14 @@ define(['angular',
         'feed-mgr/visual-query/init-query-engine.directive',
         'feed-mgr/visual-query/build-query/build-query.component',
         'feed-mgr/visual-query/build-query/connection-dialog/connection-dialog.component',
-        'feed-mgr/visual-query/services/query-engine-factory.service',
+        'feed-mgr/visual-query/services/save.service',
         'feed-mgr/visual-query/services/spark/spark-query-engine',
-        'feed-mgr/visual-query/store/visual-query-store',
+        'feed-mgr/visual-query/store/store.component',
         'feed-mgr/visual-query/transform-data/transform-data.component',
         'feed-mgr/visual-query/transform-data/services/wrangler-data.service',
         'feed-mgr/visual-query/transform-data/services/wrangler-table.service',
         'feed-mgr/visual-query/transform-data/profile-stats/VisualQueryProfileStats',
-        'feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table.component'], function () {
+        'feed-mgr/visual-query/transform-data/visual-query-table/visual-query-painter.service',
+        'feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table.component',
+        'feed-mgr/visual-query/wrangler/query-engine-factory.service'], function () {
 });

@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 
 public class FileResourceService {
 
-    private static Logger log = LoggerFactory.getLogger(FileResourceService.class);
+    private static final Logger log = LoggerFactory.getLogger(FileResourceService.class);
 
     @Autowired
     private ResourceLoader resourceLoader;

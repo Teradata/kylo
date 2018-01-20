@@ -67,6 +67,9 @@ public class JcrFeedDefaultRoleMembership extends JcrAbstractRoleMembership {
         this.category.getFeeds().forEach(feed -> enableOnly(principal, streamAllRoleMemberships(feed), feed.getAllowedActions()));
     }
 
+    /**
+     * Streams all feed role memberships (category-level and feed-level) that apply to the specified feed.
+     */
     protected Stream<RoleMembership> streamAllRoleMemberships(Feed feed) {
         return Stream.concat(this.category.getFeedRoleMemberships().stream(), feed.getRoleMemberships().stream());
     }

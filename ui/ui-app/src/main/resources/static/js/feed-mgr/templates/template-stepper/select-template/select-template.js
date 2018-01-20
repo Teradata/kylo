@@ -181,7 +181,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
             },function(err) {
                 RegisterTemplateService.resetModel();
-                self.errorMessage ="An Error was found loading this template.  Please ensure you have access to edit this template.";
+                self.errorMessage = (angular.isDefined(err.data) && angular.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
                 self.loadingTemplate = false;
                 hideProgress();
             });

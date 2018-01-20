@@ -1,0 +1,16 @@
+<div>
+  <card-layout body-css="md-padding" class="centered">
+    <header-section>
+      <div layout="row" layout-align="center start">
+        <div class="card-title">Domain Type Details</div>
+        <span flex></span>
+        <ng-md-icon icon="{{$ctrl.model.icon}}" ng-style="{'fill':$ctrl.model.iconColor}" style="padding-right:16px;" size="30"></ng-md-icon>
+      </div>
+    </header-section>
+    <body-section>
+      <domain-type-metadata-details allow-edit="$ctrl.allowEdit" model="$ctrl.model"></domain-type-metadata-details>
+      <domain-type-matchers-details ng-if="!$ctrl.isNew" allow-edit="$ctrl.allowEdit" model="$ctrl.model"></domain-type-matchers-details>
+      <domain-type-rules-details ng-if="!$ctrl.isNew" allow-edit="$ctrl.allowEdit" model="$ctrl.model"></domain-type-rules-details>
+    </body-section>
+  </card-layout>
+</div>

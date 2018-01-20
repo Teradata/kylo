@@ -31,7 +31,7 @@ then
     cp $WORKING_DIR/nifi/nifi-${NIFI_VERSION}-bin.tar.gz .
 else
     echo "Downloading NiFi ${NIFI_VERSION} distro"
-    curl -f -O https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz
+    curl -f -O -k https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz
 fi
 
 if ! [ -f nifi-${NIFI_VERSION}-bin.tar.gz ]

@@ -49,7 +49,7 @@ import javax.annotation.Nullable;
  */
 public class TableMergeSyncSupport implements Serializable {
 
-    public static Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
+    private static final Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
 
     protected Connection conn;
 
@@ -73,9 +73,37 @@ public class TableMergeSyncSupport implements Serializable {
      */
     public void setHiveConf(String[] configurations) {
         for (String conf : configurations) {
-            doExecuteSQL("set " + conf);
+            if(conf.equalsIgnoreCase("reset")){
+                    resetHiveConf();
+            }
+            else {
+                doExecuteSQL("set " + conf);
+            }
         }
     }
+
+    /**
+     * Sets the list of configurations given in name=value string pairs
+     */
+    public void resetHiveConf() {
+            doExecuteSQL("reset");
+    }
+
+
+    public String getHivePropertyValue(String parameter) throws SQLException{
+
+        String value = null;
+        try (final Statement st = conn.createStatement()) {
+            ResultSet rs = doSelectSQL(st, "set "+parameter);
+
+            while (rs.next()) {
+                value = rs.getString(1);
+                logger.info("Value = {} ",value);
+            }
+        }
+        return value;
+    }
+
 
     /**
      * Performs a sync replacing all data in the target table. A temporary table is created with the new data, old table dropped and the temporary table renamed to become the new table.  This causes a
@@ -515,12 +543,12 @@ public class TableMergeSyncSupport implements Serializable {
 
         return "insert into table " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " " +
                "select " + selectAggregateSQL + " from (" +
-               " select " + selectSQL +
+               " select distinct " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " where processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) + " " +
                " union all " +
                " select " + selectSQL +
                " from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) +
-               ") x group by " + groupBySQL + " having min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
+               ") x group by " + groupBySQL + " having count(processing_dttm) = 1 and min(processing_dttm) = " + HiveUtils.quoteString(feedPartitionValue);
     }
 
     /**
@@ -599,7 +627,7 @@ public class TableMergeSyncSupport implements Serializable {
                "  from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) + " a" +
                "  where " +
                "  a.processing_dttm = " + HiveUtils.quoteString(feedPartitionValue) +
-               " union " +
+               " union all" +
                "  select " + selectSQLWithAlias +
                "  from " + HiveUtils.quoteIdentifier(targetSchema, targetTable) + " a left outer join (" + sbSourceQuery + ") b " +
                "  on (" + joinOnClause + ")" +

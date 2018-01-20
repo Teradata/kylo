@@ -7,21 +7,22 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../services/query-engine"], function (require, exports, core_1, angular, $, _, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
     /**
      * Transform Data step of the Visual Query page.
      */
-    var TransformDataComponent = (function () {
+    var TransformDataComponent = /** @class */ (function () {
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $element, $q, $mdDialog, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
+            this.domainTypesService = domainTypesService;
             this.RestUrlService = RestUrlService;
             this.uiGridConstants = uiGridConstants;
             this.FeedService = FeedService;
@@ -90,6 +91,10 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              */
             this.sampleFormulas = [];
             /**
+             * List of available domain types.
+             */
+            this.domainTypes = [];
+            /**
              * Height offset from the top of the page.
              */
             this.heightOffset = "0";
@@ -151,6 +156,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Wait for query engine to load
             var onLoad = function () {
+                var domainTypesLoaded = false;
                 _this.sampleFormulas = _this.engine.sampleFormulas;
                 if (angular.isArray(_this.model.states) && _this.model.states.length > 0) {
                     _this.engine.setQuery(source, _this.model.$datasources);
@@ -160,8 +166,36 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 else {
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
-                // Load table data
-                _this.query();
+                // Watch for changes to field policies
+                if (_this.fieldPolicies == null) {
+                    _this.fieldPolicies = [];
+                }
+                _this.engine.setFieldPolicies(_this.fieldPolicies);
+                _this.$scope.$watch(function () { return _this.fieldPolicies; }, function () {
+                    _this.fieldPolicies.forEach(function (policy) {
+                        if (policy.name == null) {
+                            policy.name = policy.fieldName;
+                        }
+                        if (policy.fieldName !== policy.name) {
+                            policy.fieldName = policy.name;
+                        }
+                        if (policy.feedFieldName !== policy.name) {
+                            policy.feedFieldName = policy.name;
+                        }
+                    });
+                    _this.engine.setFieldPolicies(_this.fieldPolicies);
+                    if (domainTypesLoaded) {
+                        _this.query();
+                    }
+                }, true);
+                // Fetch domain types
+                _this.domainTypesService.findAll()
+                    .then(function (domainTypes) {
+                    _this.domainTypes = domainTypes;
+                    domainTypesLoaded = true;
+                    // Load table data
+                    _this.query();
+                });
             };
             if (this.engine instanceof Promise) {
                 this.engine.then(function (queryEngine) {
@@ -216,9 +250,9 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             //assign the editor to a variable on this object for future reference
             this.codemirrorEditor = _editor;
             //Set the width,height of the editor. Code mirror needs an explicit width/height
-            _editor.setSize(625, 25);
-            _editor.on("focus", function () { return _editor.setSize(625, "auto"); });
-            _editor.on("blur", function () { return _editor.setSize(625, 25); });
+            _editor.setSize(585, 25);
+            _editor.on("focus", function () { return _editor.setSize(585, "auto"); });
+            _editor.on("blur", function () { return _editor.setSize(585, 25); });
             //disable users ability to add new lines.  The Formula bar is only 1 line
             _editor.on("beforeChange", function (instance, change) {
                 var newtext = change.text.join("").replace(/\n/g, ""); // remove ALL \n !
@@ -361,6 +395,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.executingQuery = true;
             this.queryProgress = 0;
             // Query Spark shell service
+            var didUpdateColumns = false;
             var successCallback = function () {
                 //mark the query as finished
                 self.executingQuery = false;
@@ -377,23 +412,48 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             var errorCallback = function (message) {
                 // Display error message
-                var alert = self.$mdDialog.alert()
-                    .parent($('body'))
-                    .clickOutsideToClose(true)
-                    .title("Error executing the query")
-                    .textContent(message)
-                    .ariaLabel("error executing the query")
-                    .ok("Got it!");
-                self.$mdDialog.show(alert);
+                self.$mdDialog.show({
+                    clickOutsideToClose: true,
+                    controller: (_a = /** @class */ (function () {
+                            function class_1($mdDialog) {
+                                this.$mdDialog = $mdDialog;
+                                /**
+                                 * Additional details about the error.
+                                 */
+                                this.detailMessage = message;
+                                /**
+                                 * Indicates that the detail message should be shown.
+                                 */
+                                this.showDetail = false;
+                            }
+                            /**
+                             * Hides this dialog.
+                             */
+                            class_1.prototype.hide = function () {
+                                this.$mdDialog.hide();
+                            };
+                            return class_1;
+                        }()),
+                        _a.$inject = ["$mdDialog"],
+                        _a),
+                    controllerAs: "dialog",
+                    parent: angular.element("body"),
+                    template: "\n                  <md-dialog arial-label=\"error executing the query\" style=\"max-width: 640px;\">\n                    <md-dialog-content class=\"md-dialog-content\" role=\"document\" tabIndex=\"-1\">\n                      <h2 class=\"md-title\">Error executing the query</h2>\n                      <p>There was a problem executing the query.</p>\n                      <md-button ng-if=\"!dialog.showDetail\" ng-click=\"dialog.showDetail = true\" style=\"margin: 0; padding: 0;\">Show more</md-button>\n                      <p ng-if=\"dialog.showDetail\">{{ dialog.detailMessage }}</p>\n                    </md-dialog-content>\n                    <md-dialog-actions>\n                      <md-button ng-click=\"dialog.hide()\" class=\"md-primary md-confirm-button\" md-autofocus=\"true\">Got it!</md-button>\n                    </md-dialog-actions>\n                  </md-dialog>\n                "
+                });
                 // Reset state
                 self.executingQuery = false;
                 self.engine.pop();
                 self.functionHistory.pop();
                 self.refreshGrid();
                 deferred.reject(message);
+                var _a;
             };
             var notifyCallback = function (progress) {
                 self.queryProgress = progress * 100;
+                if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
+                    didUpdateColumns = true;
+                    self.updateGrid();
+                }
             };
             self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
             return deferred.promise;
@@ -403,9 +463,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var self = this;
             //transform the result to the agGrid model
             var columns = [];
+            var fieldPolicies = this.engine.getFieldPolicies();
             var profile = this.engine.getProfile();
-            angular.forEach(this.engine.getColumns(), function (col) {
-                var delegate = self.engine.createColumnDelegate(col.dataType, self);
+            angular.forEach(this.engine.getColumns(), function (col, index) {
+                var delegate = self.engine.createColumnDelegate(col.dataType, self, col);
+                var fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
                 var longestValue = _.find(profile, function (row) {
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"));
                 });
@@ -413,6 +475,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
+                    domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
                     filters: delegate.filters,
                     headerTooltip: col.hiveColumnLabel,
                     longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
@@ -422,6 +485,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             //update the ag-grid
             this.tableColumns = columns;
             this.tableRows = this.engine.getRows();
+            this.tableValidation = this.engine.getValidationResults();
             this.updateCodeMirrorAutoComplete();
         };
         /**
@@ -447,23 +511,24 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         TransformDataComponent.prototype.addColumnFilter = function (filter, column) {
             // Generate formula for filter
             var formula;
+            var safeTerm = (column.delegate.dataCategory === column_delegate_1.DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
             var verb;
             switch (filter.condition) {
                 case this.uiGridConstants.filter.LESS_THAN:
-                    formula = "filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(lessThan(" + column.field + ", " + safeTerm + "))";
                     verb = "less than";
                     break;
                 case this.uiGridConstants.filter.GREATER_THAN:
-                    formula = "filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(greaterThan(" + column.field + ", " + safeTerm + "))";
                     verb = "greater than";
                     break;
                 case this.uiGridConstants.filter.EXACT:
-                    formula = "filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    formula = "filter(equal(" + column.field + ", " + safeTerm + "))";
                     verb = "equal to";
                     break;
                 case this.uiGridConstants.filter.CONTAINS:
                     var query = "%" + filter.term.replace("%", "%%") + "%";
-                    formula = "filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))";
+                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
                     verb = "containing";
                     break;
                 default:
@@ -482,17 +547,18 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          */
         TransformDataComponent.prototype.addFunction = function (formula, context) {
             this.addFilters();
-            this.pushFormula(formula, context);
-            this.query();
+            this.pushFormula(formula, context, true);
         };
         ;
         /**
          * Appends the specified formula to the current script.
          *
-         * @param {string} formula the formula
-         * @param {TransformContext} context the UI context for the transformation
+         * @param {string} formula - the formula
+         * @param {TransformContext} context - the UI context for the transformation
+         * @param {boolean} doQuery - true to immediately execute the query
          */
-        TransformDataComponent.prototype.pushFormula = function (formula, context) {
+        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery) {
+            if (doQuery === void 0) { doQuery = false; }
             // Covert to a syntax tree
             this.ternServer.server.addFile("[doc]", formula);
             var file = this.ternServer.server.findFile("[doc]");
@@ -514,6 +580,9 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Add to function history
             this.functionHistory.push(context);
+            if (doQuery || this.engine.getRows() === null) {
+                this.query();
+            }
         };
         ;
         /**
@@ -555,6 +624,13 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
         };
         ;
+        /**
+         * Refreshes the table content.
+         */
+        TransformDataComponent.prototype.resample = function () {
+            this.addFilters();
+            this.query();
+        };
         //noinspection JSUnusedGlobalSymbols
         TransformDataComponent.prototype.onUndo = function () {
             this.engine.undo();
@@ -599,6 +675,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @returns {Promise} signals when the save is complete
          */
         TransformDataComponent.prototype.saveToFeedModel = function () {
+            var _this = this;
             // Add unsaved filters
             this.addFilters();
             // Check if updates are necessary
@@ -619,15 +696,16 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var deferred = this.$q.defer();
             var fields = this.engine.getFields();
             if (fields !== null) {
-                this.FeedService.setTableFields(fields);
+                this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
+                this.FeedService.syncTableFieldPolicyNames();
                 this.engine.save();
                 deferred.resolve(true);
             }
             else {
-                var self_1 = this;
                 this.query().then(function () {
-                    self_1.FeedService.setTableFields(self_1.engine.getFields());
-                    self_1.engine.save();
+                    _this.FeedService.setTableFields(_this.engine.getFields(), _this.engine.getFieldPolicies());
+                    _this.FeedService.syncTableFieldPolicyNames();
+                    _this.engine.save();
                     deferred.resolve(true);
                 });
             }
@@ -644,26 +722,55 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 this.engine.limit(1000);
             }
         };
+        /**
+         * Sets the domain type for the specified field.
+         *
+         * @param columnIndex - the field index
+         * @param domainTypeId - the domain type id
+         */
+        TransformDataComponent.prototype.setDomainType = function (columnIndex, domainTypeId) {
+            var _this = this;
+            var domainType = (domainTypeId != null) ? this.domainTypes.find(function (domainType) { return domainType.id === domainTypeId; }) : { fieldPolicy: { standardization: null, validation: null } };
+            if (domainType) {
+                var fieldPolicies_1 = (this.engine.getFieldPolicies() !== null) ? this.engine.getFieldPolicies() : [];
+                this.fieldPolicies = this.engine.getColumns().map(function (column, index) {
+                    var fieldPolicy;
+                    if (index < fieldPolicies_1.length) {
+                        fieldPolicy = fieldPolicies_1[index];
+                    }
+                    else {
+                        fieldPolicy = _this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                        fieldPolicy.fieldName = column.hiveColumnLabel;
+                        fieldPolicy.feedFieldName = column.hiveColumnLabel;
+                    }
+                    if (index === columnIndex) {
+                        _this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
+                    }
+                    return fieldPolicy;
+                });
+            }
+        };
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", query_engine_1.QueryEngine)
+        ], TransformDataComponent.prototype, "engine", void 0);
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", Object)
+        ], TransformDataComponent.prototype, "model", void 0);
         return TransformDataComponent;
     }());
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", query_engine_1.QueryEngine)
-    ], TransformDataComponent.prototype, "engine", void 0);
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object)
-    ], TransformDataComponent.prototype, "model", void 0);
     exports.TransformDataComponent = TransformDataComponent;
     angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         bindings: {
             engine: "=",
+            fieldPolicies: "<?",
             heightOffset: "@",
             model: "=",
             stepIndex: "@"
         },
-        controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
-            TransformDataComponent],
+        controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
+            "WindowUnloadService", TransformDataComponent],
         controllerAs: "$td",
         require: {
             stepperController: "^thinkbigStepper"

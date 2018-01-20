@@ -29,6 +29,7 @@ import com.google.common.cache.RemovalNotification;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
@@ -51,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -160,6 +162,13 @@ public class FeedEventStatistics implements Serializable {
     protected Map<String,AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
 
     /**
+     * Count of the flows running by feed processor
+     */
+    protected Set<String> changedFeedProcessorRunningFeedFlows = new HashSet<>();
+
+    protected AtomicBoolean feedProcessorRunningFeedFlowsChanged = new AtomicBoolean(false);
+
+    /**
      * file location to persist this data if NiFi goes Down midstream
      * This value is set via the KyloPersistenetProvenanceEventRepository during initialization
      */
@@ -221,14 +230,11 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean backup(String location) {
 
-        try {
+        try (FileOutputStream fos = new FileOutputStream(location);
+             GZIPOutputStream gz = new GZIPOutputStream(fos);
+             ObjectOutputStream oos = new ObjectOutputStream(gz)){
             //cleanup any files that should be removed before backup
             detailedTrackingFlowFilesToDelete.cleanUp();
-
-            FileOutputStream fos = new FileOutputStream(location);
-            GZIPOutputStream gz = new GZIPOutputStream(fos);
-
-            ObjectOutputStream oos = new ObjectOutputStream(gz);
 
             oos.writeObject(new FeedEventStatisticsData(this));
             oos.close();
@@ -246,11 +252,11 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean loadBackup(String location) {
         FeedEventStatisticsData inStats = null;
-        try {
+        try (FileInputStream fin = new FileInputStream(location);
+             GZIPInputStream gis = new GZIPInputStream(fin);
+             ValidatingObjectInputStream ois = new ValidatingObjectInputStream(gis)){
 
-            FileInputStream fin = new FileInputStream(location);
-            GZIPInputStream gis = new GZIPInputStream(fin);
-            ObjectInputStream ois = new ObjectInputStream(gis);
+            ois.accept(FeedEventStatisticsData.class);
             inStats = (FeedEventStatisticsData) ois.readObject();
             ois.close();
 
@@ -267,7 +273,9 @@ public class FeedEventStatistics implements Serializable {
             try {
                 File f = new File(location);
                 if (f.exists()) {
-                    f.delete();
+                    if(! f.delete()) {
+                        throw new RuntimeException("Error deleting file " + f.getName());
+                    }
                 }
             } catch (Exception e) {
 
@@ -324,10 +332,19 @@ public class FeedEventStatistics implements Serializable {
             feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
 
             feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(),processorId -> new AtomicLong(0)).incrementAndGet();
-
+            feedProcessorRunningFeedFlowsChanged.set(true);
+            changedFeedProcessorRunningFeedFlows.add(event.getComponentId());
             //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
         }
+    }
 
+    public void markFeedProcessorRunningFeedFlowsUnchanged(){
+        feedProcessorRunningFeedFlowsChanged.set(false);
+        changedFeedProcessorRunningFeedFlows.clear();
+    }
+
+    public boolean isFeedProcessorRunningFeedFlowsChanged(){
+        return feedProcessorRunningFeedFlowsChanged.get();
     }
 
     /**
@@ -533,12 +550,18 @@ public class FeedEventStatistics implements Serializable {
         return feedProcessorRunningFeedFlows.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
     }
 
+    public Map<String,Long> getRunningFeedFlowsChanged(){
+        return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId,processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
+    }
+
     private void decrementRunningProcessorFeedFlows(String feedFlowFile){
         String feedProcessor = feedFlowFileIdToFeedProcessorId.get(feedFlowFile);
         if(feedProcessor != null){
             AtomicLong runningCount = feedProcessorRunningFeedFlows.get(feedProcessor);
             if( runningCount != null && runningCount.get() >=1) {
                 runningCount.decrementAndGet();
+                feedProcessorRunningFeedFlowsChanged.set(true);
+                changedFeedProcessorRunningFeedFlows.add(feedProcessor);
             }
         }
     }

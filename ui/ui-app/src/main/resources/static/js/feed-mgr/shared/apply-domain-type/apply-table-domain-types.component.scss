@@ -1,0 +1,20 @@
+form[name=overwriteFieldsForm] .ui-grid {
+  border-color: white;
+
+  .ui-grid-pinned-container.ui-grid-pinned-container-left .ui-grid-header-cell:last-child {
+    border: white;
+  }
+  .ui-grid-top-panel {
+    background: inherit;
+  }
+  .ui-grid-header-cell {
+    border-color: white;
+  }
+  .ui-grid-cell, .ui-grid-cell.ui-grid-row-header-cell {
+    background-color: inherit;
+    border-color: white;
+  }
+  .ui-grid-cell, .ui-grid-row:last-child .ui-grid-cell {
+    border-bottom: 1px solid white;
+  }
+}

@@ -78,7 +78,7 @@ public class JpaNiFiFlowCacheClusterSync implements NiFiFlowCacheClusterSync {
     }
 
     public JpaNiFiFlowCacheClusterSync(String clusterAddress, String updateKey, boolean updateApplied){
-        this.setNiFiFlowCacheKey(new JpaNiFiFlowCacheClusterSync.NiFiFlowCacheKey(clusterAddress, updateKey));
+        this.niFiFlowCacheKey = new JpaNiFiFlowCacheClusterSync.NiFiFlowCacheKey(clusterAddress, updateKey);
         this.updateApplied = updateApplied;
         this.createdTime = DateTimeUtil.getNowUTCTime();
         this.modifiedTime = this.createdTime;
@@ -88,9 +88,6 @@ public class JpaNiFiFlowCacheClusterSync implements NiFiFlowCacheClusterSync {
         return niFiFlowCacheKey;
     }
 
-    public void setNiFiFlowCacheKey(NiFiFlowCacheKey niFiFlowCacheKey) {
-        this.niFiFlowCacheKey = niFiFlowCacheKey;
-    }
 
     @Override
     public NiFiFlowCacheClusterUpdateItem getUpdateItem() {

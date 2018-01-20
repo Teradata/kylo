@@ -76,7 +76,7 @@ public class JerseyRestClient {
     /**
      * Flag to indicate if the client is configured correctly and available to be used.
      */
-    public boolean isHostConfigured;
+    private boolean isHostConfigured;
     /**
      * The Jersey Client
      */
@@ -117,30 +117,37 @@ public class JerseyRestClient {
             byte[] keyStoreFile = null;
             byte[] truststoreFile = null;
 
-            try {
-                if (StringUtils.isNotBlank(config.getKeystorePath())) {
-                    InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath());
+            if (StringUtils.isNotBlank(config.getKeystorePath())) {
+                try (InputStream keystore = JerseyRestClient.class.getResourceAsStream(config.getKeystorePath())) {
+
                     if (keystore != null) {
                         keyStoreFile = ByteStreams.toByteArray(keystore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
             }
 
-            try {
-                if (StringUtils.isNotBlank(config.getTruststorePath())) {
-                    InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath());
+            if (StringUtils.isNotBlank(config.getTruststorePath())) {
+                try (InputStream truststore = JerseyRestClient.class.getResourceAsStream(config.getTruststorePath())) {
                     if (truststore != null) {
                         truststoreFile = ByteStreams.toByteArray(truststore);
                     }
+
+                } catch (IOException e) {
+                    log.error("Encountered IOException attempting to get keystore: ", e);
                 }
-            } catch (IOException e) {
+            }
+
+            if( config.getTruststorePassword()==null && config.getKeystorePassword() == null ) {
+                log.warn("keystorePassword and truststorePassword should not both be null, check application.properties");
             }
 
             if (keyStoreFile != null) {
                 sslConfig = SslConfigurator.newInstance()
                     .trustStoreBytes(truststoreFile != null ? truststoreFile : keyStoreFile)
-                    .trustStorePassword(config.getTruststorePassword() != null ? config.getTruststorePassword() : config.getKeystorePassword())
+                    .trustStorePassword(config.getTruststorePassword() != null ? String.valueOf(config.getTruststorePassword()) : String.valueOf(config.getKeystorePassword()))
                     .trustStoreType(config.getTrustStoreType())
                     .keyStoreBytes(keyStoreFile != null ? keyStoreFile : truststoreFile)
                     .keyStorePassword(config.getKeystorePassword());
@@ -149,7 +156,7 @@ public class JerseyRestClient {
                     .keyStoreFile(config.getKeystorePath() == null ? config.getTruststorePath() : config.getKeystorePath())
                     .keyStorePassword(config.getKeystorePassword() == null ? config.getTruststorePassword() : config.getKeystorePassword())
                     .trustStoreFile(config.getTruststorePath() == null ? config.getKeystorePath() : config.getTruststorePath())
-                    .trustStorePassword(config.getTruststorePassword() == null ? config.getKeystorePassword() : config.getTruststorePassword())
+                    .trustStorePassword(config.getTruststorePassword() == null ? String.valueOf(config.getKeystorePassword()) : String.valueOf(config.getTruststorePassword()))
                     .trustStoreType(config.getTrustStoreType());
             }
 
@@ -222,7 +229,7 @@ public class JerseyRestClient {
 
         // Configure authentication
         if (StringUtils.isNotBlank(config.getUsername())) {
-            HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
+            HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), String.valueOf(config.getPassword()));
             client.register(feature);
         }
         this.uri = config.getUrl();
@@ -251,7 +258,7 @@ public class JerseyRestClient {
      *
      * @param clientConfig the Rest Client Configuration
      */
-    protected void extendClientConfig(ClientConfig clientConfig) {
+    private final void extendClientConfig(ClientConfig clientConfig) {
 
     }
 
@@ -575,6 +582,27 @@ public class JerseyRestClient {
     public <T> T delete(String path, Map<String, Object> params, Class<T> returnType) {
         WebTarget target = buildTarget(path, params);
         return target.request().delete(returnType);
+    }
+
+
+    /**
+     * call a GET request
+     *
+     * @param path    the path to call.
+     * @param headers key, list parameters to add http request headers to the request
+     * @param clazz   the class type to return as the response from the GET request
+     * @param params  key,value parameters to add to the request
+     * @param <T>     the class to return
+     * @return the response of class type T
+     */
+    public <T> T deleteWithHeaders(String path, MultivaluedMap<String, Object> headers, Map<String, Object> params, Class<T> clazz) {
+        WebTarget target = buildTarget(path, params);
+
+        Invocation.Builder builder = target.request(MediaType.APPLICATION_JSON_TYPE)
+            .headers(headers)
+            .accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE);
+
+        return builder.delete(clazz);
     }
 
     /**

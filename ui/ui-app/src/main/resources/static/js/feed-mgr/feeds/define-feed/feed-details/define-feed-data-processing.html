@@ -24,11 +24,11 @@
     <card-layout body-css="md-padding" flex="70">
       <header-section>
         <div layout="row" layout-align="space-between-center" flex>
-          <div class="card-title" flex>Data Processing</div>
-          <h2 class="card-sub-header">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+          <div class="card-title" flex> {{"views.define-feed-data-processing.DP" | translate}} </div>
+          <h2 class="card-sub-header">{{vm.stepNumber}} {{"views.define-feed-data-processing.of" | translate}} {{vm.totalSteps}}</h2>
         </div>
         <div layout="row" layout-align="space-between-center" flex class="layout-padding-top">
-          <div class="card-sub-header" flex>Define field validation, standardization, and cleansing policies</div>
+          <div class="card-sub-header" flex>{{"views.define-feed-data-processing.DP2" | translate}}</div>
           <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
         </div>
 
@@ -39,13 +39,13 @@
           <md-expansion-panel md-component-id="panelFieldPolicies">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
-                <span>Choose field policies </span>
+                <span>{{"views.define-feed-data-processing.DP3" | translate}}</span>
               </div>
               <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
               <md-expansion-panel-header md-no-sticky>
-                <div class="md-subhead layout-padding">Field Policies</div>
+                <div class="md-subhead layout-padding">{{"views.define-feed-data-processing.DP4" | translate}}</div>
               </md-expansion-panel-header>
               <md-expansion-panel-content>
                 <md-list layout-fill class="list-item-table list-condensed" id="policy-list">
@@ -53,15 +53,15 @@
                   <md-list-item>
                     <div layout="row" layout-fill>
                       <div flex="30" class="md-list-item-text hint">
-                        Field Name
+                        {{"views.define-feed-data-processing.DP6" | translate}}
                       </div>
                       <div flex="20" class="md-list-item-text hint" style="padding-left:5px;">
-                        Domain Type
+                        {{"views.define-feed-data-processing.DP5" | translate}}
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout="column" layout-align="start center">
                         Index
                         <md-tooltip md-direction="top">
-                          Specifies fields available for global indexing for search and discovery
+                          {{"views.define-feed-data-processing.DP7" | translate}}                          
                         </md-tooltip>
                         <md-input-container class="md-block" flex-gt-sm>
                           <md-checkbox aria-label="Select All"
@@ -73,7 +73,7 @@
                       <div flex="10" class="md-list-item-text hint" layout="column" layout-align="start center">
                         Profile
                         <md-tooltip md-direction="top">
-                          Should this field be profiled?
+                          {{"views.define-feed-data-processing.DP8" | translate}}                                              
                         </md-tooltip>
                         <md-input-container class="md-block" flex-gt-sm>
                           <md-checkbox aria-label="Select All"
@@ -84,7 +84,7 @@
                         </md-input-container>
                       </div>
                       <div flex="30" class="md-list-item-text hint" style="padding-left:5px;">
-                        Standardize & Validate
+                        {{"views.define-feed-data-processing.DP9" | translate}}                                                                                          
                       </div>
                     </div>
                   </md-list-item>
@@ -94,69 +94,41 @@
                     </span>
                   </div>
                   <div id="define-feed-data-processing-container">
-                    <div ng-repeat="policy in vm.model.table.fieldPolicies" layout="row"
-                         ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
-                         ng-click="vm.onSelectedColumn($index)"
-                         class="data-processing-row"
-                    >
-
-                      <div flex="30" class="md-list-item-text">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <div>{{policy.name | characters:30}}</div>
-                          <div class="hint">{{policy.field.dataTypeDisplay}}</div>
-                        </md-input-container>
-                      </div>
-                      <div flex="20" class="md-list-item-text " style="padding-left:5px;">
-                        <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                          <md-select ng-model="policy.domainTypeId" placeholder="Domain Type" ng-disabled="policy.field.complex" ng-change="vm.onDomainTypeChange(policy)">
-                            <md-option ng-value=""><em>None</em></md-option>
-                            <md-option ng-repeat="domainType in vm.availableDomainTypes | orderBy:'title' track by $index" ng-value="domainType.id" aria-label="{{domainType.title}}">
-                              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon> {{domainType.title}}
-                            </md-option>
-                          </md-select>
-                        </md-input-container>
-                      </div>
-                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index" ng-disabled="policy.field.complex" ng-click="vm.indexCheckAll.clicked(!policy.index)">
-                          </md-checkbox>
-                        </md-input-container>
-                      </div>
-                      <div flex="10" class="md-list-item-text " layout="column" layout-align="start center">
-                        <md-input-container class="md-block" flex-gt-sm>
-                          <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Profile" ng-disabled="policy.field.complex" ng-click="vm.profileCheckAll.clicked(!policy.profile)">
-                          </md-checkbox>
-                        </md-input-container>
-                      </div>
-                      <!--  rules -->
-                      <div flex="30" class="md-list-item-text hint" layout-align="start center">
-                        <div style="color:rgba(0, 0, 0, 0.54)" ng-if="policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;" ng-disabled="true">
-                            <ng-md-icon icon="add_circle_outline"></ng-md-icon>
-                          </md-button>
-                          ADD
+                    <md-virtual-repeat-container
+                        class="virtual-repeat-scroller-overlay"
+                        ng-if="vm.model.table.fieldPolicies.length >= 30"
+                        style="min-height: 700px">
+                        <div
+                            class="repeated-item"
+                            md-virtual-repeat="policy in vm.model.table.fieldPolicies"
+                            ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
+                            ng-click="vm.onSelectedColumn($index)">
+                          <span style="display: none"></span> <!-- for whatever reason, the following ng-include is not displayed without displaying something here -->
+                          <ng-include
+                              layout="row"
+                              layout-align="start center"
+                              class="data-processing-row"
+                              src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
+                          </ng-include>
                         </div>
-
-                        <div style="color:#2D78B1" ng-click="vm.showFieldRuleDialog(policy)" ng-if="!policy.field.dataTypeDescriptor.complex">
-                          <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
-                            <ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon>
-                          </md-button>
-                          ADD
-                        </div>
-                        <div ng-if="(policy.standardization != null && policy.standardization.length >0 || policy.validation != null && policy.validation.length >0)"
-                             class="orange layout-padding-bottom" style="padding-left:32px;" layout="column">
-                          <span ng-if="policy.standardization != null && policy.standardization.length >0">{{policy.standardization.length}} Standardizers</span>
-                          <span ng-if="policy.validation != null && policy.validation.length >0">{{policy.validation.length}} Validators</span>
-                        </div>
-                      </div>
-
+                    </md-virtual-repeat-container>
+                    <div ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30">
+                      <ng-include
+                          layout="row"
+                          layout-align="start center"
+                          ng-repeat="policy in vm.model.table.fieldPolicies"
+                          ng-show="!vm.model.table.tableSchema.fields[$index].deleted"
+                          ng-click="vm.onSelectedColumn($index)"
+                          class="data-processing-row"
+                          src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-data-processing-row.html'">
+                      </ng-include>
                     </div>
                   </div>
                 </md-list>
               </md-expansion-panel-content>
               <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
-                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">{{"views.define-feed-data-processing.DP13" | translate}}</md-button>
               </md-expansion-panel-footer>
             </md-expansion-panel-expanded>
           </md-expansion-panel>
@@ -164,17 +136,17 @@
           <md-expansion-panel md-component-id="panelMergeStrategy">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
-                <span>Choose merge strategy </span>
+                <span>{{"views.define-feed-data-processing.DP14" | translate}}</span>
               </div>
-              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">{{"views.define-feed-data-processing.DP15" | translate}}</md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
               <md-expansion-panel-header md-no-sticky>
-                <div class="md-subhead layout-padding">Merge strategy</div>
+                <div class="md-subhead layout-padding">{{"views.define-feed-data-processing.DP16" | translate}}</div>
               </md-expansion-panel-header>
               <md-expansion-panel-content>
                 <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-                  <label class="label-small md-container-ignore">Merge Strategy</label>
+                  <label class="label-small md-container-ignore">{{"views.define-feed-data-processing.DP16" | translate}}</label>
                   <md-radio-group ng-model="vm.model.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy"
                                   ng-change="vm.onChangeMergeStrategy()">
                     <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
@@ -186,15 +158,15 @@
                     </md-radio-button>
                   </md-radio-group>
                   <div ng-messages="vm.dataProcessingForm['targetMergeStrategy'].$error" md-auto-hide="false">
-                    <div ng-message="invalidPKOption">A primary key must be selected to use this strategy</div>
-                    <div ng-message="invalidRollingSyncOption">A Partition must be added to use this strategy</div>
+                    <div ng-message="invalidPKOption">{{"views.define-feed-data-processing.DP17" | translate}}</div>
+                    <div ng-message="invalidRollingSyncOption">{{"views.define-feed-data-processing.DP18" | translate}}</div>
                   </div>
 
                 </md-input-container>
               </md-expansion-panel-content>
               <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
-                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">{{"views.define-feed-data-processing.DP19" | translate}}</md-button>
               </md-expansion-panel-footer>
             </md-expansion-panel-expanded>
           </md-expansion-panel>
@@ -203,19 +175,19 @@
           <md-expansion-panel md-component-id="panelTargetFormat">
             <md-expansion-panel-collapsed>
               <div flex class="md-subhead layout-padding-top">
-                <span>Choose target format </span>
+                <span>{{"views.define-feed-data-processing.DP20" | translate}}</span>
               </div>
-              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">Expand</md-button>
+              <md-button aria-label="Expand panel" class="md-info" ng-click="$panel.collapse()">{{"views.define-feed-data-processing.DP15" | translate}}</md-button>
             </md-expansion-panel-collapsed>
             <md-expansion-panel-expanded>
               <md-expansion-panel-header md-no-sticky>
-                <div class="md-subhead layout-padding">Target Format</div>
+                <div class="md-subhead layout-padding">{{"views.define-feed-data-processing.DP21" | translate}}</div>
               </md-expansion-panel-header>
               <md-expansion-panel-content>
 
 
                 <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-                  <label class="label-small md-container-ignore">Target Format</label>
+                  <label class="label-small md-container-ignore">{{"views.define-feed-data-processing.DP21" | translate}}</label>
                   <md-select ng-model="vm.model.table.targetFormat" ng-change="vm.onTableFormatChange(opt);">
                     <md-option ng-repeat="opt in vm.targetFormatOptions track by $index" ng-value="opt.value">
                       {{opt.label}}
@@ -225,7 +197,7 @@
 
 
                 <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-                  <label class="label-small md-container-ignore">Compression Options</label>
+                  <label class="label-small md-container-ignore">{{"views.define-feed-data-processing.DP22" | translate}}</label>
                   <md-select ng-model="vm.model.table.options.compressionFormat">
                     <md-option ng-repeat="opt in vm.compressionOptions track by $index" ng-value="opt">
                       {{opt}}
@@ -236,7 +208,7 @@
               </md-expansion-panel-content>
               <md-expansion-panel-footer md-no-sticky>
                 <div flex></div>
-                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">Collapse</md-button>
+                <md-button class="md-warn" aria-label="Collapse panel" ng-click="$panel.collapse()">{{"views.define-feed-data-processing.DP19" | translate}}</md-button>
               </md-expansion-panel-footer>
             </md-expansion-panel-expanded>
           </md-expansion-panel>
@@ -251,7 +223,7 @@
     <card-layout flex="30" body-css="md-padding" ng-if="vm.selectedColumn != null" sticky scroll-selector="#content" style="width:100%;right:10px;" id="selectedColumnPanel2">
 
       <header-section>
-        <div class="card-title" flex>Field Details</div>
+        <div class="card-title" flex>{{"views.define-feed-data-processing.DP23" | translate}}</div>
         <div layout="column" class="layout-padding-top-bottom">
           <span class="item-title orange">{{vm.selectedColumn.name}}</span>
         </div>
@@ -259,7 +231,7 @@
 
       <body-section>
         <div layout="column" class="layout-padding-top-bottom">
-          <span>Sample field values</span>
+          <span>{{"views.define-feed-data-processing.DP24" | translate}}</span>
           <span class="hint"> <md-input-container class="md-block condensed" flex-gt-sm>
                       <md-select ng-model="vm.selectedColumn.selectedSampleValue" placeholder="Preview Data">
                         <md-option ng-repeat="data in vm.selectedColumn.sampleValues | unique" value="{{data}}" aria-label="{{data}}">
@@ -271,13 +243,13 @@
 
         <div layout="column" class="layout-padding-top">
           <div layout="column" class="layout-padding-top-bottom">
-            <span>Field Description</span>
+            <span>{{"views.define-feed-data-processing.DP25" | translate}}</span>
             <textarea ng-model="vm.selectedColumn.description" rows="5" md-select-on-focus="" maxlength="256"></textarea>
           </div>
         </div>
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-xs" flex-gt-xs>
-          <label class="label-small md-container-ignore">Tags</label>
+          <label class="label-small md-container-ignore">{{"views.define-feed-data-processing.DP26" | translate}}</label>
           <md-chips ng-model="vm.selectedColumn.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
             <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(tagChips.searchText)"
                              md-item-text="item.name" placeholder="Add a Tag">
@@ -293,7 +265,7 @@
 
         <div layout="column" class="layout-align-start-start layout-padding-top-bottom">
           <md-button aria-label="Remove field" ng-click="vm.removeColumnUsingReference(vm.selectedColumn)" aria-label="Remove Field"
-                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">Remove
+                     ng-if="!vm.tableLocked && vm.model.table.method != 'SAMPLE_FILE'">{{"views.define-feed-data-processing.DP27" | translate}}
           </md-button>
         </div>
       </body-section>

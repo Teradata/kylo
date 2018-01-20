@@ -79,7 +79,7 @@ public class JpaFeedOpsAccessControlProvider extends AbstractCacheBackedProvider
     @PostConstruct
     private void init(){
         subscribeListener(feedAclCache);
-        clusterService.subscribe(this);
+        clusterService.subscribe(this,getClusterMessageKey());
         //initially populate
         metadataAccess.read(() ->populateCache(), MetadataAccess.SERVICE );
     }

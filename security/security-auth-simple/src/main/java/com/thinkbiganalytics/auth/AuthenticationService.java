@@ -29,5 +29,5 @@ package com.thinkbiganalytics.auth;
  */
 public interface AuthenticationService {
 
-    public boolean authenticate(String username, String password);
+    public boolean authenticate(String username, char[] password);
 }

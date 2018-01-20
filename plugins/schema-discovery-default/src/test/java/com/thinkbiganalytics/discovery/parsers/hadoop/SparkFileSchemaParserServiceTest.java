@@ -20,13 +20,12 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-import com.thinkbiganalytics.discovery.model.DefaultQueryResult;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Field;
-import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
@@ -77,7 +76,7 @@ public class SparkFileSchemaParserServiceTest {
     private TransformResponse transformResponse(List<QueryResultColumn> columns) {
         TransformResponse transformResponse = new TransformResponse();
         transformResponse.setStatus(TransformResponse.Status.SUCCESS);
-        QueryResult result = new DefaultQueryResult("query");
+        TransformQueryResult result = new TransformQueryResult();
         result.setColumns(columns);
         transformResponse.setResults(result);
         return transformResponse;

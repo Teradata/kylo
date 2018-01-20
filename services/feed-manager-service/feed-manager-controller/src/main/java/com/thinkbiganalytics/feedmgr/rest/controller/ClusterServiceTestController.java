@@ -19,10 +19,12 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.cluster.ClusterNodeSummary;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceTester;
 import com.thinkbiganalytics.cluster.MessageDeliveryStatus;
 import com.thinkbiganalytics.cluster.SimpleClusterMessageTest;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
 import java.util.List;
@@ -39,6 +41,8 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 import io.swagger.annotations.SwaggerDefinition;
 import io.swagger.annotations.Tag;
 
@@ -70,7 +74,10 @@ public class ClusterServiceTestController {
     @GET
     @Path("/is-clustered")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Is it clustered.")
+    @ApiOperation("Check to see if Kylo is clustered")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the response with a 'success' or 'error' indicating the cluster status.", response = RestResponseStatus.class)
+                  })
     public Response isClustered() {
 
         if (clusterServiceTester.isClustered()) {
@@ -84,6 +91,9 @@ public class ClusterServiceTestController {
     @Path("/members")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the members in the cluster.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the list of Kylo cluster members", response = String.class, responseContainer = "List")
+                  })
     public Response getMembers() {
         List<String> members = clusterServiceTester.getMembers();
         return Response.ok(members).build();
@@ -91,7 +101,11 @@ public class ClusterServiceTestController {
 
     @POST
     @Path("/simple")
-    @ApiOperation("Post a Simple message")
+    @ApiOperation("Send a Simple text message to other nodes in the Kylo cluster")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the response status of the message.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "The message was unable to be sent.", response = RestResponseStatus.class)
+                  })
     public Response postSimpleMessage(@Nonnull final String simpleMessage) {
 
         clusterServiceTester.sendSimpleMessage(simpleMessage);
@@ -102,7 +116,10 @@ public class ClusterServiceTestController {
     @GET
     @Path("/awaiting-messages")
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the members in the cluster.")
+    @ApiOperation("Gets messages awaiting acknowledgement.  This will only return data if the property: kylo.cluster.acknowledge=true in the application.properties of kylo-services ")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns message delivery status of pending messages", response = MessageDeliveryStatus.class, responseContainer = "List")
+                  })
     public List<MessageDeliveryStatus> getMessagesAwaitingAcknowledgement(@QueryParam("longerThan") Long longerThan) {
         if (longerThan != null && longerThan > 0L) {
             return clusterService.getMessagesAwaitingAcknowledgement(longerThan);
@@ -111,4 +128,17 @@ public class ClusterServiceTestController {
         }
 
     }
+
+
+    @GET
+    @Path("/cluster-node-summary")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Returns a summary of this cluster node.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns summary data about this node in the cluster.", response = ClusterNodeSummary.class)
+                  })
+    public ClusterNodeSummary getClusterNodeSummary() {
+            return clusterService.getClusterNodeSummary();
+    }
+
 }

@@ -37,6 +37,10 @@ public interface LatestFeedJobExectionRepository extends JpaRepository<JpaLatest
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_JOB_EXECUTION
            + "where jobExecution.feedType = 'CHECK' "
            + "and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
-    List<JpaLatestFeedJobExecution> findCheckDataJobs();
+    List<JpaLatestFeedJobExecution> findCheckDataJobsWithAcl();
+
+    @Query("select distinct jobExecution from JpaLatestFeedJobExecution as jobExecution "
+           + "where jobExecution.feedType = 'CHECK' ")
+    List<JpaLatestFeedJobExecution> findCheckDataJobsWithoutAcl();
 
 }

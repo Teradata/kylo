@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -16,16 +16,20 @@
     <timestamp>${maven.build.timestamp}</timestamp>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+    <guava.version>23.0</guava.version>
   </properties>
 
   <dependencyManagement>
     <dependencies>
-
+      <dependency>
+        <groupId>com.google.guava</groupId>
+        <artifactId>guava</artifactId>
+        <version>${guava.version}</version>
+      </dependency>
     </dependencies>
   </dependencyManagement>
 
   <dependencies>
-
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-service-app-api</artifactId>
@@ -241,7 +245,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.8.4-SNAPSHOT</version>
+      <version>0.9.0-SNAPSHOT</version>
     </dependency>
 
     <!-- NiFi REST clients -->
@@ -439,14 +443,14 @@
       <version>1.5.7</version>
     </dependency>
     <!--<dependency>-->
-      <!--<groupId>org.postgresql</groupId>-->
-      <!--<artifactId>postgresql</artifactId>-->
-      <!--<version>42.0.0</version>-->
+    <!--<groupId>org.postgresql</groupId>-->
+    <!--<artifactId>postgresql</artifactId>-->
+    <!--<version>42.0.0</version>-->
     <!--</dependency>-->
     <!--<dependency>-->
-      <!--<groupId>com.microsoft.sqlserver</groupId>-->
-      <!--<artifactId>mssql-jdbc</artifactId>-->
-      <!--<version>6.2.1.jre7</version>-->
+    <!--<groupId>com.microsoft.sqlserver</groupId>-->
+    <!--<artifactId>mssql-jdbc</artifactId>-->
+    <!--<version>6.2.1.jre7</version>-->
     <!--</dependency>-->
 
 
@@ -496,7 +500,6 @@
     </dependency>
 
   </dependencies>
-
 
   <build>
 
@@ -551,9 +554,9 @@
             <version>42.0.0</version>
           </dependency>
           <!--<dependency>-->
-            <!--<groupId>com.microsoft.sqlserver</groupId>-->
-            <!--<artifactId>mssql-jdbc</artifactId>-->
-            <!--<version>6.2.1.jre7</version>-->
+          <!--<groupId>com.microsoft.sqlserver</groupId>-->
+          <!--<artifactId>mssql-jdbc</artifactId>-->
+          <!--<version>6.2.1.jre7</version>-->
           <!--</dependency>-->
           <dependency>
             <groupId>org.liquibase</groupId>

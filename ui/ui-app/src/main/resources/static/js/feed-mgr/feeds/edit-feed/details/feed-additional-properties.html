@@ -17,20 +17,20 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Properties" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()" allow-edit="vm.allowEdit"
+<vertical-section-layout section-title='{{"views.feed-additional-properties.Properties" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()" allow-edit="vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid">
 
     <readonly-section>
         <div layout="column">
             <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Data Owner</span>
+                <span flex="25" class="property-name"> {{"views.feed-additional-properties.DO" | translate}} </span>
 
                 <div flex>
                     {{vm.model.dataOwner}}
                 </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Tags</span>
+                <span flex="25" class="property-name"> {{"views.feed-additional-properties.Tags" | translate}} </span>
 
                 <div flex>
                     {{vm.model.tags | join: ',':'name'}}
@@ -49,15 +49,15 @@
 
     <editable-section>
         <md-input-container class="md-block" flex-gt-sm>
-            <label>Data Owner</label>
+            <label> {{"views.feed-additional-properties.DO" | translate}} </label>
             <input ng-model="vm.editModel.dataOwner">
         </md-input-container>
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm" flex-gt-sm="" style="">
-            <label class="label-small md-container-ignore">Tags</label>
+            <label class="label-small md-container-ignore"> {{"views.feed-additional-properties.Tags" | translate}} </label>
             <md-chips ng-model="vm.editModel.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
                 <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
-                        md-item-text="item.name" placeholder="Add a Tag">
+                        md-item-text="item.name" placeholder='{{"views.feed-additional-properties.AaT" | translate}}'>
                     <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
                 </md-autocomplete>
                 <md-chip-template>
@@ -66,6 +66,7 @@
                     </span>
                 </md-chip-template>
             </md-chips>
+            <span class="hint">Type in a tag and press enter</span>
         </md-input-container>
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.securityGroupsEnabled == true">

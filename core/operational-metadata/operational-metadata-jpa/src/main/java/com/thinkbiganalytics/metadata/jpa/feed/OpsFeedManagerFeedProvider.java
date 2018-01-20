@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,6 +50,7 @@ import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescription;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementDescriptionRepository;
 import com.thinkbiganalytics.metadata.jpa.support.GenericQueryDslFilter;
@@ -62,10 +63,12 @@ import org.joda.time.ReadablePeriod;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -126,12 +129,19 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private OpsManagerFeedCacheById opsManagerFeedCacheById;
 
     @Inject
+    private NifiFeedStatisticsProvider feedStatisticsProvider;
+
+    @Inject
     private MetadataAccess metadataAccess;
 
+    @Value("${kylo.ops.mgr.ensure-unique-feed-name:true}")
+    private boolean ensureUniqueFeedName = true;
+
+    private static String CLUSTER_MESSAGE_KEY = "OPS_MANAGER_FEED_CACHE";
 
     @Override
     public String getClusterMessageKey() {
-        return "OPS_MANAGER_FEED_CACHE";
+        return CLUSTER_MESSAGE_KEY;
     }
 
     @Override
@@ -163,9 +173,9 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     private void init() {
         subscribeListener(opsManagerFeedCacheByName);
         subscribeListener(opsManagerFeedCacheById);
-        clusterService.subscribe(this);
+        clusterService.subscribe(this, getClusterMessageKey());
         //initially populate
-        metadataAccess.read(() -> populateCache(), MetadataAccess.SERVICE);
+        populateCache();
     }
 
     @Override
@@ -226,15 +236,42 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         saveList(feeds);
     }
 
+    /**
+     *
+     * @param systemName
+     * @param feedId
+     */
+    private void ensureAndRemoveDuplicateFeedsWithTheSameName(String systemName, OpsManagerFeed.ID feedId) {
+        List<JpaOpsManagerFeed> feeds = repository.findFeedsByNameWithoutAcl(systemName);
+        if (feeds != null) {
+            feeds.stream().filter(feed -> !feed.getId().toString().equalsIgnoreCase(feedId.toString())).forEach(feed -> {
+                log.warn(
+                    "Attempting to create a new Feed for {} with id {}, but found an existing Feed in the kylo.FEED table with id {} that has the same name {}.  Kylo will remove the previous feed with id: {} ",
+                    systemName, feedId, feed.getId(), feed.getName(), feed.getId());
+                delete(feed.getId());
+            });
+        }
+    }
+
     @Override
     public OpsManagerFeed save(OpsManagerFeed.ID feedId, String systemName, boolean isStream, Long timeBetweenBatchJobs) {
-        OpsManagerFeed feed = repository.findOne(feedId);
+        OpsManagerFeed feed = repository.findByIdWithoutAcl(feedId);
         if (feed == null) {
+            if (ensureUniqueFeedName) {
+                ensureAndRemoveDuplicateFeedsWithTheSameName(systemName, feedId);
+            }
             feed = new JpaOpsManagerFeed();
             ((JpaOpsManagerFeed) feed).setName(systemName);
             ((JpaOpsManagerFeed) feed).setId((OpsManagerFeedId) feedId);
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
+            NifiFeedStats stats = feedStatisticsProvider.findLatestStatsForFeedWithoutAccessControl(systemName);
+            if (stats == null) {
+                JpaNifiFeedStats newStats = new JpaNifiFeedStats(systemName, new JpaNifiFeedStats.OpsManagerFeedId(feedId.toString()));
+                newStats.setRunningFeedFlows(0L);
+                feedStatisticsProvider.saveLatestFeedStats(Lists.newArrayList(newStats));
+            }
+
         } else {
             ((JpaOpsManagerFeed) feed).setStream(isStream);
             ((JpaOpsManagerFeed) feed).setTimeBetweenBatchJobs(timeBetweenBatchJobs);
@@ -245,7 +282,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
 
     @Override
     public void delete(OpsManagerFeed.ID id) {
-        OpsManagerFeed feed = repository.findOne(id);
+        OpsManagerFeed feed = repository.findByIdWithoutAcl(id);
         if (feed != null) {
             log.info("Deleting feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
             //first delete all jobs for this feed
@@ -255,6 +292,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
             if (slas != null && !slas.isEmpty()) {
                 serviceLevelAgreementDescriptionRepository.delete(slas);
             }
+            feedStatisticsProvider.deleteFeedStats(feed.getName());
             delete(feed);
 
             log.info("Successfully deleted the feed {} ({})  and all job executions. ", feed.getName(), feed.getId());
@@ -287,6 +325,10 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         return opsManagerFeedCacheByName.findAll();
     }
 
+    public List<OpsManagerFeed> findAllWithoutAcl() {
+        return findAll();
+    }
+
     @EntityAccessControlled
     public Map<String, List<OpsManagerFeed>> getFeedsGroupedByCategory() {
         return opsManagerFeedCacheByName.findAll().stream().collect(Collectors.groupingBy(f -> FeedNameUtil.category(f.getName())));
@@ -314,7 +356,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<? extends LatestFeedJobExecution> findLatestCheckDataJobs() {
-        return latestFeedJobExectionRepository.findCheckDataJobs();
+        if (accessController.isEntityAccessControlled()) {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithAcl();
+        } else {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithoutAcl();
+        }
     }
 
     public List<JobStatusCount> getJobStatusCountByDateFromNow(String feedName, ReadablePeriod period) {
@@ -448,8 +494,19 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
 
+    public List<? extends OpsManagerFeed> findFeedsWithSameName() {
+        List<JpaFeedNameCount> feedNameCounts = repository.findFeedsWithSameName();
+        if (feedNameCounts != null && !feedNameCounts.isEmpty()) {
+            List<String> feedNames = feedNameCounts.stream().map(c -> c.getFeedName()).collect(Collectors.toList());
+            if(feedNames != null && !feedNames.isEmpty()) {
+                return repository.findFeedsByNameWithoutAcl(feedNames);
+            }
+        }
+        return Collections.emptyList();
+    }
+
     public List<? extends FeedSummary> findFeedSummary() {
-        return feedSummaryRepository.findAll();
+        return feedSummaryRepository.findAllWithoutAcl();
     }
 
     @Override
@@ -471,4 +528,8 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
 
+    @Override
+    protected Collection<OpsManagerFeed> populateCache() {
+        return metadataAccess.read(() -> super.populateCache(), MetadataAccess.SERVICE);
+    }
 }

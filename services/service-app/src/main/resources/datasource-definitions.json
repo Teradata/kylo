@@ -1,6 +1,6 @@
 [
   {
-    "processorType": "datatransformation.template",
+    "processorType": "datatransformation.hive.template",
     "datasourcePropertyKeys": [
       "schema",
       "table"
@@ -8,6 +8,18 @@
     "datasourceType": "HiveDatasource",
     "connectionType": "SOURCE",
     "identityString": "${schema}.${table}"
+  },
+  {
+    "processorType": "datatransformation.jdbc.template",
+    "datasourcePropertyKeys": [
+      "Database Connection",
+      "Table",
+      "{Database Connection:Database Connection URL}"
+    ],
+    "datasourceType": "DatabaseDatasource",
+    "connectionType": "SOURCE",
+    "identityString": "${Table} - ${Database Connection}",
+    "title": "${Table}"
   },
   {
     "processorType": "org.apache.nifi.jms.processors.ConsumeJMS",
@@ -160,7 +172,7 @@
   },
   {
     "processorType":"com.thinkbiganalytics.nifi.v2.ingest.GetTableData",
-    "datasourcePropertyKeys":["Source Table","Source Database Connection"],
+    "datasourcePropertyKeys":["Source Table","Source Database Connection","{Source Database Connection:Database Connection URL}"],
     "datasourceType":"DatabaseDatasource",
     "connectionType":"SOURCE",
     "identityString":"${Source Table} - ${Source Database Connection}",

@@ -8,7 +8,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-nar-bundles</artifactId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
@@ -20,6 +20,7 @@
     <module>nifi-core-service-api</module>
     <module>nifi-hadoop-service-api</module>
     <module>nifi-standard-services-nar</module>
+    <module>nifi-standard-services-v1.2-nar</module>
     <module>nifi-core-service-bundle</module>
     <module>nifi-hadoop-service-bundle</module>
     <module>nifi-spark-service-api</module>

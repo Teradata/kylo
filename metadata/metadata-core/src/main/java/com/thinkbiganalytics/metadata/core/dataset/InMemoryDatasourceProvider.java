@@ -95,7 +95,7 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
                 } else if (type.isInstance(ds)) {
                     ds = (D) existing;
                 } else {
-                    throw new MetadataException("A datasource already exists of type: " + ds.getClass() + " but expected one of type: " + type);
+                    throw new MetadataException("A datasource already exists of type: " + (ds.getClass() == null ? "UNKNOWN": ds.getClass()) + " but expected one of type: " + type);
                 }
 
                 return ds;

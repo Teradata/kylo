@@ -37,7 +37,7 @@ import javax.jcr.RepositoryException;
  */
 public abstract class JcrFeedConnection extends JcrObject implements FeedConnection {
 
-    public static String DATASOURCE = "tba:datasource";
+    public static final String DATASOURCE = "tba:datasource";
 
     public JcrFeedConnection(Node node) {
         super(node);

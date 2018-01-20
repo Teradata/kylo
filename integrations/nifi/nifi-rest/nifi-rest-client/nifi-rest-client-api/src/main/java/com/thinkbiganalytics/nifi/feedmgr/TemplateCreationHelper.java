@@ -35,6 +35,7 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.VersionedProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
@@ -74,9 +75,9 @@ public class TemplateCreationHelper {
 
     public static final String REUSABLE_TEMPLATES_CATEGORY_NAME = "Reusable Templates";
     private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
-    public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
+    public static final String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
 
-    public static String TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME = "kylo_temporary_template_inspection";
+    public static final String TEMPORARY_TEMPLATE_INSPECTION_GROUP_NAME = "kylo_temporary_template_inspection";
     /**
      * REST client for NiFi API
      */
@@ -118,8 +119,17 @@ public class TemplateCreationHelper {
         return NifiTemplateNameUtil.getVersionedProcessGroupName(name);
     }
 
+    public static String getVersionedProcessGroupName(String name, String versionIdentifier) {
+        return NifiTemplateNameUtil.getVersionedProcessGroupName(name,versionIdentifier);
+    }
+
     public static String parseVersionedProcessGroupName(String name) {
         return NifiTemplateNameUtil.parseVersionedProcessGroupName(name);
+    }
+
+    @Nullable
+    public static String getKyloVersionIdentifier(String name) {
+        return NifiTemplateNameUtil.getKyloVersionIdentifier(name);
     }
 
     public void setTemplateProperties(List<NifiProperty> templateProperties) {
@@ -410,7 +420,7 @@ public class TemplateCreationHelper {
                                         validControllerServiceId = hasMatchingService(enabledServiceNameMap,name) ? enabledServiceNameMap.get(name).get(0).getId()
                                                                                                       : hasMatchingService(serviceNameMap, name) ? serviceNameMap.get(name).get(0).getId() : null;
 
-                                    if (StringUtils.isNotBlank(validControllerServiceId)) {
+                                    if (StringUtils.isNotBlank(validControllerServiceId) && ( v.isRequired() || !v.isRequired() &&  StringUtils.isNotBlank(processorDTO.getConfig().getProperties().get(k)))) {
                                         processorDTO.getConfig().getProperties().put(k, validControllerServiceId);
                                         updatedProcessorProperties.put(k, validControllerServiceId);
                                         if (!updatedProcessors.contains(processorDTO)) {
@@ -655,19 +665,19 @@ public class TemplateCreationHelper {
      * @param processGroup the process group with input port connections
      * @throws NifiClientRuntimeException if a connection cannot be deleted
      */
-    private void deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
+    private List<ConnectionDTO> deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
         // Get the list of incoming connections coming from some source to this process group
-
+          List<ConnectionDTO> deletedConnections = new ArrayList<>();
 
         final Set<ConnectionDTO> connectionsEntity = nifiObjectCache.isCacheConnections() ? nifiObjectCache.getConnections(processGroup.getParentGroupId()) : restClient.getProcessGroupConnections(processGroup.getParentGroupId());
 
         if (connectionsEntity == null) {
-            return;
+            return deletedConnections;
         }
 
         final List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity, processGroup.getId());
         if (connections == null) {
-            return;
+            return deletedConnections;
         }
 
         Set<String> removedConnections = new HashSet<>();
@@ -692,6 +702,7 @@ public class TemplateCreationHelper {
             try {
                 restClient.deleteConnection(connection, false);
                 removedConnections.add(connection.getId());
+                deletedConnections.add(connection);
             } catch (Exception e) {
                 log.error("Failed to delete the connection: {}", connection.getId(), e);
 
@@ -701,6 +712,7 @@ public class TemplateCreationHelper {
             }
         }
         nifiObjectCache.removeConnections(processGroup.getParentGroupId(),removedConnections);
+        return deletedConnections;
     }
 
     /**
@@ -709,10 +721,17 @@ public class TemplateCreationHelper {
      *
      * @param processGroup the group to version
      */
-    public ProcessGroupDTO versionProcessGroup(ProcessGroupDTO processGroup) {
+    public VersionedProcessGroup versionProcessGroup(ProcessGroupDTO processGroup, String versionIdentifier) {
         log.info("Versioning Process Group {} ", processGroup.getName());
+        VersionedProcessGroup versionedProcessGroup = new VersionedProcessGroup();
+        versionedProcessGroup.setProcessGroupPriorToVersioning(processGroup);
+        versionedProcessGroup.setProcessGroupName(processGroup.getName());
 
-        restClient.disableAllInputProcessors(processGroup.getId());
+
+       List<ProcessorDTO> inputProcessorsPriorToDisabling = restClient.disableAllInputProcessors(processGroup.getId());
+
+       versionedProcessGroup.setInputProcessorsPriorToDisabling(inputProcessorsPriorToDisabling);
+
         log.info("Disabled Inputs for {} ", processGroup.getName());
         //attempt to stop all processors
         try {
@@ -723,7 +742,8 @@ public class TemplateCreationHelper {
         }
         //delete input connections
         try {
-            deleteInputPortConnections(processGroup);
+          List<ConnectionDTO> deletedConnections=  deleteInputPortConnections(processGroup);
+          versionedProcessGroup.setDeletedInputPortConnections(deletedConnections);
 
         } catch (NifiClientRuntimeException e) {
             log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName(), e);
@@ -731,15 +751,20 @@ public class TemplateCreationHelper {
                                                                     + "in NiFi and try again."));
         }
 
-        String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName());
+        String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName(),versionIdentifier);
+        versionedProcessGroup.setVersionedProcessGroupName(versionedProcessGroupName);
 
         //rename the feedGroup to be name+timestamp
         processGroup.setName(versionedProcessGroupName);
         restClient.updateProcessGroup(processGroup);
         log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
+        versionedProcessGroup.setVersionedProcessGroup(processGroup);
 
-        return processGroup;
+        return versionedProcessGroup;
     }
+
+
+
 
     public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {
         if (newProcessGroup.isSuccess()) {
@@ -754,6 +779,11 @@ public class TemplateCreationHelper {
             }
         }
     }
+
+    public void startProcessGroupAndParentInputPorts(ProcessGroupDTO entity) {
+        restClient.startProcessGroupAndParentInputPorts(entity);
+    }
+
 
     public void markConnectionPortsAsRunning(ProcessGroupDTO entity) {
 

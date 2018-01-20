@@ -121,11 +121,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                     profileRow:profileRow,
                     currentTab:currentTab
                 }
-            }).then(function(msg) {
-
-                }, function() {
-
-                });
+            }).then(function (msg) {
+            }, function () {
+            });
         };
 
 

@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -16,7 +16,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-    var controller =  function($scope, $q, AccessControlService,EntityAccessControlService, FeedService) {
+    var controller =  function($scope, $q, AccessControlService,EntityAccessControlService, FeedService, $filter) {
 
         var self = this;
 
@@ -58,7 +58,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         this.onSave = function (ev) {
             //save changes to the model
-            FeedService.showFeedSavingDialog(ev, "Saving...", self.model.feedName);
+            FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-definition.Saving'), self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
 
             copy.feedName = self.editModel.feedName;
@@ -86,12 +86,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access;
+            self.allowEdit = access && !self.model.view.generalInfo.disabled;
         });
     };
 
 
-    angular.module(moduleName).controller('FeedDefinitionController', ["$scope","$q","AccessControlService","EntityAccessControlService","FeedService",controller]);
+    angular.module(moduleName).controller('FeedDefinitionController', ["$scope","$q","AccessControlService","EntityAccessControlService","FeedService", "$filter",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigFeedDefinition', directive);

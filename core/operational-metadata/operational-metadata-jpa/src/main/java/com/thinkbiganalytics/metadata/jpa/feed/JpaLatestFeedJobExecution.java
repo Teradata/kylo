@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.jpa.BaseJpaId;
 import com.thinkbiganalytics.metadata.api.feed.LatestFeedJobExecution;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
@@ -30,7 +31,11 @@ import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
+import java.util.UUID;
+
 import javax.persistence.Column;
+import javax.persistence.Embeddable;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
@@ -48,14 +53,12 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
     @ManyToOne(targetEntity = JpaOpsManagerFeed.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "FEED_ID", insertable = false, updatable = false)
-    OpsManagerFeed feed;
+    private OpsManagerFeed feed;
 
-
-    @Column(name = "FEED_ID", insertable = false, updatable = false)
-    String feedId;
+    private LatestJobExecutionFeedId feedId;
 
     @Column(name = "FEED_NAME", insertable = false, updatable = false)
-    String feedName;
+    private String feedName;
 
     @Column(name = "FEED_TYPE", insertable = false, updatable = false)
     String feedType;
@@ -213,10 +216,37 @@ public class JpaLatestFeedJobExecution implements LatestFeedJobExecution {
 
     @Override
     public String getFeedId() {
-        return feedId;
+        return feedId != null ? feedId.toString() : null;
     }
 
-    public void setFeedId(String feedId) {
+    public void setFeedId(LatestJobExecutionFeedId feedId) {
         this.feedId = feedId;
+    }
+
+
+    @Embeddable
+    public static class LatestJobExecutionFeedId extends BaseJpaId implements Serializable, OpsManagerFeed.ID {
+
+        private static final long serialVersionUID = 6017751710414995750L;
+
+        @Column(name = "FEED_ID",insertable = false, updatable = false)
+        private UUID uuid;
+
+        public LatestJobExecutionFeedId() {
+        }
+
+        public LatestJobExecutionFeedId(Serializable ser) {
+            super(ser);
+        }
+
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
     }
 }

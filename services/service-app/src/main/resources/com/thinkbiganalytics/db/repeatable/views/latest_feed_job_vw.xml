@@ -29,13 +29,12 @@
       SELECT
         f.id AS FEED_ID,
         f.name AS FEED_NAME,
-        f.is_stream AS IS_STREAM,
         MAX(e.JOB_EXECUTION_ID) AS JOB_EXECUTION_ID
       FROM
         ((BATCH_JOB_EXECUTION e
         JOIN BATCH_JOB_INSTANCE i ON ((i.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID)))
         JOIN FEED f ON ((f.id = i.FEED_ID)))
-        GROUP BY f.id , f.name, f.is_stream
+        GROUP BY f.id , f.name
 
       ]]>
     </createView>

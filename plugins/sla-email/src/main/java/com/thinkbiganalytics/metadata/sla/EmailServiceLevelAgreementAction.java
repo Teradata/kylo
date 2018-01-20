@@ -65,7 +65,7 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
 
     @Override
     public boolean respond(EmailServiceLevelAgreementActionConfiguration actionConfiguration, ServiceLevelAssessment assessment, Alert a) {
-        log.info("Responding to SLA violation.");
+        log.info("Responding to SLA violation {}. for alert {} received from: {} ",assessment.getServiceLevelAgreementDescription().getName(),a.getId(), a.getSource());
         String desc = ServiceLevelAssessmentAlertUtil.getDescription(assessment);
         String slaName = assessment.getAgreement().getName();
         String emails = actionConfiguration.getEmailAddresses();
@@ -83,6 +83,7 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         }
         final String finalSubject = subject;
         final String finalBody = body;
+        log.info("sending {}  email to: {}",assessment.getServiceLevelAgreementDescription().getName(),addresses);
         Arrays.stream(addresses).forEach(address ->{
             emailService.sendMail(address.trim(), finalSubject, finalBody);
         });

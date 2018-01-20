@@ -62,9 +62,12 @@ module.exports = function(config) {
             // Angular itself
             { pattern: 'node_modules/@angular/**/*.js', included: false, watched: false },
             { pattern: 'node_modules/@angular/**/*.js.map', included: false, watched: false },
+            { pattern: 'node_modules/@covalent/**/*.js', included: false, watched: false },
+            { pattern: 'node_modules/@covalent/**/*.js.map', included: false, watched: false },
             { pattern: 'node_modules/@uirouter/**/*.js', included: false, watched: false },
             { pattern: 'node_modules/@uirouter/**/*.js.map', included: false, watched: false },
             { pattern: 'node_modules/angular-mocks/angular-mocks.js', included: false, watched: false },
+            { pattern: 'node_modules/tslib/tslib.js', included: false, watched: false },
 
             { pattern: 'src/main/resources/static/bower_components/**/*.js', included: false, watched: false },
             { pattern: appBase + '/systemjs.config.js', included: false, watched: false },

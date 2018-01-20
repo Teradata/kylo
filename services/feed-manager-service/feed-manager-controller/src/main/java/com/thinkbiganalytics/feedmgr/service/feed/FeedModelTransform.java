@@ -195,6 +195,9 @@ public class FeedModelTransform {
 
         }
         domain.setDisplayName(feedMetadata.getFeedName());
+        if(feedMetadata.getDescription() == null){
+            feedMetadata.setDescription("");
+        }
         domain.setDescription(feedMetadata.getDescription());
 
         feedMetadata.setId(domain.getId().toString());
@@ -261,6 +264,7 @@ public class FeedModelTransform {
         result.setDataTransformation(source.getDataTransformation());
         result.setHadoopAuthorizationType(source.getHadoopAuthorizationType());
         result.setInputProcessorType(source.getInputProcessorType());
+        result.setInputProcessorName(source.getInputProcessorName());
         result.setIsReusableFeed(source.isReusableFeed());
         result.setNifiProcessGroupId(source.getNifiProcessGroupId());
         result.setOptions(source.getOptions());

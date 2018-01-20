@@ -23,6 +23,8 @@ package com.thinkbiganalytics.ingest;
 import com.klarna.hiverunner.HiveShell;
 
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.InputStream;
 import java.io.Reader;
@@ -52,6 +54,7 @@ import java.util.Map;
  * Intercepts sql calls and executes them through the hive shell instead of a JDBC connection
  */
 public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
+    private static final Logger log = LoggerFactory.getLogger(HiveShellTableMergeSyncSupport.class);
 
     private HiveShell shell;
 
@@ -70,7 +73,7 @@ public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
 
     @Override
     protected void doExecuteSQL(String sql) {
-        logger.info("Executing SQL for MergeTable [%]", sql);
+        log.info("Executing SQL for MergeTable [%]", sql);
         shell.execute(sql);
     }
 

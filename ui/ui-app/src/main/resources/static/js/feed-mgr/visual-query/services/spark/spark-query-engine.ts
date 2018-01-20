@@ -1,21 +1,38 @@
-import {QueryEngine} from "../query-engine";
-import {UserDatasource} from "../../../model/user-datasource";
-import {SparkConstants} from "./spark-constants";
-import {SparkScriptBuilder} from "./spark-script-builder";
-import {SparkQueryParser} from "./spark-query-parser";
+import {HttpClient} from "@angular/common/http";
+import {Injector} from "@angular/core";
+import * as angular from "angular";
 import {Program} from "estree";
-import {UnderscoreStatic} from "underscore";
+import "rxjs/add/observable/empty";
+import "rxjs/add/observable/fromPromise";
+import "rxjs/add/observable/interval";
+import "rxjs/add/operator/catch";
+import "rxjs/add/operator/expand";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/mergeMap";
+import "rxjs/add/operator/take";
 import {Observable} from "rxjs/Observable";
 import {Subject} from "rxjs/Subject";
+import * as _ from "underscore";
+
+import {SchemaField} from "../../../model/schema-field";
 import {TableSchema} from "../../../model/table-schema";
+import {UserDatasource} from "../../../model/user-datasource";
 import {DatasourcesServiceStatic} from "../../../services/DatasourcesService.typings";
 import {SqlDialect} from "../../../services/VisualQueryService";
-import {QueryResultColumn} from "../../../model/query-result-column";
-import {registerQueryEngine} from "../query-engine-factory.service";
-import {SchemaField} from "../../../model/schema-field";
-
-declare const _: UnderscoreStatic;
-declare const angular: angular.IAngularStatic;
+import {DIALOG_SERVICE} from "../../wrangler/api/index";
+import {SaveRequest, SaveResponse, SaveResponseStatus} from "../../wrangler/api/rest-model";
+import {DialogService} from "../../wrangler/api/services/dialog.service";
+import {ColumnController} from "../../wrangler/column-controller";
+import {ColumnDelegate} from "../../wrangler/column-delegate";
+import {QueryResultColumn} from "../../wrangler/model/query-result-column";
+import {ScriptState} from "../../wrangler/model/script-state";
+import {TransformResponse} from "../../wrangler/model/transform-response";
+import {QueryEngine} from "../../wrangler/query-engine";
+import {registerQueryEngine} from "../../wrangler/query-engine-factory.service";
+import {SparkColumnDelegate} from "./spark-column";
+import {SparkConstants} from "./spark-constants";
+import {SparkQueryParser} from "./spark-query-parser";
+import {SparkScriptBuilder} from "./spark-script-builder";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -28,14 +45,23 @@ export class SparkQueryEngine extends QueryEngine<string> {
     private apiUrl: string;
 
     /**
+     * Wrangler dialog service.
+     */
+    private dialog: DialogService;
+
+    static readonly $inject: string[] = ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", "$$wranglerInjector"];
+
+    /**
      * Constructs a {@code SparkQueryEngine}.
      */
     constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
-                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any) {
-        super($mdDialog, DatasourcesService, uiGridConstants);
+                DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any,
+                private $$angularInjector: Injector) {
+        super($mdDialog, DatasourcesService, uiGridConstants, $$angularInjector);
 
         // Initialize properties
         this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
+        this.dialog = $$angularInjector.get(DIALOG_SERVICE);
 
         // Ensure Kylo Spark Shell is running
         $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
@@ -58,7 +84,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
     /**
      * Gets the sample formulas.
      */
-    get sampleFormulas(): {name: string; formula: string}[] {
+    get sampleFormulas(): { name: string; formula: string }[] {
         return [
             {name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))"},
             {name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)"},
@@ -79,6 +105,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     get useNativeDataType(): boolean {
         return false;
+    }
+
+    /**
+     * Creates a column delegate of the specified data type.
+     */
+    createColumnDelegate(dataType: string, controller: ColumnController, column: any): ColumnDelegate {
+        return new SparkColumnDelegate(column, dataType, controller, this.$mdDialog, this.uiGridConstants, this.dialog, this.$$angularInjector.get(HttpClient), this.RestUrlService);
     }
 
     /**
@@ -213,6 +246,76 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 
     /**
+     * Saves the results to the specified destination.
+     *
+     * @param request - save target
+     * @returns an observable tracking the save status
+     */
+    saveResults(request: SaveRequest): Observable<SaveResponse> {
+        // Build the request body
+        let body = {
+            async: true,
+            datasources: (this.datasources_ !== null) ? this.datasources_.filter(datasource => datasource.id !== SparkConstants.HIVE_DATASOURCE) : null,
+            script: this.getFeedScript()
+        };
+
+        if (request.jdbc && request.jdbc.id === SparkConstants.HIVE_DATASOURCE) {
+            request.jdbc = null;
+        }
+
+        // Send the request
+        let transformId: string;
+
+        return Observable
+        // Send transform script
+            .fromPromise(this.$http<TransformResponse>({
+                method: "POST",
+                url: this.apiUrl + "/transform",
+                data: JSON.stringify(body),
+                headers: {"Content-Type": "application/json"},
+                responseType: "json"
+            }))
+            // Send save request
+            .mergeMap(response => {
+                transformId = response.data.table;
+                return this.$http<SaveResponse>({
+                    method: "POST",
+                    url: this.apiUrl + "/transform/" + transformId + "/save",
+                    data: JSON.stringify(request),
+                    headers: {"Content-Type": "application/json"},
+                    responseType: "json"
+                });
+            })
+            // Wait for save to complete
+            .expand(response => {
+                if (response.data.status === SaveResponseStatus.PENDING) {
+                    return Observable.interval(1000)
+                        .take(1)
+                        .mergeMap(() => this.$http<SaveResponse>({
+                            method: "GET",
+                            url: this.apiUrl + "/transform/" + transformId + "/save/" + response.data.id,
+                            responseType: "json"
+                        }));
+                } else if (response.data.status === SaveResponseStatus.SUCCESS) {
+                    return Observable.empty();
+                } else {
+                    throw response;
+                }
+            })
+            // Map result to SaveResponse
+            .map(response => {
+                const save = response.data;
+                if (save.location !== null && save.location.startsWith("./")) {
+                    save.location = this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
+                }
+                return save;
+            })
+            .catch((response: angular.IHttpResponse<SaveResponse>): Observable<SaveResponse> => {
+                throw response.data;
+            });
+    }
+
+    /**
      * Searches for table names matching the specified query.
      *
      * @param query - search query
@@ -239,7 +342,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     transform(): Observable<any> {
         // Build the request body
-        let body = {};
+        let body = {
+            "policies": this.getState().fieldPolicies
+        };
         let index = this.states_.length - 1;
 
         if (index > 0) {
@@ -270,13 +375,22 @@ export class SparkQueryEngine extends QueryEngine<string> {
         let self = this;
         let deferred = new Subject();
 
-        let successCallback = function (response: any) {
+        let successCallback = function (response: angular.IHttpResponse<TransformResponse>) {
+            let state = self.states_[index];
+
             // Check status
             if (response.data.status === "PENDING") {
+                if (state.columns === null && response.data.results && response.data.results.columns) {
+                    state.columns = response.data.results.columns;
+                    state.rows = [];
+                    state.table = response.data.table;
+                    self.updateFieldPolicies(state);
+                }
+
                 deferred.next(response.data.progress);
 
                 self.$timeout(function () {
-                    self.$http({
+                    self.$http<TransformResponse>({
                         method: "GET",
                         url: self.apiUrl + "/transform/" + response.data.table,
                         headers: {"Content-Type": "application/json"},
@@ -298,7 +412,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 return (column.hiveColumnLabel === "processing_dttm");
             });
 
-            let state = self.states_[index];
             if (angular.isDefined(invalid)) {
                 state.columns = [];
                 state.rows = [];
@@ -308,14 +421,19 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 state.rows = [];
                 deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
             } else {
+                // Update state
                 state.columns = response.data.results.columns;
                 state.profile = response.data.profile;
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
+                state.validationResults = response.data.results.validationResults;
+                self.updateFieldPolicies(state);
+
+                // Indicate observable is complete
                 deferred.complete();
             }
         };
-        let errorCallback = function (response: any) {
+        let errorCallback = function (response: angular.IHttpResponse<TransformResponse>) {
             // Update state
             let state = self.states_[index];
             state.columns = [];
@@ -334,7 +452,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         };
 
         // Send the request
-        self.$http({
+        self.$http<TransformResponse>({
             method: "POST",
             url: this.apiUrl + "/transform",
             data: JSON.stringify(body),
@@ -357,6 +475,36 @@ export class SparkQueryEngine extends QueryEngine<string> {
     protected parseQuery(source: any): string {
         return new SparkQueryParser(this.VisualQueryService).toScript(source, this.datasources_);
     }
+
+    /**
+     * Updates the field policies of the specified state to match the column order.
+     * @param {ScriptState<string>} state
+     */
+    private updateFieldPolicies(state: ScriptState<string>) {
+        if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
+            const policyMap = {};
+            state.fieldPolicies.forEach(policy => {
+                policyMap[policy.name] = policy;
+            });
+
+            state.fieldPolicies = state.columns.map(column => {
+                if (policyMap[column.hiveColumnLabel]) {
+                    return policyMap[column.hiveColumnLabel];
+                } else {
+                    return {
+                        name: column.hiveColumnLabel,
+                        fieldName: column.hiveColumnLabel,
+                        feedFieldName: column.hiveColumnLabel,
+                        domainTypeId: null,
+                        partition: null,
+                        profile: true,
+                        standardization: null,
+                        validation: null
+                    };
+                }
+            });
+        }
+    }
 }
 
-registerQueryEngine("spark", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", SparkQueryEngine]);
+registerQueryEngine("spark", SparkQueryEngine);

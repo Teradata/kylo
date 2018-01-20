@@ -62,7 +62,7 @@ public class JpaBatchJobExecutionContextValue extends AbstractBatchExecutionCont
     }
 
     public JpaBatchJobExecutionContextValue(BatchJobExecution jobExecution, String keyName) {
-        setJobExecutionId(jobExecution.getJobExecutionId());
+        this.jobExecutionId = jobExecution.getJobExecutionId();
         this.keyName = keyName;
     }
 
@@ -89,9 +89,6 @@ public class JpaBatchJobExecutionContextValue extends AbstractBatchExecutionCont
         return jobExecutionId;
     }
 
-    public void setJobExecutionId(Long jobExecutionId) {
-        this.jobExecutionId = jobExecutionId;
-    }
 
     @Override
     public boolean equals(Object o) {

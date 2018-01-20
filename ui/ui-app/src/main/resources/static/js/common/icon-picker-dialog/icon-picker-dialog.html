@@ -1,12 +1,12 @@
 <md-dialog aria-label="Category"  ng-cloak >
     <form>
         <div  class="md-toolbar-tools">
-                <span> Icon for {{iconModel.name}}</span>
+                <span> {{"views.icon-picker-dialog.If" | translate}} {{iconModel.name}}</span>
         </div>
         <md-dialog-content layout="column" flex layout-fill  layout-padding style="min-width:700px;min-height:400px;height:400px;max-height:400px;">
             <div layout="row" flex layout-fill>
                 <div layout="column"  style="width:250px;">
-                    <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">Select your icon</span>
+                    <span class="md-subhead" style="text-align: center;padding-bottom:10px;;">{{"views.icon-picker-dialog.Syi" | translate}}</span>
                     <div  ng-if="loadingIcons"  layout-fill layout="row" layout-align="center center">
                         <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
                     </div>
@@ -27,7 +27,7 @@
                     </div>
                 </div>
                 <div layout="column"  style="width:250px;padding-left:20px;">
-                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Select your color</span>
+                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Syc" | translate}}</span>
                     <div ng-if="loadingColors" layout-fill layout="row" layout-align="center center">
                         <md-progress-circular md-mode="indeterminate" md-diameter="60"></md-progress-circular>
                     </div>
@@ -48,18 +48,18 @@
                     </div>
                 </div>
                 <div layout="column" flex >
-                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">Your icon</span>
+                    <span  class="md-subhead" style="text-align: center;padding-bottom:10px;">{{"views.icon-picker-dialog.Yi" | translate}}</span>
                     <ng-md-icon icon="{{selectedIconTile.title}}" size="100" ng-style="fillStyle" style="padding-bottom:120px;padding-right:40px;"></ng-md-icon>
                 </div>
             </div>
         </md-dialog-content>
         <md-dialog-actions layout="row">
             <md-button ng-click="cancel()">
-                Cancel
+                {{"views.icon-picker-dialog.Cancel" | translate}}
             </md-button>
             <span flex></span>
             <md-button class="md-primary md-raised" ng-click="save()">
-                Save
+                {{"views.icon-picker-dialog.Save" | translate}}
             </md-button>
         </md-dialog-actions>
     </form>

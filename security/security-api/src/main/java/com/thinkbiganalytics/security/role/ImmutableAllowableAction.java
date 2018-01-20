@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.security.role;
 
+import java.security.Principal;
+
 /*-
  * #%L
  * kylo-security-api
@@ -26,11 +28,13 @@ package com.thinkbiganalytics.security.role;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowableAction;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  * An immutable AllowedAction suitable for creating a snapshot of another AllowableAction tree.
@@ -38,20 +42,23 @@ import com.thinkbiganalytics.security.action.AllowableAction;
 public class ImmutableAllowableAction implements AllowableAction {
 
     private final Action action;
+    private final Set<Principal> principals;
     private final List<AllowableAction> subactions;
     
-    public ImmutableAllowableAction(AllowableAction allowable) {
+    public ImmutableAllowableAction(AllowedActions allowed, AllowableAction allowable) {
         this(allowable, 
+             allowed,
              allowable.getSubActions().stream()
-                 .map(a -> new ImmutableAllowableAction(a))
+                 .map(a -> new ImmutableAllowableAction(allowed, a))
                  .collect(Collectors.toList()));
     }
     
-    public ImmutableAllowableAction(Action action, List<ImmutableAllowableAction> subActions) {
+    public ImmutableAllowableAction(Action action, AllowedActions allowed, List<ImmutableAllowableAction> subActions) {
         List<Action> hierarchy = action.getHierarchy();
         Action[] parents = hierarchy.subList(0, hierarchy.size() - 1).toArray(new Action[hierarchy.size() - 1]);
         this.action = Action.create(action.getSystemName(), action.getTitle(), action.getDescription(), parents);
         this.subactions = Collections.unmodifiableList(subActions);
+        this.principals = allowed.getPrincipalsAllowedAll(action);
     }
 
     @Override
@@ -83,6 +90,10 @@ public class ImmutableAllowableAction implements AllowableAction {
     public Stream<AllowableAction> stream() {
         return Stream.concat(Stream.of(this),
                              getSubActions().stream().flatMap(AllowableAction::stream));
+    }
+    
+    public Set<Principal> getPrincipals() {
+        return principals;
     }
 
     /* (non-Javadoc)

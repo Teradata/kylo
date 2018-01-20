@@ -1,13 +1,13 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.spark.rest.model.TransformResponse
+import java.util
 
+import com.google.common.base.Supplier
+import com.thinkbiganalytics.spark.rest.model.TransformResponse
 import org.apache.spark.SparkContext
 import org.apache.spark.scheduler.StageInfo
 import org.junit.{Assert, Test}
 import org.mockito.Mockito
-
-import java.util.concurrent.Callable
 
 class TransformJobTest {
 
@@ -15,15 +15,15 @@ class TransformJobTest {
     @Test
     def progress(): Unit = {
         // Test with new job
-        val job = new TransformJob("MyJob", Mockito.mock(classOf[Callable[TransformResponse]]), Mockito.mock(classOf[SparkContext]))
+        val job = new TransformJob("MyJob", Mockito.mock(classOf[Supplier[TransformResponse]]), Mockito.mock(classOf[SparkContext]))
         Assert.assertEquals(0.0, job.progress, 0.0)
 
         // Test when job started
-        job.stages = Seq(new StageInfo(1, 1, "stage-1", 25, Seq(), Seq(), ""), new StageInfo(2, 1, "stage-2", 75, Seq(), Seq(), ""))
+        job.setStages(util.Arrays.asList(new StageInfo(1, 1, "stage-1", 25, Seq(), Seq(), ""), new StageInfo(2, 1, "stage-2", 75, Seq(), Seq(), "")))
         Assert.assertEquals(0.0, job.progress, 0.0)
 
         // Test when stage started
-        job.onStageProgress(job.stages(0), 0)
+        job.onStageProgress(job.getStages.get(0), 0)
         Assert.assertEquals(0.0, job.progress, 0.0)
 
         // Test when task completed
@@ -34,7 +34,7 @@ class TransformJobTest {
         Assert.assertEquals(0.02, job.progress, 0.001)
 
         // Test when stage completed
-        job.onStageProgress(job.stages(0), 25)
+        job.onStageProgress(job.getStages.get(0), 25)
         Assert.assertEquals(0.25, job.progress, 0.001)
 
         // Test when task completed
@@ -42,7 +42,7 @@ class TransformJobTest {
         Assert.assertEquals(0.26, job.progress, 0.001)
 
         // Test when stage failed
-        job.onStageProgress(job.stages(1), 0)
+        job.onStageProgress(job.getStages.get(1), 0)
         Assert.assertEquals(0.25, job.progress, 0.001)
 
         // Test when job completed
@@ -55,8 +55,8 @@ class TransformJobTest {
     def run(): Unit = {
         // Mock callable function and Spark context
         val response = new TransformResponse
-        val callable = new Callable[TransformResponse] {
-            override def call(): TransformResponse = response
+        val callable = new Supplier[TransformResponse] {
+            override def get(): TransformResponse = response
         }
 
         val spark = Mockito.mock(classOf[SparkContext])

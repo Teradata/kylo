@@ -20,7 +20,7 @@
 <div class="layout-padding-indent">
 
   <md-input-container property-disabled="ctl.mode == 'edit'" nifi-property-input class="md-block layout-padding-top-bottom" property="ctl.dbConnectionProperty"
-                      on-property-change="ctl.onDbConnectionPropertyChanged"
+                      on-property-change="ctl.onDbConnectionPropertyChanged(property)"
                       flex-gt-sm>
   </md-input-container>
 

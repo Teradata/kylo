@@ -52,6 +52,8 @@ public class NiFiFlowInspection {
 
     private Long time = 0L;
 
+    private boolean complete = false;
+
 
     public NiFiFlowInspection(String processGroupId, int level, NiFiFlowInspection parent, String threadName) {
         this.processGroupId = processGroupId;
@@ -127,7 +129,7 @@ public class NiFiFlowInspection {
         return processGroupName;
     }
 
-    public void addChild(NiFiFlowInspection child) {
+    private void addChild(NiFiFlowInspection child) {
         children.add(child);
     }
 
@@ -167,5 +169,14 @@ public class NiFiFlowInspection {
 
     public void setTime(Long time) {
         this.time = time;
+        setComplete(true);
+    }
+
+    public boolean isComplete() {
+        return complete;
+    }
+
+    public void setComplete(boolean complete) {
+        this.complete = complete;
     }
 }

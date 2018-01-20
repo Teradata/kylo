@@ -1,5 +1,5 @@
 <md-menu >
-  <md-button aria-label="Options" class="md-icon-button" style="margin-top:-10px" ng-click="openMenu($mdOpenMenu, $event)">
+  <md-button aria-label="Options" class="md-icon-button" ng-click="openMenu($mdOpenMenu, $event)">
     <ng-md-icon icon="{{menuIcon}}"></ng-md-icon>
   </md-button>
   <md-menu-content width="3">
@@ -7,12 +7,12 @@
       <header> <ng-md-icon icon="account_circle"></ng-md-icon>{{username}}</header>
     </md-menu-item>
     <md-menu-item>
-      <md-button ng-click="logout()">Logout</md-button>
+      <md-button ng-click="logout()">{{"views.kylo-options.Logout" | translate}}</md-button>
     </md-menu-item>
     <md-menu-divider></md-menu-divider>
     <md-menu-item layout="column">
       <md-button ng-click="aboutKylo()" md-prevent-menu-close="md-prevent-menu-close">
-        <span style="float:left;">About Kylo</span>
+        <span style="float:left;">{{"views.kylo-options.AK" | translate}}</span>
       </md-button>
     </md-menu-item>
   </md-menu-content>

@@ -63,6 +63,12 @@ define(['angular'], function (angular) {
         this.tableSchema = null;
 
         /**
+         * boolean flag to indicate we are initializing the controller
+         * @type {boolean}
+         */
+        this.initializing = true;
+
+        /**
          * If we are creating a new feed then use the Create Model, otherwise use the Edit Model
          * If the processor is undefined, attempt to get it via the inputProcessor of the model
          */
@@ -108,7 +114,6 @@ define(['angular'], function (angular) {
          * Default the property keys that are used to look up the
          *
          */
-
         this.SOURCE_TABLE_PROPERTY_KEY = angular.isDefined(this.sourceTableKey) ? this.sourceTableKey : 'Source Table';
         this.SOURCE_FIELDS_PROPERTY_KEY = angular.isDefined(this.sourceFieldsKey) ? this.sourceFieldsKey : 'Source Fields';
         this.DB_CONNECTION_SERVICE_PROPERTY_KEY = angular.isDefined(this.connectionServiceKey) ? this.connectionServiceKey : 'Source Database Connection'; //''
@@ -144,10 +149,32 @@ define(['angular'], function (angular) {
         var customPropertyKeys = [self.DB_CONNECTION_SERVICE_PROPERTY_KEY, self.SOURCE_TABLE_PROPERTY_KEY, self.SOURCE_FIELDS_PROPERTY_KEY, self.LOAD_STRATEGY_PROPERTY_KEY,
                                   self.INCREMENTALPROPERTY_KEY, self.RETENTION_PERIOD_PROPERTY_KEY, self.ARCHIVE_UNIT_PROPERTY_KEY];
 
+
+
         /**
-         * lookup and find the respective Nifi Property objects that map to the custom property keys
+         * Autocomplete objected used in the UI html page
+         * @type {{clear: Function, searchText: string, selectedTable: null, searchTextChange: Function, selectedItemChange: Function, querySearch: Function}}
          */
-        initPropertyLookup();
+        this.tablesAutocomplete = {
+            clear:function(){
+                this.searchText = '';
+                this.selectedTable = null;
+            },
+            searchText:'',
+            selectedTable:null,
+            searchTextChange:function(text){
+                validate();
+
+            },
+            selectedItemChange : function(table){
+                self.selectedTable = table;
+                validate();
+            },
+            querySearch:function(txt){
+                return queryTablesSearch(txt);
+            }
+        }
+
 
         /**
          * lookup and find the respective Nifi Property objects that map to the custom property keys
@@ -202,7 +229,6 @@ define(['angular'], function (angular) {
          */
         this.onDbConnectionPropertyChanged = function (dbConnectionProperty) {
             if (self.mode != 'edit') {
-
             //clear out rest of the model
             self.selectedTable = undefined;
             self.model.table.sourceTableIncrementalDateField = null;
@@ -305,14 +331,21 @@ define(['angular'], function (angular) {
                    var deferred = $q.defer();
                    var tableNameQuery = "%" + query + "%";
                    var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId), {params: {serviceName: serviceName, tableName: tableNameQuery}}).then(function (response) {
-                       self.databaseConnectionError = false;
-                       var tables = parseTableResponse(response.data);
-                       // Dont cache .. uncomment to cache results
-                       // self.allTables[serviceId] = parseTableResponse(response.data);
-                       var results = query ? tables.filter(createFilterForTable(query)) : tables;
-                       deferred.resolve(results);
+                       if(_.isArray(response.data)) {
+                           self.databaseConnectionError = false;
+                           var tables = parseTableResponse(response.data);
+                           // Dont cache .. uncomment to cache results
+                           // self.allTables[serviceId] = parseTableResponse(response.data);
+                           var results = query ? tables.filter(createFilterForTable(query)) : tables;
+                           deferred.resolve(results);
+                       }
+                       else {
+                           self.databaseConnectionError = true;
+                           deferred.reject(response);
+                       }
                    }, function (err) {
                        self.databaseConnectionError = true;
+                       deferred.reject(err);
 
                    });
                    return deferred.promise;
@@ -345,51 +378,8 @@ define(['angular'], function (angular) {
             return allTables;
         }
 
-        /**
-         * Autocomplete objected used in the UI html page
-         * @type {{clear: Function, searchText: string, selectedTable: null, searchTextChange: Function, selectedItemChange: Function, querySearch: Function}}
-         */
-        this.tablesAutocomplete = {
-            clear:function(){
-                this.searchText = '';
-                this.selectedTable = null;
-            },
-            searchText:'',
-            selectedTable:null,
-            searchTextChange:function(text){
-                validate();
 
-            },
-            selectedItemChange : function(table){
-            self.selectedTable = table;
-                validate();
-            },
-            querySearch:function(txt){
-                return queryTablesSearch(txt);
-            }
-        }
 
-        /**
-         * if we are editing then get the selectedTable saved on this model.
-         */
-        if(this.mode == 'edit'){
-            var processorTableName = this.model.table.existingTableName;
-            this.tablesAutocomplete.selectedTable = this.model.table.existingTableName;
-            if(processorTableName != null) {
-                var schemaName = processorTableName.substring(0, processorTableName.indexOf("."));
-                var tableName = processorTableName.substring(processorTableName.indexOf(".")+1);
-                var fullNameLower = processorTableName.toLowerCase();
-                this.selectedTable = this.tablesAutocomplete.selectedTable = {
-                    schema: schemaName,
-                    tableName: tableName,
-                    fullName: processorTableName,
-                    fullNameLower: fullNameLower
-                };
-            }
-            if(self.isIncrementalLoadStrategy()){
-                editIncrementalLoadDescribeTable();
-            }
-        }
 
         /**
          * Callback from saving/edit feed
@@ -469,6 +459,8 @@ define(['angular'], function (angular) {
             }
         }
 
+
+
         this.onManualTableNameChange = function () {
             if (self.model.table.method != 'EXISTING_TABLE') {
                 self.model.table.method = 'EXISTING_TABLE';
@@ -533,67 +525,137 @@ define(['angular'], function (angular) {
         }
 
 
+        function initializeAutoComplete(){
+            var processorTableName = self.model.table.existingTableName;
+            self.tablesAutocomplete.selectedTable = self.model.table.existingTableName;
+            if(processorTableName != null) {
+                var schemaName = processorTableName.substring(0, processorTableName.indexOf("."));
+                var tableName = processorTableName.substring(processorTableName.indexOf(".")+1);
+                var fullNameLower = processorTableName.toLowerCase();
+                self.selectedTable = self.tablesAutocomplete.selectedTable = {
+                    schema: schemaName,
+                    tableName: tableName,
+                    fullName: processorTableName,
+                    fullNameLower: fullNameLower
+                };
+            }
+        }
+
         /**
-         * Watch for changes on the table to refresh the schema
+         * Initialize the controller
          */
-        $scope.$watch(function(){
-            return self.selectedTable
-        },function(newVal){
-            var tableProperty = self.tableProperty
-            validate();
-            if(tableProperty && newVal != undefined) {
+        this.init = function() {
 
-               if(self.useTableNameOnly){
-                   tableProperty.value = newVal.tableName;
-               }
-                else {
-                   tableProperty.value = newVal.fullName;
-               }
+            self.initializing = true;
+            /**
+             * lookup and find the respective Nifi Property objects that map to the custom property keys
+             */
+            initPropertyLookup();
 
+            function setupClonedFeedTableFields(){
+                self.databaseConnectionError = false;
+                self.tableSchema = self.model.table.tableSchema;
+                self.tableFields = self.tableSchema.fields;
+                self.originalTableFields = self.model.table.sourceTableSchema;
+                self.tableFieldsDirty = false;
 
-                if (newVal != null && newVal != undefined) {
-                    if(self.mode == 'create') {
-                        //only describe on the Create as the Edit will be disabled and we dont want to change the field data
-                        describeTable();
-                    }
-                }
-                else {
-                    self.tableSchema = null;
+                //   FeedService.setTableFields(self.tableSchema.fields);
+                self.model.table.method = 'EXISTING_TABLE';
+
+            }
+
+            /**
+             * if we are editing or working with the cloned feed then get the selectedTable saved on this model.
+             */
+            if(self.mode == 'edit'){
+                initializeAutoComplete();
+                if(self.isIncrementalLoadStrategy()){
+                    editIncrementalLoadDescribeTable();
                 }
             }
-        })
+            else if(self.mode == 'create' && self.model.cloned == true) {
+             //if we are cloning and creating a new feed setup the autocomplete
+                initializeAutoComplete();
+                setupClonedFeedTableFields();
+            }
 
-        /**
-         * If there is a LOAD_STRATEGY property then watch for changes to show/hide additional options
-         */
-        if(self.loadStrategyProperty){
-            $scope.$watch(function () {
-                return self.loadStrategyProperty.value
-            }, function (newVal,oldValue) {
-                self.loadStrategyProperty.displayValue = newVal
-              if(newVal == 'FULL_LOAD'){
-                  self.model.table.tableType = 'SNAPSHOT';
-                  self.restrictIncrementalToDateOnly = false;
-              }
-              else if (self.isIncrementalLoadStrategy(newVal)) {
-                  self.model.table.tableType = 'DELTA';
-                  //reset the date field
-                  if(oldValue != undefined && oldValue != null && newVal != oldValue) {
-                      self.model.table.sourceTableIncrementalDateField = '';
-                  }
-                  var option = _.find(self.loadStrategyOptions, function (opt) {
-                      return opt.strategy == newVal
-                  });
-                  if (option) {
-                      self.restrictIncrementalToDateOnly = option.restrictDates != undefined ? option.restrictDates : false;
-                  }
-                  if(newVal !== oldValue){
-                          editIncrementalLoadDescribeTable();
-                  }
-              }
 
+            /**
+             * Watch for changes on the table to refresh the schema
+             */
+            $scope.$watch(function(){
+                return self.selectedTable
+            },function(newVal, oldVal){
+                var tableProperty = self.tableProperty
+                validate();
+                if(tableProperty && newVal != undefined) {
+
+                    if(self.useTableNameOnly){
+                        tableProperty.value = newVal.tableName;
+                    }
+                    else {
+                        tableProperty.value = newVal.fullName;
+                    }
+
+
+                    if (newVal != null && newVal != undefined) {
+                        if(self.mode == 'create') {
+                            //only describe on the Create as the Edit will be disabled and we dont want to change the field data.
+                            //If we are working with a cloned feed we should attempt to get the field information from the cloned model
+                            if(!self.model.cloned || (self.model.cloned && (angular.isUndefined(oldVal) || (angular.isDefined(oldVal) && newVal.fullName != oldVal.fullName) || self.model.table.tableSchema.fields.length ==0))) {
+                                describeTable();
+                            }
+                        }
+                    }
+                    else {
+                        self.tableSchema = null;
+                    }
+                }
             });
+
+
+            /**
+             * If there is a LOAD_STRATEGY property then watch for changes to show/hide additional options
+             */
+            if(self.loadStrategyProperty){
+                $scope.$watch(function () {
+                    return self.loadStrategyProperty.value
+                }, function (newVal,oldValue) {
+                    self.loadStrategyProperty.displayValue = newVal
+                    if(newVal == 'FULL_LOAD'){
+                        self.model.table.tableType = 'SNAPSHOT';
+                        self.restrictIncrementalToDateOnly = false;
+                    }
+                    else if (self.isIncrementalLoadStrategy(newVal)) {
+                        self.model.table.tableType = 'DELTA';
+                        //reset the date field
+                        if(oldValue != undefined && oldValue != null && newVal != oldValue) {
+                            self.model.table.sourceTableIncrementalDateField = '';
+                        }
+                        var option = _.find(self.loadStrategyOptions, function (opt) {
+                            return opt.strategy == newVal
+                        });
+                        if (option) {
+                            self.restrictIncrementalToDateOnly = option.restrictDates != undefined ? option.restrictDates : false;
+                        }
+                        if(newVal !== oldValue){
+                            editIncrementalLoadDescribeTable();
+                        }
+                    }
+
+                });
+            }
+
+            self.initializing = false;
+
         }
+
+
+
+        //Initialize the Controller
+        this.init();
+
+
 
     };
 

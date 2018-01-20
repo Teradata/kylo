@@ -18,6 +18,7 @@ package com.thinkbiganalytics.nifi.rest.client;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 
 import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
@@ -30,9 +31,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by sr186054 on 8/25/17.
  */
-public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessorsRestClient  {
+public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessorsRestClient {
+
     private static final Logger log = LoggerFactory.getLogger(AbstractNiFiProcessorsRestClient.class);
-    protected ProcessorDTO applySchedule(NifiProcessorSchedule schedule){
+
+    protected ProcessorDTO applySchedule(NifiProcessorSchedule schedule) {
         if (schedule != null && schedule.getProcessorId() != null) {
             ProcessorDTO input = new ProcessorDTO();
             input.setId(schedule.getProcessorId());
@@ -40,13 +43,7 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
             input.getConfig().setSchedulingPeriod(schedule.getSchedulingPeriod());
             input.getConfig().setSchedulingStrategy(schedule.getSchedulingStrategy());
             input.getConfig().setConcurrentlySchedulableTaskCount(schedule.getConcurrentTasks());
-            //clear the properties before updating the schedule
-            if (input.getConfig().getProperties() != null) {
-                input.getConfig().getProperties().clear();
-            }
-
-         return   updateWithRetry(input, 5, 300, TimeUnit.MILLISECONDS);
-
+            return input;
         }
         return null;
     }
@@ -54,12 +51,11 @@ public abstract class AbstractNiFiProcessorsRestClient implements NiFiProcessors
     @Override
     public ProcessorDTO schedule(NifiProcessorSchedule schedule) {
         if (schedule != null && schedule.getProcessorId() != null) {
-           ProcessorDTO input = applySchedule(schedule);
-           if(input != null) {
-            log.info("About to update the schedule for processor: {} to be {} with a value of: {} ",schedule.getProcessorId(),schedule.getSchedulingStrategy(),schedule.getSchedulingPeriod());
-            return   updateWithRetry(input, 5, 300, TimeUnit.MILLISECONDS);
-           }
-
+            ProcessorDTO input = applySchedule(schedule);
+            if (input != null) {
+                log.info("About to update the schedule for processor: {} to be {} with a value of: {} ", schedule.getProcessorId(), schedule.getSchedulingStrategy(), schedule.getSchedulingPeriod());
+                return updateWithRetry(input, 5, 300, TimeUnit.MILLISECONDS);
+            }
         }
         return null;
     }

@@ -48,7 +48,7 @@ import static org.junit.Assert.assertTrue;
  */
 public class IndexElasticSearchTest {
 
-    private static final String TEST_HOST = "ec2-54-152-98-43.compute-1.amazonaws.com";
+    private static final String TEST_HOST = "FILLMEIN";
     private static final String TEST_INDEX = "integration-test";
     private static final String TEST_TYPE = "userdatatest";
     private static final String TEST_CLUSTER = "demo-cluster";

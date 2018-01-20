@@ -20,20 +20,25 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.nifi;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedOpsAccessControlRepository;
 
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.query.Procedure;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
 /**
  * Spring data repository for {@link JpaNifiFeedProcessorStats}
+ * A custom repository is used to call the stored procedure
  */
-public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats> {
+public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<JpaNifiFeedProcessorStats, String>, QueryDslPredicateExecutor<JpaNifiFeedProcessorStats>, NifiFeedProcessorStatisticsRepositoryCustom
+                                                                {
 
     @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
                    + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
@@ -43,7 +48,6 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     List<JpaNifiFeedProcessorStats> findWithinTimeWindowWithAcl(@Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
     @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
-                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
                    + "where stats.minEventTime between :startTime and :endTime ")
     List<JpaNifiFeedProcessorStats> findWithinTimeWindowWithoutAcl(@Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
@@ -65,9 +69,8 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
 
 
     @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
-                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
-                   + " and feed.name = :feedName "
-                   + "where stats.minEventTime between :startTime and :endTime "
+                   + " where stats.feedName = :feedName "
+                   + " and stats.minEventTime between :startTime and :endTime "
                    + " and stats.errorMessages is not null ")
     List<JpaNifiFeedProcessorStats> findWithErrorsWithinTimeWithoutAcl(@Param("feedName") String feedName, @Param("startTime") DateTime start, @Param("endTime") DateTime end);
 
@@ -81,11 +84,40 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     List<JpaNifiFeedProcessorStats> findWithErrorsAfterTimeWithAcl(@Param("feedName") String feedName, @Param("afterTimestamp") DateTime afterTimestamp);
 
     @Query(value = "select distinct stats from JpaNifiFeedProcessorStats as stats "
-                   + "join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
-                   + " and feed.name = :feedName"
-                   + " where stats.minEventTime > :afterTimestamp "
+                   + " where stats.feedName = :feedName"
+                   + " and stats.minEventTime > :afterTimestamp "
                    + " and stats.errorMessages is not null ")
     List<JpaNifiFeedProcessorStats> findWithErrorsAfterTimeWithoutAcl(@Param("feedName") String feedName, @Param("afterTimestamp") DateTime afterTimestamp);
+
+
+    @Query("select stats from JpaNifiFeedProcessorStats as stats "
+           + " join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where stats.minEventTime = :latestTime "
+           + " and stats.feedName = :feedName "
+           + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    List<NifiFeedProcessorStats> findLatestFinishedStatsWithAcl(@Param("feedName") String feedName, @Param("latestTime") DateTime latestTime);
+
+    @Query("select stats from JpaNifiFeedProcessorStats as stats "
+           + " where stats.minEventTime = :latestTime "
+           + " and stats.feedName = :feedName ")
+    List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(@Param("feedName") String feedName, @Param("latestTime") DateTime latestTime);
+
+    @Query("select max(stats.minEventTime) as dateProjection from JpaNifiFeedProcessorStats as stats "
+           + " join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
+           + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
+           + " where stats.feedName = :feedName "
+           + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
+    DateProjection findLatestFinishedTimeWithAcl(@Param("feedName") String feedName);
+
+    @Query("select max(stats.minEventTime) as dateProjection from JpaNifiFeedProcessorStats as stats "
+           + " where stats.feedName = :feedName")
+    DateProjection findLatestFinishedTimeWithoutAcl(@Param("feedName") String feedName);
+
+  //  @Procedure(name = "NifiFeedProcessorStats.compactFeedProcessorStats")
+  //  String compactFeedProcessorStatistics();
+
+
 
 
 }

@@ -27,7 +27,7 @@
     <body-section>
       <div ng-if="vm.loading">
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
-        <span class="md-body-2 layout-padding-left">Loading feeds</span>
+        <span class="md-body-2 layout-padding-left">{{"feeds.feed-table.loading-feeds" | translate}}</span>
       </div>
       <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list' && !vm.loading">
         <md-list flex layout-fill class="list-item-table">
@@ -37,7 +37,7 @@
                         pagination-id="feeds"
                         current-page="vm.currentPage">
             <div layout="row" layout-fill>
-              <div flex="30" layout="column" class="item-column md-list-item-text " ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
+              <div flex="30" layout="column" class="item-column md-list-item-text pointer" ng-click="vm.feedDetails($event,feed)" title="{{feed.feedName}} - {{feed.state}}">
                                      <span class="item-title" title="{{feed.feedName}} - {{feed.state}}" ng-class="{'disabled':feed.state == 'DISABLED'}">
                                       {{feed.feedName}}
                                    </span>
@@ -45,7 +45,7 @@
                                      <span ng-if="feed.state == 'DISABLED'">
                                           <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs>
                                           </ng-md-icon>
-                                       </span> Feed Name
+                                       </span> {{"feeds.feed-table.feed-name" | translate}}
                                    </span>
 
               </div>
@@ -55,25 +55,25 @@
                               <span class="column-title column-title-bottom">
                                           <ng-md-icon icon="{{feed.category.icon}}" size="20" hide-xs ng-style="{'fill':feed.category.iconColor }">
                                           </ng-md-icon>
-                                    Category
+                                    {{"feeds.feed-table.category" | translate}}
                                    </span>
               </div>
               <div flex="30" layout="column" class="item-column md-list-item-text ">
                                    <span class="item-title">{{feed.templateName}}
                                    </span>
-                <span class="column-title column-title-bottom">Type</span>
+                <span class="column-title column-title-bottom">{{"feeds.feed-table.type" | translate}}</span>
               </div>
               <div flex="15" layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport">
                 <md-button href="{{feed.exportUrl}}" layout-align="center" ng-disabled="!feed.allowExport">
                   <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
-                  <span style="padding-left:10px;">Export</span>
+                  <span style="padding-left:10px;">{{"feeds.feed-table.export" | translate}}</span>
                 </md-button>
               </div>
             </div>
             <md-divider ng-if="!$last"></md-divider>
           </md-list-item>
           <md-list-item ng-show="vm.loading == false && vm.feedData.length ==0" class="md-list-item with-padding">
-            No results found
+            {{"views.define-feed-mgr-tables.tables4" | translate}}
           </md-list-item>
           <md-divider></md-divider>
           <md-list-item layout-align="end center" layout-row class="pagination-list-item">
@@ -84,7 +84,7 @@
                                      boundary-links="false"
                                      template-url="js/common/dir-pagination/dirPagination.tpl.html"
                                      on-page-change="vm.onPaginationChange(newPageNumber)"
-                                     label="Rows per page"
+                                     label='{{"views.all-page.Rows_per_page" | translate}}'
                                      rows-per-page="vm.paginationData.rowsPerPage"
                                      rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                      class="pagination-row">
@@ -97,11 +97,11 @@
           <table md-table md-progress="vm.deferred.promise">
             <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
             <tr md-row>
-              <th md-column name="Feed" md-order-by="feedName">Feed</th>
-              <th md-column name="State" md-order-by="state">State</th>
-              <th md-column name="Category" md-order-by="category.name">Category</th>
-              <th md-column name="Type">Type</th>
-              <th md-column name="Last Updated" md-order-by="updateDate">Last Updated</th>
+              <th md-column name="Feed" md-order-by="feedName">{{"feeds.feed-table.feed-name" | translate}}</th>
+              <th md-column name="State" md-order-by="state">{{"feeds.feed-table.state" | translate}}</th>
+              <th md-column name="Category" md-order-by="category.name">{{"feeds.feed-table.category" | translate}}</th>
+              <th md-column name="Type">{{"feeds.feed-table.type" | translate}}</th>
+              <th md-column name="Last Updated" md-order-by="updateDate">{{"feeds.feed-table.last-updated" | translate}}</th>
             </tr>
             </thead>
             <tbody md-body>

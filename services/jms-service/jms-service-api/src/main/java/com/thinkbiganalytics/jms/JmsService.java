@@ -25,8 +25,11 @@ import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.core.JmsMessagingTemplate;
 
 import javax.jms.Queue;
+import javax.jms.Topic;
 
 public interface JmsService {
+
+    Topic getTopic(String topicName);
 
     Queue getQueue(String queueName);
 

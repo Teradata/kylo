@@ -20,18 +20,12 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -42,12 +36,8 @@ import javax.inject.Inject;
  */
 public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetric, Serializable> {
 
-    private static final Logger log = LoggerFactory.getLogger(FeedFailureMetricAssessor.class);
-
-
     @Inject
     private FeedFailureService feedFailureService;
-
 
     @Override
     public boolean accepts(Metric metric) {
@@ -60,27 +50,25 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
 
         String feedName = metric.getFeedName();
 
-        FeedFailureService.LastFeedFailure lastFeedFailure = feedFailureService.findLastJob(feedName);
-        DateTime lastTime =feedFailureService.initializeTime;
-        if(!lastFeedFailure.equals(FeedFailureService.EMPTY_JOB)){
-            lastTime = lastFeedFailure.getDateTime();
-
-        //compare with the latest feed time
-        builder.compareWith(feedName, lastTime.getMillis());
-
-        if (feedFailureService.hasFailure(lastFeedFailure)) {
-            builder.message("Feed " + feedName + " has failed ")
-                .result(AssessmentResult.FAILURE);
-        } else if(lastFeedFailure.isFailure()) {
-            //it failed and is still failing... WARN
-            builder.message("Feed " + feedName + " is still failed.  The last job failed at "+lastFeedFailure.getDateTime())
-                .result(AssessmentResult.WARNING);
+        FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLastJob(feedName);
+        if(lastFeedJob == null){
+            String msg = "Feed " + feedName + " is does not exist.";
+            builder.message(msg).result(AssessmentResult.WARNING);
         }
-        else {
-            builder.message("Feed " + feedName + " has succeeded ")
-                .result(AssessmentResult.SUCCESS);
-        }
-        }
+        else if(!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)){
+            DateTime lastTime = lastFeedJob.getDateTime();
 
+            //compare with the latest feed time, alerts with same timestamps will not be raised
+            builder.compareWith(feedName, lastTime.getMillis());
+
+            if (feedFailureService.isExistingFailure(lastFeedJob)) {
+                String msg = "Feed " + feedName + " is still failed.  The last job failed at " + lastFeedJob.getDateTime();
+                builder.message(msg).result(AssessmentResult.WARNING);
+            } else if (lastFeedJob.isFailure()) {
+                builder.message("Feed " + feedName + " has failed ").result(AssessmentResult.FAILURE);
+            } else {
+                builder.message("Feed " + feedName + " has succeeded ").result(AssessmentResult.SUCCESS);
+            }
+        }
     }
 }

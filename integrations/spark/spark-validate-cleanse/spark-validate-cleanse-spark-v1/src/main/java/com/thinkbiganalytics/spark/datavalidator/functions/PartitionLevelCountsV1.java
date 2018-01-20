@@ -48,11 +48,11 @@ public class PartitionLevelCountsV1 implements FlatMapFunction<Iterator<Cleansed
             CleansedRowResult cleansedRowResult = cleansedRowResultIterator.next();
 
             for (int idx = 0; idx < schemaLen; idx++) {
-                if (!cleansedRowResult.columnsValid[idx]) {
+                if (!cleansedRowResult.isColumnValid(idx)) {
                     validationCounts[idx] = validationCounts[idx] + 1L;
                 }
             }
-            if (cleansedRowResult.rowIsValid) {
+            if (cleansedRowResult.isRowValid()) {
                 validationCounts[schemaLen] = validationCounts[schemaLen] + 1L;
             } else {
                 validationCounts[schemaLen + 1] = validationCounts[schemaLen + 1] + 1L;

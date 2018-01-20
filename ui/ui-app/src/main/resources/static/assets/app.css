@@ -157,10 +157,15 @@ md-list md-datepicker .md-button.md-icon-button {
   width: inherit;
 }
 
+
 md-sidenav .collapse-btn {
   padding: 10px;
   color: #3483BA;
   background-color: #F9F9F9;
+  cursor: pointer;
+}
+
+.pointer {
   cursor: pointer;
 }
 
@@ -186,6 +191,10 @@ md-sidenav .collapse-btn {
   padding-right: 8px;
 }
 
+.layout-padding-left-right-16 {
+  padding-left: 16px;
+  padding-right: 16px;
+}
 .layout-padding-right {
   padding-right: 10px;
 }
@@ -198,12 +207,20 @@ md-sidenav .collapse-btn {
   padding-left: 16px;
 }
 
+.layout-padding-right-16 {
+  padding-right: 16px;
+}
+
+.layout-padding-left-25 {
+  padding-left: 25px;
+}
+
 .layout-padding-indent {
   padding-left: 30px;
 }
 
 .layout-padding-indent button {
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 .layout-padding-indent-20 {
@@ -211,7 +228,7 @@ md-sidenav .collapse-btn {
 }
 
 .layout-padding-indent button, .layout-padding-indent-20 button {
-  margin-left: 0px;
+  margin-left: 0;
 }
 
 .layout-padding-top-bottom, .layout-padding-top-bottom md-item {
@@ -223,8 +240,49 @@ md-sidenav .collapse-btn {
   padding-top: 10px;
 }
 
+.layout-padding-top-20 {
+  padding-top: 20px;
+}
+
 .layout-padding-bottom {
   padding-bottom: 10px;
+}
+
+.layout-padding-bottom-15 {
+  padding-bottom: 15px;
+}
+
+.layout-margin-left-right-0 {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.layout-margin-left-5 {
+  margin-left: 5px;
+}
+
+.layout-margin-right-5 {
+  margin-right: 5px;
+}
+
+.layout-margin-left-10 {
+  margin-left: 10px;
+}
+
+.layout-margin-right-10 {
+  margin-right: 10px;
+}
+
+.layout-margin-top-3 {
+  margin-top: 3px;
+}
+
+.layout-margin-top-7 {
+  margin-top: 7px;
+}
+
+.layout-margin-top-minus-7 {
+  margin-top: -7px;
 }
 
 .layout-max-width {
@@ -287,6 +345,12 @@ md-list.padding-left md-list-item {
   font-size: 14px;
 }
 
+.md-button.md-link {
+  text-transform: none;
+  padding:0;
+  margin:0;
+
+}
 
 
 
@@ -408,6 +472,24 @@ md-tabs.no-animation md-tab-content.md-left, md-tabs.no-animation md-tab-content
   transform: none !important;
 }
 
+/** center tabs fix
+https://github.com/angular/material/issues/6375
+ */
+
+md-tabs-canvas.md-center-tabs {
+/** Keeps IE11 from making `md-pagination-wrapper` as wide as the page. **/
+align-items: center;
+}
+
+md-tabs-canvas.md-center-tabs md-pagination-wrapper {
+  width: auto !important;
+}
+
+/**
+End Center Tabs fix
+ */
+
+
 md-list.list-item-left md-list-item {
   padding: 8px 0px !important;
 }
@@ -510,9 +592,7 @@ md-tab-content.md-no-scroll {
   z-index: 60;
 }
 
-.md-button.md-fab.md-fab-top-right {
-  right: 50px;
-  top: 30px;
+.md-button.md-kylo-theme.md-fab.kylo-add-button {
   z-index: 61;
   color: white;
 }
@@ -593,6 +673,15 @@ card-layout .card-toolbar {
   padding-top: 15px;
   height: 60px;
   max-height: 60px;
+}
+
+card-layout .card-toolbar2 {
+  border-radius: 3px 3px 0 0;
+  box-shadow: 0 1px rgba(255, 255, 255, 0.1);
+  background-color: #FFF;
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-top: 15px;
 }
 
 card-layout .card-toolbar.filter-header {
@@ -1162,4 +1251,65 @@ md-input-container.global-search .md-input {
 }
 
 .elastic-search-property-table tr:not(:last-child) td {
+}
+
+
+
+.virtual-repeat-scroller-overlay .md-virtual-repeat-scroller {
+  /* overlay required to align column in virtual
+  repeat with header columns outside of virtual repeat, otherwise
+   on Chrome header and virtual repeat is not aligned */
+  overflow-y: overlay;
+}
+
+.button-more {
+  font-size: 23px;
+  /*line-height: 8px;*/
+  height: 20px;
+  width: 25px;
+  background-color: lightgray;
+  border-radius: 2px;
+}
+
+/* Notification Menu */
+.kylo-notification-button .td-loading-wrapper.td-overlay .td-loading {
+  background: none;
+}
+.kylo-notification-button.loading mat-icon {
+  align-content: center;
+  align-items: center;
+  background-color: white;
+  border: 1px solid #2B6C9A;
+  border-radius: 50%;
+  color: #3483BA;
+  display: flex;
+  height: 40px;
+  justify-content: center;
+  width: 40px;
+}
+.mat-menu-panel.kylo-notification-menu {
+  width: 280px;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list .mat-list-item.not-clickable:hover {
+  background: inherit;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list .mat-list-item.not-clickable .mat-list-item-content {
+  cursor: default;
+}
+.mat-menu-panel.kylo-notification-menu .mat-nav-list[dense] .mat-list-item mat-progress-spinner.mat-list-icon {
+  margin: 4px;
+  padding: 0;
+}
+
+/* Full-screen dialogs */
+.full-screen-dialog .mat-dialog-container {
+  padding: 0;
+  overflow: hidden;
+}
+.full-screen-dialog .mat-dialog-content {
+  margin: 0;
+}
+.full-screen-dialog .mat-dialog-actions:last-child {
+  margin-bottom: 0;
+  padding: 20px 30px;
 }

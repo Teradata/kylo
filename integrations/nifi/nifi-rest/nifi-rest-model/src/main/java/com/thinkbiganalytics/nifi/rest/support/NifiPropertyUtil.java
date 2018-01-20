@@ -594,6 +594,14 @@ public class NifiPropertyUtil {
     private static NifiProperty matchPropertyByProcessorName(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
         NifiProperty matchingProperty = findPropertyByProcessorName(templateProperties, nifiProperty);
         if (matchingProperty != null) {
+            //
+            if(PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode)){
+                //copy the property
+                NifiProperty copy = new NifiProperty(matchingProperty);
+                templateProperties.remove(matchingProperty);
+                templateProperties.add(copy);
+                matchingProperty = copy;
+            }
             updateMatchingProperty(matchingProperty, nifiProperty, updateMode);
         }
         return matchingProperty;
@@ -606,7 +614,7 @@ public class NifiPropertyUtil {
      * @param nifiProperty     the property to use to update the matchingProperty
      * @param updateMode       a mode to update
      */
-    private static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
+    public static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
         if (updateMode.performUpdate()) {
             if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE.equals(updateMode) || (
                 PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES.equals(updateMode) && (

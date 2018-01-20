@@ -25,7 +25,6 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.metadata.api.common.ItemLastModified;
 import com.thinkbiganalytics.metadata.api.common.ItemLastModifiedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
@@ -44,12 +43,12 @@ import java.util.List;
 import javax.inject.Inject;
 
 /**
- * Provider for accessing the statstics for a feed and processor
+ * Provider for accessing the statistics for a feed and processor
  */
 @Service
 public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisticsProvider {
 
-    public static String ITEM_LAST_MODIFIED_KEY = "NIFI_FEED_PROCESSOR_STATS";
+    public static final String ITEM_LAST_MODIFIED_KEY = "NIFI_FEED_PROCESSOR_STATS";
 
     @Autowired
     private JPAQueryFactory factory;
@@ -84,7 +83,6 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
     @Override
     public NifiFeedProcessorStats create(NifiFeedProcessorStats t) {
         NifiFeedProcessorStats stats = statisticsRepository.save((JpaNifiFeedProcessorStats) t);
-       // ItemLastModified lastModified = itemLastModifiedProvider.update(getLastModifiedKey(t.getClusterNodeId()), t.getMaxEventId().toString());
         return stats;
     }
 
@@ -210,10 +208,9 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
                              stats.flowFilesStarted.sum().as("flowFilesStarted"), stats.flowFilesFinished.sum().as("flowFilesFinished"), stats.failedCount.sum().as("failedCount"),
-                             stats.maxEventTime,
+                             stats.minEventTime,
                              stats.jobsStarted.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsStartedPerSecond"),
                              stats.jobsFinished.sum().divide(stats.collectionIntervalSeconds).castToNum(BigDecimal.class).as("jobsFinishedPerSecond"),
-                             //stats.maxEventTime,
                              stats.collectionIntervalSeconds.as("collectionIntervalSeconds"),
                              stats.jobsFailed.sum().as("jobsFailed"), stats.totalCount.sum().as("totalCount"),
                              stats.count().as("resultSetCount"))
@@ -225,8 +222,8 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                        .and(stats.minEventTime.goe(start)
                                 .and(stats.maxEventTime.loe(end))))
 
-            .groupBy(stats.feedName, stats.maxEventTime, stats.collectionIntervalSeconds)
-            .orderBy(stats.maxEventTime.asc());
+            .groupBy(stats.feedName, stats.minEventTime, stats.collectionIntervalSeconds)
+            .orderBy(stats.minEventTime.asc());
 
         return (List<JpaNifiFeedProcessorStats>) query.fetch();
     }
@@ -242,6 +239,22 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
                                                            : statisticsRepository.findWithErrorsAfterTimeWithoutAcl(feedName, after);
     }
 
+    @Override
+    public List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName) {
+        if (accessController.isEntityAccessControlled()) {
+            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithAcl(feedName).getDateProjection();
+            return statisticsRepository.findLatestFinishedStatsWithAcl(feedName, latestTime);
+        } else {
+            return findLatestFinishedStatsWithoutAcl(feedName);
+        }
+    }
+
+    @Override
+    public List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName) {
+        DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
+        return statisticsRepository.findLatestFinishedStatsWithoutAcl(feedName, latestTime);
+    }
+
 
     @Override
     public List<? extends NifiFeedProcessorStats> save(List<? extends NifiFeedProcessorStats> stats) {
@@ -249,5 +262,13 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
             return statisticsRepository.save((List<JpaNifiFeedProcessorStats>) stats);
         }
         return stats;
+    }
+
+    /**
+     * Call the procedure to compact the NIFI_FEED_PROCESSOR_STATS table
+     * @return a summary of what was compacted
+     */
+    public String compactFeedProcessorStatistics(){
+        return statisticsRepository.compactFeedProcessorStats();
     }
 }

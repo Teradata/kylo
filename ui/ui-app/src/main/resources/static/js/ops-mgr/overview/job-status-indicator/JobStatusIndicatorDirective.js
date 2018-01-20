@@ -125,10 +125,10 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             if(responseData){
                 angular.forEach(responseData,function(statusCount,i){
                     if(statusCount.status == 'RUNNING'){
-                        self.running = statusCount.count;
+                        self.running += statusCount.count;
                     }
                     else if(statusCount.status =='FAILED'){
-                        self.failed = statusCount.count;
+                        self.failed += statusCount.count;
                     }
                 });
                 ensureFeedSummaryMatches(responseData);
@@ -145,6 +145,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             var summaryData = OpsManagerDashboardService.feedSummaryData;
             var feedSummaryUpdated = [];
             var runningFeedNames = [];
+            var notify = false;
             _.each(jobStatus, function (feedJobStatusCounts) {
                 var feedSummary = summaryData[feedJobStatusCounts.feedName];
                 if (angular.isDefined(feedSummary)) {
@@ -158,6 +159,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                         feedSummary.runningCount = summaryData.count
                         //trigger update of feed summary
                         feedSummaryUpdated.push(feedSummary);
+                        notify = true;
                     }
                 }
             });
@@ -169,10 +171,11 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
                     summary.state = "WAITING";
                     summary.runningCount = 0;
                     feedSummaryUpdated.push(summary);
+                    notify = true;
                 }
             })
 
-            if (feedSummaryUpdated.length > 0) {
+            if ( notify == true) {
                 BroadcastService.notify(OpsManagerDashboardService.FEED_SUMMARY_UPDATED, feedSummaryUpdated);
             }
         }

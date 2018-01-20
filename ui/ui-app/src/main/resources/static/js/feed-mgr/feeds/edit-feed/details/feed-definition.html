@@ -17,48 +17,48 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Feed Definition" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+<vertical-section-layout section-title='{{"views.feed-definition.FD" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDefinitionForm">
 
     <readonly-section>
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Feed Name</span>
+            <span flex="25" class="property-name"> {{"views.feed-definition.FN" | translate}} </span>
             <div flex>
                 {{vm.model.feedName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">System Name</span>
+            <span flex="25" class="property-name"> {{"views.feed-definition.SN" | translate}} </span>
 
             <div flex>
                 {{vm.model.systemFeedName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Description</span>
+            <span flex="25" class="property-name">{{"views.import_feed.Description" | translate}} </span>
 
             <div flex>
                 {{vm.model.description}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Feed Type</span>
+            <span flex="25" class="property-name"> {{"views.feed-definition.FT" | translate}} </span>
 
             <div flex>
                 {{vm.model.templateName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Flow Processing</span>
+            <span flex="25" class="property-name"> {{"views.feed-definition.FP" | translate}} </span>
 
             <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
-                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> Stream</span>
+                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Stream" | translate}} </span>
                 <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
             </div>
 
             <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
-                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> Batch</span>
-                <span class="hint">Kylo will track individual jobs and steps.</span>
+                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Batch" | translate}} </span>
+                <span class="hint"> {{"views.feed-definition.Kwtijas" | translate}} </span>
             </div>
         </div>
     </readonly-section>
@@ -66,26 +66,26 @@
         <ng-form name="vm.editFeedDefinitionForm">
         <div layout="row" layout-align="space-between start">
             <md-input-container flex="45" class="condensed">
-                <label>Display Name</label>
+                <label> {{"views.feed-definition.DN" | translate}} </label>
                 <input required ng-model="vm.editModel.feedName" name="feedName" />
 
                 <div ng-show="vm.editFeedDefinitionForm.feedName.$touched && vm.editFeedDefinitionForm.feedName.$invalid" ng-messages="vm.editFeedDefinitionForm.feedName.$error">
-                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">Required.</div>
+                    <div ng-show="vm.editFeedDefinitionForm.feedName.$error.required" ng-message="required">{{"views.define-feed-general-info.Req" | translate}}</div>
                 </div>
             </md-input-container>
             <div flex="10"></div>
             <md-input-container flex="45" class="condensed">
-                <label>System Name</label>
+                <label> {{"views.feed-definition.SN" | translate}} </label>
                 <input  readonly ng-model="vm.editModel.systemFeedName"/>
             </md-input-container>
         </div>
 
         <md-input-container class="md-block condensed">
-            <label>Description</label>
+            <label> {{"views.import_feed.Description" | translate}} </label>
             <textarea ng-model="vm.editModel.description"></textarea>
         </md-input-container>
         <md-input-container flex="45" class="condensed">
-            <label>Feed Type</label>
+            <label> {{"views.feed-definition.FT" | translate}} </label>
             <input  readonly ng-model="vm.model.templateName"/>
         </md-input-container>
         </ng-form>

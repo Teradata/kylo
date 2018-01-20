@@ -9,7 +9,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                 return promise;
             },
 
-            getFeedProcessorDuration: function (feedName, timeFrame) {
+            getFeedProcessorDuration: function (feedName, from, to) {
                 var self = this;
 
                 var successFn = function (response) {
@@ -19,26 +19,25 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                     self.loading = false;
 
                 }
-                var promise = $http.get(OpsManagerRestUrlService.PROCESSOR_DURATION_FOR_FEED(feedName, timeFrame));
+                var promise = $http.get(OpsManagerRestUrlService.PROCESSOR_DURATION_FOR_FEED(feedName, from, to));
                 promise.then(successFn, errorFn);
                 return promise;
             },
-            getFeedStatisticsOverTime: function (feedName, timeFrame) {
+            getFeedStatisticsOverTime: function (feedName, from, to) {
                 var self = this;
 
                 var successFn = function (response) {
 
-                }
+                };
                 var errorFn = function (err) {
                     self.loading = false;
-
-                }
-                var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, timeFrame));
+                };
+                var promise = $http.get(OpsManagerRestUrlService.FEED_STATISTICS_OVER_TIME(feedName, from, to));
                 promise.then(successFn, errorFn);
                 return promise;
             },
 
-            getFeedProcessorErrors: function (feedName, timeFrame, after) {
+            getFeedProcessorErrors: function (feedName, from, to, after) {
                 var self = this;
 
                 var successFn = function (response) {
@@ -48,7 +47,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                     self.loading = false;
 
                 }
-                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, timeFrame),{params:{after:after}});
+                var promise = $http.get(OpsManagerRestUrlService.FEED_PROCESSOR_ERRORS(feedName, from, to),{params:{after:after}});
                 promise.then(successFn, errorFn);
                 return promise;
             }

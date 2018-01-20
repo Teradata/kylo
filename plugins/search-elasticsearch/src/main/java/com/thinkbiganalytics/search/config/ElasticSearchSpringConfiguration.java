@@ -43,6 +43,7 @@ public class ElasticSearchSpringConfiguration {
     }
 
     @Bean
+    @Profile("!kyloUpgrade")
     public RepositoryIndexConfiguration elasticSearchModeShapeConfigurationService(ElasticSearchClientConfiguration elasticSearchClientConfiguration) {
         return new ElasticSearchModeShapeConfigurationService(elasticSearchClientConfiguration);
     }

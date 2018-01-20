@@ -24,7 +24,9 @@ import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.spring.FileResourceService;
 import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.service.UiTemplateService;
+import com.thinkbiganalytics.ui.api.template.DefaultTemplateTableOption;
 import com.thinkbiganalytics.ui.api.template.ProcessorTemplate;
+import com.thinkbiganalytics.ui.api.template.TemplateTableOption;
 import com.thinkbiganalytics.ui.module.DefaultAngularModule;
 import com.thinkbiganalytics.ui.template.ProcessorTemplateDefinition;
 
@@ -47,7 +49,7 @@ import javax.annotation.Nullable;
 
 public class StandardUiTemplateService implements UiTemplateService {
 
-    private static Logger log = LoggerFactory.getLogger(StandardUiTemplateService.class);
+    private static final Logger log = LoggerFactory.getLogger(StandardUiTemplateService.class);
 
     @Autowired
     private FileResourceService fileResourceService;
@@ -65,6 +67,22 @@ public class StandardUiTemplateService implements UiTemplateService {
             return Collections.emptyList();
         }
     }
+
+
+    /**
+     * Load the '*-stepper-definition.json files
+     */
+    public List<TemplateTableOption> loadStepperTemplateDefinitionFiles() {
+
+        List<String> resources = fileResourceService.loadResourcesAsString("classpath*:**/*-stepper-definition.json");
+        if (resources != null) {
+           return  resources.stream().map(json -> ObjectMapperSerializer.deserialize(json, DefaultTemplateTableOption.class)).map(o -> { o.updateTotalSteps(); return o;}).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+
 
     public List<AngularModule> loadAngularModuleDefinitionFiles() {
         List<AngularModule> modules = new ArrayList<>();

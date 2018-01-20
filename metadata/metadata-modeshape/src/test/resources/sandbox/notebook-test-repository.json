@@ -1,0 +1,23 @@
+{
+    "name" : "My Repository",
+    "node-types" : ["sandbox/notebook-test-schema.cnd"],
+    "workspaces" : {
+        "predefined" : ["otherWorkspace"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "useOnFailedLogin" : false
+        }
+    },
+    "storage" : {
+        "persistence" : {
+            "type" : "db",
+            "connectionUrl": "jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=TRUE",
+            "createOnStart" : true,
+            "dropOnExit" : true
+        }
+    }
+}

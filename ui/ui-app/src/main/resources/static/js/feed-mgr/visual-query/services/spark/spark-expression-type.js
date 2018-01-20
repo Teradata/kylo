@@ -8,13 +8,13 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "../script-expression-type", "../query-engine-constants"], function (require, exports, script_expression_type_1, query_engine_constants_1) {
+define(["require", "exports", "../../wrangler/query-engine-constants", "../../wrangler/script-expression-type"], function (require, exports, query_engine_constants_1, script_expression_type_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Types supported by {@link SparkExpression}.
      */
-    var SparkExpressionType = (function (_super) {
+    var SparkExpressionType = /** @class */ (function (_super) {
         __extends(SparkExpressionType, _super);
         function SparkExpressionType() {
             return _super !== null && _super.apply(this, arguments) || this;
@@ -36,14 +36,14 @@ define(["require", "exports", "../script-expression-type", "../query-engine-cons
         SparkExpressionType.toTernjsName = function (sparkType) {
             return (sparkType === SparkExpressionType.COLUMN.toString()) ? query_engine_constants_1.QueryEngineConstants.TERNJS_COLUMN_TYPE : sparkType;
         };
+        /** Represents a chain of {@code when} function calls */
+        SparkExpressionType.CONDITION_CHAIN = new SparkExpressionType("ConditionChain");
+        /** Represents a Spark SQL DataFrame */
+        SparkExpressionType.DATA_FRAME = new SparkExpressionType("dataframe");
+        /** Represents a function that takes a DataFrame and returns a DataFrame */
+        SparkExpressionType.TRANSFORM = new SparkExpressionType("transform");
         return SparkExpressionType;
     }(script_expression_type_1.ScriptExpressionType));
-    /** Represents a chain of {@code when} function calls */
-    SparkExpressionType.CONDITION_CHAIN = new SparkExpressionType("ConditionChain");
-    /** Represents a Spark SQL DataFrame */
-    SparkExpressionType.DATA_FRAME = new SparkExpressionType("dataframe");
-    /** Represents a function that takes a DataFrame and returns a DataFrame */
-    SparkExpressionType.TRANSFORM = new SparkExpressionType("transform");
     exports.SparkExpressionType = SparkExpressionType;
 });
 //# sourceMappingURL=spark-expression-type.js.map

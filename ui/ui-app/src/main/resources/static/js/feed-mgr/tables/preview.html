@@ -20,7 +20,7 @@
 <div class="layout-padding">
 
   <md-input-container>
-    <label>Limit</label>
+    <label>{{"views.preview.Limit" | translate}}</label>
     <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
       <md-option ng-repeat="opt in vm.limitOptions track by $index" ng-value="opt">
         {{opt}}
@@ -31,14 +31,11 @@
     <md-progress-linear md-mode="indeterminate"></md-progress-linear>
   </div>
   <div class="layout-padding-bottom">
-    <div ui-grid-auto-resize
+    <div id="preview-table"
+         flex
          browser-height
          browser-height-scroll-y="false"
-         browser-height-offset="374"
-         ui-grid="gridOptions"
-         ui-grid-move-columns
-         flex>
+         browser-height-offset="374">
     </div>
-
   </div>
 </div>

@@ -108,24 +108,54 @@ public interface NifiFeedProcessorStatisticsProvider {
     List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after);
 
     /**
+     * Finds the latest stats for a feed.
+     * This is bound by Entity Access control rules
+     * @param feedName the name of the feed
+     * @return the stats
+     */
+    List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName);
+
+    /**
+     * Finds the latest stats for a feed.
+     * This is NOT bound by Entity Access control rules
+     * @param feedName the name of the feed
+     * @return the stats
+     */
+    List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName);
+
+    /**
+     * Compact the NiFi Feed Processor Stats table.
+     *
+     * @return a summary of the rows that were compacted
+     */
+    String compactFeedProcessorStatistics();
+
+    /**
      * allow for specifying a time to look back from when querying for statistical information
      */
-    public static enum TimeFrame {
+    enum TimeFrame {
 
-        ONE_MIN(new Long(1000 * 60), "Last Minute"), THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"), FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes");
-        //Uncomment after code is in place to better handle the larger datasets
-        /*
-        TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"),
-        HOUR(new Long(1000 * 60 * 60), "Last Hour"),
-        THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"), FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"), TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
-        DAY(HOUR.millis * 24, " Last Day"), THREE_DAYS(DAY.millis * 3, " Last 3 Days"), WEEK(DAY.millis * 7, "Last Week"), MONTH(DAY.millis * 30, " Last Month"),
-        THREE_MONTHS(MONTH.millis * 3, " Last 3 Months"), SIX_MONTHS(DAY.millis * (365 / 2), "Last 6 Months"), YEAR(DAY.millis * 365, "Last Year");
-        */
+        ONE_MIN((long) (1000 * 60), "Last Minute"),
+        THREE_MIN(ONE_MIN.millis * 3, "Last 3 Minutes"),
+        FIVE_MIN(ONE_MIN.millis * 5, "Last 5 Minutes"),
+        TEN_MIN(ONE_MIN.millis * 10, "Last 10 Minutes"),
+        THIRTY_MIN(ONE_MIN.millis * 30, "Last 30 Minutes"),
+        HOUR(ONE_MIN.millis * 60, "Last Hour"),
+        THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"),
+        FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"),
+        TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
+        DAY(HOUR.millis * 24, "Last Day"),
+        THREE_DAYS(DAY.millis * 3, "Last 3 Days"),
+        WEEK(DAY.millis * 7, "Last Week"),
+        MONTH(DAY.millis * (365 / 12), "Last Month"),
+        THREE_MONTHS(DAY.millis * (365 / 6), "Last 3 Months"),
+        SIX_MONTHS(DAY.millis * (365 / 2), "Last 6 Months"),
+        YEAR(DAY.millis * 365, "Last Year");
 
         protected Long millis;
         private String displayName;
 
-        private TimeFrame(long millis, String displayName) {
+        TimeFrame(long millis, String displayName) {
             this.millis = millis;
             this.displayName = displayName;
         }
@@ -140,6 +170,10 @@ public interface NifiFeedProcessorStatisticsProvider {
 
         public DateTime startTimeRelativeTo(DateTime dt) {
             return dt.minus(millis);
+        }
+
+        public Long getMillis() {
+            return millis;
         }
     }
 

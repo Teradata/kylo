@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.feed.datasource;
  */
 
 import com.thinkbiganalytics.discovery.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedDataTransformation;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -38,9 +39,13 @@ import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -49,6 +54,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -58,7 +64,37 @@ import javax.inject.Inject;
  */
 public class DerivedDatasourceFactory {
 
-    private static String DATA_TRANSFORMATION_DEFINITION = "datatransformation.template";
+    private static final Logger log = LoggerFactory.getLogger(DerivedDatasourceFactory.class);
+
+    /**
+     * Processor type for a Hive datasource in a data transformation feed.
+     */
+    private static String DATA_TRANSFORMATION_HIVE_DEFINITION = "datatransformation.hive.template";
+
+    /**
+     * Processor type for a JDBC datasource in a data transformation feed.
+     */
+    private static String DATA_TRANSFORMATION_JDBC_DEFINITION = "datatransformation.jdbc.template";
+
+    /**
+     * Property for the table name of a HiveDatasource.
+     */
+    private static String HIVE_TABLE_KEY = "table";
+
+    /**
+     * Property for the schema name of a HiveDatasource.
+     */
+    private static String HIVE_SCHEMA_KEY = "schema";
+
+    /**
+     * Property for the database connection name of a DatabaseDatasource.
+     */
+    private static String JDBC_CONNECTION_KEY = "Database Connection";
+
+    /**
+     * Property for the schema and table name of a DatabaseDatasource.
+     */
+    private static String JDBC_TABLE_KEY = "Table";
 
     @Inject
     DatasourceDefinitionProvider datasourceDefinitionProvider;
@@ -78,35 +114,21 @@ public class DerivedDatasourceFactory {
     @Inject
     RegisteredTemplateCache registeredTemplateCache;
 
+    @Inject
+    private NifiControllerServiceProperties nifiControllerServiceProperties;
+
     public void populateDatasources(FeedMetadata feedMetadata, RegisteredTemplate template, Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> sources,
                                     Set<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> dest) {
-
+        // Extract source and destination datasources from data transformation feeds
         if (isDataTransformation(feedMetadata)) {
-            Set<Datasource.ID> ids = ensureDataTransformationSourceDatasources(feedMetadata);
-            if (ids != null && !ids.isEmpty()) {
-                sources.addAll(ids);
+            if (noneMatch(template.getRegisteredDatasourceDefinitions(), DatasourceDefinition.ConnectionType.SOURCE)) {
+                sources.addAll(ensureDataTransformationSourceDatasources(feedMetadata));
             }
-            //ensure this feed gets set as a hive table dest
-            DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
-            String identityString = datasourceDefinition.getIdentityString();
-            Map<String, String> props = new HashMap<String, String>();
-            props.put("schema", feedMetadata.getSystemCategoryName());
-            props.put("table", feedMetadata.getSystemFeedName());
-            identityString = propertyExpressionResolver.resolveVariables(identityString, props);
-            String desc = datasourceDefinition.getDescription();
-            if (desc != null) {
-                desc = propertyExpressionResolver.resolveVariables(desc, props);
+            if (noneMatch(template.getRegisteredDatasourceDefinitions(), DatasourceDefinition.ConnectionType.DESTINATION)) {
+                dest.addAll(ensureDataTransformationDestinationDatasources(feedMetadata));
             }
-            String title = identityString;
-            DerivedDatasource
-                derivedDatasource =
-                datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                           new HashMap<String, Object>(props));
-            if (derivedDatasource != null) {
-                dest.add(derivedDatasource.getId());
-            }
-
         }
+
         //see if its in the cache first
         List<RegisteredTemplate.Processor> processors = registeredTemplateCache.getProcessors(feedMetadata.getTemplateId());
         //if not add it
@@ -139,44 +161,101 @@ public class DerivedDatasourceFactory {
     }
 
     /**
+     * Builds the list of destinations for the specified data transformation feed.
+     *
+     * <p>The data source type is determined based on the sources used in the transformation. If only one source is used then it is assumed that the source and destination are the same. Otherwise it
+     * is assumed that the destination is Hive.</p>
+     *
+     * @param feed the feed
+     * @return the list of destinations
+     * @throws NullPointerException if the feed has no data transformation
+     */
+    @Nonnull
+    private Set<Datasource.ID> ensureDataTransformationDestinationDatasources(@Nonnull final FeedMetadata feed) {
+        // Set properties based on data source type
+        final String processorType;
+        final Map<String, String> properties = new HashMap<>();
+
+        if (feed.getDataTransformation().getDatasourceIds() != null && feed.getDataTransformation().getDatasourceIds().size() == 1) {
+            final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(feed.getDataTransformation().getDatasourceIds().get(0)));
+
+            processorType = DATA_TRANSFORMATION_JDBC_DEFINITION;
+            properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+            properties.put(JDBC_TABLE_KEY, feed.getSystemCategoryName() + "." + feed.getSystemFeedName());
+        } else {
+            processorType = DATA_TRANSFORMATION_HIVE_DEFINITION;
+            properties.put(HIVE_SCHEMA_KEY, feed.getSystemCategoryName());
+            properties.put(HIVE_TABLE_KEY, feed.getSystemFeedName());
+        }
+
+        // Create datasource
+        final DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(processorType);
+        if(datasourceDefinition != null) {
+            final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+            final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+            final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
+
+            if (processorType.equals(DATA_TRANSFORMATION_JDBC_DEFINITION)) {
+                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition, properties.get(JDBC_CONNECTION_KEY)));
+            }
+
+            final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+            return Collections.singleton(datasource.getId());
+        }
+        else {
+            return Collections.emptySet();
+        }
+    }
+
+    /**
      * Builds the list of data sources for the specified data transformation feed.
      *
      * @param feed the feed
      * @return the list of data sources
+     * @throws NullPointerException if the feed has no data transformation
      */
     @Nonnull
     private Set<Datasource.ID> ensureDataTransformationSourceDatasources(@Nonnull final FeedMetadata feed) {
-        // Build the data sources from the view model
         final Set<Datasource.ID> datasources = new HashSet<>();
-        final Set<String> tableNames = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getTableNamesFromViewModel).orElse(Collections.emptySet());
 
-        if (!tableNames.isEmpty()) {
-            DatasourceDefinition datasourceDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_DEFINITION);
-            if (datasourceDefinition != null) {
-                tableNames.forEach(hiveTable -> {
-                    String schema = StringUtils.trim(StringUtils.substringBefore(hiveTable, "."));
-                    String table = StringUtils.trim(StringUtils.substringAfterLast(hiveTable, "."));
-                    String identityString = datasourceDefinition.getIdentityString();
-                    Map<String, String> props = new HashMap<String, String>();
-                    props.put("schema", schema);
-                    props.put("table", table);
-                    identityString = propertyExpressionResolver.resolveVariables(identityString, props);
-                    String desc = datasourceDefinition.getDescription();
-                    if (desc != null) {
-                        desc = propertyExpressionResolver.resolveVariables(desc, props);
-                    }
-                    String title = identityString;
+        // Extract nodes in chart view model
+        @SuppressWarnings("unchecked") final Stream<Map<String, Object>> nodes = Optional.ofNullable(feed.getDataTransformation().getChartViewModel())
+            .map(model -> (List<Map<String, Object>>) model.get("nodes"))
+            .map(Collection::stream)
+            .orElse(Stream.empty());
 
-                    DerivedDatasource
-                        derivedDatasource =
-                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                                   new HashMap<String, Object>(props));
-                    if (derivedDatasource != null) {
-                        datasources.add(derivedDatasource.getId());
-                    }
-                });
+        // Create a data source for each node
+        final DatasourceDefinition hiveDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_HIVE_DEFINITION);
+        final DatasourceDefinition jdbcDefinition = datasourceDefinitionProvider.findByProcessorType(DATA_TRANSFORMATION_JDBC_DEFINITION);
+
+        nodes.forEach(node -> {
+            // Extract properties from node
+            final DatasourceDefinition datasourceDefinition;
+            final Map<String, String> properties = new HashMap<>();
+
+            if (node.get("datasourceId") == null || node.get("datasourceId").equals("HIVE")) {
+                final String name = (String) node.get("name");
+                datasourceDefinition = hiveDefinition;
+                properties.put(HIVE_SCHEMA_KEY, StringUtils.trim(StringUtils.substringBefore(name, ".")));
+                properties.put(HIVE_TABLE_KEY, StringUtils.trim(StringUtils.substringAfterLast(name, ".")));
+            } else {
+                final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve((String) node.get("datasourceId")));
+                datasourceDefinition = jdbcDefinition;
+                properties.put(JDBC_CONNECTION_KEY, datasource.getName());
+                properties.put(JDBC_TABLE_KEY, (String) node.get("name"));
+                properties.putAll(parseDataTransformControllerServiceProperties(datasourceDefinition,datasource.getName()));
+
             }
-        }
+            if(datasourceDefinition != null) {
+                // Create the derived data source
+                final String identityString = propertyExpressionResolver.resolveVariables(datasourceDefinition.getIdentityString(), properties);
+                final String title = datasourceDefinition.getTitle() != null ? propertyExpressionResolver.resolveVariables(datasourceDefinition.getTitle(), properties) : identityString;
+                final String desc = propertyExpressionResolver.resolveVariables(datasourceDefinition.getDescription(), properties);
+
+                final DerivedDatasource datasource = datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, new HashMap<>(properties));
+                datasources.add(datasource.getId());
+            }
+        });
 
         // Build the data sources from the data source ids
         final List<String> datasourceIds = Optional.ofNullable(feed.getDataTransformation()).map(FeedDataTransformation::getDatasourceIds).orElse(Collections.emptyList());
@@ -187,7 +266,10 @@ public class DerivedDatasourceFactory {
         return datasources;
     }
 
-    public boolean isDataTransformation(FeedMetadata feedMetadata) {
+    /**
+     * Indicates if the feed contains a data transformation.
+     */
+    private boolean isDataTransformation(@Nonnull final FeedMetadata feedMetadata) {
         return feedMetadata.getDataTransformation() != null && StringUtils.isNotEmpty(feedMetadata.getDataTransformation().getDataTransformScript());
     }
 
@@ -241,10 +323,12 @@ public class DerivedDatasourceFactory {
                 //find any datasource matching this DsName and identity String, if not create one
                 //if it is the Source ensure the feed matches this ds
                 if (isCreateDatasource(datasourceDefinition, feedMetadata)) {
+                    Map<String, String> controllerServiceProperties = parseControllerServiceProperties(datasourceDefinition, feedProperties);
+                    Map<String, Object> properties = new HashMap<String, Object>(identityStringPropertyResolution.getResolvedVariables());
+                    properties.putAll(controllerServiceProperties);
                     DerivedDatasource
                         derivedDatasource =
-                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc,
-                                                                   new HashMap<String, Object>(identityStringPropertyResolution.getResolvedVariables()));
+                        datasourceProvider.ensureDerivedDatasource(datasourceDefinition.getDatasourceType(), identityString, title, desc, properties);
                     if (derivedDatasource != null) {
                         if ("HiveDatasource".equals(derivedDatasource.getDatasourceType())
                             && Optional.ofNullable(feedMetadata.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent()) {
@@ -285,5 +369,103 @@ public class DerivedDatasourceFactory {
                    getFeedInputProcessorTypes(feedMetadata).contains(datasourceDefinition.getProcessorType())));
     }
 
+    private Map<String, String> parseDataTransformControllerServiceProperties(DatasourceDefinition datasourceDefinition, String controllerServiceName) {
+        Map<String, String> properties = new HashMap<>();
+        if(datasourceDefinition != null) {
+            try {
+                if (StringUtils.isNotBlank(controllerServiceName)) {
+                    //{Source Database Connection:Database Connection URL}
+                    List<String>
+                        controllerServiceProperties =
+                        datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{" + JDBC_CONNECTION_KEY + ":(.*)\\}")).collect(Collectors.toList());
+                    List<String> serviceProperties = new ArrayList<>();
+                    controllerServiceProperties.stream().forEach(p -> {
+                        String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
+                        serviceProperties.add(property);
+                    });
+                    ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceByName(controllerServiceName);
+                    if (csDto != null) {
 
+                        serviceProperties.stream().forEach(p -> {
+
+                            if (csDto != null) {
+                                String value = csDto.getProperties().get(p);
+                                if (value != null) {
+                                    properties.put(p, value);
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("An error occurred trying to parse controller service properties for data transformation when deriving the datasource for {}, {}. {} ",
+                         datasourceDefinition.getDatasourceType(),
+                         datasourceDefinition.getConnectionType(), e.getMessage(), e);
+            }
+        }
+
+        return properties;
+    }
+
+    /**
+     * Parse the defintion metadata for the {propertyKey:CS Property Key} objects and pick out the values in the controller service
+     *
+     * @param datasourceDefinition the definition to use
+     * @param feedProperties       the feed properties that match this definition
+     * @return a Map of the Controller Service Property Key, Value
+     */
+    private Map<String, String> parseControllerServiceProperties(DatasourceDefinition datasourceDefinition, List<NifiProperty> feedProperties) {
+        Map<String, String> properties = new HashMap<>();
+        try {
+            //{Source Database Connection:Database Connection URL}
+            List<String> controllerServiceProperties = datasourceDefinition.getDatasourcePropertyKeys().stream().filter(k -> k.matches("\\{(.*):(.*)\\}")).collect(Collectors.toList());
+            Map<String, List<String>> serviceProperties = new HashMap<>();
+            controllerServiceProperties.stream().forEach(p -> {
+                String service = p.substring(1, StringUtils.indexOf(p, ":"));
+                String property = p.substring(StringUtils.indexOf(p, ":") + 1, p.length() - 1);
+                if (!serviceProperties.containsKey(service)) {
+                    serviceProperties.put(service, new ArrayList<>());
+                }
+                serviceProperties.get(service).add(property);
+            });
+
+            serviceProperties.entrySet().stream().forEach(e -> {
+
+                String service = e.getKey();
+                String controllerServiceId = feedProperties.stream()
+                    .filter(p -> StringUtils.isNotBlank(p.getValue())
+                                 && p.getPropertyDescriptor() != null
+                                 && p.getPropertyDescriptor().getName().equalsIgnoreCase(service)
+                                 && StringUtils.isNotBlank(p.getPropertyDescriptor().getIdentifiesControllerService())).map(p -> p.getValue()).findFirst().orElse(null);
+                if (controllerServiceId != null) {
+                    ControllerServiceDTO csDto = nifiControllerServiceProperties.getControllerServiceById(controllerServiceId);
+                    if(csDto != null) {
+                        e.getValue().stream().forEach(propertyKey -> {
+                            String value = csDto.getProperties().get(propertyKey);
+                            if (value != null) {
+                                properties.put(propertyKey, value);
+                            }
+                        });
+                    }
+
+                }
+
+            });
+        } catch (Exception e) {
+            log.warn("An error occurred trying to parse controller service properties when deriving the datasource for {}, {}. {} ", datasourceDefinition.getDatasourceType(),
+                     datasourceDefinition.getConnectionType(), e.getMessage(), e);
+        }
+
+        return properties;
+    }
+
+    /**
+     * Indicates if there are no definitions with the specified connection type in the collection.
+     */
+    private boolean noneMatch(@Nonnull final Collection<TemplateProcessorDatasourceDefinition> definitions, @Nonnull final DatasourceDefinition.ConnectionType connectionType) {
+        return definitions.stream()
+            .map(definition -> datasourceDefinitionProvider.findByProcessorType(definition.getProcessorType()))
+            .map(DatasourceDefinition::getConnectionType)
+            .noneMatch(connectionType::equals);
+    }
 }

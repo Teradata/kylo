@@ -8,9 +8,11 @@
   <parent>
     <artifactId>kylo-schema-discovery</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <properties>
+    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.7</maven.compiler.target>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
 
@@ -38,7 +40,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.8.4-SNAPSHOT</version>
+      <version>0.9.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

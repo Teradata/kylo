@@ -22,18 +22,12 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionsGroupBuilder;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.role.JcrSecurityRoleProvider;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
-import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import org.slf4j.Logger;
@@ -43,18 +37,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 
-import java.util.List;
-import java.util.Map;
-
 import javax.inject.Inject;
-import javax.jcr.Node;
 
 /**
  * Defines ModeShape-managed implementations of security infrastructure components.
  */
 @Configuration
 public class ModeShapeAuthConfig {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ModeShapeAuthConfig.class);
 
     @Inject
@@ -81,10 +71,16 @@ public class ModeShapeAuthConfig {
     public ActionsModuleBuilder prototypesActionGroupsBuilder() {
         return new JcrActionsGroupBuilder(SecurityPaths.PROTOTYPES.toString());
     }
-    
+
     @Bean
     @Order(PostMetadataConfigAction.EARLY_ORDER)
     public PostMetadataConfigAction checkEntityAccessControl() {
         return new CheckEntityAccessControlAction();
+    }
+
+    @Bean
+    @Order(PostMetadataConfigAction.LATE_ORDER)
+    public PostMetadataConfigAction ensureServicesAccessControlAction() {
+        return new EnsureServicesAccessControlAction();
     }
 }

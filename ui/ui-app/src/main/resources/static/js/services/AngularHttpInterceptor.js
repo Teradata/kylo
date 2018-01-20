@@ -102,7 +102,7 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     }
                     else if (rejection.status === 400) {
                         // Bad Request
-                        var message = "An unexpected error occurred ";
+                        var message = "An error occurred ";
                         var errorMessage = rejection.data["message"];
                         var groupKey = errorMessage;
                         if (groupKey == undefined || groupKey == '') {
@@ -124,13 +124,13 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
                     }
                     else {
-                        if (rejection.config.acceptStatus === rejection.status) {
+                        if (rejection.config && rejection.config.acceptStatus === rejection.status) {
                             //sometimes 404 response is a valid response for which we don't want to show error message with NotificationService
                             return $q.when(rejection);
                         }
 
                         if (rejection.data['handledException'] == undefined || (rejection.data['handledException'] != undefined && rejection.data['handledException'] == false )) {
-                            var message = "An unexpected error occurred ";
+                            var message = "An error occurred ";
                             var rejectionMessage = rejection.data['message'];
                             if (rejectionMessage == undefined || rejectionMessage == '') {
                                 rejectionMessage = 'OtherError';

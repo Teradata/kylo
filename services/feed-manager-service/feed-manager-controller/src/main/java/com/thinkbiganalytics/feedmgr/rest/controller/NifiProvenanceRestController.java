@@ -141,8 +141,8 @@ public class NifiProvenanceRestController {
         @ApiResponse(code = 200, message = "The cache was reset.", response = String.class)
     )
     public Response resetCache() {
-        nifiFlowCache.rebuildAll();
-        return Response.ok("Reset the Cache").build();
+       boolean updated = nifiFlowCache.rebuildAll();
+        return Response.ok(updated ?"Reset the Cache" :" Unable to reset the cache.  Refer to the kylo-services.log file for more information.").build();
     }
 
 

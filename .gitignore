@@ -15,8 +15,10 @@ bin
 .recommenders
 derby.log
 .springBeans
-**/logs/
 **/node_modules/
 target/
 test-output/
 **/*.log
+dependency-reduced-pom.xml
+${modeshape.index.dir}
+

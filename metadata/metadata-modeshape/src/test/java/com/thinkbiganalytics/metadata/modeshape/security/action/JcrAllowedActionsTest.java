@@ -23,10 +23,8 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 
@@ -38,6 +36,7 @@ import org.testng.annotations.Test;
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.inject.Inject;
 
@@ -45,6 +44,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class})
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
+    
+    private static final UsernamePrincipal TEST_USER = new TestUserPrincipal();
     
     @Inject
     private JcrMetadataAccess metadata;
@@ -121,7 +122,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
             assertThat(option.isPresent()).isTrue();
 
-            return option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
+            return option.get().enable(TEST_USER, TestSecurityConfig.EXPORT_FEEDS);
         }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
@@ -133,7 +134,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             return true;
-        }, TestSecurityConfig.TEST);
+        }, TEST_USER);
 
         assertThat(passed).isTrue();
     }
@@ -145,7 +146,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
             assertThat(option.isPresent()).isTrue();
 
-            return option.get().disable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
+            return option.get().disable(TEST_USER, TestSecurityConfig.EXPORT_FEEDS);
         }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
@@ -156,7 +157,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             assertThat(option.isPresent()).isTrue();
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        }, TestSecurityConfig.TEST);
+        }, TEST_USER);
     }
 
     @Test(dependsOnMethods = "testDisableExport", expectedExceptions = AccessControlException.class)
@@ -166,8 +167,8 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 
             assertThat(option.isPresent()).isTrue();
 
-            option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
-            return option.get().enableOnly(new TestUserPrincipal(), TestSecurityConfig.CREATE_FEEDS);
+            option.get().enable(TEST_USER, TestSecurityConfig.EXPORT_FEEDS);
+            return option.get().enableOnly(TEST_USER, TestSecurityConfig.CREATE_FEEDS);
         }, TestSecurityConfig.ADMIN);
 
         assertThat(changed).isTrue();
@@ -184,6 +185,25 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             }
 
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-        }, TestSecurityConfig.TEST);
+        }, TEST_USER);
+    }
+    
+    @Test(dependsOnMethods = "testEnableOnlyCreate")
+    public void testAdminPrincipalsAllowedAll() throws Exception {
+        this.metadata.read(() -> {
+            Optional<AllowedActions> option = this.provider.getAllowedActions(AllowedActions.SERVICES);
+
+            assertThat(option.isPresent()).isTrue();
+
+            option.ifPresent(actions -> {
+                Set<Principal> createPrincs = actions.getPrincipalsAllowedAll(TestSecurityConfig.CREATE_FEEDS);
+                Set<Principal> accessPrincs = actions.getPrincipalsAllowedAll(TestSecurityConfig.CREATE_FEEDS);
+                Set<Principal> exportPrincs = actions.getPrincipalsAllowedAll(TestSecurityConfig.EXPORT_FEEDS);
+                
+                assertThat(createPrincs).contains(TEST_USER);
+                assertThat(accessPrincs).contains(TEST_USER);
+                assertThat(exportPrincs).doesNotContain(TEST_USER);
+            });
+        }, TestSecurityConfig.ADMIN);
     }
 }

@@ -28,20 +28,20 @@ import java.util.List;
  * Represents a Search result
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class SearchResultImpl implements SearchResult {
+public  class SearchResultImpl<T extends Object> implements SearchResult<T> {
 
-    private List<? extends Object> data;
+    private List<T> data;
     private Long recordsTotal;
     private Long recordsFiltered;
     private String error;
 
     @Override
-    public List<? extends Object> getData() {
+    public List<T> getData() {
         return data;
     }
 
     @Override
-    public void setData(List<? extends Object> data) {
+    public void setData(List<T> data) {
         this.data = data;
     }
 

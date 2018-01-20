@@ -100,6 +100,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -159,12 +160,19 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Inject
     private MetadataAccess metadataAccess;
 
-    private Map<String,BatchJobExecution> latestStreamingJobByFeedName = new ConcurrentHashMap<>();
+    private Map<String, BatchJobExecution> latestStreamingJobByFeedName = new ConcurrentHashMap<>();
 
     @Inject
     private ClusterService clusterService;
 
     private BatchStatusChangeReceiver batchStatusChangeReceiver = new BatchStatusChangeReceiver();
+
+
+    /**
+     * Latest start time for feed.
+     * This is used to speed up the findLatestJobForFeed query limiting the result set by the last known start time
+     */
+    private Map<String, Long> latestStartTimeByFeedName = new ConcurrentHashMap<>();
 
 
     @Autowired
@@ -185,8 +193,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     @PostConstruct
-    private void init(){
-        clusterService.subscribe(batchStatusChangeReceiver);
+    private void init() {
+        clusterService.subscribe(batchStatusChangeReceiver, FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE);
     }
 
     @Override
@@ -402,24 +410,41 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+        JpaBatchJobExecution jobExecution = null;
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)
             if (event.isStartOfJob() || event.isFinalJobEvent()) {
-                return getOrCreateStreamJobExecution(event, feed);
-            } else {
-                return null;
+                jobExecution = getOrCreateStreamJobExecution(event, feed);
             }
         } else {
             if (feed == null) {
                 feed = opsManagerFeedRepository.findByName(event.getFeedName());
             }
             if (isProcessBatchEvent(event, feed)) {
-                return getOrCreateBatchJobExecution(event, feed);
-            } else {
-                return null;
+                jobExecution = getOrCreateBatchJobExecution(event, feed);
             }
         }
 
+        return jobExecution;
+
+    }
+
+    @Override
+    public void updateFeedJobStartTime(BatchJobExecution jobExecution,OpsManagerFeed feed){
+        if(jobExecution != null){
+            //add the starttime to the map
+            Long startTime = jobExecution.getStartTime().getMillis();
+            if(startTime != null) {
+                if (!latestStartTimeByFeedName.containsKey(startTime)) {
+                    latestStartTimeByFeedName.put(feed.getName(), startTime);
+                } else {
+                    Long previousStartTime = latestStartTimeByFeedName.get(startTime);
+                    if (startTime > previousStartTime) {
+                        latestStartTimeByFeedName.put(feed.getName(), startTime);
+                    }
+                }
+            }
+        }
     }
 
     private BatchRelatedFlowFile getOtherBatchJobFlowFile(ProvenanceEventRecordDTO event) {
@@ -539,17 +564,43 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         return jobExecution;
     }
 
+    public void markStreamingFeedAsStopped(String feed) {
+        BatchJobExecution jobExecution = findLatestJobForFeed(feed);
+        if (jobExecution != null && !jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STOPPED)) {
+            log.info("Stopping Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
+            jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
+            jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            jobExecution.setEndTime(DateTimeUtil.getNowUTCTime());
+            save(jobExecution);
+            //update the cache
+            latestStreamingJobByFeedName.put(feed, jobExecution);
+        }
+    }
+
+    public void markStreamingFeedAsStarted(String feed) {
+        BatchJobExecution jobExecution = findLatestJobForFeed(feed);
+        //ensure its Running
+        if (!jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
+            log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
+            jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
+            jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
+            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            jobExecution.setStartTime(DateTimeUtil.getNowUTCTime());
+            save(jobExecution);
+            latestStreamingJobByFeedName.put(feed, jobExecution);
+        }
+    }
 
     private JpaBatchJobExecution getOrCreateStreamJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         boolean isNew = false;
         try {
             BatchJobExecution latestJobExecution = latestStreamingJobByFeedName.get(event.getFeedName());
-            if(latestJobExecution == null) {
+            if (latestJobExecution == null) {
                 latestJobExecution = findLatestJobForFeed(event.getFeedName());
-            }
-            else {
-                if(clusterService.isClustered()){
+            } else {
+                if (clusterService.isClustered()) {
                     latestJobExecution = jobExecutionRepository.findOne(latestJobExecution.getJobExecutionId());
                 }
             }
@@ -564,17 +615,17 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                     finishJob(tempFailedEvent, (JpaBatchJobExecution) latestJobExecution);
                     latestJobExecution.setExitMessage("Failed Running Batch event as this Feed has now become a Stream");
                     save(latestJobExecution);
-                }
 
+                }
                 jobExecution = createNewJobExecution(event, feed);
                 jobExecution.setStream(true);
-                latestStreamingJobByFeedName.put(event.getFeedName(),jobExecution);
+                latestStreamingJobByFeedName.put(event.getFeedName(), jobExecution);
                 log.info("Created new Streaming Job Execution with id of {} and starting event {} ", jobExecution.getJobExecutionId(), event);
             } else {
                 jobExecution = (JpaBatchJobExecution) latestJobExecution;
             }
-            if(jobExecution != null){
-                latestStreamingJobByFeedName.put(event.getFeedName(),jobExecution);
+            if (jobExecution != null) {
+                latestStreamingJobByFeedName.put(event.getFeedName(), jobExecution);
             }
         } catch (OptimisticLockException e) {
             //read
@@ -669,7 +720,14 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Override
     public BatchJobExecution findLatestJobForFeed(String feedName) {
-        List<JpaBatchJobExecution> jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
+        List<JpaBatchJobExecution> jobExecutions = null;
+        Long latestStartTime = latestStartTimeByFeedName.get(feedName);
+        if(latestStartTime != null) {
+            jobExecutions = jobExecutionRepository.findLatestJobForFeedWithStartTimeLimit(feedName,latestStartTime);
+        }
+        if(jobExecutions == null) {
+            jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
+        }
         if (jobExecutions != null && !jobExecutions.isEmpty()) {
             return jobExecutions.get(0);
         } else {
@@ -776,7 +834,8 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
                              feed.name.as("feedName"),
                              feed.isStream.as("isStream"),
                              feedStats.runningFeedFlows.as("runningFeedFlows"),
-                             jobExecution.jobExecutionId.count().as("count"));
+                             jobExecution.jobExecutionId.count().as("count"),
+                             feedStats.lastActivityTimestamp.max().as("lastActivityTimestamp"));
 
         JPAQuery<?> query = factory.select(expr)
             .from(feed)
@@ -786,7 +845,17 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             .where(whereBuilder)
             .groupBy(jobExecution.status, feed.id, feed.name, feed.isStream, feedStats.runningFeedFlows);
         List<BatchAndStreamingJobStatusCount> stats = (List<BatchAndStreamingJobStatusCount>) query.fetch();
-        return stats;
+
+        return stats.stream().map(s -> {
+            if (s.isStream()
+                && (BatchJobExecution.RUNNING_DISPLAY_STATUS.equalsIgnoreCase(s.getStatus())
+                    || BatchJobExecution.JobStatus.STARTING.name().equalsIgnoreCase(s.getStatus())
+                    || BatchJobExecution.JobStatus.STARTED.name().equalsIgnoreCase(s.getStatus())) && s.getRunningFeedFlows() == 0L) {
+                ((JpaBatchAndStreamingJobStatusCounts) s).setStatus(BatchJobExecution.JobStatus.STOPPED.name());
+            }
+            return s;
+        }).collect(Collectors.toList());
+        //  return stats;
 
     }
 
@@ -960,7 +1029,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Override
     public void notifySuccess(BatchJobExecution jobExecution, OpsManagerFeed feed, String status) {
-        jobExecutionChangedNotifier.notifySuccess(jobExecution,feed, status);
+        jobExecutionChangedNotifier.notifySuccess(jobExecution, feed, status);
     }
 
     @Override
@@ -1058,21 +1127,21 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     @Override
     public void notifyBatchToStream(BatchJobExecution jobExecution, OpsManagerFeed feed) {
         FeedOperationBatchStatusChange change = new FeedOperationBatchStatusChange(feed.getId(), feed.getName(), jobExecution.getJobExecutionId(), FeedOperationBatchStatusChange.BatchType.STREAM);
-       clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE,change);
+        clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE, change);
     }
 
     @Override
     public void notifyStreamToBatch(BatchJobExecution jobExecution, OpsManagerFeed feed) {
         FeedOperationBatchStatusChange change = new FeedOperationBatchStatusChange(feed.getId(), feed.getName(), jobExecution.getJobExecutionId(), FeedOperationBatchStatusChange.BatchType.BATCH);
-        clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE,change);
+        clusterService.sendMessageToOthers(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE, change);
     }
 
-    private  class BatchStatusChangeReceiver implements ClusterServiceMessageReceiver{
+    private class BatchStatusChangeReceiver implements ClusterServiceMessageReceiver {
 
         @Override
         public void onMessageReceived(String from, ClusterMessage message) {
-            if(FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE.equalsIgnoreCase(message.getType())){
-                FeedOperationBatchStatusChange change = (FeedOperationBatchStatusChange)message.getMessage();
+            if (FeedOperationBatchStatusChange.CLUSTER_MESSAGE_TYPE.equalsIgnoreCase(message.getType())) {
+                FeedOperationBatchStatusChange change = (FeedOperationBatchStatusChange) message.getMessage();
                 latestStreamingJobByFeedName.remove(change.getFeedName());
             }
 

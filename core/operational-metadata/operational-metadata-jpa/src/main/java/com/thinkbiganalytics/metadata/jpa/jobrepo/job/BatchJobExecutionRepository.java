@@ -40,7 +40,7 @@ import java.util.Set;
 @RepositoryType(BatchJobExecutionSecuringRepository.class)
 public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobExecution, Long>, QueryDslPredicateExecutor<JpaBatchJobExecution> {
 
-    @Query(value = "select job from JpaBatchJobExecution as job "
+    @Query(value = "select distinct job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
                    + "where nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);
@@ -92,6 +92,19 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "order by job.jobExecutionId DESC ")
     List<JpaBatchJobExecution> findLatestJobForFeed(@Param("feedName") String feedName);
 
+
+    @Query("select job from JpaBatchJobExecution as job "
+           + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + "where feed.name = :feedName "
+           + "and job.startTimeMillis = (SELECT max(job2.startTimeMillis)"
+           + "     from JpaBatchJobExecution as job2 "
+           + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed2 on feed2.id = jobInstance2.feed.id "
+           + "where feed2.name = :feedName "
+           + "and job2.startTimeMillis >= :startTime)"
+           + "order by job.jobExecutionId DESC ")
+    List<JpaBatchJobExecution> findLatestJobForFeedWithStartTimeLimit(@Param("feedName") String feedName, @Param("startTime") Long startTime);
 
     @Query("select job from JpaBatchJobExecution as job "
            + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "

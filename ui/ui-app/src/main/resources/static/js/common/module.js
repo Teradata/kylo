@@ -1,4 +1,4 @@
-define(['angular','common/module-name', 'kylo-services','common/dir-pagination/dirPagination-arrows'], function (angular,moduleName) {
+define(['angular','common/module-name', 'kylo-services','common/dir-pagination/dirPagination-arrows','./common.module'], function (angular,moduleName) {
 
     var module = angular.module(moduleName, ['kylo.services','templates.navigate-before.html', 'templates.navigate-first.html', 'templates.navigate-last.html', 'templates.navigate-next.html']);
     //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6

@@ -1,15 +1,7 @@
-define(["require", "exports", "../services/wrangler-event-type", "./wrangler-table-model", "fattable"], function (require, exports, wrangler_event_type_1, wrangler_table_model_1) {
+define(["require", "exports", "angular", "jquery", "underscore", "../services/wrangler-event-type", "./visual-query-painter.service", "./wrangler-table-model", "fattable"], function (require, exports, angular, $, _, wrangler_event_type_1, visual_query_painter_service_1, wrangler_table_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
-    /**
-     * Left and right padding for normal columns.
-     */
-    var COLUMN_PADDING = 28;
-    /**
-     * Left padding for the first column.
-     */
-    var COLUMN_PADDING_FIRST = 24;
     /**
      * Maximum width of a column including padding.
      */
@@ -19,29 +11,13 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
      */
     var COLUMN_WIDTH_MIN = 150;
     /**
-     * Default font.
+     * Width of the domain type icon.
      */
-    var DEFAULT_FONT = "10px sans-serif";
-    /**
-     * Height of header row.
-     */
-    var HEADER_HEIGHT = 56;
-    /**
-     * HTML template for header cells.
-     */
-    var HEADER_TEMPLATE = "js/feed-mgr/visual-query/transform-data/visual-query-table/visual-query-table-header.html";
+    var DOMAIN_TYPE_WIDTH = 30;
     /**
      * Width of the menu element in the header.
      */
     var MENU_WIDTH = 52;
-    /**
-     * Pixel unit.
-     */
-    var PIXELS = "px";
-    /**
-     * Height of data rows.
-     */
-    var ROW_HEIGHT = 48;
     /**
      * Manages a data table for viewing the results of transformations.
      *
@@ -54,14 +30,13 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
      * @param $timeout the Angular timeout service
      * @param uiGridConstants the ui-grid constants
      */
-    var VisualQueryTable = (function () {
-        function VisualQueryTable($scope_, $compile_, $element, $templateCache_, $templateRequest_, $timeout_, dataService, tableService, uiGridConstants_) {
+    var VisualQueryTable = /** @class */ (function () {
+        function VisualQueryTable($scope_, $element, $timeout_, painter, dataService, tableService, uiGridConstants_) {
+            var _this = this;
             this.$scope_ = $scope_;
-            this.$compile_ = $compile_;
             this.$element = $element;
-            this.$templateCache_ = $templateCache_;
-            this.$templateRequest_ = $templateRequest_;
             this.$timeout_ = $timeout_;
+            this.painter = painter;
             this.dataService = dataService;
             this.tableService = tableService;
             this.uiGridConstants_ = uiGridConstants_;
@@ -78,33 +53,42 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
              * @type {fattable.TableView}
              */
             this.table_ = null;
-            var self = this;
+            this.painter.delegate = this;
             // Refresh table when model changes
-            var onColumnsChange = angular.bind(this, this.onColumnsChange);
-            var onRowsChange = angular.bind(this, this.onRowsChange);
-            var refresh = angular.bind(this, this.refresh);
             tableService.registerTable(function (event) {
                 if (event.type === wrangler_event_type_1.WranglerEventType.REFRESH) {
-                    self.refresh();
+                    _this.refresh();
                 }
             });
-            $scope_.$watch(function () {
-                return self.columns;
-            }, function () {
-                onColumnsChange();
-                refresh();
+            $scope_.$watchCollection(function () { return _this.columns; }, function () {
+                _this.onColumnsChange();
+                _this.refresh();
             });
-            $scope_.$watch(function () {
-                return self.rows;
-            }, function () {
-                onRowsChange();
-                refresh();
+            $scope_.$watchCollection(function () { return _this.domainTypes; }, function () {
+                _this.painter.domainTypes = _this.domainTypes.sort(function (a, b) { return (a.title < b.title) ? -1 : 1; });
+                _this.refresh();
             });
+            $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
+            $scope_.$watch(function () { return _this.options ? _this.options.rowFont : null; }, function () { return painter.rowFont = _this.options.rowFont; });
+            $scope_.$watchCollection(function () { return _this.rows; }, function () {
+                _this.onRowsChange();
+            });
+            $scope_.$watchCollection(function () { return _this.validationResults; }, function () {
+                _this.onValidationResultsChange();
+                _this.refresh();
+            });
+            var resizeTimeoutPromise = null;
+            var resizeTimeout = function (callback, interval) {
+                if (resizeTimeoutPromise != null) {
+                    _this.$timeout_.cancel(resizeTimeoutPromise);
+                }
+                resizeTimeoutPromise = _this.$timeout_(callback, interval);
+            };
             // Refresh table on resize
-            $scope_.$watch(function () { return $element.height(); }, refresh);
-            $scope_.$watch(function () { return $element.width(); }, refresh);
+            $scope_.$watch(function () { return $element.height(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
+            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
             // Listen for destroy event
-            $scope_.$on("destroy", function () { return self.$onDestroy(); });
+            $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }
         VisualQueryTable.prototype.$onDestroy = function () {
             this.tableService.unsubscribe();
@@ -115,41 +99,21 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
             this.init(this.$element);
         };
         /**
-         * Gets the font for the header row.
-         *
-         * @returns {string}
-         */
-        VisualQueryTable.prototype.getHeaderFont = function () {
-            return (angular.isObject(this.options) && angular.isString(this.options.headerFont)) ? this.options.headerFont : DEFAULT_FONT;
-        };
-        /**
-         * Gets the font for the data rows.
-         *
-         * @returns {string}
-         */
-        VisualQueryTable.prototype.getRowFont = function () {
-            return (angular.isObject(this.options) && angular.isString(this.options.rowFont)) ? this.options.rowFont : DEFAULT_FONT;
-        };
-        /**
          * Initializes the table.
          *
          * @param {jQuery} element the table element
          */
         VisualQueryTable.prototype.init = function (element) {
-            var self = this;
-            this.$templateRequest_(HEADER_TEMPLATE)
-                .then(function () {
-                self.table_ = fattable({
-                    container: element.get(0),
-                    model: new wrangler_table_model_1.WranglerTableModel(self.dataService),
-                    nbRows: 0,
-                    rowHeight: ROW_HEIGHT,
-                    headerHeight: HEADER_HEIGHT,
-                    painter: self,
-                    columnWidths: [0]
-                });
-                self.$timeout_(angular.bind(self, self.refresh), 500);
+            this.table_ = fattable({
+                container: element.get(0),
+                model: new wrangler_table_model_1.WranglerTableModel(this.dataService),
+                nbRows: 0,
+                rowHeight: visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT,
+                headerHeight: visual_query_painter_service_1.VisualQueryPainterService.HEADER_HEIGHT,
+                painter: this.painter,
+                columnWidths: [0]
             });
+            this.$timeout_(this.refresh.bind(this), 500);
         };
         /**
          * Redraws the table.
@@ -175,8 +139,9 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
             // Update table properties
             var rowCount = angular.isArray(this.dataService.rows_) ? this.dataService.rows_.length : 0;
             this.table_.nbRows = rowCount;
-            this.table_.H = ROW_HEIGHT * rowCount;
+            this.table_.H = visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT * rowCount;
             // Rebuild table
+            this.painter.hideTooltip();
             this.table_.setup();
         };
         /**
@@ -207,7 +172,6 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
         /**
          * Gets a 2D rending context for calculating text width.
          *
-         * @private
          * @returns {CanvasRenderingContext2D} a 2D rendering context
          */
         VisualQueryTable.prototype.get2dContext = function () {
@@ -224,27 +188,28 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
         /**
          * Calculates the width for every column.
          *
-         * @private
          * @returns {Array.<number>} the column widths
          */
         VisualQueryTable.prototype.getColumnWidths = function () {
+            var _this = this;
             // Skip if no columns
             if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
                 return [];
             }
             // Determine column widths based on header size
             var context = this.get2dContext();
-            context.font = this.getHeaderFont();
-            var headerWidths = _.map(this.dataService.columns_, function (column, index) {
-                var textWidth = context.measureText(column.displayName).width;
-                var padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
-                return Math.ceil(textWidth + padding + MENU_WIDTH);
+            context.font = this.painter.headerFont;
+            var headerWidths = this.dataService.columns_.map(function (column, index) {
+                var textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
+                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 2;
+                var menuWidth = (_this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
+                return Math.ceil(textWidth + padding + menuWidth);
             });
             // Determine column widths based on row sampling
-            context.font = this.getRowFont();
+            context.font = this.painter.rowFont;
             var rowWidths = _.map(this.dataService.columns_, function (column, index) {
                 var textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
-                var padding = (index === 0) ? COLUMN_PADDING_FIRST : COLUMN_PADDING * 2;
+                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 2;
                 return Math.ceil(textWidth + padding);
             });
             // Calculate total width
@@ -283,7 +248,7 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
             var self = this;
             // Filter rows
             this.dataService.rows_ = _.filter(this.rows, function (row) {
-                return _.every(self.dataService.columns_, function (column) {
+                return _.every(self.dataService.columns_, function (column, index) {
                     return _.every(column.filters, function (filter) {
                         if (angular.isUndefined(filter.term) || filter.term === null) {
                             return true;
@@ -292,19 +257,19 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
                             if (angular.isUndefined(filter.regex)) {
                                 filter.regex = new RegExp(filter.term);
                             }
-                            return filter.regex.test(row[column.name]);
+                            return filter.regex.test(row[index]);
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.LESS_THAN) {
-                            return row[column.name] < filter.term;
+                            return row[index] < filter.term;
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.GREATER_THAN) {
-                            return row[column.name] > filter.term;
+                            return row[index] > filter.term;
                         }
                         else if (filter.condition === self.uiGridConstants_.filter.EXACT) {
                             if (angular.isUndefined(filter.regex)) {
                                 filter.regex = new RegExp("^" + filter.term + "$");
                             }
-                            return filter.regex.test(row[column.name]);
+                            return filter.regex.test(row[index]);
                         }
                         else {
                             return false;
@@ -314,136 +279,44 @@ define(["require", "exports", "../services/wrangler-event-type", "./wrangler-tab
             });
             // Sort rows
             if (angular.isNumber(this.dataService.sortIndex_) && this.dataService.sortIndex_ < this.dataService.columns_.length) {
-                var field_1 = this.dataService.columns_[this.dataService.sortIndex_].name;
+                var column_1 = this.dataService.sortIndex_;
                 var lessThan_1 = (this.dataService.sortDirection_ === VisualQueryTable.ASC) ? -1 : 1;
                 var greaterThan_1 = -lessThan_1;
                 this.dataService.rows_.sort(function (a, b) {
-                    if (a[field_1] === b[field_1]) {
+                    if (a[column_1] === b[column_1]) {
                         return 0;
                     }
                     else {
-                        return (a[field_1] < b[field_1]) ? lessThan_1 : greaterThan_1;
+                        return (a[column_1] < b[column_1]) ? lessThan_1 : greaterThan_1;
                     }
                 });
             }
         };
+        VisualQueryTable.prototype.onValidationResultsChange = function () {
+            this.dataService.validationResults = this.validationResults;
+        };
+        VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
+        /**
+         * Indicates a column should be sorted in ascending order.
+         */
+        VisualQueryTable.ASC = "asc";
+        /**
+         * Indicates a column should be sorted in descending order.
+         */
+        VisualQueryTable.DESC = "desc";
         return VisualQueryTable;
     }());
-    /**
-     * Indicates a column should be sorted in ascending order.
-     */
-    VisualQueryTable.ASC = "asc";
-    /**
-     * Indicates a column should be sorted in descending order.
-     */
-    VisualQueryTable.DESC = "desc";
     exports.VisualQueryTable = VisualQueryTable;
-    angular.extend(VisualQueryTable.prototype, fattable.Painter.prototype, fattable.SyncTableModel.prototype, {
-        /**
-         * Will be called whenever a cell is put out of the DOM.
-         *
-         * @param {HTMLElement} cellDiv the cell <div> element
-         */
-        cleanUpCell: function (cellDiv) {
-        },
-        /**
-         * Will be called whenever a column is put out of the DOM.
-         *
-         * @param {HTMLElement} headerDiv the header <div> element
-         */
-        cleanUpHeader: function (headerDiv) {
-        },
-        /**
-         * Fills and style a cell div.
-         *
-         * @param {HTMLElement} cellDiv the cell <div> element
-         * @param {VisualQueryTableCell|null} cell the cell object
-         */
-        fillCell: function (cellDiv, cell) {
-            // Adjust padding based on column number
-            if (cell !== null && cell.column === 0) {
-                cellDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
-                cellDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                cellDiv.style.paddingLeft = COLUMN_PADDING + PIXELS;
-                cellDiv.style.paddingRight = COLUMN_PADDING + PIXELS;
-            }
-            // Set contents
-            if (cell === null) {
-                cellDiv.textContent = "";
-                cellDiv.title = "";
-            }
-            else if (cell.value !== null && cell.value.sqltypeName && cell.value.sqltypeName.startsWith("PERIOD")) {
-                var value = "(" + cell.value.attributes.join(", ") + ")";
-                cellDiv.textContent = value;
-                cellDiv.title = value;
-            }
-            else {
-                cellDiv.textContent = cell.value;
-                cellDiv.title = cell.value;
-            }
-        },
-        /**
-         * Fills and style a column div.
-         *
-         * @param {HTMLElement} headerDiv the header <div> element
-         * @param {VisualQueryTableHeader|null} header the column header
-         */
-        fillHeader: function (headerDiv, header) {
-            // Adjust padding based on column number
-            if (header !== null && header.index === 0) {
-                headerDiv.style.paddingLeft = COLUMN_PADDING_FIRST + PIXELS;
-                headerDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                headerDiv.style.paddingLeft = COLUMN_PADDING + PIXELS;
-                headerDiv.style.paddingRight = COLUMN_PADDING + PIXELS;
-            }
-            // Update scope in a separate thread
-            var $scope = angular.element(headerDiv).scope();
-            var self = this;
-            if ($scope.header !== header) {
-                $scope.header = header;
-                $scope.header.unsort = this.unsort.bind(this);
-                $scope.table = self;
-            }
-        },
-        /**
-         * Setup method are called at the creation of the cells. That is during initialization and for all window resize event.
-         *
-         * Cells are recycled.
-         *
-         * @param {HTMLElement} cellDiv the cell <div> element
-         */
-        setupCell: function (cellDiv) {
-            cellDiv.style.font = this.getRowFont();
-            cellDiv.style.lineHeight = ROW_HEIGHT + PIXELS;
-        },
-        /**
-         * Setup method are called at the creation of the column header. That is during initialization and for all window resize event.
-         *
-         * Columns are recycled.
-         *
-         * @param {HTMLElement} headerDiv the header <div> element
-         */
-        setupHeader: function (headerDiv) {
-            // Set style attributes
-            headerDiv.style.font = this.getHeaderFont();
-            headerDiv.style.lineHeight = HEADER_HEIGHT + PIXELS;
-            // Load template
-            headerDiv.innerHTML = this.$templateCache_.get(HEADER_TEMPLATE);
-            this.$compile_(headerDiv)(this.$scope_.$new(true));
-        }
-    });
     angular.module(moduleName).directive("visualQueryTable", function () {
         return {
             bindToController: {
                 columns: "=*tableColumns",
+                domainTypes: "=*tableDomainTypes",
                 options: "=*tableOptions",
-                rows: "=*tableRows"
+                rows: "=*tableRows",
+                validationResults: "=*tableValidation"
             },
-            controller: ["$scope", "$compile", "$element", "$templateCache", "$templateRequest", "$timeout", "WranglerDataService", "WranglerTableService", "uiGridConstants", VisualQueryTable],
+            controller: VisualQueryTable,
             restrict: "E",
             link: function ($scope, element, attrs, controller) {
                 controller.$onInit();

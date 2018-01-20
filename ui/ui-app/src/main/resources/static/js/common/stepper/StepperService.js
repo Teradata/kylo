@@ -42,11 +42,24 @@ define(['angular','common/module-name'], function (angular,moduleName) {
          */
         this.STEP_STATE_CHANGED_EVENT = 'STEP_STATE_CHANGED_EVENT';
 
+        /**
+         * Map of stepper Name  -> to Array of Steps
+         * @type {{}}
+         */
         this.steppers = {};
+
+        /**
+         * Map of stepper name  -> {stepName,step}
+         * populated only with self.assignStepNames
+         * @type {{}}
+         */
+        this.stepperNameMap = {};
+
         this.newNameIndex = 0;
         this.registerStepper = function (name, totalSteps) {
             var steps = [];
             self.steppers[name] = steps;
+            this.stepperNameMap[name] = {};
             var lastIndex = totalSteps - 1;
             var disabled = false;
             for (var i = 0; i < totalSteps; i++) {
@@ -56,6 +69,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
                 steps[i] = {
                     disabled: disabled,
+                    stepName:null,
                     active: true,
                     number: (i + 1),
                     index: i,
@@ -74,7 +88,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                         }
                         else {
                             this.type = 'step-default';
-                            this.icon = 'number' + (this.number);
+                            this.icon = 'number'+ (this.number);
                             this.iconSize = 30;
                             this.iconStyle = '';
                         }
@@ -87,8 +101,36 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                 };
             }
         }
+        this.assignStepName = function(name, index, stepName){
+            var step = self.getStep(name,index);
+            if(step != null && step.stepName == null){
+                step.stepName = stepName;
+                self.assignedStepName(name,step)
+            }
+        };
+        this.assignedStepName = function(name, step){
+            if(step != null && step.stepName != null){
+                 //register the step to the name map index
+                self.stepperNameMap[name][step.stepName] = step;
+            }
+        };
+        /**
+         * get a step by its name.
+         * Could be null
+         * @param stepperName
+         * @param stepName
+         */
+        this.getStepByName=function(stepperName,stepName){
+            if(angular.isDefined(self.stepperNameMap[stepperName])){
+                return  self.stepperNameMap[stepperName][stepName];
+            }
+            else {
+                return null;
+            }
+        };
         this.deRegisterStepper = function (name) {
             delete self.steppers[name];
+            delete self.stepperNameMap[name]
         }
         this.newStepperName = function () {
             self.newNameIndex++;
@@ -167,13 +209,26 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
         }
 
-        this.arePreviousStepsComplete = function (stepper, index) {
-            var complete = false;
+        this.arePreviousVisitedStepsComplete = function (stepper, index) {
+            var complete = true;
             var steps = self.steppers[stepper];
             for (var i = 0; i < index; i++) {
                 var step = steps[i];
-                if (step.active && step.complete && step.visited) {
-                    complete = true;
+                if (step.active && !step.complete && step.visited) {
+                    complete = false;
+                    break;
+                }
+            }
+            return complete;
+        }
+
+        this.arePreviousStepsComplete = function (stepper, index) {
+            var complete = true;
+            var steps = self.steppers[stepper];
+            for (var i = 0; i < index; i++) {
+                var step = steps[i];
+                if (step.active && !step.disabled && !step.complete) {
+                    complete = false;
                     break;
                 }
             }
@@ -181,12 +236,12 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         }
 
         this.arePreviousStepsVisited = function (stepper, index) {
-            var complete = false;
+            var complete = true;
             var steps = self.steppers[stepper];
             for (var i = 0; i < index; i++) {
                 var step = steps[i];
-                if (step.active && step.visited) {
-                    complete = true;
+                if (step.active && !step.visited) {
+                    complete = false;
                     break;
                 }
             }

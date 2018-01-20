@@ -24,22 +24,28 @@ import com.beust.jcommander.JCommander;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
+import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
-import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
-import com.thinkbiganalytics.spark.service.TransformJobTracker;
+import com.thinkbiganalytics.spark.service.JobTrackerService;
+import com.thinkbiganalytics.spark.service.SparkListenerService;
+import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.glassfish.hk2.api.Factory;
+import org.apache.spark.sql.jdbc.JdbcDialect;
+import org.apache.spark.sql.jdbc.JdbcDialects;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,9 +55,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.autoconfigure.web.ServerProperties;
 import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
+import org.springframework.boot.context.config.ConfigFileApplicationListener;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
+import org.springframework.boot.logging.LoggingApplicationListener;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.PropertySource;
@@ -61,7 +70,9 @@ import org.springframework.core.io.support.ResourcePropertySource;
 
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -85,7 +96,21 @@ public class SparkShellApp {
      * @param args the command-line arguments
      */
     public static void main(String[] args) {
-        final ApplicationContext context = SpringApplication.run(SparkShellApp.class, args);
+        final SpringApplication app = new SpringApplication(SparkShellApp.class);
+
+        // Ignore application listeners that will load kylo-services configuration
+        final List<ApplicationListener<?>> listeners = FluentIterable.from(app.getListeners())
+            .filter(Predicates.not(
+                Predicates.or(
+                    Predicates.instanceOf(ConfigFileApplicationListener.class),
+                    Predicates.instanceOf(LoggingApplicationListener.class)
+                )
+            ))
+            .toList();
+        app.setListeners(listeners);
+
+        // Start app
+        final ApplicationContext context = app.run(args);
 
         // Keep main thread running until the idle timeout
         context.getBean(IdleMonitorService.class).awaitIdleTimeout();
@@ -100,6 +125,14 @@ public class SparkShellApp {
     public EmbeddedServletContainerFactory embeddedServletContainer(final ServerProperties serverProperties, @Qualifier("sparkShellPort") final int serverPort) {
         serverProperties.setPort(serverPort);
         return new TomcatEmbeddedServletContainerFactory();
+    }
+
+    /**
+     * Gets the Hadoop File System.
+     */
+    @Bean
+    public FileSystem fileSystem() throws IOException {
+        return FileSystem.get(new Configuration());
     }
 
     /**
@@ -118,26 +151,29 @@ public class SparkShellApp {
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig jerseyConfig(final TransformService service) {
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
+    public ResourceConfig jerseyConfig(final TransformService transformService, final FileSystem fileSystem, final SparkLocatorService sparkLocatorService) {
+        final ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class);
+        config.packages("com.thinkbiganalytics.spark.rest");
         config.register(new AbstractBinder() {
             @Override
             protected void configure() {
-                bindFactory(new Factory<TransformService>() {
-                    @Override
-                    public void dispose(TransformService instance) {
-                        // nothing to do
-                    }
-
-                    @Override
-                    public TransformService provide() {
-                        return service;
-                    }
-                }).to(TransformService.class).in(RequestScoped.class);
+                bind(fileSystem).to(FileSystem.class);
+                bind(transformService).to(TransformService.class);
+                bind(sparkLocatorService).to(SparkLocatorService.class);
             }
         });
 
         return config;
+    }
+
+    /**
+     * Creates the job tracker service.
+     */
+    @Bean
+    public JobTrackerService jobTrackerService(@Nonnull final SparkScriptEngine sparkScriptEngine, @Nonnull final SparkListenerService sparkListenerService) {
+        final JobTrackerService jobTrackerService = new JobTrackerService(sparkScriptEngine.getClassLoader());
+        sparkListenerService.addSparkListener(jobTrackerService);
+        return jobTrackerService;
     }
 
     /**
@@ -252,13 +288,46 @@ public class SparkShellApp {
     }
 
     /**
+     * Gets the Spark context.
+     */
+    @Bean
+    public SparkContext sparkContext(@Nonnull final SparkScriptEngine engine) {
+        return engine.getSparkContext();
+    }
+
+    /**
+     * Creates a Spark locator service.
+     */
+    @Bean
+    public SparkLocatorService sparkLocatorService(final SparkContext sc, @Value("${spark.shell.datasources.exclude}") final String excludedDataSources,
+                                                   @Value("${spark.shell.datasources.include}") final String includedDataSources) {
+        final SparkLocatorService service = new SparkLocatorService();
+        service.setSparkClassLoader(sc.getClass().getClassLoader());
+        if (excludedDataSources != null && !excludedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(excludedDataSources.split(","));
+            service.excludeDataSources(dataSources);
+        }
+        if (includedDataSources != null && !includedDataSources.isEmpty()) {
+            final List<String> dataSources = Arrays.asList(includedDataSources.split(","));
+            service.includeDataSources(dataSources);
+        }
+        return service;
+    }
+
+    /**
      * Gets the Spark SQL context.
      *
      * @param engine the Spark script engine
      * @return the Spark SQL context
      */
     @Bean
-    public SQLContext sqlContext(final SparkScriptEngine engine) {
+    public SQLContext sqlContext(final SparkScriptEngine engine, @Nonnull final List<JdbcDialect> jdbcDialects) {
+        // Register JDBC dialects
+        for (final JdbcDialect dialect : jdbcDialects) {
+            JdbcDialects.registerDialect(dialect);
+        }
+
+        // Create SQL Context
         return engine.getSQLContext();
     }
 
@@ -275,10 +344,13 @@ public class SparkShellApp {
      */
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
-                                             final TransformJobTracker tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler) {
+                                             final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
+                                             final FileSystem fileSystem) {
         final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
+        service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
+        service.setValidator(validator);
         return service;
     }
 }

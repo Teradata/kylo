@@ -21,7 +21,7 @@
 
     <card-layout class="centered" >
         <header-section>
-            <div class="card-title" flex>{{vm.schema}}.{{vm.tableName}}</div>
+            <div class="card-title" flex style="margin-top: 10px">{{vm.datasource.name}} {{vm.schema}}.{{vm.tableName}}</div>
         </header-section>
 
         <body-section >
@@ -30,7 +30,7 @@
                 <md-tab>
                     <md-tab-label>
                         <div >
-                            Fields
+                            {{"views.table.Fields" | translate}}
                         </div>
                     </md-tab-label>
                     <md-tab-body>
@@ -39,20 +39,20 @@
                             <md-list class="list-item-table">
                                 <md-list-item >
                                     <div flex="40" class="item-column md-list-item-text table-column-header">
-                                       Field
+                                       {{"views.table.Field" | translate}}
                                     </div>
                                     <div flex="20" class="item-column md-list-item-text table-column-header">
-                                        Data Type
+                                        {{"views.table.DT" | translate}}
                                     </div>
                                     <div flex="40" class="item-column md-list-item-text table-column-header">
-                                        Description
+                                        {{"views.table.Description" | translate}}
                                     </div>
                                   <!--
                                   <div flex="20" class="item-column md-list-item-text table-column-header">
-                                       Primary Key
+                                       {{"views.table.PK" | translate}}
                                     </div>
                                     <div flex="20" class="item-column md-list-item-text table-column-header">
-                                       Nullable
+                                       {{"views.table.Nullable" | translate}}
                                     </div>
                                     -->
                                     <md-divider ng-if="!$last"></md-divider>
@@ -89,7 +89,7 @@
                 <md-tab>
                     <md-tab-label>
                         <div >
-                            Preview
+                            {{"views.table.Preview" | translate}}
                         </div>
                     </md-tab-label>
                     <md-tab-body>
@@ -99,7 +99,7 @@
                 <md-tab  >
                     <md-tab-label>
                         <div >
-                            Query
+                            {{"views.table.Query" | translate}}
                         </div>
                     </md-tab-label>
                     <md-tab-body>

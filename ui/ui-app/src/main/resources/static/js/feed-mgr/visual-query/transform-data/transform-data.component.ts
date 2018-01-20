@@ -3,11 +3,14 @@ import * as angular from "angular";
 import * as $ from "jquery";
 import * as _ from "underscore";
 
+import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {QueryEngine} from "../services/query-engine";
+import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {DataCategory} from "../wrangler/column-delegate";
+import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
+import {QueryEngine} from "../wrangler/query-engine";
 
 declare const CodeMirror: any;
-declare const StringUtils: any;
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
@@ -115,15 +118,31 @@ export class TransformDataComponent implements OnInit {
     sampleFormulas: { name: string, formula: string }[] = [];
 
     /**
+     * List of available domain types.
+     */
+    domainTypes: DomainType[] = [];
+
+    /**
+     * List of field policies for current transformation.
+     */
+    fieldPolicies: any[];
+
+    /**
      * Height offset from the top of the page.
      */
     heightOffset: string = "0";
 
     /**
+     * Validation results for current transformation.
+     */
+    tableValidation: TransformValidationResult[][];
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
-    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any,
-                SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any, StepperService: any, WindowUnloadService: any) {
+    constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
+                private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
+                StepperService: any, WindowUnloadService: WindowUnloadService) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -188,6 +207,7 @@ export class TransformDataComponent implements OnInit {
 
         // Wait for query engine to load
         const onLoad = () => {
+            let domainTypesLoaded = false;
             this.sampleFormulas = this.engine.sampleFormulas;
 
             if (angular.isArray(this.model.states) && this.model.states.length > 0) {
@@ -198,8 +218,39 @@ export class TransformDataComponent implements OnInit {
                 this.engine.setQuery(source, this.model.$datasources);
             }
 
-            // Load table data
-            this.query();
+            // Watch for changes to field policies
+            if (this.fieldPolicies == null) {
+                this.fieldPolicies = [];
+            }
+            this.engine.setFieldPolicies(this.fieldPolicies);
+
+            this.$scope.$watch(() => this.fieldPolicies, () => {
+                this.fieldPolicies.forEach(policy => {
+                    if (policy.name == null) {
+                        policy.name = policy.fieldName;
+                    }
+                    if (policy.fieldName !== policy.name) {
+                        policy.fieldName = policy.name;
+                    }
+                    if (policy.feedFieldName !== policy.name) {
+                        policy.feedFieldName = policy.name;
+                    }
+                });
+                this.engine.setFieldPolicies(this.fieldPolicies);
+                if (domainTypesLoaded) {
+                    this.query();
+                }
+            }, true);
+
+            // Fetch domain types
+            this.domainTypesService.findAll()
+                .then(domainTypes => {
+                    this.domainTypes = domainTypes;
+                    domainTypesLoaded = true;
+
+                    // Load table data
+                    this.query();
+                });
         };
 
         if (this.engine instanceof Promise) {
@@ -256,9 +307,9 @@ export class TransformDataComponent implements OnInit {
         //assign the editor to a variable on this object for future reference
         this.codemirrorEditor = _editor;
         //Set the width,height of the editor. Code mirror needs an explicit width/height
-        _editor.setSize(625, 25);
-        _editor.on("focus", () => _editor.setSize(625, "auto"));
-        _editor.on("blur", () => _editor.setSize(625, 25));
+        _editor.setSize(585, 25);
+        _editor.on("focus", () => _editor.setSize(585, "auto"));
+        _editor.on("blur", () => _editor.setSize(585, 25));
 
         //disable users ability to add new lines.  The Formula bar is only 1 line
         _editor.on("beforeChange", function (instance: any, change: any) {
@@ -413,6 +464,8 @@ export class TransformDataComponent implements OnInit {
         this.queryProgress = 0;
 
         // Query Spark shell service
+        let didUpdateColumns = false;
+
         const successCallback = function () {
             //mark the query as finished
             self.executingQuery = false;
@@ -433,14 +486,48 @@ export class TransformDataComponent implements OnInit {
         };
         const errorCallback = function (message: string) {
             // Display error message
-            let alert = self.$mdDialog.alert()
-                .parent($('body'))
-                .clickOutsideToClose(true)
-                .title("Error executing the query")
-                .textContent(message)
-                .ariaLabel("error executing the query")
-                .ok("Got it!");
-            self.$mdDialog.show(alert);
+            self.$mdDialog.show({
+                clickOutsideToClose: true,
+                controller: class {
+
+                    /**
+                     * Additional details about the error.
+                     */
+                    detailMessage = message;
+
+                    /**
+                     * Indicates that the detail message should be shown.
+                     */
+                    showDetail = false;
+
+                    static readonly $inject = ["$mdDialog"];
+
+                    constructor(private $mdDialog: angular.material.IDialogService) {
+                    }
+
+                    /**
+                     * Hides this dialog.
+                     */
+                    hide() {
+                        this.$mdDialog.hide();
+                    }
+                },
+                controllerAs: "dialog",
+                parent: angular.element("body"),
+                template: `
+                  <md-dialog arial-label="error executing the query" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">Error executing the query</h2>
+                      <p>There was a problem executing the query.</p>
+                      <md-button ng-if="!dialog.showDetail" ng-click="dialog.showDetail = true" style="margin: 0; padding: 0;">Show more</md-button>
+                      <p ng-if="dialog.showDetail">{{ dialog.detailMessage }}</p>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+            });
 
             // Reset state
             self.executingQuery = false;
@@ -452,6 +539,10 @@ export class TransformDataComponent implements OnInit {
         };
         const notifyCallback = function (progress: number) {
             self.queryProgress = progress * 100;
+            if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
+                didUpdateColumns = true;
+                self.updateGrid();
+            }
         };
 
         self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
@@ -463,11 +554,13 @@ export class TransformDataComponent implements OnInit {
 
         //transform the result to the agGrid model
         let columns: any = [];
+        let fieldPolicies = this.engine.getFieldPolicies();
         let profile = this.engine.getProfile();
 
-        angular.forEach(this.engine.getColumns(), function (col) {
-            let delegate = self.engine.createColumnDelegate(col.dataType, self);
-            let longestValue = _.find(profile, function (row: any) {
+        angular.forEach(this.engine.getColumns(), function (col, index) {
+            const delegate = self.engine.createColumnDelegate(col.dataType, self, col);
+            const fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
+            const longestValue = _.find(profile, function (row: any) {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });
 
@@ -475,9 +568,10 @@ export class TransformDataComponent implements OnInit {
                 dataType: col.dataType,
                 delegate: delegate,
                 displayName: col.displayName,
+                domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
                 filters: delegate.filters,
                 headerTooltip: col.hiveColumnLabel,
-                longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
+                longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
                 name: self.engine.getColumnName(col)
             });
         });
@@ -485,6 +579,7 @@ export class TransformDataComponent implements OnInit {
         //update the ag-grid
         this.tableColumns = columns;
         this.tableRows = this.engine.getRows();
+        this.tableValidation = this.engine.getValidationResults();
 
         this.updateCodeMirrorAutoComplete();
     }
@@ -512,27 +607,28 @@ export class TransformDataComponent implements OnInit {
     addColumnFilter(filter: any, column: any) {
         // Generate formula for filter
         let formula;
+        let safeTerm = (column.delegate.dataCategory === DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
         let verb;
 
         switch (filter.condition) {
             case this.uiGridConstants.filter.LESS_THAN:
-                formula = "filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(lessThan(" + column.field + ", " + safeTerm + "))";
                 verb = "less than";
                 break;
 
             case this.uiGridConstants.filter.GREATER_THAN:
-                formula = "filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(greaterThan(" + column.field + ", " + safeTerm + "))";
                 verb = "greater than";
                 break;
 
             case this.uiGridConstants.filter.EXACT:
-                formula = "filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                formula = "filter(equal(" + column.field + ", " + safeTerm + "))";
                 verb = "equal to";
                 break;
 
             case this.uiGridConstants.filter.CONTAINS:
                 const query = "%" + filter.term.replace("%", "%%") + "%";
-                formula = "filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))";
+                formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
                 verb = "containing";
                 break;
 
@@ -553,17 +649,17 @@ export class TransformDataComponent implements OnInit {
      */
     addFunction(formula: any, context: any) {
         this.addFilters();
-        this.pushFormula(formula, context);
-        this.query();
+        this.pushFormula(formula, context, true);
     };
 
     /**
      * Appends the specified formula to the current script.
      *
-     * @param {string} formula the formula
-     * @param {TransformContext} context the UI context for the transformation
+     * @param {string} formula - the formula
+     * @param {TransformContext} context - the UI context for the transformation
+     * @param {boolean} doQuery - true to immediately execute the query
      */
-    pushFormula(formula: any, context: any) {
+    pushFormula(formula: any, context: any, doQuery: boolean = false) {
         // Covert to a syntax tree
         this.ternServer.server.addFile("[doc]", formula);
         let file = this.ternServer.server.findFile("[doc]");
@@ -586,6 +682,10 @@ export class TransformDataComponent implements OnInit {
 
         // Add to function history
         this.functionHistory.push(context);
+
+        if (doQuery || this.engine.getRows() === null) {
+            this.query();
+        }
     };
 
     /**
@@ -632,6 +732,14 @@ export class TransformDataComponent implements OnInit {
             this.updateGrid();
         }
     };
+
+    /**
+     * Refreshes the table content.
+     */
+    resample() {
+        this.addFilters();
+        this.query();
+    }
 
     //noinspection JSUnusedGlobalSymbols
     onUndo() {
@@ -702,14 +810,15 @@ export class TransformDataComponent implements OnInit {
         let fields = this.engine.getFields();
 
         if (fields !== null) {
-            this.FeedService.setTableFields(fields);
+            this.FeedService.setTableFields(fields, this.engine.getFieldPolicies());
+            this.FeedService.syncTableFieldPolicyNames();
             this.engine.save();
             deferred.resolve(true);
         } else {
-            let self = this;
-            this.query().then(function () {
-                self.FeedService.setTableFields(self.engine.getFields());
-                self.engine.save();
+            this.query().then(() => {
+                this.FeedService.setTableFields(this.engine.getFields(), this.engine.getFieldPolicies());
+                this.FeedService.syncTableFieldPolicyNames();
+                this.engine.save();
                 deferred.resolve(true);
             });
         }
@@ -727,17 +836,47 @@ export class TransformDataComponent implements OnInit {
             this.engine.limit(1000);
         }
     }
+
+    /**
+     * Sets the domain type for the specified field.
+     *
+     * @param columnIndex - the field index
+     * @param domainTypeId - the domain type id
+     */
+    setDomainType(columnIndex: number, domainTypeId: string) {
+        const domainType: any = (domainTypeId != null) ? this.domainTypes.find(domainType => domainType.id === domainTypeId) : {fieldPolicy: {standardization: null, validation: null}};
+        if (domainType) {
+            const fieldPolicies = (this.engine.getFieldPolicies() !== null) ? this.engine.getFieldPolicies() : [];
+            this.fieldPolicies = this.engine.getColumns().map((column, index) => {
+                let fieldPolicy: any;
+                if (index < fieldPolicies.length) {
+                    fieldPolicy = fieldPolicies[index];
+                } else {
+                    fieldPolicy = this.FeedService.newTableFieldPolicy(column.hiveColumnLabel);
+                    fieldPolicy.fieldName = column.hiveColumnLabel;
+                    fieldPolicy.feedFieldName = column.hiveColumnLabel;
+                }
+
+                if (index === columnIndex) {
+                    this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
+                }
+
+                return fieldPolicy;
+            });
+        }
+    }
 }
 
 angular.module(moduleName).component("thinkbigVisualQueryTransform", {
     bindings: {
         engine: "=",
+        fieldPolicies: "<?",
         heightOffset: "@",
         model: "=",
         stepIndex: "@"
     },
-    controller: ["$scope", "$element", "$q", "$mdDialog", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService", "WindowUnloadService",
-        TransformDataComponent],
+    controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
+        "WindowUnloadService", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"

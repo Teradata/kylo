@@ -1,19 +1,22 @@
 define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
-    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService) {
+    var controller = function ($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService,AccessControlService) {
         var self = this;
+
+        self.allowEdit = false;
 
         /**
          * The current template we are editing
          * @type {null}
          */
         this.template = SlaEmailTemplateService.template;
+        this.emailAddress = '';
 
         this.queriedTemplate = null;
         this.isDefault = false;
 
         var templateId = $transition$.params().emailTemplateId;
-        if(angular.isDefined(templateId) && (self.template == null || angular.isUndefined(self.template))){
+        if(angular.isDefined(templateId) && templateId != null && (self.template == null || angular.isUndefined(self.template))){
             self.queriedTemplate = null;
             SlaEmailTemplateService.getExistingTemplates().then(function() {
                 self.template = SlaEmailTemplateService.getTemplate(templateId);
@@ -32,6 +35,11 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             self.queriedTemplate = angular.copy(self.template);
             self.isDefault = self.queriedTemplate.default
         }
+        else {
+        //redirect back to email template list page
+            StateService.FeedManager().Sla().navigateToEmailTemplates();
+        }
+
 
         /**
          * the list of available sla actions the template(s) can be assigned to
@@ -47,11 +55,33 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         this.validate = function () {
 
             SlaEmailTemplateService.validateTemplate(self.template.subject,self.template.template).then(function (response) {
+                response.data.sendTest = false;
                 showTestDialog(response.data);
             });
 
         }
 
+        this.sendTestEmail = function() {
+
+            SlaEmailTemplateService.sendTestEmail(self.emailAddress, self.template.subject, self.template.template).then(function(response){
+                response.data.sendTest = true;
+                if(response.data.success){
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Successfully sent the template')
+                            .hideDelay(3000)
+                    );
+                }
+                else {
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Error sending the template ')
+                            .hideDelay(3000)
+                    );
+                    showTestDialog(response.data);
+                }
+            })
+        }
 
 
         this.saveTemplate = function () {
@@ -79,10 +109,49 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
            SlaEmailTemplateService.save(self.template).then(successFn, errorFn);
         }
 
+
+        this.exampleTemplate = function(){
+            self.template.subject = 'SlA Violation for $sla.name';
+            self.template.template = '<html>\n<body> \n'+
+                                     '\t<table>\n'+
+                                     '\t\t<tr>\n'+
+                                     '\t\t\t<td align="center" style="background-color:rgb(43,108,154);">\n'+
+                                     '\t\t\t\t<img src="https://kylo.io/assets/Kylo-Logo-REV.png" height="50%" width="50%">\n'+
+                                     '\t\t\t</td>\n'+
+                                     '\t\t</tr>\n'+
+                                     '\t\t<tr>\n'+
+                                     '\t\t\t<td>\n'+
+                                     '\t\t\t\t<table>\n'+
+                                     '\t\t\t\t\t<tr>\n'+
+                                     '\t\t\t\t\t\t<td>$sla.name</td>\n'+
+                                     '\t\t\t\t\t </tr>\n'+
+                                     '\t\t\t\t\t<tr>\n'+
+                                     '\t\t\t\t\t\t<td>$sla.description</td>\n'+
+                                     '\t\t\t\t\t</tr>\n'+
+                                     '\t\t\t\t\t<tr>\n'+
+                                     '\t\t\t\t\t\t<td colspan="2">\n'+
+                                     '\t\t\t\t\t\t\t<h3>Assessment Description</h3>\n'+
+                                     '\t\t\t\t\t\t</td>\n'+
+                                     '\t\t\t\t\t</tr>\n'+
+                                     '\t\t\t\t\t<tr>\n'+
+                                     '\t\t\t\t\t\t<td colspan="2" style="white-space:pre-wrap;">$assessmentDescription</td>\n'+
+                                     '\t\t\t\t\t</tr>\n'+
+                                     '\t\t\t\t</table>\n'+
+                                     '\t\t\t</td>\n'+
+                                     '\t\t</tr>\n'+
+                                     '\t</table>\n'+
+                                     '</body>\n</html>';
+            '</html>';
+        };
+
         function getAvailableActionItems() {
             SlaEmailTemplateService.getAvailableActionItems().then(function (response) {
                     self.availableSlaActions = response;
             });
+        }
+
+        this.navigateToSla=function(slaId){
+            StateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
         }
 
         function getRelatedSlas(){
@@ -105,7 +174,8 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
                 clickOutsideToClose: true,
                 fullscreen: true,
                 locals: {
-                    resolvedTemplate: resolvedTemplate
+                    resolvedTemplate: resolvedTemplate,
+                    emailAddress: self.emailAddress
                 }
             })
                 .then(function (answer) {
@@ -126,6 +196,9 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
             );
         }
 
+
+
+
         function hideDialog() {
             $mdDialog.hide();
         }
@@ -133,17 +206,24 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         getAvailableActionItems();
         getRelatedSlas();
 
+        // Fetch the allowed actions
+        AccessControlService.getUserAllowedActions()
+            .then(function(actionSet) {
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            });
 
     };
 
     /**
      * The Controller used for the Feed Saving Dialog
      */
-    var testDialogController = function ($scope,$sce, $mdDialog, resolvedTemplate) {
+    var testDialogController = function ($scope,$sce, $mdDialog, resolvedTemplate, emailAddress) {
         var self = this;
 
         $scope.resolvedTemplateSubject = $sce.trustAsHtml(resolvedTemplate.subject);
         $scope.resolvedTemplateBody = $sce.trustAsHtml(resolvedTemplate.body);
+        $scope.resolvedTemplate = resolvedTemplate;
+        $scope.emailAddress = emailAddress;
 
         this.trustAsHtml = function(string) {
             return $sce.trustAsHtml(string);
@@ -162,6 +242,6 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
     angular.module(moduleName).controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
 
-    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService', controller]);
+    angular.module(moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http','SlaEmailTemplateService','StateService','AccessControlService', controller]);
 
 });

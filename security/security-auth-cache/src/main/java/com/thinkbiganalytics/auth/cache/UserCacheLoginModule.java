@@ -32,6 +32,8 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.CredentialNotFoundException;
+import javax.security.auth.login.FailedLoginException;
+import javax.security.auth.login.LoginException;
 
 import com.google.common.cache.Cache;
 
@@ -42,13 +44,16 @@ import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
  */
 public class UserCacheLoginModule extends AbstractLoginModule {
     
+    public static final String DEFAULT_DIGEST_ALG = "SHA-256";
     public static final String CACHE_OPTION = "cache";
     public static final String MODE_OPTION = "mode";
+    public static final String DIGEST_ALG_OPTION = "digest.algorithm";
 
     public enum Mode { AUTHENTICATE, CACHE }
     
     private Mode mode;
     private Cache<Object, Set<Principal>> principalCache;
+    private String digestAlgorithm;
     
     private Object cacheKey;
     
@@ -59,6 +64,7 @@ public class UserCacheLoginModule extends AbstractLoginModule {
         
         this.mode = (Mode) getOption(MODE_OPTION).orElseThrow(() -> new IllegalArgumentException("The \"mode\" option is required"));
         this.principalCache = (Cache<Object, Set<Principal>>) getOption(CACHE_OPTION).orElseThrow(() -> new IllegalArgumentException("The \"cache\" option is required"));
+        this.digestAlgorithm = (String) getOption(DIGEST_ALG_OPTION).orElse(DEFAULT_DIGEST_ALG);
     }
 
     @Override
@@ -116,7 +122,7 @@ public class UserCacheLoginModule extends AbstractLoginModule {
         return true;
     }
 
-    protected Object createCacheKey(NameCallback nameCallback, PasswordCallback passwordCallback) {
+    protected Object createCacheKey(NameCallback nameCallback, PasswordCallback passwordCallback) throws LoginException {
         if (nameCallback.getName() == null) {
             return null;
         } else {
@@ -128,10 +134,10 @@ public class UserCacheLoginModule extends AbstractLoginModule {
             }
             
             try {
-                byte[] hashed = MessageDigest.getInstance("SHA").digest(chars.toString().getBytes());
+                byte[] hashed = MessageDigest.getInstance(this.digestAlgorithm).digest(chars.toString().getBytes());
                 return Base64.getEncoder().encodeToString(hashed);
             } catch (NoSuchAlgorithmException e) {
-                return chars.toString();
+                throw new FailedLoginException("Unknown digest algorithm configured: " + this.digestAlgorithm);
             }
         }
     }

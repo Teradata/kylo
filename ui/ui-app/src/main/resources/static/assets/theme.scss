@@ -1,0 +1,118 @@
+@import '../../../../../node_modules/@angular/material/theming';
+@import '../../../../../node_modules/@covalent/core/theming/all-theme';
+
+// Custom typography
+$typography: mat-typography-config(
+  $font-family: 'Roboto, monospace',
+  $button: mat-typography-level(14px, 14px, 400),
+  $headline: mat-typography-level(32px, 48px 700)
+);
+$toolbar-typography: mat-typography-config(
+  $title: mat-typography-level(20px, 32px, 400)
+);
+
+// Include the base styles for Angular Material core. We include this here so that you only
+// have to load a single css file for Angular Material in your app.
+@include mat-core($typography);
+
+// Setting the toolbar to the proper spec weight
+@include mat-toolbar-typography($toolbar-typography);
+
+// Include the core styles for Covalent
+@include covalent-core();
+
+// Define the palettes for your theme using the Material Design palettes available in palette.scss
+// (imported above). For each palette, you can optionally specify a default, lighter, and darker
+// hue.
+$primaryBlue: (
+  50: #e3f2fd,
+  100: #bbdefb,
+  200: #90caf9,
+  300: #64b5f6,
+  400: #42a5f5,
+  500: #3483BA,
+  600: #1e88e5,
+  700: #1976d2,
+  800: #1565c0,
+  900: #2B6C9A,
+  A100: #82b1ff,
+  A200: #448aff,
+  A400: #2979ff,
+  A700: #2962ff,
+  contrast: (
+    50: $black-87-opacity,
+    100: $black-87-opacity,
+    200: $black-87-opacity,
+    300: $black-87-opacity,
+    400: $black-87-opacity,
+    500: white,
+    600: white,
+    700: white,
+    800: $white-87-opacity,
+    900: $white-87-opacity,
+    A100: $black-87-opacity,
+    A200: white,
+    A400: white,
+    A700: white,
+  )
+);
+$accentOrange: (
+        50: #fff3e0,
+        100: #ffe0b2,
+        200: #ffcc80,
+        300: #ffb74d,
+        400: #ffa726,
+        500: #ff9800,
+        600: #fb8c00,
+        700: #f57c00,
+        800: #ef6c00,
+        900: #e65100,
+        A100: #ffd180,
+        A200: #F08C38,
+        A400: #ff9100,
+        A700: #ff6d00,
+        contrast: (
+                50: $black-87-opacity,
+                100: $black-87-opacity,
+                200: $black-87-opacity,
+                300: $black-87-opacity,
+                400: $black-87-opacity,
+                500: $black-87-opacity,
+                600: $black-87-opacity,
+                700: $black-87-opacity,
+                800: white,
+                900: white,
+                A100: $black-87-opacity,
+                A200: white,
+                A400: $black-87-opacity,
+                A700: black,
+        )
+);
+
+$primary: mat-palette($primaryBlue, 900);
+$accent: mat-palette($accentOrange, A200);
+
+// The warn palette is optional (defaults to red).
+$warn: mat-palette($mat-red, 600);
+
+// Create the theme object (a Sass map containing all of the palettes).
+$theme: mat-light-theme($primary, $accent, $warn);
+
+// Include theme styles for core and each component used in your app.
+// Alternatively, you can import and @include the theme mixins for each component
+// that you are using.
+@include angular-material-theme($theme);
+@include covalent-theme($theme, $typography);
+
+// Active icon color in list nav
+mat-nav-list {
+  [mat-list-item].active {
+    mat-icon[matListAvatar] {
+      background-color: mat-color($accent);
+      color: mat-color($accent, default-contrast)
+    }
+    mat-icon[matListIcon] {
+      color: mat-color($accent);
+    }
+  }
+}

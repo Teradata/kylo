@@ -110,6 +110,10 @@ public class TableMergeSyncSupportTest {
         return hiveShell.executeQuery("select * from " + HiveUtils.quoteIdentifier(targetSchema, targetTable));
     }
 
+    private List<String> fetchEmployeesWithoutProcessingDttm(String targetSchema, String targetTable) {
+        return hiveShell.executeQuery("select `id`, `timestamp`, `name`, `company`, `zip`, `phone`, `email`, `hired`, `country` from " + HiveUtils.quoteIdentifier(targetSchema, targetTable));
+    }
+
 
     @Test
     /**
@@ -384,6 +388,106 @@ public class TableMergeSyncSupportTest {
         assertEquals(7, results.size());
         verifyUnique(results);
     }
+
+    @Test
+    /**
+     * Tests that merge with dedupe works correctly even when merges are processed out of order
+     */
+    public void testMergeNonPartitionedWithProcessingDttmOutOfOrder() throws Exception {
+        String targetTableNP = "employeepd_np";
+        // Insert one record to start
+        hiveShell.execute(
+                "insert into emp_sr.employeepd_np (`id`, `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`, `country`, `processing_dttm`)  values (60, '1', 'Billy',"
+                        + "'ABC',"
+                        + "'94550',"
+                        + "'555-1212',"
+                        + "'billy@acme.org','2015-01-01', 'USA', '20150119974350');");
+
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(1, results.size());
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // We should have 5 records 4 from the sourceTable and 1 existing
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // Now create a new record that is duplicated in two successive processing_dttms
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974360') "
+                + "values (200, '1', 'Helen', 'ABC', '94611', '555-1212', 'wendy@acme.org', '2016-01-02', 'USA');");
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974370') "
+                + "values (200, '1', 'Helen', 'ABC', '94611', '555-1212', 'wendy@acme.org', '2016-01-02', 'USA');");
+
+        // Ensure that only a single record is inserted, even if the processing_dttms are merged out of order
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974370", true);
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974360", true);
+
+        // we should now have 6 records and no duplicates
+        results = fetchEmployeesWithoutProcessingDttm(targetSchema, targetTableNP);
+        verifyUnique(results);
+        assertEquals(6, results.size());
+    }
+
+    @Test
+    /**
+     * Tests that dedupe and merge works correctly when the input data contains duplicated rows
+     */
+    public void testMergeNonPartitionedWithDuplicatedInputRows() throws Exception {
+        String targetTableNP = "employeepd_np";
+
+        // Call merge without dedupe
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, processingPartition, false);
+
+        // should have 4 records from the valid table inserted
+        List<String> results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(4, results.size());
+
+        // Now create a new record that is duplicated in the valid table
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974360') values "
+                          + "(200, '1', 'Helen', 'ABC', '94611', '555-1212', 'helen@acme.org', '2016-01-02', 'USA'),"
+                          + "(200, '1', 'Helen', 'ABC', '94611', '555-1212', 'helen@acme.org', '2016-01-02', 'USA');");
+
+
+        // Now merge the records into the table
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974360", true);
+
+        // there should now be 5 records in the table
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // only one record from the source table should have been inserted
+
+        results =  hiveShell.executeQuery("select count(*) from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 200");
+        assertEquals(1, results.size());
+        assertEquals("1", results.get(0));
+
+        // Now create a new record that is a duplicate of one already in the table and is duplicated in the source table
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition (processing_dttm='20150119974390') values "
+                          + "(2,'1','Joe','ABC','94550','555-1212','sally@acme.org','2016-01-01','USA'),"
+                          + "(2,'1','Joe','ABC','94550','555-1212','sally@acme.org','2016-01-01','USA');");
+
+        // Now merge the records into the table
+        mergeSyncSupport.doMerge(sourceSchema, sourceTable, targetSchema, targetTableNP, specNP, "20150119974390", true);
+
+        // there should still be just 5 records in the table
+        results = fetchEmployees(targetSchema, targetTableNP);
+        assertEquals(5, results.size());
+
+        // there should be only one row for the inserted employee
+        results =  hiveShell.executeQuery("select count(*) from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 2");
+        assertEquals(1, results.size());
+        assertEquals("1", results.get(0));
+
+        // the processing_dttm of that row should be the original one in the target table
+
+        results =  hiveShell.executeQuery("select processing_dttm from " + HiveUtils.quoteIdentifier(targetSchema, targetTableNP) + " where id = 2");
+        assertEquals(1, results.size());
+        assertEquals("20160119074340", results.get(0));
+    }
+
 
     @Test
     /**

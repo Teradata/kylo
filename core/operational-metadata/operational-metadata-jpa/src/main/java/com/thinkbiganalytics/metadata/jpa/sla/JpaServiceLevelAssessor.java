@@ -168,7 +168,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
         ServiceLevelAgreement serviceLevelAgreement = sla;
         assessment = this.metadataAccess.commit(() -> {
-            AssessmentResult combinedResult = AssessmentResult.FAILURE;
+            AssessmentResult combinedResult = AssessmentResult.SUCCESS;
             try {
 
                 //create the new Assessment
@@ -207,7 +207,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
                     // Required condition but non-failure, sufficient condition but non-success, or optional condition:
                     // continue assessing groups and retain the best of the group results.
-                    combinedResult = combinedResult.min(groupResult);
+                    combinedResult = combinedResult.max(groupResult);
                 }
 
                 return completeAssessment(slaAssessment, combinedResult);

@@ -1,4 +1,4 @@
-define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
 
     var directive = function () {
         return {
@@ -19,7 +19,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
     };
 
-    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService) {
+    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService, $filter) {
         var self = this;
         this.refreshing = false;
         this.dataLoaded = false;
@@ -87,13 +87,25 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             });
         }
 
+        this.onHealthyClick = function(){
+            if(self.dataMap.Healthy.count >0){
+                self.openDetailsDialog('Healthy');
+            }
+        }
+
+        this.onUnhealthyClick = function(){
+            if(self.dataMap.Unhealthy.count >0){
+                self.openDetailsDialog('Unhealthy');
+            }
+        }
+
 
 
         this.updateChart = function(){
             angular.forEach(self.chartData,function(row,i){
                 row.value = self.dataMap[row.key].count;
             });
-            var title = (self.dataMap.Healthy.count+self.dataMap.Unhealthy.count)+" Total";
+            var title = (self.dataMap.Healthy.count+self.dataMap.Unhealthy.count)+" " + $filter('translate')('Total');
             self.chartOptions.chart.title=title
             self.dataLoaded = true;
             if(self.chartApi.update) {
@@ -112,12 +124,14 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
             if (self.refreshing == false) {
                 self.refreshing = true;
                     var data = OpsManagerDashboardService.dashboard.dataConfidenceSummary;
-                    self.allData = data;
-                    if (self.dataLoaded == false) {
-                        self.dataLoaded = true;
+                    if(angular.isDefined(data)) {
+                        self.allData = data;
+                        if (self.dataLoaded == false) {
+                            self.dataLoaded = true;
+                        }
+                        self.dataMap.Healthy.count = data.successCount;
+                        self.dataMap.Unhealthy.count = data.failedCount;
                     }
-                    self.dataMap.Healthy.count = data.successCount;
-                    self.dataMap.Unhealthy.count = data.failedCount;
                     self.updateChart();
                 }
                  self.refreshing = false;
@@ -182,7 +196,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
 
-    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", controller]);
+    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", "$filter", controller]);
 
 
     angular.module(moduleName)

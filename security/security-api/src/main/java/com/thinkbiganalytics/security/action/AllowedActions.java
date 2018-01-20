@@ -38,8 +38,9 @@ public interface AllowedActions {
     String CATEGORY = "category";
     String TEMPLATE = "template";
     String DATASOURCE = "datasource";
+    String PROJECTS = "projects";
 
-
+    
     /**
      * Retrieves the hierarchical set of allowable actions.
      *
@@ -165,4 +166,39 @@ public interface AllowedActions {
      * @return true if not all actions had already been revoked from that principal, otherwise false.
      */
     boolean disableAll(Principal principal);
+
+    /**
+     * Gets the set of principals that have been granted permission to perform all of the specified action(s).
+     * 
+     * @param action an action
+     * @param more optional list of additional actions
+     * @return a set of principals allowed all of the actions
+     */
+    Set<Principal> getPrincipalsAllowedAll(Action action, Action... more);
+    
+    /**
+     * Gets the set of principals that have been granted permission to perform all of the specified actions.
+     * 
+     * @param actions the set of actions
+     * @return a set of principals allowed all of the actions
+     */
+    Set<Principal> getPrincipalsAllowedAll(Set<Action> actions);
+    
+    /**
+     * Gets the set of principals that have been granted permission to perform any of the specified action(s).
+     * 
+     * @param action an action
+     * @param more optional additional actions
+     * @return a set of principals allowed at least one of the actions
+     */
+    Set<Principal> getPrincipalsAllowedAny(Action action, Action... more);
+    
+    /**
+     * Gets the set of principals that have been granted permission to perform all of the specified actions.
+     * 
+     * @param actions the set of actions
+     * @return a set of principals allowed all of the actions
+     */
+    Set<Principal> getPrincipalsAllowedAny(Set<Action> actions);
+    
 }

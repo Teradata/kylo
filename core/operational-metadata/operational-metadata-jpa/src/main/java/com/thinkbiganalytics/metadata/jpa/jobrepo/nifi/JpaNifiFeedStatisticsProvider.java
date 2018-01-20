@@ -61,9 +61,20 @@ public class JpaNifiFeedStatisticsProvider implements NifiFeedStatisticsProvider
         }
     }
 
+    public void deleteFeedStats(String feedName){
+        List<JpaNifiFeedStats> stats = feedStatisticsRepository.findForFeedWithoutAcl(feedName);
+        if(stats != null && !stats.isEmpty()){
+            feedStatisticsRepository.delete(stats);
+        }
+    }
+
     @Override
     public NifiFeedStats findLatestStatsForFeed(String feedName) {
         return accessController.isEntityAccessControlled() ? feedStatisticsRepository.findLatestForFeedWithAcl(feedName) : feedStatisticsRepository.findLatestForFeedWithoutAcl(feedName);
+    }
+
+    public NifiFeedStats findLatestStatsForFeedWithoutAccessControl(String feedName) {
+        return feedStatisticsRepository.findLatestForFeedWithoutAcl(feedName);
     }
 
     public List<? extends NifiFeedStats> findFeedStats(boolean streamingOnly) {

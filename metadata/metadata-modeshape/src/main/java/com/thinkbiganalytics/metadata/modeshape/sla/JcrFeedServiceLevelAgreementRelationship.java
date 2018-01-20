@@ -36,10 +36,10 @@ import javax.jcr.Node;
 public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntity implements FeedServiceLevelAgreementRelationship {
 
 
-    public static String TYPE_NAME = "feedSla";
-    public static String NODE_TYPE = "tba:" + TYPE_NAME;
-    public static String FEEDS = "feeds"; /// list of feed references on the SLA
-    public static String SLA = "sla"; // a ref to the SLA
+    public static final String TYPE_NAME = "feedSla";
+    public static final String NODE_TYPE = "tba:" + TYPE_NAME;
+    public static final String FEEDS = "feeds"; /// list of feed references on the SLA
+    public static final String SLA = "sla"; // a ref to the SLA
 
 
     public JcrFeedServiceLevelAgreementRelationship(Node node) {

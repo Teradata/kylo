@@ -17,6 +17,13 @@ define([
     'dirPagination',
     'ng-fx',
     'ng-text-truncate',
+    'pascalprecht.translate',
+    'angular-translate-loader-static-files',
+    'angular-translate-storage-local',
+    'angular-translate-handler-log',
+    'angular-translate-storage-cookie',
+    'angular-cookies',
+    'tmh.dynamicLocale',
     'ocLazyLoad',
     'kylo-common',
     'kylo-services',
@@ -34,11 +41,32 @@ define([
                                           'ui.grid.resizeColumns',
                                           'ui.grid.autoResize',
                                           'ui.grid.moveColumns',
-                                          'ui.grid.pagination', 'ngMessages']);
+                                          'ui.grid.pagination', 'ui.grid.selection', 'ngMessages',
+                                          'pascalprecht.translate', 'tmh.dynamicLocale', 'ngCookies']);
+    module.constant('LOCALES', {
+           'locales': {
+               'en_US': 'English',
+               'ru_RU': 'Русский'
+            },
+            'preferredLocale': 'en_US'
+        });
 
-    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider', function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider){
+    module.config(['$mdAriaProvider','$mdThemingProvider','$mdIconProvider','$urlServiceProvider','ngMdIconServiceProvider','$qProvider', '$translateProvider', 'tmhDynamicLocaleProvider',
+           function($mdAriaProvider,$mdThemingProvider, $mdIconProvider, $urlService, ngMdIconServiceProvider,$qProvider, $translateProvider, tmhDynamicLocaleProvider){
        //disable the aria-label warnings in the console
         $mdAriaProvider.disableWarnings();
+
+        $qProvider.errorOnUnhandledRejections(false);
+        $translateProvider.useStaticFilesLoader({
+                prefix: 'locales/locale-',// path to translations files
+                suffix: '.json'// suffix, currently- extension of the translations
+        });
+
+        $translateProvider.preferredLanguage('en_US');// is applied on first load
+        $translateProvider.fallbackLanguage('en_US');
+        $translateProvider.useLocalStorage();// saves selected language to localStorage
+
+        tmhDynamicLocaleProvider.localeLocationPattern('../bower_components/angular-i18n/angular-locale_{{locale}}.js');
 
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',
@@ -67,14 +95,16 @@ define([
         // Register custom fonts
         ngMdIconServiceProvider
             .addShape('fa-database', '<path d="M896 768q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0 768q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0-384q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0-1152q208 0 385 34.5t280 93.5 103 128v128q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-128q0-69 103-128t280-93.5 385-34.5z"/>')
-            .addViewBox('fa-database', '0 0 1792 1792');
+            .addViewBox('fa-database', '0 0 1792 1792')
+            .addShape('fa-hashtag', '<path d="M991 1024l64-256h-254l-64 256h254zm768-504l-56 224q-7 24-31 24h-327l-64 256h311q15 0 25 12 10 14 6 28l-56 224q-5 24-31 24h-327l-81 328q-7 24-31 24h-224q-16 0-26-12-9-12-6-28l78-312h-254l-81 328q-7 24-31 24h-225q-15 0-25-12-9-12-6-28l78-312h-311q-15 0-25-12-9-12-6-28l56-224q7-24 31-24h327l64-256h-311q-15 0-25-12-10-14-6-28l56-224q5-24 31-24h327l81-328q7-24 32-24h224q15 0 25 12 9 12 6 28l-78 312h254l81-328q7-24 32-24h224q15 0 25 12 9 12 6 28l-78 312h311q15 0 25 12 9 12 6 28z"/>')
+            .addViewBox('fa-hashtag', '0 0 1792 1792');
     }]);
 
 
 
 
 
-    module.run(['$ocLazyLoad',function($ocLazyLoad){
+    module.run(['$ocLazyLoad', '$translate', function($ocLazyLoad, $translate){
         $ocLazyLoad.load({name:'kylo',files:['bower_components/angular-material-icons/angular-material-icons.css',
                                              'bower_components/angular-material-expansion-panel/dist/md-expansion-panel.css',
                                              'bower_components/angular-material-data-table/dist/md-data-table.css',

@@ -17,11 +17,24 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService) {
+define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService, $filter) {
 
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
+        }
+
+        /**
+         * for a given processor assign the feedPropertiesUrl so it can be rendered correctly
+         * @param processor
+         */
+        function setRenderTemplateForProcessor(processor, mode) {
+            if (processor.feedPropertiesUrl == undefined) {
+                processor.feedPropertiesUrl = null;
+            }
+            if (processor.feedPropertiesUrl == null) {
+                FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
+            }
         }
 
         var data = {
@@ -383,8 +396,26 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return _.sortBy(arr, 'sortIndex');
 
             },
-
             /**
+             * Updates the feedProcessingTemplateUrl for each processor in the model
+             * @param model
+             */
+            setProcessorRenderTemplateUrl : function(model, mode){
+                _.each(model.inputProcessors, function (processor) {
+                    processor.feedPropertiesUrl = null;
+                    //ensure the processorId attr is set
+                    processor.processorId = processor.id
+                    setRenderTemplateForProcessor(processor, mode);
+                });
+                _.each(model.nonInputProcessors, function (processor) {
+                    processor.feedPropertiesUrl = null;
+                    //ensure the processorId attr is set
+                    processor.processorId = processor.id
+                    setRenderTemplateForProcessor(processor, mode);
+                });
+
+            },
+             /**
              * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
              * used in Feed creation and feed details to render the nifi input fields
              * @param template
@@ -401,14 +432,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     });
                 }
 
-                function setRenderTemplateForProcessor(processor) {
-                    if (processor.feedPropertiesUrl == undefined) {
-                        processor.feedPropertiesUrl = null;
-                    }
-                    if (processor.feedPropertiesUrl == null) {
-                        FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
-                    }
-                }
 
                 function updateProperties(processor, properties) {
 
@@ -446,13 +469,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     //ensure the processorId attr is set
                     processor.processorId = processor.id
                     updateProperties(processor, processor.properties)
-                    setRenderTemplateForProcessor(processor);
+                    setRenderTemplateForProcessor(processor, mode);
                 });
                 _.each(template.nonInputProcessors, function (processor) {
                     //ensure the processorId attr is set
                     processor.processorId = processor.id
                     updateProperties(processor, processor.properties)
-                    setRenderTemplateForProcessor(processor);
+                    setRenderTemplateForProcessor(processor, mode);
                 });
 
             },
@@ -560,13 +583,13 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 }
             },
 
-            accessDeniedDialog:function() {
+            accessDeniedDialog:function($filter) {
                 $mdDialog.show(
                     $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title("Access Denied")
-                        .textContent("You do not have access to edit templates.")
-                        .ariaLabel("Access denied to edit templates")
+                        .title($filter('translate')('views.main.registerService-accessDenied'))
+                        .textContent($filter('translate')('views.main.registerService-accessDenied2'))
+                        .ariaLabel($filter('translate')('views.main.registerService-accessDenied3'))
                         .ok("OK")
                 );
             },

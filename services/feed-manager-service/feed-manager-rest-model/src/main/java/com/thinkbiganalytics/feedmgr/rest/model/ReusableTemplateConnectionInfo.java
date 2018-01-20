@@ -28,6 +28,7 @@ public class ReusableTemplateConnectionInfo {
     private String feedOutputPortName;
     private String reusableTemplateInputPortName;
     private String inputPortDisplayName;
+    private String reusableTemplateProcessGroupName;
 
 
     public String getFeedOutputPortName() {
@@ -60,5 +61,45 @@ public class ReusableTemplateConnectionInfo {
 
     public void setInputPortDisplayName(String inputPortDisplayName) {
         this.inputPortDisplayName = inputPortDisplayName;
+    }
+
+    public String getReusableTemplateProcessGroupName() {
+        return reusableTemplateProcessGroupName;
+    }
+
+    public void setReusableTemplateProcessGroupName(String reusableTemplateProcessGroupName) {
+        this.reusableTemplateProcessGroupName = reusableTemplateProcessGroupName;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof ReusableTemplateConnectionInfo)) {
+            return false;
+        }
+
+        ReusableTemplateConnectionInfo that = (ReusableTemplateConnectionInfo) o;
+
+        if (feedOutputPortName != null ? !feedOutputPortName.equals(that.feedOutputPortName) : that.feedOutputPortName != null) {
+            return false;
+        }
+        if (reusableTemplateInputPortName != null ? !reusableTemplateInputPortName.equals(that.reusableTemplateInputPortName) : that.reusableTemplateInputPortName != null) {
+            return false;
+        }
+        if (inputPortDisplayName != null ? !inputPortDisplayName.equals(that.inputPortDisplayName) : that.inputPortDisplayName != null) {
+            return false;
+        }
+        return reusableTemplateProcessGroupName != null ? reusableTemplateProcessGroupName.equals(that.reusableTemplateProcessGroupName) : that.reusableTemplateProcessGroupName == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = feedOutputPortName != null ? feedOutputPortName.hashCode() : 0;
+        result = 31 * result + (reusableTemplateInputPortName != null ? reusableTemplateInputPortName.hashCode() : 0);
+        result = 31 * result + (inputPortDisplayName != null ? inputPortDisplayName.hashCode() : 0);
+        result = 31 * result + (reusableTemplateProcessGroupName != null ? reusableTemplateProcessGroupName.hashCode() : 0);
+        return result;
     }
 }

@@ -120,6 +120,11 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
     BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed);
 
     /**
+     * after a job execution is committed and returned this is called to store the job and its id back in a map for future reference
+     */
+    void updateFeedJobStartTime(BatchJobExecution jobExecution,OpsManagerFeed feed);
+
+    /**
      * find the job execution from the provenance event
      *
      * @param event a provenance event
@@ -170,6 +175,15 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      * @return true if running, false if not
      */
     Boolean isFeedRunning(String feedName);
+
+
+    /**
+     * when a streaming feed indicates there is no new activity it needs to set the job for the feed to STOPPED
+     * @param feed
+     */
+    void markStreamingFeedAsStopped(String feed);
+
+    void markStreamingFeedAsStarted(String feed);
 
     /**
      * find all job executions matching a particular filter string, returning a paged result set

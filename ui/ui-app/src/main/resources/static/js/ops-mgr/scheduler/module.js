@@ -20,7 +20,7 @@ define(['angular','ops-mgr/scheduler/module-name',  'kylo-utils/LazyLoadUtil','c
             },
             data:{
                 breadcrumbRoot:true,
-                displayName:'Scheduler',
+                displayName:'Tasks',
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.SCHEDULER.permissions
             }

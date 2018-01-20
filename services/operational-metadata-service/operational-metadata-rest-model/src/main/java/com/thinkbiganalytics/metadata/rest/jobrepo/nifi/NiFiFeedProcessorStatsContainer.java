@@ -31,35 +31,18 @@ import java.util.List;
  */
 public class NiFiFeedProcessorStatsContainer {
 
-    DateTime startTime;
-
-    DateTime endTime;
-
-    NifiFeedProcessorStatisticsProvider.TimeFrame timeframe;
-
-    List<NifiFeedProcessorStats> stats;
-
-
-    Long runningFlows = 0L;
+    private DateTime startTime;
+    private DateTime endTime;
+    private List<NifiFeedProcessorStats> stats;
+    private Long runningFlows = 0L;
 
     public NiFiFeedProcessorStatsContainer() {
 
     }
 
-    public NiFiFeedProcessorStatsContainer( NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-        this.timeframe = timeframe;
-        DateTime now = DateTime.now();
-        startTime = timeframe.startTimeRelativeTo(now);;
-        endTime = now;
-    }
-
-
-    public NifiFeedProcessorStatisticsProvider.TimeFrame getTimeframe() {
-        return timeframe;
-    }
-
-    public void setTimeframe(NifiFeedProcessorStatisticsProvider.TimeFrame timeframe) {
-        this.timeframe = timeframe;
+    public NiFiFeedProcessorStatsContainer(DateTime startTime, DateTime endTime) {
+        this.startTime = startTime;
+        this.endTime = endTime;
     }
 
     public DateTime getStartTime() {

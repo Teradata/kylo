@@ -70,6 +70,21 @@ define(['angular','common/module-name'], function (angular,moduleName) {
         this.showProgress = false;
         this.height = 80;
 
+        /**
+         * Array of all steps for the stepper
+         * @type {Array}
+         */
+        this.steps = [];
+
+        /**
+         * Any steps to be rendered at the beginning
+         * @type {Array}
+         */
+        this.preSteps = [];
+
+        this.getStartingIndex = function(index){
+            return index+self.preSteps.length;
+        }
 
 
 
@@ -77,6 +92,7 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             $scope.templateUrl = self.templateUrl;
             $scope.stepperName = self.stepperName;
             $scope.totalSteps = self.totalSteps;
+
             Utils.waitForDomElementReady('md-tab-item', function () {
                 $element.find('md-tab-item:not(:last)').addClass('arrow-tab')
             })
@@ -89,6 +105,14 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             }
             StepperService.registerStepper(self.stepperName, self.totalSteps);
             self.steps = StepperService.getSteps(self.stepperName);
+
+            //set the pre-steps
+            if(angular.isDefined(self.coreDataModel) && angular.isDefined(self.coreDataModel.totalPreSteps) && self.coreDataModel.totalPreSteps >0) {
+                self.preSteps = self.steps.slice(0,self.coreDataModel.totalPreSteps);
+            }
+
+
+
 
             if (angular.isNumber(self.selectedStepIndex) || angular.isString(self.selectedStepIndex)) {
                 // Complete previous steps
@@ -167,6 +191,14 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             StepperService.activateStep(self.stepperName, index);
         }
 
+        this.resetStep = function(index){
+           var step = StepperService.getStep(self.stepperName, index);
+           if(angular.isDefined(step)) {
+               step.reset();
+               BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
+           }
+        }
+
         this.stepDisabled = function (index) {
             StepperService.stepDisabled(self.stepperName, index);
             BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
@@ -196,6 +228,10 @@ define(['angular','common/module-name'], function (angular,moduleName) {
             return StepperService.arePreviousStepsDisabled(self.stepperName, index);
         }
 
+        this.arePreviousStepsComplete = function (index) {
+            return StepperService.arePreviousStepsComplete(self.stepperName, index);
+        }
+
         this.cancelStepper = function () {
             if (self.onCancelStepper) {
                 self.onCancelStepper();
@@ -204,6 +240,15 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
         this.showCancel = function () {
             return (self.showCancelButton != undefined ? self.showCancelButton : true);
+        }
+
+        this.assignStepName = function(step,name){
+            step.stepName = name;
+            StepperService.assignedStepName(self.stepperName,step)
+        }
+
+        this.getStepByName = function(stepName){
+            return StepperService.getStepByName(self.stepperName,stepName);
         }
 
         this.completeStep = function (index) {

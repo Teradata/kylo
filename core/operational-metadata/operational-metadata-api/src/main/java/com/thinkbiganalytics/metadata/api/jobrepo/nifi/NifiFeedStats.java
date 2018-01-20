@@ -38,4 +38,6 @@ public interface NifiFeedStats {
 
     Long getLastActivityTimestamp();
 
+    boolean isStream();
+
 }

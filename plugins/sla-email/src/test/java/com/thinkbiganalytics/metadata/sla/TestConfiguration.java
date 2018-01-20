@@ -68,8 +68,6 @@ public class TestConfiguration {
         emailConfiguration.setFrom("sla-violation@thinkbiganalytics.com");
         emailConfiguration.setSmtpAuth("true");
         emailConfiguration.setStarttls("true");
-        emailConfiguration.setPassword("th1nkb1g2");
-        emailConfiguration.setUsername("thinkbig.tester@gmail.com");
         return emailConfiguration;
     }
 

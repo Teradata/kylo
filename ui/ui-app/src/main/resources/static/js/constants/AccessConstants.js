@@ -100,7 +100,7 @@ define([], function () {
          * Allows users to create new Service Level agreements
          * @type {string}
          */
-        this.SLA_EMAIL_TEMPLATES_ACCESS = null;//"accessSLAEmailTemplates";
+        this.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE = "editServiceLevelAgreementEmailTemplate";
 
         /**
          * Allows access to feed templates.
@@ -265,9 +265,11 @@ define([], function () {
             GROUP_DETAILS: {state: "group-details", permissions: [this.USERS_GROUPS_ACCESS]},
             VISUAL_QUERY: {state: "visual-query", permissions: [this.VISUAL_QUERY_ACCESS]},
             SERVICE_LEVEL_AGREEMENTS: {state: "service-level-agreements", permissions: [this.SLA_ACCESS]},
-            SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: []},
-            TABLES: {state: "tables", permissions: [this.TABLES_ACCESS]},
-            TABLE: {state: "table", permissions: [this.TABLES_ACCESS]},
+            SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES: {state: "sla-email-templates", permissions: [this.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE]},
+            CATALOG: {state: "catalog", permissions: [this.TABLES_ACCESS]},
+            SCHEMAS: {state: "schemas", permissions: [this.TABLES_ACCESS]},
+            TABLES: {state: "schemas-schema", permissions: [this.TABLES_ACCESS]},
+            TABLE: {state: "schemas-schema-table", permissions: [this.TABLES_ACCESS]},
             DATASOURCES: {state: "datasources", permissions: [this.DATASOURCE_ACCESS]},
             DATASOURCE_DETAILS: {state: "datasource-details", permissions: [this.DATASOURCE_ACCESS]},
             REGISTERED_TEMPLATES: {state: "registered-templates", permissions: [this.TEMPLATES_ACCESS]},

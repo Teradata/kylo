@@ -24,7 +24,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd">
 
-  <include file="check_data_to_feed_vw.xml" relativeToChangelogFile="true"/>
+  <include file="check_data_to_feed_vw.xml" relativeToChangelogFile="true" />
   <include file="batch_feed_summary_counts_vw.xml" relativeToChangelogFile="true"/>
   <include file="latest_feed_job_end_time_vw.xml" relativeToChangelogFile="true"/>
   <include file="latest_feed_job_vw.xml" relativeToChangelogFile="true"/>

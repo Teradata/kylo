@@ -45,11 +45,11 @@
 
                 </div>
                 <div layout="row" layout-align="end center">
-                    <md-button ng-click="delete($event)" ng-disabled="allowDelete == false" ng-if="onDelete !== undefined && isDeleteVisible == true">Delete</md-button>
+                    <md-button ng-click="delete($event)" ng-disabled="allowDelete == false" ng-if="onDelete !== undefined && isDeleteVisible == true">{{"views.vertical-section-layout-template.Delete" | translate}}</md-button>
                     <span flex></span>
-                    <md-button ng-click="cancel($event)">Cancel</md-button>
+                    <md-button ng-click="cancel($event)">{{"views.vertical-section-layout-template.Cancel" | translate}}</md-button>
                     <md-button class="md-primary md-raised" ng-click="save($event)"
-                               ng-disabled="isValid == false || (theForm != undefined && theForm.$invalid != undefined && theForm.$invalid == true)">Save
+                               ng-disabled="isValid == false || (theForm != undefined && theForm.$invalid != undefined && theForm.$invalid == true)">{{"views.vertical-section-layout-template.Save" | translate}}
                     </md-button>
                 </div>
                 </form>

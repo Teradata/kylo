@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.sla;
  */
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -126,6 +127,11 @@ public class TestJira {
 
                     @Override
                     public List<Obligation> getObligations() {
+                        return null;
+                    }
+                    
+                    @Override
+                    public Set<Metric> getAllMetrics() {
                         return null;
                     }
 

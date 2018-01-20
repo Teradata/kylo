@@ -56,6 +56,18 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.inputProcessorId = null;
 
+        /**
+         * The initial non null input Id selected
+         * @type {null}
+         */
+        this.initialInputProcessorId = null;
+
+        /**
+         * counter holding the number of times the user changes to a different input
+         * @type {number}
+         */
+        this.inputChangedCounter = 0;
+
         this.isValid = false;
 
         this.stepperController = null;
@@ -113,18 +125,24 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
          * @param {Object} template the template with properties
          */
         function initializeProperties(template) {
-            if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
-                RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
-                self.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
-                self.model.allowPreconditions = template.allowPreconditions;
-                //self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
-                //    return self.model.inputProcessorType == processor.type;
-                // });
-                self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            if(angular.isDefined(self.model.cloned) && self.model.cloned == true) {
+                RegisterTemplateService.setProcessorRenderTemplateUrl(self.model, 'create');
+               var inputProcessors = self.model.inputProcessors;
+                self.inputProcessors = _.sortBy(inputProcessors,'name')
 
-                if(angular.isDefined(self.model.inputProcessor)){
-                    var match = matchInputProcessor(self.model.inputProcessor,self.inputProcessors);
-                    if(angular.isDefined(match)){
+            }else {
+                RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
+                var inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+                //sort them by name
+                self.inputProcessors = _.sortBy(inputProcessors, 'name')
+
+                self.model.allowPreconditions = template.allowPreconditions;
+
+                self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            }
+                if (angular.isDefined(self.model.inputProcessor)) {
+                    var match = matchInputProcessor(self.model.inputProcessor, self.inputProcessors);
+                    if (angular.isDefined(match)) {
                         self.inputProcessor = match;
                         self.inputProcessorId = match.id;
                     }
@@ -134,11 +152,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                     self.inputProcessorId = self.inputProcessors[0].id;
                 }
                 // Skip this step if it's empty
-                if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function(processor) {
+                if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function (processor) {
                         return processor.userEditable
                     })) {
-                    var step =   StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
-                    if(step != null) {
+                    var step = StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
+                    if (step != null) {
                         step.skip = true;
                     }
                 }
@@ -147,11 +165,11 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 _.chain(template.inputProcessors.concat(template.nonInputProcessors))
                     .pluck("properties")
                     .flatten(true)
-                    .filter(function(property) {
+                    .filter(function (property) {
                         return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                     })
                     .each(findControllerServicesForProperty);
-            }
+
             self.loading = false;
             validate();
         }
@@ -185,8 +203,13 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         var inputProcessorIdWatch = $scope.$watch(function() {
             return self.inputProcessorId;
-        }, function(newVal) {
+        }, function(newVal,oldVal) {
+            if(newVal != null && self.initialInputProcessorId == null){
+                self.initialInputProcessorId = newVal;
+            }
             updateInputProcessor(newVal);
+            //mark the next step as not visited.. force the user to go to the next step
+            self.stepperController.resetStep(parseInt(self.stepIndex)+1);
             validate();
         });
 
@@ -219,20 +242,33 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 return;
             }
 
+            self.inputChangedCounter++;
+
+            var clonedAndInputChanged = function(inputProcessorId){
+                return (self.model.cloned == true && self.inputChangedCounter >1);
+            }
+
+            var notCloned = function(){
+                return (angular.isUndefined(self.model.cloned) || self.model.cloned == false);
+            }
+
             // Determine render type
             var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
           
-          if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
               if (renderGetTableData) {
+
+                  if(self.model.table.method != null && self.model.table.method != 'EXISTING_TABLE'){
+                      //reset the fields
+                      self.model.table.tableSchema.fields = [];
+                  }
                   self.model.table.method = 'EXISTING_TABLE';
                   self.model.options.skipHeader = true;
                   self.model.allowSkipHeaderOption = true;
 
-              } else {
+              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId)|| notCloned())){
                   self.model.table.method = 'SAMPLE_FILE';
                   self.model.table.tableSchema.fields = [];
               }
-          }
 
             // Update model
             self.model.inputProcessor = processor;

@@ -98,7 +98,9 @@ public class ServiceLevelAgreementActionConfigTransformer
             }
 
         } catch (ClassNotFoundException e) {
-            validation.add(new ServiceLevelAgreementActionValidation(false, "ImmutableAction Configuration Not Found: " + e.getMessage()));
+            if(validation != null) {
+                validation.add(new ServiceLevelAgreementActionValidation(false, "ImmutableAction Configuration Not Found: " + e.getMessage()));
+            }
         }
 
         return validation;

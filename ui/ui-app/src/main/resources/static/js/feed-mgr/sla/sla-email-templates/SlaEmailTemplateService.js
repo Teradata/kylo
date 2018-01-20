@@ -81,6 +81,23 @@ define(['angular','feed-mgr/sla/module-name'], function (angular,moduleName) {
                     }
                     });
             },
+            sendTestEmail: function(address, subject, templateString) {
+                if(angular.isUndefined(subject)){
+                    subject = data.template.subject;
+                }
+                if(angular.isUndefined(templateString)){
+                    templateString = data.template.template;
+                }
+                var testTemplate =  {emailAddress:address,subject:subject,body:templateString};
+                return $http({
+                    url: "/proxy/v1/feedmgr/sla/send-test-email-template",
+                    method: "POST",
+                    data:angular.toJson(testTemplate),
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    }
+                });
+            },
             save:function(template){
                 if(angular.isUndefined(template)){
                     template = data.template;

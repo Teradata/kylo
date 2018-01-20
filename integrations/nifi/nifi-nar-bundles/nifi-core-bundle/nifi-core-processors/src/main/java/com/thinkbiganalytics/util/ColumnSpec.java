@@ -152,7 +152,7 @@ public class ColumnSpec {
 
     }
 
-    public void validate() {
+    private final void validate() {
         Validate.notEmpty(name);
         Validate.notEmpty(dataType);
     }

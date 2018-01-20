@@ -43,7 +43,7 @@ import java.util.stream.Collectors;
 /**
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class RegisteredTemplate extends EntityAccessControl {
+public final class RegisteredTemplate extends EntityAccessControl {
 
     private List<NifiProperty> properties;
 
@@ -168,6 +168,9 @@ public class RegisteredTemplate extends EntityAccessControl {
 
 
     public List<NifiProperty> getProperties() {
+        if(properties == null){
+            properties = new ArrayList<>();
+        }
         return properties;
     }
 

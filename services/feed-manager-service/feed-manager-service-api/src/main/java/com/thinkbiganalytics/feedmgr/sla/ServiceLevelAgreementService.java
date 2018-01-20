@@ -40,9 +40,11 @@ public interface ServiceLevelAgreementService {
 
     void enableServiceLevelAgreementSchedule(Feed.ID feedId);
 
-    void unscheduleServiceLevelAgreement(Feed.ID feedId);
+    void unscheduleServiceLevelAgreement(Feed.ID feedId,String categoryAndFeedName);
 
     void disableServiceLevelAgreementSchedule(Feed.ID feedId);
+
+    boolean hasServiceLevelAgreements(Feed.ID id );
 
     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getFeedServiceLevelAgreements(String feedId);
 
@@ -65,7 +67,7 @@ public interface ServiceLevelAgreementService {
      * Remove and Unschedule all SLA's for a feedId
      * @param feedId the feed id
      */
-    void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId);
+    void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId, String categoryAndFeedName);
 
     boolean removeAllAgreements();
 

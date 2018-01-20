@@ -30,7 +30,6 @@
         <property name="locations">
             <list>
                 <value>classpath:integration-test.properties</value>
-                <value>classpath:integration-test-jenkins.properties</value>
             </list>
         </property>
         <property name="ignoreResourceNotFound" value="true" />

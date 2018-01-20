@@ -121,7 +121,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
         // Fetch the allowed actions
         AccessControlService.getUserAllowedActions()
             .then(function(actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.SLA_EMAIL_TEMPLATES_ACCESS, actionSet.actions);
+                self.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
     };
 

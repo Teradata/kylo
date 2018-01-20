@@ -67,7 +67,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      *
      * @param event the cleanup event
      */
-    @JmsListener(destination = MetadataQueues.CLEANUP_TRIGGER, containerFactory = JmsConstants.JMS_CONTAINER_FACTORY)
+    @JmsListener(destination = MetadataQueues.CLEANUP_TRIGGER, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
     public void receiveEvent(@Nonnull final FeedCleanupTriggerEvent event) {
         LOG.debug("Received JMS message - topic: {}, message: {}", MetadataQueues.CLEANUP_TRIGGER, event);
         LOG.info("Received feed cleanup trigger event: {}", event);

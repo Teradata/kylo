@@ -20,14 +20,19 @@ package com.thinkbiganalytics.service;
  * #L%
  */
 
+import com.thinkbiganalytics.app.ApplicationStartupListenerType;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
+import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
@@ -37,6 +42,8 @@ import java.util.concurrent.TimeUnit;
 /**
  */
 public class DefaultServicesApplicationStartup implements ServicesApplicationStartup, ApplicationListener<ContextRefreshedEvent> {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultServicesApplicationStartup.class);
 
     int maxThreads = 10;
     ExecutorService executorService =
@@ -54,9 +61,23 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
         startupListeners.add(o);
     }
 
+    private ApplicationType applicationType;
+
+    private void determineApplicationType(final ContextRefreshedEvent event) {
+        applicationType = ApplicationType.KYLO;
+        String[] activeProfiles = event.getApplicationContext().getEnvironment().getActiveProfiles();
+
+        if (activeProfiles != null && Arrays.asList(activeProfiles).contains(KyloUpgrader.KYLO_UPGRADE)) {
+            applicationType = ApplicationType.UPGRADE;
+        } else {
+            applicationType = ApplicationType.KYLO;
+        }
+    }
+
     @Override
     public void onApplicationEvent(final ContextRefreshedEvent event) {
         if (startTime == null) {
+            determineApplicationType(event);
             startTime = new DateTime();
             for (ServicesApplicationStartupListener startupListener : startupListeners) {
                 executorService.submit(new StartupTask(startTime, startupListener));
@@ -75,7 +96,21 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
         }
 
         public void run() {
-            listener.onStartup(startTime);
+            ApplicationStartupListenerType a = listener.getClass().getAnnotation(ApplicationStartupListenerType.class);
+            if (a != null) {
+                if (a.listenerType() == ApplicationStartupListenerType.ListenerType.UPGRADE_AND_KYLO ||
+                    (applicationType == ApplicationType.UPGRADE && a.listenerType() == ApplicationStartupListenerType.ListenerType.UPGRADE_AND_KYLO ||
+                     applicationType == ApplicationType.KYLO && a.listenerType() == ApplicationStartupListenerType.ListenerType.KYLO_ONLY)) {
+                    log.info("Running startup listener {} ", listener.getClass().getSimpleName());
+                    listener.onStartup(startTime);
+                }
+            } else {
+                log.info("Running startup listener {} ", listener.getClass().getSimpleName());
+                listener.onStartup(startTime);
+
+            }
+
+
         }
     }
 }

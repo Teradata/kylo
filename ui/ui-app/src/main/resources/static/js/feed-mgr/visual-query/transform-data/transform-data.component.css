@@ -1,3 +1,20 @@
+/**
+ * Applies styles for users in high contrast mode. Note that this only applies
+ * to Microsoft browsers. Chrome can be included by checking for the `html[hc]`
+ * attribute, however Chrome handles high contrast differently.
+ */
+/* Theme for the ripple elements.*/
+/** The mixins below are shared between mat-menu and mat-select */
+/**
+ * This mixin adds the correct panel transform styles based
+ * on the direction that the menu panel opens.
+ */
+/* stylelint-disable material/no-prefixes */
+/* stylelint-enable */
+/**
+ * This mixin contains shared option styles between the select and
+ * autocomplete components.
+ */
 thinkbig-visual-query-transform md-sidenav.md-locked-open:not(.collapsed) {
   max-width: 257px;
   min-width: 257px;
@@ -41,13 +58,34 @@ thinkbig-visual-query-transform .visual-query-sample-menu {
 thinkbig-visual-query-transform .visual-query-sample-menu.ng-hide {
   opacity: 0; }
 
+thinkbig-visual-query-transform thinkbig-step-buttons {
+  padding-bottom: 0;
+  padding-left: inherit;
+  padding-right: 0;
+  padding-top: 0; }
+
 thinkbig-visual-query-transform visual-query-table {
   position: absolute;
   top: 0; }
   thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
     border-bottom: 1px solid rgba(0, 0, 0, 0.24);
     padding: 0 28px;
-    vertical-align: middle; }
+    text-overflow: ellipsis;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap; }
+    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
+      background-color: #ffcdd2; }
+    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
+      background-color: #f5f5f5; }
+    thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.selected {
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
+      user-select: text; }
   thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
     color: rgba(0, 0, 0, 0.54);
     letter-spacing: .02em;
@@ -57,3 +95,109 @@ thinkbig-visual-query-transform visual-query-table {
     padding-right: 0; }
   thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div {
     letter-spacing: .01em; }
+  thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-domain-type {
+    line-height: inherit;
+    position: absolute;
+    right: 46px;
+    top: 1px; }
+  thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-menu-content {
+    max-height: 352px; }
+
+/* Column headers */
+.ui-grid-header-cell-label {
+  color: grey;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.ui-grid-header-cell-title {
+  color: black; }
+
+/* Column menu button */
+.ui-grid-column-menu-button {
+  padding: 0; }
+
+.ui-grid-column-menu-button > .md-button.md-icon-button {
+  height: inherit;
+  line-height: inherit;
+  padding: 0 6px; }
+
+.ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  display: inline-block;
+  height: 23px;
+  margin: auto; }
+
+/* Column sub-menus */
+md-menu-item > .md-menu {
+  height: 100%;
+  padding: 0;
+  width: 173px; }
+
+md-menu-item > .md-menu > .md-button {
+  border-radius: 0;
+  margin: auto 0;
+  font-size: 15px;
+  text-transform: none;
+  font-weight: 400;
+  text-align: left;
+  text-align: start;
+  height: 100%;
+  padding-left: 16px;
+  padding-right: 16px;
+  display: inline-block;
+  -webkit-align-items: baseline;
+  -ms-flex-align: baseline;
+  align-items: baseline;
+  -webkit-align-content: flex-start;
+  -ms-flex-line-pack: start;
+  align-content: flex-start;
+  width: 100%; }
+
+md-menu-item > .md-menu > .md-button:after {
+  display: block;
+  content: '\25BC';
+  position: absolute;
+  top: 7px;
+  speak: none;
+  -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+  transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+  right: 28px; }
+
+md-menu-item > .md-menu > .md-button md-icon {
+  margin: auto 16px auto 0; }
+
+md-menu-item > .md-menu > .md-button span {
+  margin-top: auto;
+  margin-bottom: auto; }
+
+/** Column menu item buttons */
+.visual-query-column-menu {
+  max-height: 352px; }
+  .visual-query-column-menu .material-icons {
+    font-size: 20px;
+    vertical-align: sub; }
+    .visual-query-column-menu .material-icons.custom-icon {
+      font-weight: bold;
+      text-align: right;
+      vertical-align: super; }
+
+/** Column menu text inputs */
+md-menu-item > div > md-input-container {
+  margin: 0; }
+
+/** Menu */
+.md-panel.visual-query-menu {
+  transform-origin: right top 0; }
+
+/** Tooltip */
+.md-tooltip.visual-query-tooltip {
+  height: auto;
+  overflow: visible;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; }
+  .md-tooltip.visual-query-tooltip ul {
+    color: #ffcdd2;
+    margin: 0;
+    padding-left: 20px; }

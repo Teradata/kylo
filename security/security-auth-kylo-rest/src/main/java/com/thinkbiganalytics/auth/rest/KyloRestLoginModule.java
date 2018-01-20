@@ -77,7 +77,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
     /**
      * The password to use when a loginUser property is set
      */
-    private String loginPassword = null;
+    private char[] loginPassword = null;
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
@@ -86,8 +86,12 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         try {
             config = (LoginJerseyClientConfig) options.get(REST_CLIENT_CONFIG);
             loginUser = (String) getOption(LOGIN_USER).orElse(null);
-            loginPassword = loginUser == null ? null : (String) getOption(LOGIN_PASSWORD)
-                .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+            if(loginUser != null) {
+                String passwordObject = (String)getOption(LOGIN_PASSWORD)
+                    .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
+                loginPassword = passwordObject.toCharArray();
+            }
+
         } catch (RuntimeException e) {
             log.error("Unhandled exception during initialization", e);
             throw e;
@@ -100,13 +104,13 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
         final String username;
-        final String password;
+        final char[] password;
 
         if (loginUser == null) {
             // Use user's own username and password to access the REST API if a loginUser was not provided.
             handle(nameCallback, passwordCallback);
             username = nameCallback.getName();
-            password = new String(passwordCallback.getPassword());
+            password = passwordCallback.getPassword();
         } else {
             // Using the loginUser to access API so only need the authenticating user's name.
             handle(nameCallback);
@@ -134,7 +138,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
         // Parse response
         if (user == null) {
-            log.debug("Received null response from Login API for user: {}", username);
+            log.debug("No account exists with the name: {}", username);
             throw new AccountNotFoundException("No account exists with the name: " + username);
         } else if (!user.isEnabled()) {
             log.debug("User from Login API is disabled: {}", username);

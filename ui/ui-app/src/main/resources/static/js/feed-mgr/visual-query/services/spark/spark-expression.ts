@@ -1,5 +1,6 @@
-import {ParseException} from "../parse-exception";
 import {Expression} from "estree";
+
+import {ParseException} from "../../wrangler/parse-exception";
 import {SparkConstants} from "./spark-constants";
 import {SparkExpressionType} from "./spark-expression-type";
 

@@ -20,8 +20,10 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
+import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
@@ -51,6 +53,7 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +65,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
@@ -110,6 +114,9 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
+
+    @Inject
+    private TemplateConnectionUtil templateConnectionUtil;
 
 
 
@@ -354,12 +361,45 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
      */
     public Set<PortDTO> getReusableFeedInputPorts() {
         Set<PortDTO> ports = new HashSet<>();
-        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
-        if (processGroup != null) {
-            //fetch the ports
-            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
-            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
-                ports.addAll(inputPortsEntity);
+        String reusableProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+        if(reusableProcessGroupId != null) {
+            ProcessGroupFlowDTO processGroup = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
+            if (processGroup != null) {
+
+                //fetch the ports
+                Set<PortDTO> inputPortsEntity = processGroup.getFlow().getInputPorts().stream()
+                    .map(portEntity -> {
+                        PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
+                        //find the connection destination processgroup id
+
+                        List<ConnectionDTO> connList = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent()).collect(Collectors.toList());
+
+                        Optional<ConnectionDTO> connection = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent())
+                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
+                            .findFirst();
+
+                        Optional<ProcessGroupDTO> pg1 = processGroup.getFlow().getProcessGroups().stream()
+                            .map(processGroupEntity -> processGroupEntity.getComponent())
+                            .filter(processGroupDTO -> processGroupDTO.getId().equals(connection.get().getDestination().getGroupId()))
+                            .findFirst();
+
+                        Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
+                            .map(connectionEntity -> connectionEntity.getComponent())
+                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
+                            .flatMap(connectionDTO -> processGroup.getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent())
+                                .filter(processGroupDTO -> processGroupDTO.getId().equals(connectionDTO.getDestination().getGroupId())))
+                            .findFirst();
+                        if (destinationGroup.isPresent()) {
+                            portDTOWithGroupInfo.setDestinationProcessGroupName(destinationGroup.get().getName());
+                        }
+
+                        return portDTOWithGroupInfo;
+                    }).collect(Collectors.toSet());
+                if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                    ports.addAll(inputPortsEntity);
+                }
             }
         }
         return ports;

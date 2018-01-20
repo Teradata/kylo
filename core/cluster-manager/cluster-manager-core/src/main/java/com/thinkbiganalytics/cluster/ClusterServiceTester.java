@@ -39,7 +39,7 @@ public class ClusterServiceTester {
 
     @PostConstruct
     private void init() {
-        clusterService.subscribe(simpleMessageReceiver);
+        clusterService.subscribe(simpleMessageReceiver,SIMPLE_MESSAGE_TYPE);
     }
 
     public void sendSimpleMessage(String message) {

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.server.upgrade;
 
@@ -23,6 +23,9 @@ package com.thinkbiganalytics.server.upgrade;
  * #L%
  */
 
+import com.thinkbiganalytics.KyloVersion;
+import com.thinkbiganalytics.KyloVersionUtil;
+
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +33,17 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.core.env.PropertiesPropertySource;
 
-import com.thinkbiganalytics.KyloVersion;
-import com.thinkbiganalytics.KyloVersionUtil;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Properties;
 
 /**
  * Performs all upgrade steps within a metadata transaction.
  */
 public class KyloUpgrader {
-    
+
     private static final Logger log = LoggerFactory.getLogger(KyloUpgrader.class);
 
     public static final String KYLO_UPGRADE = "kyloUpgrade";
@@ -47,25 +52,27 @@ public class KyloUpgrader {
     public void upgrade() {
         System.setProperty(SpringApplication.BANNER_LOCATION_PROPERTY, "upgrade-banner.txt");
         ConfigurableApplicationContext upgradeCxt = new SpringApplicationBuilder(KyloUpgradeConfig.class)
-                        .web(true)
-                        .profiles(KYLO_UPGRADE)
-                        .run();
+            .web(true)
+            .profiles(KYLO_UPGRADE)
+            .run();
         try {
             KyloUpgradeService upgradeService = upgradeCxt.getBean(KyloUpgradeService.class);
             // Keep upgrading until upgrade() returns true, i.e. we are up-to-date;
-            while (! upgradeService.upgradeNext());
+            while (!upgradeService.upgradeNext()) {
+                ;
+            }
         } finally {
             upgradeCxt.close();
         }
     }
-    
+
     public boolean isUpgradeRequired() {
         KyloVersion buildVer = KyloVersionUtil.getBuildVersion();
         KyloVersion currentVer = getCurrentVersion();
-        
-        return currentVer == null || ! buildVer.matches(currentVer.getMajorVersion(), 
-                                                        currentVer.getMinorVersion(), 
-                                                        currentVer.getPointVersion());
+
+        return currentVer == null || !buildVer.matches(currentVer.getMajorVersion(),
+                                                       currentVer.getMinorVersion(),
+                                                       currentVer.getPointVersion());
     }
 
     /**
@@ -81,11 +88,26 @@ public class KyloUpgrader {
         }
         //Spring is needed to load the Spring Cloud context so we can decrypt the passwords for the database connection
         ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("kylo-upgrade-check-application-context.xml");
+        loadProfileProperties(ctx);
         ctx.refresh();
         KyloUpgradeDatabaseVersionChecker upgradeDatabaseVersionChecker = (KyloUpgradeDatabaseVersionChecker) ctx.getBean("kyloUpgradeDatabaseVersionChecker");
         KyloVersion kyloVersion = upgradeDatabaseVersionChecker.getDatabaseVersion();
         ctx.close();
         return kyloVersion;
+    }
+
+    private void loadProfileProperties(ClassPathXmlApplicationContext ctx) {
+        Arrays.asList(ctx.getEnvironment().getActiveProfiles()).stream().filter(p -> !"native".equalsIgnoreCase(p)).forEach(p -> {
+            Properties properties = new Properties();
+            ClassLoader classLoader = this.getClass().getClassLoader();
+            try (InputStream inputStream = classLoader.getResourceAsStream("application-" + p + ".properties")) {
+                properties.load(inputStream);
+                PropertiesPropertySource propertiesPropertySource = new PropertiesPropertySource(p, properties);
+                ctx.getEnvironment().getPropertySources().addLast(propertiesPropertySource);
+            } catch(Exception e) {
+                log.error("Error loading properties for profile " + p, e);
+            }
+        });
     }
 
 }

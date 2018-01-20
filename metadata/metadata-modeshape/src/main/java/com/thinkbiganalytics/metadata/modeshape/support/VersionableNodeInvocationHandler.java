@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
 /*-
@@ -23,40 +20,33 @@ package com.thinkbiganalytics.metadata.modeshape.support;
  * #L%
  */
 
-import java.lang.reflect.Array;
+import com.google.common.collect.Sets;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.security.AccessControlException;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Set;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
-import com.google.common.collect.Sets;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-
-/**
- *
- */
 public class VersionableNodeInvocationHandler implements InvocationHandler {
-    
+
     private static final Set<String> PARENT_CHILD = Sets.newHashSet("getParent", "addNode", "getNode");
     private static final Set<String> NODE_ITERATOR = Sets.newHashSet("getNodes", "merge", "getSharedSet");
 
     private final Node versionable;
-    
-    /**
-     * @param versionable
-     */
+
     public VersionableNodeInvocationHandler(Node node) {
         this.versionable = node;
     }
@@ -68,7 +58,7 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         try {
             String methodName = method.getName();
-            
+
             if (methodName.startsWith("set")) {
                 if (isValueChange(methodName, args)) {
                     // If the setter value has changed then ensure checkout.
@@ -80,7 +70,7 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
             } else if (methodName.startsWith("add") || methodName.equals("remove")) {
                 ensureCheckout();
             }
-            
+
             if (PARENT_CHILD.contains(methodName)) {
                 return JcrVersionUtil.createAutoCheckoutProxy((Node) method.invoke(this.versionable, args));
             } else if (NODE_ITERATOR.contains(methodName)) {
@@ -96,7 +86,7 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
             throw e.getCause();
         }
     }
-    
+
     private boolean isValueChange(String methodName, Object[] args) throws RepositoryException {
         if (methodName.equals("setProperty")) {
             if (this.versionable.hasProperty((String) args[0])) {
@@ -104,17 +94,17 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
                 if (prop.isMultiple()) {
                     Value[] values = prop.getValues();
                     Object[] propValues = Arrays.stream(values).map(v -> {
-                            try {
-                                return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
-                            } catch (AccessDeniedException e) {
-                                throw new AccessControlException("Unauthorized to access property: " + args[0]);
-                            }
-                        }).toArray();
+                        try {
+                            return JcrPropertyUtil.asValue(v, JcrMetadataAccess.getActiveSession());
+                        } catch (AccessDeniedException e) {
+                            throw new AccessControlException("Unauthorized to access property: " + args[0]);
+                        }
+                    }).toArray();
                     Object[] argValues = (Object[]) args[1];
-                    return ! Arrays.equals(argValues, propValues);
+                    return !Arrays.equals(argValues, propValues);
                 } else {
                     Object value = JcrPropertyUtil.asValue(prop);
-                    return ! args[1].equals(value);
+                    return !Objects.equals(args[1], value);
                 }
             } else {
                 return true;
@@ -128,9 +118,9 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
         JcrVersionUtil.ensureCheckoutNode(this.versionable);
     }
 
-    
+
     private NodeIterator createNodeIterator(final NodeIterator itr) {
-        return (NodeIterator) Proxy.newProxyInstance(NodeIterator.class.getClassLoader(), new Class<?>[] { NodeIterator.class }, new InvocationHandler() {
+        return (NodeIterator) Proxy.newProxyInstance(NodeIterator.class.getClassLoader(), new Class<?>[]{NodeIterator.class}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 try {
@@ -145,9 +135,9 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
             }
         });
     }
-    
+
     private PropertyIterator createPropertyIterator(final PropertyIterator itr) {
-        return (PropertyIterator) Proxy.newProxyInstance(PropertyIterator.class.getClassLoader(), new Class<?>[] { PropertyIterator.class }, new InvocationHandler() {
+        return (PropertyIterator) Proxy.newProxyInstance(PropertyIterator.class.getClassLoader(), new Class<?>[]{PropertyIterator.class}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 try {
@@ -162,16 +152,16 @@ public class VersionableNodeInvocationHandler implements InvocationHandler {
             }
         });
     }
-    
+
     private Property createProperty(final Property prop) {
-        return (Property) Proxy.newProxyInstance(Property.class.getClassLoader(), new Class<?>[] { Property.class }, new InvocationHandler() {
+        return (Property) Proxy.newProxyInstance(Property.class.getClassLoader(), new Class<?>[]{Property.class}, new InvocationHandler() {
             @Override
             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
                 try {
                     if (method.getName().equals("setValue")) {
                         ensureCheckout();
                     }
-                    
+
                     return method.invoke(prop, args);
                 } catch (InvocationTargetException e) {
                     throw e.getCause();

@@ -389,9 +389,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
                                 RegisterTemplateService.initializeProperties(updatedFeedResponse.data.registeredTemplate,'edit');
                                 self.model.inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.inputProcessors,true);
+                                //sort them by name
+                                self.model.inputProcessors = _.sortBy(self.model.inputProcessors,'name')
+
                                 self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
-                                    return self.model.inputProcessorType == processor.type;
+                                    return angular.isDefined(self.model.inputProcessorName) && self.model.inputProcessorName != null ? self.model.inputProcessorType == processor.type && self.model.inputProcessorName.toLowerCase() == processor.name.toLowerCase() : self.model.inputProcessorType == processor.type;
                                 });
+
+                                if(angular.isUndefined(self.model.inputProcessor)){
+                                    self.model.inputProcessor = _.find(self.model.inputProcessors,function(processor){
+                                        return self.model.inputProcessorType == processor.type;
+                                    });
+                                }
                                 self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(updatedFeedResponse.data.registeredTemplate.nonInputProcessors,false);
                                 self.updateMenuOptions();
                                 self.loadingFeedData = false;

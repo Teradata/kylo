@@ -29,6 +29,16 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
          */
         var USER_TYPE = "UserDatasource";
 
+        var ICON = "grid_on";
+        var ICON_COLOR = "orange";
+
+        function ensureDefaultIcon(datasource) {
+            if (datasource.icon === undefined) {
+                datasource.icon = ICON;
+                datasource.iconColor = ICON_COLOR;
+            }
+        }
+
         /**
          * Interacts with the Data Sources REST API.
          * @constructor
@@ -37,6 +47,25 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
         }
 
         angular.extend(DatasourcesService.prototype, {
+
+            /**
+             * Default icon name and color is used for data sources which  were created prior to
+             * data sources supporting icons
+             * @returns {string} default icon name
+             */
+            defaultIconName: function() {
+                return ICON;
+            },
+
+            /**
+             * Default icon name and color is used for data sources which  were created prior to
+             * data sources supporting icons
+             * @returns {string} default icon color
+             */
+            defaultIconColor: function() {
+                return ICON_COLOR;
+            },
+
             /**
              * Deletes the data source with the specified id.
              * @param {string} id the data source id
@@ -70,6 +99,7 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             findAll: function () {
                 return $http.get(RestUrlService.GET_DATASOURCES_URL, {params: {type: USER_TYPE}})
                     .then(function (response) {
+                        _.each(response.data, ensureDefaultIcon);
                         return response.data;
                     });
             },
@@ -82,6 +112,7 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
             findById: function (id) {
                 return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id)
                     .then(function (response) {
+                        ensureDefaultIcon(response.data);
                         return response.data;
                     });
             },

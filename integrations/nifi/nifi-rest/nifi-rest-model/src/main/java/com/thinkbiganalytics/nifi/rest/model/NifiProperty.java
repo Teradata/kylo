@@ -33,7 +33,7 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @XmlRootElement
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NifiProperty {
+public final class NifiProperty {
 
     /**
      * Nifi property options from the Nifi dto
@@ -108,6 +108,7 @@ public class NifiProperty {
         this.processorName = property.getProcessorName();
         this.processorId = property.getProcessorId();
         this.processGroupId = property.getProcessGroupId();
+        this.processorType = property.getProcessorType();
         this.key = property.getKey();
         this.value = property.getValue();
         this.templateValue = property.getTemplateValue();
@@ -117,7 +118,6 @@ public class NifiProperty {
         this.renderType = property.getRenderType();
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
-        this.processorName = property.getProcessorType();
         this.containsConfigurationVariables = property.isContainsConfigurationVariables();
         this.sensitive = property.isSensitive();
         this.required = property.isRequired();

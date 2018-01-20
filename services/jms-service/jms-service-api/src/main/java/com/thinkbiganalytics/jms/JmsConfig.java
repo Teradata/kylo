@@ -70,22 +70,32 @@ public class JmsConfig {
         return template;
     }
 
-    @Bean
-    public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
+    @Bean(name=JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
+    public DefaultJmsListenerContainerFactory queueListenerContainerFactory(ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setPubSubDomain(false);
         factory.setConnectionFactory(connectionFactory);
         //factory.setSubscriptionDurable(true);
         factory.setClientId(env.getProperty("jms.client.id:thinkbig.feedmgr"));
         String concurrency = env.getProperty("jms.connections.concurrent");
-        if (StringUtils.isEmpty(concurrency)) {
-            concurrency = "1-1";
-        }
+        concurrency = StringUtils.isEmpty(concurrency) ? "1-1" : concurrency;
         factory.setConcurrency(concurrency);
         factory.setMessageConverter(new SimpleMessageConverter());
 
         jmsService.configureContainerFactory(factory);
 
+        return factory;
+    }
+    
+    @Bean(name=JmsConstants.TOPIC_LISTENER_CONTAINER_FACTORY)
+    public JmsListenerContainerFactory<?> topicListenerContainerFactory(ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setPubSubDomain(true);
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(new SimpleMessageConverter());
+        
+        jmsService.configureContainerFactory(factory);
+        
         return factory;
     }
 }

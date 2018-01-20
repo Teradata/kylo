@@ -4,7 +4,7 @@ import * as _ from "underscore";
 
 import "feed-mgr/visual-query/module";
 import "feed-mgr/visual-query/module-require";
-import {QueryEngineFactory} from "../services/query-engine-factory.service";
+import {QueryEngineFactory} from "../wrangler/query-engine-factory.service";
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 

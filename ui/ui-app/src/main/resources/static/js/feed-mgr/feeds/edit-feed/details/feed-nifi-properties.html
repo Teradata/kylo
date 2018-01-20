@@ -17,13 +17,13 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+<vertical-section-layout section-title='{{"views.feed-nifi-properties.FD" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true"
                          the-form="vm.feedDetailsForm">
     <readonly-section>
         <div layout="column">
             <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Source</span>
+                <span flex="25" class="property-name">{{"views.feed-nifi-properties.Source" | translate}}</span>
 
                 <div flex>
                     {{vm.model.inputProcessor.name}}
@@ -33,11 +33,11 @@
             <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
                 <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
                  <md-tooltip md-direction="right" ng-if="property.sensitive">
-                   This is a sensitive property.
+                   {{"views.feed-nifi-properties.Tiasp" | translate}}
                 </md-tooltip>
                 </div>
 
-                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">Source Retention Period</span>
+                <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'">{{"views.feed-nifi-properties.SRP" | translate}}</span>
 
                 <div flex>
                     <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{property.value}}</span>
@@ -64,7 +64,7 @@
 
         <div layout="column">
             <div style="padding-bottom:10px;">
-                <div class="md-subhead">Choose a Feed Input</div>
+                <div class="md-subhead">{{"views.feed-nifi-properties.CaFI" | translate}}</div>
                 <div class="layout-padding-indent" style="padding-top:8px;">
                     <md-radio-group ng-model="vm.editModel.inputProcessorId" layout="row" disabled="true">
                         <md-radio-button ng-repeat="inputProcessor in vm.model.inputProcessors" ng-value="inputProcessor.processorId" aria-label="{{inputProcessor.name}}" disabled>
@@ -72,7 +72,7 @@
                             <div class="hint" ng-if="vm.model.inputProcessor.config.comments != ''">{{vm.inputProcessor.config.comments}}</div>
                         </md-radio-button>
                         <md-tooltip>
-                            You cannot change the input processor after the feed has been created
+                            {{"views.feed-nifi-properties.Ycctipatfhbc" | translate}}
                         </md-tooltip>
                     </md-radio-group>
                 </div>

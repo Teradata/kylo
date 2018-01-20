@@ -11,6 +11,8 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
         this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
         this.DASHBOARD_URL = this.ROOT + '/proxy/v1/dashboard';
 
+        this.DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
+
         this.FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
         this.FEED_NAMES_URL = this.FEEDS_BASE + "/names";
         this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";
@@ -59,6 +61,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.JOBS_BASE + "/" + executionId + "/abandon";
         }
 
+
         this.ABANDON_ALL_JOBS_URL = function (feedId) {
             return self.JOBS_BASE + "/abandon-all/" + feedId;
         }
@@ -84,19 +87,19 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
 
         this.STATS_BASE_V2 = "/proxy/v2/provenance-stats";
 
-        this.PROCESSOR_DURATION_FOR_FEED = function (feedName, timeInterval) {
-            return self.STATS_BASE_V2 + "/" + feedName + "/processor-duration/" + timeInterval;
-        }
+        this.PROCESSOR_DURATION_FOR_FEED = function (feedName, from, to) {
+            return self.STATS_BASE_V2 + "/" + feedName + "/processor-duration?from=" + from + "&to=" + to;
+        };
 
-        this.FEED_STATISTICS_OVER_TIME = function (feedName, timeInterval) {
-            return self.STATS_BASE_V2 + "/" + feedName + "/" + timeInterval;
-        }
+        this.FEED_STATISTICS_OVER_TIME = function (feedName, from, to, maxDataPoints) {
+            return self.STATS_BASE_V2 + "/" + feedName + "?from=" + from + "&to=" + to + "&dp=" + maxDataPoints;
+        };
 
-        this.FEED_PROCESSOR_ERRORS = function (feedName, timeInterval) {
-            return self.STATS_BASE_V2 + "/" + feedName + "/processor-errors/" + timeInterval;
-        }
+        this.FEED_PROCESSOR_ERRORS = function (feedName, from, to) {
+            return self.STATS_BASE_V2 + "/" + feedName + "/processor-errors?from=" + from + "&to=" + to;
+        };
 
-        this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";
+        this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE_V2 + "/time-frame-options";
 
         /**
          * Gets the alert details endpoint for the specified alert.

@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
@@ -23,22 +23,6 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * #L%
  */
 
-import java.security.Principal;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.function.Function;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
-
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.jcr.Node;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.core.annotation.Order;
-
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -48,6 +32,7 @@ import com.thinkbiganalytics.metadata.api.datasource.security.DatasourceAccessCo
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.api.security.RoleNotFoundException;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
@@ -68,49 +53,64 @@ import com.thinkbiganalytics.security.action.AllowedEntityActionsProvider;
 import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.annotation.Order;
+
+import java.security.Principal;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
+
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.jcr.Node;
+
 /**
- * An action invoked early post-metadata configuration that checks if access control has been enabled or disabled.
- * If it was enabled when previously disabled then roles are setup.  If it was disabled when previously enabled then
- * an exception is thrown to fail startup.
+ * An action invoked early post-metadata configuration that checks if access control has been enabled or disabled. If it was enabled when previously disabled then roles are setup.  If it was disabled
+ * when previously enabled then an exception is thrown to fail startup.
  */
 @Order(PostMetadataConfigAction.EARLY_ORDER)
 public class CheckEntityAccessControlAction implements PostMetadataConfigAction {
 
     private static final Logger log = LoggerFactory.getLogger(CheckEntityAccessControlAction.class);
-    
+
     @Inject
     private MetadataAccess metadata;
 
     @Inject
     private AccessController accessController;
-    
+
     @Inject
     private SecurityRoleProvider roleProvider;
-    
+
     @Inject
     private AllowedEntityActionsProvider actionsProvider;
 
     @Inject
     private CategoryProvider categoryProvider;
-    
+
     @Inject
     private FeedProvider feedProvider;
-    
+
     @Inject
     private FeedManagerTemplateProvider feedManagerTemplateProvider;
 
-    
+
     @Override
     public void run() {
         metadata.commit(() -> {
             Node securityNode = JcrUtil.getNode(JcrMetadataAccess.getActiveSession(), SecurityPaths.SECURITY.toString());
             boolean propertyEnabled = accessController.isEntityAccessControlled();
             boolean metadataEnabled = wasAccessControllEnabled(securityNode);
-            
+
             if (metadataEnabled == true && propertyEnabled == false) {
-                log.error(  "\n*************************************************************************************************************************************\n"
-                            + "Kylo has previously been started with entity access control enabled and the current configuration is attempting to set it as disabled\n"
-                            + "*************************************************************************************************************************************");
+                log.error("\n*************************************************************************************************************************************\n"
+                          + "Kylo has previously been started with entity access control enabled and the current configuration is attempting to set it as disabled\n"
+                          + "*************************************************************************************************************************************");
                 throw new IllegalStateException("Entity access control is configured as disabled when it was previously enabled");
             } else if (metadataEnabled == false && propertyEnabled == true) {
                 ensureDefaultEntityRoles();
@@ -139,12 +139,15 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
 
     private void createDefaultRoles() {
         // Create default roles
-        SecurityRole feedEditor = createDefaultRole(SecurityRole.FEED, "editor", "Editor", "Allows a user to edit, enable/disable, delete and export feed. Allows access to job operations for feed. If role inherited via a category, allows these operations for feeds under that category.",
-                                                    FeedAccessControl.EDIT_DETAILS,
-                                                    FeedAccessControl.DELETE,
-                                                    FeedAccessControl.ACCESS_OPS,
-                                                    FeedAccessControl.ENABLE_DISABLE,
-                                                    FeedAccessControl.EXPORT);
+        SecurityRole
+            feedEditor =
+            createDefaultRole(SecurityRole.FEED, "editor", "Editor",
+                              "Allows a user to edit, enable/disable, delete and export feed. Allows access to job operations for feed. If role inherited via a category, allows these operations for feeds under that category.",
+                              FeedAccessControl.EDIT_DETAILS,
+                              FeedAccessControl.DELETE,
+                              FeedAccessControl.ACCESS_OPS,
+                              FeedAccessControl.ENABLE_DISABLE,
+                              FeedAccessControl.EXPORT);
 
         //admin can do everything the editor does + change perms
         createDefaultRole(SecurityRole.FEED, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions", feedEditor,
@@ -188,8 +191,17 @@ public class CheckEntityAccessControlAction implements PostMetadataConfigAction 
         createDefaultRole(SecurityRole.DATASOURCE, "admin", "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions", datasourceEditor,
                           DatasourceAccessControl.CHANGE_PERMS);
         createDefaultRole(SecurityRole.DATASOURCE, "readOnly", "Read-Only", "Allows a user to view the datasource", DatasourceAccessControl.ACCESS_DATASOURCE);
+
+        final SecurityRole projectEditor = createDefaultRole(SecurityRole.PROJECT, ProjectAccessControl.ROLE_EDITOR, "Editor", "Allows a user to edit, delete projects",
+                                                             ProjectAccessControl.ACCESS_PROJECT,
+                                                             ProjectAccessControl.EDIT_PROJECT,
+                                                             ProjectAccessControl.DELETE_PROJECT);
+        createDefaultRole(SecurityRole.PROJECT, ProjectAccessControl.ROLE_ADMIN, "Admin", "All capabilities defined in the 'Editor' role along with the ability to change the permissions",
+                          projectEditor,
+                          ProjectAccessControl.CHANGE_PERMS);
+        createDefaultRole(SecurityRole.PROJECT, ProjectAccessControl.ROLE_READER, "Read-Only", "Allows a user to view the project", ProjectAccessControl.ACCESS_PROJECT);
     }
-    
+
     protected SecurityRole createDefaultRole(@Nonnull final String entityName, @Nonnull final String roleName, @Nonnull final String title, final String desc, @Nonnull final SecurityRole baseRole,
                                              final Action... actions) {
         final Stream<Action> baseActions = baseRole.getAllowedActions().getAvailableActions().stream().flatMap(AllowableAction::stream);

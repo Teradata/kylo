@@ -2187,9 +2187,9 @@
   "!COLLECTION_FUNCTIONS": "Functions for collections.",
 
   "array_contains": {
-    "!type": "fn(column: Column, value: Column) -> Column",
+    "!type": "fn(column: Column, value: Object) -> Column",
     "!doc": "Returns true if the array contain the value.",
-    "!spark": "functions.array_contains(%c, %c)",
+    "!spark": "functions.array_contains(%c, %o)",
     "!sparkType": "column"
   },
   "explode": {
@@ -2298,9 +2298,9 @@
     "!sparkType": "column"
   },
   "from_unixtime": {
-    "!type": "fn(ut: Column, f: string) -> Column",
+    "!type": "fn(ut: Column, opt_f: string) -> Column",
     "!doc": "Converts the number of seconds from unix epoch (1970-01-01 00:00:00 UTC) to a string representing the timestamp of that moment in the current system time zone in the given format.",
-    "!spark": "functions.from_unixtime(%c, %s)",
+    "!spark": "functions.from_unixtime(%c%,?s)",
     "!sparkType": "column"
   },
   "from_utc_timestamp": {
@@ -2553,9 +2553,9 @@
     "!sparkType": "column"
   },
   "round": {
-    "!type": "fn(e: Column, scale: number) -> Column",
+    "!type": "fn(e: Column, opt_scale: number) -> Column",
     "!doc": "Round the value of e to scale decimal places if scale >= 0 or at integral part when scale < 0.",
-    "!spark": "functions.round(%c, %d)",
+    "!spark": "functions.round(%c%,?d)",
     "!sparkType": "column"
   },
   "shiftLeft": {

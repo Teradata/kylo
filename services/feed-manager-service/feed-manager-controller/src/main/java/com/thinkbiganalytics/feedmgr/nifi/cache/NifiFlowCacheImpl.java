@@ -108,6 +108,14 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     @Value("${nifi.flow.inspector.threads:1}")
     private Integer nififlowInspectorThreads = 1;
 
+
+    @Value("${nifi.flow.max.retries:100}")
+    private Integer nifiFlowMaxRetries = 100;
+
+
+    @Value("${nifi.flow.retry.wait.time.seconds:5}")
+    private Integer nifiFlowWaitTime = 5;
+
     @Deprecated
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedProcessorIdProcessorMap = new ConcurrentHashMap<>();
 
@@ -220,7 +228,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         if (!loaded && rebuildWithRetryInProgress.get() == false) {
             log.info("Check and Initialize NiFi Flow Cache. Kylo up to date:{}, NiFi Connected:{}, Cache needs loading:{} ", isLatest, nifiConnected, !loaded);
             if (isLatest && nifiConnected && !loaded) {
-                rebuildCacheWithRetry();
+                rebuildCacheWithRetry(nifiFlowMaxRetries, nifiFlowWaitTime);
             }
         }
     }
@@ -309,7 +317,15 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
      * Rebuild the base cache that others will update from.
      */
     @Override
-    public synchronized void rebuildAll() {
+    public boolean rebuildAll() {
+        if (rebuildWithRetryInProgress.get() == false) {
+            return rebuildCacheWithRetry(1, 5);
+        }
+        return false;
+    }
+
+
+    private void rebuildAllCache() {
         log.info("Rebuilding the NiFi Flow Cache. Starting NiFi Flow Inspection with {} threads ...", nififlowInspectorThreads);
         boolean notify = reloadCount.get() == 0;
         loaded = false;
@@ -330,21 +346,25 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         reuseableTemplateProcessorIds.addAll(completionCallback.getReusableTemplateProcessorIds());
         reusableTemplateProcessGroupId = completionCallback.getReusableTemplateProcessGroupId();
 
-        log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
-                 completionCallback.getFeedNames().size(), processorIdToProcessorName.size(), connectionIdCacheNameMap.size());
-        if (completionCallback.getRootConnections() != null) {
-            log.info("Adding {} Root Connections to the niFiObjectCache ", completionCallback.getRootConnections().size());
-            niFiObjectCache.addProcessGroupConnections(completionCallback.getRootConnections());
-        }
-        if (completionCallback.getReusableTemplateProcessGroupId() != null) {
-            niFiObjectCache.setReusableTemplateProcessGroupId(completionCallback.getReusableTemplateProcessGroupId());
-        }
-        lastUpdated = DateTime.now();
-        loaded = true;
-        reloadCount.incrementAndGet();
-        log.info("Successfully built NiFi Flow Cache");
-        if (notify) {
-            notifyCacheAvailable();
+        if (!flowInspectorManager.hasErrors()) {
+            log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
+                     completionCallback.getFeedNames().size(), processorIdToProcessorName.size(), connectionIdCacheNameMap.size());
+            if (completionCallback.getRootConnections() != null) {
+                log.info("Adding {} Root Connections to the niFiObjectCache ", completionCallback.getRootConnections().size());
+                niFiObjectCache.addProcessGroupConnections(completionCallback.getRootConnections());
+            }
+            if (completionCallback.getReusableTemplateProcessGroupId() != null) {
+                niFiObjectCache.setReusableTemplateProcessGroupId(completionCallback.getReusableTemplateProcessGroupId());
+            }
+            lastUpdated = DateTime.now();
+            loaded = true;
+            reloadCount.incrementAndGet();
+            log.info("Successfully built NiFi Flow Cache");
+            if (notify) {
+                notifyCacheAvailable();
+            }
+        } else {
+            throw new NiFiFlowCacheException("Error inspecting and building the NiFi flow cache.");
         }
 
     }
@@ -374,17 +394,18 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
      * Rebuilds the cache.
      * If an exception occurs during the rebuild it will attempt to retry to build it up to 10 times before aborting
      */
-    public void rebuildCacheWithRetry() {
+    public boolean rebuildCacheWithRetry(int retries, int waitTime) {
+        boolean updated = false;
         if (rebuildWithRetryInProgress.compareAndSet(false, true)) {
             Exception lastError = null;
-            int retries = 10;
-            int waitTime = 5;
+
             for (int count = 1; count <= retries; ++count) {
                 try {
                     log.info("Attempting to build the NiFiFlowCache");
-                    rebuildAll();
+                    rebuildAllCache();
                     if (loaded) {
                         log.info("Successfully built the NiFiFlowCache");
+                        updated = true;
                         break;
                     }
                 } catch (final Exception e) {
@@ -402,6 +423,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
             }
             rebuildWithRetryInProgress.set(false);
         }
+        return updated;
     }
 
 
@@ -437,14 +459,14 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         }
     }
 
-    public boolean needsUpdateFromCluster(){
+    public boolean needsUpdateFromCluster() {
         return isKyloClustered() && nifiFlowCacheClusterManager.needsUpdate();
     }
 
     /**
      * if Kylo is clustered it needs to sync any updates from the other Kylo instances before proceeding
      */
-    public void applyClusterUpdates() {
+    public synchronized void applyClusterUpdates() {
         List<NifiFlowCacheClusterUpdateMessage> updates = nifiFlowCacheClusterManager.findUpdates();
         Set<String> templateUpdates = new HashSet<>();
         boolean needsUpdates = !updates.isEmpty();
@@ -500,10 +522,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     }
 
     public NifiFlowCacheSnapshot getLatest() {
-        if (!isAvailable()) {
-            return NifiFlowCacheSnapshot.EMPTY;
-        }
-        return latest;
+     return latest;
     }
 
     private void initializeLatestSnapshot() {

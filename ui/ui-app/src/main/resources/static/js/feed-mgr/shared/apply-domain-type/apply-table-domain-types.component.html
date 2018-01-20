@@ -1,0 +1,25 @@
+<md-dialog arial-label="Apply domain types">
+  <form name="overwriteFieldsForm" ng-cloak>
+    <md-toolbar>
+      <div class="md-toolbar-tools">
+        <h2>Apply domain types</h2>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon icon="close" size="20"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+
+    <md-dialog-content>
+      <div class="md-dialog-content">
+        <div style="padding-bottom: 12px;">The detected domain type will overwrite the name or data type of one or more columns. Please deselect any column that should be not changed:</div>
+        <div ui-grid="gridOptions" ui-grid-selection></div>
+      </div>
+    </md-dialog-content>
+
+    <md-dialog-actions layout="row">
+      <md-button ng-click="cancel()">Cancel</md-button>
+      <md-button class="md-raised md-primary" ng-click="hide()">Apply</md-button>
+    </md-dialog-actions>
+  </form>
+</md-dialog>

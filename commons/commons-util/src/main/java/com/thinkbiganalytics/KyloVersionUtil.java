@@ -91,11 +91,9 @@ public class KyloVersionUtil {
             Properties prop = new Properties();
             String versionFile = "version.txt";
 
-            InputStream in = KyloVersionUtil.class.getClassLoader()
-                .getResourceAsStream(versionFile);
-            URL url = KyloVersionUtil.class.getClassLoader().getResource(versionFile);
-            if (in != null) {
-                try {
+            try(InputStream in = KyloVersionUtil.class.getClassLoader().getResourceAsStream(versionFile)) {
+                URL url = KyloVersionUtil.class.getClassLoader().getResource(versionFile);
+                if (in != null) {
                     try {
                         log.info("finding version information from {} ", url.toURI().getPath().toString());
                     } catch (Exception e) {
@@ -106,9 +104,9 @@ public class KyloVersionUtil {
                     buildTimestamp = prop.getProperty("build.date");
 
                     log.info("loaded Kylo version file: {}  build Time: {}", currentVersion, buildTimestamp);
-                } catch (IOException e) {
-
                 }
+            } catch(Exception e) {
+                log.error("Error loading properties from input stream", e);
             }
             versionString = currentVersion;
         }
@@ -117,7 +115,7 @@ public class KyloVersionUtil {
     }
 
 
-    public String getBuildTimestamp() {
+    public static String getBuildTimestamp() {
         if (StringUtils.isBlank(buildTimestamp)) {
             getBuildVersionString();
         }
@@ -211,6 +209,11 @@ public class KyloVersionUtil {
 
         public void setTag(String tag) {
             this.tag = tag;
+        }
+        
+        @Override
+        public KyloVersion withoutTag() {
+            return new Version(this.getMajorVersion(), this.getMinorVersion(), this.getPointVersion(), null);
         }
 
         /**

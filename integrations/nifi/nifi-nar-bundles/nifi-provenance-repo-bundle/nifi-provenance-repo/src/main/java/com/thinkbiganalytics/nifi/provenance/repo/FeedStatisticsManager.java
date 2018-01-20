@@ -148,12 +148,22 @@ public class FeedStatisticsManager {
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(),FeedEventStatistics.getInstance().getRunningFeedFlows());
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(),FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
+            }
+            else {
+                //if we are empty but the runningFlows have changed, then send off as well
+                if(FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged()){
+                    JmsSender jmsSender = new JmsSender(null, null,FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                    this.jmsService.submit(new JmsSenderConsumer(jmsSender));
+                }
+
             }
 
 
         } finally {
+            FeedEventStatistics.getInstance().markFeedProcessorRunningFeedFlowsUnchanged();
+
             feedStatisticsMap.values().stream().forEach(stats -> stats.clear());
             lock.unlock();
         }

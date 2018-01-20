@@ -36,8 +36,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
@@ -78,15 +78,18 @@ public class FeedIT extends IntegrationTestBase {
 
     private static final String SAMPLES_DIR = "/samples";
     private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
-    private static final String NIFI_VERSION = "nifi-1.0";
-    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_VERSION + "/";
-    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_VERSION + "/";
+    private static final String NIFI_FEED_SAMPLE_VERSION = "nifi-1.3";
+    private static final String NIFI_TEMPLATE_SAMPLE_VERSION = "nifi-1.0";
+    private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_TEMPLATE_SAMPLE_VERSION + "/";
+    private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_FEED_SAMPLE_VERSION + "/";
     protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
     private static final String USERDATA1_CSV = "userdata1.csv";
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private static final int VALID_RESULTS = 879;
+    private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
     private static String FEED_NAME = "users_" + System.currentTimeMillis();
+    private static String CATEGORY_NAME = "Functional Tests";
 
     private String sampleFeedsPath;
     protected String sampleTemplatesPath;
@@ -119,9 +122,9 @@ public class FeedIT extends IntegrationTestBase {
         copyDataToDropzone();
 
         //create new category
-        FeedCategory category = createCategory("Functional Tests");
+        FeedCategory category = createCategory(CATEGORY_NAME);
 
-        ExportImportTemplateService.ImportTemplate ingest = importDataIngestTemplate();
+        ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
         FeedMetadata feed = getCreateFeedRequest(category, ingest, FEED_NAME);
@@ -134,6 +137,30 @@ public class FeedIT extends IntegrationTestBase {
 
         failJobs(response.getCategoryAndFeedName());
         abandonAllJobs(response.getCategoryAndFeedName());
+    }
+
+    @Test
+    public void testEditFeed() throws Exception {
+        // Prepare environment
+        prepare();
+
+        final FeedCategory category = createCategory(CATEGORY_NAME);
+        final ImportTemplate template = importDataIngestTemplate();
+
+        // Create feed
+        FeedMetadata feed = getCreateFeedRequest(category, template, FEED_NAME);
+        feed.setDescription("Test feed");
+
+        FeedMetadata response = createFeed(feed).getFeedMetadata();
+        Assert.assertEquals(feed.getFeedName(), response.getFeedName());
+
+        // Edit feed
+        feed = response;
+        feed.setDescription(null);
+
+        response = createFeed(feed).getFeedMetadata();
+        Assert.assertEquals(feed.getFeedName(), response.getFeedName());
+        Assert.assertEquals(feed.getDescription(), response.getDescription());
     }
 
     @Override
@@ -225,22 +252,22 @@ public class FeedIT extends IntegrationTestBase {
 
 
     protected void importSystemFeeds() {
-        ExportImportFeedService.ImportFeed textIndex = importFeed(sampleFeedsPath + "index_text_service_elasticsearch.feed.zip");
+        ImportFeed textIndex = importFeed(sampleFeedsPath + INDEX_TEXT_SERVICE_V2_FEED_ZIP);
         enableFeed(textIndex.getNifiFeed().getFeedMetadata().getFeedId());
     }
 
-    protected ExportImportTemplateService.ImportTemplate importDataIngestTemplate() {
+    protected ImportTemplate importDataIngestTemplate() {
         return importFeedTemplate(sampleTemplatesPath + DATA_INGEST_ZIP);
     }
 
-    protected ExportImportTemplateService.ImportTemplate importFeedTemplate(String templatePath) {
+    protected ImportTemplate importFeedTemplate(String templatePath) {
         LOG.info("Importing feed template {}", templatePath);
 
         //get number of templates already there
         int existingTemplateNum = getTemplates().length;
 
         //import standard feedTemplate template
-        ExportImportTemplateService.ImportTemplate feedTemplate = importTemplate(templatePath);
+        ImportTemplate feedTemplate = importTemplate(templatePath);
         Assert.assertTrue(templatePath.contains(feedTemplate.getFileName()));
         Assert.assertTrue(feedTemplate.isSuccess());
 
@@ -358,7 +385,7 @@ public class FeedIT extends IntegrationTestBase {
         Assert.assertTrue(countries.contains("Brazil"));
     }
 
-    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ExportImportTemplateService.ImportTemplate template, String name) throws Exception {
+    protected FeedMetadata getCreateFeedRequest(FeedCategory category, ImportTemplate template, String name) throws Exception {
         FeedMetadata feed = new FeedMetadata();
         feed.setFeedName(name);
         feed.setSystemFeedName(name.toLowerCase());
@@ -387,6 +414,8 @@ public class FeedIT extends IntegrationTestBase {
         properties.add(inputDir);
 
         NifiProperty loadStrategy = new NifiProperty("305363d8-015a-1000-0000-000000000000", "6aeabec7-ec36-4ed5-0000-000000000000", "Load Strategy", "FULL_LOAD");
+        loadStrategy.setProcessGroupName("NiFi Flow");
+        loadStrategy.setProcessorName("GetTableData");
         loadStrategy.setProcessorType("com.thinkbiganalytics.nifi.v2.ingest.GetTableData");
         properties.add(loadStrategy);
 

@@ -43,6 +43,7 @@ public class SolrSearchSpringConfiguration {
     }
 
     @Bean
+    @Profile("!kyloUpgrade")
     public RepositoryIndexConfiguration solrModeShapeConfigurationService(SolrSearchClientConfiguration solrSearchClientConfiguration) {
         return new SolrSearchModeShapeConfigurationService(solrSearchClientConfiguration);
     }

@@ -216,8 +216,6 @@ echo "    - Completed kylo-ui install"
 
 echo "    - Install kylo-services application"
 
-rm -f $INSTALL_HOME/kylo-services/lib/jetty*
-rm -f $INSTALL_HOME/kylo-services/lib/servlet-api*
 sed -i "s/security\.jwt\.key=<insert-256-bit-secret-key-here>/security\.jwt\.key=${jwtkey}/" $INSTALL_HOME/kylo-services/conf/application.properties
 echo "   - Installed kylo-services to '$INSTALL_HOME/kylo-services'"
 
@@ -226,19 +224,20 @@ cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
+export KYLO_SPRING_PROFILES_OPTS=
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
 KYLO_NIFI_PROFILE="nifi-v1"
 if [[ \${PROFILES} == *"nifi-v1.1"* ]];
  then
  KYLO_NIFI_PROFILE="nifi-v1.1"
-elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]] || [[ \${PROFILES} == *"nifi-v1.4"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
-java \$KYLO_SERVICES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
+java \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
@@ -253,7 +252,7 @@ KYLO_NIFI_PROFILE="nifi-v1"
 if [[ \${PROFILES} == *"nifi-v1.1"* ]];
  then
  KYLO_NIFI_PROFILE="nifi-v1.1"
-elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]];
+elif [[ \${PROFILES} == *"nifi-v1.2"* ]] || [[ \${PROFILES} == *"nifi-v1.3"* ]] || [[ \${PROFILES} == *"nifi-v1.4"* ]];
 then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi

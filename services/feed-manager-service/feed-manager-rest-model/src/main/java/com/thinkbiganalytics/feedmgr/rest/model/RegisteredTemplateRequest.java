@@ -20,7 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  * #L%
  */
 
-public class RegisteredTemplateRequest {
+public final class RegisteredTemplateRequest {
 
     private String templateId;
     private String templateName;

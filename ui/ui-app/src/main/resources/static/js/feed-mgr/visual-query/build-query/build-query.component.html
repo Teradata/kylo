@@ -1,5 +1,4 @@
 <div layout="column" flex ng-class="{'visual-query-auto-complete-centered':$bq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$bq.chartViewModel.data.nodes.length >0}">
-  <td-message label="Error!" sublabel="You did something wrong!" color="warn" icon="error"></td-message>
   <div ng-if="$bq.error != null" style="color:#e53935;background-color:rgba(229,57,53,.15);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
     <ng-md-icon icon="error" style="margin-right:20px;"></ng-md-icon>
     <div layout="column" flex>
@@ -30,7 +29,8 @@
             md-min-length="1"
             placeholder="Search tables"
             md-menu-class="autocomplete-hive-table-template"
-            ng-disabled="$bq.error != null">
+            ng-disabled="$bq.error != null"
+            md-delay="$bq.tablesAutocomplete.delay">
           <md-item-template>
           <span class="item-title">
             <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>

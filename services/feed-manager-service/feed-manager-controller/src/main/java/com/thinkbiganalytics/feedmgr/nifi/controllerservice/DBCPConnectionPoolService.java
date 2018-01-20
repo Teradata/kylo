@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.nifi.controllerservice;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -104,6 +104,29 @@ public class DBCPConnectionPoolService {
     }
 
     /**
+     * Executes the specified SELECT query in the context of the specified data source.
+     *
+     * @param datasource the JDBC datasource
+     * @param query      the query to execute
+     * @return the query results
+     * @throws DataAccessException      if the query cannot be executed
+     * @throws IllegalArgumentException if the datasource is invalid
+     */
+    @Nonnull
+    public QueryResult executeQueryForDatasource(@Nonnull final JdbcDatasource datasource, @Nonnull final String query) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(controllerService.get());
+            final ExecuteQueryControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).query(query).useEnvironmentProperties(false).build();
+            return executeQueryForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot execute query for datasource: {}", datasource);
+            throw new IllegalArgumentException("Missing controller service for datasource: " + datasource);
+        }
+    }
+
+    /**
      * Returns a list of table names matching a pattern
      *
      * @param serviceId   a NiFi controller service id
@@ -123,6 +146,26 @@ public class DBCPConnectionPoolService {
             log.error("Cannot getTable Names for Controller Service. Unable to obtain Controller Service for serviceId or Name ({} , {})", serviceId, serviceName);
         }
         return null;
+    }
+
+    /**
+     * Returns a list of schema names for the specified data source.
+     *
+     * @param datasource the data source
+     * @return a list of schema names, or {@code null} if not accessible
+     */
+    @Nullable
+    public List<String> getSchemaNamesForDatasource(@Nonnull final JdbcDatasource datasource) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DescribeTableControllerServiceRequestBuilder builder = new DescribeTableControllerServiceRequestBuilder(controllerService.get());
+            final DescribeTableControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).useEnvironmentProperties(false).build();
+            return getSchemaNamesForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot get table names for data source: {}", datasource);
+            return null;
+        }
     }
 
     /**
@@ -223,6 +266,35 @@ public class DBCPConnectionPoolService {
      * @param serviceProperties properties describing where and what to look for
      * @return a list of schema.table_name
      */
+    private List<String> getSchemaNamesForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
+
+        if (serviceProperties != null) {
+            Map<String, String> properties = serviceProperties.useEnvironmentProperties()
+                                             ? nifiControllerServiceProperties.mergeNifiAndEnvProperties(serviceProperties.getControllerServiceDTO().getProperties(),
+                                                                                                         serviceProperties.getControllerServiceName())
+                                             : serviceProperties.getControllerServiceDTO().getProperties();
+
+            PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(properties, serviceProperties);
+
+            boolean valid = evaluateWithUserDefinedDatasources(dataSourceProperties, serviceProperties);
+
+            if (valid) {
+                log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ", serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(),
+                         dataSourceProperties.getUrl());
+                DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
+                return schemaParser.listCatalogs();
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return a list of schema.table_name
+     *
+     * @param serviceProperties properties describing where and what to look for
+     * @return a list of schema.table_name
+     */
     private List<String> getTableNamesForControllerService(DescribeTableControllerServiceRequest serviceProperties) {
 
         if (serviceProperties != null) {
@@ -240,7 +312,7 @@ public class DBCPConnectionPoolService {
                          dataSourceProperties.getUrl());
                 DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-                return schemaParser.listTables(serviceProperties.getSchemaName(), serviceProperties.getTableName());
+                return schemaParser.listTables(serviceProperties.getSchemaName());
             }
         }
         return null;
@@ -258,7 +330,7 @@ public class DBCPConnectionPoolService {
                     .collect(Collectors.toList());
             }, MetadataAccess.SERVICE);
 
-            if (matchingDatasources != null) {
+            if (matchingDatasources != null && !matchingDatasources.isEmpty()) {
                 JdbcDatasource
                     userDatasource =
                     (JdbcDatasource) matchingDatasources.stream().filter(ds -> ((JdbcDatasource) ds).getDatabaseUser().equalsIgnoreCase(dataSourceProperties.getUser())).findFirst().orElse(null);
@@ -275,7 +347,7 @@ public class DBCPConnectionPoolService {
             if (!valid) {
                 String propertyKey = nifiControllerServiceProperties.getEnvironmentControllerServicePropertyPrefix(serviceProperties.getControllerServiceName()) + ".password";
                 String example = propertyKey + "=PASSWORD";
-                log.error("Unable to connect to Controller Service {}, {}.  You need to specifiy a configuration property as {} with the password for user: {}. ",
+                log.error("Unable to connect to Controller Service {}, {}.  You need to specify a configuration property as {} with the password for user: {}. ",
                           serviceProperties.getControllerServiceName(), serviceProperties.getControllerServiceId(), example, dataSourceProperties.getUser());
             }
         }
@@ -290,9 +362,10 @@ public class DBCPConnectionPoolService {
     private String parseValidationQueryFromConnectionString(String connectionString) {
         String validationQuery = null;
         try {
-            DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
-            validationQuery = databaseType.getValidationQuery();
-
+            if (StringUtils.isNotBlank(connectionString)) {
+                DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
+                validationQuery = databaseType.getValidationQuery();
+            }
         } catch (IllegalArgumentException e) {
             //if we cant find it in the map its ok.
         }
@@ -327,11 +400,7 @@ public class DBCPConnectionPoolService {
 
 
     private ControllerServiceDTO getControllerService(String serviceId, String serviceName) {
-        ControllerServiceDTO controllerService = nifiControllerServiceProperties.getControllerServiceById(serviceId);
-        if (controllerService == null) {
-            controllerService = nifiControllerServiceProperties.getControllerServiceByName(serviceName);
-        }
-        return controllerService;
+        return nifiControllerServiceProperties.getControllerService(serviceId, serviceName);
     }
 
 
@@ -348,7 +417,7 @@ public class DBCPConnectionPoolService {
         }
 
         String validationQuery = nifiControllerServiceProperties.getEnvironmentPropertyValueForControllerService(serviceProperties.getControllerServiceName(), "validationQuery");
-        if (StringUtils.isBlank(validationQuery)) {
+        if (StringUtils.isBlank(validationQuery) && StringUtils.isNotBlank(uri)) {
             //attempt to get it from parsing the connection string
             validationQuery = parseValidationQueryFromConnectionString(uri);
         }

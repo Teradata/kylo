@@ -3,7 +3,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 
 /*-
  * #%L
- * thinkbig-operational-metadata-jpa
+ * thinkbig-operational-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,7 +21,6 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 
@@ -104,6 +103,6 @@ public interface FeedSummary {
     }
 
     enum RunStatus {
-        RUNNING, FINISHED
+        RUNNING, FINISHED, INITIAL, UNKNOWN
     }
 }

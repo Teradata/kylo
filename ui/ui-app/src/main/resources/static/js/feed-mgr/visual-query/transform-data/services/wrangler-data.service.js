@@ -2,7 +2,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
-    var WranglerDataService = (function () {
+    var WranglerDataService = /** @class */ (function () {
         function WranglerDataService() {
             /**
              * The sort direction.
@@ -23,10 +23,15 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         WranglerDataService.prototype.getCellSync = function (i, j) {
             var column = this.columns_[j];
             if (i >= 0 && i < this.rows_.length) {
+                var validation = (this.validationResults != null && i < this.validationResults.length && this.validationResults[i] != null)
+                    ? this.validationResults[i].filter(function (result) { return result.field === column.headerTooltip; })
+                    : null;
                 return {
                     column: j,
+                    field: column.name,
                     row: i,
-                    value: this.rows_[i][column.name]
+                    validation: (validation !== null && validation.length > 0) ? validation : null,
+                    value: this.rows_[i][j]
                 };
             }
             else {

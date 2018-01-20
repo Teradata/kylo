@@ -25,6 +25,7 @@ import com.mifmif.common.regex.Generex;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -171,6 +172,9 @@ public class FeedRestController {
 
     @Inject
     private AccessController accessController;
+
+    @Inject
+    PropertyExpressionResolver propertyExpressionResolver;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -865,10 +869,11 @@ public class FeedRestController {
 
         FeedMetadata feed = getMetadataService().getFeedById(feedId, false);
         // Derive path and file
+        feed = registeredTemplateService.mergeTemplatePropertiesWithFeed(feed);
+        propertyExpressionResolver.resolvePropertyExpressions(feed);
         List<NifiProperty> properties = feed.getProperties();
         String dropzone = null;
         String regexFileFilter = null;
-
         for (NifiProperty property : properties) {
 
             if (property.getProcessorType().equals("org.apache.nifi.processors.standard.GetFile")) {
@@ -905,15 +910,15 @@ public class FeedRestController {
 
         } catch (AccessDeniedException e) {
             String errTemplate = "Permission denied attempting to write file [%s] to [%s]. Check with system administrator to ensure this application has write permissions to folder";
-            String err = String.format(errTemplate, fileName, dropzone);
+            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
             log.error(err);
             throw new InternalServerErrorException(err);
 
         } catch (Exception e) {
             String errTemplate = "Unexpected exception writing file [%s] to [%s].";
-            String err = String.format(errTemplate, fileName, dropzone);
+            String err = String.format(errTemplate, fileMetaData.getFileName(), dropzone);
             log.error(err);
-            throw new InternalServerErrorException(err);
+            throw new InternalServerErrorException(err, e);
         }
         return Response.ok("").build();
     }

@@ -27,7 +27,7 @@
       <span flex></span>
     </div>
   </md-toolbar>
-  <md-dialog-content layout="column" flex style="min-width:400px;" layout-padding>
+  <md-dialog-content layout="column" style="min-width:400px;" layout-padding>
     <md-list class="md-dense" flex>
       <md-list-item class="md-3-line" ng-repeat="item in services">
         <div class="md-list-item-text" layout="column">
@@ -36,6 +36,11 @@
           <h4>Last checked: {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</h4>
         </div>
         <md-divider ></md-divider>
+      </md-list-item>
+      <md-list-item class="md-3-line" ng-if="services.length == 0">
+        <div class="md-list-item-text" layout="column">
+          No services found matching your criteria
+        </div>
       </md-list-item>
     </md-list>
 

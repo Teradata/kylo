@@ -27,7 +27,7 @@ import javax.jcr.Node;
  */
 public class JcrProperties extends JcrObject {
 
-    public static String NODE_TYPE = "tba:properties";
+    public static final String NODE_TYPE = "tba:properties";
 
     public JcrProperties(Node node) {
         super(node);

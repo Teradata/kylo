@@ -93,6 +93,9 @@ public class ReactorMetadataEventService implements MetadataEventService {
     public <E extends MetadataEvent<? extends Serializable>> void addListener(MetadataEventListener<E> listener, EventMatcher<E> matcher) {
         log.debug("Adding event listener: {}", listener);
 
+        if(this.eventBus == null) {
+            throw new RuntimeException("Event Bus object is null");
+        }
         Registration<?, ?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
         this.registrations.put(listener, reg);
     }

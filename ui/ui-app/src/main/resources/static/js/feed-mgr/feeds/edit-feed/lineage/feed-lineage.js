@@ -79,7 +79,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * Set the default mode to SIMPLE view
          * @type {string}
          */
-        self.graphMode = graphModes.SIMPLE;
+        self.graphMode = graphModes.DETAILED;
 
 
 

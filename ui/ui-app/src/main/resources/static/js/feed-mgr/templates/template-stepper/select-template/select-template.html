@@ -36,7 +36,11 @@
                 </md-option>
             </md-select>
         </md-input-container>
-        <div class="error md-caption layout-padding" ng-if="vm.errorMessage != null && !vm.isValid">{{vm.errorMessage}}</div>
+        <div ng-if="vm.errorMessage != null && !vm.isValid" layout="row">
+            <ng-md-icon icon="error" size="20" class="error"></ng-md-icon>
+            <div flex class="error layout-padding" >{{vm.errorMessage}}</div>
+        </div>
+
 
         <div layout="column" ng-if="!vm.model.reusableTemplate">
             <md-subheader class="md-subhead left-aligned">Feed Destination Table Options</md-subheader>

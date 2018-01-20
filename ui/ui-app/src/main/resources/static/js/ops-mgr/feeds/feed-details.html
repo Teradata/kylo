@@ -21,14 +21,14 @@
 <div layout="row" layout-sm="column" layout-xs="column"   ng-if="vm.loading == false">
     <div layout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2" >
             <tba-feed-activity  feed-name="vm.feedName"></tba-feed-activity>
-      <tba-jobs hide-feed-column="true" card-title="Jobs" feed-filter="vm.feedName" feed="vm.feed"
+      <tba-jobs hide-feed-column="true" card-title='{{"views.feeds.feed-details.Jobs" | translate}}' feed-filter="vm.feedName" feed="vm.feed"
                 page-name="feed-job-details" on-job-action="vm.onJobAction(action,job)"></tba-jobs>
     </div>
 
     <div layout="column"  flex="100"  flex-gt-sm="30"  style="margin:8px;" flex-order="2" flex-order-xs="1" flex-order-sm="1">
         <card-layout body-css="job-details-right-body">
             <header-section transclude-to="head">
-                <div style="white-space:nowrap" class="card-title" flex>Feed Details</div>
+                <div style="white-space:nowrap" class="card-title" flex>{{"views.feeds.feed-details.FD" | translate}}</div>
                 </header-section>
             <body-section transclude-to="body">
                 <md-content flex md-scroll-y>
@@ -43,7 +43,7 @@
                           <div>
                               <ng-md-icon icon="{{vm.feed.icon}}" size="20"
                                       ng-if="vm.feed.icon"></ng-md-icon>
-                                {{vm.feed.healthText}}
+                                {{vm.feed.healthText | translate}}
                           </div>
                       </div>
                     </div>
@@ -54,9 +54,9 @@
                     <div layout="column"  class="item-column md-list-item-text ">
 
                                    <span  class="item-title" ng-class="{'healthy':vm.feed.displayStatus == 'COMPLETED' || vm.feed.displayStatus =='RUNNING','error':vm.feed.displayStatus == 'FAILED'}">
-                                     {{vm.feed.displayStatus}}</span>
+                                     {{vm.feed.displayStatus | translate}}</span>
                                      <span class="column-title column-title-bottom">
-                                     Status
+                                     {{"views.feeds.feed-details.Status" | translate}}
                                    </span>
                         </div>
                 </md-list-item>
@@ -67,7 +67,7 @@
                                     <span class="item-title">
                                         <kylo-timer start-time="vm.feed.timeSinceEndTime"></kylo-timer>
                                    </span>
-                        <span class="column-title column-title-bottom">Since</span>
+                        <span class="column-title column-title-bottom">{{"views.feeds.feed-details.Since" | translate}}</span>
                         </div>
                 </md-list-item>
                 <md-divider></md-divider>
@@ -75,7 +75,7 @@
                 <md-list-item >
                     <div layout="column"  class="item-column md-list-item-text ">
                         <span class="item-title">{{vm.feed.runTimeString}}</span>
-                        <span class="column-title column-title-bottom">Last Run Time</span>
+                        <span class="column-title column-title-bottom">{{"views.feeds.feed-details.LRT" | translate}}</span>
                         </div>
                 </md-list-item>
                     </md-list>
@@ -83,10 +83,10 @@
                   <md-divider></md-divider>
 
                   <div layout="column" class="layout-padding-top-bottom layout-padding-left-right"  layout-align="space-between start">
-                    <div class="md-subheader layout-padding-bottom">Feed Manager</div>
-                    <span class="layout-padding-bottom">
-                       <a href ng-click="vm.gotoFeedDetails($event)">Feed Details</a>
-                    </span>
+                    <div class="md-subhead layout-padding-bottom">Links</div>
+                    <div class="layout-padding-left ">
+                    <md-button class="md-primary md-link" ng-click="vm.gotoFeedDetails($event)">{{"views.feeds.feed-details.FeedD" | translate}}</md-button>
+                    </div>
                   </div>
 
 
@@ -102,7 +102,7 @@
 <div layout="row" layout-sm="column" layout-xs="column"   ng-if="vm.loading == true">
       <md-card layout-fill>
         <div layout="column" layout-align="center center" flex>
-          <h2 class="md-title">Loading Feed ...</h2>
+          <h2 class="md-title">{{"views.feeds.feed-details.LF" | translate}}</h2>
         <div layout-align="center center" layout="column">
           <md-progress-circular md-mode="indeterminate" md-diameter="30"></md-progress-circular>
         </div>

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.rest;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,27 +20,21 @@ package com.thinkbiganalytics.spark.rest;
  * #L%
  */
 
-import com.thinkbiganalytics.spark.metadata.TransformJob;
+import com.thinkbiganalytics.spark.rest.model.SaveRequest;
+import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
-import com.thinkbiganalytics.spark.service.IdleMonitorService;
-import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.springframework.stereotype.Component;
-
-import java.util.MissingResourceException;
-import java.util.ResourceBundle;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.script.ScriptException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -56,24 +50,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "spark")
 @Component
 @Path("/api/v1/spark/shell/transform")
-public class SparkShellTransformController {
-
-    /**
-     * Resources for error messages
-     */
-    private static final ResourceBundle STRINGS = ResourceBundle.getBundle("spark-shell");
-
-    /**
-     * Service for detecting when this app is idle
-     */
-    @Context
-    public IdleMonitorService idleMonitorService;
-
-    /**
-     * Service for evaluating transform scripts
-     */
-    @Context
-    public TransformService transformService;
+public class SparkShellTransformController extends AbstractTransformController {
 
     /**
      * Executes a Spark script that performs transformations using a {@code DataFrame}.
@@ -94,8 +71,6 @@ public class SparkShellTransformController {
     public Response create(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or source"
                                              + " must be specified.", required = true)
                            @Nullable final TransformRequest request) {
-        idleMonitorService.reset();
-
         // Validate request
         if (request == null || request.getScript() == null) {
             return error(Response.Status.BAD_REQUEST, "transform.missingScript");
@@ -113,75 +88,39 @@ public class SparkShellTransformController {
         try {
             TransformResponse response = this.transformService.execute(request);
             return Response.ok(response).build();
-        } catch (ScriptException e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
-            idleMonitorService.reset();
+        } catch (final ScriptException e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e);
         }
     }
 
     /**
-     * Requests the status of a transformation.
-     *
-     * @param id the destination table name
-     * @return the transformation status
+     * Saves the results of a Spark script.
      */
-    @GET
-    @Path("{table}")
+    @POST
+    @Path("{table}/save")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Fetches the status of a transformation.")
+    @ApiOperation("Saves the results of a transformation.")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
-                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = TransformResponse.class),
-                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = TransformResponse.class)
+                      @ApiResponse(code = 200, message = "Returns the status of the save.", response = SaveResponse.class),
+                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = SaveResponse.class)
                   })
     @Nonnull
-    public Response getTable(@Nonnull @PathParam("table") final String id) {
-        idleMonitorService.reset();
-
-        try {
-            TransformJob job = transformService.getJob(id);
-
-            if (job.isDone()) {
-                return Response.ok(job.get()).build();
-            } else {
-                TransformResponse response = new TransformResponse();
-                response.setProgress(job.progress());
-                response.setStatus(TransformResponse.Status.PENDING);
-                response.setTable(job.groupId());
-                return Response.ok(response).build();
-            }
-        } catch (IllegalArgumentException e) {
-            return error(Response.Status.NOT_FOUND, "transform.unknownTable");
-        } catch (Exception e) {
-            return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
-        } finally {
-            idleMonitorService.reset();
-        }
-    }
-
-    /**
-     * Generates an error response for the specified message.
-     *
-     * @param key the resource key or the error message
-     * @return the error response
-     */
-    @Nonnull
-    private Response error(@Nonnull final Response.Status status, @Nonnull final String key) {
-        // Determine the error message
-        String message;
-
-        try {
-            message = STRINGS.getString(key);
-        } catch (MissingResourceException e) {
-            message = key;
+    public Response save(@Nonnull @PathParam("table") final String id,
+                         @ApiParam(value = "The request indicates the destination for saving the transformation. The format is required.", required = true) @Nullable final SaveRequest request) {
+        // Validate request
+        if (request == null || (request.getJdbc() == null && request.getFormat() == null)) {
+            return error(Response.Status.BAD_REQUEST, "save.missingFormat");
         }
 
-        // Generate the response
-        TransformResponse entity = new TransformResponse();
-        entity.setMessage(message);
-        entity.setStatus(TransformResponse.Status.ERROR);
-        return Response.status(status).entity(entity).build();
+        // Execute request
+        try {
+            final SaveResponse response = transformService.saveShell(id, request);
+            return Response.ok(response).build();
+        } catch (final IllegalArgumentException e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, "save.notFound");
+        } catch (final Exception e) {
+            return error(Response.Status.INTERNAL_SERVER_ERROR, e);
+        }
     }
 }

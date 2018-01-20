@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <artifactId>kylo-spark-validate-cleanse</artifactId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>kylo-spark-validate-cleanse-model</artifactId>
+
+  <properties>
+    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+  </properties>
+
+  <dependencies>
+    <!-- Kylo Dependencies -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
+      <artifactId>kylo-field-policy-default</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-field-policy-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <!-- Spark Dependencies -->
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+    </dependency>
+  </dependencies>
+</project>

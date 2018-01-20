@@ -21,12 +21,12 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  */
 
 import com.google.common.base.Stopwatch;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -47,7 +47,6 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -114,6 +113,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -204,6 +204,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private FeedHiveTableService feedHiveTableService;
+
+    @Inject
+    private TemplateConnectionUtil templateConnectionUtil;
 
 
     @Value("${nifi.remove.inactive.versioned.feeds:true}")
@@ -301,13 +304,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
 
             Feed.ID domainId = feedProvider.resolveId(feedId);
-            
+
             return feedProvider.findVersions(domainId, includeContent)
-                            .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
-                            .orElse((FeedVersions) null);
+                .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
+                .orElse((FeedVersions) null);
         });
     }
-    
+
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return metadataAccess.read(() -> {
@@ -315,12 +318,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
             com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
-            
+
             return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+                .map(version -> feedModelTransform.domainToFeedVersion(version));
         });
     }
-    
+
     @Override
     public Collection<FeedMetadata> getFeeds() {
         return getFeeds(PAGE_ALL, null).getContent();
@@ -434,6 +437,20 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
         }
 
+        if (StringUtils.isBlank(feedMetadata.getId())) {
+            feedMetadata.setIsNew(true);
+        }
+
+        //Read all the feeds as System Service account to ensure the feed name is unique
+        if (feedMetadata.isNew()) {
+            metadataAccess.read(() -> {
+                Feed existing = feedProvider.findBySystemName(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+                if (existing != null) {
+                    throw new DuplicateFeedNameException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
+                }
+            }, MetadataAccess.SERVICE);
+        }
+
         NifiFeed feed = createAndSaveFeed(feedMetadata);
         //register the audit for the update event
         if (feed.isSuccess() && !feedMetadata.isNew()) {
@@ -504,7 +521,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         }
 
         //store ref to the originalFeedProperties before resolving and merging with the template
-        List<NifiProperty> orignialFeedProperties = feedMetadata.getProperties();
+        List<NifiProperty> originalFeedProperties = feedMetadata.getProperties();
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -513,37 +530,19 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 new RegisteredTemplateRequest.Builder().templateId(feedMetadata.getTemplateId()).templateName(feedMetadata.getTemplateName()).isFeedEdit(true).includeSensitiveProperties(true)
                     .build());
 
+        //copy the registered template properties it a new list so it doest get updated
+        List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
 
+        registeredTemplate.setProperties(templateProperties);
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
 
         //resolve any ${metadata.} properties
         List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
-
-        /*
-        //store all input related properties as well
-        List<NifiProperty> inputProperties = NifiPropertyUtil
-            .findInputProperties(registeredTemplate.getProperties());
-
-        ///store only those matched and resolved in the final metadata store
-        Set<NifiProperty> updatedProperties = new HashSet<>();
-        //first get all those selected properties where the value differs from the template value
-
-        List<NifiProperty> modifiedProperties = registeredTemplate.findModifiedDefaultProperties();
-        if (modifiedProperties != null) {
-             propertyExpressionResolver.resolvePropertyExpressions(modifiedProperties,feedMetadata);
-            updatedProperties.addAll(modifiedProperties);
-        }
-        updatedProperties.addAll(matchedProperties);
-        updatedProperties.addAll(resolvedProperties);
-        updatedProperties.addAll(inputProperties);
-        feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
-
-        */
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
@@ -569,7 +568,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder
-                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache)
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache, templateConnectionUtil)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)
@@ -601,7 +600,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feed = new NifiFeed(feedMetadata, entity);
 
         //set the original feedProperties back to the feed
-        feedMetadata.setProperties(orignialFeedProperties);
+        feedMetadata.setProperties(originalFeedProperties);
         //encrypt the metadata properties
         feedModelTransform.encryptSensitivePropertyValues(feedMetadata);
 
@@ -643,20 +642,13 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
 
     private void saveFeed(final FeedMetadata feed) {
-        if (StringUtils.isBlank(feed.getId())) {
-            feed.setIsNew(true);
-        }
+
+
         metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
             List<? extends HadoopSecurityGroup> previousSavedSecurityGroups = null;
-            // Store the old security groups before saving beccause we need to compare afterward
-            if (feed.isNew()) {
-                Feed existing = feedProvider.findBySystemName(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                // Since we know this is expected to be new check if the category/feed name combo is already being used.
-                if (existing != null) {
-                    throw new DuplicateFeedNameException(feed.getCategoryName(), feed.getFeedName());
-                }
-            } else {
+            // Store the old security groups before saving because we need to compare afterward
+            if (!feed.isNew()) {
                 Feed previousStateBeforeSaving = feedProvider.findById(feedProvider.resolveId(feed.getId()));
                 Map<String, String> userProperties = previousStateBeforeSaving.getUserProperties();
                 previousSavedSecurityGroups = previousStateBeforeSaving.getSecurityGroups();
@@ -899,8 +891,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
             //unschedule any SLAs
-            //serviceLevelAgreementService.unscheduleServiceLevelAgreement(feed.getId());
-            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier);
+            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier,feed.getQualifiedName());
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
             return true;
@@ -919,11 +910,11 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         return metadataAccess.commit(() -> {
             boolean enabled = feedProvider.enableFeed(feedId);
             Feed domainFeed = feedProvider.findById(feedId);
-            
+
             if (domainFeed != null) {
                 domainFeed.setState(Feed.State.ENABLED);
                 feedProvider.update(domainFeed);
-                
+
                 if (enabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.ENABLED, MetadataChange.ChangeType.UPDATE);
@@ -945,7 +936,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             if (domainFeed != null) {
                 domainFeed.setState(Feed.State.DISABLED);
                 feedProvider.update(domainFeed);
-                
+
                 if (disabled) {
                     FeedMetadata feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                     notifyFeedStateChange(feedMetadata, feedId, Feed.State.DISABLED, MetadataChange.ChangeType.UPDATE);
@@ -1011,6 +1002,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         if (properties != null && !properties.isEmpty()) {
             List<FeedSummary> feedSummaries = getFeedSummaryData();
             List<LabelValue> feedSelection = new ArrayList<>();
+
             for (FeedSummary feedSummary : feedSummaries) {
                 boolean isDisabled = feedSummary.getState() == Feed.State.DISABLED.name();
                 boolean
@@ -1023,6 +1015,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName() + (isDisabled ? " (DISABLED) " : ""), feedSummary.getCategoryAndFeedSystemName(),
                                                  isDisabled ? "This feed is currently disabled" : "", labelValueProperties));
             }
+
+            feedSelection.sort(Comparator.comparing(LabelValue::getLabel, String.CASE_INSENSITIVE_ORDER));
             for (FieldRuleProperty property : properties) {
                 property.setSelectableValues(feedSelection);
                 if (property.getValues() == null) {

@@ -39,13 +39,18 @@ public class ConfigurationProperties {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigurationProperties.class);
 
-    public static String DEFAULT_BACKUP_LOCATION = "/opt/nifi/feed-event-statistics.gz";
-    public static Integer DEFAULT_MAX_EVENTS = 10;
-    public static Long DEFAULT_RUN_INTERVAL_MILLIS = 3000L;
-    public static Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD = 15;
-    public static Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS = 1000;
+    public static final String DEFAULT_BACKUP_LOCATION = "/opt/nifi/feed-event-statistics.gz";
+    public static final Integer DEFAULT_MAX_EVENTS = 10;
+    public static final Long DEFAULT_RUN_INTERVAL_MILLIS = 3000L;
+    public static final Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD = 15;
+    public static final Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS = 1000;
 
-    public static String DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS = "{\"CLONE\":[\"ConvertCSVToAvro\"]}";
+    public static final String DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS = "{\"CLONE\":[\"ConvertCSVToAvro\"]}";
+
+    public static final String BACKUP_LOCATION_KEY = "backupLocation";
+    public static final String MAX_FEED_EVENTS_KEY = "maxFeedEvents";
+    public static final String RUN_INTERVAL_KEY = "runInterval";
+    public static final String ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY="orphanChildFlowFileProcessors";
 
     private Properties properties = new Properties();
 
@@ -57,11 +62,6 @@ public class ConfigurationProperties {
 
     //JSON MAP of eventType to processors that create children that are removed without provenance.
     private String orphanChildFlowFileProcessorsString;
-
-    public static String BACKUP_LOCATION_KEY = "backupLocation";
-    public static String MAX_FEED_EVENTS_KEY = "maxFeedEvents";
-    public static String RUN_INTERVAL_KEY = "runInterval";
-    public static String ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY="orphanChildFlowFileProcessors";
 
 
     private static final ConfigurationProperties instance = new ConfigurationProperties();
@@ -79,10 +79,6 @@ public class ConfigurationProperties {
         return  System.getProperty("kylo.nifi.configPath");
     }
 
-    private FileInputStream getConfigFileInputStream(String location) throws Exception{
-        return new FileInputStream(location + "/config.properties");
-    }
-
     private File getConfigFile(String location){
         return new File(location + "/config.properties");
     }
@@ -95,10 +91,14 @@ public class ConfigurationProperties {
             location = getConfigLocation();
             properties.clear();
             File file = getConfigFile(getConfigLocation());
-            properties.load(getConfigFileInputStream(location));
-            setValues();
-            if(file.exists()) {
-                lastModified = file.lastModified();
+            try(FileInputStream fileInputStream = new FileInputStream(location + "/config.properties")) {
+                properties.load(fileInputStream);
+                setValues();
+                if (file.exists()) {
+                    lastModified = file.lastModified();
+                }
+            } catch(Exception e) {
+                log.error("Error loading file from inputstream", e);
             }
         } catch (Exception e) {
             log.error("Unable to load properties for location: {} , {} ", location, e.getMessage(), e);

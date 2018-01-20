@@ -31,5 +31,7 @@ public interface NiFiProvenanceConstants {
     String NiFiMetadataControllerServiceType = "com.thinkbiganalytics.nifi.v2.core.metadata.MetadataProviderSelectorService";
 
     String NiFiKyloProvenanceEventReportingTaskType = "com.thinkbiganalytics.nifi.provenance.reporting.KyloProvenanceEventReportingTask";
+    
+    String NiFiKyloJobExecutionState = "com.thinkbiganalytics.nifi.provenance.reporting.KyloJobExecutionState";
 
 }

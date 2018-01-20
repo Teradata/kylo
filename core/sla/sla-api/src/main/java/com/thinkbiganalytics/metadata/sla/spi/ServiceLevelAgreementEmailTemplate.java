@@ -18,11 +18,12 @@ package com.thinkbiganalytics.metadata.sla.spi;
  * limitations under the License.
  * #L%
  */
-import java.util.List;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
-/**
- * Created by sr186054 on 10/4/17.
- */
+
+@JsonInclude(JsonInclude.Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAgreementEmailTemplate {
     public static final String EMAIL_TEMPLATE_TYPE ="SLA_EMAIL_TEMPLATE";
 

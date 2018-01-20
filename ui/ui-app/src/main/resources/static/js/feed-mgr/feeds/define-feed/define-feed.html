@@ -22,7 +22,7 @@
     <div flex class="md-padding feed-templates" layout-align="start center" ng-if="vm.model.totalSteps == null">
         <div>
             <div layout="column" flex layout-fill layout-align="center center">
-                <div class="item-title">Select a template <span ng-if="vm.allowImport">or <a href="" ng-click="vm.gotoImportFeed()">import</a> from file</span></div>
+                <div class="item-title"> {{"views.define-feed.Sat" | translate}} <span ng-if="vm.allowImport"> {{"views.define-feed.or" | translate}} <a href="" ng-click="vm.gotoImportFeed()"> {{"views.define-feed.import" | translate}} </a> {{"views.define-feed.ff" | translate}} </span></div>
             </div>
         </div>
 
@@ -40,7 +40,7 @@
             </md-card-title>
         </md-card>
             <div>
-          <a href="" ng-click="vm.more()" ng-if="vm.displayMoreLink">More</a>
+          <a href="" ng-click="vm.more()" ng-if="vm.displayMoreLink"> {{"views.define-feed.More" | translate}} </a>
             </div>
         </div>
 
@@ -60,7 +60,6 @@
         </div>
 
     </div>
-
     <thinkbig-stepper total-steps="{{vm.model.totalSteps}}" stepper-name="DefineFeedStepper" core-data-model="vm.model" on-initialized="vm.onStepperInitialized" on-cancel-stepper="vm.cancelStepper()"
                       template-url="js/feed-mgr/feeds/define-feed/define-feed-stepper.html" ng-if="vm.model.totalSteps != null"></thinkbig-stepper>
 

@@ -21,8 +21,14 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 
 import java.text.DecimalFormat;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 /**
  * Feed Status built from the transform class
@@ -30,6 +36,8 @@ import java.util.List;
  * @see com.thinkbiganalytics.jobrepo.query.model.transform.FeedModelTransform
  */
 public class DefaultFeedStatus implements FeedStatus {
+
+    private static final Logger log = LoggerFactory.getLogger(DefaultFeedStatus.class);
 
     private List<FeedHealth> feeds;
     private Integer healthyCount = 0;
@@ -40,9 +48,17 @@ public class DefaultFeedStatus implements FeedStatus {
 
     private List<FeedSummary> feedSummary;
 
-    public DefaultFeedStatus(List<FeedHealth> feeds) {
+    public void populateWithFeedHealth(List<FeedHealth> feeds) {
         this.feeds = feeds;
         this.populate();
+
+    }
+
+    public void populateWithFeedSummary(List<FeedSummary> feeds) {
+        if(feeds != null && !feeds.isEmpty()) {
+            this.feeds = feeds.stream().map(f -> f.getFeedHealth()).collect(Collectors.toList());
+        }
+        populate();
 
     }
 
@@ -51,8 +67,7 @@ public class DefaultFeedStatus implements FeedStatus {
 
     }
 
-    @Override
-    public void populate() {
+    private void populate() {
         this.healthyFeeds = new ArrayList<FeedHealth>();
         this.failedFeeds = new ArrayList<FeedHealth>();
         this.feedSummary = new ArrayList<>();
@@ -74,7 +89,11 @@ public class DefaultFeedStatus implements FeedStatus {
         }
         if (percent > 0f) {
             DecimalFormat twoDForm = new DecimalFormat("##.##");
-            this.percent = Float.valueOf(twoDForm.format(this.percent)) * 100;
+            try {
+                this.percent = twoDForm.parse(twoDForm.format(this.percent)).floatValue() * 100;
+            } catch (ParseException e) {
+                log.error("Error parsing percent value ", e);
+            }
         }
 
     }

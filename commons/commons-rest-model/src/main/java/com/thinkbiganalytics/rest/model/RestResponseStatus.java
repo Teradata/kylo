@@ -35,11 +35,11 @@ public class RestResponseStatus {
     /**
      * static response indicating success
      */
-    public static RestResponseStatus SUCCESS = new RestResponseStatus.ResponseStatusBuilder().buildSuccess();
+    public static final RestResponseStatus SUCCESS = new RestResponseStatus.ResponseStatusBuilder().buildSuccess();
     /**
      * static response indicating an error
      */
-    public static RestResponseStatus ERROR = new RestResponseStatus.ResponseStatusBuilder().buildError();
+    public static final RestResponseStatus ERROR = new RestResponseStatus.ResponseStatusBuilder().buildError();
     /**
      * the status of the response
      */

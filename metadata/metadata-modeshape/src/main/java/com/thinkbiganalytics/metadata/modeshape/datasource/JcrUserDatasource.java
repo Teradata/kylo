@@ -53,13 +53,13 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     /**
      * JCR node type
      */
-    public static String NODE_TYPE = "tba:userDatasource";
+    public static final String NODE_TYPE = "tba:userDatasource";
 
     /**
      * Sub-node under {@code datasources} node for {@code userDatasource} nodes
      */
     @SuppressWarnings("unused")
-    public static String PATH_NAME = "user";
+    public static final String PATH_NAME = "user";
 
     /**
      * Name of the details attribute
@@ -88,6 +88,8 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
      * Name of the type attribute
      */
     private static final String TYPE = "tba:type";
+    private static final String ICON = "tba:icon";
+    private static final String ICON_COLOR = "tba:iconColor";
 
     @Nonnull
     static Class<? extends JcrDatasourceDetails> resolveDetailsClass(@Nonnull final Class<? extends DatasourceDetails> domainClass) {
@@ -137,6 +139,26 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     @Override
     public void setType(@Nonnull final String type) {
         setProperty(TYPE, type);
+    }
+
+    @Override
+    public String getIcon() {
+        return getProperty(ICON, String.class);
+    }
+
+    @Override
+    public void setIcon(@Nonnull final String icon) {
+        setProperty(ICON, icon);
+    }
+
+    @Override
+    public String getIconColor() {
+        return getProperty(ICON_COLOR, String.class);
+    }
+
+    @Override
+    public void setIconColor(@Nonnull final String iconColor) {
+        setProperty(ICON_COLOR, iconColor);
     }
 
     @Nonnull

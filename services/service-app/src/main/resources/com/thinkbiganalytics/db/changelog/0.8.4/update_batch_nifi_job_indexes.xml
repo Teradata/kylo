@@ -1,0 +1,93 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<!--
+  #%L
+  kylo-service-app
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+  <changeSet author="sr186054" id="create_batch_nifi_job_tmp_table">
+    <createTable tableName="TMP_BATCH_NIFI_JOB_DELETED">
+      <column name="EVENT_ID" type="BIGINT"/>
+      <column name="NIFI_EVENT_ID" type="BIGINT"/>
+      <column name="FLOW_FILE_ID" type="VARCHAR(255)"/>
+      <column name="FEED_ID" type="BIGINT"/>
+      <column name="FEED_NAME" type="VARCHAR(255)"/>
+      <column name="JOB_INSTANCE_ID" type="BIGINT"/>
+      <column name="JOB_EXECUTION_ID" type="BIGINT"/>
+    </createTable>
+  </changeSet>
+
+  <changeSet id="insert_deleted_duplicate_flow_file_entries" author="sr186054" >
+    <validCheckSum>7:6444d6e8b0c17a4174558ccb4231ecb0</validCheckSum>
+    <validCheckSum>7:b8363d87393a585018a5f9ce54f717ab</validCheckSum>
+    <sql >
+      INSERT INTO TMP_BATCH_NIFI_JOB_DELETED
+      SELECT j.* FROM BATCH_NIFI_JOB j
+      INNER JOIN ( SELECT MIN(x.EVENT_ID) event_id,x.FLOW_FILE_ID
+                    FROM BATCH_NIFI_JOB x
+                    INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*) as cnt
+                                FROM BATCH_NIFI_JOB
+                                GROUP BY FLOW_FILE_ID
+                                having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
+                     group by x.FLOW_FILE_ID) as d on d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
+    </sql>
+  </changeSet>
+
+
+
+  <changeSet id="delete_duplicate_batch_nifi_job_flow_file_entries_mssql" author="sr186054" dbms="mysql,mssql">
+    <sql >
+      DELETE j FROM BATCH_NIFI_JOB j
+      inner join (SELECT MIN(x.EVENT_ID) event_id,x.FLOW_FILE_ID
+      FROM BATCH_NIFI_JOB x
+      INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*) as cnt
+      FROM BATCH_NIFI_JOB
+      GROUP BY FLOW_FILE_ID
+      having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
+      group by x.FLOW_FILE_ID) d  on d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
+    </sql>
+  </changeSet>
+
+  <changeSet id="postgres_delete_duplicate_batch_nifi_job_flow_file_entries" author="sr186054" dbms="postgresql">
+    <sql >
+      with records_to_delete as (SELECT MIN(x.EVENT_ID) event_id,x.FLOW_FILE_ID
+      FROM BATCH_NIFI_JOB x
+      INNER JOIN (SELECT FLOW_FILE_ID,  COUNT(*)
+      FROM BATCH_NIFI_JOB
+      GROUP BY FLOW_FILE_ID
+      having count(*) >1) c on c.FLOW_FILE_ID = x.FLOW_FILE_ID
+      group by x.FLOW_FILE_ID)
+      DELETE FROM BATCH_NIFI_JOB j
+      USING records_to_delete d
+      where  d.event_id = j.event_id and d.FLOW_FILE_ID = j.FLOW_FILE_ID
+    </sql>
+  </changeSet>
+
+  <changeSet id="drop_batch_nifi_job_pk" author="sr186054"  onValidationFail="MARK_RAN" failOnError="false">
+      <preConditions onFail="MARK_RAN"><not><primaryKeyExists tableName="BATCH_NIFI_JOB"/></not></preConditions>
+      <dropPrimaryKey tableName="BATCH_NIFI_JOB" />
+  </changeSet>
+
+
+  <changeSet id="create_batch_nifi_job_pk" author="sr186054">
+    <addPrimaryKey columnNames="FLOW_FILE_ID" tableName="BATCH_NIFI_JOB"/>
+  </changeSet>
+
+
+</databaseChangeLog>

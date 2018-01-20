@@ -66,7 +66,7 @@ public class DefaultMessageDeliveryStatus implements MessageDeliveryStatus {
     }
 
     @Override
-    public void redeliverdTo(String to) {
+    public void redeliveredTo(String to) {
         redeliveryCount.getAndIncrement(to);
     }
 

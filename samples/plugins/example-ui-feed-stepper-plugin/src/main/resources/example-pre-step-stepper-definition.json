@@ -1,0 +1,24 @@
+{
+  "description": "Example feed stepper with a custom pre-step form",
+  "displayName": "Example Pre Step Feed Stepper",
+  "resourceContext":"/example-plugin-1.0",
+  "feedDetailsTemplateUrl": "/example-plugin-1.0/feed-details-templates/simple-feed-details.html",
+  "stepperTemplateUrl": "/example-plugin-1.0/stepper-templates/simple-steps.html",
+  "preStepperTemplateUrl":"/example-plugin-1.0/stepper-templates/pre-steps.html",
+  "preFeedDetailsTemplateUrl":"/example-plugin-1.0/feed-details-templates/pre-step-feed-details.html",
+  "metadataProperties": [
+    {
+      "name": "examplePluginProperty",
+      "description": "Example Plugin property"
+    },
+    {
+      "name": "anotherProperty",
+      "description": "This is another property"
+    }
+  ],
+  "totalCoreSteps": 1,
+  "totalPreSteps":1,
+  "type": "EXAMPLE_PRE_STEP_FEED_STEPPER",
+  "initializeServiceName":"ExampleFeedStepperInitializerService",
+  "initializeScript": "/example-plugin-1.0/initialize.js"
+}

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.v2.core.spring;
 
+import com.google.common.util.concurrent.SettableFuture;
+
 /*-
  * #%L
  * thinkbig-nifi-core-service
@@ -31,12 +33,19 @@ import org.apache.nifi.controller.ControllerService;
 import org.apache.nifi.processor.Processor;
 import org.apache.nifi.reporting.InitializationException;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.BeanCurrentlyInCreationException;
+import org.springframework.beans.factory.BeanInitializationException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
 
 /**
  * Creates a Spring {@link ApplicationContext} that can be reused by other {@link ControllerService} and {@link Processor} objects.
@@ -44,6 +53,9 @@ import java.util.List;
  * <p><b>NOTE:</b> The context is only valid within the NAR file containing this service.</p>
  */
 public class SpringContextLoaderService extends AbstractControllerService implements SpringContextService {
+    
+    /** The maximum number of seconds to wait for bean initialization to finish when retrieving a bean */
+    public static final int MAX_BEAN_WAIT_SEC = 60;
 
     public static final PropertyDescriptor CONFIG_CLASSES = new PropertyDescriptor.Builder()
         .name("Configuraton Classes")
@@ -57,7 +69,7 @@ public class SpringContextLoaderService extends AbstractControllerService implem
         properties = Collections.singletonList(CONFIG_CLASSES);
     }
 
-    private volatile AbstractRefreshableConfigApplicationContext context;
+    private final SettableFuture<AbstractRefreshableConfigApplicationContext> contextFuture = SettableFuture.create();
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -74,13 +86,15 @@ public class SpringContextLoaderService extends AbstractControllerService implem
     @OnEnabled
     public void loadConfiurations(final ConfigurationContext context) throws InitializationException {
         try {
-            this.context = new ClassPathXmlApplicationContext();
-            this.context.setClassLoader(getClass().getClassLoader());
-            this.context.setConfigLocation("application-context.xml");
+            AbstractRefreshableConfigApplicationContext appContext = new ClassPathXmlApplicationContext();
+            appContext.setClassLoader(getClass().getClassLoader());
+            appContext.setConfigLocation("application-context.xml");
 
             getLogger().info("Refreshing spring context");
-            this.context.refresh();
+            appContext.refresh();
             getLogger().info("Spring context refreshed");
+            
+            this.contextFuture.set(appContext);
         } catch (BeansException | IllegalStateException e) {
             getLogger().error("Failed to load spring configurations", e);
             throw new InitializationException(e);
@@ -92,7 +106,15 @@ public class SpringContextLoaderService extends AbstractControllerService implem
      */
     @Override
     public <T> T getBean(Class<T> requiredType) throws BeansException {
-        return this.context.getBean(requiredType);
+        return getBean(requiredType.getSimpleName(), cxt -> cxt.getBean(requiredType));
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.spring.SpringContextService#getBean(java.lang.Class, java.lang.Object[])
+     */
+    @Override
+    public <T> T getBean(Class<T> requiredType, Object... args) throws BeansException {
+        return getBean(requiredType.getSimpleName(), cxt -> cxt.getBean(requiredType, args));
     }
 
     /* (non-Javadoc)
@@ -100,7 +122,31 @@ public class SpringContextLoaderService extends AbstractControllerService implem
      */
     @Override
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
-        return this.context.getBean(name, requiredType);
+        return getBean(name, cxt -> cxt.getBean(name, requiredType));
+    }
+    
+    /**
+     * @return true if the Spring context has finished loading for failed to do so
+     */
+    public boolean isInitialized() {
+        return this.contextFuture.isDone();
     }
 
+    private <T> T getBean(String beanName, Function<AbstractRefreshableConfigApplicationContext, T> beanExtractor) {
+        try {
+            try {
+                return beanExtractor.apply(this.contextFuture.get(MAX_BEAN_WAIT_SEC, TimeUnit.SECONDS));
+            } catch (InterruptedException e) {
+                throw new BeanCurrentlyInCreationException(beanName, "Thread interrupted while Spring initialization was in progress");
+            } catch (TimeoutException e) {
+                throw new BeanCurrentlyInCreationException(beanName, "The requested bean is not yet available as Spring initialization is in progress");
+            } catch (ExecutionException e) {
+                throw e.getCause();
+            }
+        } catch (RuntimeException | Error e) {
+            throw e;
+        } catch (Throwable e) {
+            throw new BeanInitializationException("Failed to obtain the Spring application context", e);
+        }
+    }
 }

@@ -28,7 +28,7 @@ public interface MessageDeliveryStatus {
 
     void sentTo(String to);
 
-    void redeliverdTo(String to);
+    void redeliveredTo(String to);
 
     void receivedFrom(String from);
 

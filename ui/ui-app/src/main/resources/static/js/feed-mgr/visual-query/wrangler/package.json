@@ -1,0 +1,21 @@
+{
+  "name": "@kylo/wrangler",
+  "version": "0.9.0-SNAPSHOT",
+  "description": "Data wrangler services for Kylo UI",
+  "module": "index.js",
+  "typings": "index.d.ts",
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Teradata/kylo.git"
+  },
+  "author": "Think Big Analytics",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://kylo-io.atlassian.net/"
+  },
+  "homepage": "https://kylo.io/",
+  "peerDependencies": {
+    "rxjs": "^5.5.5"
+  }
+}

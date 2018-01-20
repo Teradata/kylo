@@ -19,7 +19,7 @@
   -->
 <card-layout flex header-css="filter-header">
   <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
-                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+                  on-selected-option="vm.selectedTableOption" filter-model="vm.filter" filter-model-options="{debounce:1000}">
 
   </header-section>
   <body-section>
@@ -30,13 +30,15 @@
               ng-disabled="tab.disabled"
               md-on-select="vm.onTabSelected(tab)" flex
       >
-        <md-tab-label> {{tab.title}}</md-tab-label>
+        <md-tab-label> {{tab.title | translate}}</md-tab-label>
         <md-tab-body>
           <md-divider></md-divider>
           <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
+              <md-progress-linear md-mode="indeterminate" ng-show="vm.showProgress"></md-progress-linear>
             <md-list flex layout-fill class="list-item-table">
-              <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content|orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage"
-                            pagination-id="vm.paginationId(tab)" ng-click="vm.feedDetails($event,feed)">
+              <md-list-item class="md-secondary overview" dir-paginate="feed in tab.data.content |itemsPerPage:vm.paginationData.rowsPerPage" total-items="tab.data.total" current-page="tab.currentPage"
+                            pagination-id="tab.title" ng-click="vm.feedDetails($event,feed)">
+
                 <div layout="column" layout-fill>
                   <div class="item-column md-list-item-text item-column-title"
                        layout-fill flex>
@@ -49,10 +51,10 @@
                                     <span ng-class="{'healthy':feed.healthText == 'HEALTHY','error':feed.healthText == 'UNHEALTHY'}">
                                            <ng-md-icon icon="{{feed.icon}}" size="20" hide-xs style="height: inherit">
                                            </ng-md-icon>
-                                      {{feed.healthText}}
+                                      {{feed.healthText | translate}}
                                     </span>
                       <span class="column-title column-title-bottom">
-                               Feed Health
+                               {{"wievs.dashboard.feed-health" | translate}}
                                    </span>
                     </div>
                     <div flex="20" layout="column" class="item-column md-list-item-text " ng-if="feed.stream">
@@ -66,44 +68,44 @@
                     <div flex="20" layout="column" class="item-column md-list-item-text " >
 
                                    <span class="item-title-small {{feed.statusStyle}}">
-                                     {{feed.displayStatus}}</span>
+                                     {{feed.displayStatus | translate}}</span>
                       <span class="column-title column-title-bottom">
-                                     Status
+                                     {{"wievs.dashboard.status" | translate}}
                                    </span>
                     </div>
 
 
                     <div flex="30" layout="column" class="item-column md-list-item-text " ng-if="((!feed.stream  || (feed.stream && !feed.running)))">
-                                   <span class="item-title" ng-if="feed.status != 'UNKNOWN'">
+                                   <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">
                                       <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true"></kylo-timer>
                                    </span>
-                                   <span class="item-title" ng-if="feed.status == 'UNKNOWN'">
+                                   <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">
                                     --
                                    </span>
-                      <span class="column-title column-title-bottom">Since</span>
+                      <span class="column-title column-title-bottom">{{"wievs.dashboard.since" | translate}}</span>
                     </div>
                     <div flex hide-xs layout="column" class="item-column md-list-item-text " ng-if="!feed.stream">
-                      <span class="item-title">{{feed.runTimeString}}</span>
-                      <span class="column-title column-title-bottom">Last Run Time</span>
+                      <span class="item-title" ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
+                      <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
+                      <span class="column-title column-title-bottom">{{"wievs.dashboard.lastRunTime" | translate}}</span>
                     </div>
                   </div>
                 </div>
                 <md-divider ng-if="!$last"></md-divider>
               </md-list-item>
-              <md-list-item ng-show="vm.loading == false && tab.content.length ==0">
-                No results found
+              <md-list-item ng-show="vm.loading == false && vm.total ==0">
+                {{"wievs.dashboard.noResultsFound" | translate}}
               </md-list-item>
               <md-divider></md-divider>
               <md-list-item layout-align="end center" layout-row class="pagination-list-item">
-                <dir-pagination-controls pagination-id="vm.paginationId(tab)"
+                <dir-pagination-controls pagination-id="tab.title"
                                          auto-hide="false"
                                          max-size="5"
                                          direction-links="true"
                                          boundary-links="false"
                                          template-url="js/common/dir-pagination/dirPagination.tpl.html"
-                                         current-page="vm.currentPage(tab)"
                                          on-page-change="vm.onPaginationChange(newPageNumber)"
-                                         label="Rows per page"
+                                         label='{{"views.all-page.Rows_per_page" | translate}}'
                                          rows-per-page="vm.paginationData.rowsPerPage"
                                          rows-per-page-options="vm.paginationData.rowsPerPageOptions"
                                          class="pagination-row">
@@ -113,19 +115,19 @@
           </div>
           <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
             <md-table-container>
-              <table md-table md-progress="vm.deferred.promise">
+              <table md-table md-progress="vm.fetchFeedHealthPromise">
                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
                 <tr md-row>
-                  <th md-column name="Feed" md-order-by="feed">Feed</th>
-                  <th md-column name="Health" md-order-by="healthText">Health</th>
-                  <th md-column name="Status" md-order-by="displayStatus">Status</th>
-                  <th md-column name="Since" md-order-by="timeSinceEndTime">Since</th>
-                  <th md-column name="Last Run Time" md-order-by="runTime">Last Run Time</th>
+                  <th md-column name="Feed" md-order-by="feed">{{"wievs.dashboard.feed" | translate}}</th>
+                  <th md-column name="Health" md-order-by="healthText">{{"wievs.dashboard.feed-health" | translate}}</th>
+                  <th md-column name="Status" md-order-by="displayStatus">{{"wievs.dashboard.status" | translate}}</th>
+                  <th md-column name="Since" md-order-by="timeSinceEndTime">{{"wievs.dashboard.since" | translate}}</th>
+                  <th md-column name="Last Run Time" md-order-by="runTime">{{"wievs.dashboard.lastRunTime" | translate}}</th>
                 </tr>
                 </thead>
                 <tbody md-body>
                 <tr md-row
-                    ng-repeat="feed in tab.data.content | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"
+                    ng-repeat="feed in tab.data.content "
                     ng-click="vm.feedDetails($event,feed)">
                   <td md-cell>{{feed.feed}}</td>
                   <td md-cell>
@@ -133,24 +135,29 @@
                                        <ng-md-icon icon="{{feed.icon}}" size="20"
                                                    style="{{job.iconstyle}}">
                                        </ng-md-icon>
-                                       <span>{{feed.healthText}}</span></span>
+                                       <span>{{feed.healthText | translate}}</span></span>
 
                   </td>
                   <td md-cell>
                                        <span class="{{feed.statusStyle}}">
-                                         {{feed.displayStatus}}
+                                         {{feed.displayStatus | translate}}
                                        </span>
                   </td>
                   <td md-cell>
-                    <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true" ng-if="(!feed.stream || (feed.stream && !feed.running))"></kylo-timer>
+                    <kylo-timer start-time="feed.timeSinceEndTime" truncated-format="true" add-ago-suffix="true" ng-if="(feed.lastStatus != 'UNKNOWN' && (!feed.stream || (feed.stream && !feed.running)))"></kylo-timer>
+                    <span class="item-title" ng-if="feed.lastStatus == 'UNKNOWN'"> -- </span>
                   </td>
-                  <td md-cell><span ng-if="!feed.stream">{{feed.runTimeString}}</span></td>
+                  <td md-cell>
+                    <div ng-if="!feed.stream">
+                    <span ng-if="feed.lastStatus != 'UNKNOWN'">{{feed.runTimeString}}</span>
+                    <span ng-if="feed.lastStatus == 'UNKNOWN'">--</span>
+                    </div>
                 </tr>
                 </tbody>
               </table>
             </md-table-container>
 
-            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.content.length}}" md-on-paginate="vm.onPaginationChange"
+            <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="tab.currentPage" md-total="{{tab.data.total}}" md-on-paginate="vm.onTablePaginationChange"
                                  md-limit-options="[5,10,20,50]"></md-table-pagination>
 
           </div>

@@ -1,4 +1,4 @@
-import {QueryEngineFactory} from "./services/query-engine-factory.service";
+import {QueryEngineFactory} from "./wrangler/query-engine-factory.service";
 
 declare const angular: angular.IAngularStatic;
 

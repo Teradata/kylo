@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.8.4-SNAPSHOT</version>
+  <version>0.9.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
@@ -113,6 +113,7 @@
     <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
     <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
     <maven.site.plugin.version>3.6</maven.site.plugin.version>
+    <spring-data-commons.version>1.12.0.RELEASE</spring-data-commons.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -340,11 +341,32 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-test</artifactId>
         <version>${spring.boot.version}</version>
+        <exclusions>
+
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter</artifactId>
         <version>${spring.boot.version}</version>
+        <exclusions>
+          <exclusion>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>log4j-over-slf4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jcl-over-slf4j</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.slf4j</groupId>
+            <artifactId>jul-to-slf4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
@@ -437,13 +459,13 @@
       <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-commons</artifactId>
-        <version>1.12.0.RELEASE</version>
+        <version>${spring-data-commons.version}</version>
       </dependency>
 
       <dependency>
         <groupId>org.springframework.data</groupId>
         <artifactId>spring-data-jpa</artifactId>
-        <version>1.10.2.RELEASE</version>
+        <version>${spring.jpa.version}</version>
       </dependency>
 
 
@@ -819,6 +841,11 @@
       </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-ext</artifactId>
+        <version>${slf4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>${slf4j.log4j12.version}</version>
       </dependency>
@@ -950,7 +977,7 @@
             <licenseMerge>Creative Commons CC0 1.0 Universal|CC0|CC0 1.0 Universal|Public Domain, per Creative Commons CC0</licenseMerge>
             <licenseMerge>Eclipse Public License - v 1.0|Eclipse Public License v1.0|Eclipse Public License (EPL), Version 1.0|Eclipse Public License - Version 1.0</licenseMerge>
             <licenseMerge>GNU Lesser General Public License, Version 2.1|GNU LESSER GENERAL PUBLIC LICENSE|GNU Lesser General Public License|GNU General Lesser Public License (LGPL) version 2.1|lgpl|LGPL 2.1|LGPL-2.1|LGPL, version 2.1</licenseMerge>
-            <licenseMerge>MIT License|Bouncy Castle Licence</licenseMerge>
+            <licenseMerge>MIT License|Bouncy Castle Licence|MIT license</licenseMerge>
             <licenseMerge>Mozilla Public License Version 1.1|MPL 1.1</licenseMerge>
           </licenseMerges>
         </configuration>

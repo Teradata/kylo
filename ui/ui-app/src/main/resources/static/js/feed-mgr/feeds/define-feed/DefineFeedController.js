@@ -31,7 +31,19 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
         if(angular.isUndefined(self.model)){
             FeedService.resetFeed();
         }
+        /**
+         * The total number of steps to deisplay and render for the feed stepper
+         * @type {null}
+         */
         self.model.totalSteps = null;
+
+        /**
+         * The stepper url.
+         *
+         * @type {string}
+         */
+        self.model.stepperTemplateUrl= 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html'
+
 
         var requestedTemplate = $transition$.params().templateName || '';
         var requestedTemplateId = $transition$.params().templateId || '';
@@ -143,11 +155,28 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                 self.model.templateTableOption = "NO_TABLE";
             }
 
+            //set the total pre-steps for this feed to be 0. They will be taken from the templateTableOption
+            self.model.totalPreSteps = 0;
+            //When rendering the pre-step we place a temp tab/step in the front for the initial steps to transclude into and then remove it.
+            //set this render flag to false initially
+            self.model.renderTemporaryPreStep = false;
+
             // Load table option
             if (self.model.templateTableOption !== "NO_TABLE") {
                 UiComponentsService.getTemplateTableOption(self.model.templateTableOption)
                     .then(function (tableOption) {
-                        self.model.totalSteps = tableOption.totalSteps + 5;
+                        //if we have a pre-stepper configured set the properties
+                        if(angular.isDefined(tableOption.preStepperTemplateUrl) && tableOption.preStepperTemplateUrl != null){
+                            self.model.totalPreSteps = tableOption.totalPreSteps
+                            self.model.renderTemporaryPreStep = true;
+                        }
+                        //signal the service that we should track rendering the table template
+                        //We want to run our initializer when both the Pre Steps and the Feed Steps have completed.
+                        //this flag will be picked up in the TableOptionsStepperDirective.js
+                        UiComponentsService.startStepperTemplateRender(tableOption);
+
+                        //add the template steps + 5 (general, feedDetails, properties, access, schedule)
+                        self.model.totalSteps = tableOption.totalSteps +  5;
                     }, function () {
                         $mdDialog.show(
                             $mdDialog.alert()

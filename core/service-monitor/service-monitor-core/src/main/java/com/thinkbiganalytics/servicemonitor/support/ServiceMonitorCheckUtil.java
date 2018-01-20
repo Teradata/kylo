@@ -36,7 +36,7 @@ import java.util.TreeMap;
  */
 public class ServiceMonitorCheckUtil {
 
-    public static String ALL_COMPONENTS = "ALL";
+    public static final String ALL_COMPONENTS = "ALL";
 
     /**
      * get all the services names as a list

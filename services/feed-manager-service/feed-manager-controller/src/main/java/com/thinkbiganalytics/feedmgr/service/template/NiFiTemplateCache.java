@@ -27,6 +27,7 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -34,9 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -186,6 +185,9 @@ public class NiFiTemplateCache {
         return registeredTemplate.getNifiTemplate();
     }
 
+    private String cacheKey(TemplateDTO templateDTO, boolean includePropertyDescriptors) {
+        return templateDTO.getName() + includePropertyDescriptors;
+    }
 
     /**
      * Cache the Template properties.  Return the cached properties if the template hasnt been updated
@@ -194,15 +196,19 @@ public class NiFiTemplateCache {
      * @param includePropertyDescriptors true to include descriptors, false to not include the descriptors
      * @return a list of properties
      */
-    public List<NifiProperty> getTemplateProperties(TemplateDTO templateDTO, boolean includePropertyDescriptors) {
-
-        String cacheKey = templateDTO.getName() + includePropertyDescriptors;
+    public List<NifiProperty> getTemplateProperties(TemplateDTO templateDTO, boolean includePropertyDescriptors, RegisteredTemplate registeredTemplate) {
+        String cacheKey = cacheKey(templateDTO, includePropertyDescriptors);
         TemplatePropertiesCache cachedProperties = templatePropertiesCache.getIfPresent(cacheKey);
         if (cachedProperties == null || templateDTO.getTimestamp().getTime() > cachedProperties.getLastUpdated()) {
             List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateDTO, includePropertyDescriptors);
             if (cachedProperties == null) {
                 cachedProperties = new TemplatePropertiesCache(templateDTO.getId(), includePropertyDescriptors, templateDTO.getTimestamp().getTime());
                 templatePropertiesCache.put(cacheKey, cachedProperties);
+            }
+            if (registeredTemplate != null) {
+                //merge in the saved state of the template
+                NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
+                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
             cachedProperties.setProperties(properties);
             cachedProperties.setLastUpdated(templateDTO.getTimestamp().getTime());
@@ -213,9 +219,21 @@ public class NiFiTemplateCache {
 
     public void updateSelectedProperties(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate.getNifiTemplate() != null) {
-            Map<String, NifiProperty> selectedProperties = registeredTemplate.getProperties().stream().filter(p -> p.isSelected()).collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
-            List<NifiProperty> cachedProperties = getTemplateProperties(registeredTemplate.getNifiTemplate(), true);
-            cachedProperties.forEach(p -> p.setSelected(selectedProperties.containsKey(p.getProcessorNameTypeKey())));
+            //   Map<String, NifiProperty> selectedProperties = registeredTemplate.getProperties().stream().filter(p -> p.isSelected()).collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
+            List<NifiProperty> cachedProperties = getTemplateProperties(registeredTemplate.getNifiTemplate(), true, registeredTemplate);
+            cachedProperties.stream().forEach(p -> p.setSelected(false));
+            NifiPropertyUtil.matchAndSetPropertyByProcessorName(cachedProperties, registeredTemplate.getProperties(),
+                                                                NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+            //also update the non property descriptor cache if present
+            String cacheKey = cacheKey(registeredTemplate.getNifiTemplate(), false);
+            TemplatePropertiesCache cache = templatePropertiesCache.getIfPresent(cacheKey);
+            if (cache != null) {
+                cache.getProperties().stream().forEach(p -> p.setSelected(false));
+                NifiPropertyUtil.matchAndSetPropertyByProcessorName(cache.getProperties(), registeredTemplate.getProperties(),
+                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+            }
+
+            //    cachedProperties.forEach(p -> p.setSelected(selectedProperties.containsKey(p.getProcessorNameTypeKey())));
         }
     }
 

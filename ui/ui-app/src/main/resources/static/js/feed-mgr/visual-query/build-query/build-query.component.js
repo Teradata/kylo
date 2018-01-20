@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "underscore", "../services/query-engine"], function (require, exports, core_1, angular, _, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "underscore", "../wrangler/query-engine"], function (require, exports, core_1, angular, _, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -37,7 +37,7 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../serv
      *
      * - Advanced Mode - A textarea is provided for the user to input their query.
      */
-    var QueryBuilderComponent = (function () {
+    var QueryBuilderComponent = /** @class */ (function () {
         /**
          * Constructs a {@code BuildQueryComponent}.
          */
@@ -105,7 +105,8 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../serv
                 selectedTable: null,
                 noCache: true,
                 querySearch: this.onAutocompleteQuerySearch.bind(this),
-                refreshCache: this.onAutocompleteRefreshCache.bind(this)
+                refreshCache: this.onAutocompleteRefreshCache.bind(this),
+                delay: 900
             };
             /**
              * List of native data sources to exclude from the model.
@@ -648,20 +649,24 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../serv
             }
         };
         QueryBuilderComponent.prototype.onAutocompleteRefreshCache = function () {
-            this.HiveService.init();
-            var searchText = this.tablesAutocomplete.searchText.trim();
-            angular.element('#tables-auto-complete').focus().val(searchText).trigger('change');
+            var successFn = function () {
+                var searchText = this.tablesAutocomplete.searchText.trim();
+                angular.element('#tables-auto-complete').focus().val(searchText).trigger('change');
+            };
+            var errorFn = function () {
+            };
+            this.HiveService.refreshTableCache().then(successFn, errorFn);
         };
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", query_engine_1.QueryEngine)
+        ], QueryBuilderComponent.prototype, "engine", void 0);
+        __decorate([
+            core_1.Input(),
+            __metadata("design:type", Object)
+        ], QueryBuilderComponent.prototype, "model", void 0);
         return QueryBuilderComponent;
     }());
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", query_engine_1.QueryEngine)
-    ], QueryBuilderComponent.prototype, "engine", void 0);
-    __decorate([
-        core_1.Input(),
-        __metadata("design:type", Object)
-    ], QueryBuilderComponent.prototype, "model", void 0);
     exports.QueryBuilderComponent = QueryBuilderComponent;
     angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
         bindings: {

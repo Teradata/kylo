@@ -112,11 +112,16 @@ public enum DatabaseType {
      * @param connectionString a jdbc url connection string
      * @return the DatabaseType matching the connection String
      */
-    public static DatabaseType fromJdbcConnectionString(String connectionString) throws IllegalArgumentException {
-        return jdbcConnectionStringMap.entrySet().stream()
-            .filter(entry -> connectionString.toLowerCase().contains(entry.getKey())).map(entry -> entry.getValue())
-            .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("DatabaseType not found for jdbc connection String: " + connectionString));
+    public static DatabaseType fromJdbcConnectionString(final String connectionString) throws IllegalArgumentException {
+        final String lowerCaseConnectionString = connectionString.toLowerCase();
+
+        for (final Map.Entry<String, DatabaseType> entry : jdbcConnectionStringMap.entrySet()) {
+            if (lowerCaseConnectionString.contains(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+
+        throw new IllegalArgumentException("DatabaseType not found for jdbc connection String: " + connectionString);
     }
 
     /**

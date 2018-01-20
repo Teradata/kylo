@@ -59,7 +59,7 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
     /**
      * Sets base path
      */
-    public void setPath(String path) {
+    private void setPath(String path) {
         this.path = path;
     }
 

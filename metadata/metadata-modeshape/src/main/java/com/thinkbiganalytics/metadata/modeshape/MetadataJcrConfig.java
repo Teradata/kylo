@@ -44,6 +44,8 @@ import com.thinkbiganalytics.metadata.modeshape.domaintype.JcrDomainTypeProvider
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.project.providers.JcrProjectProvider;
+import com.thinkbiganalytics.metadata.modeshape.project.providers.ProjectProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.service.JcrIndexService;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;
@@ -76,6 +78,12 @@ public class MetadataJcrConfig {
         // to a separate module than the metadata one.
         return new JcrUserProvider();
     }
+
+    @Bean
+    public ProjectProvider projectProvider() {
+        return new JcrProjectProvider();
+    }
+
 
     @Bean
     public ExtensibleTypeProvider extensibleTypeProvider() {
@@ -176,7 +184,7 @@ public class MetadataJcrConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(prefix="config", value="search.engine")
+    @ConditionalOnProperty(prefix = "config", value = "search.engine")
     public JcrIndexService indexService(final Search search, final DatasourceProvider datasourceProvider, final MetadataAccess metadataAccess, final Repository repository) {
         final JcrIndexService indexService = new JcrIndexService(search, datasourceProvider, metadataAccess);
         try {

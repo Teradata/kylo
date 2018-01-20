@@ -21,6 +21,7 @@ define(['angular',
         'feed-mgr/services/DBCPTableSchemaService',
         'feed-mgr/services/EditFeedNifiPropertiesService',
         'feed-mgr/services/FeedTagService',
+        'feed-mgr/services/fattable/FattableService',
         'feed-mgr/shared/properties-admin/properties-admin',
         'feed-mgr/shared/property-list/property-list',
         'feed-mgr/shared/feed-field-policy-rules/FeedFieldPolicyRuleDialog',
@@ -35,7 +36,9 @@ define(['angular',
         'feed-mgr/shared/profile-stats/ProfileStats',
         'feed-mgr/services/UiComponentsService',
         'feed-mgr/services/DomainTypesService',
-        'feed-mgr/shared/apply-domain-type/ApplyDomainTypeDialog'],function() {
+        'feed-mgr/shared/apply-domain-type/ApplyDomainTypeDialog',
+        'feed-mgr/shared/apply-domain-type/apply-table-domain-types.component',
+        'feed-mgr/shared/apply-domain-type/domain-type-conflict.component'],function() {
 
 });
 

@@ -149,7 +149,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         }
 
         this.GET_SLA_BY_ID_URL = function (slaId) {
-            return self.SLA_BASE_URL + "/"+slaId;
+            return self.SLA_BASE_URL + "/" + slaId;
         }
 
         this.GET_SLA_AS_EDIT_FORM = function (slaId) {
@@ -288,8 +288,8 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
 
-        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function(id){
-            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/"+id+"/references";
+        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id) {
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
         }
 
         /**
@@ -309,14 +309,14 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.CATEGORY_ROLES_URL = function (categoryId) {
             return self.CATEGORIES_URL + "/" + categoryId + "/roles"
         };
-        
+
         /**
          * Get/Post roles changes for a Category entity
          * @param categoryId the category id
          * @returns {string} the url to get/post category role changes
          */
         this.CATEGORY_FEED_ROLES_URL = function (categoryId) {
-        	return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
+            return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
         };
 
         /**
@@ -343,7 +343,6 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
 
-
         /**
          * The URL for retrieving the list of templates for custom rendering with nifi processors
          * @type {string}
@@ -356,5 +355,14 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
 
+        /**
+         * Formats a date as a string.
+         */
+        this.FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
+
+        /**
+         * Parses a string as a date.
+         */
+        this.PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
     });
 });

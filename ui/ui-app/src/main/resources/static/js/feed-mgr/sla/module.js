@@ -44,7 +44,7 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
                 breadcrumbRoot:false,
                 displayName:'SLA Email Templates',
                 module:moduleName,
-                permissions:[AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions]
+                permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
             }
         })
 
@@ -69,7 +69,7 @@ define(['angular', 'feed-mgr/sla/module-name','kylo-utils/LazyLoadUtil','constan
                     breadcrumbRoot:false,
                     displayName:'SLA Email Template',
                     module:moduleName,
-                    permissions:[AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions]
+                    permissions:AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
                 }
             })
 

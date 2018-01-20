@@ -18,19 +18,19 @@
   #L%
   -->
 <md-card layout-align="center center">
-    <span class="card-title kpi-header">Services Health</span>
-    <span class="md-caption kpi-subtitle ">Monitors All Service Health</span>
+    <span class="card-title kpi-header">{{"Services Health" | translate}}</span>
+    <span class="md-caption kpi-subtitle ">{{"Monitors All Service Health" | translate}}</span>
     <md-card-content layout="column" layout-align="center center" class="kpi-content" style="width:100%;">
         <div ng-if="vm.dataLoaded">
             <nvd3 options="vm.chartOptions" data="vm.chartData" api="vm.chartApi" config="vm.chartConfig"></nvd3>
             <div layout="row" layout-align="space-between end" class="kpi-health-count-container" >
-            <span layout="column">
+            <span layout="column" ng-click="vm.openDetailsDialog('HEALTHY')" style="cursor: pointer;">
                 <span class="kpi-health-count" ng-class="{'healthy':vm.indicator.counts.upCount >0}">{{vm.indicator.counts.upCount}}</span>
-                <span class="md-caption kpi-health-label">Healthy</span>
+                <span class="md-caption kpi-health-label">{{"Healthy" | translate}}</span>
             </span>
-            <span layout="column">
+            <span layout="column" ng-click="vm.openDetailsDialog('UNHEALTHY')" style="cursor: pointer;">
                 <span class="kpi-health-count" ng-class="{'unhealthy':vm.indicator.counts.errorCount >0}">{{vm.indicator.counts.errorCount}}</span>
-                <span class="md-caption kpi-health-label">Unhealthy</span>
+                <span class="md-caption kpi-health-label">{{"Unhealthy" | translate}}</span>
             </span>
             </div>
         </div>

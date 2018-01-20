@@ -98,7 +98,7 @@ public class KyloEntityAwareAlertCriteria extends DefaultAlertCriteria implement
         QJpaServiceLevelAgreementDescription sla = QJpaServiceLevelAgreementDescription.jpaServiceLevelAgreementDescription;
 
         JPAQuery<JpaAlert> query = queryFactory
-            .select(alert)
+            .select(alert).distinct()
             .from(alert)
             .leftJoin(feed).on(feed.id.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'FEED'"))))
             .leftJoin(sla).on(sla.slaId.uuid.eq(alert.entityId.value).and(alert.entityType.eq(Expressions.stringPath("'SLA'"))))

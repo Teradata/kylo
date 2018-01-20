@@ -189,28 +189,31 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
     }
 
     @Override
-    public void unscheduleServiceLevelAgreement(Feed.ID feedId) {
-        unscheduleServiceLevelAgreement(feedId,false);
+    public void unscheduleServiceLevelAgreement(Feed.ID feedId, String categoryAndFeedName) {
+        unscheduleServiceLevelAgreement(feedId, categoryAndFeedName, false);
     }
 
 
-    public void unscheduleServiceLevelAgreement(Feed.ID feedId, boolean remove) {
+    public void unscheduleServiceLevelAgreement(Feed.ID feedId, String categoryAndFeedName, boolean remove) {
         metadataAccess.commit(() -> {
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(feedId);
             if (agreements != null) {
                 for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : agreements) {
-                    serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
-                    if(sla instanceof FeedServiceLevelAgreement && ((FeedServiceLevelAgreement)sla).getFeeds().size() == 1){
+
+                    if (sla instanceof FeedServiceLevelAgreement && ((FeedServiceLevelAgreement) sla).getFeeds().size() == 1) {
                         feedSlaProvider.removeFeedRelationships(sla.getId());
                         slaProvider.removeAgreement(sla.getId());
+                        serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
+                    } else {
+                        serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla.getId());
                     }
                 }
             }
         });
     }
 
-    public void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId) {
-        unscheduleServiceLevelAgreement(feedId,true);
+    public void removeAndUnscheduleAgreementsForFeed(Feed.ID feedId, String categoryAndFeedName) {
+        unscheduleServiceLevelAgreement(feedId, categoryAndFeedName, true);
     }
 
 
@@ -226,6 +229,10 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
         }, MetadataAccess.SERVICE);
     }
 
+    public boolean hasServiceLevelAgreements(Feed.ID id) {
+        List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(id);
+        return agreements != null && !agreements.isEmpty();
+    }
 
     @Override
     public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getFeedServiceLevelAgreements(String feedId) {
@@ -376,6 +383,7 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
             return metadataAccess.commit(() -> {
                 com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId = slaProvider.resolve(id);
                 //attempt to find it
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
                 slaProvider.removeAgreement(slaId);
                 serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(slaId);
                 return true;
@@ -468,7 +476,7 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
 
 
     private Set<VelocityTemplate.ID> findVelocityTemplates(ServiceLevelAgreementGroup agreement) {
-        if(agreement.getActionConfigurations() == null) {
+        if (agreement.getActionConfigurations() == null) {
             return null;
         }
         return agreement.getActionConfigurations().stream().flatMap(a -> ServiceLevelAgreementMetricTransformer.instance()
@@ -560,13 +568,6 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
                     // now assign the sla checks
                     slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
 
-                    if (feed != null) {
-                        Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
-                        if (!slaFeedIds.contains(feedId)) {
-                            Feed feedEntity = feedProvider.getFeed(feedId);
-                            slaFeeds.add(feedEntity);
-                        }
-                    }
                     //relate them
                     Set<Feed.ID> feedIds = new HashSet<>();
                     FeedServiceLevelAgreementRelationship feedServiceLevelAgreementRelationship = feedSlaProvider.relateFeeds(savedSla, slaFeeds);

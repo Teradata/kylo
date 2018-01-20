@@ -37,7 +37,7 @@ import java.util.List;
  */
 public class CronExpressionTest {
 
-    private static Logger log = LoggerFactory.getLogger(CronExpressionTest.class);
+    private static final Logger log = LoggerFactory.getLogger(CronExpressionTest.class);
 
     @Test
     public void testNextFireTimes() {

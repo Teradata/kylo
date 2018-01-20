@@ -35,7 +35,6 @@ import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
@@ -124,7 +123,7 @@ public class JcrFeedSlaTest {
         ExtensibleEntity.ID feedSlaEntityId = createFeedSLAEntity(feedIds, feedSlaTitle);
         ServiceLevelAgreement.ID nonFeedSla = createGenericSla(nonFeedSlaTitle);
 
-        ServiceLevelAgreement.ID slaId = metadata.read(new AdminCredentials(), () -> {
+        ServiceLevelAgreement.ID slaId = metadata.read(() -> {
 
             JcrFeedServiceLevelAgreementProvider jcrFeedSlaProvider = (JcrFeedServiceLevelAgreementProvider) feedSlaProvider;
 
@@ -183,9 +182,9 @@ public class JcrFeedSlaTest {
             }
 
             return feedSla.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
-        ExtensibleEntity entity = metadata.read(new AdminCredentials(), () -> {
+        ExtensibleEntity entity = metadata.read(() -> {
             ExtensibleEntity e = entityProvider.getEntity(feedSlaEntityId);
             Set<Node> feeds = (Set<Node>) e.getPropertyAsSet(JcrFeedServiceLevelAgreementRelationship.FEEDS, Node.class);
             Assert.assertEquals(feeds.size(), numberOfFeeds);
@@ -197,40 +196,40 @@ public class JcrFeedSlaTest {
                 }
             }
             return e;
-        });
+        }, MetadataAccess.SERVICE);
 
         //now remove the feed relationships
-        boolean removedFeedRelationships = metadata.commit(new AdminCredentials(), () -> {
+        boolean removedFeedRelationships = metadata.commit(() -> {
             ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
             return feedSlaProvider.removeFeedRelationships(slaId);
 
-        });
+        }, MetadataAccess.SERVICE);
 
         //query for the feeds related to this SLA and verify there are none
-        metadata.read(new AdminCredentials(), () -> {
+        metadata.read(() -> {
             FeedServiceLevelAgreement feedServiceLevelAgreement = feedSlaProvider.findAgreement(slaId);
             Assert.assertTrue(feedServiceLevelAgreement.getFeeds() == null || (feedServiceLevelAgreement.getFeeds().isEmpty()));
             return null;
-        });
+        }, MetadataAccess.SERVICE);
 
 
     }
 
 
     public ExtensibleEntity.ID createFeedSLAEntity(Set<Feed.ID> feedIdList, String title) {
-        return metadata.commit(new AdminCredentials(), () -> {
+        return metadata.commit(() -> {
             ServiceLevelAgreement sla = slaProvider.builder().name(title).description(title + " DESC").build();
             ExtensibleEntity entity = feedSlaProvider.relate(sla, feedIdList);
             return entity.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 
     public ServiceLevelAgreement.ID createGenericSla(String title) {
-        return metadata.commit(new AdminCredentials(), () -> {
+        return metadata.commit(() -> {
             ServiceLevelAgreement sla = slaProvider.builder().name(title).description(title + " DESC").build();
             return sla.getId();
-        });
+        }, MetadataAccess.SERVICE);
 
     }
 

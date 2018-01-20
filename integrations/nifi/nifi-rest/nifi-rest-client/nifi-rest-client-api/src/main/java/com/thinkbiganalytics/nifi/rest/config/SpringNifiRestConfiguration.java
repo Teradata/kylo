@@ -70,12 +70,12 @@ public class SpringNifiRestConfiguration {
     public NifiRestClientConfig nifiRestClientConfig() {
         final NifiRestClientConfig config = new NifiRestClientConfig();
         config.setUsername(env.getProperty("thinkbig.nifi.rest.username"));
-        config.setPassword(env.getProperty("thinkbig.nifi.rest.password"));
+        config.setPassword(env.getProperty("thinkbig.nifi.rest.password") == null ? null : env.getProperty("thinkbig.nifi.rest.password").toCharArray());
         config.setHttps(BooleanUtils.toBoolean(env.getProperty("thinkbig.nifi.rest.https")));
         config.setUseConnectionPooling(BooleanUtils.toBoolean(env.getProperty("thinkbig.nifi.rest.useConnectionPooling")));
         config.setTruststorePath(env.getProperty("thinkbig.nifi.rest.truststorePath"));
-        config.setTruststorePassword(env.getProperty("thinkbig.nifi.rest.truststorePassword"));
-        config.setKeystorePassword(env.getProperty("thinkbig.nifi.rest.keystorePassword"));
+        config.setTruststorePassword(env.getProperty("thinkbig.nifi.rest.truststorePassword") == null ? null : env.getProperty("thinkbig.nifi.rest.truststorePassword").toCharArray());
+        config.setKeystorePassword(env.getProperty("thinkbig.nifi.rest.keystorePassword") == null ? null : env.getProperty("thinkbig.nifi.rest.keystorePassword").toCharArray());
         config.setKeystorePath(env.getProperty("thinkbig.nifi.rest.keystorePath"));
         config.setTrustStoreType(env.getProperty("thinkbig.nifi.rest.truststoreType"));
         config.setKeystoreType(env.getProperty("thinkbig.nifi.rest.keystoreType"));

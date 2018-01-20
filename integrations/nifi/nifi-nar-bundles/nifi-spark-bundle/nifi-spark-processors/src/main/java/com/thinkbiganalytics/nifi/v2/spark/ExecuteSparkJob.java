@@ -151,7 +151,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .description("The deploy mode for YARN master (client, cluster). Only applicable for yarn mode. "
                      + "NOTE: Please ensure that you have not set this in your application.")
         .required(false)
-        .defaultValue("client")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -581,21 +580,23 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                             .build());
         }
 
-        if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
-            results.add(new ValidationResult.Builder()
-                            .subject(this.getClass().getSimpleName())
-                            .valid(false)
-                            .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
-                            .build());
+        if (StringUtils.isNotEmpty(sparkYarnDeployMode)) {
+            if ((!sparkMaster.contains("local")) && (!sparkMaster.equals("yarn")) && (!sparkMaster.contains("mesos")) && (!sparkMaster.contains("spark"))) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("invalid spark master provided. Valid values will have local, local[n], local[*], yarn, mesos, spark")
+                                .build());
 
-        }
+            }
 
-        if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
-            results.add(new ValidationResult.Builder()
-                            .subject(this.getClass().getSimpleName())
-                            .valid(false)
-                            .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
-                            .build());
+            if (sparkMaster.equals("yarn") && (!(sparkYarnDeployMode.equals("client") || sparkYarnDeployMode.equals("cluster")))) {
+                results.add(new ValidationResult.Builder()
+                                .subject(this.getClass().getSimpleName())
+                                .valid(false)
+                                .explanation("yarn master requires a deploy mode to be specified as either 'client' or 'cluster'")
+                                .build());
+            }
         }
 
         return results;
@@ -614,7 +615,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         }
 
         private OptionalSparkConfigurator setDeployMode(String sparkMaster, String sparkYarnDeployMode) {
-            if (sparkMaster.equals("yarn")) {
+            if (sparkMaster.equals("yarn") && StringUtils.isNotEmpty(sparkYarnDeployMode)) {
                 launcher.setDeployMode(sparkYarnDeployMode);
                 getLog().info("YARN deploy mode set to: {}", new Object[]{sparkYarnDeployMode});
             }

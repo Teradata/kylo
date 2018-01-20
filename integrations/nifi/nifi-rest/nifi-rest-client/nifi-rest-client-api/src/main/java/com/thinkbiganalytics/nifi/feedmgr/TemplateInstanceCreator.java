@@ -26,6 +26,7 @@ import com.thinkbiganalytics.nifi.rest.client.layout.AlignProcessGroupComponents
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.VersionedProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
@@ -65,14 +67,21 @@ public class TemplateInstanceCreator {
 
     private List<NifiProperty> templateProperties;
 
+    private String versionIdentifier;
+
     public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
                                    ReusableTemplateCreationCallback creationCallback) {
-        this(restClient, templateId, staticConfigPropertyMap, createReusableFlow, creationCallback);
+        this(restClient, templateId, templateProperties, staticConfigPropertyMap, createReusableFlow, creationCallback,null);
+    }
+
+    public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, List<NifiProperty> templateProperties, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
+                                   ReusableTemplateCreationCallback creationCallback, String versionIdentifier) {
+        this(restClient, templateId, staticConfigPropertyMap, createReusableFlow, creationCallback,versionIdentifier);
         this.templateProperties = templateProperties;
     }
 
     public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow,
-                                   ReusableTemplateCreationCallback creationCallback) {
+                                   ReusableTemplateCreationCallback creationCallback,  String versionIdentifier) {
         this.restClient = restClient;
         this.templateId = templateId;
         this.createReusableFlow = createReusableFlow;
@@ -85,7 +94,12 @@ public class TemplateInstanceCreator {
             staticConfigPropertyStringMap = new HashMap<>();
         }
         this.creationCallback = creationCallback;
+        if(versionIdentifier == null){
+            versionIdentifier = System.currentTimeMillis()+"";
+        }
+        this.versionIdentifier = versionIdentifier;
     }
+
 
     public boolean isCreateReusableFlow() {
         return createReusableFlow;
@@ -103,6 +117,7 @@ public class TemplateInstanceCreator {
 
             NifiProcessGroup newProcessGroup = null;
             TemplateDTO template = restClient.getTemplateById(templateId);
+            VersionedProcessGroup versionedProcessGroup = null;
 
             if (template != null) {
 
@@ -122,7 +137,7 @@ public class TemplateInstanceCreator {
                     if (thisGroup != null) {
                         //version the group
                         log.info("A previous Process group of with this name {} was found.  Versioning it before continuing", thisGroup.getName());
-                        templateCreationHelper.versionProcessGroup(thisGroup);
+                       versionedProcessGroup= templateCreationHelper.versionProcessGroup(thisGroup, this.getVersionIdentifier());
 
                     }
                     group = restClient.createProcessGroup(reusableParentGroup.getId(), template.getName());
@@ -215,11 +230,14 @@ public class TemplateInstanceCreator {
                     ///make the input/output ports in the category group as running
                     if (isCreateReusableFlow()) {
                         log.info("Reusable flow, attempt to mark the connection ports as running.");
-                        templateCreationHelper.markConnectionPortsAsRunning(entity);
+                        templateCreationHelper.startProcessGroupAndParentInputPorts(entity);
+                      //  templateCreationHelper.markConnectionPortsAsRunning(entity);
                         log.info("Reusable flow.  Successfully marked the ports as running.");
                     }
 
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
+                    newProcessGroup.setVersionedProcessGroup(versionedProcessGroup);
+                    newProcessGroup.setReusableFlowInstance(isCreateReusableFlow());
 
                     if (isCreateReusableFlow()) {
                         //call listeners notify of before mark as running  processing
@@ -250,8 +268,13 @@ public class TemplateInstanceCreator {
 
                     newProcessGroup.setSuccess(!newProcessGroup.hasFatalErrors());
 
-                    log.info("Finished importing template Errors found.  Success: {}, {} {}", newProcessGroup.isSuccess(), (errors != null ? errors.size() : 0),
-                             (errors != null ? " - " + StringUtils.join(errors) : ""));
+                    if(!newProcessGroup.isSuccess()) {
+                        log.info("Errors while importing the template. {} errors found. {}",  (errors != null ? errors.size() : 0),
+                                 (errors != null ? " - " + StringUtils.join(errors, ",") : ""));
+                    }
+                    else {
+                        log.info("Success.  Finished importing template ");
+                    }
 
                     return newProcessGroup;
 
@@ -266,5 +289,13 @@ public class TemplateInstanceCreator {
         }
 
         return null;
+    }
+
+    public String getVersionIdentifier() {
+        return versionIdentifier;
+    }
+
+    public void setVersionIdentifier(String versionIdentifier) {
+        this.versionIdentifier = versionIdentifier;
     }
 }

@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.8.4-SNAPSHOT</version>
+    <version>0.9.0-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -197,6 +197,12 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-security-controller</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hashids</groupId>
+      <artifactId>hashids</artifactId>
+      <version>1.0.3</version>
     </dependency>
 
     <!-- Upload support -->

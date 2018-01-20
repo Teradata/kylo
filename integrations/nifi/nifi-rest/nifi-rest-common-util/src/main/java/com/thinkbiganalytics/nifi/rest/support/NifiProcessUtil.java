@@ -24,12 +24,16 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.flow.FlowDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,9 +53,9 @@ public class NifiProcessUtil {
     /**
      * Type of the cleanup processor
      */
-    public static String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
+    public static final String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
 
-    public static String TRIGGER_FEED_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed";
+    public static final String TRIGGER_FEED_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed";
 
     /**
      * Return processors matching a supplied processor type matching {@link ProcessorDTO#getType()} against the supplied {@code type}
@@ -80,6 +84,22 @@ public class NifiProcessUtil {
             }
         }
         return null;
+    }
+
+    public static ProcessorDTO findFirstProcessorsByTypeAndName(Collection<ProcessorDTO> processors, String type, String name) {
+        ProcessorDTO processorDTO = null;
+        if (type != null) {
+            List<ProcessorDTO> list = findProcessorsByType(processors, type);
+            if (list != null && !list.isEmpty()) {
+                if(StringUtils.isNotBlank(name)){
+                    processorDTO = list.stream().filter(p -> p.getName().equalsIgnoreCase(name)).findFirst().orElse(list.get(0));
+                }
+                if( processorDTO == null) {
+                    processorDTO = list.get(0);
+                }
+            }
+        }
+        return processorDTO;
     }
 
     /**
@@ -352,6 +372,7 @@ public class NifiProcessUtil {
         Pattern pattern = Pattern.compile("^" + Pattern.quote(feedName) + "( - \\d+)?$", Pattern.CASE_INSENSITIVE);
         return processGroups.stream().filter(processGroup -> pattern.matcher(processGroup.getName()).matches()).collect(Collectors.toSet());
     }
+
 
 
     /**

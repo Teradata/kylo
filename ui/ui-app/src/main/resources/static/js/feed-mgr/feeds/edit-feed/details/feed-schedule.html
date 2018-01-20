@@ -17,21 +17,21 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
+<vertical-section-layout section-title='{{"views.feed-schedule.Schedule" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
                          allow-edit="!vm.model.reusableFeed && vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid"
                          the-form="vm.scheduleFeedForm">
 
     <readonly-section>
         <div ng-if="vm.model.reusableFeed == false">
         <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name">Strategy</span>
+            <span flex="25" class="property-name"> {{"views.feed-schedule.Strategy" | translate}} </span>
 
             <div flex>
-                {{vm.model.schedule.schedulingStrategy}}
+                {{vm.model.schedule.schedulingStrategy | translate}}
             </div>
         </div>
             <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
-            <span flex="25" class="property-name">Period</span>
+            <span flex="25" class="property-name"> {{"views.feed-schedule.Period" | translate}} </span>
 
             <div flex>
                 {{vm.model.schedule.schedulingPeriod}}
@@ -71,7 +71,7 @@
             <div layout-gt-sm="row" style="margin-bottom:18px">
 
                 <md-input-container class="md-block" flex-gt-sm>
-                    <label>Strategy</label>
+                    <label> {{"views.feed-schedule.Strategy" | translate}} </label>
                     <md-select ng-model="vm.editModel.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
                         <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
                     </md-select>
@@ -79,7 +79,7 @@
 
 
                 <md-input-container class="md-block" flex-gt-sm ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN'">
-                    <label>Expression</label>
+                    <label> {{"views.feed-schedule.Expression" | translate}} </label>
                     <input required ng-model="vm.editModel.schedule.schedulingPeriod" name="cronExpression"
                            cron-expression-validator
                            ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
@@ -90,7 +90,7 @@
                              ng-message="cronExpression">Invalid Cron Expression.
                         </div>
                         <div ng-show="vm.scheduleFeedForm.cronExpression.$error.required" ng-message="required">
-                            Required.
+                            {{"views.feed-schedule.Required" | translate}}
                         </div>
                     </div>
                     <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"
@@ -99,18 +99,18 @@
 
                 <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' || vm.editModel.schedule.schedulingStrategy == 'PRIMARY_NODE_ONLY'" layout="row" style="margin-bottom:-18px">
                     <md-input-container class="md-block" flex-gt-sm>
-                        <label>Run Schedule</label>
+                        <label> {{"views.feed-schedule.RS" | translate}} </label>
                         <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"
                                ng-model-options="{ updateOn: 'default blur', debounce: {'default': 500, 'blur': 0} }"/>
                     </md-input-container>
 
                     <md-input-container class="md-block" flex-gt-sm>
-                        <label>Units</label>
+                        <label> {{"views.feed-schedule.Units" | translate}} </label>
                         <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()">
-                            <md-option value="days">Days</md-option>
-                            <md-option value="hrs">Hours</md-option>
-                            <md-option value="min">Minutes</md-option>
-                            <md-option value="sec">Seconds</md-option>
+                            <md-option value="days"> {{"views.feed-schedule.Days" | translate}} </md-option>
+                            <md-option value="hrs"> {{"views.feed-schedule.Hours" | translate}} </md-option>
+                            <md-option value="min"> {{"views.feed-schedule.Minutes" | translate}} </md-option>
+                            <md-option value="sec"> {{"views.feed-schedule.Seconds" | translate}} </md-option>
                         </md-select>
                     </md-input-container>
                 </div>

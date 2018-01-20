@@ -1,30 +1,38 @@
 <div>
   <form name="defineFeedForm">
-    <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-on-select="vm.onStepSelect()" md-no-ink-bar="true" md-no-ink="true" sticky-tabs>
+    <md-tabs md-dynamic-height md-center-tabs="true"  md-border-bottom md-selected="vm.selectedStepIndex" md-on-select="vm.onStepSelect()" md-no-ink-bar="true" md-no-ink="true" >
 
-      <kylo-define-feed-step title="General Info" step="vm.steps[0]">
-        <thinkbig-define-feed-general-info step-index="0"></thinkbig-define-feed-general-info>
+      <kylo-table-options-stepper ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE' && vm.coreDataModel.totalPreSteps >0" selected-step-index="vm.selectedStepIndex" steps="vm.steps" step-index="0"
+                                  type="{{vm.coreDataModel.templateTableOption}}" stepper-template-type="pre-step" core-data-model="vm.coreDataModel"></kylo-table-options-stepper>
+
+
+     <kylo-define-feed-step title="PreStep" step="vm.steps[0]" ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE' && vm.coreDataModel.totalPreSteps >0 && vm.coreDataModel.renderTemporaryPreStep">
+
       </kylo-define-feed-step>
 
-      <kylo-define-feed-step title="Feed Details" step="vm.steps[1]">
-        <thinkbig-define-feed-details step-index="1"></thinkbig-define-feed-details>
+      <kylo-define-feed-step title='{{"views.define-feed-stepper.GeneralInfo" | translate}}' step="vm.steps[vm.coreDataModel.totalPreSteps +0]">
+        <thinkbig-define-feed-general-info step-index="{{vm.coreDataModel.totalPreSteps + 0}}"></thinkbig-define-feed-general-info>
       </kylo-define-feed-step>
 
-      <kylo-table-options-stepper ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE'" selected-step-index="vm.selectedStepIndex" steps="vm.steps" step-index="2"
-                                  type="{{vm.coreDataModel.templateTableOption}}" core-data-model="vm.coreDataModel"></kylo-table-options-stepper>
+      <kylo-define-feed-step title='{{"views.define-feed-stepper.FeedDetails" | translate}}'  step="vm.steps[vm.coreDataModel.totalPreSteps + 1]">
+        <thinkbig-define-feed-details step-index="{{vm.coreDataModel.totalPreSteps + 1}}"></thinkbig-define-feed-details>
+      </kylo-define-feed-step>
 
-      <kylo-define-feed-step title="Properties" step="vm.steps[vm.coreDataModel.totalSteps - 3]">
+
+      <kylo-table-options-stepper ng-if="vm.coreDataModel.templateTableOption != 'NO_TABLE'" selected-step-index="vm.selectedStepIndex" steps="vm.steps" step-index="vm.getStartingIndex(2)"
+                                  type="{{vm.coreDataModel.templateTableOption}}" stepper-template-type="stepper"  core-data-model="vm.coreDataModel"></kylo-table-options-stepper>
+
+
+      <kylo-define-feed-step title='{{"views.define-feed-stepper.Properties" | translate}}' step="vm.steps[vm.coreDataModel.totalSteps - 3]">
         <thinkbig-define-feed-properties step-index="{{vm.coreDataModel.totalSteps - 3}}"></thinkbig-define-feed-properties>
       </kylo-define-feed-step>
-
-      <kylo-define-feed-step title="Access Control" step="vm.steps[vm.coreDataModel.totalSteps - 2]">
+      <kylo-define-feed-step title='{{"views.define-feed-stepper.AccessControl" | translate}}'  step="vm.steps[vm.coreDataModel.totalSteps - 2]">
         <thinkbig-define-feed-access-control step-index="{{vm.coreDataModel.totalSteps - 2}}"></thinkbig-define-feed-access-control>
       </kylo-define-feed-step>
 
-      <kylo-define-feed-step title="Schedule" step="vm.steps[vm.coreDataModel.totalSteps - 1]">
+      <kylo-define-feed-step title='{{"views.define-feed-stepper.Schedule" | translate}}' step="vm.steps[vm.coreDataModel.totalSteps - 1]">
         <thinkbig-define-feed-schedule step-index="{{vm.coreDataModel.totalSteps - 1}}"></thinkbig-define-feed-schedule>
       </kylo-define-feed-step>
-
     </md-tabs>
   </form>
 </div>

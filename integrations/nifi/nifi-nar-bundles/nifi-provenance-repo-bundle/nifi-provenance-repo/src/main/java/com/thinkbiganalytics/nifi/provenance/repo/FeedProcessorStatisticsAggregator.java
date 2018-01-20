@@ -113,6 +113,9 @@ public class FeedProcessorStatisticsAggregator {
         stats1.addJobDuration(stats2.getJobDuration());
         stats1.addJobsFailed(stats2.getJobsFailed());
         stats1.addSuccessfulJobDuration(stats2.getSuccessfulJobDuration());
+        stats1.setMaxTime(stats1.getMaxTime() == null || stats1.getMaxTime() < stats2.getMaxTime() ? stats2.getMaxTime() : stats1.getMaxTime());
+        stats1.setMinTime(stats1.getMinTime() == null || stats1.getMinTime() > stats2.getMinTime() ? stats2.getMinTime() : stats1.getMinTime());
+        stats1.setTime(stats1.getMinTime());
         if(stats1 instanceof GroupedStatsV2 && stats2 instanceof GroupedStatsV2)
         if(((GroupedStatsV2) stats1).getLatestFlowFileId() == null && ((GroupedStatsV2) stats2).getLatestFlowFileId() != null){
             ((GroupedStatsV2) stats1).setLatestFlowFileId(((GroupedStatsV2) stats2).getLatestFlowFileId());

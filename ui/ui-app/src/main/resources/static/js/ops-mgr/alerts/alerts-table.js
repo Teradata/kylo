@@ -52,6 +52,13 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
 
         self.alertTypes = [ALL_ALERT_TYPES_FILTER];
 
+        var UNHANDLED_FILTER = {label:'UNHANDLED'};
+        self.filterAlertState = UNHANDLED_FILTER;
+
+        self.alertStates = [{label:'ALL'},{label:'HANDLED'},UNHANDLED_FILTER]
+
+
+
         initAlertTypes();
 
         this.showCleared = false;
@@ -83,6 +90,9 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
             loadAlerts(true);
         }
 
+        self.onFilterAlertStateChange = function(alertState){
+            loadAlerts(true);
+        }
 
         /**
          * Array holding onto the active alert promises
@@ -323,6 +333,11 @@ define(['angular','ops-mgr/alerts/module-name'], function (angular,moduleName) {
                     else {
                         params.filter+=','+self.filterAlertType.type;
                     }
+                }
+
+
+                if(self.filterAlertState.label != 'ALL'){
+                    params.state = self.filterAlertState.label;
                 }
 
 

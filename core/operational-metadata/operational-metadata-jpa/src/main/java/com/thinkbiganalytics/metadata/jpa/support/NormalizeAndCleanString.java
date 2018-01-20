@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.support;
  * #L%
  */
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,9 +37,11 @@ public class NormalizeAndCleanString {
 
     public static String normalizeAndClean(String str){
         try {
-            String testStr = Normalizer.normalize(str, Normalizer.Form.NFD);
-            String clean = testStr.replaceAll("\\P{InBasic_Latin}", "");
-            return clean;
+            if(StringUtils.isNotBlank(str)) {
+                String testStr = Normalizer.normalize(str, Normalizer.Form.NFD);
+                String clean = testStr.replaceAll("\\P{InBasic_Latin}", "");
+                return clean;
+            }
         }catch (Exception e){
             log.error("Unable to replace non UTF-8 characters for {}. {} ",str,e.getMessage(),e);
         }

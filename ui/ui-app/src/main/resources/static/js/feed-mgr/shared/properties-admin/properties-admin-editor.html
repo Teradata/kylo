@@ -30,18 +30,18 @@
             </div>
 
             <md-input-container flex="45">
-                <label>Name</label>
+                <label>{{"views.properties-admin-editor.Name" | translate}}</label>
                 <input ng-model="field.displayName" ng-change="vm.updateSystemName(field)">
                 <div ng-messages="field.$error" md-auto-hide="false">
-                    <div ng-message="duplicate">Names must be unique.</div>
-                    <div ng-message="missingName">A name is required.</div>
+                    <div ng-message="duplicate">{{"views.properties-admin-editor.Nmbu" | translate}}</div>
+                    <div ng-message="missingName">{{"views.properties-admin-editor.Anir" | translate}}</div>
                 </div>
             </md-input-container>
 
             <span flex="5"></span>
 
             <md-input-container flex="40">
-                <label>System Name</label>
+                <label>{{"views.properties-admin-editor.SN" | translate}}</label>
                 <input ng-model="field.systemName" ng-readonly="!field.$isNew">
             </md-input-container>
 
@@ -54,7 +54,7 @@
             <span flex="5"></span>
 
             <md-input-container flex="90">
-                <label>Description</label>
+                <label>{{"views.properties-admin-editor.Description" | translate}}</label>
                 <input ng-model="field.description">
             </md-input-container>
 
@@ -65,7 +65,7 @@
             <span flex="5"></span>
 
             <md-input-container layout="column" flex="90" class="md-input-has-value">
-                <label>Required?</label>
+                <label>{{"views.properties-admin-editor.Required" | translate}}</label>
                 <md-checkbox ng-model="field.required"></md-checkbox>
             </md-input-container>
 
@@ -74,4 +74,4 @@
     </li>
 </ul>
 
-<md-button class="md-primary md-raised" ng-click="vm.addField()">Add Property</md-button>
+<md-button class="md-primary md-raised" ng-click="vm.addField()">{{"views.properties-admin-editor.AP" | translate}}</md-button>

@@ -35,9 +35,9 @@ import java.util.List;
 /**
  * Represents a NiFi process group that has been updated in Kylo and holds any error messages resulting from the NiFi update.
  */
-public class NifiProcessGroup {
+public final class NifiProcessGroup {
 
-    public static String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
+    public static final String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
     private ProcessGroupDTO processGroupEntity;
 
     private List<ProcessorDTO> activeProcessors;
@@ -51,6 +51,10 @@ public class NifiProcessGroup {
     private List<NiFiComponentErrors> errors;
 
     private boolean rolledBack = false;
+
+    private VersionedProcessGroup versionedProcessGroup;
+
+    private boolean reusableFlowInstance;
 
     public NifiProcessGroup() {
         this(new ProcessGroupDTO());
@@ -71,14 +75,41 @@ public class NifiProcessGroup {
         this.success = !this.hasFatalErrors();
     }
 
-    private void populateErrors() {
-        this.errors = new ArrayList<NiFiComponentErrors>();
+    public void validateInputProcessor() {
+        if (this.errors == null) {
+            errors = new ArrayList<>();
+        }
+        if (processGroupEntity == null) {
+            processGroupEntity = new ProcessGroupDTO();
+            processGroupEntity.setName("Process Group");
+            if (inputProcessor != null) {
+                processGroupEntity.setId(inputProcessor.getParentGroupId());
+
+            }
+        }
         if (this.inputProcessor != null && this.processGroupEntity != null) {
             NiFiComponentErrors error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
             if (error != null && !error.getValidationErrors().isEmpty()) {
-                errors.add(error);
+                if (!isErrorAlreadyRecorded(error)) {
+                    errors.add(error);
+                }
             }
         }
+    }
+
+    private boolean isErrorAlreadyRecorded(NiFiComponentErrors error) {
+        for (NiFiComponentErrors existingError : errors) {
+            if ((error.getProcessGroupId().equals(existingError.getProcessGroupId())) && (error.getProcessorId().equals(existingError.getProcessorId()))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private void populateErrors() {
+        this.errors = new ArrayList<NiFiComponentErrors>();
+        validateInputProcessor();
         if (this.downstreamProcessors != null && this.processGroupEntity != null) {
             List<NiFiComponentErrors> processorErrors = NifiProcessorValidationUtil.getProcessorValidationErrors(this.downstreamProcessors, true);
             if (processorErrors != null) {
@@ -118,6 +149,14 @@ public class NifiProcessGroup {
 
     public ProcessGroupDTO getProcessGroupEntity() {
         return processGroupEntity;
+    }
+
+    public void updateProcessGroupContent(ProcessGroupDTO dto) {
+        if (processGroupEntity != null) {
+            processGroupEntity.setContents(dto.getContents());
+        } else {
+            this.processGroupEntity = dto;
+        }
     }
 
     public List<NiFiComponentErrors> getErrors() {
@@ -186,11 +225,37 @@ public class NifiProcessGroup {
         return errors;
     }
 
+
+    public void setInputProcessor(ProcessorDTO inputProcessor) {
+        this.inputProcessor = inputProcessor;
+    }
+
+
+    public ProcessorDTO getInputProcessor() {
+        return inputProcessor;
+    }
+
     public boolean isSuccess() {
         return success;
     }
 
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+
+    public VersionedProcessGroup getVersionedProcessGroup() {
+        return versionedProcessGroup;
+    }
+
+    public void setVersionedProcessGroup(VersionedProcessGroup versionedProcessGroup) {
+        this.versionedProcessGroup = versionedProcessGroup;
+    }
+
+    public boolean isReusableFlowInstance() {
+        return reusableFlowInstance;
+    }
+
+    public void setReusableFlowInstance(boolean reusableFlowInstance) {
+        this.reusableFlowInstance = reusableFlowInstance;
     }
 }

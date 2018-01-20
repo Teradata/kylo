@@ -37,13 +37,13 @@ public class NifiRestClientConfig extends JerseyClientConfig {
 
     }
 
-    public NifiRestClientConfig(String host, String username, String password, String apiPath) {
+    public NifiRestClientConfig(String host, String username, char[] password, String apiPath) {
         super(host, username, password);
         this.apiPath = apiPath;
     }
 
-    public NifiRestClientConfig(String host, String username, String password, boolean https, boolean keystoreOnClasspath,
-                                String keystorePath, String keystorePassword, String apiPath) {
+    public NifiRestClientConfig(String host, String username, char[] password, boolean https, boolean keystoreOnClasspath,
+                                String keystorePath, char[] keystorePassword, String apiPath) {
         super(host, username, password, https, keystoreOnClasspath, keystorePath, keystorePassword);
         this.apiPath = apiPath;
     }
