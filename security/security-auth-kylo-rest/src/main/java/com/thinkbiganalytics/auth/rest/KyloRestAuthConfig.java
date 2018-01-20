@@ -46,20 +46,24 @@ public class KyloRestAuthConfig {
     @Value("${security.auth.kylo.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
     private int loginOrder;
 
-    @Bean(name = "loginRestClientConfig")
-    @ConfigurationProperties(prefix = "loginRestClientConfig")
-    public LoginJerseyClientConfig loginRestClientConfig() {
-        return new LoginJerseyClientConfig();
-    }
-
-    @Inject
-    private LoginJerseyClientConfig loginRestClientConfig;
-
     @Value("${security.auth.kylo.login.username:#{null}}")
     private String loginUser;
 
     @Value("${security.auth.kylo.login.password:#{null}}")
     private String loginPassword;
+    
+    @Value("${security.auth.kylo.login.servicesLogout:#{false}}")
+    private boolean servicesLogout = false;
+
+    @Inject
+    private LoginJerseyClientConfig loginRestClientConfig;
+
+    
+    @Bean(name = "loginRestClientConfig")
+    @ConfigurationProperties(prefix = "loginRestClientConfig")  // TODO should the prefix be "security.auth.kylo.client" for consistency?
+    public LoginJerseyClientConfig loginRestClientConfig() {
+        return new LoginJerseyClientConfig();
+    }
 
     /**
      * Creates a new UI login configuration for the REST Login Module.
@@ -78,11 +82,13 @@ public class KyloRestAuthConfig {
                     .moduleClass(KyloRestLoginModule.class)
                     .controlFlag(this.loginFlag)
                     .option(KyloRestLoginModule.REST_CLIENT_CONFIG, loginRestClientConfig)
+                    .option(KyloRestLoginModule.SERVICES_LOGOUT, servicesLogout)
                     .add()
                 .loginModule(JaasAuthConfig.JAAS_UI_TOKEN)
                     .moduleClass(KyloRestLoginModule.class)
                     .controlFlag(this.loginFlag)
                     .option(KyloRestLoginModule.REST_CLIENT_CONFIG, loginRestClientConfig)
+                    .option(KyloRestLoginModule.SERVICES_LOGOUT, servicesLogout)
                     .option(KyloRestLoginModule.LOGIN_USER, loginUser)
                     .option(KyloRestLoginModule.LOGIN_PASSWORD, loginPassword)
                     .add()

@@ -281,7 +281,6 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
     }
 
-    @SuppressWarnings("unchecked")
     protected Optional<Object> getOption(String name) {
         return Optional.ofNullable(this.options.get(name));
     }
