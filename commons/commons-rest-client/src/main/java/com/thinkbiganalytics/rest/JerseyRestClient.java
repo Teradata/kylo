@@ -352,6 +352,31 @@ public class JerseyRestClient {
         return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
 
     }
+    
+    public WebTarget target(String path, Map<String, Object> params) {
+        return buildTarget(path, params);
+    }
+    
+    public <T> T get(WebTarget target, Class<T> clazz) {
+        return get(target, clazz, true);
+    }
+    
+    public <T> T get(WebTarget target, Class<T> clazz, boolean logError) {
+        T obj = null;
+
+        try {
+            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+        } catch (Exception e) {
+            if (e instanceof NotAcceptableException) {
+                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
+            } else {
+                if (logError) {
+                    log.error("Failed to process request " + target.request(), e);
+                }
+            }
+        }
+        return obj;
+    }
 
     /**
      * Perform a GET request
@@ -378,20 +403,7 @@ public class JerseyRestClient {
      */
     public <T> T get(String path, Map<String, Object> params, Class<T> clazz, boolean logError) {
         WebTarget target = buildTarget(path, params);
-        T obj = null;
-
-        try {
-            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
-        } catch (Exception e) {
-            if (e instanceof NotAcceptableException) {
-                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
-            } else {
-                if (logError) {
-                    log.error("Failed to process request " + path, e);
-                }
-            }
-        }
-        return obj;
+        return get(target, clazz, logError);
     }
 
     /**

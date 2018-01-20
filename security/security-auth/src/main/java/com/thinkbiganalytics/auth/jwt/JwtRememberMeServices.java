@@ -57,6 +57,7 @@ import org.springframework.security.web.authentication.rememberme.InvalidCookieE
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
 import java.security.Key;
 import java.security.Principal;
 import java.util.ArrayList;
@@ -68,13 +69,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.security.auth.Subject;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Identifies previously remembered users by a JSON Web Token.
@@ -211,6 +216,25 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         final String[] tokens = Stream.concat(user, token).toArray(String[]::new);
 
         setCookie(tokens, getTokenValiditySeconds(), request, response);
+        
+        // If there is a current Subject then add the cookie as a private credential.
+        Subject subject = Subject.getSubject(AccessController.getContext());
+        if (subject != null) {
+            subject.getPrivateCredentials().add(getTokenCookie(tokens, request, response));
+        }
+    }
+    
+    protected Cookie getTokenCookie(@Nonnull String[] tokens, @Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response) {
+        // The easiest way to get the cookie is to get it from a request as it is set
+        final AtomicReference<Cookie> cookieRef = new AtomicReference<>();
+        HttpServletResponseWrapper wrapper = new HttpServletResponseWrapper(response) {
+            public void addCookie(Cookie cookie) {
+                cookieRef.set(cookie);
+            };
+        };
+        
+        setCookie(tokens, getTokenValiditySeconds(), request, wrapper);
+        return cookieRef.get();
     }
 
     /**

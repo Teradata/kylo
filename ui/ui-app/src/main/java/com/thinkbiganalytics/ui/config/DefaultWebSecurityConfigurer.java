@@ -43,6 +43,7 @@ import org.springframework.security.web.authentication.logout.LogoutSuccessHandl
 import org.springframework.security.web.authentication.logout.SimpleUrlLogoutSuccessHandler;
 import org.springframework.security.web.authentication.rememberme.RememberMeAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.jaasapi.JaasApiIntegrationFilter;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -123,7 +124,8 @@ public class DefaultWebSecurityConfigurer extends BaseWebSecurityConfigurer {
                 .and()
             .httpBasic()
                 .and()
-            .addFilterBefore(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), BasicAuthenticationFilter.class)
+            .addFilterBefore(jaasFilter(), BasicAuthenticationFilter.class)
+            .addFilterAfter(new RememberMeAuthenticationFilter(auth -> auth, rememberMeServices), JaasApiIntegrationFilter.class)
             .addFilterAfter(logoutFilter(), BasicAuthenticationFilter.class);
 
         // @formatter:on
