@@ -20,7 +20,7 @@
 import {Component, OnInit} from '@angular/core';
 
 import {Account, ConfigService} from '../shared';
-import {FormControl, Validators} from '@angular/forms';
+import {AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
 
 @Component({
     selector: 'jhi-home',
@@ -30,13 +30,13 @@ import {FormControl, Validators} from '@angular/forms';
     ]
 })
 export class HomeComponent implements OnInit {
-    account: Account;
     checks: Array<any> = []; // todo make a class
     isLoading: boolean;
     selectedCheckId = -1;
-    path = new FormControl('', [Validators.required]);
+    path = new FormControl('', [Validators.required, forbiddenNameValidator(this)]);
     devMode = new FormControl(false, [Validators.required]);
     selectAll = new FormControl(false, [Validators.required]);
+    configuration: any;
 
     constructor(private configService: ConfigService) {
     }
@@ -75,18 +75,24 @@ export class HomeComponent implements OnInit {
 
     checkConfig() {
         console.log('checkConfig for ' + this.path);
+        this.reset();
         this.configService.setPath(this.path.value, this.devMode.value).toPromise().then((configuration) => {
             if (configuration) {
                 console.log('created new configuration', configuration);
+                this.configuration = configuration;
                 this.isLoading = false;
             } else {
                 console.log('failed to create configuration on path ' + this.path);
+                this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
+                this.path.updateValueAndValidity();
                 this.isLoading = false;
             }
             return configuration;
         }).then(this.executeChecks)
             .catch((err) => {
                 console.log('error creating configuration on path ' + this.path);
+                this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
+                this.path.updateValueAndValidity();
                 this.isLoading = false;
                 return null;
             });
@@ -107,7 +113,6 @@ export class HomeComponent implements OnInit {
             .filter((check) => check.enabled.value)
             .map((check) => {
             check.isLoading = true;
-            check.status = {};
             return this.configService.executeCheck(configuration.id, check.id).toPromise().then((status) => {
                 console.log('check ' + check.id + ' executed with status ' + status, status);
                 check.isLoading = false;
@@ -129,7 +134,13 @@ export class HomeComponent implements OnInit {
     };
 
     getErrorMessage() {
-        return this.path.hasError('required') ? 'You must enter a value' : '';
+        if (this.path.hasError('required')) {
+            return 'You must enter a value';
+        }
+        if (this.path.hasError('configurationError')) {
+            return 'Failed to read configuration on path "' + this.configuration.errorPath + '"';
+        }
+        return '';
     }
 
     onSelectAllChange() {
@@ -137,4 +148,29 @@ export class HomeComponent implements OnInit {
             this.checks.forEach((check) => check.enabled.setValue(this.selectAll.value));
         }
     }
+
+    onDevModeChange() {
+        this.path.updateValueAndValidity();
+    }
+
+    reset() {
+        this.configuration = {};
+        if (this.checks) {
+            this.checks.forEach((check) => check.status = {});
+        }
+    }
+}
+
+export function forbiddenNameValidator(homeComponent: HomeComponent): ValidatorFn {
+    return (control: AbstractControl): {[key: string]: any} => {
+        console.log('forbidden check');
+        if (homeComponent.configuration !== undefined
+            && homeComponent.configuration.error
+            && homeComponent.configuration.errorPath === control.value
+            && homeComponent.configuration.devmode === homeComponent.devMode.value) {
+            return {'configurationError': {value: control.value}};
+        } else {
+            return null;
+        }
+    };
 }
