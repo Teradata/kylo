@@ -90,7 +90,7 @@
                 </div>
 
                 <div layout="column" class="layout-padding-top-bottom">
-                    <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+                    <span>{{'select-template.time_locale' | translate:{date:vm.model.updateDate} }}</span>
                                              <span class="hint">
                                              Last Updated
                                            </span>
