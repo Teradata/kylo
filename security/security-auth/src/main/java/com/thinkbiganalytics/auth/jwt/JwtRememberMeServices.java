@@ -216,25 +216,55 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
         final String[] tokens = Stream.concat(user, token).toArray(String[]::new);
 
         setCookie(tokens, getTokenValiditySeconds(), request, response);
-        
-        // If there is a current Subject then add the cookie as a private credential.
-        Subject subject = Subject.getSubject(AccessController.getContext());
-        if (subject != null) {
-            subject.getPrivateCredentials().add(getTokenCookie(tokens, request, response));
-        }
     }
     
-    protected Cookie getTokenCookie(@Nonnull String[] tokens, @Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response) {
-        // The easiest way to get the cookie is to get it from a request as it is set
+    /* (non-Javadoc)
+     * @see org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices#extractRememberMeCookie(javax.servlet.http.HttpServletRequest)
+     */
+    @Override
+    protected String extractRememberMeCookie(HttpServletRequest request) {
+        // If a remember-me cookie is found also add it as a private credential of the current subject (if any.)
+        Cookie[] cookies = request.getCookies();
+        
+        if (cookies != null) {
+            Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(getCookieName()))
+                .findFirst()
+                .ifPresent(this::addSubjectCredential);
+        }
+        
+        return super.extractRememberMeCookie(request);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices#setCookie(java.lang.String[], int, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void setCookie(String[] tokens, int maxAge, HttpServletRequest request, HttpServletResponse response) {
+        // Record the new cookie as a private credential of the current subject (if any.)
+        // The easiest way to capture the cookie is to get it from the request as it is added.
         final AtomicReference<Cookie> cookieRef = new AtomicReference<>();
         HttpServletResponseWrapper wrapper = new HttpServletResponseWrapper(response) {
             public void addCookie(Cookie cookie) {
+                super.addCookie(cookie);
                 cookieRef.set(cookie);
             };
         };
         
-        setCookie(tokens, getTokenValiditySeconds(), request, wrapper);
-        return cookieRef.get();
+        super.setCookie(tokens, maxAge, request, wrapper);
+        addSubjectCredential(cookieRef.get());
+    }
+    
+    /**
+     * If a current subject exists then adds the given cookie to the private credentials of the subject.
+     * @param cookie to cookie to add as a private credential
+     */
+    private void addSubjectCredential(Cookie cookie) {
+        Subject subject = Subject.getSubject(AccessController.getContext());
+        
+        if (subject != null) {
+            subject.getPrivateCredentials().add(cookie);
+        }
     }
 
     /**

@@ -99,7 +99,7 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
      * @return true if the REST login credentials are different from the user being authenticated
      */
     public boolean isAlternateCredentials() {
-        return getUsername().equals(this.authenticatingUser);
+        return getUsername() != null && this.authenticatingUser != null && getUsername().equals(this.authenticatingUser);
     }
     
     /**

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
@@ -121,7 +122,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
     @Override
     protected boolean doLogin() throws Exception {
-        final LoginJerseyClientConfig userConfig = createClientConfig();
+        final LoginJerseyClientConfig userConfig = createClientConfig(true);
 
         final User user;
         try {
@@ -164,7 +165,7 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
     @Override
     protected boolean doLogout() throws Exception {
-        final LoginJerseyClientConfig userConfig = createClientConfig();
+        final LoginJerseyClientConfig userConfig = createClientConfig(false);
 
         logoutUser(userConfig);
         getSubject().getPrincipals().removeAll(getAllPrincipals());
@@ -173,15 +174,16 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
     }
 
     private LoginJerseyClientConfig createClientConfig(boolean usePasswords) throws LoginException {
-        // Get username and password
-        final NameCallback nameCallback = new NameCallback("Username: ");
-        final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
         final LoginJerseyClientConfig userConfig = new LoginJerseyClientConfig(config);
-        final String authUser;
-        final String username;
-        final char[] password;
-    
+        
         if (usePasswords) {
+            // Get username and password
+            final NameCallback nameCallback = new NameCallback("Username: ");
+            final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
+            final String authUser;
+            final String username;
+            final char[] password;
+            
             if (loginUser == null) {
                 // Use user's own username and password to access the REST API if a loginUser was not provided.
                 handle(nameCallback, passwordCallback);
@@ -204,14 +206,13 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
         return userConfig;
     }
     
-    private WebTarget createWebTarget(String endpoint) throws LoginException {
-        Set<Cookie> cookies = getSubject().getPrivateCredentials(Cookie.class);
-        WebTarget target = getClient(createClientConfig(cookies.size() > 0)).target(endpoint, null);
+    private WebTarget createWebTarget(JerseyRestClient client, String endpoint, Set<Cookie> cookies) throws LoginException {
+        WebTarget target = client.target(endpoint, null);
         
         if (cookies.size() > 0) {
             Invocation.Builder req = target.request();
             
-            getSubject().getPrivateCredentials(Cookie.class).stream()
+            cookies.stream()
                 .map(jsr -> new javax.ws.rs.core.Cookie(jsr.getName(), jsr.getValue()))
                 .forEach(cookie -> req.cookie(cookie));
         }
@@ -221,13 +222,15 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
 
     private User retrieveUser(final LoginJerseyClientConfig userConfig) throws LoginException {
         String endpoint = userConfig.isAlternateCredentials() ? "/v1/security/users/" + userConfig.getAuthenticatingUser() : "/v1/about/me";
-        return getClient(userConfig).get(createWebTarget(endpoint), User.class);
+        JerseyRestClient client = getClient(userConfig);
+        return client.get(createWebTarget(client, endpoint, Collections.emptySet()), User.class);
     }
 
     private void logoutUser(final LoginJerseyClientConfig userConfig) throws LoginException {
         if (servicesLogout) {
             String endpoint = userConfig.isAlternateCredentials()  ? "/v1/logout?user=" + userConfig.getAuthenticatingUser() : "/v1/logout";
-            getClient(userConfig).get(createWebTarget(endpoint), String.class);
+            JerseyRestClient client = getClient(userConfig);
+            client.get(createWebTarget(client, endpoint, getSubject().getPrivateCredentials(Cookie.class)), String.class);
         }
     }
 
