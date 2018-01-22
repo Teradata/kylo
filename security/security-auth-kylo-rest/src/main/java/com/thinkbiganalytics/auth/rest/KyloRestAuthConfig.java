@@ -52,7 +52,7 @@ public class KyloRestAuthConfig {
     @Value("${security.auth.kylo.login.password:#{null}}")
     private String loginPassword;
     
-    @Value("${security.auth.kylo.login.servicesLogout:#{false}}")
+    @Value("${security.auth.kylo.login.servicesLogout:#{true}}")
     private boolean servicesLogout = false;
 
     @Inject

@@ -22,11 +22,7 @@ package com.thinkbiganalytics.auth.rest;
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import javax.annotation.Nonnull;
-import javax.servlet.http.Cookie;
 
 /**
  * Configuration for a Login REST client.
@@ -43,8 +39,6 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
      * used to make the REST call.
      */
     private String authenticatingUser;
-    
-    private final Set<Cookie> cookies = new HashSet<>();
 
     /**
      * Default constructor, does nothing
@@ -98,18 +92,7 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
     /**
      * @return true if the REST login credentials are different from the user being authenticated
      */
-    public boolean isAlternateCredentials() {
+    public boolean isAlternateUser() {
         return getUsername() != null && this.authenticatingUser != null && getUsername().equals(this.authenticatingUser);
-    }
-    
-    /**
-     * @return the cookies
-     */
-    public Set<Cookie> getCookies() {
-        return cookies;
-    }
-    
-    public boolean addCookie(Cookie cookie) {
-        return this.cookies.add(cookie);
     }
 }

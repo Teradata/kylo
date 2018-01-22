@@ -27,7 +27,6 @@ import com.thinkbiganalytics.security.rest.model.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -48,7 +47,6 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
 
 /**
  * Authenticates users by querying an external REST API. This allows the UI module to get a user's groups from the Services module.
@@ -90,10 +88,9 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
     private char[] loginPassword = null;
     
     /**
-     * Indicates whether Kylo services should be notified of 
-     * logout (requires options logoutUser and LogoutPassword)
+     * Indicates whether Kylo services should be notified of logout
      */
-    private boolean servicesLogout = false;
+    private boolean servicesLogout = true;
     
 
     @Override
@@ -110,10 +107,6 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
                     .orElseThrow(() -> new IllegalArgumentException("A REST login password is required if a login username was provided"));
                 loginPassword = passwordObject.toCharArray();
             }
-            
-//            if (servicesLogout && loginUser == null) {
-//                throw new IllegalArgumentException("Using the \"servicesLogout\" option requires the \"loginUser\" and \"loginPassword\" options to be set");
-//            }
         } catch (RuntimeException e) {
             log.error("Unhandled exception during initialization", e);
             throw e;
@@ -174,9 +167,9 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
     }
 
     private LoginJerseyClientConfig createClientConfig(boolean usePasswords) throws LoginException {
-        final LoginJerseyClientConfig userConfig = new LoginJerseyClientConfig(config);
-        
         if (usePasswords) {
+            final LoginJerseyClientConfig userConfig = new LoginJerseyClientConfig(config);
+            
             // Get username and password
             final NameCallback nameCallback = new NameCallback("Username: ");
             final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
@@ -201,36 +194,39 @@ public class KyloRestLoginModule extends AbstractLoginModule implements LoginMod
             userConfig.setUsername(username);
             userConfig.setPassword(password);
             userConfig.setAuthenticatingUser(authUser);
+            
+            return userConfig;
+        } else {
+            return config;
         }
-        
-        return userConfig;
     }
     
-    private WebTarget createWebTarget(JerseyRestClient client, String endpoint, Set<Cookie> cookies) throws LoginException {
-        WebTarget target = client.target(endpoint, null);
+    private Invocation.Builder createBuilder(@Nonnull JerseyRestClient client, @Nonnull String endpoint, @Nonnull Set<Cookie> cookies) throws LoginException {
+        Invocation.Builder builder = client.request(endpoint, null);
         
         if (cookies.size() > 0) {
-            Invocation.Builder req = target.request();
-            
-            cookies.stream()
-                .map(jsr -> new javax.ws.rs.core.Cookie(jsr.getName(), jsr.getValue()))
-                .forEach(cookie -> req.cookie(cookie));
+            for (Cookie cookie : cookies) {
+                builder.cookie(cookie.getName(), cookie.getValue());
+            }
         }
         
-        return target;
+        return builder;
     }
 
-    private User retrieveUser(final LoginJerseyClientConfig userConfig) throws LoginException {
-        String endpoint = userConfig.isAlternateCredentials() ? "/v1/security/users/" + userConfig.getAuthenticatingUser() : "/v1/about/me";
+    private User retrieveUser(@Nonnull final LoginJerseyClientConfig userConfig) throws LoginException {
+        String endpoint = userConfig.isAlternateUser() ? "/v1/security/users/" + userConfig.getAuthenticatingUser() : "/v1/about/me";
         JerseyRestClient client = getClient(userConfig);
-        return client.get(createWebTarget(client, endpoint, Collections.emptySet()), User.class);
+        
+        return client.get(createBuilder(client, endpoint, Collections.emptySet()), User.class);
     }
 
-    private void logoutUser(final LoginJerseyClientConfig userConfig) throws LoginException {
+    private void logoutUser(@Nonnull final LoginJerseyClientConfig userConfig) throws LoginException {
         if (servicesLogout) {
-            String endpoint = userConfig.isAlternateCredentials()  ? "/v1/logout?user=" + userConfig.getAuthenticatingUser() : "/v1/logout";
+            String endpoint = "/v1/logout";
             JerseyRestClient client = getClient(userConfig);
-            client.get(createWebTarget(client, endpoint, getSubject().getPrivateCredentials(Cookie.class)), String.class);
+            Invocation.Builder builder = createBuilder(client, endpoint, getSubject().getPrivateCredentials(Cookie.class));
+            
+            client.get(builder, String.class);
         }
     }
 
