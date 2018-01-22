@@ -76,6 +76,8 @@ public class ImportComponentOption {
      */
     private List<ReusableTemplateConnectionInfo> connectionInfo;
 
+    private List<String> remoteProcessGroupInputPorts;
+
 
     /**
      * true will import this item
@@ -199,5 +201,13 @@ public class ImportComponentOption {
     }
     public void setConnectionInfo(List<ReusableTemplateConnectionInfo> connectionInfo) {
         this.connectionInfo = connectionInfo;
+    }
+
+    public List<String> getRemoteProcessGroupInputPorts() {
+        return remoteProcessGroupInputPorts;
+    }
+
+    public void setRemoteProcessGroupInputPorts(List<String> remoteProcessGroupInputPorts) {
+        this.remoteProcessGroupInputPorts = remoteProcessGroupInputPorts;
     }
 }

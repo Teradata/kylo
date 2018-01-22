@@ -24,11 +24,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.security.rest.model.EntityAccessControl;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
@@ -50,6 +52,8 @@ public final class RegisteredTemplate extends EntityAccessControl {
     private List<Processor> nonInputProcessors;
 
     private List<Processor> inputProcessors;
+
+    private List<NiFiRemoteProcessGroup> remoteProcessGroups;
 
     private String id;
 
@@ -443,6 +447,15 @@ public final class RegisteredTemplate extends EntityAccessControl {
 
     public void setTemplateTableOption(String templateTableOption) {
         this.templateTableOption = templateTableOption;
+    }
+
+
+    public List<NiFiRemoteProcessGroup> getRemoteProcessGroups() {
+        return remoteProcessGroups;
+    }
+
+    public void setRemoteProcessGroups(List<NiFiRemoteProcessGroup> remoteProcessGroups) {
+        this.remoteProcessGroups = remoteProcessGroups;
     }
 
     public static class FlowProcessor extends RegisteredTemplate.Processor {

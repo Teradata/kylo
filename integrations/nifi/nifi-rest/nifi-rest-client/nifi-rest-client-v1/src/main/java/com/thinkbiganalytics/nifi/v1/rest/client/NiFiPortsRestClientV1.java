@@ -26,7 +26,15 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
+import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.PortEntity;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.ws.rs.NotFoundException;
@@ -123,5 +131,15 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
             throw new NifiComponentNotFoundException(portId, NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
         }
         return current.getComponent();
+    }
+
+    public List<PortDTO> findInputPorts(String parentGroupId) {
+
+        InputPortsEntity inputPortsEntity = client.get("/process-groups/" + parentGroupId + "/input-ports", null, InputPortsEntity.class);
+        if (inputPortsEntity != null && inputPortsEntity.getInputPorts() != null) {
+            return inputPortsEntity.getInputPorts().stream().map(portEntity -> portEntity.getComponent()).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
     }
 }

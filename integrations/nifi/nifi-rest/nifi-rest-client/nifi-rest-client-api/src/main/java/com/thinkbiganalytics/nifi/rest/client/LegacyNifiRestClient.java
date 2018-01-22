@@ -54,6 +54,7 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
@@ -301,9 +302,10 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      * @return all the properties included in this template
      */
     public List<NifiProperty> getPropertiesForTemplate(TemplateDTO dto, boolean includePropertyDescriptors) {
-        ProcessGroupDTO rootProcessGroup = getProcessGroup("root", false, false);
+        ProcessGroupDTO rootProcessGroup = niFiObjectCache.getRootProcessGroup(); //getProcessGroup("root", false, false);
         return getPropertiesForTemplate(rootProcessGroup, dto, includePropertyDescriptors);
     }
+
 
 
     /**
@@ -1148,7 +1150,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
     /**
      * Creates an INPUT Port and verifys/creates the connection from it to the child processgroup input port
      */
-    public void createReusableTemplateInputPort(String reusableTemplateCategoryGroupId, String reusableTemplateGroupId,
+    public PortDTO createReusableTemplateInputPort(String reusableTemplateCategoryGroupId, String reusableTemplateGroupId,
                                                 String inputPortName) {
         // ProcessGroupEntity reusableTemplateGroup = getProcessGroup(reusableTemplateGroupId, false, false);
         Set<PortDTO> inputPortsEntity = getInputPorts(reusableTemplateCategoryGroupId);
@@ -1184,6 +1186,7 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
             dest.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
             createConnection(reusableTemplateCategoryGroupId, source, dest);
         }
+        return inputPort;
 
 
     }

@@ -503,4 +503,12 @@ public class NifiIntegrationRestController {
         boolean isRunning = nifiConnectionService.isNiFiRunning();
         return Response.ok(isRunning).build();
     }
+
+
+    public Response remoteNiFiConnectionInputPorts() {
+
+
+    }
+
+
 }

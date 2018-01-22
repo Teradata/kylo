@@ -192,6 +192,7 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
             }
         }
         if (validConnections) {
+
             for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
                 validConnections &= importReusableTemplate.validateInstance();
                 if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {

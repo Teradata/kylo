@@ -127,9 +127,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         }
 
         if (validReusableTemplate) {
-            //TODO Mark template and output ports as running!
-
-            //remove previous template?
+            nifiRestClient.markConnectionPortsAsRunning(importTemplate.getTemplateResults().getProcessGroupEntity());
+            //remove previous template
             cleanup();
         } else {
             rollback();
@@ -249,6 +248,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         importStatusMessage.complete(valid);
         return valid && newTemplateInstance.isSuccess();
     }
+
+
 
     public boolean rollback() {
         rollbackTemplateImportInNifi();
