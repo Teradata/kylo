@@ -10,7 +10,7 @@ Main page styles
     font-size: 15px;
 }
 
-.devmode-hint {
+.control-hint {
     font-size: 0.8em;
 }
 
@@ -32,6 +32,10 @@ Main page styles
     margin-right: 15px;
 }
 
+.actions {
+    width: 100%;
+}
+
 .inspection-enabled-check-checkbox {
 }
 
@@ -41,6 +45,11 @@ Main page styles
 
 .inspection-status-error {
 
+}
+
+.checkbox-label {
+    line-height: 17px;
+    padding-top: 5px;
 }
 
 .muted {

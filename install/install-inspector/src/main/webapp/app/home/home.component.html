@@ -26,17 +26,28 @@
                 <input matInput placeholder="Absolute path to Kylo installation, e.g. /opt/kylo" [formControl]="path" required>
                 <mat-error *ngIf="path.invalid">{{getErrorMessage()}}</mat-error>
             </mat-form-field>
-            <mat-checkbox [formControl]="selectAll">Enable All</mat-checkbox>
-            <div>
-                <mat-checkbox [formControl]="devMode">Running from source</mat-checkbox>
-                <div class="devmode-hint muted">Check this if you are inspecting Kylo configuration checked out from Git</div>
+            <mat-checkbox [formControl]="selectAll" (change)="onSelectAllChange()">Enable All</mat-checkbox>
+            <mat-checkbox [formControl]="devMode">
+                <div class="checkbox-label">
+                    <div>Running from source</div>
+                    <div class="control-hint muted">Check this if you are inspecting Kylo configuration checked out from GitHub</div>
+                </div>
+            </mat-checkbox>
+            <div class="actions" fxlayout="row" fxLayoutAlign="space-between center">
+                <button fxFlex="nogrow" [disabled]="path.invalid" mat-raised-button
+                        (click)="checkConfig()">Inspect Configuration
+                </button>
+                <button fxFlex="nogrow" mat-raised-button
+                        (click)="downloadReport()">Download Report
+                </button>
             </div>
-            <button fxFlex="nogrow" [disabled]="path.invalid" mat-raised-button
-                    (click)="checkConfig()">Inspect Configuration
-            </button>
-            <div></div>
         </div>
 
+        <!--
+        todo Check Kylo version, link to Release Notes, as another Inspection?
+        todo Inspections should link to Read-the-docs
+        todo Inspections which users have difficulties with on Google Groups
+        -->
 
         <mat-card class="inspection" *ngFor="let check of checks; let i = index"
                   [class.disabled]="check.enabled.value === false"
@@ -45,7 +56,7 @@
                 <div fxLayout="row" fxLayoutAlign="center center">
                     <div class="inspection-enabled-check" fxLayout="column" fxLayoutAlign="start center">
                         <mat-checkbox class="inspection-enabled-check-checkbox muted" name="check_{{ i }}" [formControl]="check.enabled"></mat-checkbox>
-                        <div class="devmode-hint muted">Enabled</div>
+                        <div class="control-hint muted">Enabled</div>
                     </div>
                     <div fxFlex fxLayout="column">
                         <span class="inspection-header">{{check.name}}</span>
