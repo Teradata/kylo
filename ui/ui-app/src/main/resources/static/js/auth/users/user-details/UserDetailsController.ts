@@ -1,8 +1,9 @@
 import * as angular from 'angular';
-// import * as moduleName from '../../../auth/module-name';
+// import moduleName from '../../../auth/module-name';
 import * as _ from 'underscore';
+const moduleName = require('auth/module-name');
 
-class UserDetailsController implements ng.IComponentController {
+export default class UserDetailsController implements ng.IComponentController {
 
     ngOnInit(){
         
@@ -291,5 +292,6 @@ class UserDetailsController implements ng.IComponentController {
 
 
 }
-angular.module("kylo.auth").controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
+
+angular.module(moduleName).controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
 

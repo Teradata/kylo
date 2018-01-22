@@ -1,293 +1,260 @@
-define(['angular', "auth/module-name"], function (angular, moduleName) {
-    /**
-     * Adds or updates user details.
-     *
-     * @constructor
-     * @param $scope the application model
-     * @param $mdDialog the dialog service
-     * @param $mdToast the toast notification service
-     * @param $transition$ the URL parameters
-     * @param {AccessControlService} AccessControlService the access control service
-     * @param UserService the user service
-     * @param StateService manages system state
-     */
-    function UserDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, UserService, StateService) {
-        var self = this;
-
-        /**
-         * Error message object that maps keys to a boolean indicating the error state.
-         * @type {{duplicateUser: boolean, missingGroup: boolean, missingUser: boolean}}
-         */
-        self.$error = {duplicateUser: false, missingGroup: false, missingUser: false};
-
-        /**
-         * Indicates that admin operations are allowed.
-         * @type {boolean}
-         */
-        self.allowAdmin = false;
-
-        /**
-         * User model for the edit view.
-         * @type {UserPrincipal}
-         */
-        self.editModel = {};
-
-        /**
-         * List of group system names.
-         * @type {Array.<string>}
-         */
-        self.groupList = [];
-
-        /**
-         * Map of group system names to group objects.
-         * @type {Object.<string, GroupPrincipal>}
-         */
-        self.groupMap = {};
-
-        /**
-         * Autocomplete search text for group input.
-         * @type {string}
-         */
-        self.groupSearchText = "";
-
-        /**
-         * Indicates if the edit view is displayed.
-         * @type {boolean}
-         */
-        self.isEditable = false;
-
-        /**
-         * Indicates if the edit form is valid.
-         * @type {boolean}
-         */
-        self.isValid = false;
-
-        /**
-         * Indicates that the user is currently being loaded.
-         * @type {boolean}
-         */
-        self.loading = true;
-
-        /**
-         * User model for the read-only view.
-         * @type {UserPrincipal}
-         */
-        self.model = {displayName: null, email: null, enabled: true, groups: [], systemName: null};
-
-        /**
-         * Lookup map for detecting duplicate user names.
-         * @type {Object.<string, boolean>}
-         */
-        self.userMap = {};
-
-        // Update isValid when $error is updated
-        $scope.$watch(
-                function() {return self.$error},
-                function() {
-                    self.isValid = _.reduce(self.$error, function(memo, value) {
-                        return memo && !value;
-                    }, true);
-                },
-                true
-        );
-
-        // Update $error.missingGroup when the edit model changes
-        $scope.$watch(
-                function() {return self.editModel.groups},
-                function() {self.$error.missingGroup = (angular.isUndefined(self.editModel.groups) || self.editModel.groups.length === 0)},
-                true
-        );
-
-        // Update $error when the system name changes
-        $scope.$watch(
-                function() {return self.editModel.systemName},
-                function() {
-                    self.$error.duplicateUser = (angular.isString(self.editModel.systemName) && self.userMap[self.editModel.systemName]);
-                    self.$error.missingUser = (!angular.isString(self.editModel.systemName) || self.editModel.systemName.length === 0);
-                }
-        );
-
+define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('auth/module-name');
+    var UserDetailsController = /** @class */ (function () {
+        function UserDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, UserService, StateService) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$mdDialog = $mdDialog;
+            this.$mdToast = $mdToast;
+            this.$transition$ = $transition$;
+            this.AccessControlService = AccessControlService;
+            this.UserService = UserService;
+            this.StateService = StateService;
+            this.$error = { duplicateUser: false, missingGroup: false, missingUser: false };
+            /**
+             * Indicates that admin operations are allowed.
+             * @type {boolean}
+             */
+            this.allowAdmin = false;
+            /**
+             * User model for the edit view.
+             * @type {UserPrincipal}
+             */
+            this.editModel = {};
+            /**
+             * List of group system names.
+             * @type {Array.<string>}
+             */
+            this.groupList = [];
+            /**
+             * Map of group system names to group objects.
+             * @type {Object.<string, GroupPrincipal>}
+             */
+            this.groupMap = {};
+            /**
+             * Autocomplete search text for group input.
+             * @type {string}
+             */
+            this.groupSearchText = "";
+            /**
+             * Indicates if the edit view is displayed.
+             * @type {boolean}
+             */
+            this.isEditable = false;
+            /**
+             * Indicates if the edit form is valid.
+             * @type {boolean}
+             */
+            this.isValid = false;
+            /**
+             * Indicates that the user is currently being loaded.
+             * @type {boolean}
+             */
+            this.loading = true;
+            /**
+             * User model for the read-only view.
+             * @type {UserPrincipal}
+             */
+            this.model = { displayName: null, email: null, enabled: true, groups: [], systemName: null };
+            /**
+             * Lookup map for detecting duplicate user names.
+             * @type {Object.<string, boolean>}
+             */
+            this.userMap = {};
+            $scope.$watch(function () { return _this.$error; }, function () {
+                _this.isValid = _.reduce(_this.$error, function (memo, value) {
+                    return memo && !value;
+                }, true);
+            }, true);
+            // Update $error.missingGroup when the edit model changes
+            $scope.$watch(function () { return _this.editModel.groups; }, function () { _this.$error.missingGroup = (angular.isUndefined(_this.editModel.groups) || _this.editModel.groups.length === 0); }, true);
+            // Update $error when the system name changes
+            $scope.$watch(function () { return _this.editModel.systemName; }, function () {
+                _this.$error.duplicateUser = (angular.isString(_this.editModel.systemName) && _this.userMap[_this.editModel.systemName]);
+                _this.$error.missingUser = (!angular.isString(_this.editModel.systemName) || _this.editModel.systemName.length === 0);
+            });
+            this.onLoad();
+        }
+        UserDetailsController.prototype.ngOnInit = function () {
+        };
         /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
          *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
-        self.canDelete = function() {
-            return (self.model.systemName !== null);
+        UserDetailsController.prototype.canDelete = function () {
+            return (this.model.systemName !== null);
         };
-
+        ;
         /**
-         * Finds the substring of the title for the specified group that matches the query term.
-         *
-         * @param group the group
-         * @returns {string} the group title substring
-         */
-        self.findGroupSearchText = function(group) {
-            var safeQuery = self.groupSearchText.toLocaleUpperCase();
-            if (angular.isString(self.groupMap[group].title)) {
-                var titleIndex = self.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
-                return (titleIndex > -1) ? self.groupMap[group].title.substr(titleIndex, safeQuery.length) : self.groupSearchText;
-            } else {
+ * Finds the substring of the title for the specified group that matches the query term.
+ *
+ * @param group the group
+ * @returns {string} the group title substring
+ */
+        UserDetailsController.prototype.findGroupSearchText = function (group) {
+            var safeQuery = this.groupSearchText.toLocaleUpperCase();
+            if (angular.isString(this.groupMap[group].title)) {
+                var titleIndex = this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
+                return (titleIndex > -1) ? this.groupMap[group].title.substr(titleIndex, safeQuery.length) : this.groupSearchText;
+            }
+            else {
                 var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
-                return (nameIndex > -1) ? group.substr(nameIndex, safeQuery.length) : self.groupSearchText;
+                return (nameIndex > -1) ? group.substr(nameIndex, safeQuery.length) : this.groupSearchText;
             }
         };
-
+        ;
         /**
          * Gets the title for the specified group.
          *
          * @param group the group
          * @returns {string} the group title
          */
-        self.getGroupTitle = function(group) {
-            if (angular.isDefined(self.groupMap[group]) && angular.isString(self.groupMap[group].title)) {
-                return self.groupMap[group].title;
-            } else {
+        UserDetailsController.prototype.getGroupTitle = function (group) {
+            if (angular.isDefined(this.groupMap[group]) && angular.isString(this.groupMap[group].title)) {
+                return this.groupMap[group].title;
+            }
+            else {
                 return group;
             }
         };
-
+        ;
         /**
          * Gets the titles for every group this user belongs to.
          *
          * @returns {Array.<string>} the group titles for this user
          */
-        self.getGroupTitles = function() {
-            return _.map(self.model.groups, self.getGroupTitle);
+        UserDetailsController.prototype.getGroupTitles = function () {
+            return _.map(this.model.groups, this.getGroupTitle);
         };
-
+        ;
         /**
          * Cancels the current edit operation. If a new user is being created then redirects to the users page.
          */
-        self.onCancel = function() {
-            if (self.model.systemName === null) {
-                StateService.Auth().navigateToUsers();
+        UserDetailsController.prototype.onCancel = function () {
+            if (this.model.systemName === null) {
+                this.StateService.Auth().navigateToUsers();
             }
         };
-
+        ;
         /**
          * Deletes the current user.
          */
-        self.onDelete = function() {
-            var name = (angular.isString(self.model.displayName) && self.model.displayName.length > 0) ? self.model.displayName : self.model.systemName;
-            UserService.deleteUser(encodeURIComponent(self.model.systemName))
-                    .then(function() {
-                        $mdToast.show(
-                                $mdToast.simple()
-                                        .textContent("Successfully deleted the user " + name)
-                                        .hideDelay(3000)
-                        );
-                        StateService.Auth().navigateToUsers();
-                    }, function() {
-                        $mdDialog.show(
-                                $mdDialog.alert()
-                                        .clickOutsideToClose(true)
-                                        .title("Delete Failed")
-                                        .textContent("The user " + name + " could not be deleted. " + err.data.message)
-                                        .ariaLabel("Failed to delete user")
-                                        .ok("Got it!")
-                        );
-                    });
+        UserDetailsController.prototype.onDelete = function () {
+            var _this = this;
+            var name = (angular.isString(this.model.displayName) && this.model.displayName.length > 0) ? this.model.displayName : this.model.systemName;
+            this.UserService.deleteUser(encodeURIComponent(this.model.systemName))
+                .then(function () {
+                _this.$mdToast.show(_this.$mdToast.simple()
+                    .textContent("Successfully deleted the user " + name)
+                    .hideDelay(3000));
+                _this.StateService.Auth().navigateToUsers();
+            }, function () {
+                _this.$mdDialog.show(_this.$mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title("Delete Failed")
+                    .textContent("The user " + name + " could not be deleted. ") //+ err.data.message
+                    .ariaLabel("Failed to delete user")
+                    .ok("Got it!"));
+            });
         };
-
+        ;
         /**
-         * Creates a copy of the user model for editing.
+        //  * Creates a copy of the user model for editing.
          */
-        self.onEdit = function() {
-            self.editModel = angular.copy(self.model);
+        UserDetailsController.prototype.onEdit = function () {
+            this.editModel = angular.copy(this.model);
         };
-
+        ;
         /**
          * Loads the user details.
          */
-        self.onLoad = function() {
+        UserDetailsController.prototype.onLoad = function () {
+            var _this = this;
             // Get the list of groups
-            UserService.getGroups()
-                    .then(function(groups) {
-                        self.groupList = [];
-                        self.groupMap = {};
-                        angular.forEach(groups, function(group) {
-                            self.groupList.push(group.systemName);
-                            self.groupMap[group.systemName] = group;
-                        });
-                    });
-
+            this.UserService.getGroups()
+                .then(function (groups) {
+                _this.groupList = [];
+                _this.groupMap = {};
+                angular.forEach(groups, function (group) {
+                    _this.groupList.push(group.systemName);
+                    _this.groupMap[group.systemName] = group;
+                });
+            });
             // Load allowed permissions
-            AccessControlService.getUserAllowedActions()
-                    .then(function(actionSet) {
-                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.USERS_ADMIN, actionSet.actions);
-                    });
-
+            this.AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                _this.allowAdmin = _this.AccessControlService.hasAction(_this.AccessControlService.USERS_ADMIN, actionSet.actions);
+            });
             // Load the user details
-            if (angular.isString($transition$.params().userId)) {
-                UserService.getUser($transition$.params().userId)
-                        .then(function(user) {
-                            self.model = user;
-                            self.loading = false;
-                        });
-            } else {
-                self.onEdit();
-                self.isEditable = true;
-                self.loading = false;
-
-                UserService.getUsers()
-                        .then(function(users) {
-                            self.userMap = {};
-                            angular.forEach(users, function(user) {
-                                self.userMap[user.systemName] = true;
-                            });
-                        });
+            if (angular.isString(this.$transition$.params().userId)) {
+                this.UserService.getUser(this.$transition$.params().userId)
+                    .then(function (user) {
+                    _this.model = user;
+                    _this.loading = false;
+                });
+            }
+            else {
+                this.onEdit();
+                this.isEditable = true;
+                this.loading = false;
+                this.UserService.getUsers()
+                    .then(function (users) {
+                    _this.userMap = {};
+                    angular.forEach(users, function (user) {
+                        _this.userMap[user.systemName] = true;
+                    });
+                });
             }
         };
-
+        ;
         /**
          * Saves the current user.
          */
-        self.onSave = function() {
-            var model = angular.copy(self.editModel);
-            UserService.saveUser(model)
-                    .then(function() {
-                        self.model = model;
-                    });
+        UserDetailsController.prototype.onSave = function () {
+            var _this = this;
+            var model = angular.copy(this.editModel);
+            this.UserService.saveUser(model)
+                .then(function () {
+                _this.model = model;
+            });
         };
-
+        ;
         /**
          * Filters the list of groups to those matching the specified query.
          *
          * @param {string} query the query string
          * @returns {Array.<string>} the list of matching groups
          */
-        self.queryGroups = function(query) {
+        UserDetailsController.prototype.queryGroups = function (query) {
+            var _this = this;
             var safeQuery = query.toLocaleUpperCase();
-            return self.groupList
-                    // Filter groups that are already selected
-                    .filter(function(group) {
-                        return (self.editModel.groups.indexOf(group) === -1);
-                    })
-                    // Find position of query term
-                    .map(function(group) {
-                        var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
-                        var titleIndex = angular.isString(self.groupMap[group].title) ? self.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) : -1;
-                        var index = (titleIndex > -1 && (nameIndex === -1 || nameIndex > titleIndex)) ? titleIndex : nameIndex;
-                        return {name: group, index: index};
-                    })
-                    // Filter groups without query term
-                    .filter(function(item) {
-                        return item.index > -1;
-                    })
-                    // Sort based on position of query term
-                    .sort(function(a, b) {
-                        return a.index - b.index;
-                    })
-                    // Map back to just the name
-                    .map(function(item) {
-                        return item.name;
-                    });
+            return this.groupList
+                .filter(function (group) {
+                return (_this.editModel.groups.indexOf(group) === -1);
+            })
+                .map(function (group) {
+                var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
+                var titleIndex = angular.isString(_this.groupMap[group].title) ? _this.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) : -1;
+                var index = (titleIndex > -1 && (nameIndex === -1 || nameIndex > titleIndex)) ? titleIndex : nameIndex;
+                return { name: group, index: index };
+            })
+                .filter(function (item) {
+                return item.index > -1;
+            })
+                .sort(function (a, b) {
+                return a.index - b.index;
+            })
+                .map(function (item) {
+                return item.name;
+            });
         };
-
-        // Load the user details
-        self.onLoad();
-    }
-
-    angular.module(moduleName).controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
+        ;
+        return UserDetailsController;
+    }());
+    exports.default = UserDetailsController;
+    angular.module(moduleName).controller('UserDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", UserDetailsController]);
 });
+//# sourceMappingURL=UserDetailsController.js.map
