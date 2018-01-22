@@ -326,6 +326,28 @@ public class JerseyRestClient {
     }
 
     /**
+     * Begins a request for a specified path and parameters.
+     * 
+     * @param path the request path
+     * @param params the request parameters
+     * @return a builder with which to continue constructing the request
+     */
+    public Invocation.Builder request(String path, Map<String, Object> params) {
+        return buildTarget(path, params).request();
+    }
+
+    /**
+     * Builds a target for for a specified path and parameters.
+     * 
+     * @param path the request path
+     * @param params the request parameters
+     * @return a WebTarget instance
+     */
+    public WebTarget target(String path, Map<String, Object> params) {
+        return buildTarget(path, params);
+    }
+
+    /**
      * Perform a asynchronous GET request
      *
      * @param path   the path to access
@@ -353,29 +375,67 @@ public class JerseyRestClient {
 
     }
     
-    public WebTarget target(String path, Map<String, Object> params) {
-        return buildTarget(path, params);
+    /**
+     * Perform a GET request using the current state of the supplied builder.
+     *
+     * @param builder the Invokation.Builder
+     * @param clazz the type of result
+     * @param <T>    the returned class type
+     * @return the returned object of the specified Class
+     */
+    public <T> T get(Invocation.Builder builder, Class<T> clazz) {
+        return get(builder, clazz, true);
     }
-    
+
+    /**
+     * Perform a GET request against the supplied web target.
+     *
+     * @param target the WebTarget
+     * @param clazz the type of result
+     * @param <T>    the returned class type
+     * @return the returned object of the specified Class
+     */
     public <T> T get(WebTarget target, Class<T> clazz) {
         return get(target, clazz, true);
     }
     
-    public <T> T get(WebTarget target, Class<T> clazz, boolean logError) {
+    /**
+     * Perform a GET request using the current state of the supplied builder.
+     *
+     * @param builder the Invokation.Builder
+     * @param clazz the type of result
+     * @param <T>    the returned class type
+     * @param logError true to log an exceptions, false to not
+     * @return the returned object of the specified Class
+     */
+    public <T> T get(Invocation.Builder builder, Class<T> clazz, boolean logError) {
         T obj = null;
-
+        
         try {
-            obj = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+            obj = builder.accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             if (e instanceof NotAcceptableException) {
-                obj = handleNotAcceptableGetRequestJsonException(target, clazz);
+                obj = handleNotAcceptableGetRequestJsonException(builder, clazz);
             } else {
                 if (logError) {
-                    log.error("Failed to process request " + target.request(), e);
+                    log.error("Failed to process request " + builder, e);
                 }
             }
         }
         return obj;
+    }
+    
+    /**
+     * Perform a GET request against the supplied web target.
+     *
+     * @param builder the WebTarget
+     * @param clazz the type of result
+     * @param <T>    the returned class type
+     * @param logError true to log an exceptions, false to not
+     * @return the returned object of the specified Class
+     */
+    public <T> T get(WebTarget target, Class<T> clazz, boolean logError) {
+        return get(target.request(MediaType.APPLICATION_JSON_TYPE), clazz, logError);
     }
 
     /**
@@ -642,9 +702,39 @@ public class JerseyRestClient {
         WebTarget target = buildTarget(path, null);
         return target.request().async().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
+    
+    /**
+     * If a request doesn't like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
+     * This can be called in the Exception of a particular GET request which will attempt to resolve the correct object from the Response string.
+     *
+     * @param builder the Invocation.Builder
+     * @param clazz  the class to return
+     * @return the response of type T
+     * @see JerseyRestClient#get(String, Map, Class)
+     * @see JerseyRestClient#getFromPathString(String, Class)
+     */
+    private <T> T handleNotAcceptableGetRequestJsonException(Invocation.Builder builder, Class<T> clazz) {
+        T obj = null;
+        try {
+            //the response didnt link getting data in JSON.. attempt to get it in TEXT and convert to JSON
+            String jsonString = builder.accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
+            if (StringUtils.isNotBlank(jsonString)) {
+                try {
+                    obj = objectMapper.readValue(jsonString, clazz);
+                } catch (Exception ex) {
+                    //unable to deserialize string
+                    log.error("Unable to deserialize request to JSON for string {}, for builder {} returning class {} ", jsonString, builder, clazz);
+                }
+            }
+        } catch (Exception ex1) {
+            //swallow the exception.  cant do anything about it.
+            log.error("Unable to deserialize request for target {} returning class {} ", builder, clazz);
+        }
+        return obj;
+    }
 
     /**
-     * if a request doesnt like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
+     * If a request doesn't like the accepted type (i.e. its coded for TEXT instead of JSON, try to resolve the JSON by getting the JSON string
      * This can be called in the Exception of a particular GET request which will attempt to resolve the correct object from the Response string.
      *
      * @param target the WebTarget
@@ -654,23 +744,7 @@ public class JerseyRestClient {
      * @see JerseyRestClient#getFromPathString(String, Class)
      */
     private <T> T handleNotAcceptableGetRequestJsonException(WebTarget target, Class<T> clazz) {
-        T obj = null;
-        try {
-            //the response didnt link getting data in JSON.. attempt to get it in TEXT and convert to JSON
-            String jsonString = target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.TEXT_PLAIN_TYPE).get(String.class);
-            if (StringUtils.isNotBlank(jsonString)) {
-                try {
-                    obj = objectMapper.readValue(jsonString, clazz);
-                } catch (Exception ex) {
-                    //unable to deserialize string
-                    log.error("Unable to deserialize request to JSON for string {}, for target {} returning class {} ", jsonString, target, clazz);
-                }
-            }
-        } catch (Exception ex1) {
-            //swallow the exception.  cant do anything about it.
-            log.error("Unable to deserialize request for target {} returning class {} ", target, clazz);
-        }
-        return obj;
+        return handleNotAcceptableGetRequestJsonException(target.request(MediaType.APPLICATION_JSON_TYPE), clazz);
     }
 
 
