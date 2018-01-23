@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.auth.rest;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
+
 /*-
  * #%L
  * REST API Authentication
@@ -40,6 +43,7 @@ import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
+import javax.ws.rs.client.Invocation;
 
 public class KyloRestLoginModuleTest {
 
@@ -55,7 +59,7 @@ public class KyloRestLoginModuleTest {
         user.setSystemName("dladmin");
 
         final JerseyRestClient client = Mockito.mock(JerseyRestClient.class);
-        Mockito.when(client.get("/v1/about/me", null, User.class)).thenReturn(user);
+        Mockito.when(client.get(any(Invocation.Builder.class), eq(User.class))).thenReturn(user);
 
         // Mock callback handler
         final CallbackHandler callbackHandler = callbacks -> Arrays.stream(callbacks).forEach(callback -> {
@@ -80,6 +84,8 @@ public class KyloRestLoginModuleTest {
 
         Map<String, Object> options = new HashMap<>();
         options.put(KyloRestLoginModule.REST_CLIENT_CONFIG, new LoginJerseyClientConfig());
+        options.put(KyloRestLoginModule.SERVICES_LOGOUT, false);
+        
         module.initialize(subject, callbackHandler, Collections.emptyMap(), options);
         Assert.assertTrue(module.login());
         Assert.assertTrue(module.commit());
