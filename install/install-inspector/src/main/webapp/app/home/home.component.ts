@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit {
     checks: Array<any> = []; // todo make a class
     isLoading: boolean;
     selectedCheckId = -1;
-    path = new FormControl('', [Validators.required, forbiddenNameValidator(this)]);
+    path = new FormControl('', [Validators.required, configurationValidator(this)]);
     devMode = new FormControl(false, [Validators.required]);
     selectAll = new FormControl(false, [Validators.required]);
     configuration: any;
@@ -119,7 +119,7 @@ export class HomeComponent implements OnInit {
                 check.status = status;
                 return check.status;
             }).catch((err) => {
-                console.log('error executing check ' + check.id);
+                console.log('error executing check ' + check.id, err);
                 check.isLoading = false;
                 check.status = {valid: false, description: 'Unknown error occurred', error: err};
                 return check.status;
@@ -132,6 +132,18 @@ export class HomeComponent implements OnInit {
                 });
             });
     };
+
+// .then((status) => {
+//     console.log('check ' + check.id + ' executed with status ' + status, status);
+//     check.isLoading = false;
+//     check.status = status;
+//     return check.status;
+// }).catch((err) => {
+//     console.log('error executing check ' + check.id, err);
+//     check.isLoading = false;
+//     check.status = {valid: false, description: 'Unknown error occurred', error: err.message};
+//     return check.status;
+// });
 
     getErrorMessage() {
         if (this.path.hasError('required')) {
@@ -161,7 +173,7 @@ export class HomeComponent implements OnInit {
     }
 }
 
-export function forbiddenNameValidator(homeComponent: HomeComponent): ValidatorFn {
+export function configurationValidator(homeComponent: HomeComponent): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
         console.log('forbidden check');
         if (homeComponent.configuration !== undefined
