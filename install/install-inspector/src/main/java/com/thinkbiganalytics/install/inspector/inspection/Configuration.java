@@ -28,14 +28,10 @@ import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.util.FileSystemUtils;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
-
-import io.undertow.util.FileUtils;
 
 public class Configuration {
 
@@ -43,7 +39,7 @@ public class Configuration {
     private static final String VERSION_TXT = "version.txt";
     private static final String APPLICATION_PROPERTIES = "application.properties";
     private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES = "/services/service-app/src/main/resources/";
-    private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/application.properties";
+    private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/";
     private static final String KYLO_SERVICES_CONF = "/kylo-services/conf/";
     private static final String KYLO_UI_CONF = "/kylo-ui/conf/";
     private ConfigurableListableBeanFactory servicesFactory;
