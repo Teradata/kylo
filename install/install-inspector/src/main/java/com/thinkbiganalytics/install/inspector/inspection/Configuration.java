@@ -45,7 +45,7 @@ public class Configuration {
     private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES = "/services/service-app/src/main/resources/";
     private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/application.properties";
     private static final String KYLO_SERVICES_CONF = "/kylo-services/conf/";
-    private static final String KYLO_UI_CONF_APPLICATION_PROPERTIES = "/kylo-ui/conf/application.properties";
+    private static final String KYLO_UI_CONF = "/kylo-ui/conf/";
     private ConfigurableListableBeanFactory servicesFactory;
     private ConfigurableListableBeanFactory uiFactory;
     private Path path;
@@ -63,11 +63,11 @@ public class Configuration {
             servicesLocation += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES;
             uiLocation += UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
         } else {
-            servicesLocation += KYLO_SERVICES_CONF + APPLICATION_PROPERTIES;
-            uiLocation += KYLO_UI_CONF_APPLICATION_PROPERTIES;
+            servicesLocation += KYLO_SERVICES_CONF;
+            uiLocation += KYLO_UI_CONF;
         }
 
-        uiFactory = createConfiguration(uiLocation);
+        uiFactory = createConfiguration(uiLocation + APPLICATION_PROPERTIES);
         servicesFactory = createConfiguration(servicesLocation + APPLICATION_PROPERTIES);
 
         initBuildProperties(servicesLocation);
