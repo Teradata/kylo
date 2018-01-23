@@ -1,2 +1,2 @@
-version=${pom.version}
-build.date=${timestamp}
+version=0.9.0-SNAPSHOT
+build.date=2017-12-04 12:14

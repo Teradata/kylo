@@ -51,7 +51,15 @@ public class InspectionService {
     }
 
     public InspectionStatus execute(int configId, int inspectionId) {
-        return inspectionRepo.get(inspectionId).inspect(configRepo.get(configId));
+        Inspection inspection = inspectionRepo.get(inspectionId);
+        try {
+            return inspection.inspect(configRepo.get(configId));
+        } catch (Exception e) {
+            String msg = String.format("An error occurred while running configuration inspection '%s'", inspection.getName());
+            InspectionStatus status = new InspectionStatus(false);
+            status.setError(msg + ": " + e.getMessage());
+            return status;
+        }
     }
 
     public Configuration createConfiguration(Path path) {

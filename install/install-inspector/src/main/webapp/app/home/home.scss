@@ -10,6 +10,10 @@ Main page styles
     font-size: 15px;
 }
 
+.release-notes-link {
+    margin-left: 10px;
+}
+
 .control-hint {
     font-size: 0.8em;
 }
@@ -48,7 +52,9 @@ Main page styles
 }
 
 .inspection-status-error {
-
+    padding: 10px;
+    background: #ff634726;
+    margin-right: 40px;
 }
 
 .checkbox-label {
