@@ -30,6 +30,7 @@ import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.alerts.OperationalAlerts;
 import com.thinkbiganalytics.metadata.api.feed.DeleteFeedListener;
 import com.thinkbiganalytics.metadata.api.feed.FeedHealth;
@@ -41,6 +42,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecutionStatusCounts;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.QJpaBatchJobInstance;
@@ -90,6 +93,13 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     @Inject
     private AlertProvider alertProvider;
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
+    @Inject
+    NifiFeedStatisticsProvider nifiFeedStatisticsProvider;
+
 
     /**
      * list of delete feed listeners
@@ -379,6 +389,24 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
 
     public void notifyOnFeedChanged(OpsManagerFeed feed) {
         feedChangedListeners.stream().forEach(listener -> listener.onFeedChange(feed));
+    }
+
+    @Override
+    public DateTime getLastActiveTimeStamp(String feedName) {
+        DateTime lastFeedTime = null;
+        OpsManagerFeed feed = this.findByName(feedName);
+        if (feed.isStream()) {
+            NifiFeedStats feedStats = metadataAccess.read(() -> nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName));
+            if (feedStats != null) {
+                lastFeedTime = new DateTime(feedStats.getLastActivityTimestamp());
+            }
+        } else {
+            BatchJobExecution jobExecution = metadataAccess.read(() -> batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName));
+            if (jobExecution != null) {
+                lastFeedTime = jobExecution.getEndTime();
+            }
+        }
+        return lastFeedTime;
     }
 
 }

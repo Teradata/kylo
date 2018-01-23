@@ -107,6 +107,8 @@ public interface NifiFeedProcessorStatisticsProvider {
 
     List<? extends NifiFeedProcessorErrors> findFeedProcessorErrorsAfter(String feedName, DateTime after);
 
+    List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName);
+
     /**
      * allow for specifying a time to look back from when querying for statistical information
      */

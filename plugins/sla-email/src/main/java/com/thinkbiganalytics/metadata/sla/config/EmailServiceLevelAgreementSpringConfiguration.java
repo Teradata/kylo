@@ -60,8 +60,8 @@ public class EmailServiceLevelAgreementSpringConfiguration {
     public JavaMailSender javaMailSender(@Qualifier("slaEmailConfiguration") EmailConfiguration emailConfiguration) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
-        mailProperties.put("mail.smtp.auth", emailConfiguration.isSmtpAuth());
-        mailProperties.put("mail.smtp.starttls.enable", emailConfiguration.isStarttls());
+        mailProperties.put("mail.smtp.auth", ""+emailConfiguration.isSmtpAuth());
+        mailProperties.put("mail.smtp.starttls.enable", ""+emailConfiguration.isStarttls());
         if (StringUtils.isNotBlank(emailConfiguration.getSmptAuthNtmlDomain())) {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }
@@ -70,6 +70,7 @@ public class EmailServiceLevelAgreementSpringConfiguration {
         mailProperties.put("mail.smtp.writetimeout", "5000");
         if (emailConfiguration.isSslEnable()) {
             mailProperties.put("mail.smtp.ssl.enable", "true");
+            mailProperties.put("mail.smtp.socketFactory.class","javax.net.ssl.SSLSocketFactory");
         }
         mailProperties.put("mail.debug", emailConfiguration.isDebug());
 
