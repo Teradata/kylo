@@ -33,7 +33,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
@@ -311,7 +311,7 @@ public class FeedsController {
         
         try {
             return this.waterMerkService.getWaterMarks(feedIdStr);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -331,7 +331,7 @@ public class FeedsController {
         try {
             return this.waterMerkService.getWaterMark(feedIdStr, waterMarkName)
                   .orElseThrow(() -> new WebApplicationException("A feed high-water mark with the given name does not exist: " + waterMarkName, Status.NOT_FOUND));
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -353,7 +353,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.updateWaterMark(feedIdStr, waterMarkName, value, cancelActive);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -374,7 +374,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.cancelActiveWaterMark(feedIdStr, waterMarkName);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
