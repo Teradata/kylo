@@ -20,6 +20,25 @@ Main page styles
 
 .inspection {
     margin-bottom: 10px;
+
+    .fa {
+        color: gray;
+        margin-right: 15px;
+        margin-top: -5px;
+    }
+
+    .fa-warning {
+        color: tomato;
+    }
+
+    .fa-check {
+        color: seagreen;
+    }
+
+    .fa-larger {
+        font-size: 3em;
+    }
+
 }
 
 .inspection-header {
@@ -84,20 +103,3 @@ Main page styles
     min-width: 500px;
 }
 
-.fa {
-    color: gray;
-    margin-right: 15px;
-    margin-top: -5px;
-}
-
-.fa-warning {
-    color: tomato;
-}
-
-.fa-check {
-    color: seagreen;
-}
-
-.fa-larger {
-    font-size: 3em;
-}
