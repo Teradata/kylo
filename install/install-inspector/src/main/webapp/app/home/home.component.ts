@@ -19,8 +19,9 @@
  */
 import {Component, OnInit} from '@angular/core';
 
-import {Account, ConfigService} from '../shared';
-import {AbstractControl, FormControl, ValidationErrors, ValidatorFn, Validators} from '@angular/forms';
+import {ConfigService} from '../shared';
+import {AbstractControl, FormControl, ValidatorFn, Validators} from '@angular/forms';
+import {saveAs} from 'file-saver/FileSaver';
 
 @Component({
     selector: 'jhi-home',
@@ -99,7 +100,20 @@ export class HomeComponent implements OnInit {
     }
 
     downloadReport() {
-        console.log('download report');
+        const result = {
+            configuration: this.configuration,
+            inspections: this.checks.map((inspection) => {
+                return {
+                    name: inspection.name,
+                    description: inspection.description,
+                    enabled: inspection.enabled.value,
+                    valid: inspection.status.valid,
+                    error: inspection.status.error
+                }
+            })
+        };
+        const blob = new Blob([JSON.stringify(result)], {type: 'application/json'});
+        saveAs(blob, 'kylo-configuration-inspection.json');
     }
 
     loadChecks() {
@@ -133,18 +147,6 @@ export class HomeComponent implements OnInit {
             });
     };
 
-// .then((status) => {
-//     console.log('check ' + check.id + ' executed with status ' + status, status);
-//     check.isLoading = false;
-//     check.status = status;
-//     return check.status;
-// }).catch((err) => {
-//     console.log('error executing check ' + check.id, err);
-//     check.isLoading = false;
-//     check.status = {valid: false, description: 'Unknown error occurred', error: err.message};
-//     return check.status;
-// });
-
     getErrorMessage() {
         if (this.path.hasError('required')) {
             return 'You must enter a value';
@@ -175,7 +177,6 @@ export class HomeComponent implements OnInit {
 
 export function configurationValidator(homeComponent: HomeComponent): ValidatorFn {
     return (control: AbstractControl): {[key: string]: any} => {
-        console.log('forbidden check');
         if (homeComponent.configuration !== undefined
             && homeComponent.configuration.error
             && homeComponent.configuration.errorPath === control.value

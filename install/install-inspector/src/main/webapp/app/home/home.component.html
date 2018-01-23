@@ -41,11 +41,14 @@
                 </div>
             </mat-checkbox>
             <div class="actions" fxlayout="row" fxLayoutAlign="space-between center">
-                <button fxFlex="nogrow" [disabled]="path.invalid" mat-raised-button
+                <button fxFlex="nogrow" [disabled]="path.invalid"
+                        mat-raised-button color="primary"
                         (click)="checkConfig()">Inspect Configuration
                 </button>
-                <button fxFlex="nogrow" mat-raised-button
-                        (click)="downloadReport()">Download Report
+                <button fxFlex="nogrow" title="Download Report"
+                        mat-mini-fab color="primary"
+                        (click)="downloadReport()">
+                    <i class="fa fa-download"></i>
                 </button>
             </div>
         </div>
