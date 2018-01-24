@@ -36,37 +36,37 @@
                                    </span>
                                    <span class="{{service.iconstyle}} column-title-bottom" >
                                        <ng-md-icon icon="{{service.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{service.healthText}}</span>
+                                     {{service.healthText | translate}}</span>
                                 </div>
                                 <div flex="20" layout="column" hide show-gt-sm class="item-column md-list-item-text" >
                                    <span class="item-title">{{service.componentsCount}}
                                    </span>
-                                    <span class="column-title column-title-bottom">Component(s)</span>
+                                    <span class="column-title column-title-bottom">{{"views.service-health-template.Component(s)" | translate}}</span>
                                 </div>
                                 <div flex="20" layout="column"  class="item-column md-list-item-text">
                                     <span class="item-title" ng-if="service.alertsCount >1">
-                                        {{service.alertsCount}} Alerts
+                                        {{service.alertsCount}} {{"views.service-health-template.Alerts" | translate}}
                                     </span>
                                       <span class="item-title" ng-if="service.alertsCount == 1" >
-                                        {{service.alertsCount}} Alert
+                                        {{service.alertsCount}} {{"views.service-health-template.Alert" | translate}}
                                     </span>
                                       <span class="item-title" ng-if="service.alertsCount ==0">
                                         None
                                     </span>
-                                    <span class="column-title column-title-bottom">Alerts</span>
+                                    <span class="column-title column-title-bottom">{{"views.service-health-template.Alerts" | translate}}</span>
                                 </div>
                                 <div flex="30" layout="column" hide show-gt-md class="item-column md-list-item-text">
                                     <span class="item-title">
                                     {{'service-component-detail.time-locale' | translate:{date:service.checkDate} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:service.checkDate} }}
                                     </span>
-                                    <span class="column-title column-title-bottom">Last Checked</span>
+                                    <span class="column-title column-title-bottom">{{"views.service-health-template.LC" | translate}}</span>
                                 </div>
                                 </div>
                                 <md-divider ng-if="!$last"></md-divider>
 
                         </md-list-item>
                         <md-item  ng-show="vm.showProgress == false && tab.data.content.length ==0">
-                            No results found
+                            {{"views.service-health-template.Nrf" | translate}}
                         </md-item >
                         <md-divider></md-divider>
                         <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
@@ -91,11 +91,11 @@
                             <table md-table md-progress="vm.deferred.promise">
                                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
                                 <tr md-row>
-                                    <th md-column name="Name" order-by="serviceName">Name</th>
-                                    <th md-column name="Status">Status</th>
-                                    <th md-column name="Components" order-by="componentsCount">Components</th>
-                                    <th md-column name="Alerts" order-by="alertsCount" >Alerts</th>
-                                    <th md-column name="Last Checked" order-by="checkDate"  >Last Checked</th>
+                                    <th md-column name="Name" order-by="serviceName">{{"views.service-health-template.Name" | translate}}</th>
+                                    <th md-column name="Status">{{"views.service-health-template.Status" | translate}}</th>
+                                    <th md-column name="Components" order-by="componentsCount">{{"views.service-health-template.Components" | translate}}</th>
+                                    <th md-column name="Alerts" order-by="alertsCount" >{{"views.service-health-template.Alerts" | translate}}</th>
+                                    <th md-column name="Last Checked" order-by="checkDate"  >{{"views.service-health-template.LC" | translate}}</th>
                                 </tr>
                                 </thead>
                                 <tbody md-body>
@@ -104,7 +104,7 @@
                                     <td md-cell>
                             <span >
                                         <ng-md-icon icon="{{service.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{service.healthText}}</span>
+                                     {{service.healthText | translate}}</span>
 
                                     </td>
                                     <td md-cell>{{service.componentsCount}}</td>

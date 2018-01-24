@@ -20,7 +20,7 @@
 <div flex layout="row">
     <card-layout flex>
         <header-section transclude-to="head" flex layout>
-            <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
+            <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle | translate}}</div>
         </header-section>
         <body-section transclude-to="body" transclude-replace="true">
             <md-content>
@@ -28,115 +28,52 @@
                     <div layout="row">
                         <div flex="20" layout="column">
                             <span class="item-title">
-                                {{vm.alertData.level}}
+                                {{vm.alertData.level | translate}}
                             </span>
-                            <span class="column-title column-title-bottom">Level</span>
+                            <span class="column-title column-title-bottom">{{"views.alert-details-template.Level" | translate}}</span>
                         </div>
 
                         <div flex="50" layout="column">
                             <span class="item-title">
                                 {{vm.alertData.type}}
                             </span>
-                            <span class="column-title column-title-bottom">Type</span>
+                            <span class="column-title column-title-bottom">{{"views.alert-details-template.Type" | translate}}</span>
                         </div>
 
                         <div flex="30" layout="column">
                             <span class="item-title">
                                 {{'alert-detail-template.time_locale' | translate:{date:vm.alertData.createdTime} }}
                             </span>
-                            <span class="column-title column-title-bottom">Start Time</span>
+                            <span class="column-title column-title-bottom">{{"views.alert-details-template.ST" | translate}}</span>
                         </div>
                     </div>
 
 
 
-                    <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Description</div>
+                    <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{"views.alert-details-template.Description" | translate}}</div>
                     <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;padding-right:16px;">{{vm.alertData.description}}</div>
 
                     <md-list class="list-item-table">
                         <md-divider></md-divider>
                         <md-list-item>
                             <div flex="60" class="item-column md-list-item-text accent-color-3">
-                                Comment
+                                {{"views.alert-details-template.Comment" | translate}}
                             </div>
                             <div flex="15" class="item-column md-list-item-text accent-color-3">
-                                User
+                                {{"views.alert-details-template.User" | translate}}
                             </div>
                             <div flex="25" class="item-column md-list-item-text accent-color-3">
-                                Create Time
+                                {{"views.alert-details-template.CT" | translate}}
                             </div>
                             <md-divider></md-divider>
                         </md-list-item>
                         <md-list-item ng-repeat="item in vm.alertData.events | orderBy:'createTime'">
                             <div flex="60" class="item-column md-list-item-text" layout="column" ng-if="item.description.length > 0">
                                 <span class="item-title" style="white-space: normal;">
-                                    {{item.description}}
+                                    {{item.description | translate}}
                                 </span>
                                 <span class="column-title column-title-bottom {{item.stateClass}}">
                                     <ng-md-icon icon="{{item.stateIcon}}" size="20"></ng-md-icon>
-                                    {{item.stateText}} {{item.contentSummary}}
-                                </span>
-                            </div>
-                            <div flex="60" style="word-wrap:break-word;" class="item-column md-list-item-text {{item.stateClass}}" ng-if="item.description == null || item.description.length == 0">
-                                <ng-md-icon icon="{{item.stateIcon}}" size="20"></ng-md-icon>
-                                {{item.stateText}} {{item.contentSummary}}
-                            </div>
-                            <div flex="15" style="word-wrap:break-word;" class="item-column md-list-item-text">
-                                {{item.user}}
-                            </div>
-                            <div flex="25" style="word-wrap:break-word;" class="item-column md-list-item-text">
-                                {{'alert-detail-template.time_locale' | translate:{date:item.createdTime} }}
-                            </div>
-                            <md-divider ng-if="!$last"></md-divider>
-                        </md-list-item>
-                    </md-list>
-                </div>
-            </md-content>
-        </body-section>
-    </card-layout>
-
-    <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body">
-        <header-section transclude-to="head" flex layout>
-            <div style="white-space:nowrap" class="card-title">Alert Summary</div>
-            <span flex></span>
-        </header-section>
-        <body-section transclude-to="body">
-            <md-content flex md-scroll-y>
-                <div class="card-content">
-                    <md-button ng-if="vm.alertData.actionable && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showEventDialog($event)">UPDATE</md-button>
-                    <md-button ng-if="vm.alertData.cleared == false && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.hideAlert($event)">HIDE</md-button>
-                    <md-button ng-if="vm.alertData.cleared == true && vm.allowAdmin" class="border-btn action-btn" ng-click="vm.showAlert($event)">SHOW</md-button>
-                </div>
-
-                <md-list flex layout-fill layout="column" class="list-item-table">
-                    <md-list-item>
-                        <div layout="column" class="item-column md-list-item-text">
-                            <span class="item-title {{vm.alertData.stateClass}}">
-                                <ng-md-icon icon="{{vm.alertData.stateIcon}}" size="20"></ng-md-icon>
-                                {{vm.alertData.stateText}}
-                            </span>
-                            <span class="column-title column-title-bottom">State</span>
-                        </div>
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item>
-                        <div layout="column"  class="item-column md-list-item-text ">
-                            <span class="item-title">
-                                <kylo-timer start-time="vm.alertData.createdTimeSince"></kylo-timer>
-                            </span>
-                            <span class="column-title column-title-bottom">Since</span>
-                        </div>
-                    </md-list-item>
-                </md-list>
-                <md-divider></md-divider>
-                <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="vm.alertData.links.length >0" style="padding-left:25px">
-
-                    <div class="md-subhead layout-padding-bottom">Links</div>
-                    <div ng-repeat="link in vm.alertData.links" layout="column" class="layout-padding-bottom">
-                        <md-button class="md-primary md-link" ui-sref="{{link.value}}">{{link.label}}</md-button>
-                    </div>
-                </div>
-            </md-content>
-        </body-section>
-    </card-layout>
-</div>
+                                    {{item.stateText | translate}} {{item.contentSummary | translate}}
+                                <span>
+             

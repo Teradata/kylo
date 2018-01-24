@@ -1,6 +1,6 @@
 <div style="margin-top:-10px;" layout="row">
   <md-input-container class="md-block condensed" flex-gt-sm="" style="">
-    <label class="label-small md-container-ignore">Alert Type</label>
+    <label class="label-small md-container-ignore">{{"views.alert-type-filter-select.AT" | translate}}</label>
     <md-select ng-model="ctl.filterAlertType" ng-change="ctl.onFilterAlertTypeChange(ctl.filterAlertType)"  class="md-no-underline">
       <md-option ng-repeat="opt in ctl.alertTypes track by $index" ng-value="opt">
         {{opt.label}}
@@ -9,10 +9,10 @@
   </md-input-container>
 
   <md-input-container class="md-block condensed" flex-gt-sm="" style="">
-    <label class="label-small md-container-ignore">AlertState</label>
+    <label class="label-small md-container-ignore">{{"views.alert-type-filter-select.AlertState" | translate}}</label>
     <md-select ng-model="ctl.filterAlertState" ng-change="ctl.onFilterAlertStateChange(ctl.filterAlertState)"  class="md-no-underline">
       <md-option ng-repeat="opt in ctl.alertStates track by $index" ng-value="opt">
-        {{opt.label}}
+        {{opt.label | translate}}
       </md-option>
     </md-select>
   </md-input-container>

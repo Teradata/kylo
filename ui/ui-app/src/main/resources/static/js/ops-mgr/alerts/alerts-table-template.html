@@ -32,7 +32,7 @@
         <md-tabs flex md-selected="vm.tabMetadata.selectedIndex" md-align-tabs="top" layout-fill md-dynamic-height>
 
             <md-tab ng-repeat="tab in vm.tabs" ng-disabled="tab.disabled" md-on-select="vm.onTabSelected(tab)" flex>
-                <md-tab-label>{{tab.title}}</md-tab-label>
+                <md-tab-label>{{tab.title | translate}}</md-tab-label>
                 <md-tab-body>
                     <md-divider></md-divider>
                     <div ng-show="vm.viewType == 'list'">
@@ -46,33 +46,33 @@
                                 <div layout="row" layout-fill>
                                     <div flex="10" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">
-                                            {{alert.level}}
+                                            {{alert.level | translate}}
                                         </span>
-                                        <span class="column-title column-title-bottom">Level</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.Level" | translate}}</span>
                                     </div>
 
                                     <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.state }}</span>
-                                        <span class="column-title column-title-bottom">State</span>
+                                        <span class="item-title">{{alert.state | translate}}</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.State" | translate}}</span>
                                     </div>
                                     <div flex="10" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.typeDisplay }}</span>
-                                        <span class="column-title column-title-bottom">Type</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.Type" | translate}}</span>
                                     </div>
                                     <div flex="5" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)" ng-if="vm.showCleared">
                                         <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
                                         <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
-                                        <span class="column-title column-title-bottom">Cleared</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.Cleared" | translate}}</span>
                                     </div>
 
                                     <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{'time_locale' | translate:{date:alert.createdTime} }}</span>
-                                        <span class="column-title column-title-bottom">Start Time</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.ST" | translate}}</span>
                                     </div>
 
                                     <div flex="35" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
                                         <span class="item-title">{{alert.description }}</span>
-                                        <span class="column-title column-title-bottom">Description</span>
+                                        <span class="column-title column-title-bottom">{{"views.alerts-table-template.Description" | translate}}</span>
                                     </div>
 
                                 </div>
@@ -80,7 +80,7 @@
 
                             </md-list-item>
                             <md-item ng-show="vm.showProgress == false && tab.data.content.length == 0" style="padding:10px">
-                                No results found
+                                {{"views.alerts-table-template.Nrf" | translate}}
                             </md-item>
                             <md-divider></md-divider>
                         </md-list>
@@ -91,18 +91,18 @@
                             <table md-table md-progress="vm.deferred.promise">
                                 <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange">
                                     <tr md-row>
-                                        <th md-column  md-order-by="level" name="Level">Level</th>
-                                        <th md-column  md-order-by="state" name="State">State</th>
-                                        <th md-column  md-order-by="type" name="Type">Type</th>
-                                        <th md-column name="Cleared" ng-if="vm.showCleared">Cleared</th>
-                                        <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>Start Time</th>
-                                        <th md-column name="Description">Description</th>
+                                        <th md-column  md-order-by="level" name="Level">{{"views.alerts-table-template.Level" | translate}}</th>
+                                        <th md-column  md-order-by="state" name="State">{{"views.alerts-table-template.State" | translate}}</th>
+                                        <th md-column  md-order-by="type" name="Type">{{"views.alerts-table-template.Type" | translate}}</th>
+                                        <th md-column name="Cleared" ng-if="vm.showCleared">{{"views.alerts-table-template.Cleared" | translate}}</th>
+                                        <th md-column name="Start Time" md-order-by="startTime" hide show-gt-sm>{{"views.alerts-table-template.ST" | translate}}</th>
+                                        <th md-column name="Description">{{"views.alerts-table-template.Description" | translate}}</th>
                                     </tr>
                                 </thead>
                                 <tbody md-body>
                                     <tr md-row ng-repeat="alert in tab.data.content" ng-click="vm.alertDetails($event,alert)">
-                                        <td md-cell>{{alert.level}}</td>
-                                        <td md-cell>{{alert.state}}</td>
+                                        <td md-cell>{{alert.level | translate}}</td>
+                                        <td md-cell>{{alert.state | translate}}</td>
                                         <td md-cell>{{alert.typeDisplay}}</td>
                                         <td md-cell ng-if="vm.showCleared">
                                             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
@@ -115,7 +115,7 @@
                             </table>
                         </md-table-container>
                         <div ng-if="vm.showProgress == false && tab.data.content.length == 0" layout="column" layout-align="center center">
-                            No results found
+                            {{"views.alerts-table-template.Nrf" | translate}}
                         </div>
                         <md-divider></md-divider>
                     </div>
