@@ -326,7 +326,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<OpsManagerFeed> findAllWithoutAcl() {
-        return findAll();
+        return opsManagerFeedCacheByName.findAllWithoutAcl();
     }
 
     @EntityAccessControlled

@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.jms;
+package com.thinkbiganalytics.nifi.provenance.repo;
 
 /*-
  * #%L
- * kylo-jms-service-api
+ * thinkbig-nifi-provenance-repo
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,12 +20,26 @@ package com.thinkbiganalytics.jms;
  * #L%
  */
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
 /**
- * Created by ru186002 on 21/07/2017.
+ * Created by sr186054 on 7/27/17.
  */
-public interface Queues {
+public class FeedEventStatisticsDataV3 extends FeedEventStatisticsDataV2 {
 
-    String FEED_MANAGER_QUEUE = "thinkbig.feed-manager";
-    String PROVENANCE_EVENT_STATS_QUEUE = "thinkbig.provenance-event-stats";
 
+    private Map<String, List<String>> streamingFeedProcessorIds = new ConcurrentHashMap<>();
+
+
+    public FeedEventStatisticsDataV3() {
+        super();
+    }
+
+
+    public FeedEventStatisticsDataV3(FeedEventStatistics other) {
+        super(other);
+        this.streamingFeedProcessorIds = other.streamingFeedProcessorIds;
+    }
 }

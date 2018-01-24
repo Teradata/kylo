@@ -581,7 +581,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public void markStreamingFeedAsStarted(String feed) {
         BatchJobExecution jobExecution = findLatestJobForFeed(feed);
         //ensure its Running
-        if (!jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
+        if (jobExecution != null && !jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
             log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);

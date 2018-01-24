@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.jms;
+package com.thinkbiganalytics.metadata.api.cache;
 
 /*-
  * #%L
- * kylo-jms-service-api
+ * kylo-operational-metadata-jpa
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,11 +21,19 @@ package com.thinkbiganalytics.jms;
  */
 
 /**
- * Created by ru186002 on 21/07/2017.
+ * Listener for those caches that need to be updated when the base cache is updated.
+ * Usually these <ID,T> refer to the Database Id, and Database object
+ *
+ * @param <ID> the base cache Id
+ * @param <T>  the base cached item
  */
-public interface Queues {
+public interface CacheBackedProviderListener<ID, T> {
 
-    String FEED_MANAGER_QUEUE = "thinkbig.feed-manager";
-    String PROVENANCE_EVENT_STATS_QUEUE = "thinkbig.provenance-event-stats";
+    void onAddedItem(ID key, T value);
 
+    void onRemovedItem(T value);
+
+    void onRemoveAll();
+
+    void onPopulated();
 }

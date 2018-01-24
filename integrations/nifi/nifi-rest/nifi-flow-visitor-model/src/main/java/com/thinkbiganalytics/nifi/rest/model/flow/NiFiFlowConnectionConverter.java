@@ -21,6 +21,7 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
  */
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 
 import java.util.Set;
@@ -54,6 +55,20 @@ public class NiFiFlowConnectionConverter {
             return connection;
         }
         return null;
+    }
+
+    public static ConnectionDTO toConnection(NifiFlowConnection nifiFlowConnection){
+        ConnectionDTO connectionDTO = new ConnectionDTO();
+        ConnectableDTO source = new ConnectableDTO();
+        source.setId(nifiFlowConnection.getSourceIdentifier());
+        connectionDTO.setSource(source);
+
+        ConnectableDTO dest = new ConnectableDTO();
+        dest.setId(nifiFlowConnection.getDestinationIdentifier());
+        connectionDTO.setDestination(dest);
+        connectionDTO.setId(nifiFlowConnection.getConnectionIdentifier());
+        connectionDTO.setName(nifiFlowConnection.getName());
+        return connectionDTO;
     }
 
 }

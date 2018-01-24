@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionData;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -53,6 +54,8 @@ public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCall
     private Set<ConnectionDTO> rootConnections = new HashSet<>();
     private String reusableTemplateProcessGroupId;
     private Set<String> feedNames = new HashSet<>();
+
+    private Map<String, List<String>> feedToInputProcessorIds = new ConcurrentHashMap<>();
 
     private String rootProcessGroupId;
 
@@ -100,6 +103,12 @@ public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCall
                                                                  .collect(Collectors.toMap(p -> p.getId(), p -> f.getProcessGroupId()));
                                                          processorIdToFeedProcessGroupId.putAll(processGroupIdMap);
 
+                                                         List<ConnectionDTO>
+                                                             connections =
+                                                             f.getProcessGroupFlow().getFlow().getConnections().stream().map(e -> e.getComponent()).collect(Collectors.toList());
+                                                         List<String> inputProcessorIds = NifiConnectionUtil.getInputProcessorIds(connections);
+                                                         feedToInputProcessorIds.put(feedName, inputProcessorIds);
+
                                                      });
 
         nifiFlowInspectorManager.getFlowsInspected().values().stream().forEach(inspection -> {
@@ -122,7 +131,6 @@ public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCall
             connectionIdCacheNameMap.putAll(connectionIdMap);
             connectionIdToConnectionMap.putAll(connectionMap);
             processorIdToProcessorName.putAll(processorIdToNameMap);
-
 
         });
 
@@ -167,5 +175,14 @@ public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCall
 
     public String getRootProcessGroupId() {
         return rootProcessGroupId;
+    }
+
+
+    public Map<String, List<String>> getFeedToInputProcessorIds() {
+        return feedToInputProcessorIds;
+    }
+
+    public void setFeedToInputProcessorIds(Map<String, List<String>> feedToInputProcessorIds) {
+        this.feedToInputProcessorIds = feedToInputProcessorIds;
     }
 }

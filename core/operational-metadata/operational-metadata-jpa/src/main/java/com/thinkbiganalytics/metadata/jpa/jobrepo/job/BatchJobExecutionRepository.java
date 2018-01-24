@@ -84,6 +84,18 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
            + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
            + "where feed.name = :feedName "
+           + "and job.jobExecutionId = (SELECT max(job2.jobExecutionId)"
+           + "     from JpaBatchJobExecution as job2 "
+           + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed2 on feed2.id = jobInstance2.feed.id "
+           + "where feed2.name = :feedName )")
+    List<JpaBatchJobExecution> findLatestJobForFeed(@Param("feedName") String feedName);
+
+    /*
+        @Query("select job from JpaBatchJobExecution as job "
+           + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + "where feed.name = :feedName "
            + "and job.startTimeMillis = (SELECT max(job2.startTimeMillis)"
            + "     from JpaBatchJobExecution as job2 "
            + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "
@@ -91,6 +103,7 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "where feed2.name = :feedName )"
            + "order by job.jobExecutionId DESC ")
     List<JpaBatchJobExecution> findLatestJobForFeed(@Param("feedName") String feedName);
+     */
 
 
     @Query("select job from JpaBatchJobExecution as job "

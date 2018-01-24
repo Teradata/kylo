@@ -25,6 +25,8 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * update nifi flow cache using nifi processors and connections instead of the flow order processors/connections
@@ -36,21 +38,44 @@ public class NifiFlowCacheFeedUpdate2 {
     private String feedProcessGroupId;
     private Collection<ProcessorDTO> processors;
     private Collection<ConnectionDTO> connections;
-
+    private List<String> feedToInputProcessorIds;
+    private Collection<NifiFlowCacheSimpleProcessorDTO> simpleProcessors;
 
     public NifiFlowCacheFeedUpdate2() {
 
     }
 
     public NifiFlowCacheFeedUpdate2(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors,
+                                    Collection<ConnectionDTO> connections, List<String> feedToInputProcessorIds) {
+        this.feedName = feedName;
+        this.isStream = isStream;
+        this.feedProcessGroupId = feedProcessGroupId;
+        this.processors = processors;
+        this.connections = connections;
+        this.feedToInputProcessorIds = feedToInputProcessorIds;
+    }
+
+    public NifiFlowCacheFeedUpdate2(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors, Collection<NifiFlowCacheSimpleProcessorDTO> simpleProcessors,
                                     Collection<ConnectionDTO> connections) {
         this.feedName = feedName;
         this.isStream = isStream;
         this.feedProcessGroupId = feedProcessGroupId;
         this.processors = processors;
-
+        this.simpleProcessors = simpleProcessors;
         this.connections = connections;
+
+        if ((processors == null || processors.isEmpty()) && simpleProcessors != null) {
+            this.processors = simpleProcessors.stream().map(simpleProcessor -> {
+                ProcessorDTO dto = new ProcessorDTO();
+                dto.setName(simpleProcessor.getName());
+                dto.setParentGroupId(simpleProcessor.getParentGroupId());
+                dto.setType(simpleProcessor.getType());
+                dto.setId(simpleProcessor.getId());
+                return dto;
+            }).collect(Collectors.toList());
+        }
     }
+
 
     public String getFeedName() {
         return feedName;
@@ -91,4 +116,5 @@ public class NifiFlowCacheFeedUpdate2 {
     public void setConnections(Collection<ConnectionDTO> connections) {
         this.connections = connections;
     }
+
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.rest.model.nifi;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,6 +27,7 @@ import org.joda.time.DateTime;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -52,6 +53,7 @@ public class NifiFlowCacheSnapshot {
     private Map<String, NiFiFlowCacheConnectionData> connectionIdToConnection = new ConcurrentHashMap<>();
     private Set<String> allStreamingFeeds = new HashSet<>();
     private Set<String> reusableTemplateProcessorIds = new HashSet<>();
+    private Map<String, List<String>> feedToInputProcessorIds = new ConcurrentHashMap<>();
     /**
      * Set of the category.feed names
      */
@@ -154,6 +156,14 @@ public class NifiFlowCacheSnapshot {
         this.reusableTemplateProcessorIds = reusableTemplateProcessorIds;
     }
 
+    public Map<String, List<String>> getFeedToInputProcessorIds() {
+        return feedToInputProcessorIds;
+    }
+
+    public void setFeedToInputProcessorIds(Map<String, List<String>> feedToInputProcessorIds) {
+        this.feedToInputProcessorIds = feedToInputProcessorIds;
+    }
+
     public void update(NifiFlowCacheSnapshot syncSnapshot) {
         processorIdToFeedNameMap.putAll(syncSnapshot.getProcessorIdToFeedNameMap());
         processorIdToFeedProcessGroupId.putAll(syncSnapshot.getProcessorIdToFeedProcessGroupId());
@@ -164,6 +174,7 @@ public class NifiFlowCacheSnapshot {
         connectionIdToConnection.putAll(syncSnapshot.getConnectionIdToConnection());
         connectionIdToConnectionName.putAll(syncSnapshot.getConnectionIdToConnectionName());
         reusableTemplateProcessorIds.addAll(syncSnapshot.getReusableTemplateProcessorIds());
+        feedToInputProcessorIds.putAll(syncSnapshot.getFeedToInputProcessorIds());
     }
 
     public static class Builder {
