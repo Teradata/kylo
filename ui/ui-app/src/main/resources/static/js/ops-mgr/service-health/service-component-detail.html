@@ -33,17 +33,17 @@
                                    </span>
                                    <span class="{{alert.iconstyle}} column-title-bottom" >
                                        <ng-md-icon icon="{{alert.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{alert.state | translate}}
+                                     {{alert.state}}
                                    </span>
                         </div>
                         <div flex="60" flex-sm="80" flex-xs="80" layout="column"  class="item-column md-list-item-text">
                                    <span class="item-title">{{alert.message}}
                                    </span>
-                            <span class="column-title column-title-bottom">{{"views.service-component-detail.Message" | translate}}</span>
+                            <span class="column-title column-title-bottom">Message</span>
                         </div>
                         <div flex="20" layout="column" hide show-gt-md class="item-column md-list-item-text">
                             <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:alert.latestTimestamp} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:alert.latestTimestamp} }}</span>
-                            <span class="column-title column-title-bottom">{{"views.service-component-detail.Time" | translate}}</span>
+                            <span class="column-title column-title-bottom">Time</span>
                         </div>
                         <md-divider ng-if="!$last"></md-divider>
 
@@ -76,10 +76,10 @@
                     <table md-table md-progress="vm.deferred.promise">
                         <thead md-head md-order="vm.paginationData.sort" md-trigger="vm.onOrderChange" >
                         <tr md-row>
-                            <th md-column name="Name" md-order-by="label">{{"views.service-component-detail.Name" | translate}}</th>
-                            <th md-column name="Status" md-order-by="state">{{"views.service-component-detail.Status" | translate}}</th>
-                            <th md-column name="Message" md-order-by="message">{{"views.service-component-detail.Message" | translate}}</th>
-                            <th md-column name="Time" md-order-by="latestTimestamp"  hide show-gt-md >{{"views.service-component-detail.Time" | translate}}</th>
+                            <th md-column name="Name" md-order-by="label">Name</th>
+                            <th md-column name="Status" md-order-by="state">Status</th>
+                            <th md-column name="Message" md-order-by="message">Message</th>
+                            <th md-column name="Time" md-order-by="latestTimestamp"  hide show-gt-md >Time</th>
                         </tr>
                         </thead>
                         <tbody md-body >
@@ -88,7 +88,7 @@
                         <td md-cell>
                             <span >
                                        <ng-md-icon icon="{{alert.icon}}" class="{{alert.iconstyle}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{alert.healthText | translate}}</span>
+                                     {{alert.healthText}}</span>
 
                         </td>
                         <td md-cell>
@@ -107,7 +107,7 @@
     </card-layout>
     <card-layout flex="20">
       <header-section transclude-to="head">
-            <div class="card-title">{{"views.service-component-detail.CD" | translate}}</div>
+            <div class="card-title">Component Details</div>
       </header-section>
       <body-section transclude-to="body">
             <md-list flex layout-fill layout="column" class="list-item-table">
@@ -115,14 +115,14 @@
                     <div layout="column"  class="item-column md-list-item-text">
                         <span class="item-title">{{vm.componentName}}</span>
                                <span class="{{vm.component.iconstyle}} column-title-bottom" ><ng-md-icon icon="{{vm.component.icon}}" size="20" options='{"rotation": "clock"}' ></ng-md-icon>
-                                     {{vm.component.healthText | translate}}</span>
+                                     {{vm.component.healthText}}</span>
                     </div>
                 </md-list-item>
                 <md-divider></md-divider>
                 <md-list-item>
                     <div layout="column"  class="item-column md-list-item-text">
                         <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:vm.component.checkDate} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:vm.component.checkDate} }}</span>
-                        <span class="column-title column-title-bottom">{{"views.service-component-detail.LC" | translate}}</span>
+                        <span class="column-title column-title-bottom">Last Checked</span>
                     </div>
                 </md-list-item>
 

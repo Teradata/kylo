@@ -43,7 +43,7 @@
                   <div class="item-column md-list-item-text item-column-title"
                        layout-fill flex>
                            <span class="item-title" title="{{feed.feed}}">
-                              {{feed.feed | translate}}
+                              {{feed.feed}}
                             </span>
                   </div>
                   <div layout="row" layout-fill class="overview-row">
@@ -129,7 +129,7 @@
                 <tr md-row
                     ng-repeat="feed in tab.data.content "
                     ng-click="vm.feedDetails($event,feed)">
-                  <td md-cell>{{feed.feed | translate}}</td>
+                  <td md-cell>{{feed.feed}}</td>
                   <td md-cell>
                                     <span ng-class="{'healthy':feed.healthText == 'HEALTHY','unhealthy':feed.healthText == 'UNHEALTHY'}">
                                        <ng-md-icon icon="{{feed.icon}}" size="20"

@@ -19,13 +19,13 @@
   -->
 <md-dialog aria-label="Event dialog">
     <md-dialog-content layout="column" layout-padding>
-        <h4 class="md-title" style="margin-bottom:0px;">{{"views.event-dialog.UAD" | translate}}</h4>
+        <h4 class="md-title" style="margin-bottom:0px;">Update Alert Details</h4>
         <form name="actionUpdateForm" layout="column">
             <md-input-container layout="row">
                 <md-select ng-model="state" placeholder="State">
-                    <md-option ng-value="'UNHANDLED'">{{"views.event-dialog.Unhandled" | translate}}</md-option>
-                    <md-option ng-value="'IN_PROGRESS'">{{"views.event-dialog.IP" | translate}}</md-option>
-                    <md-option ng-value="'HANDLED'">{{"views.event-dialog.Handled" | translate}}</md-option>
+                    <md-option ng-value="'UNHANDLED'">Unhandled</md-option>
+                    <md-option ng-value="'IN_PROGRESS'">In Progress</md-option>
+                    <md-option ng-value="'HANDLED'">Handled</md-option>
                 </md-select>
             </md-input-container>
             <md-input-container layout="row">
@@ -35,7 +35,7 @@
         </form>
     </md-dialog-content>
     <md-dialog-actions>
-        <md-button ng-click="closeDialog()">{{"views.event-dialog.Cancel" | translate}}</md-button>
-        <md-button class="md-primary md-raised" ng-click="saveDialog()" ng-disabled="saving">{{"views.event-dialog.Save" | translate}}</md-button>
+        <md-button ng-click="closeDialog()">Cancel</md-button>
+        <md-button class="md-primary md-raised" ng-click="saveDialog()" ng-disabled="saving">Save</md-button>
     </md-dialog-actions>
 </md-dialog>

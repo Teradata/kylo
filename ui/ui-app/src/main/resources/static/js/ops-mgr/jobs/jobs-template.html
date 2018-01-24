@@ -117,13 +117,13 @@
                                <span  ng-class="{'success':(job.displayStatus == 'COMPLETED' || job.displayStatus =='STARTING' || job.displayStatus =='STARTED' ),'error':job.displayStatus == 'FAILED', 'warn':(job.displayStatus == 'STOPPING' || job.displayStatus =='STOPPED'), 'abandoned':job.displayStatus == 'ABANDONED','unknown':job.displayStatus == 'UNKNOWN'}">
                                        <ng-md-icon icon="{{job.icon}}" size="20" >
                                        </ng-md-icon>
-                                       <span hide show-gt-md>{{job.displayStatus | translate}}</span></span>
+                                       <span hide show-gt-md>{{job.displayStatus}}</span></span>
 
                                     </td>
                                     <td md-cell ng-if="vm.hideFeedColumn == false">{{job.feedName}}</td>
                                     <td md-cell hide show-gt-sm>{{'jobs-template.time-locale' | translate:{date:job.startTime} }}</td>
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
-                                    <td md-cell >{{job.status | translate}}</td>
+                                    <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>
                                         <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">{{"views.jobs-template.FAIL" | translate}}</md-button>
                                         <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">{{"views.jobs-template.ABANDON" | translate}}</md-button>
