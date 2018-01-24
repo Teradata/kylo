@@ -9,9 +9,9 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,7 @@ package com.thinkbiganalytics.install.inspector.inspection;
 
 
 
-public interface Inspection<SP, UP> {
+public interface Inspection {
 
     /**
      * @return unique id
@@ -43,19 +43,7 @@ public interface Inspection<SP, UP> {
 
     /**
      * This method is executed to inspect provided kylo-services and kylo-ui properties
-     * @param servicesProperties kylo-services properties
-     * @param uiProperties kylo-ui properties
      * @return inspection status
      */
-    InspectionStatus inspect(SP servicesProperties, UP uiProperties);
-
-    /**
-     * @return a new blank instance of kylo-services properties which are of interest to this configuration
-     */
-    SP getServicesProperties();
-
-    /**
-     * @return a new blank instance of kylo-ui properties which are of interest to this configuration
-     */
-    UP getUiProperties();
+    InspectionStatus inspect(Configuration configuration);
 }

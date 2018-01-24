@@ -31,6 +31,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
+import org.springframework.security.web.jaasapi.JaasApiIntegrationFilter;
 
 import java.util.Collections;
 import java.util.List;
@@ -71,5 +72,12 @@ public abstract class BaseWebSecurityConfigurer extends WebSecurityConfigurerAda
         return new MultiHandlerLogoutFilter(UI_LOGOUT_URL, 
                                             logoutHandlers.orElse(Collections.emptyList()), 
                                             logoutSuccessHandlers.orElse(Collections.emptyList()));
+    }
+    
+    @Bean
+    public JaasApiIntegrationFilter jaasFilter() {
+        JaasApiIntegrationFilter filter = new JaasApiIntegrationFilter();
+        filter.setCreateEmptySubject(true);
+        return filter;
     }
 }

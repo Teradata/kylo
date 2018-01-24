@@ -9,9 +9,9 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,9 +21,7 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-public abstract class AbstractInspection<SP, UP> implements Inspection<SP, UP> {
+public abstract class AbstractInspection implements Inspection {
 
     private int id;
 
@@ -38,19 +36,7 @@ public abstract class AbstractInspection<SP, UP> implements Inspection<SP, UP> {
     }
 
     @Override
-    public InspectionStatus inspect(SP servicesProperties, UP uiProperties) {
+    public InspectionStatus inspect(Configuration configuration) {
         throw new IllegalStateException("Not implemented yet");
-    }
-
-    @Override
-    @JsonIgnore
-    public SP getServicesProperties() {
-        return null;
-    }
-
-    @Override
-    @JsonIgnore
-    public UP getUiProperties() {
-        return null;
     }
 }

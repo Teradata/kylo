@@ -9,9 +9,9 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,16 +21,12 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtTokenSyncInspection extends AbstractInspection<JwtTokenSyncInspection.JwtProperties, JwtTokenSyncInspection.JwtProperties> {
+public class JwtTokenSyncInspection extends AbstractInspection {
 
-    class JwtProperties {
-        @Value("${security.jwt.key}")
-        private String jwtKey;
-    }
+    public static final String SECURITY_JWT_KEY = "security.jwt.key";
 
     @Override
     public String getName() {
@@ -43,22 +39,14 @@ public class JwtTokenSyncInspection extends AbstractInspection<JwtTokenSyncInspe
     }
 
     @Override
-    public InspectionStatus inspect(JwtProperties servicesProperties, JwtProperties uiProperties) {
-        boolean valid = servicesProperties.jwtKey.equals(uiProperties.jwtKey);
+    public InspectionStatus inspect(Configuration configuration) {
+        String servicesJwtKey = configuration.getServicesProperty(SECURITY_JWT_KEY);
+        String uiJwtKey = configuration.getUiProperty(SECURITY_JWT_KEY);
+        boolean valid = servicesJwtKey.equals(uiJwtKey);
         InspectionStatus inspectionStatus = new InspectionStatus(valid);
         if (!valid) {
             inspectionStatus.setError("'security.jwt.key' property in kylo-services/conf/application.properties does not match 'security.jwt.key' property in kylo-ui/conf/application.properties");
         }
         return inspectionStatus;
-    }
-
-    @Override
-    public JwtProperties getServicesProperties() {
-        return new JwtProperties();
-    }
-
-    @Override
-    public JwtProperties getUiProperties() {
-        return new JwtProperties();
     }
 }
