@@ -39,7 +39,9 @@ import javax.annotation.Nullable;
 
 public class AbstractSchema implements Schema {
 
-    private UUID uuid = UUID.randomUUID();
+    // Random ID initialization removed as it shows as an attribute change when comparing feeds
+//    private UUID uuid = UUID.randomUUID();
+    private UUID uuid;
 
     @MetadataField
     private String name;

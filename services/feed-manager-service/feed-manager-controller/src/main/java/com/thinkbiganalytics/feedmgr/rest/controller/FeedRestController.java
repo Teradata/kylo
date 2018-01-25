@@ -509,7 +509,7 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFeedVersions(@PathParam("feedId") String feedId,
-                                    @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                    @QueryParam("content") @DefaultValue("false") boolean includeContent) {
         FeedVersions feed = getMetadataService().getFeedVersions(feedId, includeContent);
 
         return Response.ok(feed).build();
@@ -540,13 +540,13 @@ public class FeedRestController {
     }
     
     @GET
-    @Path("/{feedId}/versions/{versionId1}/diff/{versionId2}")
+    @Path("/{feedId}/versions/{toVerId}/diff/{fromVerId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getFeedVersionDifference(@PathParam("feedId") String feedId,
-                                             @PathParam("versionId1") String versionId1,
-                                             @PathParam("versionId2") String versionId2) {
+                                             @PathParam("toVerId") String toVerId,
+                                             @PathParam("fromVerId") String fromVerId) {
         try {
-            EntityVersionDifference diff = getMetadataService().getFeedVersionDifference(feedId, versionId1, versionId2);
+            EntityVersionDifference diff = getMetadataService().getFeedVersionDifference(feedId, fromVerId, toVerId);
             return Response.ok(diff).build();
         } catch (FeedNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
