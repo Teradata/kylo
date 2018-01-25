@@ -520,26 +520,28 @@ public class FeedModelTransform {
     }
 
     /**
-     * @param ev1
-     * @param ev2
+     * @param fromVer
+     * @param toVer
      */
-    public EntityVersionDifference generateDifference(com.thinkbiganalytics.feedmgr.rest.model.EntityVersion ev1, 
-                                                      com.thinkbiganalytics.feedmgr.rest.model.EntityVersion ev2) {
+    public EntityVersionDifference generateDifference(com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromVer, 
+                                                      com.thinkbiganalytics.feedmgr.rest.model.EntityVersion toVer) {
         try {
             ObjectMapper om = new ObjectMapper();
             ObjectWriter ow = om.writer();
             ObjectReader or = om.reader();
-            String ent1Str = ow.writeValueAsString(ev1.getEntity());
-            String ent2Str = ow.writeValueAsString(ev2.getEntity());
-            JsonNode node1 = or.readTree(ent1Str);
-            JsonNode node2 = or.readTree(ent2Str);
-            JsonNode diff = JsonDiff.asJson(node2, node1);
+            String fromEntStr = ow.writeValueAsString(fromVer.getEntity());
+            String toEntStr = ow.writeValueAsString(toVer.getEntity());
+            JsonNode fromNode = or.readTree(fromEntStr);
+            JsonNode toNode = or.readTree(toEntStr);
+            // Produce a patch showing the changes from the "to" node back into the "from" node.
+            // This is because we will be providing the "to" entity content so the patch should show the original "from" values.
+            JsonNode diff = JsonDiff.asJson(toNode, fromNode);
             com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
-                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(ev2.getId(), ev2.getName(), ev2.getCreatedDate());
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate());
             
-            return new EntityVersionDifference(fromNoContent, ev2, diff);
+            return new EntityVersionDifference(fromNoContent, toVer, diff);
         } catch (IOException e) {
-            throw new ModelTransformException("Failed to generate entity difference between entity versions " + ev1.getId() + " and " + ev2.getId());
+            throw new ModelTransformException("Failed to generate entity difference between entity versions " + fromVer.getId() + " and " + toVer.getId());
         }
     }
 }

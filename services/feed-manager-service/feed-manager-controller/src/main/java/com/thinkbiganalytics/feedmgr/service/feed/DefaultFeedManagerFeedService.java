@@ -331,22 +331,22 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     }
     
     @Override
-    public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
             
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVerId1 = feedProvider.resolveVersion(versionId1);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVerId2 = feedProvider.resolveVersion(versionId2);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
             
-            Optional<EntityVersion> firstVer = feedProvider.findVersion(domainFeedId, domainVerId1, true)
+            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
                             .map(version -> feedModelTransform.domainToFeedVersion(version));
-            Optional<EntityVersion> secondVer = feedProvider.findVersion(domainFeedId, domainVerId2, true)
+            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
                             .map(version -> feedModelTransform.domainToFeedVersion(version));
             
-            return firstVer.map(ev1 -> {
-                return secondVer.map(ev2 -> {
-                    return feedModelTransform.generateDifference(ev1, ev2);
+            return fromVer.map(from -> {
+                return toVer.map(to -> {
+                    return feedModelTransform.generateDifference(from, to);
                 }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
             }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
         });
