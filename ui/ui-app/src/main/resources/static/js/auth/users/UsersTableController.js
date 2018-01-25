@@ -58,6 +58,35 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @type {any}
              */
             this.viewType = this.PaginationDataService.viewType(PAGE_NAME);
+            /**
+             * Updates the order of the table.
+             *
+             * @param order the sort order
+             */
+            this.onOrderChange = function (order) {
+                _this.PaginationDataService.sort(_this.pageName, order);
+                _this.TableOptionsService.setSortOption(_this.pageName, order);
+            };
+            /**
+             * Updates the pagination of the table.
+             *
+             * @param page the page number
+             */
+            this.onPaginationChange = function (page) {
+                _this.PaginationDataService.currentPage(_this.pageName, null, page);
+                _this.currentPage = page;
+            };
+            /**
+             * Updates the order of the table.
+             *
+             * @param option the sort order
+             */
+            this.selectedTableOption = function (option) {
+                var sortString = _this.TableOptionsService.toSortString(option);
+                _this.PaginationDataService.sort(_this.pageName, sortString);
+                _this.TableOptionsService.toggleSort(_this.pageName, option);
+                _this.TableOptionsService.setSortOption(_this.pageName, sortString);
+            };
             // Notify pagination service of changes to view type
             this.$scope.$watch(function () {
                 return _this.viewType;
@@ -120,38 +149,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     return group;
                 }
             });
-        };
-        ;
-        /**
-         * Updates the order of the table.
-         *
-         * @param order the sort order
-         */
-        UsersTableController.prototype.onOrderChange = function (order) {
-            this.PaginationDataService.sort(this.pageName, order);
-            this.TableOptionsService.setSortOption(this.pageName, order);
-        };
-        ;
-        /**
-         * Updates the pagination of the table.
-         *
-         * @param page the page number
-         */
-        UsersTableController.prototype.onPaginationChange = function (page) {
-            this.PaginationDataService.currentPage(this.pageName, null, page);
-            this.currentPage = page;
-        };
-        ;
-        /**
-         * Updates the order of the table.
-         *
-         * @param option the sort order
-         */
-        UsersTableController.prototype.selectedTableOption = function (option) {
-            var sortString = this.TableOptionsService.toSortString(option);
-            this.PaginationDataService.sort(this.pageName, sortString);
-            this.TableOptionsService.toggleSort(this.pageName, option);
-            this.TableOptionsService.setSortOption(this.pageName, sortString);
         };
         ;
         /**

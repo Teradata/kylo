@@ -107,7 +107,7 @@ export default class UsersTableController implements ng.IComponentController {
      *
      * @param order the sort order
      */
-    onOrderChange(order:any) {
+    onOrderChange=(order:any)=>{
         this.PaginationDataService.sort(this.pageName, order);
         this.TableOptionsService.setSortOption(this.pageName, order);
     };
@@ -117,7 +117,7 @@ export default class UsersTableController implements ng.IComponentController {
      *
      * @param page the page number
      */
-    onPaginationChange (page:any) {
+    onPaginationChange= (page:any)=> {
         this.PaginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
@@ -127,7 +127,7 @@ export default class UsersTableController implements ng.IComponentController {
      *
      * @param option the sort order
      */
-    selectedTableOption (option:any) {
+    selectedTableOption =(option:any) =>{
         var sortString = this.TableOptionsService.toSortString(option);
         this.PaginationDataService.sort(this.pageName, sortString);
         this.TableOptionsService.toggleSort(this.pageName, option);
