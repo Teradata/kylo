@@ -63,6 +63,20 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @type {Object.<string, boolean>}
              */
             this.userMap = {};
+            /**
+             * Gets the title for the specified group.
+             *
+             * @param group the group
+             * @returns {string} the group title
+             */
+            this.getGroupTitle = function (group) {
+                if (angular.isDefined(_this.groupMap[group]) && angular.isString(_this.groupMap[group].title)) {
+                    return _this.groupMap[group].title;
+                }
+                else {
+                    return group;
+                }
+            };
             $scope.$watch(function () { return _this.$error; }, function () {
                 _this.isValid = _.reduce(_this.$error, function (memo, value) {
                     return memo && !value;
@@ -103,21 +117,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             else {
                 var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
                 return (nameIndex > -1) ? group.substr(nameIndex, safeQuery.length) : this.groupSearchText;
-            }
-        };
-        ;
-        /**
-         * Gets the title for the specified group.
-         *
-         * @param group the group
-         * @returns {string} the group title
-         */
-        UserDetailsController.prototype.getGroupTitle = function (group) {
-            if (angular.isDefined(this.groupMap[group]) && angular.isString(this.groupMap[group].title)) {
-                return this.groupMap[group].title;
-            }
-            else {
-                return group;
             }
         };
         ;

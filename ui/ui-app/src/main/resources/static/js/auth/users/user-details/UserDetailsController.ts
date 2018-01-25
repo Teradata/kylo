@@ -142,7 +142,7 @@ export default class UserDetailsController implements ng.IComponentController {
          * @param group the group
          * @returns {string} the group title
          */
-        getGroupTitle(group:any) {
+        getGroupTitle=(group:any)=> {
             if (angular.isDefined(this.groupMap[group]) && angular.isString(this.groupMap[group].title)) {
                 return this.groupMap[group].title;
             } else {
@@ -228,6 +228,7 @@ export default class UserDetailsController implements ng.IComponentController {
                             this.model = user;
                             this.loading = false;
                         });
+                       
             } else {
                 this.onEdit();
                 this.isEditable = true;
