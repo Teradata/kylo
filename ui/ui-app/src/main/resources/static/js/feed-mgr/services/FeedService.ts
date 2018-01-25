@@ -798,6 +798,38 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     return response.data;
                 });
         },
+        
+        
+        getFeedVersions: function (feedId: string) {
+            var successFn = function (response: any) {
+                return response.data;
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+        },
+        
+        getFeedVersion: function (feedId: string, versionId: string) {
+            var successFn = function (response: any) {
+                return response.data;
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+        },
+        
+        diffFeedVersions: function (feedId: string, versionId1: string, versionId2: string) {
+            var successFn = function (response: any) {
+                return response.data;
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+        },
+
         /**
          * check if the user has access on an entity
          * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
@@ -840,9 +872,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             }
         }
     } as any;
+    
     data.init();
+    
     return data;
-
 }
 
 /**

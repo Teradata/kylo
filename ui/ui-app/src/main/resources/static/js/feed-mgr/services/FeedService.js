@@ -734,6 +734,38 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     return response.data;
                 });
             },
+            
+            
+            getFeedVersions: function (feedId) {
+                var successFn = function (response) {
+                    return response.data;
+                }
+                var errorFn = function (err) {
+                    console.log('ERROR ', err)
+                }
+                return $http.get(RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+            },
+            
+            getFeedVersion: function (feedId, versionId) {
+                var successFn = function (response) {
+                    return response.data;
+                }
+                var errorFn = function (err) {
+                    console.log('ERROR ', err)
+                }
+                return $http.get(RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+            },
+            
+            diffFeedVersions: function (feedId, versionId1, versionId2) {
+                var successFn = function (response) {
+                    return response.data;
+                }
+                var errorFn = function (err) {
+                    console.log('ERROR ', err)
+                }
+                return $http.get(RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+            },
+
             /**
              * check if the user has access on an entity
              * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user

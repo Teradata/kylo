@@ -22,45 +22,52 @@
 <!-- Feed definition -->
         
 <vertical-section-layout section-title="Feed Definition">
+
+    <div layout="row" class="layout-padding-top-bottom">
+        <span flex="25" class="property-name">Compare versions:</span>
+        <select ng-model="vm.leftSelection" ng-options="v.name for v in vm.leftVersions" />
+        <select ng-model="vm.rightSelection" ng-options="v.name for v in vm.rightVersions" />
+    </div>
+
     <readonly-section>
         <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Feed Name</span>
-            
+            http://marketplace.eclipse.org/marketplace-client-intro?mpc_install=3037133
             <div flex>
-                {{vm.model.feedName}}
+                {{vm.left.feedName}}
             </div>
             <div flex>
-                {{vm.model.feedName}}
+                {{vm.right.feedName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">System Name</span>
 
             <div flex>
-                {{vm.model.systemFeedName}}
+                {{vm.left.systemFeedName}}
             </div>
             <div flex>
-                {{vm.model.systemFeedName}}
+                {{vm.right.systemFeedName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Description</span>
 
             <div flex>
-                {{vm.model.description}}
+                {{vm.left.description}}
             </div>
             <div flex>
-                {{vm.model.description}}
+                {{vm.right.description}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Feed Type</span>
 
             <div flex>
-                {{vm.model.templateName}}
+                {{vm.left.templateName}}
             </div>
             <div flex>
-                {{vm.model.templateName}}
+                {{vm.right.templateName}}
             </div>
         </div>
         <div layout="row" class="layout-padding-top-bottom">
@@ -88,11 +95,11 @@
                 <span flex="25" class="property-name">Source</span>
 
                 <div flex>
-                    {{vm.model.inputProcessor.name}}
+                    {{vm.left.inputProcessor.name}}
                 </div>
             </div>
                 <div flex>
-                    {{vm.model.inputProcessor.name}}
+                    {{vm.right.inputProcessor.name}}
                 </div>
             </div>
 
@@ -149,30 +156,30 @@
                 <span flex="25" class="property-name">Data Owner</span>
 
                 <div flex>
-                    {{vm.model.dataOwner}}
+                    {{vm.left.dataOwner}}
                 </div>
                 <div flex>
-                    {{vm.model.dataOwner}}
+                    {{vm.right.dataOwner}}
                 </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom">
                 <span flex="25" class="property-name">Tags</span>
 
                 <div flex>
-                    {{vm.model.tags | join: ',':'name'}}
+                    {{vm.left.tags | join: ',':'name'}}
                 </div>
                 <div flex>
-                    {{vm.model.tags | join: ',':'name'}}
+                    {{vm.right.tags | join: ',':'name'}}
                 </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
                 <span flex="25" class="property-name">Hadoop Security Groups</span>
 
                 <div flex>
-                    {{vm.model.securityGroups | join: ',':'name'}}
+                    {{vm.left.securityGroups | join: ',':'name'}}
                 </div>
                 <div flex>
-                    {{vm.model.securityGroups | join: ',':'name'}}
+                    {{vm.right.securityGroups | join: ',':'name'}}
                 </div>
             </div>
             <thinkbig-property-list properties="vm.model.userProperties"></thinkbig-property-list>
@@ -189,30 +196,30 @@
                 <span flex="25" class="property-name">Strategy</span>
     
                 <div flex>
-                    {{vm.model.schedule.schedulingStrategy}}
+                    {{vm.left.schedule.schedulingStrategy}}
                 </div>
                 <div flex>
-                    {{vm.model.schedule.schedulingStrategy}}
+                    {{vm.right.schedule.schedulingStrategy}}
                 </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
                 <span flex="25" class="property-name">Period</span>
     
                 <div flex>
-                    {{vm.model.schedule.schedulingPeriod}}
+                    {{vm.left.schedule.schedulingPeriod}}
                 </div>
                 <div flex>
-                    {{vm.model.schedule.schedulingPeriod}}
+                    {{vm.right.schedule.schedulingPeriod}}
                 </div>
             </div>
             <div layout="row" class="layout-padding-top-bottom" ng-if="vm.isClustered && vm.supportsExecutionNode">
                 <span flex="25" class="property-name">Execution Node</span>
 
                 <div flex>
-                    {{vm.model.schedule.executionNode}}
+                    {{vm.left.schedule.executionNode}}
                 </div>
                 <div flex>
-                    {{vm.model.schedule.executionNode}}
+                    {{vm.right.schedule.executionNode}}
                 </div>
             </div>
             <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
