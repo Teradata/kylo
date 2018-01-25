@@ -829,8 +829,8 @@
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
-    "dirPagination.tpl.All": "Все"
+    "dirPagination.tpl.All": "Все",
 
-
+    "views.SchedulerController.time-locale":"DD/MM/YYYY H:mm:ss"
 }
 
