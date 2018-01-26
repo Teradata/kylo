@@ -199,6 +199,19 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         }
     }
 
+    protected void resetFileSystem() throws IOException {
+        HdfsResources resources = hdfsResources.get();
+        Configuration conf = resources.configuration;
+        UserGroupInformation ugi = resources.userGroupInformation;
+        FileSystem fs = resources.fileSystem;
+        if (fs != null) {
+            fs.close();
+        }
+        fs = getFileSystemAsUser(conf,ugi);
+        resources = new HdfsResources(conf, fs, ugi);
+        hdfsResources.set(resources);
+    }
+
     @OnStopped
     public final void abstractOnStopped() {
         hdfsResources.set(new HdfsResources(null, null, null));

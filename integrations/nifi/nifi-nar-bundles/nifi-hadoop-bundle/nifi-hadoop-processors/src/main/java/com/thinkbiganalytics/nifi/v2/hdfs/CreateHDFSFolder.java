@@ -178,6 +178,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
         final Configuration conf = getConfiguration();
         FsPermission.setUMask(conf, new FsPermission(dfsUmask));
+        resetFileSystem();
     }
 
     @Override
