@@ -29,6 +29,7 @@ import com.google.common.cache.RemovalNotification;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.commons.io.serialization.ValidatingObjectInputStream;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
@@ -39,18 +40,16 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
@@ -157,13 +156,22 @@ public class FeedEventStatistics implements Serializable {
     /**
      * Count of the flows running by feed processor
      */
-    protected Map<String,AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
+    protected Map<String, AtomicLong> feedProcessorRunningFeedFlows = new ConcurrentHashMap<>();
+
+    /**
+     * Count of the flows running by feed processor
+     */
+    protected Set<String> changedFeedProcessorRunningFeedFlows = new HashSet<>();
+
+    protected AtomicBoolean feedProcessorRunningFeedFlowsChanged = new AtomicBoolean(false);
 
     /**
      * file location to persist this data if NiFi goes Down midstream
      * This value is set via the KyloPersistenetProvenanceEventRepository during initialization
      */
     private String backupLocation = "/opt/nifi/feed-event-statistics.gz";
+
+    private boolean deleteBackupAfterLoad = true;
 
     /**
      * Map of the NiFi Event to Nifi Class that should be skipped
@@ -221,16 +229,13 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean backup(String location) {
 
-        try {
+        try (FileOutputStream fos = new FileOutputStream(location);
+             GZIPOutputStream gz = new GZIPOutputStream(fos);
+             ObjectOutputStream oos = new ObjectOutputStream(gz)) {
             //cleanup any files that should be removed before backup
             detailedTrackingFlowFilesToDelete.cleanUp();
 
-            FileOutputStream fos = new FileOutputStream(location);
-            GZIPOutputStream gz = new GZIPOutputStream(fos);
-
-            ObjectOutputStream oos = new ObjectOutputStream(gz);
-
-            oos.writeObject(new FeedEventStatisticsData(this));
+            oos.writeObject(new FeedEventStatisticsDataV2(this));
             oos.close();
             return true;
 
@@ -246,11 +251,12 @@ public class FeedEventStatistics implements Serializable {
 
     public boolean loadBackup(String location) {
         FeedEventStatisticsData inStats = null;
-        try {
+        try (FileInputStream fin = new FileInputStream(location);
+             GZIPInputStream gis = new GZIPInputStream(fin);
+             ValidatingObjectInputStream ois = new ValidatingObjectInputStream(gis)) {
 
-            FileInputStream fin = new FileInputStream(location);
-            GZIPInputStream gis = new GZIPInputStream(fin);
-            ObjectInputStream ois = new ObjectInputStream(gis);
+            ois.accept(FeedEventStatisticsDataV2.class, FeedEventStatisticsData.class);
+            ois.accept("java.lang.*", "java.util.*", "[Ljava.lang.*", "[Ljava.util.*");
             inStats = (FeedEventStatisticsData) ois.readObject();
             ois.close();
 
@@ -264,13 +270,17 @@ public class FeedEventStatistics implements Serializable {
         if (inStats != null) {
             boolean success = this.load(inStats);
             //DELETE backup
-            try {
-                File f = new File(location);
-                if (f.exists()) {
-                    f.delete();
-                }
-            } catch (Exception e) {
+            if (deleteBackupAfterLoad) {
+                try {
+                    File f = new File(location);
+                    if (f.exists()) {
+                        if (!f.delete()) {
+                            throw new RuntimeException("Error deleting file " + f.getName());
+                        }
+                    }
+                } catch (Exception e) {
 
+                }
             }
             return success;
         }
@@ -323,11 +333,20 @@ public class FeedEventStatistics implements Serializable {
             feedFlowProcessing.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new AtomicInteger(0)).incrementAndGet();
             feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
 
-            feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(),processorId -> new AtomicLong(0)).incrementAndGet();
-
+            feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(), processorId -> new AtomicLong(0)).incrementAndGet();
+            feedProcessorRunningFeedFlowsChanged.set(true);
+            changedFeedProcessorRunningFeedFlows.add(event.getComponentId());
             //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
         }
+    }
 
+    public void markFeedProcessorRunningFeedFlowsUnchanged() {
+        feedProcessorRunningFeedFlowsChanged.set(false);
+        changedFeedProcessorRunningFeedFlows.clear();
+    }
+
+    public boolean isFeedProcessorRunningFeedFlowsChanged() {
+        return feedProcessorRunningFeedFlowsChanged.get();
     }
 
     /**
@@ -522,23 +541,49 @@ public class FeedEventStatistics implements Serializable {
 
     /**
      * Return the count of running feed flow files for a given starting processor id
+     *
      * @param feedProcessorId the starting feed processor id
      * @return the count of running feed flows
      */
-    public Long getRunningFeedFlows(String feedProcessorId){
+    public Long getRunningFeedFlows(String feedProcessorId) {
         return feedProcessorRunningFeedFlows.getOrDefault(feedProcessorId, new AtomicLong(0L)).get();
     }
 
-    public Map<String,Long> getRunningFeedFlows(){
+    public Map<String, Long> getRunningFeedFlows() {
         return feedProcessorRunningFeedFlows.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue().get()));
     }
 
-    private void decrementRunningProcessorFeedFlows(String feedFlowFile){
+    public Map<String, Long> getRunningFeedFlowsChanged() {
+        return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId, processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
+    }
+
+    public Map<String, Long> getRunningFeedFlows(Set<String> feedNames) {
+        return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId, processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
+    }
+
+    /**
+     * Get the Running count by processorId, ensuring the feedProcessorIds exist in the map
+     */
+    public Map<String, Long> getRunningFeedFlowsForFeed(Set<String> feedProcessorIds) {
+        Map<String, Long> changedRunningFlows = getRunningFeedFlowsChanged();
+        if (feedProcessorIds != null) {
+            feedProcessorIds.stream().filter(id -> !changedRunningFlows.containsKey(id)).forEach(id -> {
+                AtomicLong runningCount = feedProcessorRunningFeedFlows.getOrDefault(id, new AtomicLong(0L));
+                changedRunningFlows.put(id, runningCount.longValue());
+            });
+        }
+        return changedRunningFlows;
+    }
+
+
+    private void decrementRunningProcessorFeedFlows(String feedFlowFile) {
         String feedProcessor = feedFlowFileIdToFeedProcessorId.get(feedFlowFile);
-        if(feedProcessor != null){
+        if (feedProcessor != null) {
             AtomicLong runningCount = feedProcessorRunningFeedFlows.get(feedProcessor);
-            if( runningCount != null && runningCount.get() >=1) {
+            if (runningCount != null && runningCount.get() >= 1) {
                 runningCount.decrementAndGet();
+                feedProcessorRunningFeedFlowsChanged.set(true);
+                changedFeedProcessorRunningFeedFlows.add(feedProcessor);
             }
         }
     }
@@ -550,7 +595,6 @@ public class FeedEventStatistics implements Serializable {
             feedFlowFileEndTime.remove(feedFlowFile);
             feedFlowFileStartTime.remove(feedFlowFile);
             feedFlowProcessing.remove(feedFlowFile);
-
 
             feedFlowFileIdToFeedProcessorId.remove(feedFlowFile);
         }
@@ -637,6 +681,9 @@ public class FeedEventStatistics implements Serializable {
         checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId);
     }
 
+    public void setDeleteBackupAfterLoad(boolean deleteBackupAfterLoad) {
+        this.deleteBackupAfterLoad = deleteBackupAfterLoad;
+    }
 
     @Override
     public String toString() {

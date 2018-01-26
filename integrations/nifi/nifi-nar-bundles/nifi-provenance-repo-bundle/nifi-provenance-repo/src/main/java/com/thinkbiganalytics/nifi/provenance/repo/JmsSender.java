@@ -24,8 +24,7 @@ import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventJmsWriter;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV3;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.slf4j.Logger;
@@ -46,14 +45,14 @@ public class JmsSender {
 
     List<ProvenanceEventRecordDTO> eventsToSend = null;
     List<AggregatedFeedProcessorStatistics> statsToSend = null;
-    Map<String,Long> processorIdRunningFlows = new HashMap<>();
+    Map<String, Long> processorIdRunningFlows = new HashMap<>();
 
-    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend, Map<String,Long> processorIdRunningFlows) {
+    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend, Map<String, Long> processorIdRunningFlows) {
         this.eventsToSend = eventsToSend;
         if (statsToSend != null) {
             this.statsToSend = new ArrayList<>(statsToSend);
         }
-        if(processorIdRunningFlows != null){
+        if (processorIdRunningFlows != null) {
             this.processorIdRunningFlows = processorIdRunningFlows;
         }
     }
@@ -68,7 +67,7 @@ public class JmsSender {
             }
 
             if (statsToSend != null && !statsToSend.isEmpty()) {
-                AggregatedFeedProcessorStatisticsHolderV2 statsHolder = new AggregatedFeedProcessorStatisticsHolderV2();
+                AggregatedFeedProcessorStatisticsHolderV3 statsHolder = new AggregatedFeedProcessorStatisticsHolderV3();
                 statsHolder.setProcessorIdRunningFlows(processorIdRunningFlows);
                 statsHolder.setCollectionId(statsToSend.get(0).getCollectionId());
                 statsHolder.setFeedStatistics(statsToSend);

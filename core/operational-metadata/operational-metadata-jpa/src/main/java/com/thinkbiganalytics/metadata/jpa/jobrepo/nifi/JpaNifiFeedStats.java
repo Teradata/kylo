@@ -145,4 +145,15 @@ public class JpaNifiFeedStats implements NifiFeedStats {
             this.uuid = uuid;
         }
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("JpaNifiFeedStats{");
+        sb.append("feedName='").append(feedName).append('\'');
+        sb.append(", runningFeedFlows=").append(runningFeedFlows);
+        sb.append(", time=").append(time);
+        sb.append(", lastActivityTimestamp=").append(lastActivityTimestamp);
+        sb.append('}');
+        return sb.toString();
+    }
 }

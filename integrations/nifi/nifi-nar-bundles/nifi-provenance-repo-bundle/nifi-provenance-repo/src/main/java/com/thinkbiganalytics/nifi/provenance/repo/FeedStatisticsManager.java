@@ -89,7 +89,6 @@ public class FeedStatisticsManager {
     private ScheduledExecutorService jmsGatherEventsToSendService = Executors.newSingleThreadScheduledExecutor(gatherStatsThreadFactory);
 
 
-
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
         lock.lock();
         try {
@@ -122,7 +121,7 @@ public class FeedStatisticsManager {
             eventsToSend = feedStatisticsMap.values().stream().flatMap(stats -> stats.getEventsToSend().stream()).collect(Collectors.toList());
 
             final String collectionId = UUID.randomUUID().toString();
-            Map<String,Long> runningFlowsCount = new HashMap<>();
+            Map<String, Long> runningFlowsCount = new HashMap<>();
 
             for (FeedStatistics feedStatistics : feedStatisticsMap.values()) {
                 if (feedStatistics.hasStats()) {
@@ -148,12 +147,21 @@ public class FeedStatisticsManager {
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(),FeedEventStatistics.getInstance().getRunningFeedFlows());
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsForFeed(statsToSend.keySet()));
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
+            } else {
+                //if we are empty but the runningFlows have changed, then send off as well
+                if (FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged()) {
+                    JmsSender jmsSender = new JmsSender(null, null, FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                    this.jmsService.submit(new JmsSenderConsumer(jmsSender));
+                }
+
             }
 
 
         } finally {
+            FeedEventStatistics.getInstance().markFeedProcessorRunningFeedFlowsUnchanged();
+
             feedStatisticsMap.values().stream().forEach(stats -> stats.clear());
             lock.unlock();
         }
@@ -172,7 +180,7 @@ public class FeedStatisticsManager {
         lock.lock();
         sendJmsTimeMillis = interval;
         try {
-            if(gatherStatsScheduledFuture != null){
+            if (gatherStatsScheduledFuture != null) {
                 gatherStatsScheduledFuture.cancel(true);
             }
             initGatherStatisticsTimerThread(interval);
@@ -196,7 +204,7 @@ public class FeedStatisticsManager {
         Long runInterval = ConfigurationProperties.getInstance().getFeedProcessingRunInterval();
         this.sendJmsTimeMillis = runInterval;
         initGatherStatisticsTimerThread(runInterval);
-        log.info("Initialized Timer Thread to gather statistics and send events to JMS running every {} ms ",sendJmsTimeMillis);
+        log.info("Initialized Timer Thread to gather statistics and send events to JMS running every {} ms ", sendJmsTimeMillis);
     }
 
     //jms thread

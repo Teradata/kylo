@@ -87,14 +87,16 @@ public class StreamingFeedService {
                     if (feed != null && feed.isStream()) {
                         //update the job status
                         BatchJobExecution jobExecution = batchJobExecutionProvider.findLatestJobForFeed(feedName.get());
-                        if (state.equals(Feed.State.ENABLED)) {
-                            jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
-                            jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-                            jobExecution.setStartTime(DateTime.now());
-                        } else {
-                            jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
-                            jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
-                            jobExecution.setEndTime(DateTime.now());
+                        if (jobExecution != null) {
+                            if (state.equals(Feed.State.ENABLED)) {
+                                jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
+                                jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
+                                jobExecution.setStartTime(DateTime.now());
+                            } else {
+                                jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
+                                jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+                                jobExecution.setEndTime(DateTime.now());
+                            }
                         }
                         batchJobExecutionProvider.save(jobExecution);
                     }

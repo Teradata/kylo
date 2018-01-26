@@ -397,8 +397,11 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
         OpsManagerFeed feed = this.findByName(feedName);
         if (feed.isStream()) {
             NifiFeedStats feedStats = metadataAccess.read(() -> nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName));
-            if (feedStats != null) {
+            if (feedStats != null && feedStats.getLastActivityTimestamp() != null) {
                 lastFeedTime = new DateTime(feedStats.getLastActivityTimestamp());
+            }
+            else {
+                log.warn("feedStats.getLastActivityTimestamp is null for streaming feed {} ",feedName);
             }
         } else {
             BatchJobExecution jobExecution = metadataAccess.read(() -> batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName));
