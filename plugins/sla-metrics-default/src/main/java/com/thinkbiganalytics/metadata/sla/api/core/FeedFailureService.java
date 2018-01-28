@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * #L%
  */
 
+import com.thinkbiganalytics.app.ServicesApplicationStartup;
+import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
@@ -31,11 +33,13 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import static com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus.FAILED;
@@ -46,6 +50,8 @@ import static com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.J
 @Component
 public class FeedFailureService {
 
+    @Inject
+    ServicesApplicationStartup servicesApplicationStartup;
 
     @Inject
     private BatchJobExecutionProvider batchJobExecutionProvider;
@@ -59,6 +65,7 @@ public class FeedFailureService {
     @Inject
     private NifiFeedProcessorStatisticsProvider nifiFeedProcessorStatisticsProvider;
 
+
     public static LastFeedJob EMPTY_JOB = new LastFeedJob("empty", DateTime.now(), true);
 
     /**
@@ -66,33 +73,78 @@ public class FeedFailureService {
      */
     private Map<String, LastFeedJob> lastAssessedFeedFailureMap = new HashMap<>();
 
-    public LastFeedJob findLastJob(String feedName){
-     return metadataAccess.read(() -> {
+    private FeedFailureServiceStatusStartupListener servicesApplicationStartupListener = new FeedFailureServiceStatusStartupListener();
 
-         OpsManagerFeed feed = feedProvider.findByName(feedName);
-         if (feed.isStream()) {
-             List<NifiFeedProcessorStats> latestStats = nifiFeedProcessorStatisticsProvider.findLatestFinishedStats(feedName);
-             Optional<NifiFeedProcessorStats> total = latestStats.stream().reduce((a, b) -> {
-                 a.setFailedCount(a.getFailedCount() + b.getFailedCount());
-                 return a;
-             });
-             if (total.isPresent()) {
-                 NifiFeedProcessorStats stats = total.get();
-                 boolean success = stats.getFailedCount() == 0;
-                 return new LastFeedJob(feedName, stats.getMinEventTime(), success);
-             } else {
-                 return EMPTY_JOB;
-             }
-         } else {
-             BatchJobExecution latestJob = batchJobExecutionProvider.findLatestFinishedJobForFeed(feedName);
-             return latestJob != null ? new LastFeedJob(feedName, latestJob.getEndTime(), !FAILED.equals(latestJob.getStatus())) : EMPTY_JOB;
-         }
-     }, MetadataAccess.SERVICE);
 
+    private Map<String, LastFeedJob> lastAssessedFeedMap = new HashMap<>();
+
+
+    @PostConstruct
+    private void init() {
+        servicesApplicationStartup.subscribe(servicesApplicationStartupListener);
+    }
+
+
+    /**
+     * Find the latest Job, first looking for any failures between the last time this service ran, and now.
+     *
+     * @param feedName feed to check
+     */
+    public LastFeedJob findLatestJob(String feedName) {
+        LastFeedJob lastFeedJob = metadataAccess.read(() -> {
+
+            LastFeedJob lastAssessedJob = lastAssessedFeedMap.getOrDefault(feedName, EMPTY_JOB);
+            DateTime lastAssessedTime = lastAssessedJob.getDateTime();
+            if (lastAssessedJob == EMPTY_JOB) {
+                //attempt to get jobs since the app started
+                lastAssessedTime = servicesApplicationStartupListener.getStartTime();
+            }
+
+            OpsManagerFeed feed = feedProvider.findByName(feedName);
+            if (feed.isStream()) {
+                List<NifiFeedProcessorStats> latestStats = nifiFeedProcessorStatisticsProvider.findLatestFinishedStatsSince(feedName, lastAssessedTime);
+                Optional<NifiFeedProcessorStats> total = latestStats.stream().reduce((a, b) -> {
+                    a.setFailedCount(a.getFailedCount() + b.getFailedCount());
+                    if (b.getMinEventTime().isAfter(a.getMinEventTime())) {
+                        a.setMinEventTime(b.getMinEventTime());
+                    }
+                    return a;
+                });
+                if (total.isPresent()) {
+                    NifiFeedProcessorStats stats = total.get();
+                    boolean success = stats.getFailedCount() == 0;
+                    return new LastFeedJob(feedName, stats.getMinEventTime(), success);
+                } else {
+                    return EMPTY_JOB;
+                }
+            } else {
+                List<? extends BatchJobExecution> latestJobs = batchJobExecutionProvider.findLatestFinishedJobForFeedSince(feedName, lastAssessedTime);
+
+                BatchJobExecution latestJob = latestJobs.stream().sorted(Comparator.comparing(BatchJobExecution::getEndTime).reversed())
+                    .filter(job -> FAILED.equals(job.getStatus()))
+                    .findFirst()
+                    .orElse(null);
+                if (latestJob == null) {
+                    //find the last job if there are no failures
+                    latestJob = latestJobs.stream().sorted(Comparator.comparing(BatchJobExecution::getEndTime).reversed())
+                        .findFirst().orElse(null);
+                    // if the set doesnt have anything attempt to get the latest job
+                    if (latestJob == null) {
+                        latestJob = batchJobExecutionProvider.findLatestFinishedJobForFeed(feedName);
+                    }
+                }
+
+                return latestJob != null ? new LastFeedJob(feedName, latestJob.getEndTime(), !FAILED.equals(latestJob.getStatus())) : EMPTY_JOB;
+
+            }
+        }, MetadataAccess.SERVICE);
+
+        lastAssessedFeedMap.put(feedName, lastFeedJob);
+        return lastFeedJob;
     }
 
     boolean isExistingFailure(LastFeedJob job) {
-        if(job.isFailure()){
+        if (job.isFailure()) {
             String feedName = job.getFeedName();
             LastFeedJob lastAssessedFailure = lastAssessedFeedFailureMap.get(feedName);
             if (lastAssessedFailure == null) {
@@ -140,10 +192,34 @@ public class FeedFailureService {
             return dateTime != null && dateTime.isAfter(time);
         }
 
-        public boolean isFailure(){
+        public boolean isFailure() {
             return !this.success;
         }
     }
 
 
+    private class FeedFailureServiceStatusStartupListener implements ServicesApplicationStartupListener {
+
+        DateTime startTime;
+
+        @Override
+        public void onStartup(DateTime startTime) {
+            this.startTime = startTime;
+        }
+
+        public DateTime getStartTime() {
+            if (startTime == null) {
+                startTime = DateTime.now();
+            }
+            return startTime;
+        }
+    }
+
+    public MetadataAccess getMetadataAccess() {
+        return metadataAccess;
+    }
+
+    public void setMetadataAccess(MetadataAccess metadataAccess) {
+        this.metadataAccess = metadataAccess;
+    }
 }

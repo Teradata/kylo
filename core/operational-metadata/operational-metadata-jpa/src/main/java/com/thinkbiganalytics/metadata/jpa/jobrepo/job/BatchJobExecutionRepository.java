@@ -84,6 +84,14 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
            + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
            + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
            + "where feed.name = :feedName "
+           + "and job.endTimeMillis > :since "
+           + "order by job.jobExecutionId DESC ")
+    List<JpaBatchJobExecution> findLatestFinishedJobsForFeedSince(@Param("feedName") String feedName, @Param("since")Long since);
+
+    @Query("select job from JpaBatchJobExecution as job "
+           + "join JpaBatchJobInstance  jobInstance on jobInstance.jobInstanceId = job.jobInstance.jobInstanceId "
+           + "join JpaOpsManagerFeed  feed on feed.id = jobInstance.feed.id "
+           + "where feed.name = :feedName "
            + "and job.startTimeMillis = (SELECT max(job2.startTimeMillis)"
            + "     from JpaBatchJobExecution as job2 "
            + "join JpaBatchJobInstance  jobInstance2 on jobInstance2.jobInstanceId = job2.jobInstance.jobInstanceId "

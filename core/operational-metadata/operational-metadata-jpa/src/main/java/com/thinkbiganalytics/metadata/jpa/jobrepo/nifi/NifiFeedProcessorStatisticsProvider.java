@@ -244,15 +244,22 @@ public class NifiFeedProcessorStatisticsProvider implements com.thinkbiganalytic
 
     @Override
     public List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName) {
+      return findLatestFinishedStatsSince(feedName,null);
+    }
+
+    public List<NifiFeedProcessorStats> findLatestFinishedStatsSince(String feedName, DateTime latestTime) {
         if (accessController.isEntityAccessControlled()) {
-            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithAcl(feedName).getDateProjection();
+            if(latestTime == null) {
+                latestTime = statisticsRepository.findLatestFinishedTimeWithAcl(feedName).getDateProjection();
+            }
             return statisticsRepository.findLatestFinishedStatsWithAcl(feedName, latestTime);
         } else {
-            DateTime latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
+            if(latestTime == null) {
+                latestTime = statisticsRepository.findLatestFinishedTimeWithoutAcl(feedName).getDateProjection();
+            }
             return statisticsRepository.findLatestFinishedStatsWithoutAcl(feedName, latestTime);
         }
     }
-
 
     @Override
     public List<? extends NifiFeedProcessorStats> save(List<? extends NifiFeedProcessorStats> stats) {

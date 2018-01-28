@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,12 +21,8 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
@@ -48,7 +44,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.quartz.CronExpression;
 import org.testng.Assert;
 
-import java.security.Principal;
 import java.text.ParseException;
 
 import static org.mockito.Matchers.any;
@@ -65,7 +60,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private FeedOnTimeArrivalMetric metric;
 
     @Mock
-    private BatchJobExecutionProvider jobExecutionProvider;
+    private OpsManagerFeedProvider feedProvider;
 
     @Mock
     private MetricAssessmentBuilder builder;
@@ -99,8 +94,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     @Test
     public void testMinuteBeforeLate() throws ParseException {
         DateTime feedEnd = this.lateTime.minusMinutes(1);
-        BatchJobExecution feed = createFeedJobExecution(feedEnd);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(feedEnd);
 
         this.assessor.assess(metric, this.builder);
 
@@ -130,8 +124,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time not within this window
         DateTime lastFeedTime = new DateTime().minusWeeks(2);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
 
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
@@ -162,8 +155,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 3)  - (now -3) + lateTime)
         //Some Feed End Time to a time within this window
         DateTime lastFeedTime = new DateTime(previousFireTime).plus(lateTimeGracePeriod - 1);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
@@ -193,8 +185,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         //window is = (now - 4)  - (now -4) + lateTimeGracePeriod)
         //Some Feed End Time to a time outside the window
         DateTime lastFeedTime = new DateTime(previousFireTime).minusHours(lateTimeGracePeriod + 1);
-        BatchJobExecution feed = createFeedJobExecution(lastFeedTime);
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(lastFeedTime);
         this.metric = new FeedOnTimeArrivalMetric("feed", cron, Period.hours(lateTimeGracePeriod));
 
         this.assessor.assess(metric, this.builder);
@@ -207,12 +198,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testMinuteAfterLate() throws ParseException {
         DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
-        BatchJobExecution feed = createFeedJobExecution(feedEnd);
 
         PowerMockito.mockStatic(DateTime.class);
         BDDMockito.given(DateTime.now()).willReturn(now);
 
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(feed);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(feedEnd);
 
         this.assessor.assess(metric, this.builder);
         // data is late by 1 min, but it has a 4 hr grace period
@@ -222,7 +212,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testFeedNotFound() throws ParseException {
-        when(this.jobExecutionProvider.findLatestCompletedJobForFeed("feed")).thenReturn(null);
+        when(this.feedProvider.getLastActiveTimeStamp("feed")).thenReturn(null);
         this.assessor.assess(metric, this.builder);
 
         verify(this.builder).result(AssessmentResult.WARNING);
@@ -235,69 +225,5 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         return feed;
     }
 
-
-    public class MockMetadataAccess implements MetadataAccess {
-
-        public MockMetadataAccess() {
-
-        }
-
-        @Override
-        public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public void commit(MetadataAction cmd, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
-
-        @Override
-        public void commit(MetadataAction cmd, MetadataRollbackAction rollbackAction, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
-
-        @Override
-        public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public void read(MetadataAction cmd, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
-    }
 
 }

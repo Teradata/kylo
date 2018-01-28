@@ -109,6 +109,8 @@ public interface NifiFeedProcessorStatisticsProvider {
 
     List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName);
 
+    List<NifiFeedProcessorStats> findLatestFinishedStatsSince(String feedName, DateTime latestTime);
+
     /**
      * allow for specifying a time to look back from when querying for statistical information
      */

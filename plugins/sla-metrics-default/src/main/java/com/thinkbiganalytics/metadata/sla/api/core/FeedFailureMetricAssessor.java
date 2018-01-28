@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.sla.api.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -50,21 +50,28 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
 
         String feedName = metric.getFeedName();
 
-        FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLastJob(feedName);
-        if(!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)){
+        FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLatestJob(feedName);
+        if (!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)) {
             DateTime lastTime = lastFeedJob.getDateTime();
 
             //compare with the latest feed time, alerts with same timestamps will not be raised
             builder.compareWith(feedName, lastTime.getMillis());
 
-            if (feedFailureService.isExistingFailure(lastFeedJob)) {
-                String msg = "Feed " + feedName + " is still failed.  The last job failed at " + lastFeedJob.getDateTime();
-                builder.message(msg).result(AssessmentResult.WARNING);
-            } else if (lastFeedJob.isFailure()) {
-                builder.message("Feed " + feedName + " has failed ").result(AssessmentResult.FAILURE);
+            if (lastFeedJob.isFailure()) {
+                builder.message("Feed " + feedName + " has failed on " + lastFeedJob.getDateTime()).result(AssessmentResult.FAILURE);
             } else {
-                builder.message("Feed " + feedName + " has succeeded ").result(AssessmentResult.SUCCESS);
+                builder.message("Feed " + feedName + " has succeeded on " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
             }
+        } else {
+            builder.message("No Jobs found for feed " + feedName + " since " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
         }
+    }
+
+    public FeedFailureService getFeedFailureService() {
+        return feedFailureService;
+    }
+
+    public void setFeedFailureService(FeedFailureService feedFailureService) {
+        this.feedFailureService = feedFailureService;
     }
 }
