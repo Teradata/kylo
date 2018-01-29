@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
@@ -321,6 +322,17 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     @Override
+    public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {
+        return getFeedData().map(d -> d.getCurrentHistoryReindexingStatus()).orElse(null);
+    }
+
+    @Override
+    public Feed updateHistoryReindexingStatus(HistoryReindexingStatus historyReindexingStatus) {
+        getFeedData().ifPresent(d -> d.updateHistoryReindexingStatus(historyReindexingStatus));
+        return this;
+    }
+
+    @Override
     public List<InitializationStatus> getInitHistory() {
         return getFeedData().map(d -> d.getInitHistory()).orElse(Collections.emptyList());
     }
@@ -565,5 +577,19 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         public FeedId(Serializable ser) {
             super(ser);
         }
+    }
+
+    @Override
+    public String getAllowIndexing() {
+        Optional<FeedSummary> feedSummary = getFeedSummary();
+        if (feedSummary.isPresent()) {
+          return String.valueOf(feedSummary.get().getProperty(FeedSummary.ALLOW_INDEXING));
+        }
+        return null;
+    }
+
+    @Override
+    public void setAllowIndexing(String allowIndexing) {
+        getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.ALLOW_INDEXING, allowIndexing));
     }
 }

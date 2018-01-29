@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
@@ -44,7 +45,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 /**
  * A feed is a specification for how data should flow into and out of a system.
  *
- * @param  the type of parent category
  */
 public interface Feed extends Propertied, AccessControlled, Serializable {
 
@@ -72,6 +72,10 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     void updateInitStatus(InitializationStatus status);
 
+    HistoryReindexingStatus getCurrentHistoryReindexingStatus();
+
+    Feed updateHistoryReindexingStatus(HistoryReindexingStatus historyReindexingStatus);
+
     List<InitializationStatus> getInitHistory();
 
     FeedPrecondition getPrecondition();
@@ -87,6 +91,10 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
     boolean addUsedByFeed(Feed feed);
 
     boolean removeUsedByFeed(Feed feed);
+
+    String getAllowIndexing();
+
+    void setAllowIndexing(String allowIndexing);
 
     Category getCategory();
 

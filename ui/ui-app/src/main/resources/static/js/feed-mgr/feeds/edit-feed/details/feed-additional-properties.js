@@ -98,6 +98,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             copy.dataOwner = self.editModel.dataOwner;
             copy.userProperties = self.editModel.userProperties;
             copy.securityGroups = self.editModel.securityGroups;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
 
             FeedService.saveFeedModel(copy).then(function(response) {
                 FeedService.hideFeedSavingDialog();
@@ -107,6 +109,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
                 self.model.dataOwner = self.editModel.dataOwner;
                 self.model.userProperties = self.editModel.userProperties;
                 self.model.securityGroups = self.editModel.securityGroups;
+                //Get the updated value from the server.
+                self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, function(response) {
                 FeedService.hideFeedSavingDialog();
                 FeedService.buildErrorData(self.model.feedName, response);

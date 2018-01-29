@@ -18,7 +18,7 @@
  * #L%
  */
 define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-    angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog", function ($mdDialog, $filter) {
+    angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog", "$filter", function ($mdDialog, $filter) {
 
         function parseNifiFeedForErrors(nifiFeed, errorMap) {
             var count = 0;

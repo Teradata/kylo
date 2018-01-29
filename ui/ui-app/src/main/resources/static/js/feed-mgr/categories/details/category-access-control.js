@@ -88,6 +88,7 @@ define(['angular', 'feed-mgr/categories/module-name'], function (angular, module
             model.roleMemberships = self.editModel.roleMemberships;
             model.feedRoleMemberships = self.editModel.feedRoleMemberships;
             model.owner = self.editModel.owner;
+            model.allowIndexing = self.editModel.allowIndexing;
             EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
             EntityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
 

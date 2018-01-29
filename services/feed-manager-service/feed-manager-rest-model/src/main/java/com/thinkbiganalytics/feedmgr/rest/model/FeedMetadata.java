@@ -154,6 +154,16 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
      */
     private Map<String, Object> tableOption;
 
+    private String allowIndexing = "Y";
+    private String historyReindexingStatus = "";
+
+    public String getHistoryReindexingStatus() {
+        return historyReindexingStatus;
+    }
+
+    public void setHistoryReindexingStatus(String historyReindexingStatus) {
+        this.historyReindexingStatus = historyReindexingStatus;
+    }
 
     public FeedMetadata() {
     }
@@ -264,6 +274,14 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
 
     public void setSystemFeedName(String systemFeedName) {
         this.systemFeedName = systemFeedName;
+    }
+
+    public String getAllowIndexing() {
+        return allowIndexing;
+    }
+
+    public void setAllowIndexing(String allowIndexing) {
+        this.allowIndexing = allowIndexing;
     }
 
     public TableSetup getTable() {
@@ -578,7 +596,9 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
             userDatasources,
             userProperties,
             version,
-            versionName
+            versionName,
+            allowIndexing,
+            historyReindexingStatus
         );
     }
 
@@ -626,7 +646,9 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
                 Objects.equals(userDatasources, other.userDatasources) &&
                 Objects.equals(userProperties, other.userProperties) &&
                 Objects.equals(version, other.version) &&
-                Objects.equals(versionName, other.versionName);
+                Objects.equals(versionName, other.versionName) &&
+                Objects.equals(allowIndexing, other.allowIndexing) &&
+                Objects.equals(historyReindexingStatus, other.historyReindexingStatus);
     }
 
     

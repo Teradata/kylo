@@ -277,11 +277,15 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
                 var copy = angular.copy(FeedService.editFeedModel);
                 copy.schedule = self.editModel.schedule;
                 copy.userProperties = null;
+                //Server may have updated value. Don't send via UI.
+                copy.historyReindexingStatus = undefined;
                 FeedService.saveFeedModel(copy).then(function (response) {
                     FeedService.hideFeedSavingDialog();
                     self.editableSection = false;
                     //save the changes back to the model
                     self.model.schedule = self.editModel.schedule;
+                    //Get the updated value from the server.
+                    self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                 }, function (response) {
                     FeedService.hideFeedSavingDialog();
                     FeedService.buildErrorData(self.model.feedName, response);

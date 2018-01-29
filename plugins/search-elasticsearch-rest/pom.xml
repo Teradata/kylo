@@ -65,9 +65,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-elasticsearch-index-provider</artifactId>
-      <version>${elasticsearchindexprovider.version}</version>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-modeshape-elasticsearch-index-provider</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -102,6 +102,16 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <artifactSet>
                 <excludes>
                   <exclude>org.slf4j:*</exclude>

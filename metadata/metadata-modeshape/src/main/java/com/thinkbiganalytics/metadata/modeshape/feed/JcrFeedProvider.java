@@ -498,6 +498,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
+    public List<Feed> getFeedsForDataHistoryReindexing() {
+        String query = "SELECT e.*\n"
+                       + "        FROM [tba:feed] as e\n"
+                       + "        JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e)\n"
+                       + "        JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e)\n"
+                       + "        JOIN [tba:historyReindexing] AS fh ON ISCHILDNODE(fh, fd)\n"
+                       + "        WHERE fh.[tba:reindexingStatus] = 'DIRTY'";
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
+            List<JcrFeed> jcrFeeds = JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+            List<Feed> feeds = new ArrayList<>();
+            if (jcrFeeds !=null) {
+                feeds.addAll(jcrFeeds);
+            }
+            return feeds;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get feeds for data history reindexing ", e);
+        }
+    }
+
+    @Override
     public List<Feed> getFeeds() {
         return findAll();
     }

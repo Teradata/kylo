@@ -41,6 +41,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
@@ -199,6 +200,12 @@ public class FeedModelTransform {
             feedMetadata.setDescription("");
         }
         domain.setDescription(feedMetadata.getDescription());
+        domain.setAllowIndexing(feedMetadata.getAllowIndexing());
+
+        if (StringUtils.isNotBlank(feedMetadata.getHistoryReindexingStatus())) {
+            domain.updateHistoryReindexingStatus(
+                new HistoryReindexingStatus(com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingState.valueOf(feedMetadata.getHistoryReindexingStatus())));
+        }
 
         feedMetadata.setId(domain.getId().toString());
 
@@ -278,7 +285,7 @@ public class FeedModelTransform {
     /**
      * Transforms the specified domain feed versions to a FeedVersions.
      *
-     * @param domain the Metadata feed
+     * @param feedId the feed id
      * @return the Feed Manager feed
      */
     @Nonnull
@@ -361,6 +368,8 @@ public class FeedModelTransform {
         feed.setFeedName(domain.getDisplayName());
         feed.setSystemFeedName(domain.getName());
         feed.setDescription(domain.getDescription());
+        feed.setAllowIndexing(domain.getAllowIndexing());
+        feed.setHistoryReindexingStatus(domain.getCurrentHistoryReindexingStatus().getHistoryReindexingState().toString());
         feed.setOwner(domain.getOwner() != null ? new User(domain.getOwner().getName()) : null);
         
         if (domain.getCreatedTime() != null) {

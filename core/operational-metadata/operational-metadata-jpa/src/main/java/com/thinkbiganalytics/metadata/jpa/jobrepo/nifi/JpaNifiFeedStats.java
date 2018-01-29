@@ -84,6 +84,10 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         this.feedId = feedId;
     }
 
+    public Boolean isFeedRunning() {
+        return getRunningFeedFlows() > 0L;
+    }
+
     @Override
     public Long getRunningFeedFlows() {
         if(runningFeedFlows == null){

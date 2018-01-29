@@ -21,6 +21,8 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
  */
 
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedDataHistoryReindexParams;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
@@ -75,5 +77,13 @@ public interface MetadataRecorder {
 
 
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
+
+    /**
+     * Update the history reindexing status of a feed
+     * @param feedId feed id for which status should be updated
+     * @param historyReindexingStatus The new {@link HistoryReindexingStatus}
+     * @returns {@link FeedDataHistoryReindexParams} updated status of feed and columns to index
+     */
+    FeedDataHistoryReindexParams updateFeedHistoryReindexing(String feedId, HistoryReindexingStatus historyReindexingStatus);
 
 }

@@ -50,7 +50,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             self.editModel.systemFeedName = copy.systemFeedName;
             self.editModel.description = copy.description;
             self.editModel.templateId = copy.templateId;
-        }
+            self.editModel.allowIndexing = copy.allowIndexing;
+        };
 
         this.onCancel = function() {
 
@@ -66,6 +67,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             copy.description = self.editModel.description;
             copy.templateId = self.editModel.templateId;
             copy.userProperties = null;
+            copy.allowIndexing = self.editModel.allowIndexing;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
 
             FeedService.saveFeedModel(copy).then(function (response) {
                 FeedService.hideFeedSavingDialog();
@@ -75,6 +79,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
                 self.model.systemFeedName = self.editModel.systemFeedName;
                 self.model.description = self.editModel.description;
                 self.model.templateId = self.editModel.templateId;
+                self.model.allowIndexing = self.editModel.allowIndexing;
+                //Get the updated value from the server.
+                self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
                 FeedService.buildErrorData(self.model.feedName, response);

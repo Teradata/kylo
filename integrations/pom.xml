@@ -18,6 +18,7 @@
     <module>nifi</module>
     <module>spark</module>
     <module>input-format</module>
+    <module>modeshape</module>
   </modules>
 
   <build>

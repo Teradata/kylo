@@ -28,10 +28,11 @@
         ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
     <md-checkbox
         class="data-policy-item-check-box"
-        ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker"
+        ng-model="policy.columnDef.updatedTracker" aria-label="Updated Tracker"
         ng-disabled="!(policy.columnDef.derivedDataType == 'date' || policy.columnDef.derivedDataType == 'timestamp')"></md-checkbox>
     <md-checkbox
         class="data-policy-item-check-box"
+        ng-disabled = "vm.shouldIndexingOptionsBeDisabled()"
         ng-model="policy.index" aria-label="Index" ng-click="vm.indexCheckAll.clicked(!policy.index)"></md-checkbox>
     <md-checkbox
         class="data-policy-item-check-box"
