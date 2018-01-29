@@ -89,13 +89,13 @@ public interface NifiFeedProcessorStatisticsRepository extends JpaRepository<Jpa
     @Query("select stats from JpaNifiFeedProcessorStats as stats "
            + " join JpaOpsManagerFeed as feed on feed.name = stats.feedName "
            + FeedOpsAccessControlRepository.JOIN_ACL_TO_FEED
-           + " where stats.minEventTime = :latestTime "
+           + " where stats.minEventTime > :latestTime "
            + " and stats.feedName = :feedName "
            + " and " + FeedOpsAccessControlRepository.WHERE_PRINCIPALS_MATCH)
     List<NifiFeedProcessorStats> findLatestFinishedStatsWithAcl(@Param("feedName") String feedName, @Param("latestTime") DateTime latestTime);
 
     @Query("select stats from JpaNifiFeedProcessorStats as stats "
-           + " where stats.minEventTime = :latestTime "
+           + " where stats.minEventTime > :latestTime "
            + " and stats.feedName = :feedName ")
     List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(@Param("feedName") String feedName, @Param("latestTime") DateTime latestTime);
 

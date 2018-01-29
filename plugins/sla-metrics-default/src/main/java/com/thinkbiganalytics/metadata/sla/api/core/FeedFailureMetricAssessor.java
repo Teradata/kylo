@@ -26,6 +26,8 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 
@@ -35,6 +37,10 @@ import javax.inject.Inject;
  * SLA assessor used to asses the {@link FeedFailedMetric} and violate the SLA if the feed fails
  */
 public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetric, Serializable> {
+
+
+    private static final Logger LOG = LoggerFactory.getLogger(FeedFailureMetricAssessor.class);
+
 
     @Inject
     private FeedFailureService feedFailureService;
@@ -51,18 +57,32 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         String feedName = metric.getFeedName();
 
         FeedFailureService.LastFeedJob lastFeedJob = feedFailureService.findLatestJob(feedName);
-        if (!lastFeedJob.equals(FeedFailureService.EMPTY_JOB)) {
+        LOG.debug("Assessing FeedFailureMetric for '{}'.  The Last Feed Job was: {} ",feedName,lastFeedJob);
+        if (!feedFailureService.isEmptyJob(lastFeedJob)) {
             DateTime lastTime = lastFeedJob.getDateTime();
 
             //compare with the latest feed time, alerts with same timestamps will not be raised
             builder.compareWith(feedName, lastTime.getMillis());
 
             if (lastFeedJob.isFailure()) {
-                builder.message("Feed " + feedName + " has failed on " + lastFeedJob.getDateTime()).result(AssessmentResult.FAILURE);
+                String message = "Feed " + feedName + " has failed on " + lastFeedJob.getDateTime();
+                if(lastFeedJob.getBatchJobExecutionId() != null){
+                    message +=". Batch Job ExecutionId: "+lastFeedJob.getBatchJobExecutionId();
+                }
+                LOG.debug(message);
+
+                builder.message(message).result(AssessmentResult.FAILURE);
             } else {
-                builder.message("Feed " + feedName + " has succeeded on " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
+                String message ="Feed " + feedName + " has succeeded on " + lastFeedJob.getDateTime();
+                if(lastFeedJob.getBatchJobExecutionId() != null){
+                    message +=". Batch Job ExecutionId: "+lastFeedJob.getBatchJobExecutionId();
+                }
+                LOG.debug(message);
+
+                builder.message(message).result(AssessmentResult.SUCCESS);
             }
         } else {
+            LOG.debug("FeedFailureMetric found an no recent jobs for '{}'. Returning SUCCESS ",feedName);
             builder.message("No Jobs found for feed " + feedName + " since " + lastFeedJob.getDateTime()).result(AssessmentResult.SUCCESS);
         }
     }

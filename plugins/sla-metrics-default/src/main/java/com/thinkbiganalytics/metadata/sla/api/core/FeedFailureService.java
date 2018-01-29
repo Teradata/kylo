@@ -31,6 +31,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStatisti
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorStats;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Comparator;
@@ -49,6 +51,7 @@ import static com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.J
  */
 @Component
 public class FeedFailureService {
+    private static final Logger LOG = LoggerFactory.getLogger(FeedFailureService.class);
 
     @Inject
     ServicesApplicationStartup servicesApplicationStartup;
@@ -65,8 +68,9 @@ public class FeedFailureService {
     @Inject
     private NifiFeedProcessorStatisticsProvider nifiFeedProcessorStatisticsProvider;
 
+    private static String EMPTY_FEED_JOB_NAME = "!!!EMPTY!!!";
 
-    public static LastFeedJob EMPTY_JOB = new LastFeedJob("empty", DateTime.now(), true);
+
 
     /**
      * Map with the Latest recorded failure that has been assessed by the FeedFailureMetricAssessor
@@ -85,6 +89,14 @@ public class FeedFailureService {
     }
 
 
+    public boolean isEmptyJob(LastFeedJob lastFeedJob){
+        return lastFeedJob.getFeedName().equals(EMPTY_FEED_JOB_NAME);
+    }
+
+    private LastFeedJob newEmptyFeedJob(DateTime dateTime){
+        return new LastFeedJob(EMPTY_FEED_JOB_NAME, dateTime, true);
+    }
+
     /**
      * Find the latest Job, first looking for any failures between the last time this service ran, and now.
      *
@@ -93,16 +105,19 @@ public class FeedFailureService {
     public LastFeedJob findLatestJob(String feedName) {
         LastFeedJob lastFeedJob = metadataAccess.read(() -> {
 
-            LastFeedJob lastAssessedJob = lastAssessedFeedMap.getOrDefault(feedName, EMPTY_JOB);
+            LastFeedJob lastAssessedJob = lastAssessedFeedMap.getOrDefault(feedName, newEmptyFeedJob(DateTime.now()));
+            LOG.debug("Feed failure service check.  LastAssessJob from map is {}",lastAssessedJob);
             DateTime lastAssessedTime = lastAssessedJob.getDateTime();
-            if (lastAssessedJob == EMPTY_JOB) {
+            if (isEmptyJob(lastAssessedJob)) {
                 //attempt to get jobs since the app started
                 lastAssessedTime = servicesApplicationStartupListener.getStartTime();
+                lastAssessedJob.setDateTime(lastAssessedTime);
             }
 
             OpsManagerFeed feed = feedProvider.findByName(feedName);
             if (feed.isStream()) {
                 List<NifiFeedProcessorStats> latestStats = nifiFeedProcessorStatisticsProvider.findLatestFinishedStatsSince(feedName, lastAssessedTime);
+                LOG.debug("Streaming Feed failure check for {}.  Found {} stats",feedName,latestStats.size());
                 Optional<NifiFeedProcessorStats> total = latestStats.stream().reduce((a, b) -> {
                     a.setFailedCount(a.getFailedCount() + b.getFailedCount());
                     if (b.getMinEventTime().isAfter(a.getMinEventTime())) {
@@ -110,20 +125,26 @@ public class FeedFailureService {
                     }
                     return a;
                 });
+                LastFeedJob lastJob = null;
                 if (total.isPresent()) {
                     NifiFeedProcessorStats stats = total.get();
                     boolean success = stats.getFailedCount() == 0;
-                    return new LastFeedJob(feedName, stats.getMinEventTime(), success);
-                } else {
-                    return EMPTY_JOB;
-                }
-            } else {
-                List<? extends BatchJobExecution> latestJobs = batchJobExecutionProvider.findLatestFinishedJobForFeedSince(feedName, lastAssessedTime);
+                     lastJob = new LastFeedJob(feedName, stats.getMinEventTime(), success);
 
+                } else {
+                     lastJob = new LastFeedJob(feedName, lastAssessedTime,true);
+                }
+                LOG.debug("{} stats for feed. Streaming Feed failure returning {}",total.isPresent() ? "Found":"Did not find any",lastJob);
+                return lastJob;
+            } else {
+
+                List<? extends BatchJobExecution> latestJobs = batchJobExecutionProvider.findLatestFinishedJobForFeedSince(feedName, lastAssessedTime);
+                LOG.debug("Batch Feed failure check for {}.  Found {} jobs",feedName,latestJobs != null ? latestJobs.size() : 0);
                 BatchJobExecution latestJob = latestJobs.stream().sorted(Comparator.comparing(BatchJobExecution::getEndTime).reversed())
                     .filter(job -> FAILED.equals(job.getStatus()))
                     .findFirst()
                     .orElse(null);
+
                 if (latestJob == null) {
                     //find the last job if there are no failures
                     latestJob = latestJobs.stream().sorted(Comparator.comparing(BatchJobExecution::getEndTime).reversed())
@@ -134,12 +155,16 @@ public class FeedFailureService {
                     }
                 }
 
-                return latestJob != null ? new LastFeedJob(feedName, latestJob.getEndTime(), !FAILED.equals(latestJob.getStatus())) : EMPTY_JOB;
+
+                LastFeedJob lastJob = latestJob != null ? new LastFeedJob(feedName, latestJob.getEndTime(), !FAILED.equals(latestJob.getStatus()),latestJob.getJobExecutionId()) : newEmptyFeedJob(lastAssessedTime);
+                LOG.debug("Batch Feed failure check returning {} for feed {}",lastJob,feedName);
+                return lastJob;
 
             }
         }, MetadataAccess.SERVICE);
 
         lastAssessedFeedMap.put(feedName, lastFeedJob);
+
         return lastFeedJob;
     }
 
@@ -169,11 +194,19 @@ public class FeedFailureService {
         private String feedName;
         private DateTime dateTime;
         private boolean success = false;
+        private Long batchJobExecutionId;
 
         public LastFeedJob(String feedName, DateTime dateTime, boolean success) {
             this.feedName = feedName;
             this.dateTime = dateTime;
             this.success = success;
+        }
+
+        public LastFeedJob(String feedName, DateTime dateTime, boolean success, Long batchJobExecutionId) {
+            this.feedName = feedName;
+            this.dateTime = dateTime;
+            this.success = success;
+            this.batchJobExecutionId = batchJobExecutionId;
         }
 
         public String getFeedName() {
@@ -188,12 +221,37 @@ public class FeedFailureService {
             return dateTime;
         }
 
+        public void setDateTime(DateTime dateTime){
+            this.dateTime = dateTime;
+        }
+
         public boolean isAfter(DateTime time) {
             return dateTime != null && dateTime.isAfter(time);
         }
 
         public boolean isFailure() {
             return !this.success;
+        }
+
+        public Long getBatchJobExecutionId() {
+            return batchJobExecutionId;
+        }
+
+        public void setBatchJobExecutionId(Long batchJobExecutionId) {
+            this.batchJobExecutionId = batchJobExecutionId;
+        }
+
+        @Override
+        public String toString() {
+            final StringBuilder sb = new StringBuilder("LastFeedJob{");
+            sb.append("feedName='").append(feedName).append('\'');
+            sb.append(", dateTime=").append(dateTime);
+            sb.append(", success=").append(success);
+            if(batchJobExecutionId != null) {
+                sb.append(", batchJobExecutionId=").append(batchJobExecutionId);
+            }
+            sb.append('}');
+            return sb.toString();
         }
     }
 
