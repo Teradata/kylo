@@ -1,12 +1,12 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-const moduleName = require('auth/module-name');
-
+//const moduleName = require('auth/module-name');
+import {moduleName} from "../../module-name";
 export interface IMyScope extends ng.IScope {
   model?: any;
   readOnly?: boolean;
 }
-export default class PermissionsTableController implements ng.IComponentController {
+export  class PermissionsTableController implements ng.IComponentController {
          /**
          * List of available actions to be displayed.
          * @type {Array.<ActionState>}
@@ -202,17 +202,7 @@ export default class PermissionsTableController implements ng.IComponentControll
     }
 */
 angular.module(moduleName).controller("PermissionsTableController",["$scope", "AccessControlService", PermissionsTableController]);
-                        /*  app.directive("customDirective", [ () => {
-     return {
-        restrict: "E",
-        controller:CustomDirectiveController,
-        controllerAs:'ctrl',
-        link:(scope,element,attributes,ctrl:CustomDirectiveController) => {
-           ctrl.$rootScope.text = "Injected $rootScope properly into controller class";
-        }
-     };
-  }]); */
-  angular.module(moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
+angular.module(moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
   [ () => { return {
             controller: "PermissionsTableController",
             controllerAs: "vm",

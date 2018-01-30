@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('auth/module-name');
     var PermissionsTableController = /** @class */ (function () {
         function PermissionsTableController($scope, AccessControlService) {
             var _this = this;
@@ -162,7 +161,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         ;
         return PermissionsTableController;
     }());
-    exports.default = PermissionsTableController;
+    exports.PermissionsTableController = PermissionsTableController;
     /*export function thinkbigPermissionsTable(): ng.IDirective
         {
             return {
@@ -178,18 +177,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             };
         }
     */
-    angular.module(moduleName).controller("PermissionsTableController", ["$scope", "AccessControlService", PermissionsTableController]);
-    /*  app.directive("customDirective", [ () => {
-return {
-restrict: "E",
-controller:CustomDirectiveController,
-controllerAs:'ctrl',
-link:(scope,element,attributes,ctrl:CustomDirectiveController) => {
-ctrl.$rootScope.text = "Injected $rootScope properly into controller class";
-}
-};
-}]); */
-    angular.module(moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
+    angular.module(module_name_1.moduleName).controller("PermissionsTableController", ["$scope", "AccessControlService", PermissionsTableController]);
+    angular.module(module_name_1.moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
     [function () {
             return {
                 controller: "PermissionsTableController",
