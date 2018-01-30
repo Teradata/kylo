@@ -5,12 +5,16 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             restrict: "EA",
             bindToController: {
             },
+            scope: {
+                versions: '=?'
+            },
             controllerAs: 'vm',
-            scope: {},
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-definition.html',
             controller: "FeedDefinitionController",
             link: function ($scope, element, attrs, controller) {
-
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
             }
 
         };
@@ -20,13 +24,16 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
 
         var self = this;
 
+        self.versions = $scope.versions;
         /**
-         * Indicates if the feed definitions may be edited.
+         * Indicates if the feed definitions may be edited. Editing is disabled if displaying Feed Versions
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
+        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
         this.editableSection = false;
 
         $scope.$watch(function(){
@@ -36,8 +43,20 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             if(self.model == null) {
                 self.model = angular.copy(FeedService.editFeedModel);
             }
-        })
+        });
 
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return FeedService.versionFeedModelDiff;
+            },function(newVal) {
+                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            });
+        }
 
         self.editModel = {};
 
@@ -84,9 +103,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             });
         };
 
+        this.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access && !self.model.view.generalInfo.disabled;
+            self.allowEdit = !self.versions && access && !self.model.view.generalInfo.disabled;
         });
     };
 

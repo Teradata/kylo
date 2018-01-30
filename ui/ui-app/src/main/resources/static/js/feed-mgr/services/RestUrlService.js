@@ -175,7 +175,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         }
         
         this.FEED_VERSIONS_DIFF_URL = function (feedId, verId1, verId2) {
-        		return self.FEED_VERSIONS_ID_URL(feedId, verId1) + "/diff/" + verId;
+        		return self.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
         }
 
         this.FEED_PROFILE_STATS_URL = function (feedId) {

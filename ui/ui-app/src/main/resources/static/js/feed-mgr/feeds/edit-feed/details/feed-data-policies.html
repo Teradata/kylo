@@ -22,7 +22,7 @@
 
   <readonly-section>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+    <div layout="row" class="feed-property" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF" | translate}}</span>
 
       <div flex layout="column">
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property">
       <span flex="25" class="property-name">{{"views.feed-data-policies.DTN" | translate}}</span>
 
       <div flex layout="column">
@@ -39,7 +39,7 @@
     </div>
 
 
-    <md-list flex layout-fill class="list-item-table list-condensed data-policy-header">
+    <md-list flex layout-fill class="list-item-table list-condensed data-policy-header feed-property">
 
       <md-list-item>
         <div layout="row" layout-fill>
@@ -134,7 +134,7 @@
 
 
       <md-list-item ng-repeat="field in vm.model.table.partitions">
-        <div layout="row" layout-fill>
+        <div layout="row" layout-fill class="feed-property">
           <div flex="50" class="md-list-item-text">
             <div>{{field.field}}</div>
           </div>
@@ -149,36 +149,49 @@
       </md-list-item>
     </md-list>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.partitions.length ==0">
+    <div layout="row" class="feed-property" ng-if="vm.model.table.partitions.length ==0">
       <span flex class="property-name">{{"views.feed-data-policies.NPIE" | translate}}</span>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/targetMergeStrategy')}}"
+         ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">{{"views.feed-data-policies.MS" | translate}}</span>
 
       <div flex layout="column">
-        <span>{{vm.mergeStrategyDisplayName()}}</span>
+        <span>{{vm.mergeStrategyDisplayName(vm.model)}}</span>
+      </div>
+      <div flex layout="column" ng-if="vm.versions">
+        <span>{{vm.mergeStrategyDisplayName(vm.versionFeedModel)}}</span>
       </div>
     </div>
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/targetFormat')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.TF" | translate}}</span>
-      <span>{{vm.model.table.targetFormat}}</span>
+      <span flex>{{vm.model.table.targetFormat}}</span>
+      <span flex ng-if="vm.versions">{{vm.versionFeedModel.table.targetFormat}}</span>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/options/compressionFormat')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.Co" | translate}}</span>
-      <span>{{vm.model.table.options.compressionFormat}}</span>
+      <span flex>{{vm.model.table.options.compressionFormat}}</span>
+      <span flex ng-if="vm.versions">{{vm.versionFeedModel.table.options.compressionFormat}}</span>
     </div>
 
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/options/skipHeader')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.Options" | translate}}</span>
 
       <div flex layout="row" layout-align="start start" layout-wrap="true">
-        <div layout="row">
+        <div layout="row" layout-align="start center" >
           <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.options.skipHeader"></ng-md-icon>
           <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.options.skipHeader"></ng-md-icon>
           <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
+        </div>
+      </div>
+      <div flex layout="row" layout-align="start start" ng-if="vm.versions && vm.versionFeedModel.options">
+        <div layout="row" layout-align="start center" >
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
         </div>
       </div>
     </div>

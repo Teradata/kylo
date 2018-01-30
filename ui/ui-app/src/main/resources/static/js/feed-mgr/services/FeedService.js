@@ -34,6 +34,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             editFeedModel: {},
             /**
+             * Feed model for comparison with editFeedModel in Versions tab
+             */
+            versionFeedModel: {},
+            /**
+             * Difference between editFeedModel and versionFeedModel
+             */
+            versionFeedModelDiff: [],
+            /**
              * The initial CRON expression used when a user selects Cron for the Schedule option
              */
             DEFAULT_CRON: "0 0 12 1/1 * ? *",
@@ -84,11 +92,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * Returns the feed object model for creating a new feed
              *
              * @returns {{id: null, versionName: null, templateId: string, feedName: string, description: null, systemFeedName: string, inputProcessorType: string, inputProcessor: null,
-             *     nonInputProcessors: Array, properties: Array, securityGroups: Array, schedule: {schedulingPeriod: string, schedulingStrategy: string, concurrentTasks: number}, defineTable: boolean,
+             *     nonInputProcessors: Array, properties: Array, securityGroups: Array, schedule: {schedulingPeriod: string, schedulingStrategy: string, concurrentTasks: number}, defineTable:
+             *     boolean,
              *     allowPreconditions: boolean, dataTransformationFeed: boolean, table: {tableSchema: {name: null, fields: Array}, sourceTableSchema: {name: null, fields: Array}, method: string,
-             *     existingTableName: null, targetMergeStrategy: string, feedFormat: string, targetFormat: null, fieldPolicies: Array, partitions: Array, options: {compress: boolean, compressionFormat:
-             *     null, auditLogging: boolean, encrypt: boolean, trackHistory: boolean}, sourceTableIncrementalDateField: null}, category: {id: null, name: null}, dataOwner: string, tags: Array,
-             *     reusableFeed: boolean, dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: Array}, userProperties: Array}}
+             *     existingTableName: null, targetMergeStrategy: string, feedFormat: string, targetFormat: null, fieldPolicies: Array, partitions: Array, options: {compress: boolean,
+             *     compressionFormat: null, auditLogging: boolean, encrypt: boolean, trackHistory: boolean}, sourceTableIncrementalDateField: null}, category: {id: null, name: null}, dataOwner:
+             *     string, tags: Array, reusableFeed: boolean, dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: Array}, userProperties: Array}}
              */
             getNewCreateFeedModel: function () {
                 return {
@@ -243,6 +252,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * Resets the Create feed ({@code this.createFeedModel}) object
              */
             resetFeed: function () {
+                console.log('resetFeed');
                 //get the new model and its keys
                 var newFeedObj = this.getNewCreateFeedModel();
                 var keys = _.keys(newFeedObj);
@@ -739,30 +749,30 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             getFeedVersions: function (feedId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
                     console.log('ERROR ', err)
-                }
+                };
                 return $http.get(RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
             },
             
             getFeedVersion: function (feedId, versionId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
                     console.log('ERROR ', err)
-                }
+                };
                 return $http.get(RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
             },
             
             diffFeedVersions: function (feedId, versionId1, versionId2) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
                     console.log('ERROR ', err)
-                }
+                };
                 return $http.get(RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
             },
 
@@ -803,7 +813,50 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
                     policy.validation = angular.copy(domainType.fieldPolicy.validation);
                 }
+            },
+            /**
+             * Returns operation of the difference at given path for versioned feed
+             * @param path current diff model
+             * @returns {string} operation type, e.g. add, remove, update, no-change
+             */
+            diffOperation: function (path) {
+                var op = this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
+                return op;
+            },
+
+            diffCollectionOperation: function (path) {
+                if (this.versionFeedModelDiff) {
+                    if (this.versionFeedModelDiff[path]) {
+                        return this.versionFeedModelDiff[path].op;
+                    } else {
+                        var patch =
+                            {
+                                opLevels: {'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2},
+                                op: 'no-change',
+                                join: function (patch) {
+                                    if (this.opLevels[patch.op] > this.opLevels[this.op]) {
+                                        this.op = patch.op;
+                                    } else if (this.opLevels[patch.op] === this.opLevels[this.op]) {
+                                        this.op = 'replace';
+                                    }
+                                }
+                            };
+                        _.each(_.values(this.versionFeedModelDiff), function(p) {
+                            if (p.path.startsWith(path + "/")) {
+                                patch.join(p);
+                            }
+                        });
+                        return patch.op;
+                    }
+                }
+                return 'no-change';
+            },
+
+            resetVersionFeedModel: function() {
+                this.versionFeedModel = {};
+                this.versionFeedModelDiff = {};
             }
+
         };
         data.init();
         return data;
