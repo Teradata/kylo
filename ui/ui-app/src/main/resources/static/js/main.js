@@ -1,4 +1,4 @@
-define(["require", "exports", "@angular/platform-browser-dynamic", "@angular/upgrade/static", "@uirouter/angular-hybrid", "@uirouter/core", "./app.module"], function (require, exports, platform_browser_dynamic_1, static_1, angular_hybrid_1, core_1, app_module_1) {
+define(["require", "exports", "@angular/platform-browser-dynamic", "@angular/upgrade/static", "@uirouter/core", "./app.module"], function (require, exports, platform_browser_dynamic_1, static_1, core_1, app_module_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     // Fix @uirouter/core unable to load
@@ -10,7 +10,7 @@ define(["require", "exports", "@angular/platform-browser-dynamic", "@angular/upg
         // The DOM must be already be available
         upgrade.bootstrap(document.body, ["kylo"]);
         // Initialize the Angular Module (get() any UIRouter service from DI to initialize it)
-        var url = angular_hybrid_1.getUIRouter(injector).urlService;
+        var url = injector.get(core_1.UIRouter).urlService; //getUIRouter(injector).urlService;
         // Instruct UIRouter to listen to URL changes
         url.listen();
         url.sync();
