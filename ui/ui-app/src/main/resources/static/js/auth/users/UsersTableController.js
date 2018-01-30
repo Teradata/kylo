@@ -1,17 +1,18 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../services/UserService", "../module-name"], function (require, exports, angular, _, UserService_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PAGE_NAME = "users";
-    var moduleName = require('auth/module-name');
+    //const moduleName = require('auth/module-name');
     var UsersTableController = /** @class */ (function () {
-        function UsersTableController($scope, AddButtonService, PaginationDataService, StateService, TableOptionsService, UserService) {
+        function UsersTableController($scope, AddButtonService, PaginationDataService, StateService, TableOptionsService, UserService //UserService
+        ) {
             var _this = this;
             this.$scope = $scope;
             this.AddButtonService = AddButtonService;
             this.PaginationDataService = PaginationDataService;
             this.StateService = StateService;
             this.TableOptionsService = TableOptionsService;
-            this.UserService = UserService;
+            this.UserService = UserService; //UserService
             /**
              * Page title.
              * @type {string}
@@ -163,6 +164,16 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return UsersTableController;
     }());
     exports.default = UsersTableController;
-    angular.module(moduleName).controller("UsersTableController", ["$scope", "AddButtonService", "PaginationDataService", "StateService", "TableOptionsService", "UserService", UsersTableController]);
+    angular.module(module_name_1.moduleName)
+        .service("UserService", ['$http',
+        'CommonRestUrlService',
+        'UserGroupService', UserService_1.UserService])
+        .controller("UsersTableController", ["$scope",
+        "AddButtonService",
+        "PaginationDataService",
+        "StateService",
+        "TableOptionsService",
+        "UserService",
+        UsersTableController]);
 });
 //# sourceMappingURL=UsersTableController.js.map

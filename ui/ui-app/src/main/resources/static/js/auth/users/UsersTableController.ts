@@ -1,7 +1,9 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
+import {UserService} from "../services/UserService";
 const PAGE_NAME:string = "users";
-const moduleName = require('auth/module-name');
+import {moduleName} from "../module-name";
+//const moduleName = require('auth/module-name');
 export default class UsersTableController implements ng.IComponentController {
 
     /**
@@ -149,9 +151,8 @@ export default class UsersTableController implements ng.IComponentController {
         private PaginationDataService:any,
         private StateService:any,
         private TableOptionsService:any,
-        private UserService:any
+        private UserService:any //UserService
     ) {
-
         // Notify pagination service of changes to view type
         this.$scope.$watch(() => {
             return this.viewType;
@@ -175,10 +176,20 @@ export default class UsersTableController implements ng.IComponentController {
             this.users = users;
             this.loading = false;
         });
-        
-
     }
-
 }
-angular.module(moduleName).controller("UsersTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",UsersTableController]);
+angular.module(moduleName)
+        .service("UserService",['$http',
+                          'CommonRestUrlService',
+                          'UserGroupService', UserService])
+       .controller("UsersTableController",
+                     ["$scope",
+                     "AddButtonService",
+                     "PaginationDataService",
+                     "StateService",
+                     "TableOptionsService",
+                     "UserService",
+                      UsersTableController]
+                    )
+        ;
 
