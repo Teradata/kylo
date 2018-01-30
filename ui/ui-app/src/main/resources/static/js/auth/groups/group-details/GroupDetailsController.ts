@@ -2,45 +2,10 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 //const PAGE_NAME:string = "group-details";
 const moduleName = require('auth/module-name');
+import PermissionsTableController from "../../shared/permissions-table/permissions-table";
 
 export default class GroupDetailsController implements ng.IComponentController {
-
-    ngOnInit(){
-
-    }
-     constructor(
-        private $scope:angular.IScope,
-        private $mdDialog:angular.material.IDialogService,
-        private $mdToast:angular.material.IToastService,
-        private $transition$: any,
-        private AccessControlService:any,
-        private UserService:any,
-        private StateService:any)
-    {
-         // Update isValid when $error is updated
-        $scope.$watch(
-            () => {return this.$error},
-            () => {
-                this.isValid = _.reduce(this.$error, 
-                    (memo, value) => {
-                    return memo && !value;
-                }, true);
-            },
-            true
-        );
-
-        // Update $error when the system name changes
-        $scope.$watch(
-                () => {return this.editModel.systemName},
-                () => {
-                    this.$error.duplicateName = (angular.isString(this.editModel.systemName) && this.groupMap[this.editModel.systemName]);
-                    this.$error.missingName = (!angular.isString(this.editModel.systemName) || this.editModel.systemName.length === 0);
-                }
-        );
-        this.onLoad();
-    }
-
-        $error:any = {duplicateName: false, missingName: false };
+     $error:any = {duplicateName: false, missingName: false };
         /**
          * Indicates that admin operations are allowed.
          * @type {boolean}
@@ -87,14 +52,45 @@ export default class GroupDetailsController implements ng.IComponentController {
         editActions: any[] = [];    // Editable list of actions allowed to the group. //@type {Array.<Action>}
         isPermissionsEditable = false; //Indicates if the permissions edit view is displayed.// @type {boolean}
         users: any[] = [];            // Users in the group. // @type {Array.<UserPrincipal>}
-    
+   
+
+    ngOnInit(){
+    }
+
+     constructor(
+        private $scope:angular.IScope,
+        private $mdDialog:angular.material.IDialogService,
+        private $mdToast:angular.material.IToastService,
+        private $transition$: any,
+        private AccessControlService:any,
+        private UserService:any,
+        private StateService:any){
+         // Update isValid when $error is updated
+        $scope.$watch(
+            () => {return this.$error},
+            () => {this.isValid = _.reduce(this.$error,(memo, value) => {
+                                                                    return memo && !value;
+                                                                    }, true);
+                    },
+                    true
+        );
+
+        // Update $error when thes system name changes
+        $scope.$watch(
+                () => {return this.editModel.systemName},
+                () => {
+                    this.$error.duplicateName = (angular.isString(this.editModel.systemName) && this.groupMap[this.editModel.systemName]);
+                    this.$error.missingName = (!angular.isString(this.editModel.systemName) || this.editModel.systemName.length === 0);
+                }
+        );
+        this.onLoad();
+    }
         /**
-             * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
-             *
-             * @param user the user
-             * @returns {string} the display name
-             */
-        getUserName = function(user: any) {
+         * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+         * @param user the user
+         * @returns {string} the display name
+         */
+        getUserName(user: any) {
                 return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
             };
 
@@ -150,19 +146,17 @@ export default class GroupDetailsController implements ng.IComponentController {
         /**
              * Creates a copy of the permissions for editing.
              */
-        onEditPermissions = function() {
+        onEditPermissions() {
            this.editActions = angular.copy(this.actions);
         };
-
 
         /**
          * Loads the user details.
          */
-        onLoad () {
-         
+        onLoad() {
             // Load allowed permissions
             this.AccessControlService.getUserAllowedActions()
-                    .then((actionSet:any) => {
+                    .then((actionSet:any)=>{
                        this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.GROUP_ADMIN, actionSet.actions);
                        this.allowUsers = this.AccessControlService.hasAction(this.AccessControlService.USERS_ACCESS, actionSet.actions);
                   });
@@ -212,10 +206,10 @@ export default class GroupDetailsController implements ng.IComponentController {
              /**
              * Saves the current permissions.
              */
-        onSavePermissions = function() {
+        onSavePermissions() {
                 var actions = angular.copy(this.editActions);
                 this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
-                        .then(function(actionSet: any) {
+                        .then((actionSet: any) =>{
                             this.actions = actionSet.actions;
                         });
             };
