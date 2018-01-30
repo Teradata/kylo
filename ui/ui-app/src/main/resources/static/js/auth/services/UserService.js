@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('auth/module-name');
     //@Injectable()
     var UserService = /** @class */ (function () {
         function UserService(http, CommonRestUrlService, UserGroupService) {
@@ -96,7 +95,7 @@ return this.UserGroupService.getUsers();
         };
         return UserService;
     }());
-    exports.default = UserService;
+    exports.UserService = UserService;
     /*angular.module(moduleName)
            .service('UserService',
                     [
@@ -108,8 +107,9 @@ return this.UserGroupService.getUsers();
                                                 'UserGroupService');}
                     ]
                 );*/
-    angular.module(moduleName)
-        .service('UserService', ['$http', 'CommonRestUrlService',
+    angular.module(module_name_1.moduleName)
+        .service('UserService', ['$http',
+        'CommonRestUrlService',
         'UserGroupService', UserService]);
 });
 //# sourceMappingURL=UserService.js.map

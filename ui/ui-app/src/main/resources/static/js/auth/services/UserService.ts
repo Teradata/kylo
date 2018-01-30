@@ -3,26 +3,25 @@ import { Injectable } from '@angular/core';
 import { Http, Response, Headers, RequestOptions, URLSearchParams } from '@angular/http';
 /*import 'rxjs/add/operator/toPromise';*/
 import * as http from '@angular/http';
-const moduleName = require('auth/module-name');
-
+//const moduleName = require('auth/module-name');
+import {moduleName} from "../module-name";
 //@Injectable()
-export default class UserService{
+export  class UserService{
 headers: Headers;
 options: RequestOptions;
-
 constructor(private http: any,
                 private CommonRestUrlService:any,
                 private UserGroupService: any){}
 
-     private extractData(res: Response) {
-        let body =  res.json();
-        return body || {};
-     }
+        private extractData(res: Response) {
+            let body =  res.json();
+            return body || {};
+        }
 
-    private handleError(error: any): Promise<any> {
-      //  console.error('An error occurred', error);
-        return Promise.reject(error.message || error);
-    }    
+        private handleError(error: any): Promise<any> {
+        //  console.error('An error occurred', error);
+            return Promise.reject(error.message || error);
+        }    
 
         /**
          * Deletes the user with the specified system name.
@@ -132,5 +131,6 @@ constructor(private http: any,
                 ]
             );*/
  angular.module(moduleName)
-  .service('UserService',['$http',  'CommonRestUrlService',
-                                            'UserGroupService', UserService]);
+  .service('UserService',['$http',
+                          'CommonRestUrlService',
+                          'UserGroupService', UserService]);
