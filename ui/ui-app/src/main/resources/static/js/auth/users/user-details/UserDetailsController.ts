@@ -1,7 +1,11 @@
 import * as angular from 'angular';
 // import moduleName from '../../../auth/module-name';
 import * as _ from 'underscore';
-const moduleName = require('auth/module-name');
+
+import {UserService} from "../../services/UserService";
+//const moduleName = require('auth/module-name');
+
+import {moduleName} from "../../module-name";
 
 export default class UserDetailsController implements ng.IComponentController {
 
@@ -294,5 +298,9 @@ export default class UserDetailsController implements ng.IComponentController {
 
 }
 
-angular.module(moduleName).controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
+angular.module(moduleName)
+        .service("UserService",['$http',
+                          'CommonRestUrlService',
+                          'UserGroupService', UserService])
+.controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
 
