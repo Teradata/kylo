@@ -2,8 +2,10 @@ import * as angular from 'angular';
 const AccessConstants = require('../constants/AccessConstants');
 const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import UserDetailsController from "./users/user-details/UserDetailsController";
-
-const moduleName = require('auth/module-name');
+import GroupDetailsController from "./groups/group-details/GroupDetailsController";
+import * as moduleRequire  from "./module-require";
+import {moduleName} from "./module-name";
+//const moduleName = require('auth/module-name');
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -12,7 +14,6 @@ class ModuleFactory  {
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
     }
     configFn($stateProvider:any) {
-
             
         $stateProvider.state(AccessConstants.UI_STATES.USERS.state, {
             url: '/users',
@@ -57,7 +58,8 @@ class ModuleFactory  {
             }
 
         
-        }).state(AccessConstants.UI_STATES.GROUPS.state, {
+        });
+        $stateProvider.state(AccessConstants.UI_STATES.GROUPS.state, {
             url: "/groups",
             params: {},
             views: {
@@ -76,7 +78,8 @@ class ModuleFactory  {
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.GROUPS.permissions
             }
-        }).state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
+        });
+        $stateProvider.state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
             url: "/group-details/{groupId}",
             params: {
                 groupId: null
@@ -104,7 +107,7 @@ class ModuleFactory  {
     
 
     lazyLoadController(path:any){
-        return lazyLoadUtil.lazyLoadController(path,'auth/module-require');
+        return lazyLoadUtil.lazyLoadController(path,"auth/module-require");
     }
 
     

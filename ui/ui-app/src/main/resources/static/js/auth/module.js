@@ -1,12 +1,12 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AccessConstants = require('../constants/AccessConstants');
     var lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
-    var moduleName = require('auth/module-name');
+    //const moduleName = require('auth/module-name');
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
-            this.module = angular.module(moduleName, []);
+            this.module = angular.module(module_name_1.moduleName, []);
             this.module.config(['$stateProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider) {
@@ -26,7 +26,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 data: {
                     breadcrumbRoot: true,
                     displayName: 'Users',
-                    module: moduleName,
+                    module: module_name_1.moduleName,
                     permissions: AccessConstants.UI_STATES.USERS.permissions
                 }
             });
@@ -48,10 +48,11 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 data: {
                     breadcrumbRoot: false,
                     displayName: "User Details",
-                    module: moduleName,
+                    module: module_name_1.moduleName,
                     permissions: AccessConstants.UI_STATES.USERS_DETAILS.permissions
                 }
-            }).state(AccessConstants.UI_STATES.GROUPS.state, {
+            });
+            $stateProvider.state(AccessConstants.UI_STATES.GROUPS.state, {
                 url: "/groups",
                 params: {},
                 views: {
@@ -67,10 +68,11 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 data: {
                     breadcrumbRoot: true,
                     displayName: "Groups",
-                    module: moduleName,
+                    module: module_name_1.moduleName,
                     permissions: AccessConstants.UI_STATES.GROUPS.permissions
                 }
-            }).state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
+            });
+            $stateProvider.state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
                 url: "/group-details/{groupId}",
                 params: {
                     groupId: null
@@ -88,13 +90,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 data: {
                     breadcrumbRoot: false,
                     displayName: "Group Details",
-                    module: moduleName,
+                    module: module_name_1.moduleName,
                     permissions: AccessConstants.UI_STATES.GROUP_DETAILS.permissions
                 }
             });
         };
         ModuleFactory.prototype.lazyLoadController = function (path) {
-            return lazyLoadUtil.lazyLoadController(path, 'auth/module-require');
+            return lazyLoadUtil.lazyLoadController(path, "auth/module-require");
         };
         return ModuleFactory;
     }());
