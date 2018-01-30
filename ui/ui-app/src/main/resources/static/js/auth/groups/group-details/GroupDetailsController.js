@@ -1,8 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../services/UserService", "../../module-name"], function (require, exports, angular, _, UserService_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //const PAGE_NAME:string = "group-details";
-    var moduleName = require('auth/module-name');
     var GroupDetailsController = /** @class */ (function () {
         function GroupDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, UserService, StateService) {
             var _this = this;
@@ -56,31 +54,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.isPermissionsEditable = false; //Indicates if the permissions edit view is displayed.// @type {boolean}
             this.users = []; // Users in the group. // @type {Array.<UserPrincipal>}
             /**
-                 * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
-                 *
-                 * @param user the user
-                 * @returns {string} the display name
-                 */
-            this.getUserName = function (user) {
-                return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
-            };
-            /**
-                 * Creates a copy of the permissions for editing.
-                 */
-            this.onEditPermissions = function () {
-                this.editActions = angular.copy(this.actions);
-            };
-            /**
-            * Saves the current permissions.
-            */
-            this.onSavePermissions = function () {
-                var actions = angular.copy(this.editActions);
-                this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
-                    .then(function (actionSet) {
-                    this.actions = actionSet.actions;
-                });
-            };
-            /**
            * Navigates to the details page for the specified user.
            *
            * @param user the user
@@ -94,7 +67,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     return memo && !value;
                 }, true);
             }, true);
-            // Update $error when the system name changes
+            // Update $error when thes system name changes
             $scope.$watch(function () { return _this.editModel.systemName; }, function () {
                 _this.$error.duplicateName = (angular.isString(_this.editModel.systemName) && _this.groupMap[_this.editModel.systemName]);
                 _this.$error.missingName = (!angular.isString(_this.editModel.systemName) || _this.editModel.systemName.length === 0);
@@ -103,6 +76,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         }
         GroupDetailsController.prototype.ngOnInit = function () {
         };
+        /**
+         * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+         * @param user the user
+         * @returns {string} the display name
+         */
+        GroupDetailsController.prototype.getUserName = function (user) {
+            return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
+        };
+        ;
         /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
          *
@@ -148,6 +130,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          */
         GroupDetailsController.prototype.onEdit = function () {
             this.editModel = angular.copy(this.model);
+        };
+        ;
+        /**
+             * Creates a copy of the permissions for editing.
+             */
+        GroupDetailsController.prototype.onEditPermissions = function () {
+            this.editActions = angular.copy(this.actions);
         };
         ;
         /**
@@ -204,9 +193,25 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             });
         };
         ;
+        /**
+        * Saves the current permissions.
+        */
+        GroupDetailsController.prototype.onSavePermissions = function () {
+            var _this = this;
+            var actions = angular.copy(this.editActions);
+            this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
+                .then(function (actionSet) {
+                _this.actions = actionSet.actions;
+            });
+        };
+        ;
         return GroupDetailsController;
     }());
     exports.default = GroupDetailsController;
-    angular.module(moduleName).controller('GroupDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", GroupDetailsController]);
+    angular.module(module_name_1.moduleName)
+        .service("UserService", ['$http',
+        'CommonRestUrlService',
+        'UserGroupService', UserService_1.UserService])
+        .controller('GroupDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", GroupDetailsController]);
 });
 //# sourceMappingURL=GroupDetailsController.js.map

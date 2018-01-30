@@ -1,8 +1,11 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 //const PAGE_NAME:string = "group-details";
-const moduleName = require('auth/module-name');
-import PermissionsTableController from "../../shared/permissions-table/permissions-table";
+//const moduleName = require('auth/module-name');
+
+import {UserService} from "../../services/UserService";
+import {moduleName} from "../../module-name";
+import {PermissionsTableController} from "../../shared/permissions-table/permissions-table";
 
 export default class GroupDetailsController implements ng.IComponentController {
      $error:any = {duplicateName: false, missingName: false };
@@ -225,5 +228,9 @@ export default class GroupDetailsController implements ng.IComponentController {
 
 }
 
-angular.module(moduleName).controller('GroupDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",GroupDetailsController]);
+angular.module(moduleName)
+.service("UserService",['$http',
+                          'CommonRestUrlService',
+                          'UserGroupService', UserService])
+.controller('GroupDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",GroupDetailsController]);
 
