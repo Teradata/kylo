@@ -165,7 +165,7 @@ public class FeedStatisticsManager {
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsForFeed(statsToSend.keySet()));
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
             } else {
                 //if we are empty but the runningFlows have changed, then send off as well

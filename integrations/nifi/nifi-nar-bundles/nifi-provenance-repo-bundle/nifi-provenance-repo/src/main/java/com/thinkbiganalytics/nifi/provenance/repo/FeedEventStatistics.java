@@ -571,6 +571,24 @@ public class FeedEventStatistics implements Serializable {
         return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId, processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
     }
 
+    public Map<String, Long> getRunningFeedFlows(Set<String> feedNames) {
+        return changedFeedProcessorRunningFeedFlows.stream().collect(Collectors.toMap(processorId -> processorId, processorId -> feedProcessorRunningFeedFlows.get(processorId).get()));
+    }
+
+    /**
+     * Get the Running count by processorId, ensuring the feedProcessorIds exist in the map
+     */
+    public Map<String, Long> getRunningFeedFlowsForFeed(Set<String> feedProcessorIds) {
+        Map<String, Long> changedRunningFlows = getRunningFeedFlowsChanged();
+        if (feedProcessorIds != null) {
+            feedProcessorIds.stream().filter(id -> !changedRunningFlows.containsKey(id)).forEach(id -> {
+                AtomicLong runningCount = feedProcessorRunningFeedFlows.getOrDefault(id, new AtomicLong(0L));
+                changedRunningFlows.put(id, runningCount.longValue());
+            });
+        }
+        return changedRunningFlows;
+    }
+
 
     public List<String> getStreamingFeedProcessorIdsList() {
         return streamingFeedProcessorIdsList;
