@@ -1,7 +1,12 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
+
+import {UserService} from "../services/UserService";
+import {moduleName} from "../module-name";
+
 const PAGE_NAME:string = "groups";
-const moduleName = require('auth/module-name');
+//const moduleName = require('auth/module-name');
+
 export default class GroupsTableController implements ng.IComponentController {
   /**
      * Page title.
@@ -165,5 +170,9 @@ export default class GroupsTableController implements ng.IComponentController {
              
     }
 }
-angular.module(moduleName).controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
+angular.module(moduleName)
+ .service("UserService",['$http',
+                          'CommonRestUrlService',
+                          'UserGroupService', UserService])
+.controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
 
