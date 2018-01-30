@@ -43,6 +43,14 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         editFeedModel: {},
         /**
+         * Feed model for comparison with editFeedModel in Versions tab
+         */
+        versionFeedModel: {},
+        /**
+         * Difference between editFeedModel and versionFeedModel
+         */
+        versionFeedModelDiff: [],
+        /**
          * The initial CRON expression used when a user selects Cron for the Schedule option
          */
         DEFAULT_CRON: "0 0 12 1/1 * ? *",
@@ -825,6 +833,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         diffFeedVersions: function (feedId: string, versionId1: string, versionId2: string) {
             var successFn = function (response: any) {
                 return response.data;
+
             }
             var errorFn = function (err: any) {
                 console.log('ERROR ', err)
@@ -872,7 +881,51 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
                 policy.validation = angular.copy(domainType.fieldPolicy.validation);
             }
+        },
+        /**
+         * Returns operation of the difference at given path for versioned feed
+         * @param path current diff model
+         * @returns {string} operation type, e.g. add, remove, update, no-change
+         */
+        diffOperation: function (path: any) {
+            return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
+        },
+
+        diffCollectionOperation: function (path: any) {
+            if (this.versionFeedModelDiff) {
+                if (this.versionFeedModelDiff[path]) {
+                    return this.versionFeedModelDiff[path].op;
+                } else {
+                    var patch =
+                        {
+                            opLevels: {'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2},
+                            op: 'no-change',
+                            join: function (patch: any) {
+                                if (this.opLevels[patch.op] > this.opLevels[this.op]) {
+                                    this.op = patch.op;
+                                } else if (this.opLevels[patch.op] === this.opLevels[this.op]) {
+                                    this.op = 'replace';
+                                }
+                            }
+                        };
+                    console.log('diff collection for path ' + path);
+                    _.each(this.versionFeedModelDiff, function(p) {
+                        if (p.path.startsWith(path)) {
+                            patch.join(p);
+                        }
+                    });
+
+                    return patch.op;
+                }
+            }
+            return 'no-change';
+        },
+
+        resetVersionFeedModel: function() {
+            this.versionFeedModel = {};
+            this.versionFeedModelDiff = {};
         }
+
     } as any;
     
     data.init();

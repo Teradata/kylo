@@ -1,4 +1,4 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
+define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, moduleName) {
 
     var directive = function () {
         return {
@@ -16,49 +16,65 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
     }
 
-//    var controller =  function($scope, $http, $q, $transition$, AccessControlService, EntityAccessControlService, FeedService) {
-    var controller =  function($scope, $http, $q, RestUrlService, FeedService) {
+    var controller = function ($scope, $http, $q, RestUrlService, FeedService) {
 
         var self = this;
 
         this.model = FeedService.editFeedModel;
-//        this.leftModel = FeedService.editFeedModel;
-//        this.rightModel = FeedService.editFeedModel;
-        this.leftModel = {};
-        this.rightModel = {};
-        this.leftVersions = [];
-        this.rightVersions = [];
-        this.leftSelection;
-        this.rightSelection;
+        FeedService.versionFeedModel = {};
+        FeedService.versionFeedModelDiff = [];
+        this.leftVersion = "Current"; //todo translate this
+        this.rightVersion = {};
+        this.versions = [];
+        this.loading = false;
 
-        this.initVersions = function() {
-        		var feedVersions = FeedService.getFeedVersions(this.model.feedId);
-        		// TODO populate pull downs
-        		self.leftVersions = feedVersions.versions;
-        		self.rightVersions = feedVersions.versions;
-        		// TODO remove below
-        		self.leftSelection = feedVersions.versions[0];
-        		self.rightSelection = feedVersions.versions[feedVersions.versions.length - 1];
-        }
-        
-        this.initDiff = function() {
-        		if (self.leftSelection != undefined && self.rightSelection != undefined) {
-        			var diff = FeedService.diffFeedVersions(this.model.feedId, leftSelection, rightSelection);
-        			self.leftModel = diff.toVersion.entity;
-        			// TODO derive right model instead from the patch
-        			self.rightModel = diff.toVersion.entity;
-        		}
-        }
-        
 
-        // Initialize this instance
-        self.initVersions();
-        self.initDiff();
+        this.loadVersions = function () {
+            FeedService.getFeedVersions(this.model.feedId).then(function(result) {
+                self.versions = result.versions;
+                self.leftVersion = "Current (" + getCurrentVersion().name + ")";
+            }, function(err) {
+
+            });
+        };
+
+        this.changeLeftVersion = function() {
+        };
+
+        function getCurrentVersion() {
+            return self.versions[0];
+        }
+
+        this.changeRightVersion = function() {
+            self.loading = true;
+            var diff = FeedService.diffFeedVersions(this.model.feedId, self.rightVersion, getCurrentVersion().id).then(function(result) {
+                FeedService.versionFeedModelDiff = [];
+                _.each(result.difference.patch, function(patch) {
+                    FeedService.versionFeedModelDiff[patch.path] = patch;
+                });
+            }, function (err) {
+
+            });
+
+            var version = FeedService.getFeedVersion(this.model.feedId, self.rightVersion).then(function(result) {
+                self.rightFeed = result.entity;
+                FeedService.versionFeedModel = self.rightFeed;
+            }, function (err) {
+
+            });
+
+            Promise.all([diff, version]).then(function(result) {
+                self.loading = false;
+            }).catch(function(err) {
+                self.loading = false;
+            });
+
+        };
+
+        self.loadVersions();
     };
 
     angular.module(moduleName).controller('FeedVersionsCompareController', ["$scope", "$http", "$q", "RestUrlService", "FeedService", controller]);
 
-    angular.module(moduleName)
-        .directive('thinkbigFeedVersionsCompare', directive);
-
+    angular.module(moduleName).directive('thinkbigFeedVersionsCompare', directive);
 });

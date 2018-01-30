@@ -22,15 +22,18 @@
                          the-form="vm.feedDetailsForm">
     <readonly-section>
         <div layout="column">
-            <div layout="row" class="layout-padding-top-bottom">
+            <div layout="row" class="feed-property versions-{{vm.diff('/inputProcessorName')}}">
                 <span flex="25" class="property-name">{{"views.feed-nifi-properties.Source" | translate}}</span>
 
                 <div flex>
                     {{vm.model.inputProcessor.name}}
                 </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.inputProcessorName}}
+                </div>
             </div>
 
-            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
+            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties track by $index" class="feed-property versions-{{vm.diff('/properties/' + $index + '/value')}}">
                 <div flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}} <span ng-if="property.sensitive">**</span>
                  <md-tooltip md-direction="right" ng-if="property.sensitive">
                    {{"views.feed-nifi-properties.Tiasp" | translate}}
@@ -44,14 +47,22 @@
                     <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
                     <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
                 </div>
+                <div flex ng-if="vm.versions">
+                    <span ng-if="property.key != 'Backoff Period' && !property.sensitive">{{vm.versionFeedModel.properties[$index].value}}</span>
+                    <span ng-if="property.key != 'Backoff Period' && property.sensitive">*****</span>
+                    <span ng-if="property.key == 'Backoff Period'">{{vm.versionFeedModel.properties[$index].value | nifiTimeUnit}}</span>
+                </div>
             </div>
 
-            <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="layout-padding-top-bottom" ng-if="processor.userEditable">
-                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom">
+            <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="feed-property versions-{{vm.diff('/properties/' + (vm.model.inputProcessor.properties.length + $index) + '/value')}}" ng-if="processor.userEditable">
+                <div layout="row" ng-repeat="property in processor.properties track by $index" class="feed-property">
                     <span flex="25" class="property-name">{{property.key}}</span>
 
                     <div flex>
-                        {{property.displayValue}}
+                        {{property.value}}
+                    </div>
+                    <div flex ng-if="vm.versions">
+                        {{vm.versionFeedModel.properties[vm.model.inputProcessor.properties.length + $index].value}}
                     </div>
                 </div>
 

@@ -5,11 +5,15 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-nifi-properties.html',
             controller: "FeedNifiPropertiesController",
             link: function ($scope, element, attrs, controller) {
-
+                if ($scope.versions == undefined) {
+                    $scope.versions = false;
+                }
             }
 
         };
@@ -18,6 +22,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
     var controller = function ($scope, $http,$q,RestUrlService,AccessControlService,EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService,FeedPropertyService, $filter) {
 
         var self = this;
+        self.versions = $scope.versions;
 
         /**
          * The ng-form object
@@ -31,12 +36,21 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
          * Indicates if the feed NiFi properties may be edited.
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
         this.editModel = {};
         this.editableSection = false;
         this.INCREMENTAL_DATE_PROPERTY_KEY = 'Date Field';
+
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+        }
 
         $scope.$watch(function () {
             return FeedService.editFeedModel;
@@ -255,8 +269,13 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access && !self.model.view.feedDetails.disabled
+            self.allowEdit = !self.versions && access && !self.model.view.feedDetails.disabled
         });
+
+        this.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+
     };
 
     angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","FeedPropertyService", "$filter",controller]);

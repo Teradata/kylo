@@ -199,6 +199,10 @@ md-sidenav .collapse-btn {
   padding-right: 10px;
 }
 
+.layout-padding-left-4 {
+  padding-left: 4px;
+}
+
 .layout-padding-left {
   padding-left: 10px;
 }
@@ -269,8 +273,16 @@ md-sidenav .collapse-btn {
   margin-left: 10px;
 }
 
+.layout-margin-left-20 {
+  margin-left: 20px;
+}
+
 .layout-margin-right-10 {
   margin-right: 10px;
+}
+
+.layout-margin-right-20 {
+  margin-right: 20px;
 }
 
 .layout-margin-top-3 {
@@ -1312,4 +1324,23 @@ md-input-container.global-search .md-input {
 .full-screen-dialog .mat-dialog-actions:last-child {
   margin-bottom: 0;
   padding: 20px 30px;
+}
+
+
+.versions-add {
+  background-color: lightgreen;
+}
+
+.versions-remove {
+  background-color: lightsalmon;
+}
+
+.versions-replace {
+  background-color: lightskyblue;
+}
+
+.feed-property {
+  padding-left: 4px;
+  padding-top: 10px;
+  padding-bottom: 10px;
 }
