@@ -64,7 +64,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.selectedTabIndex = 0;
 
         this.loadingFeedData = false;
-        this.model = FeedService.editFeedModel;
+        this.model = FeedService.editFeedModel = {};
         this.model.loaded = false;
         this.loadMessage = ''
         this.uploadFile = null;
@@ -382,7 +382,6 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 );
                             } else {
                                 self.model.loaded = true;
-                                FeedService.editFeedModel = {};
                                 FeedService.updateFeed(updatedFeedResponse.data);
                                 if (tabIndex != null && tabIndex != undefined && tabIndex != self.selectedTabIndex) {
                                     self.selectedTabIndex = tabIndex;
