@@ -267,7 +267,8 @@ public class FeedModelTransform {
      */
     private FeedMetadata stripMetadata(FeedMetadata source) {
         FeedMetadata result = new FeedMetadata();
-        
+
+        result.setDataOwner(source.getDataOwner());
         result.setDataTransformation(source.getDataTransformation());
         result.setHadoopAuthorizationType(source.getHadoopAuthorizationType());
         result.setInputProcessorType(source.getInputProcessorType());
