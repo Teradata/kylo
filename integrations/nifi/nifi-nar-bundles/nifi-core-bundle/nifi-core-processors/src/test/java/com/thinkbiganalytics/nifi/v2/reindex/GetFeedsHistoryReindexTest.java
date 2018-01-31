@@ -43,6 +43,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests for {@link GetFeedsHistoryReindex} processor<br>
  */
@@ -87,9 +89,13 @@ public class GetFeedsHistoryReindexTest {
             resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEED_CATEGORY_SYSTEM_NAME_FOR_HISTORY_REINDEX_KEY, "cat-" + i + "-systemName");
             resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEED_STATUS_FOR_HISTORY_REINDEX_KEY, "DIRTY");
             if (i == 0) {
-                resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEED_LAST_MODIFIED_UTC_FOR_HISTORY_REINDEX_KEY, "2017-12-18T14:53:24.013-08:00");
+                String feedLastModifiedUtcForHistoryReindexActualValue = resultFlowFile.getAttribute(GetFeedsHistoryReindex.FEED_LAST_MODIFIED_UTC_FOR_HISTORY_REINDEX_KEY);
+                String feedLastModifiedUtcForHistoryReindexExpectedValuePrefixWithoutTimeZone = "2017-12-18T14:53:24.013";
+                assertTrue(feedLastModifiedUtcForHistoryReindexActualValue.contains(feedLastModifiedUtcForHistoryReindexExpectedValuePrefixWithoutTimeZone));
             } else if (i == 1) {
-                resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEED_LAST_MODIFIED_UTC_FOR_HISTORY_REINDEX_KEY, "2017-12-17T09:35:45.335-08:00");
+                String feedLastModifiedUtcForHistoryReindexActualValue = resultFlowFile.getAttribute(GetFeedsHistoryReindex.FEED_LAST_MODIFIED_UTC_FOR_HISTORY_REINDEX_KEY);
+                String feedLastModifiedUtcForHistoryReindexExpectedValuePrefixWithoutTimeZone = "2017-12-17T09:35:45.335";
+                assertTrue(feedLastModifiedUtcForHistoryReindexActualValue.contains(feedLastModifiedUtcForHistoryReindexExpectedValuePrefixWithoutTimeZone));
             }
             resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEEDS_TOTAL_COUNT_FOR_HISTORY_REINDEX_KEY, String.valueOf(2));
             resultFlowFile.assertAttributeEquals(GetFeedsHistoryReindex.FEEDS_TOTAL_IDS_FOR_HISTORY_REINDEX_KEY, "[feed-0-id, feed-1-id]");
