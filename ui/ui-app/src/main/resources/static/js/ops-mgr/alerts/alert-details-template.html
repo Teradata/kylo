@@ -42,7 +42,7 @@
 
                         <div flex="30" layout="column">
                             <span class="item-title">
-                                {{vm.alertData.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                {{'alert-detail-template.time_locale' | translate:{date:vm.alertData.createdTime} }}
                             </span>
                             <span class="column-title column-title-bottom">Start Time</span>
                         </div>
@@ -85,7 +85,7 @@
                                 {{item.user}}
                             </div>
                             <div flex="25" style="word-wrap:break-word;" class="item-column md-list-item-text">
-                                {{item.createdTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                {{'alert-detail-template.time_locale' | translate:{date:item.createdTime} }}
                             </div>
                             <md-divider ng-if="!$last"></md-divider>
                         </md-list-item>

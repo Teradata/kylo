@@ -25,7 +25,7 @@
                         <ng-md-icon icon="check"></ng-md-icon>
                     </div>
                     <div flex="40" class="md-list-item-text ">
-                        {{feed.updateDate | date : 'MM/dd/yyyy hh:mm:ss'}}
+                        {{'category-feeds.time-locale' | translate:{date:feed.updateDate} }}
                     </div>
                 </div>
             </md-list-item>

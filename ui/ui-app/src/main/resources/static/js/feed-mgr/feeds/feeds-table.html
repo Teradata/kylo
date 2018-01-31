@@ -122,7 +122,7 @@
                 {{feed.category.name}}
               </td>
               <td md-cell>{{feed.templateName }}</td>
-              <td md-cell>{{feed.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+              <td md-cell>{{'feeds-table.time-locale' | translate:{date:feed.updateDate} }}</td>
             </tr>
             </tbody>
           </table>

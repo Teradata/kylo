@@ -66,7 +66,7 @@
                                     </div>
 
                                     <div flex="20" layout="column" hide show-gt-xs show-lg show-xl show-sm show-md class="item-column  md-list-item-text pointer" ng-click="vm.alertDetails($event,alert)">
-                                        <span class="item-title">{{alert.createdTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
+                                        <span class="item-title">{{'time_locale' | translate:{date:alert.createdTime} }}</span>
                                         <span class="column-title column-title-bottom">Start Time</span>
                                     </div>
 
@@ -108,7 +108,7 @@
                                             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="alert.cleared"></ng-md-icon>
                                             <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!alert.cleared"></ng-md-icon>
                                         </td>
-                                        <td md-cell hide show-gt-sm>{{alert.createdTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
+                                        <td md-cell hide show-gt-sm>{{'time_locale' | translate:{date:alert.createdTime} }}</td>
                                         <td md-cell>{{alert.description}}</td>
                                     </tr>
                                 </tbody>

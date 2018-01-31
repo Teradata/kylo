@@ -141,7 +141,7 @@
                   <ng-md-icon icon="check" ng-if="feed.state == 'ENABLED'"></ng-md-icon>
                 </div>
                 <div flex="40" class="md-list-item-text ">
-                  {{feed.modifiedTime | date : 'MM/dd/yyyy hh:mm:ss'}}
+                  {{'time_locale' | translate:{date:feed.modifiedTime} }}
                 </div>
               </div>
             </md-list-item>
