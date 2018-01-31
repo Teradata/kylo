@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
 /*-
@@ -12,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.metadata;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -61,6 +58,8 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+
+import javax.annotation.Nonnull;
 
 import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
 import static com.thinkbiganalytics.nifi.v2.common.CommonProperties.FEED_CATEGORY;
@@ -115,14 +114,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
     public void scheduled(ProcessContext context) {
         String category = context.getProperty(CommonProperties.FEED_CATEGORY).getValue();
         String feedName = context.getProperty(CommonProperties.FEED_NAME).getValue();
-
-        try {
-            this.feedId = getProviderService(context).getProvider().getFeedId(category, feedName);
-        } catch (Exception e) {
-            getLog().warn("Failure retrieving feed metadata" + category + "/" + feedName, e);
-            // TODO Swallowing for now until metadata client is working again
-        }
-
+        feedId = null;
         registerPreconditionListener(context, category, feedName);
     }
 
@@ -178,6 +170,26 @@ public class TriggerFeed extends AbstractFeedProcessor {
         }
     }
 
+    /**
+     * Gets the feed id.
+     *
+     * @param context the process context
+     * @return the feed identifier
+     */
+    private String getFeedId(@Nonnull final ProcessContext context) {
+        if (feedId == null) {
+            final String category = context.getProperty(CommonProperties.FEED_CATEGORY).getValue();
+            final String feedName = context.getProperty(CommonProperties.FEED_NAME).getValue();
+            try {
+                feedId = getProviderService(context).getProvider().getFeedId(category, feedName);
+            } catch (Exception e) {
+                getLog().warn("Failure retrieving feed metadata" + category + "/" + feedName, e);
+                // TODO Swallowing for now until metadata client is working again
+            }
+        }
+        return feedId;
+    }
+
     private List<String> getMatchingExecutionContextKeys(ProcessContext context) {
         String executionContextKeys = context.getProperty(MATCHING_EXECUTION_CONTEXT_KEYS).getValue();
         if (StringUtils.isBlank(executionContextKeys)) {
@@ -191,11 +203,11 @@ public class TriggerFeed extends AbstractFeedProcessor {
     private FlowFile createFlowFile(ProcessContext context,
                                     ProcessSession session,
                                     FeedPreconditionTriggerEvent event) {
-
-        getLog().info("createFlowFile for Feed {}", new Object[]{this.feedId});
+        final String feedId = getFeedId(context);
+        getLog().info("createFlowFile for Feed {}", new Object[]{feedId});
         FlowFile file = null;
-        if (this.feedId != null) {
-            FeedDependencyDeltaResults deltas = getProviderService(context).getProvider().getFeedDependentResultDeltas(this.feedId);
+        if (feedId != null) {
+            FeedDependencyDeltaResults deltas = getProviderService(context).getProvider().getFeedDependentResultDeltas(feedId);
             if (deltas != null && deltas.getDependentFeedNames() != null && !deltas.getDependentFeedNames().isEmpty()) {
                 file = session.create();
 
