@@ -382,6 +382,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 );
                             } else {
                                 self.model.loaded = true;
+                                FeedService.editFeedModel = {};
                                 FeedService.updateFeed(updatedFeedResponse.data);
                                 if (tabIndex != null && tabIndex != undefined && tabIndex != self.selectedTabIndex) {
                                     self.selectedTabIndex = tabIndex;
