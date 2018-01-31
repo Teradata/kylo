@@ -51,7 +51,7 @@
                                        {{assessment.result}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.assessmentDetails($event,assessment)">
-                                    <span class="item-title">{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</span>
+                                    <span class="item-title">{{'time_locale' | translate:{date:assessment.time} }}</span>
                                     <span class="column-title column-title-bottom">Created</span>
                                 </div>
                                 <div flex="45" flex-gt-md="20" layout="column" hide show-gt-sm class="item-column  md-list-item-text" title="{{assessment.message}}">
@@ -106,7 +106,7 @@
                                         <ng-md-icon ng-if="assessment.result == 'WARNING'" class="warn" icon="warning" size="20"></ng-md-icon>
                                        <span hide show-gt-md>{{assessment.result}}</span></span>
                                     </td>
-                                    <td md-cell >{{assessment.time | date: 'MMM d, yyyy HH:mm:ss'}}</td>
+                                    <td md-cell >{{'time_locale' | translate:{date:assessment.time} }}</td>
                                     <td md-cell >{{assessment.message}}</td>
                                 </tr>
                                 </tbody>

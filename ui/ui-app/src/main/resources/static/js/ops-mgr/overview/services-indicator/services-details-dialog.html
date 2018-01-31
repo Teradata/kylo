@@ -33,7 +33,7 @@
         <div class="md-list-item-text" layout="column">
           <a href ng-click="gotoServiceDetails(item.serviceName)">{{ item.serviceName }}<span ng-if="item.componentName">, {{item.componentName}}</span> <span ng-if="item.alertsCount >0" class="layout-padding-left">{{item.alertsCount}} Alerts</span></a>
           <h3 ng-if="item.componentMessage != null">{{item.componentMessage}}</h3>
-          <h4>Last checked: {{ item.latestAlertTimestamp | date:'HH:mm:ss a' }}</h4>
+          <h4>Last checked: {{'services-detail-dialog.time-locale' | translate:{date:item.latestAlertTimestamp} }}</h4>
         </div>
         <md-divider ></md-divider>
       </md-list-item>

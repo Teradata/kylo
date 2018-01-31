@@ -59,7 +59,7 @@
                               <div flex="30" layout="column" class="item-column md-list-item-text ">
 
                                            <span class="item-title">
-                                             {{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+                                             {{'registered-template.time_locale'|translate:{date:template.updateDate} }}</span>
                                              <span class="column-title column-title-bottom">
                                              Last Updated
                                            </span>
@@ -114,7 +114,7 @@
                             <td md-cell ng-click="vm.templateDetails($event,feed)">
                                 {{template.properties.length}}
                             </td>
-                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa' }}</td>
+                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{'registered-template.time_locale'|translate:{date:template.updateDate} }}</td>
                             <td md-cell>
                                 <md-button href="{{template.exportUrl}}"  layout-align="center">
                                     <ng-md-icon icon="launch" size="20" style="fill:#F08C38"> </ng-md-icon>
