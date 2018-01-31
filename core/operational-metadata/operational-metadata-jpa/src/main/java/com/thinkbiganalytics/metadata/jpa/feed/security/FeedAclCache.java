@@ -21,7 +21,7 @@ package com.thinkbiganalytics.metadata.jpa.feed.security;
 
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAclEntry;
 import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
-import com.thinkbiganalytics.metadata.jpa.cache.CacheBackedProviderListener;
+import com.thinkbiganalytics.metadata.api.cache.CacheBackedProviderListener;
 import com.thinkbiganalytics.metadata.jpa.cache.CacheListBean;
 import com.thinkbiganalytics.security.AccessController;
 

@@ -397,12 +397,16 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                         stats.setStream(opsManagerFeed.isStream());
                     }
                     stats.addRunningFeedFlows(runningCount);
-                    if(holder instanceof AggregatedFeedProcessorStatisticsHolderV3){
-                        stats.setTime(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
-                        stats.setLastActivityTimestamp(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
-                    }
-                    else {
+                    if (holder instanceof AggregatedFeedProcessorStatisticsHolderV3) {
+                        stats.setTime(((AggregatedFeedProcessorStatisticsHolderV3) holder).getTimestamp());
+                        if (stats.getLastActivityTimestamp() == null) {
+                            stats.setLastActivityTimestamp(((AggregatedFeedProcessorStatisticsHolderV3) holder).getTimestamp());
+                        }
+                    } else {
                         stats.setTime(DateTime.now().getMillis());
+                    }
+                    if (stats.getLastActivityTimestamp() == null) {
+                        log.warn("The JpaNifiFeedStats.lastActivityTimestamp for the feed {} is NULL.  The JMS Class was: {}", feedName, holder.getClass().getSimpleName());
                     }
                 }
             });
@@ -411,14 +415,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         //group stats to save together by feed name
         if (!feedStatsMap.isEmpty()) {
             //only save those that have changed
-            List<NifiFeedStats> updatedStats = feedStatsMap.entrySet().stream().filter(e -> {
-                                                                                           String key = e.getKey();
-                                                                                           JpaNifiFeedStats value = e.getValue();
-                                                                                           JpaNifiFeedStats savedStats = latestStatsCache.computeIfAbsent(key, name -> value);
-                                                                                           return ((value.getLastActivityTimestamp() != null && savedStats.getLastActivityTimestamp() != null && value.getLastActivityTimestamp() > savedStats.getLastActivityTimestamp()) ||
-                                                                                                   (value.getLastActivityTimestamp() != null && value.getRunningFeedFlows() != savedStats.getRunningFeedFlows()));
-                                                                                       }
-            ).map(e -> e.getValue()).collect(Collectors.toList());
+            List<NifiFeedStats> updatedStats = feedStatsMap.entrySet().stream().map(e -> e.getValue()).collect(Collectors.toList());
 
             //if the running flows are 0 and its streaming we should try back to see if this feed is running or not
             updatedStats.stream().filter(s -> s.isStream()).forEach(stats -> {
@@ -478,11 +475,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
 
         });
 
-        if (!unregisteredEvents.isEmpty()) {
 
-            //reprocess
-
-        }
         return nifiFeedProcessorStatsList;
 
     }

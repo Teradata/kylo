@@ -206,6 +206,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             copy.inputProcessor = self.editModel.inputProcessor;
             copy.inputProcessorType = self.editModel.inputProcessorType;
             copy.userProperties = null;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
 
             //table type is edited here so need to update that prop as well
             copy.table.tableType = self.editModel.table.tableType
@@ -239,7 +241,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
 
                 updateControllerServiceProperties();
                 //update the displayValue
-
+                //Get the updated value from the server.
+                self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
                 console.log('ERRORS were found ', response)

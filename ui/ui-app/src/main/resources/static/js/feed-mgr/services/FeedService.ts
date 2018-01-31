@@ -159,6 +159,8 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 tableOption: {},
                 cloned: false,
                 usedByFeeds: [],
+                allowIndexing: 'Y',
+                historyReindexingStatus: 'NEVER_RUN',
                 view: {
                     generalInfo: {disabled: false},
                     feedDetails: {disabled: false},

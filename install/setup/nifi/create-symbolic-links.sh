@@ -33,7 +33,7 @@ then
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-nar.nar
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-service-nar.nar
 
-elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] || [[ $ver == 1.4* ]] ;
+elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] || [[ $ver == 1.4* ]]  || [[ $ver == 1.5* ]] ;
 then
    echo "Creating symlinks for NiFi version $ver compatible nars"
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1.2-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar

@@ -581,7 +581,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public void markStreamingFeedAsStarted(String feed) {
         BatchJobExecution jobExecution = findLatestJobForFeed(feed);
         //ensure its Running
-        if (!jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
+        if (jobExecution != null && !jobExecution.getStatus().equals(BatchJobExecution.JobStatus.STARTED)) {
             log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
@@ -715,6 +715,21 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             return jobExecutions.get(0);
         } else {
             return null;
+        }
+    }
+
+    public List<? extends BatchJobExecution> findLatestFinishedJobForFeedSince(String feedName, DateTime dateTime) {
+        List<JpaBatchJobExecution> jobExecutions = null;
+        if(dateTime == null){
+            jobExecutions  = jobExecutionRepository.findLatestFinishedJobForFeed(feedName);
+        }
+        else {
+            jobExecutions = jobExecutionRepository.findLatestFinishedJobsForFeedSince(feedName, dateTime.getMillis());
+        }
+        if (jobExecutions != null ) {
+            return jobExecutions;
+        } else {
+            return Collections.emptyList();
         }
     }
 

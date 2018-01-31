@@ -69,6 +69,8 @@ public interface FeedProvider extends BaseProvider<Feed, Feed.ID>, EntityVersion
 
     Feed getFeed(Feed.ID id);
 
+    List<Feed> getFeedsForDataHistoryReindexing();
+
     List<? extends Feed> getFeeds();
 
     List<Feed> getFeeds(FeedCriteria criteria);

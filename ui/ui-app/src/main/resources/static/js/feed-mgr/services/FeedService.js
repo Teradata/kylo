@@ -146,6 +146,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     tableOption: {},
                     cloned: false,
                     usedByFeeds: [],
+                    allowIndexing: 'Y',
+                    historyReindexingStatus: 'NEVER_RUN',
                     view: {
                         generalInfo: { disabled: false },
                         feedDetails: { disabled: false },

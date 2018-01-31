@@ -29,6 +29,7 @@ public class AbstractJcrSystemEntity extends JcrPropertiesEntity {
     public static final String TITLE = JcrPropertyConstants.TITLE;
     public static final String SYSTEM_NAME = JcrPropertyConstants.SYSTEM_NAME;
     public static final String DESCRIPTION = JcrPropertyConstants.DESCRIPTION;
+    public static final String ALLOW_INDEXING = JcrPropertyConstants.ALLOW_INDEXING;
 
     public AbstractJcrSystemEntity(Node node) {
         super(node);
@@ -58,5 +59,12 @@ public class AbstractJcrSystemEntity extends JcrPropertiesEntity {
         setProperty(TITLE, title);
     }
 
+    public String getAllowIndexing() {
+        return getProperty(ALLOW_INDEXING, String.class);
+    }
+
+    public void setAllowIndexing(String allowIndexing) {
+        setProperty(ALLOW_INDEXING, allowIndexing);
+    }
 
 }

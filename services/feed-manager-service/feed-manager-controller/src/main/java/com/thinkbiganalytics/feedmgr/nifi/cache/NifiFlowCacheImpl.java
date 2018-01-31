@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.nifi.cache;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -118,6 +118,8 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
     @Deprecated
     private Map<String, Map<String, List<NifiFlowProcessor>>> feedProcessorIdProcessorMap = new ConcurrentHashMap<>();
+
+    Map<String, List<String>> feedToInputProcessorIds = new ConcurrentHashMap<>();
 
     @Deprecated
     private Map<String, NifiFlowProcessor> processorIdMap = new ConcurrentHashMap<>();
@@ -345,6 +347,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         processorIdToProcessorName.putAll(completionCallback.getProcessorIdToProcessorName());
         reuseableTemplateProcessorIds.addAll(completionCallback.getReusableTemplateProcessorIds());
         reusableTemplateProcessGroupId = completionCallback.getReusableTemplateProcessGroupId();
+        feedToInputProcessorIds.putAll(completionCallback.getFeedToInputProcessorIds());
 
         if (!flowInspectorManager.hasErrors()) {
             log.info("NiFi Flow Inspection took {} ms with {} threads for {} feeds, {} processors and {} connections ", flowInspectorManager.getTotalTime(), flowInspectorManager.getThreadCount(),
@@ -522,7 +525,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
     }
 
     public NifiFlowCacheSnapshot getLatest() {
-     return latest;
+        return latest;
     }
 
     private void initializeLatestSnapshot() {
@@ -531,6 +534,7 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         latest.setConnectionIdToConnection(connectionIdToConnectionMap);
         latest.setConnectionIdToConnectionName(connectionIdCacheNameMap);
         latest.setReusableTemplateProcessorIds(reuseableTemplateProcessorIds);
+        latest.setFeedToInputProcessorIds(feedToInputProcessorIds);
 
     }
 
@@ -758,6 +762,9 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
 
         updateConnectionMap(connections, false);
 
+        List<String> inputProcessorIds = NifiConnectionUtil.getInputProcessorIds(connections);
+        feedToInputProcessorIds.put(feedName, inputProcessorIds);
+
         //notify others of the cache update only if we are not doing a full refresh
         if (loaded && notifyClusterMembers) {
             if (nifiFlowCacheClusterManager.isClustered()) {
@@ -781,10 +788,15 @@ public class NifiFlowCacheImpl implements ServicesApplicationStartupListener, Ni
         updateProcessorIdMaps(feedProcessGroupId, processors);
 
         connectionIdToConnectionMap.putAll(toConnectionIdMap(connections));
+        List<String> inputProcessorIds = null;
 
         if (connections != null) {
             Map<String, String> connectionIdToNameMap = connections.stream().collect(Collectors.toMap(conn -> conn.getConnectionIdentifier(), conn -> conn.getName()));
             connectionIdCacheNameMap.putAll(connectionIdToNameMap);
+
+            Set<ConnectionDTO> connectionDTOS = connections.stream().map(conn -> NiFiFlowConnectionConverter.toConnection(conn)).collect(Collectors.toSet());
+            inputProcessorIds = NifiConnectionUtil.getInputProcessorIds(connectionDTOS);
+            feedToInputProcessorIds.put(feedName, inputProcessorIds);
         }
 
         processorIdMap.putAll(toProcessorIdMap(processors));

@@ -239,7 +239,24 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', valid);
         }
 
-        this.onEdit = function () {
+        this.shouldIndexingOptionsBeDisabled = function() {
+          return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+        };
+
+        this.shouldIndexingOptionsBeEnabled = function() {
+            return !this.shouldIndexingOptionsBeDisabled();
+        };
+
+        this.findAndReplaceString = function(str, findStr, replacementStr) {
+            var i = 0;
+            var strLength = str.length;
+            for (i; i < strLength; i++) {
+                str = str.replace(findStr, replacementStr);
+            }
+            return str;
+        };
+
+            this.onEdit = function () {
             //copy the model
             var fieldPolicies = angular.copy(FeedService.editFeedModel.table.fieldPolicies);
             var fields = angular.copy(FeedService.editFeedModel.table.tableSchema.fields);
@@ -279,6 +296,8 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             self.indexCheckAll.setup();
             self.profileCheckAll.setup();
 
+            self.editModel.historyReindexingStatus = FeedService.editFeedModel.historyReindexingStatus;
+
             $timeout(validateMergeStrategies, 400);
         };
 
@@ -291,9 +310,74 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
         };
 
         this.onSave = function (ev) {
+
+            //Identify if any indexing options were changed
+            var indexChanges = {};
+
+            for (i=0; i<FeedService.editFeedModel.table.fieldPolicies.length; i++) {
+                var fieldName = FeedService.editFeedModel.table.fieldPolicies[i].fieldName;
+                var indexOption = FeedService.editFeedModel.table.fieldPolicies[i].index;
+
+                if (self.editModel.fieldPolicies[i].fieldName == fieldName) {
+                    if (self.editModel.fieldPolicies[i].index != indexOption) {
+                        indexChanges[self.editModel.fieldPolicies[i].fieldName] = self.editModel.fieldPolicies[i].index;
+                    }
+                }
+            }
+
+            if (Object.keys(indexChanges).length > 0) {
+                var displayIndexChanges = "";
+                var displayIndexChangedStatus = "";
+                var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
+
+                //using styles does not render correctly.
+                displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below. This will take effect going forward.<br>"
+                                                + "Apply changes to historical feed data as well? "
+                                                + "(If you choose YES, further indexing changes will not be allowed for feed till historical processing is complete)</font></div><br>"
+                                                + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
+
+                for (var key in indexChanges) {
+                    displayIndexChanges+="<tr>";
+                    if (indexChanges[key] == true) {
+                        displayIndexChangedStatus = "<font color='green'>enabled</font>";
+                    } else {
+                        displayIndexChangedStatus = "<font color='red'>disabled</font>";
+                    }
+                    displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
+                    displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
+                    displayIndexChanges+="</tr>";
+                }
+                displayIndexChanges += "</table></div>";
+
+                var confirm = $mdDialog.confirm()
+                    .title("Apply data indexing changes to historical data?")
+                    .htmlContent(displayIndexChanges)
+                    .ariaLabel("Apply data indexing changes to historical data?")
+                    .ok("Yes")
+                    .cancel("No");
+
+                $mdDialog.show(confirm).then(function () {
+                    self.editModel.historyReindexingStatus = 'DIRTY';
+                    self.goAheadWithSave(ev, true);
+                }, function() {
+                    self.goAheadWithSave(ev, false);
+                });
+            } else {
+                self.goAheadWithSave(ev, false);
+            }
+        };
+
+        this.goAheadWithSave = function(ev, applyHistoryReindexing) {
             //save changes to the model
             FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-data-policies.Saving'), self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
+
+            if (applyHistoryReindexing === true) {
+                copy.historyReindexingStatus = self.editModel.historyReindexingStatus;
+            } else {
+                //Server may have updated value. Don't send via UI.
+                copy.historyReindexingStatus = undefined;
+            }
 
             copy.table.targetFormat = self.editModel.table.targetFormat;
             copy.table.fieldPolicies = self.editModel.fieldPolicies;
@@ -328,6 +412,8 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
                 self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                 self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 self.model.table.options = self.editModel.table.options;
+                //Get the updated value from the server.
+                self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                 populateFieldNameMap();
             }, function (response) {
                 FeedService.hideFeedSavingDialog();

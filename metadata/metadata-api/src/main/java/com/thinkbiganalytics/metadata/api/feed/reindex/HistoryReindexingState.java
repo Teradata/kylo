@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.metadata.jpa.cache;
+package com.thinkbiganalytics.metadata.api.feed.reindex;
 
 /*-
  * #%L
- * kylo-operational-metadata-jpa
+ * kylo-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -21,19 +21,12 @@ package com.thinkbiganalytics.metadata.jpa.cache;
  */
 
 /**
- * Listener for those caches that need to be updated when the base cache is updated.
- * Usually these <ID,T> refer to the Database Id, and Database object
- *
- * @param <ID> the base cache Id
- * @param <T>  the base cached item
+ * Data history reindex states for a feed (domain model)
  */
-public interface CacheBackedProviderListener<ID, T> {
-
-    void onAddedItem(ID key, T value);
-
-    void onRemovedItem(T value);
-
-    void onRemoveAll();
-
-    void onPopulated();
+public enum HistoryReindexingState {
+    NEVER_RUN,
+    DIRTY,
+    IN_PROGRESS,
+    COMPLETED_WITH_SUCCESS,
+    COMPLETED_WITH_FAILURE
 }

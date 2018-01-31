@@ -209,6 +209,16 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     @Override
+    public String getAllowIndexing() {
+        return super.getProperty(ALLOW_INDEXING, String.class);
+    }
+
+    @Override
+    public void setAllowIndexing(String allowIndexing) {
+        super.setProperty(ALLOW_INDEXING, allowIndexing);
+    }
+
+    @Override
     public Integer getVersion() {
         return null;
     }

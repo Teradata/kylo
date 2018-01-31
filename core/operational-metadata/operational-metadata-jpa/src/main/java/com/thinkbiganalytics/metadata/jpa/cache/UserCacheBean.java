@@ -19,7 +19,7 @@ package com.thinkbiganalytics.metadata.jpa.cache;
  * #L%
  */
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.config.RoleSetExposingSecurityExpressionRoot;
+import com.thinkbiganalytics.metadata.api.cache.CacheBackedProviderListener;
 import com.thinkbiganalytics.metadata.jpa.common.EntityAccessControlled;
 import com.thinkbiganalytics.metadata.jpa.feed.security.FeedAclCache;
 import com.thinkbiganalytics.security.AccessController;

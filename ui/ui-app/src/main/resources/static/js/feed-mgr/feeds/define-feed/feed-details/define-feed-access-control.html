@@ -45,6 +45,25 @@
       </md-input-container>
 
     </div>
+    <div>Index Control</div>
+    <div layout="row" layout-padding>
+      <div flex="40" style="align-self:center;">
+        <span>Index feed metadata and schema</span>
+        <div class="hint">
+          Index metadata and schema for the feed in a search engine.
+        </div>
+      </div>
+      <div flex class="">
+        <md-checkbox
+            ng-model="vm.model.allowIndexing"
+            aria-label="Indexing Allowed"
+            ng-true-value="'Y'"
+            ng-false-value="'N'"
+            ng-disabled="false"
+            class="md-primary md-align-top-left" flex>
+        </md-checkbox>
+      </div>
+    </div>
 
     <br/><br/><br/>
     <thinkbig-step-buttons can-continue="vm.feedAccessControlForm.$valid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>

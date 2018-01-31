@@ -92,9 +92,7 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
 
     public NifiFlowCacheClusterUpdateMessage updateProcessors(Collection<ProcessorDTO> processors) {
         //strip for serialization ... create new NifiFlowCacheSimpleProcessorDTO
-        List<NifiFlowCacheSimpleProcessorDTO> processorsToCache = processors.stream()
-            .map(p -> new NifiFlowCacheSimpleProcessorDTO(p.getId(), p.getName(), p.getType(), p.getParentGroupId()))
-            .collect(Collectors.toList());
+        List<NifiFlowCacheSimpleProcessorDTO> processorsToCache = toSimpleProcessorDtoList(processors);
         String json = ObjectMapperSerializer.serialize(processorsToCache);
         NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.PROCESSOR, json);
         updatedCache(updateMessage);
@@ -124,8 +122,10 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
      * starting with 0.8.3.1 cluster manager will callback using this method
      */
     public NifiFlowCacheClusterUpdateMessage updateFeed2(String feedName, boolean isStream, String feedProcessGroupId, Collection<ProcessorDTO> processors, Collection<ConnectionDTO> connections) {
-        NifiFlowCacheSimpleFeedUpdate feedUpdate = new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformProcessors(processors), transformConnections(connections));
-        String json = ObjectMapperSerializer.serialize(feedUpdate);
+        List<NifiFlowCacheSimpleProcessorDTO> simpleProcessors = toSimpleProcessorDtoList(processors);
+        NifiFlowCacheFeedUpdate2 feedUpdate2 = new NifiFlowCacheFeedUpdate2(feedName, isStream, feedProcessGroupId, processors, simpleProcessors, connections);
+        //NifiFlowCacheSimpleFeedUpdate feedUpdate = new NifiFlowCacheSimpleFeedUpdate(feedName, isStream, feedProcessGroupId, transformProcessors(processors), transformConnections(connections));
+        String json = ObjectMapperSerializer.serialize(feedUpdate2);
         NifiFlowCacheClusterUpdateMessage updateMessage = new NifiFlowCacheClusterUpdateMessage(NiFiFlowCacheUpdateType.FEED2, json);
         updatedCache(updateMessage);
         return updateMessage;
@@ -222,6 +222,17 @@ public class NifiFlowCacheClusterManager implements ClusterServiceListener {
             return connections.stream()
                 .map(c -> new NifiFlowConnection(c.getId(), c.getName(), c.getSource() != null ? c.getSource().getId() : null, c.getDestination() != null ? c.getDestination().getId() : null))
                 .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+    private List<NifiFlowCacheSimpleProcessorDTO> toSimpleProcessorDtoList(Collection<ProcessorDTO> processors) {
+        if (processors != null) {
+            List<NifiFlowCacheSimpleProcessorDTO> list = processors.stream()
+                .map(p -> new NifiFlowCacheSimpleProcessorDTO(p.getId(), p.getName(), p.getType(), p.getParentGroupId()))
+                .collect(Collectors.toList());
+            return list;
         } else {
             return Collections.emptyList();
         }
