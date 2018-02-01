@@ -1,82 +1,116 @@
-define(["require", "exports", "angular", "underscore", "pascalprecht.translate"], function (require, exports, angular, _) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/feeds/edit-feed/module-name');
-    var directiveConfig = function () {
-        return {
-            restrict: "EA",
-            bindToController: {},
-            controllerAs: 'vm',
-            scope: {},
-            templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-data-policies.html',
-            controller: "FeedDataPoliciesController",
-            link: function ($scope, element, attrs, controller) {
-            }
-        };
+import * as angular from 'angular';
+import 'pascalprecht.translate';
+const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
+import * as _ from 'underscore';
+
+
+
+let directiveConfig = function () {
+    return {
+        restrict: "EA",
+        bindToController: {},
+        controllerAs: 'vm',
+        scope: {},
+        templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-data-policies.html',
+        controller: "FeedDataPoliciesController",
+        link: function ($scope:any, element:any, attrs:any, controller:any) {
+
+        }
+
     };
-    var Controller = /** @class */ (function () {
-        function Controller($scope, $mdDialog, $timeout, $q, $compile, $sce, AccessControlService, EntityAccessControlService, FeedService, StateService, FeedFieldPolicyRuleService, DomainTypesService, $filter) {
-            var _this = this;
-            this.$scope = $scope;
-            this.$mdDialog = $mdDialog;
-            this.$timeout = $timeout;
-            this.$q = $q;
-            this.$compile = $compile;
-            this.$sce = $sce;
-            this.AccessControlService = AccessControlService;
-            this.EntityAccessControlService = EntityAccessControlService;
-            this.FeedService = FeedService;
-            this.StateService = StateService;
-            this.FeedFieldPolicyRuleService = FeedFieldPolicyRuleService;
-            /**
-             * Indicates if the feed data policies may be edited.
-             * @type {boolean}
-             */
-            this.allowEdit = false;
-            this.model = this.FeedService.editFeedModel;
-            // model:any = FeedService.editFeedModel;
-            /**
-             * The form for angular errors
-             * @type {{}}
-             */
-            this.editFeedDataPoliciesForm = {};
-            this.editableSection = false;
-            /**
-             * List of available domain types.
-             * @type {DomainType[]}
-             */
-            this.availableDomainTypes = [];
-            this.editModel = null;
-            ///////////////////////////////////////////////////////
-            this.totalChecked = 0;
-            this.isChecked = false;
-            this.isIndeterminate = false;
-            this.checkAll = {
-                isChecked: true,
-                isIndeterminate: false,
-                totalChecked: this.totalChecked,
-                clicked: function (checked) {
-                    if (checked) {
-                        _this.totalChecked++;
-                    }
-                    else {
-                        _this.totalChecked--;
-                    }
-                    _this.markChecked();
-                },
-                markChecked: this.markChecked
-            };
+};
+
+
+export class Controller implements ng.IComponentController {
+
+                
+        /**
+         * Indicates if the feed data policies may be edited.
+         * @type {boolean}
+         */
+        allowEdit:boolean = false;
+        model:any = this.FeedService.editFeedModel;
+        // model:any = FeedService.editFeedModel;
+        /**
+         * The form for angular errors
+         * @type {{}}
+         */
+        editFeedDataPoliciesForm:any = {};
+
+        editableSection:boolean = false;
+
+        /**
+         * List of available domain types.
+         * @type {DomainType[]}
+         */
+        availableDomainTypes:Array<any>= [];
+
+
+
+
+
+
+
+
+
+
+
+        editModel:any = null;
+
+///////////////////////////////////////////////////////
+        totalChecked:number = 0;
+
+        isChecked:boolean = false;
+        isIndeterminate:boolean = false;
+
+
+//.....................................................
+        markChecked() {
+            if (this.totalChecked == this.editModel.fieldPolicies.length) {
+                this.isChecked = true;
+                this.isIndeterminate = false;
+            }
+            else if (this.totalChecked > 0) {
+                this.isChecked = false;
+                this.isIndeterminate = true;
+            }
+            else if (this.totalChecked == 0) {
+                this.isChecked = false;
+                this.isIndeterminate = false;
+            }
+        }
+
+        checkAll:any = {
+            isChecked: true,
+            isIndeterminate: false,
+            totalChecked: this.totalChecked,
+            clicked: (checked:boolean) => {
+                if (checked) {
+                    this.totalChecked++;
+                }
+                else {
+                    this.totalChecked--;
+                }
+                this.markChecked();
+            },
+            markChecked: this.markChecked
+        };
+    constructor(private $scope:any, private $mdDialog:any, private $timeout:any, private $q:any, private $compile:any, private $sce:any, private AccessControlService:any, private EntityAccessControlService:any, private FeedService:any, private StateService:any, private FeedFieldPolicyRuleService:any,
+        DomainTypesService:any, $filter:any) {
             var self = this;
-            DomainTypesService.findAll().then(function (domainTypes) {
+            DomainTypesService.findAll().then((domainTypes:any) => {
                 self.availableDomainTypes = domainTypes;
                 // KYLO-251 Remove data type until schema evolution is supported
-                domainTypes.forEach(function (domainType) {
+                domainTypes.forEach((domainType:any) => {
                     if (domainType && domainType.field) {
                         domainType.field.derivedDataType = null;
                         domainType.field.precisionScale = null;
                     }
                 });
             });
+    
+
+    
             /**
              * Toggle Check All/None on Profile column
              * Default it to true
@@ -85,22 +119,22 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             var profileCheckAll = angular.extend({
                 isChecked: true,
                 isIndeterminate: false,
-                toggleAll: function () {
-                    var checked = (!_this.isChecked || _this.isIndeterminate) ? true : false;
-                    _.each(self.editModel.fieldPolicies, function (field) {
+                toggleAll: () => {
+                    var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                    _.each(self.editModel.fieldPolicies,  (field) =>{
                         field["profile"] = checked;
                     });
                     if (checked) {
-                        _this.totalChecked = self.editModel.fieldPolicies.length;
+                        this.totalChecked = self.editModel.fieldPolicies.length;
                     }
                     else {
-                        _this.totalChecked = 0;
+                        this.totalChecked = 0;
                     }
-                    _this.markChecked();
+                    this.markChecked();
                 },
-                setup: function () {
+                setup: () => {
                     profileCheckAll.totalChecked = 0;
-                    _.each(self.editModel.fieldPolicies, function (field) {
+                    _.each(self.editModel.fieldPolicies, (field) => {
                         if (field["profile"]) {
                             profileCheckAll.totalChecked++;
                         }
@@ -108,6 +142,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     profileCheckAll.markChecked();
                 }
             }, this.checkAll);
+            
             /**
              *
              * Toggle check all/none on the index column
@@ -117,23 +152,24 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             var indexCheckAll = angular.extend({
                 isChecked: false,
                 isIndeterminate: false,
-                toggleAll: function () {
-                    var checked = (!_this.isChecked || _this.isIndeterminate) ? true : false;
-                    _.each(self.editModel.fieldPolicies, function (field) {
+                toggleAll: () => {
+                    var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
+                    _.each(self.editModel.fieldPolicies, (field) => {
                         field["index"] = checked;
                     });
-                    _this.isChecked = checked;
+                    this.isChecked = checked;
+    
                     if (checked) {
-                        _this.totalChecked = self.editModel.fieldPolicies.length;
+                        this.totalChecked = self.editModel.fieldPolicies.length;
                     }
                     else {
-                        _this.totalChecked = 0;
+                        this.totalChecked = 0;
                     }
-                    _this.markChecked();
+                    this.markChecked();
                 },
-                setup: function () {
+                setup: ()=> {
                     indexCheckAll.totalChecked = 0;
-                    _.each(self.editModel.fieldPolicies, function (field) {
+                    _.each(self.editModel.fieldPolicies, (field) => {
                         if (field["index"]) {
                             indexCheckAll.totalChecked++;
                         }
@@ -141,92 +177,111 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     indexCheckAll.markChecked();
                 }
             }, this.checkAll);
-            $scope.$watch(function () {
+    
+            $scope.$watch(() => {
                 return FeedService.editFeedModel;
-            }, function (newVal) {
+            }, (newVal:any) => {
                 //only update the model if it is not set yet
                 if (self.model == null) {
                     self.model = FeedService.editFeedModel;
                     populateFieldNameMap();
                     applyDefaults();
+    
                 }
             });
+            
             /**
              * apply default values to the read only model
              */
             function applyDefaults() {
                 if (self.model.table.targetFormat === undefined || self.model.table.targetFormat === '' || self.model.table.targetFormat === null) {
                     //default to ORC
-                    self.model.table.targetFormat = 'STORED AS ORC';
+                    self.model.table.targetFormat = 'STORED AS ORC'
                 }
                 if (self.model.table.options.compressionFormat === undefined || self.model.table.options.compressionFormat === '' || self.model.table.options.compressionFormat === null) {
-                    self.model.table.options.compressionFormat = 'NONE';
+                    self.model.table.options.compressionFormat = 'NONE'
                 }
             }
+    
             var fieldNameMap = {};
+    
             function populateFieldNameMap() {
                 fieldNameMap = {};
-                _.each(self.model.table.tableSchema.fields, function (field) {
+    
+                _.each(self.model.table.tableSchema.fields,(field) => {
                     fieldNameMap[field['name']] = field;
                 });
             }
+    
             populateFieldNameMap();
             applyDefaults();
+    
             var compressionOptions = FeedService.allCompressionOptions();
+    
             var mergeStrategies = angular.copy(FeedService.mergeStrategies);
+    
             var targetFormatOptions = FeedService.targetFormatOptions;
-            var transformChip = function (chip) {
+    
+            var transformChip = function (chip:any) {
                 // If it is an object, it's already a known chip
                 if (angular.isObject(chip)) {
                     return chip;
                 }
                 // Otherwise, create a new one
-                return { name: chip };
+                return {name: chip}
             };
-            function findProperty(key) {
-                return _.find(self.model.inputProcessor.properties, function (property) {
+    
+            
+            function findProperty(key:any) {
+                return _.find(self.model.inputProcessor.properties,  (property) => {
                     //return property.key = 'Source Database Connection';
                     return property["key"] == key;
                 });
             }
+            
             /**
              * Returns the readable display name for the mergeStrategy on the edited feed model
              * @returns {*}
              */
             var mergeStrategyDisplayName = function () {
-                var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
+                var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy:any) {
                     return strategy.type == self.model.table.targetMergeStrategy;
                 });
-                return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy;
+                return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy
             };
+    
             /**
              * Enable/Disable the PK Merge Strategy
              */
             var onChangePrimaryKey = function () {
                 validateMergeStrategies();
             };
+    
             var onChangeMergeStrategy = function () {
                 validateMergeStrategies();
             };
+
             function validateMergeStrategies() {
                 var valid = FeedService.enableDisablePkMergeStrategy(self.editModel, mergeStrategies);
                 self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidPKOption', valid);
+    
                 valid = FeedService.enableDisableRollingSyncMergeStrategy(self.model, mergeStrategies);
                 self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', valid);
             }
+    
             var onEdit = function () {
                 //copy the model
                 var fieldPolicies = angular.copy(FeedService.editFeedModel.table.fieldPolicies);
                 var fields = angular.copy(FeedService.editFeedModel.table.tableSchema.fields);
                 //assign the field to the policy
-                var fieldMap = _.groupBy(fields, function (field) {
-                    return field.name;
+                var fieldMap = _.groupBy(fields,  (field:any) => {
+                    return field.name
                 });
-                _.each(fieldPolicies, function (policy) {
+                _.each(fieldPolicies,  (policy:any) => {
                     var columnDef = fieldMap[policy.name][0];
                     policy.columnDef = columnDef;
                     if (angular.isString(policy.domainTypeId) && policy.domainTypeId !== "") {
-                        policy.$currentDomainType = _.find(self.availableDomainTypes, function (domainType) {
+                        policy.$currentDomainType = _.find(self.availableDomainTypes,  (domainType) => {
                             return policy.domainTypeId === domainType.id;
                         });
                         if (angular.isUndefined(policy.$currentDomainType)) {
@@ -234,41 +289,50 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                         }
                     }
                 });
+    
                 self.editModel = {};
                 self.editModel.fieldPolicies = fieldPolicies;
+    
                 self.editModel.table = {};
                 self.editModel.table.tableSchema = {};
                 self.editModel.table.tableSchema.fields = fields;
                 self.editModel.table.targetFormat = FeedService.editFeedModel.table.targetFormat;
                 if (self.editModel.table.targetFormat === undefined) {
                     //default to ORC
-                    self.editModel.table.targetFormat = 'ORC';
+                    self.editModel.table.targetFormat = 'ORC'
                 }
                 self.editModel.table.targetMergeStrategy = FeedService.editFeedModel.table.targetMergeStrategy;
                 self.editModel.table.options = angular.copy(FeedService.editFeedModel.table.options);
                 if (self.editModel.table.options.compressionFormat === undefined) {
-                    self.editModel.options.compressionFormat = 'NONE';
+                    self.editModel.options.compressionFormat = 'NONE'
                 }
                 indexCheckAll.setup();
                 profileCheckAll.setup();
+    
                 $timeout(validateMergeStrategies, 400);
             };
+            
             var onCancel = function () {
+    
             };
-            var getAllFieldPolicies = function (field) {
+    
+            var getAllFieldPolicies = function (field:any) {
                 return FeedFieldPolicyRuleService.getAllPolicyRules(field);
             };
-            var onSave = function (ev) {
+    
+            var onSave = function (ev:any) {
                 //save changes to the model
                 FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-data-policies.Saving'), self.model.feedName);
                 var copy = angular.copy(FeedService.editFeedModel);
+    
                 copy.table.targetFormat = self.editModel.table.targetFormat;
                 copy.table.fieldPolicies = self.editModel.fieldPolicies;
+    
                 //add back in the changes to the pk, nullable, created, updated tracker columns
-                var policyMap = _.groupBy(copy.table.fieldPolicies, function (policy) {
-                    return policy.name;
+                var policyMap = _.groupBy(copy.table.fieldPolicies, (policy:any) => {
+                    return policy.name
                 });
-                _.each(copy.table.tableSchema.fields, function (field) {
+                _.each(copy.table.tableSchema.fields, (field:any) => {
                     //find the respective changes in the ui object for this field
                     var updatedColumnDef = policyMap[field.name] != undefined ? policyMap[field.name][0] : undefined;
                     if (updatedColumnDef) {
@@ -277,13 +341,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     }
                 });
                 //strip off the added 'columnDef' property
-                _.each(self.editModel.fieldPolicies, function (policy) {
+                _.each(self.editModel.fieldPolicies, (policy:any) => {
                     policy.columnDef = undefined;
                 });
+    
                 copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 copy.table.options = self.editModel.table.options;
                 copy.userProperties = null;
-                FeedService.saveFeedModel(copy).then(function (response) {
+    
+                FeedService.saveFeedModel(copy).then((response:any) => {
                     FeedService.hideFeedSavingDialog();
                     self.editableSection = false;
                     //save the changes back to the model
@@ -293,7 +359,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                     self.model.table.options = self.editModel.table.options;
                     populateFieldNameMap();
-                }, function (response) {
+                }, (response:any) => {
                     FeedService.hideFeedSavingDialog();
                     FeedService.buildErrorData(self.model.feedName, response);
                     FeedService.showFeedErrorsDialog();
@@ -301,7 +367,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     self.editableSection = true;
                 });
             };
-            var showFieldRuleDialog = function (field) {
+            
+            var showFieldRuleDialog = function (field:any) {
                 $mdDialog.show({
                     controller: 'FeedFieldPolicyRuleDialogController',
                     templateUrl: 'js/feed-mgr/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
@@ -313,44 +380,47 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                         field: field
                     }
                 })
-                    .then(function () {
-                    if (angular.isObject(field.$currentDomainType)) {
-                        var domainStandardization = _.map(field.$currentDomainType.fieldPolicy.standardization, _.property("name"));
-                        var domainValidation = _.map(field.$currentDomainType.fieldPolicy.validation, _.property("name"));
-                        var fieldStandardization = _.map(field.standardization, _.property("name"));
-                        var fieldValidation = _.map(field.validation, _.property("name"));
-                        if (!angular.equals(domainStandardization, fieldStandardization) || !angular.equals(domainValidation, fieldValidation)) {
-                            delete field.$currentDomainType;
-                            field.domainTypeId = null;
+                    .then(() => {
+                        if (angular.isObject(field.$currentDomainType)) {
+                            var domainStandardization = _.map(field.$currentDomainType.fieldPolicy.standardization, _.property("name"));
+                            var domainValidation = _.map(field.$currentDomainType.fieldPolicy.validation, _.property("name"));
+                            var fieldStandardization = _.map(field.standardization, _.property("name"));
+                            var fieldValidation = _.map(field.validation, _.property("name"));
+                            if (!angular.equals(domainStandardization, fieldStandardization) || !angular.equals(domainValidation, fieldValidation)) {
+                                delete field.$currentDomainType;
+                                field.domainTypeId = null;
+                            }
                         }
-                    }
-                });
+                    });
             };
+    
             /**
              * Gets the domain type with the specified id.
              *
              * @param {string} domainTypeId the domain type id
              * @returns {(DomainType|null)} the domain type
              */
-            var getDomainType = function (domainTypeId) {
-                return _.find(self.availableDomainTypes, function (domainType) {
+            var getDomainType = function (domainTypeId:any) {
+                return _.find(self.availableDomainTypes, (domainType:any) => {
                     return (domainType.id === domainTypeId);
                 });
             };
+    
             /**
              * Gets the placeholder HTML for the specified domain type option.
              *
              * @param {string} domainTypeId the domain type id
              * @returns {string} the placeholder HTML
              */
-            var getDomainTypePlaceholder = function (domainTypeId) {
+            var getDomainTypePlaceholder = function (domainTypeId:any) {
                 // Find domain type from id
                 var domainType = null;
                 if (angular.isString(domainTypeId) && domainTypeId !== "") {
-                    domainType = _.find(self.availableDomainTypes, function (domainType) {
+                    domainType = _.find(self.availableDomainTypes, (domainType) => {
                         return (domainType.id === domainTypeId);
                     });
                 }
+    
                 // Generate the HTML
                 if (angular.isObject(domainType)) {
                     var element = $("<ng-md-icon/>")
@@ -359,29 +429,31 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                         .css("fill", domainType.iconColor)
                         .css("margin-left", "12px");
                     return $sce.trustAsHtml($compile(element)($scope)[0].outerHTML);
-                }
-                else {
+                } else {
                     return "";
                 }
             };
+    
             /**
              * Display a confirmation when the domain type of a field is changed and there are existing standardizers and validators.
              *
              * @param {FieldPolicy} policy the field policy
              */
-            var onDomainTypeChange = function (policy) {
+            var onDomainTypeChange = function (policy:any) {
                 // Check if removing domain type
                 if (!angular.isString(policy.domainTypeId) || policy.domainTypeId === "") {
                     delete policy.$currentDomainType;
                     return;
                 }
+    
                 // Find domain type from id
-                var domainType = _.find(self.availableDomainTypes, function (domainType) {
+                var domainType = _.find(self.availableDomainTypes,  (domainType:any) => {
                     return (domainType.id === policy.domainTypeId);
                 });
+    
                 // Apply domain type to field
                 if ((domainType.field.derivedDataType !== null
-                    && (domainType.field.derivedDataType !== policy.columnDef.derivedDataType || domainType.field.precisionScale !== policy.columnDef.precisionScale))
+                        && (domainType.field.derivedDataType !== policy.columnDef.derivedDataType || domainType.field.precisionScale !== policy.columnDef.precisionScale))
                     || (angular.isArray(policy.standardization) && policy.standardization.length > 0)
                     || (angular.isArray(policy.columnDef.tags) && policy.columnDef.tags.length > 0)
                     || (angular.isArray(policy.validation) && policy.validation.length > 0)) {
@@ -396,22 +468,22 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                             field: policy.columnDef
                         }
                     })
-                        .then(function () {
-                        FeedService.setDomainTypeForField(policy.columnDef, policy, domainType);
-                    }, function () {
-                        policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
-                    });
-                }
-                else {
+                        .then( ()=> {
+                            FeedService.setDomainTypeForField(policy.columnDef, policy, domainType);
+                        },  ()=> {
+                            policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
+                        });
+                } else {
                     FeedService.setDomainTypeForField(policy.columnDef, policy, domainType);
                 }
             };
+    
             /**
              * Shows the Edit Field dialog for the specified field.
              *
              * @param {Object} field the field to edit
              */
-            var showEditFieldDialog = function (field) {
+            var showEditFieldDialog = function (field:any) {
                 $mdDialog.show({
                     controller: "EditFieldDialogController",
                     escapeToClose: false,
@@ -421,46 +493,38 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     locals: {
                         field: field
                     }
-                }).then(function () {
+                }).then(() => {
                     field.$edited = true;
                 });
             };
+    
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                self.allowEdit = access && !self.model.view.dataPolicies.disabled;
+            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access:any) {
+                self.allowEdit = access && !self.model.view.dataPolicies.disabled
             });
-        }
-        //.....................................................
-        Controller.prototype.markChecked = function () {
-            if (this.totalChecked == this.editModel.fieldPolicies.length) {
-                this.isChecked = true;
-                this.isIndeterminate = false;
-            }
-            else if (this.totalChecked > 0) {
-                this.isChecked = false;
-                this.isIndeterminate = true;
-            }
-            else if (this.totalChecked == 0) {
-                this.isChecked = false;
-                this.isIndeterminate = false;
-            }
-        };
-        return Controller;
-    }());
-    exports.Controller = Controller;
-    var EditFieldDialogController = /** @class */ (function () {
-        // define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular, moduleName) {
-        function EditFieldDialogController($scope, $mdDialog, FeedTagService, field) {
-            /**
-             * Controls the Edit Field dialog.
-             * @constructor
-             */
-            // var EditFieldDialogController = function () {
+        
+    }
+
+}
+
+export class EditFieldDialogController implements ng.IComponentController {
+// define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular, moduleName) {
+
+constructor($scope:any, $mdDialog:any, FeedTagService:any, field:any){
+
+    
+        /**
+         * Controls the Edit Field dialog.
+         * @constructor
+         */
+        // var EditFieldDialogController = function () {
+    
             /**
              * Provides a list of available tags.
              * @type {FeedTagService}
              */
             $scope.feedTagService = FeedTagService;
+    
             /**
              * The field to edit.
              * @type {Object}
@@ -469,40 +533,44 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             if (!angular.isArray(field.tags)) {
                 field.tags = [];
             }
+    
             /**
              * Metadata for the tag.
              * @type {{searchText: null, selectedItem: null}}
              */
-            $scope.tagChips = { searchText: null, selectedItem: null };
+            $scope.tagChips = {searchText: null, selectedItem: null};
+    
             /**
              * Closes and rejects the dialog.
              */
             $scope.cancel = function () {
                 $mdDialog.cancel();
             };
+    
             /**
              * Closes and accepts the dialog.
              */
             $scope.hide = function () {
                 $mdDialog.hide();
             };
+    
             /**
              * Transforms the specified chip into a tag.
              * @param {string} chip the chip
              * @returns {Object} the tag
              */
-            $scope.transformChip = function (chip) {
-                return angular.isObject(chip) ? chip : { name: chip };
+            $scope.transformChip = function (chip:any) {
+                return angular.isObject(chip) ? chip : {name: chip};
             };
-            // };
+        // };
+    
+
+    
         }
-        return EditFieldDialogController;
-    }());
-    exports.EditFieldDialogController = EditFieldDialogController;
+    }
+
     angular.module(moduleName)
-        .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
-        "FeedFieldPolicyRuleService", "DomainTypesService", "$filter", Controller])
-        .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
-        .directive('thinkbigFeedDataPolicies', directiveConfig);
-});
-//# sourceMappingURL=feed-data-policies.js.map
+    .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
+                                               "FeedFieldPolicyRuleService", "DomainTypesService", "$filter", Controller])
+    .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
+    .directive('thinkbigFeedDataPolicies', directiveConfig);
