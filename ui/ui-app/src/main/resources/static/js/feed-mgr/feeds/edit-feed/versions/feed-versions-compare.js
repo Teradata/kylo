@@ -46,6 +46,9 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
         }
 
         this.changeRightVersion = function() {
+            var version = _.find(self.versions, function(v){
+                return v.id === self.rightVersion;
+            });
             self.loading = true;
             var diff = FeedService.diffFeedVersions(this.model.feedId, self.rightVersion, getCurrentVersion().id).then(function(result) {
                 FeedService.versionFeedModelDiff = [];
@@ -56,14 +59,15 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
 
             });
 
-            var version = FeedService.getFeedVersion(this.model.feedId, self.rightVersion).then(function(result) {
+            var versionedFeed = FeedService.getFeedVersion(this.model.feedId, self.rightVersion).then(function(result) {
                 self.rightFeed = result.entity;
                 FeedService.versionFeedModel = self.rightFeed;
+                FeedService.versionFeedModel.version = version;
             }, function (err) {
 
             });
 
-            Promise.all([diff, version]).then(function(result) {
+            Promise.all([diff, versionedFeed]).then(function(result) {
                 self.loading = false;
             }).catch(function(err) {
                 self.loading = false;

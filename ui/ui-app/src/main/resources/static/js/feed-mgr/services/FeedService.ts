@@ -890,33 +890,29 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         },
 
         diffCollectionOperation: function (path: any) {
+            const self = this;
             if (this.versionFeedModelDiff) {
                 if (this.versionFeedModelDiff[path]) {
                     return this.versionFeedModelDiff[path].op;
                 } else {
-                    var patch =
-                        {
-                            opLevels: {'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2},
-                            op: 'no-change',
-                            join: function (patch: any) {
-                                if (this.opLevels[patch.op] > this.opLevels[this.op]) {
-                                    this.op = patch.op;
-                                } else if (this.opLevels[patch.op] === this.opLevels[this.op]) {
-                                    this.op = 'replace';
-                                }
-                            }
-                        };
-                    console.log('diff collection for path ' + path);
-                    _.each(this.versionFeedModelDiff, function(p) {
-                        if (p.path.startsWith(path)) {
-                            patch.join(p);
+                    const patch = {op: 'no-change'};
+                    _.each(_.values(this.versionFeedModelDiff), function(p) {
+                        if (p.path.startsWith(path + "/")) {
+                            patch.op = self.joinVersionOperations(patch.op, p.op);
                         }
                     });
-
                     return patch.op;
                 }
             }
             return 'no-change';
+        },
+
+        joinVersionOperations: function(op1: any, op2: any) {
+            const opLevels = {'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2};
+            if (opLevels[op1] === opLevels[op2] && op1 !== 'no-change') {
+                return 'replace';
+            }
+            return opLevels[op1] > opLevels[op2] ? op1 : op2;
         },
 
         resetVersionFeedModel: function() {
