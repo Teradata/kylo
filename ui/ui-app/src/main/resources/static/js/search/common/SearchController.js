@@ -1,8 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //import {moduleName} from "../module-name";
-    var moduleName = require('../module-name');
     var controller = /** @class */ (function () {
         function controller($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService, PaginationDataService) {
             var _this = this;
@@ -147,7 +145,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return controller;
     }());
     exports.controller = controller;
-    angular.module(moduleName).controller('SearchController', ["$scope",
+    angular.module(module_name_1.moduleName).controller('SearchController', ["$scope",
         "$sce",
         "$http",
         "$mdToast",

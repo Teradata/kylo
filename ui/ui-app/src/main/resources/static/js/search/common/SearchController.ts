@@ -1,6 +1,6 @@
 import * as angular from 'angular';
-//import {moduleName} from "../module-name";
-const moduleName = require('../module-name');
+import {moduleName} from "../module-name";
+//const moduleName = require('../module-name');
 import * as _ from 'underscore';
 
 export class controller implements ng.IComponentController{
