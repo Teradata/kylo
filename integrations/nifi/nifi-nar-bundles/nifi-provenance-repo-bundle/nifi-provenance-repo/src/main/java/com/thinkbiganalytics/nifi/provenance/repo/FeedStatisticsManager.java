@@ -33,6 +33,7 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,6 +137,8 @@ public class FeedStatisticsManager {
             eventsToSend =
                 feedStatisticsMap.values().stream()
                     .flatMap(stats -> stats.getEventsToSend().stream().filter(event -> !FeedEventStatistics.getInstance().streamingFeedProcessorIdsList.contains(event.getFirstEventProcessorId())))
+                    .sorted(Comparator.comparing(ProvenanceEventRecordDTO::getEventTime)
+                                .thenComparing(ProvenanceEventRecordDTO::getEventId))
                     .collect(Collectors.toList());
 
             final String collectionId = UUID.randomUUID().toString();
