@@ -203,6 +203,10 @@ md-sidenav .collapse-btn {
   padding-left: 4px;
 }
 
+.layout-padding-right-4 {
+  padding-right: 4px;
+}
+
 .layout-padding-left {
   padding-left: 10px;
 }
@@ -238,6 +242,10 @@ md-sidenav .collapse-btn {
 .layout-padding-top-bottom, .layout-padding-top-bottom md-item {
   padding-top: 10px;
   padding-bottom: 10px;
+}
+
+.layout-padding-top-1 {
+  padding-top: 1px;
 }
 
 .layout-padding-top {
@@ -1337,6 +1345,19 @@ md-input-container.global-search .md-input {
 
 .versions-replace {
   background-color: lightskyblue;
+}
+
+.versions-tooltip {
+  min-width: 300px;
+}
+
+.versions-tooltip-header {
+  font-weight: bold;
+  color: white;
+}
+
+#versions-tooltip-divider {
+  border-top-color: white;
 }
 
 .feed-property {

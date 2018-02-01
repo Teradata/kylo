@@ -332,6 +332,17 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             return FeedFieldPolicyRuleService.getAllPolicyRules(field);
         };
 
+        this.findVersionedRuleName = function(policyIndex, ruleIndex) {
+            if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                var field = self.versionFeedModel.table.fieldPolicies[policyIndex];
+                var rules = FeedFieldPolicyRuleService.getAllPolicyRules(field);
+                if (ruleIndex < rules.length) {
+                    return rules[ruleIndex].name;
+                }
+            }
+            return '';
+        };
+
         this.onSave = function (ev) {
 
             //Identify if any indexing options were changed
@@ -585,6 +596,14 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
         self.diff = function(path) {
             return FeedService.diffOperation(path);
         };
+
+        self.diffCollection = function(path) {
+            return FeedService.diffCollectionOperation(path);
+        };
+
+        self.diffPolicies = function(policyIdx) {
+            return FeedService.joinVersionOperations(FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/standardization'), FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/validation'));
+        }
 
     };
 

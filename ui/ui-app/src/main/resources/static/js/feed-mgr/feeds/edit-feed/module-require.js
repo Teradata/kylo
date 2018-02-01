@@ -1,6 +1,7 @@
 define(['angular','@uirouter/angularjs','kylo-common','kylo-feedmgr',
         'feed-mgr/feeds/edit-feed/details/feed-additional-properties',
         'feed-mgr/feeds/edit-feed/details/feed-data-policies',
+        'feed-mgr/feeds/edit-feed/details/feed-data-policies-row-validators-standardisers',
         'feed-mgr/feeds/edit-feed/details/feed-definition',
         'feed-mgr/feeds/edit-feed/details/feed-info',
         'feed-mgr/feeds/edit-feed/details/feed-nifi-properties',

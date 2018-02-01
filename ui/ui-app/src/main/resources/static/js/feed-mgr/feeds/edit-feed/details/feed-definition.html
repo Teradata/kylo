@@ -23,7 +23,7 @@
 
     <readonly-section>
         <div layout="row" class="feed-property"
-             ng-class="{'versions-add': vm.diff('/feedName') === 'add', 'versions-replace': vm.diff('/feedName') === 'replace'}">
+             ng-class="'versions-' + vm.diff('/feedName')">
             <span flex="25" class="property-name"> {{"views.feed-definition.FN" | translate}} </span>
             <div flex>
                 {{vm.model.feedName}}
@@ -43,7 +43,7 @@
             </div>
         </div>
         <div layout="row" class="feed-property"
-             ng-class="{'versions-add': vm.diff('/description') === 'add', 'versions-replace': vm.diff('/description') === 'replace', 'versions-no-change': vm.diff('/description') === 'no-change'}">
+             ng-class="'versions-' + vm.diff('/description')">
 
             <span flex="25" class="property-name">{{"views.import_feed.Description" | translate}} </span>
 
