@@ -18,6 +18,7 @@
 
   <modules>
     <module>nifi-core-service-api</module>
+    <module>nifi-core-service-api-v1.2</module>
     <module>nifi-hadoop-service-api</module>
     <module>nifi-standard-services-nar</module>
     <module>nifi-standard-services-v1.2-nar</module>

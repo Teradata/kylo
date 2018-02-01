@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L
@@ -20,9 +20,10 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
-/**
- * Thrown if an attempt is made to register a flowfile for a savepoint that already has a flowfile for that savepoint
- */
-public class InvalidSavePointId extends RuntimeException {
+import org.apache.nifi.controller.ControllerService;
+
+public interface SavepointController extends ControllerService {
+
+    SavepointProvider getProvider();
 
 }

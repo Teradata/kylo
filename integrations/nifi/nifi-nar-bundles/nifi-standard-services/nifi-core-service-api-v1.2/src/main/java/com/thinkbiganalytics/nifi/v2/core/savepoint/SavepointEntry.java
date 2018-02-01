@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L
@@ -22,12 +22,14 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.HashMap;
 import java.util.Map;
 
-@JsonAutoDetect
+//@JsonAutoDetect
+@JsonIgnoreProperties(ignoreUnknown = true)
 /**
  * Stores state of a savepoint
  */
@@ -121,7 +123,8 @@ public class SavepointEntry {
         processor.setState(SavePointState.WAIT);
     }
 
-    static class Processor {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Processor {
 
         @JsonProperty
         private SavePointState state = SavePointState.WAIT;
@@ -133,19 +136,20 @@ public class SavepointEntry {
             super();
         }
 
-        boolean isEmpty() {
+        @JsonIgnore
+        public boolean isEmpty() {
             return flowFileId == null;
         }
 
-        void setFlowFileId(String flowFileId) {
+        public  void setFlowFileId(String flowFileId) {
             this.flowFileId = flowFileId;
         }
 
-        void setState(SavePointState newState) {
+        public void setState(SavePointState newState) {
             this.state = newState;
         }
 
-        String getFlowFileId() {
+       public  String getFlowFileId() {
             return flowFileId;
         }
     }

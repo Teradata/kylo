@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L
@@ -43,7 +43,7 @@ public class Lock {
         return savepointId;
     }
 
-    protected Lock(String savepointId) {
+    public Lock(String savepointId) {
         this.savepointId = savepointId;
     }
 

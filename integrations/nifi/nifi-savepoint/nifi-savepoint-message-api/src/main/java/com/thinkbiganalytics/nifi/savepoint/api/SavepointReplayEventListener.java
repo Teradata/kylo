@@ -1,17 +1,17 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.savepoint.api;
 
 /*-
  * #%L
- * kylo-nifi-core-processors
+ * kylo-nifi-savepoint-message-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,12 +20,17 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
-/**
- * Thrown if the lock is not valid or no longer valid
- */
-public class InvalidLockException extends Exception {
+import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayEvent;
 
-    public InvalidLockException() {
-        super("Lock is invalid or expired.");
-    }
+/**
+ * A listener which gets called for savepoint trigger events
+ */
+public interface SavepointReplayEventListener {
+
+    /**
+     *
+     *
+     * @param event The event that occurred
+     */
+    void triggered(SavepointReplayEvent event);
 }

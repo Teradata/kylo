@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L

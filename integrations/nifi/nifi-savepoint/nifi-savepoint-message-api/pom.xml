@@ -1,0 +1,44 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+
+  <parent>
+    <artifactId>kylo-nifi-savepoint</artifactId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <version>0.9.0-SNAPSHOT</version>
+  </parent>
+  <properties>
+    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+  </properties>
+
+
+  <dependencies>
+
+
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+    </dependency>
+
+
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+    </dependency>
+
+  </dependencies>
+
+</project>

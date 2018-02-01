@@ -15,4 +15,4 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-com.thinkbiganalytics.nifi.v2.savepoint.DistributedSavepointController
+com.thinkbiganalytics.nifi.v2.core.savepoint.DistributedSavepointController
