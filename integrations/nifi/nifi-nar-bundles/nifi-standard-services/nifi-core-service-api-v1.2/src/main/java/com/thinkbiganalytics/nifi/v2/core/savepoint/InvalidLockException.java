@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L
@@ -20,10 +20,12 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
-import org.apache.nifi.controller.ControllerService;
+/**
+ * Thrown if the lock is not valid or no longer valid
+ */
+public class InvalidLockException extends Exception {
 
-public interface SavepointController extends ControllerService {
-
-    SavepointProvider getProvider();
-
+    public InvalidLockException() {
+        super("Lock is invalid or expired.");
+    }
 }

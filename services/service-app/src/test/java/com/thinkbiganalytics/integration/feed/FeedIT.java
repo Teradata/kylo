@@ -150,9 +150,11 @@ public class FeedIT extends IntegrationTestBase {
         // Create feed
         FeedMetadata feed = getCreateFeedRequest(category, template, FEED_NAME);
         feed.setDescription("Test feed");
+        feed.setDataOwner("Some Guy");
 
         FeedMetadata response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
+        Assert.assertEquals(feed.getDataOwner(), response.getDataOwner());
 
         // Edit feed
         feed = response;

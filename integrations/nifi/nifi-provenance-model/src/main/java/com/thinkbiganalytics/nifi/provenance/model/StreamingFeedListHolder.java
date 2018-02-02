@@ -112,7 +112,7 @@ public class StreamingFeedListHolder implements Serializable {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("StreamingFeedListHolder{");
-        sb.append("streamingFeedListData size=").append(streamingFeedListData.size());
+        sb.append("streamingFeedListData size=").append(streamingFeedListData != null ? streamingFeedListData.size() : 0);
         sb.append(", entireList=").append(entireList);
         sb.append(", mode=").append(mode);
         sb.append('}');

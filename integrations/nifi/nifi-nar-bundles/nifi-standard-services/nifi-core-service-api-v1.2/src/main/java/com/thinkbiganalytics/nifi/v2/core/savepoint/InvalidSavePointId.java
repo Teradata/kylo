@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.savepoint;
+package com.thinkbiganalytics.nifi.v2.core.savepoint;
 
 /*-
  * #%L
@@ -21,12 +21,8 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  */
 
 /**
- * Thrown when setpoint does not exist
+ * Thrown if an attempt is made to register a flowfile for a savepoint that already has a flowfile for that savepoint
  */
-public class InvalidSetpointException extends Exception {
-
-    public InvalidSetpointException(String setPointId) {
-        super(setPointId + " is invalid or does not exist");
-    }
+public class InvalidSavePointId extends RuntimeException {
 
 }

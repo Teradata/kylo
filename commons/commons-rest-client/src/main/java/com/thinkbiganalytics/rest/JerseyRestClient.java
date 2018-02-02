@@ -254,14 +254,14 @@ public class JerseyRestClient {
 
 
     /**
-     * Allows derived classes to make modifactions to the clientConfig before it is used to construct the client.
+     * Allows derived classes to make modifications to the clientConfig before it is used to construct the client.
      *
      * @param clientConfig the Rest Client Configuration
+     * NOTE:  this method should never be final.  Some plugin classes may extend this method.
      */
-    private final void extendClientConfig(ClientConfig clientConfig) {
+    protected void extendClientConfig(ClientConfig clientConfig) {
 
     }
-
 
     /**
      * Flag to detect if this client is configured correctly.

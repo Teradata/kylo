@@ -200,6 +200,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.hashids</groupId>
       <artifactId>hashids</artifactId>
       <version>1.0.3</version>

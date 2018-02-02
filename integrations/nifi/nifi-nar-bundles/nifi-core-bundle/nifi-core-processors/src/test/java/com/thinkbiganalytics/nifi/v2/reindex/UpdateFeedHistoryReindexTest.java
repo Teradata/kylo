@@ -41,6 +41,8 @@ import java.util.List;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Tests for {@link UpdateFeedHistoryReindex} processor <br>
  */
@@ -80,8 +82,9 @@ public class UpdateFeedHistoryReindexTest {
         resultFlowFile.assertAttributeEquals(UpdateFeedHistoryReindex.UPDATED_FEED_STATUS_FOR_HISTORY_REINDEX_KEY,
                                              "DIRTY");
 
-        resultFlowFile.assertAttributeEquals(UpdateFeedHistoryReindex.UPDATED_TIME_UTC_FOR_HISTORY_REINDEX_KEY,
-                                             "2017-12-21T11:43:23.345-08:00");
+        String updatedTimeUtcForHistoryReindexActualValue = resultFlowFile.getAttribute(UpdateFeedHistoryReindex.UPDATED_TIME_UTC_FOR_HISTORY_REINDEX_KEY);
+        String updatedTimeUtcForHistoryReindexExpectedValueWithoutTimeZone = "2017-12-21T11:43:23.345";
+        assertTrue(updatedTimeUtcForHistoryReindexActualValue.contains(updatedTimeUtcForHistoryReindexExpectedValueWithoutTimeZone));
 
         resultFlowFile.assertAttributeEquals(UpdateFeedHistoryReindex.UPDATED_INDEX_COLUMNS_STRING_FOR_HISTORY_REINDEX_KEY,
                                              "col1,col2,col3");

@@ -51,6 +51,14 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import com.thinkbiganalytics.nifi.savepoint.api.SavepointProvenanceProperties;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidLockException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidSetpointException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.Lock;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointController;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointEntry;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointProvider;
+
 @EventDriven
 @SupportsBatching
 @Tags({"savepoint", "thinkbig", "kylo"})
@@ -73,6 +81,7 @@ public class SetSavepoint extends AbstractProcessor {
 
     public static final String SAVEPOINT_RETRY_COUNT = "savepoint.retry.count";
     public static final String SAVEPOINT_START_TIMESTAMP = "savepoint.start.timestamp";
+
 
     // Identifies the savepoint service
     public static final PropertyDescriptor SAVEPOINT_SERVICE = new PropertyDescriptor.Builder()
@@ -259,6 +268,9 @@ public class SetSavepoint extends AbstractProcessor {
     private void tryFlowFile(final ProcessSession session, final FlowFile flowFile, String retryCount) {
         FlowFile flowFileModified = session.putAttribute(flowFile, SAVEPOINT_RETRY_COUNT, StringUtils.defaultString(String.valueOf(Integer.parseInt(retryCount) + 1), "1"));
         FlowFile clonedFlowFile = session.clone(flowFileModified);
+
+        flowFileModified = session.putAttribute(flowFileModified, SavepointProvenanceProperties.CLONE_FLOWFILE_ID, clonedFlowFile.getAttribute(CoreAttributes.UUID.key()) );
+        clonedFlowFile = session.putAttribute(clonedFlowFile, SavepointProvenanceProperties.PARENT_FLOWFILE_ID, flowFileModified.getAttribute(CoreAttributes.UUID.key()) );
         session.transfer(flowFileModified, REL_SELF);
         session.transfer(clonedFlowFile, REL_TRY);
     }
