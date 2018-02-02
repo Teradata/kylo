@@ -207,7 +207,11 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
         if (fs != null) {
             fs.close();
         }
-        fs = getFileSystemAsUser(conf,ugi);
+        if (ugi != null) {
+            fs = getFileSystemAsUser(conf, ugi);
+        }else {
+            fs = getFileSystem(conf);
+        }
         resources = new HdfsResources(conf, fs, ugi);
         hdfsResources.set(resources);
     }
