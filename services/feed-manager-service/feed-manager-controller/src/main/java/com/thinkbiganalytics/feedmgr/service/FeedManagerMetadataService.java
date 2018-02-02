@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -480,8 +481,16 @@ public class FeedManagerMetadataService implements MetadataService {
         return feedProvider.getFeedVersions(feedId, includeFeeds);
     }
 
+    @Nonnull
+    @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
+    }
+    
+    @Nonnull
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {
+        return feedProvider.getFeedVersionDifference(feedId, versionId1, versionId2);
     }
 
 

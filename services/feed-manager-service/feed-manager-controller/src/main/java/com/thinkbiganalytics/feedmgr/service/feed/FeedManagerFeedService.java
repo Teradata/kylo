@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 
 /*-
  * #%L
@@ -109,6 +110,14 @@ public interface FeedManagerFeedService {
      * @throws VersionNotFoundException if no version exists with the given ID
      */
     Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId
+     * @param versionId1
+     * @param versionId2
+     * @return
+     */
+    EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2);
 
     /**
      * @return a list of all the feeds in the system

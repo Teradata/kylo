@@ -5,10 +5,15 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-data-policies.html',
             controller: "FeedDataPoliciesController",
             link: function ($scope, element, attrs, controller) {
+                if (angular.isUndefined($scope.versions)) {
+                    $scope.versions = false;
+                }
 
             }
 
@@ -20,13 +25,16 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
 
         var self = this;
 
+        self.versions = $scope.versions;
         /**
          * Indicates if the feed data policies may be edited.
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
+        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
         /**
          * The form for angular errors
          * @type {{}}
@@ -159,6 +167,18 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             }
         });
 
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return FeedService.versionFeedModelDiff;
+            },function(newVal) {
+                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            });
+        }
         /**
          * apply default values to the read only model
          */
@@ -213,11 +233,14 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
          * Returns the readable display name for the mergeStrategy on the edited feed model
          * @returns {*}
          */
-        this.mergeStrategyDisplayName = function () {
-            var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
-                return strategy.type == self.model.table.targetMergeStrategy;
-            });
-            return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy
+        this.mergeStrategyDisplayName = function (model) {
+            if (model !== undefined && model.table !== undefined) { //model will be undefined when not displaying feed version for comparison
+                var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
+                    return strategy.type === model.table.targetMergeStrategy;
+                });
+                return mergeStrategyObject !== undefined ? mergeStrategyObject.name : model.table.targetMergeStrategy
+            }
+            return '';
         };
 
         /**
@@ -307,6 +330,17 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
 
         this.getAllFieldPolicies = function (field) {
             return FeedFieldPolicyRuleService.getAllPolicyRules(field);
+        };
+
+        this.findVersionedRuleName = function(policyIndex, ruleIndex) {
+            if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                var field = self.versionFeedModel.table.fieldPolicies[policyIndex];
+                var rules = FeedFieldPolicyRuleService.getAllPolicyRules(field);
+                if (ruleIndex < rules.length) {
+                    return rules[ruleIndex].name;
+                }
+            }
+            return '';
         };
 
         this.onSave = function (ev) {
@@ -556,8 +590,21 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-            self.allowEdit = access && !self.model.view.dataPolicies.disabled
+            self.allowEdit = !self.versions && access && !self.model.view.dataPolicies.disabled
         });
+
+        self.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+
+        self.diffCollection = function(path) {
+            return FeedService.diffCollectionOperation(path);
+        };
+
+        self.diffPolicies = function(policyIdx) {
+            return FeedService.joinVersionOperations(FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/standardization'), FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/validation'));
+        }
+
     };
 
     /**
