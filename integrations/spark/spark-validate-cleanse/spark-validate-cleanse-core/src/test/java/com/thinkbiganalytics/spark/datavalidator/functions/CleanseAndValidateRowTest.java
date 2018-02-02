@@ -34,6 +34,7 @@ import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.datavalidator.StandardDataValidator;
 import com.thinkbiganalytics.spark.datavalidator.StandardizationAndValidationResult;
+import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.spark.sql.types.StructField;
@@ -45,7 +46,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -229,4 +232,23 @@ public class CleanseAndValidateRowTest {
         assertEquals(StandardDataValidator.VALID_RESULT, result.getFinalValidationResult());
     }
 
+    @Test
+    public void convertBooleanType() {
+        String booleanFieldName = "flag";
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(booleanFieldName, "boolean");
+        assertNotNull(fieldDataType);
+        assertFalse(fieldDataType.isUnchecked());
+        assertEquals(fieldDataType.getConvertibleType().getName(),"java.lang.Boolean");
+    }
+
+    @Test
+    public void castStringToBoolean() throws InvalidFormatException {
+        Object booleanValueAsBoolean;
+        String booleanFieldName = "flag";
+        String booleanValueAsString = "true";
+        HCatDataType dataType = HCatDataType.createFromDataType(booleanFieldName, "boolean");
+        booleanValueAsBoolean = dataType.toNativeValue(booleanValueAsString);
+        assertEquals(booleanValueAsBoolean.getClass().getName(),"java.lang.Boolean");
+        assertEquals(booleanValueAsBoolean.toString(), "true");
+    }
 }

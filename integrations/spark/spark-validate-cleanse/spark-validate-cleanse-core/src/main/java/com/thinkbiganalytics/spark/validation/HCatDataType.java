@@ -59,7 +59,7 @@ public class HCatDataType implements Cloneable, Serializable {
         dataTypes.put("date", new HCatDataType(Date.class));
         dataTypes.put("timestamp", new HCatDataType(Timestamp.class));
         dataTypes.put("binary", new HCatDataType(byte[].class));
-
+        dataTypes.put("boolean", new HCatDataType(Boolean.class));
     }
 
     /**
@@ -144,7 +144,7 @@ public class HCatDataType implements Cloneable, Serializable {
     private HCatDataType(Class clazz) {
 
         this.convertibleType = clazz;
-        if (clazz == Date.class || clazz == Timestamp.class || clazz == byte[].class) {
+        if (clazz == Date.class || clazz == Timestamp.class || clazz == byte[].class || clazz == Boolean.class) {
             this.isnumeric = false;
         } else {
             this.isnumeric = true;
@@ -256,6 +256,8 @@ public class HCatDataType implements Cloneable, Serializable {
                 return (T) new BigInteger(val);
             } else if (convertibleType == BigDecimal.class) {
                 return (T) new BigDecimal(val);
+            } else if (convertibleType == Boolean.class) {
+                return (T) new Boolean(val);
             } else {
                 throw new RuntimeException("Unexpected conversion [" + convertibleType + "] for value [" + val + "]");
             }
