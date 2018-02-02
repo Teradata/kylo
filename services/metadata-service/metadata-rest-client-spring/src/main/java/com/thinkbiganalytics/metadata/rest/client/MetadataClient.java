@@ -42,6 +42,9 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedDataHistoryReindexParams;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedsForDataHistoryReindex;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheSync;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -112,6 +115,10 @@ public class MetadataClient {
     };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() {
     };
+    public static final ParameterizedTypeReference<FeedsForDataHistoryReindex> FEEDS_FOR_DATA_HISTORY_REINDEX = new ParameterizedTypeReference<FeedsForDataHistoryReindex>() {
+    };
+    public static final ParameterizedTypeReference<FeedDataHistoryReindexParams> FEED_DATA_HISTORY_REINDEX_PARAMS = new ParameterizedTypeReference<FeedDataHistoryReindexParams>() {
+    };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() {
     };
     private static final Logger log = LoggerFactory.getLogger(MetadataClient.class);
@@ -180,9 +187,9 @@ public class MetadataClient {
                 .setDefaultCredentialsProvider(credsProvider)
                 .setSSLContext(sslContext != null ? sslContext : null)
                 .build();
-            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth(new HttpHost(base.getHost(), 
-                                                                                                                   base.getPort(), 
-                                                                                                                   base.getScheme()), 
+            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactoryBasicAuth(new HttpHost(base.getHost(),
+                                                                                                                   base.getPort(),
+                                                                                                                   base.getScheme()),
                                                                                                       httpClient);
             this.template = new RestTemplate(reqFactory);
         } else {
@@ -210,7 +217,7 @@ public class MetadataClient {
 //        CredentialsProvider credsProvider = new BasicCredentialsProvider();
 //        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
 //    }
-    
+
     /**
      * Converts one or more strings to a path, compatible with the OS representation of a path
      *
@@ -786,8 +793,8 @@ public class MetadataClient {
             throw new WebResponseException(ResponseEntity.status(resp.getStatusCode()).headers(resp.getHeaders()).build());
         }
     }
-    
-    
+
+
     /**
      * Preemptively uses BASIC auth rather than negotiating the auth scheme.
      */
@@ -1253,6 +1260,12 @@ public class MetadataClient {
 
     }
 
+    public FeedsForDataHistoryReindex getFeedsForHistoryReindexing() {
+        return get(path("feed", "feeds-for-data-history-reindex"), null, FEEDS_FOR_DATA_HISTORY_REINDEX);
+    }
 
+    public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
+        return post(path("feed", feedId, "update-data-history-reindex-status"), historyReindexingStatus, MediaType.APPLICATION_JSON, FeedDataHistoryReindexParams.class);
+    }
 
 }

@@ -28,6 +28,8 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.ActiveWaterMarksCancelledException;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedDataHistoryReindexParams;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
@@ -48,6 +50,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+
+import javax.annotation.Nonnull;
 
 public class MetadataClientRecorder extends AbstractControllerService implements MetadataRecorder {
 
@@ -100,7 +104,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         resultFF = session.putAttribute(resultFF, parameterName, value);
         return session.putAttribute(resultFF, originalValueParameterName(parameterName), value);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#cancelWaterMark(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String, java.lang.String)
      */
@@ -108,7 +112,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     public boolean cancelWaterMark(String feedId, String waterMarkName) {
         return cancelActiveWaterMark(feedId, waterMarkName);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#cancelAndLoadWaterMark(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
@@ -141,7 +145,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         Map<String, WaterMarkParam> ffWaterMarks = getCurrentWaterMarksAttr(ff);
         WaterMarkParam param = ffWaterMarks.get(waterMarkName);
         Long activeTimestamp = getActiveWaterMarkTimestamp(feedId, waterMarkName);
-        
+
         if (param == null) {
             log.error("Received request to commit a water mark that does not exist in the flowfile: {}", waterMarkName);
             return resultFF;
@@ -149,12 +153,12 @@ public class MetadataClientRecorder extends AbstractControllerService implements
             log.warn("Received request to commit a water mark that is not active: {}", waterMarkName);
             return resultFF;
         } else if (param.timestamp != activeTimestamp) {
-            // If the water mark timestamp does not match the one recorded as an active water mark this means 
-            // this flowfile's water mark has been canceled and another flow file should be considered the active one.  
+            // If the water mark timestamp does not match the one recorded as an active water mark this means
+            // this flowfile's water mark has been canceled and another flow file should be considered the active one.
             // So this water mark value has been superseded and its value should not be committed and a canceled exception thrown.
             log.info("Received request to commit a water mark version that is no longer active: {}/{}", waterMarkName, param.timestamp);
             throw new ActiveWaterMarksCancelledException(feedId, waterMarkName);
-        } 
+        }
 
         try {
             String value = resultFF.getAttribute(param.name);
@@ -216,8 +220,8 @@ public class MetadataClientRecorder extends AbstractControllerService implements
                 if (param == null || param.timestamp == activeTimestamp) {
                     releaseActiveWaterMark(feedId, waterMarkName, activeTimestamp);
                 } else if (param.timestamp != activeTimestamp) {
-                    // If the water mark timestamp does not match the one recorded as an active water mark this means 
-                    // this flowfile's water mark has been canceled and another flow file should be considered the active one.  
+                    // If the water mark timestamp does not match the one recorded as an active water mark this means
+                    // this flowfile's water mark has been canceled and another flow file should be considered the active one.
                     // In this case this water mark value has been superseded and no release should occur.
                     log.info("Received request to release a water mark version that is no longer active: {}", waterMarkName);
                 }
@@ -226,10 +230,10 @@ public class MetadataClientRecorder extends AbstractControllerService implements
                 log.warn("Received request to release a non-active water mark: {}", waterMarkName);
             }
         }
-        
+
         return resultFF;
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#releaseAllWaterMarks(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String)
      */
@@ -304,6 +308,11 @@ public class MetadataClientRecorder extends AbstractControllerService implements
 
     }
 
+    @Override
+    public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
+            return (this.client.updateFeedHistoryReindexing(feedId, historyReindexingStatus));
+    }
+
     private String toWaterMarksKey(String feedId) {
         return feedId + ".~";
     }
@@ -311,7 +320,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private String toWaterMarkKey(String feedId, String waterMarkName) {
         return feedId + "." + waterMarkName;
     }
-    
+
     private Long getActiveWaterMarkTimestamp(String feedId, String waterMarkName) {
         return this.activeWaterMarks.get(toWaterMarkKey(feedId, waterMarkName));
     }
@@ -319,7 +328,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private Map<String, Long> getActiveWaterMarks(String feedId, String waterMarkName) {
         return this.activeWaterMarks.subMap(feedId, toWaterMarksKey(feedId));
     }
-    
+
     private boolean cancelActiveWaterMark(String feedId, String waterMarkName) {
         return this.activeWaterMarks.remove(toWaterMarkKey(feedId, waterMarkName)) == null;
     }
@@ -327,7 +336,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private long recordActiveWaterMark(String feedId, String waterMarkName) throws WaterMarkActiveException {
         long newTimestamp = System.currentTimeMillis();
         long timestamp = this.activeWaterMarks.computeIfAbsent(toWaterMarkKey(feedId, waterMarkName), k -> newTimestamp);
-    
+
         if (timestamp != newTimestamp) {
             throw new WaterMarkActiveException(waterMarkName);
         } else {
@@ -354,7 +363,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
             throw new IllegalStateException(e);
         }
     }
-    
+
     private FlowFile setCurrentWaterMarksAttr(ProcessSession session, FlowFile ff, NavigableMap<String, WaterMarkParam> actives) {
         try {
             return session.putAttribute(ff, CURRENT_WATER_MARKS_ATTR, WATER_MARKS_WRITER.writeValueAsString(actives));
@@ -367,7 +376,7 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private FlowFile resetWaterMarkParam(ProcessSession session, FlowFile ff, String feedId, String waterMarkName, String paramName) {
         // Update the flowfile with the original value for the water mark parameter.
         String value = getHighWaterMarkValue(feedId, waterMarkName).orElse(ff.getAttribute(originalValueParameterName(paramName)));
-        
+
         if (value != null) {
             return session.putAttribute(ff, paramName, value);
         } else {
@@ -382,10 +391,10 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         actives.put(waterMarkName, new WaterMarkParam(timestamp, parameterName));
         return setCurrentWaterMarksAttr(session, ff, actives);
     }
-    
+
     private FlowFile removeFromCurrentWaterMarksAttr(ProcessSession session, FlowFile ff, String waterMarkName, String parameterName) {
         NavigableMap<String, WaterMarkParam> actives = getCurrentWaterMarksAttr(ff);
-        
+
         actives.remove(waterMarkName);
         return setCurrentWaterMarksAttr(session, ff, actives);
     }
@@ -401,16 +410,16 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private String originalValueParameterName(String parameterName) {
         return parameterName + ".original";
     }
-    
-    
+
+
     public static class WaterMarkParam {
         private long timestamp;
         private String name;
-        
+
         public WaterMarkParam() {
             super();
         }
-        
+
         public WaterMarkParam(long timestamp, String value) {
             this.timestamp = timestamp;
             this.name = value;

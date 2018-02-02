@@ -27,6 +27,7 @@ import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.EditFeedEntity;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -40,6 +41,8 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedCurrentlyRunningException;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingNotEnabledException;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
@@ -47,6 +50,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.metadata.FeedPropertySection;
 import com.thinkbiganalytics.metadata.FeedPropertyType;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.security.MetadataAccessControl;
 import com.thinkbiganalytics.metadata.modeshape.versioning.VersionNotFoundException;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
@@ -265,7 +269,32 @@ public class FeedRestController {
         NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
-        } catch (DuplicateFeedNameException e) {
+        }
+        catch (FeedHistoryDataReindexingNotEnabledException e) {
+            String errorMsg = "Feed history data reindexing functionality is disabled. Contact Kylo administrator to enable it.";
+
+            // Log as warning
+            log.warn(errorMsg);
+
+            // Add error message for UI
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(errorMsg);
+            feed.setSuccess(false);
+        }
+        catch (FeedCurrentlyRunningException e) {
+            String errorMsg = "Feed in category \"" + e.getCategoryName() + "\" with name \"" + e.getFeedName() + "\" is currently running. "
+                              + "Unable to save data history reindex option. "
+                              + "Wait for the feed run to complete and then try again.";
+
+            // Log as warning
+            log.warn(errorMsg);
+
+            // Add error message for UI
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(errorMsg);
+            feed.setSuccess(false);
+        }
+        catch (DuplicateFeedNameException e) {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
 
             // Create an error message
@@ -480,7 +509,7 @@ public class FeedRestController {
                       @ApiResponse(code = 500, message = "The feed is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getFeedVersions(@PathParam("feedId") String feedId,
-                                    @QueryParam("content") @DefaultValue("true") boolean includeContent) {
+                                    @QueryParam("content") @DefaultValue("false") boolean includeContent) {
         FeedVersions feed = getMetadataService().getFeedVersions(feedId, includeContent);
 
         return Response.ok(feed).build();
@@ -502,6 +531,25 @@ public class FeedRestController {
             return getMetadataService().getFeedVersion(feedId, versionId, includeContent)
                 .map(version -> Response.ok(version).build())
                 .orElse(Response.status(Status.NOT_FOUND).build());
+        } catch (VersionNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
+        } catch (Exception e) {
+            log.error("Unexpected exception retrieving the feed version", e);
+            throw new InternalServerErrorException("Unexpected exception retrieving the feed version");
+        }
+    }
+    
+    @GET
+    @Path("/{feedId}/versions/{toVerId}/diff/{fromVerId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getFeedVersionDifference(@PathParam("feedId") String feedId,
+                                             @PathParam("toVerId") String toVerId,
+                                             @PathParam("fromVerId") String fromVerId) {
+        try {
+            EntityVersionDifference diff = getMetadataService().getFeedVersionDifference(feedId, fromVerId, toVerId);
+            return Response.ok(diff).build();
+        } catch (FeedNotFoundException e) {
+            return Response.status(Status.NOT_FOUND).build();
         } catch (VersionNotFoundException e) {
             return Response.status(Status.NOT_FOUND).build();
         } catch (Exception e) {

@@ -64,7 +64,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.selectedTabIndex = 0;
 
         this.loadingFeedData = false;
-        this.model = FeedService.editFeedModel;
+        this.model = FeedService.editFeedModel = {};
         this.model.loaded = false;
         this.loadMessage = ''
         this.uploadFile = null;
@@ -89,6 +89,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         $scope.$watch(function() {
             return self.selectedTabIndex;
         }, function(newVal) {
+            //reset display of feed versions
+            FeedService.resetVersionFeedModel();
+
             //Make the Lineage tab fit without side nav
             //open side nav if we are not navigating between lineage links
             if (newVal == 2 || (requestedTabIndex != undefined && requestedTabIndex == 2)) {

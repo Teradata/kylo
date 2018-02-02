@@ -57,15 +57,17 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
             shouldAlert = jcrMetadataAccess.read(() -> {
                 // Get the last assessment that was created for this SLA (if any).
                 ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
-
+                boolean alert = false;
                 if (previous != null) {
                     assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
-                    LOG.debug("found previous assessment {} ", previous.getClass());
-
-                    return (!assessment.getResult().equals(AssessmentResult.SUCCESS) && assessment.compareTo(previous) != 0);
+                    boolean matchesPreviousAssessment = assessment.compareTo(previous) == 0;
+                    alert = (!assessment.getResult().equals(AssessmentResult.SUCCESS) && !matchesPreviousAssessment);
+                    LOG.debug("{}. {} ",alert ? "Generating an alert ":" Not generating an alert " , matchesPreviousAssessment ? "This assessment is the same as the previous assessment": "This assessment is different than the previous assessment");
                 } else {
-                    return !assessment.getResult().equals(AssessmentResult.SUCCESS);
+                    LOG.debug("Unable to find a previous assessment for agreement {}.  {}", agreement.getId(),alert ? "Generating Alert ":" Not generating an alert " );
+                    alert = !assessment.getResult().equals(AssessmentResult.SUCCESS);
                 }
+                return alert;
             });
         } catch (Exception e) {
             LOG.error("Error checking shouldAlert for {}. {} ", agreement.getName(), e.getMessage(), e);

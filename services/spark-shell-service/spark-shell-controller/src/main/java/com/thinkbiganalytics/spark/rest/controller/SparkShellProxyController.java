@@ -83,16 +83,21 @@ import io.swagger.annotations.Tag;
  */
 @Api(tags = "Feed Manager - Data Wrangler")
 @Component
-@Path("/v1/spark/shell")
+@Path(SparkShellProxyController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Data Wrangler", description = "data transformations"))
 public class SparkShellProxyController {
 
     private static final Logger log = LoggerFactory.getLogger(SparkShellProxyController.class);
 
+    public static final String BASE = "/v1/spark/shell";
+    public static final String TRANSFORM = "/transform";
+
     /**
      * Pattern for matching exceptions in messages.
      */
-    private static final Pattern EXCEPTION = Pattern.compile("^(\\s*[a-zA-Z0-9.]+:(?=\\s*[a-zA-Z0-9.]+:))*\\s*[a-zA-Z0-9.]+?(?=[a-zA-Z0-9]+:)");
+    private static final Pattern EXCEPTION = Pattern.compile(
+        "^(\\s*[a-zA-Z0-9_$.]+:(?=\\s*[a-zA-Z0-9_$.]+:))*"               // matches all but last "package.Class: package.Class: package.Class:"
+        + "\\s*([a-zA-Z_$][a-zA-Z0-9_$.]+($|\\.))?(?=[a-zA-Z0-9_]+:)");  // matches last "package.Class:"
 
     /**
      * Resources for error messages
@@ -426,7 +431,7 @@ public class SparkShellProxyController {
      * @return the transformation status
      */
     @POST
-    @Path("/transform")
+    @Path(SparkShellProxyController.TRANSFORM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
@@ -436,6 +441,7 @@ public class SparkShellProxyController {
                       @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
                   })
     @Nonnull
+    @SuppressWarnings("squid:S1845")
     public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or"
                                                 + " source must be specified.", required = true)
                               @Nullable final TransformRequest request) {

@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedsForDataHistoryReindex;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
@@ -246,5 +247,10 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public Optional<Datasource> getDatasource(@Nonnull final String id) {
         return client.getDatasource(id);
+    }
+
+    @Override
+    public FeedsForDataHistoryReindex getFeedsForHistoryReindexing() {
+        return client.getFeedsForHistoryReindexing();
     }
 }

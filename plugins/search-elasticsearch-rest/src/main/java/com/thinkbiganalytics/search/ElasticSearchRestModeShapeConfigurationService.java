@@ -81,7 +81,7 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
     private Map<String, Object> getCategoriesIndexConfiguration() {
         final String TEXT = "text";
         final String TBA_CATEGORY = "tba:category";
-        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:systemName (STRING)";
+        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:systemName (STRING), tba:allowIndexing (STRING)";
 
         Map<String, Object> categoriesIndexConfigurationMap = new HashMap<>();
         categoriesIndexConfigurationMap.put("kind", TEXT);
@@ -95,7 +95,7 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
     private Map<String, Object> getFeedsIndexConfiguration() {
         final String TEXT = "text";
         final String TBA_FEED_SUMMARY = "tba:feedSummary";
-        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:tags (STRING), tba:category(STRING), tba:systemName (STRING)";
+        final String COLUMNS = "jcr:title (STRING), jcr:description (STRING), tba:tags (STRING), tba:category(STRING), tba:systemName (STRING), tba:allowIndexing (STRING)";
 
         Map<String, Object> feedsIndexConfigurationMap = new HashMap<>();
         feedsIndexConfigurationMap.put("kind", TEXT);
@@ -107,7 +107,7 @@ public class ElasticSearchRestModeShapeConfigurationService implements Repositor
     }
 
     private Map<String, Object> getElasticSearchIndexProviderConfiguration() {
-        final String ES_PROVIDER_CLASS = "org.modeshape.jcr.index.elasticsearch.EsIndexProvider";
+        final String ES_PROVIDER_CLASS = "com.thinkbiganalytics.modeshape.index.elasticsearch.KyloEsIndexProvider";
 
         Map<String, Object> elasticSearchIndexProviderConfigurationMap = new HashMap<>();
         elasticSearchIndexProviderConfigurationMap.put("classname", ES_PROVIDER_CLASS);

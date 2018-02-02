@@ -26,6 +26,12 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-core-service-v1.2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-standard-services-v1.2-nar</artifactId>
       <version>${project.version}</version>
       <type>nar</type>

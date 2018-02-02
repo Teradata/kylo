@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -42,6 +43,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
@@ -63,6 +66,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -219,8 +223,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private NiFiObjectCache niFiObjectCache;
 
     @Inject
-    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
+    FeedHistoryDataReindexingService feedHistoryDataReindexingService;
 
+    @Inject
+    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
 
     /**
      * Adds listeners for transferring events.
@@ -325,6 +331,28 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
                 .map(version -> feedModelTransform.domainToFeedVersion(version));
+        });
+    }
+    
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+            
+            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            
+            return fromVer.map(from -> {
+                return toVer.map(to -> {
+                    return feedModelTransform.generateDifference(from, to);
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
         });
     }
 
@@ -432,6 +460,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
+        //Check and accept feed data history reindexing request if that is the case.
+        feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
 
         if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {

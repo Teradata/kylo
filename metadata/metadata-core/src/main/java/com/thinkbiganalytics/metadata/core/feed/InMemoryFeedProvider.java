@@ -49,6 +49,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -285,6 +286,12 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public Feed getFeed(Feed.ID id) {
         return this.feeds.get(id);
+    }
+
+    @Override
+    public List<Feed> getFeedsForDataHistoryReindexing() {
+        //Returning an empty list for now
+        return new ArrayList<>();
     }
 
     @Override

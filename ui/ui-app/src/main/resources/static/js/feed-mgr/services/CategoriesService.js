@@ -304,7 +304,8 @@ define(['angular','feed-mgr/module-name','constants/AccessConstants'], function 
                         securityGroups: [],
                         roleMemberships: [],
                         feedRoleMemberships: [],
-                        owner: null
+                        owner: null,
+                        allowIndexing: 'Y'
                     };
                 },
 

@@ -200,6 +200,13 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.hashids</groupId>
       <artifactId>hashids</artifactId>
       <version>1.0.3</version>
@@ -314,6 +321,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.flipkart.zjsonpatch</groupId>
+      <artifactId>zjsonpatch</artifactId>
+      <version>0.4.1</version>
     </dependency>
 
 

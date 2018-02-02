@@ -18,6 +18,35 @@
   <dependencies>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-metadata-jms</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-core-service-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-core-service-api-v1.2</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-distributed-cache-client-service-api</artifactId>
       <version>${nifi.cache-client.version}</version>
@@ -76,6 +105,14 @@
     <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-mock</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-core-service-v1.2</artifactId>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 

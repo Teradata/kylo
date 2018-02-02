@@ -248,7 +248,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
         return data;
     }]);
 
-    var controller = function ($scope, $mdDialog, $q, $http, RestUrlService,EntityAccessControlService, entity, entityType, entityTitle, callbackEvents) {
+    var controller = function ($scope, $mdDialog, $q, $http, RestUrlService,EntityAccessControlService, entity, entityType, entityTitle, callbackEvents, FeedService) {
 
         $scope.entityTitle = entityTitle;
 
@@ -266,6 +266,11 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
         $scope.entity = entity;
 
         /**
+         * Indexing control
+         */
+        $scope.allowIndexing = $scope.entity.allowIndexing;
+
+        /**
          * convert the model to a RoleMembershipChange object
          * @returns {Array}
          */
@@ -278,13 +283,38 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
          * @param $event
          */
         $scope.onSave = function ($event) {
-            var roleMembershipChanges =
-                EntityAccessControlService.saveRoleMemberships($scope.entityType, $scope.entity.id, $scope.entity.roleMemberships, function (r) {
-                    if (angular.isFunction(callbackEvents.onSave)) {
-                        callbackEvents.onSave(r);
-                    }
-                    $mdDialog.hide();
+            if ($scope.allowIndexing != $scope.entity.allowIndexing) {
+                var indexInfoForDisplay = "";
+                if ($scope.allowIndexing === 'N') {
+                    indexInfoForDisplay = "Disabling indexing of metadata and schema...";
+                } else {
+                    indexInfoForDisplay = "Enabling indexing of metadata and schema...";
+                }
+                FeedService.showFeedSavingDialog($event, indexInfoForDisplay, $scope.entity.feedName);
+                var copy = angular.copy(FeedService.editFeedModel);
+                copy.allowIndexing = $scope.allowIndexing;
+                FeedService.saveFeedModel(copy).then(function(response) {
+                    FeedService.hideFeedSavingDialog();
+                    $scope.entity.allowIndexing = copy.allowIndexing;
+                    var roleMembershipChanges =
+                        EntityAccessControlService.saveRoleMemberships($scope.entityType, $scope.entity.id, $scope.entity.roleMemberships, function (r) {
+                            if (angular.isFunction(callbackEvents.onSave)) {
+                                callbackEvents.onSave(r);
+                            }
+                            $mdDialog.hide();
+                        });
+                }, function (response) {
+                    console.log("Error saving feed: " + $scope.entity.feedName);
                 });
+            } else {
+                var roleMembershipChanges =
+                    EntityAccessControlService.saveRoleMemberships($scope.entityType, $scope.entity.id, $scope.entity.roleMemberships, function (r) {
+                        if (angular.isFunction(callbackEvents.onSave)) {
+                            callbackEvents.onSave(r);
+                        }
+                        $mdDialog.hide();
+                    });
+            }
         };
 
         $scope.onCancel = function ($event) {
@@ -297,6 +327,6 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
     };
 
     angular.module(moduleName).controller('EntityAccessControlDialogController',
-        ["$scope", '$mdDialog', "$q", "$http", "RestUrlService", "EntityAccessControlService","entity", "entityType", "entityTitle", "callbackEvents", controller]);
+        ["$scope", '$mdDialog', "$q", "$http", "RestUrlService", "EntityAccessControlService","entity", "entityType", "entityTitle", "callbackEvents", "FeedService", controller]);
 
 });
