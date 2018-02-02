@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service.category;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -117,6 +117,7 @@ public class CategoryModelTransform  extends SimpleCategoryModelTransform{
             category.setName(domainCategory.getDisplayName());
             category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
             category.setDescription(domainCategory.getDescription());
+            category.setAllowIndexing(domainCategory.getAllowIndexing());
             category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
 
@@ -219,6 +220,7 @@ public class CategoryModelTransform  extends SimpleCategoryModelTransform{
         category.setDescription(feedCategory.getDescription());
         category.setIcon(feedCategory.getIcon());
         category.setIconColor(feedCategory.getIconColor());
+        category.setAllowIndexing(feedCategory.getAllowIndexing());
         category.setCreatedTime(new DateTime(feedCategory.getCreateDate()));
         category.setModifiedTime(new DateTime(feedCategory.getUpdateDate()));
 

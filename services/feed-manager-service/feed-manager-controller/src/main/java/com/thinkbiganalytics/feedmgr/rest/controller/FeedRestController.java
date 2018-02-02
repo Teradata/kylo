@@ -40,6 +40,8 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.DuplicateFeedNameException;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedCurrentlyRunningException;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingNotEnabledException;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
@@ -265,7 +267,32 @@ public class FeedRestController {
         NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
-        } catch (DuplicateFeedNameException e) {
+        }
+        catch (FeedHistoryDataReindexingNotEnabledException e) {
+            String errorMsg = "Feed history data reindexing functionality is disabled. Contact Kylo administrator to enable it.";
+
+            // Log as warning
+            log.warn(errorMsg);
+
+            // Add error message for UI
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(errorMsg);
+            feed.setSuccess(false);
+        }
+        catch (FeedCurrentlyRunningException e) {
+            String errorMsg = "Feed in category \"" + e.getCategoryName() + "\" with name \"" + e.getFeedName() + "\" is currently running. "
+                              + "Unable to save data history reindex option. "
+                              + "Wait for the feed run to complete and then try again.";
+
+            // Log as warning
+            log.warn(errorMsg);
+
+            // Add error message for UI
+            feed = new NifiFeed(feedMetadata, null);
+            feed.addErrorMessage(errorMsg);
+            feed.setSuccess(false);
+        }
+        catch (DuplicateFeedNameException e) {
             log.info("Failed to create a new feed due to another feed having the same category/feed name: " + feedMetadata.getCategoryAndFeedDisplayName());
 
             // Create an error message

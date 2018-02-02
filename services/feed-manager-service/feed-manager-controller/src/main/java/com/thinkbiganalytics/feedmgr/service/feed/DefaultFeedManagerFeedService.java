@@ -42,6 +42,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
@@ -219,8 +221,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private NiFiObjectCache niFiObjectCache;
 
     @Inject
-    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
+    FeedHistoryDataReindexingService feedHistoryDataReindexingService;
 
+    @Inject
+    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
 
     /**
      * Adds listeners for transferring events.
@@ -432,6 +436,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
+
+        //Check and accept feed data history reindexing request if that is the case.
+        feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
 
         if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {

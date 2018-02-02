@@ -102,10 +102,13 @@ public interface Category extends AccessControlled {
 
     void setIconColor(String iconColor);
 
+    String getAllowIndexing();
+
+    void setAllowIndexing(String allowIndexing);
+
     Set<RoleMembership> getFeedRoleMemberships();
 
     Optional<RoleMembership> getFeedRoleMembership(String roleName);
-    
     
     interface ID extends Serializable {
 

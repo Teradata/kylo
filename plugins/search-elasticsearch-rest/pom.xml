@@ -33,18 +33,22 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-search-api</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -62,24 +66,37 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
-      <groupId>org.modeshape</groupId>
-      <artifactId>modeshape-elasticsearch-index-provider</artifactId>
-      <version>${elasticsearchindexprovider.version}</version>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-modeshape-elasticsearch-index-provider</artifactId>
+      <version>${project.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-metadata-api</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>com.thinkbiganalytics.kylo</groupId>
+          <artifactId>kylo-metadata-modeshape</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-jcr</artifactId>
       <version>${modeshape.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-jcr-api</artifactId>
       <version>${modeshape.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -102,6 +119,16 @@
               <goal>shade</goal>
             </goals>
             <configuration>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <artifactSet>
                 <excludes>
                   <exclude>org.slf4j:*</exclude>

@@ -27,6 +27,13 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-core-service-api-v1.2</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-service-api</artifactId>
       <version>${project.version}</version>
       <scope>compile</scope>

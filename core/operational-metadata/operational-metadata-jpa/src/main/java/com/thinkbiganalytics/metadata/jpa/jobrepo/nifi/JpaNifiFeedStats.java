@@ -84,6 +84,10 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         this.feedId = feedId;
     }
 
+    public Boolean isFeedRunning() {
+        return getRunningFeedFlows() > 0L;
+    }
+
     @Override
     public Long getRunningFeedFlows() {
         if(runningFeedFlows == null){
@@ -159,5 +163,16 @@ public class JpaNifiFeedStats implements NifiFeedStats {
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
         }
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("JpaNifiFeedStats{");
+        sb.append("feedName='").append(feedName).append('\'');
+        sb.append(", runningFeedFlows=").append(runningFeedFlows);
+        sb.append(", time=").append(time);
+        sb.append(", lastActivityTimestamp=").append(lastActivityTimestamp);
+        sb.append('}');
+        return sb.toString();
     }
 }

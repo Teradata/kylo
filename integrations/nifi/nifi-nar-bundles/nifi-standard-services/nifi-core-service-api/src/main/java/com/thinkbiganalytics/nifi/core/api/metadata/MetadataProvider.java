@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedsForDataHistoryReindex;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
@@ -227,4 +228,11 @@ public interface MetadataProvider {
      * @return the data source, if found
      */
     Optional<Datasource> getDatasource(@Nonnull String id);
+
+    /**
+     * Get the feeds which require history to be reindexed
+     * @return the set of feeds (will be empty if no eligible feeds found)
+     *
+     */
+    FeedsForDataHistoryReindex getFeedsForHistoryReindexing();
 }

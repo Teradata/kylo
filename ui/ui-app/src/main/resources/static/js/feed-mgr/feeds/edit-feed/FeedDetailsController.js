@@ -64,7 +64,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.selectedTabIndex = 0;
 
         this.loadingFeedData = false;
-        this.model = FeedService.editFeedModel;
+        this.model = FeedService.editFeedModel = {};
         this.model.loaded = false;
         this.loadMessage = ''
         this.uploadFile = null;

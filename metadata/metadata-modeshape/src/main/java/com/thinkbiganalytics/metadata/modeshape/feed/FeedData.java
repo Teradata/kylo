@@ -39,6 +39,8 @@ import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingState;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -74,6 +76,9 @@ public class FeedData extends JcrPropertiesEntity {
 
     public static final String USR_PREFIX = "usr:";
 
+    //Data history reindexing
+    public static final String HISTORY_REINDEXING = "tba:historyReindexing";
+    public static final String REINDEXING_STATUS = "tba:reindexingStatus";
     
     public FeedData(Node node) {
         super(node);
@@ -90,6 +95,32 @@ public class FeedData extends JcrPropertiesEntity {
     public boolean isInitialized() {
         // TODO this smells like a bug
         return false;
+    }
+
+    public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {
+        if (JcrUtil.hasNode(getNode(), HISTORY_REINDEXING)) {
+            Node historyReindexingNode = JcrUtil.getNode(getNode(), HISTORY_REINDEXING);
+            return createHistoryReindexingStatus(historyReindexingNode);
+        } else {
+            return new HistoryReindexingStatus(HistoryReindexingState.NEVER_RUN);
+        }
+    }
+
+    private HistoryReindexingStatus createHistoryReindexingStatus(Node historyReindexingNode) {
+        HistoryReindexingState historyReindexingState = HistoryReindexingState.valueOf(JcrPropertyUtil.getString(historyReindexingNode, REINDEXING_STATUS));
+        DateTime lastModifiedTimestamp = JcrPropertyUtil.getProperty(historyReindexingNode, "jcr:lastModified");
+        return new HistoryReindexingStatus(historyReindexingState, lastModifiedTimestamp);
+    }
+
+    public Node updateHistoryReindexingStatus(HistoryReindexingStatus historyReindexingStatus) {
+        try {
+            Node historyReindexingNode = JcrUtil.getOrCreateNode(getNode(), HISTORY_REINDEXING, HISTORY_REINDEXING);
+            historyReindexingNode.setProperty(REINDEXING_STATUS, historyReindexingStatus.getHistoryReindexingState().toString());
+            historyReindexingNode.setProperty("jcr:lastModified", historyReindexingStatus.getLastModifiedTimestamp().toString());
+            return historyReindexingNode;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access history reindexing status for feed", e);
+        }
     }
 
     public InitializationStatus getCurrentInitStatus() {

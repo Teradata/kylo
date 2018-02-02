@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.config;
 
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.SavepointReplayJmsEventService;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -397,5 +398,9 @@ public class FeedManagerConfiguration {
 
     }
 
+    @Bean
+    public SavepointReplayJmsEventService savepointReplayJmsEventService(){
+        return new SavepointReplayJmsEventService();
+    }
 
 }
