@@ -814,12 +814,28 @@
     "Monitors All Service Health":"Monitors All Service Health",
     "Total":"Total",
 
+    "service-component-detail.time-locale": "{{date|date:'MM/dd/yyyy'}}",
+    "service-component-detail.time-locale2": "{{date|date:'h:mm'}}",
+    "service-component-detail.at": "at",
+    "registered-template.time_locale": "{{date|date:MM/dd/yyyy h:mm:ssa}}",
+    "jobs-template.time-locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
+    "job-details-template.time-locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
+    "feed-statscharts.time_locale2": "{{date|date:'HH:mm:ss'}}",
+    "feeds-table.time-locale": "{{date|date:'MM/dd/yyyy @ h:mm:ssa'}}",
+    "assessment.time_locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
+    "category-feeds.time-locale": "{{date|date:'MM/dd/yyyy hh:mm:ss'}}",
+    "time_locale":"{{date|date:'MMM d, yyyy HH:mm:ss'}}",
+    "feed-stats-charts.time_locale": "{{date|date:'MM/dd/yy HH:mm'}}",
+    "alert-detail-template.time_locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
+    "select-template.time_locale": "{{date|date:'MM/dd/yyyy h:mm:ssa'}}",
+    "services-detail-dialog.time-locale":"{{date|date:'H:mm:ss'}}",
+
     "dirPagination.tpl.5": "5",
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
-    "dirPagination.tpl.All": "All"
+    "dirPagination.tpl.All": "All",
 
-
+    "views.SchedulerController.time-locale":"MM/DD/YYYY hh:mm:ss a"
 }
 

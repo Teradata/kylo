@@ -1,6 +1,6 @@
-define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName) {
+define(['angular','ops-mgr/scheduler/module-name','pascalprecht.translate'], function (angular,moduleName) {
 
-    var controller = function ($scope, $interval, $timeout, $http, $location, HttpService, Utils,AccessControlService) {
+    var controller = function ($scope, $interval, $timeout, $http, $location, HttpService, Utils,AccessControlService, $filter) {
         var self = this;
 
         /**
@@ -78,7 +78,7 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
         this.populateSchedulerDetails = function(metadata){
 
             if(metadata.runningSince) {
-                this.schedulerDetails['startTime'] = moment(metadata.runningSince).format('MM/DD/YYYY hh:mm:ss a');
+                this.schedulerDetails['startTime'] = moment(metadata.runningSince).format($filter('translate')('views.SchedulerController.time-locale'));
                 this.schedulerDetails["upTime"] =  Utils.dateDifference(metadata.runningSince,new Date().getTime());
             }
             else {
@@ -416,7 +416,7 @@ define(['angular','ops-mgr/scheduler/module-name'], function (angular,moduleName
         });
     };
 
-    angular.module(moduleName).controller('SchedulerController', ["$scope","$interval","$timeout","$http","$location","HttpService","Utils","AccessControlService",controller]);
+    angular.module(moduleName).controller('SchedulerController', ["$scope","$interval","$timeout","$http","$location","HttpService","Utils","AccessControlService","$filter",controller]);
 
 
 });

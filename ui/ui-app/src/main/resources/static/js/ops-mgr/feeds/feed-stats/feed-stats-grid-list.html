@@ -28,7 +28,7 @@
       <span flex></span>
 
       <div layout="column">
-        <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
+        <span class="hint">{{'feed-statscharts.time_locale2' | translate:{date:vm.lastRefreshTime} }}</span>
         <span class="md-caption">Last Refreshed</span>
       </div>
     </div>
