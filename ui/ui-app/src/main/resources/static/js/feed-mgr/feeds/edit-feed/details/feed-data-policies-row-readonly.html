@@ -46,10 +46,10 @@
         md-direction="top">
       <div layout="row" class="versions-tooltip-header" layout-fill ng-if="vm.versions">
         <div flex>
-          Current
+          {{'views.feed-data-policies.Current' | translate }}
         </div>
         <div flex>
-          Version {{vm.versionFeedModel.version.name}}
+          {{'views.feed-data-policies.Version' | translate }} {{vm.versionFeedModel.version.name}}
         </div>
       </div>
       <md-divider id="versions-tooltip-divider" ng-if="vm.versions"></md-divider>

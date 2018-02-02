@@ -254,7 +254,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * Resets the Create feed ({@code this.createFeedModel}) object
              */
             resetFeed: function () {
-                console.log('resetFeed');
                 //get the new model and its keys
                 var newFeedObj = this.getNewCreateFeedModel();
                 var keys = _.keys(newFeedObj);

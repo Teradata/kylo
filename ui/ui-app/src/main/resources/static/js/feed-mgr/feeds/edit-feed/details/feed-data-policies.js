@@ -262,12 +262,12 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', valid);
         }
 
-        this.shouldIndexingOptionsBeDisabled = function() {
-          return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+        this.shouldIndexingOptionsBeDisabled = function(feedModel) {
+          return feedModel && ((feedModel.historyReindexingStatus === 'IN_PROGRESS') || (feedModel.historyReindexingStatus === 'DIRTY'));
         };
 
-        this.shouldIndexingOptionsBeEnabled = function() {
-            return !this.shouldIndexingOptionsBeDisabled();
+        this.shouldIndexingOptionsBeEnabled = function(feedModel) {
+            return !this.shouldIndexingOptionsBeDisabled(feedModel);
         };
 
         this.findAndReplaceString = function(str, findStr, replacementStr) {

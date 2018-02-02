@@ -16,14 +16,15 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
         };
     }
 
-    var controller = function ($scope, $http, $q, RestUrlService, FeedService) {
+    var controller = function ($scope, $http, $q, $filter, RestUrlService, FeedService) {
 
         var self = this;
 
         this.model = FeedService.editFeedModel;
         FeedService.versionFeedModel = {};
         FeedService.versionFeedModelDiff = [];
-        this.leftVersion = "Current"; //todo translate this
+        this.current = $filter('translate')('views.feed-versions-compare.Current');
+        this.leftVersion = this.current;
         this.rightVersion = {};
         this.versions = [];
         this.loading = false;
@@ -32,7 +33,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
         this.loadVersions = function () {
             FeedService.getFeedVersions(this.model.feedId).then(function(result) {
                 self.versions = result.versions;
-                self.leftVersion = "Current (" + getCurrentVersion().name + ")";
+                self.leftVersion = self.current + " (" + getCurrentVersion().name + ")";
             }, function(err) {
 
             });
@@ -78,7 +79,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
         self.loadVersions();
     };
 
-    angular.module(moduleName).controller('FeedVersionsCompareController', ["$scope", "$http", "$q", "RestUrlService", "FeedService", controller]);
+    angular.module(moduleName).controller('FeedVersionsCompareController', ["$scope", "$http", "$q", "$filter", "RestUrlService", "FeedService", controller]);
 
     angular.module(moduleName).directive('thinkbigFeedVersionsCompare', directive);
 });
