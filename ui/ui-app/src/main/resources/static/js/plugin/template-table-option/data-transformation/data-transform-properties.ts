@@ -20,19 +20,21 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
         /**
          * Navigates to the Edit Feed page for the current feed.
          */
-        navigateToEditFeedInStepper = => () {
-            this.VisualQueryService.resetModel();
-            this.StateService.FeedManager().Feed().navigateToEditFeedInStepper(this.model.feedId);
-        };
-
+        
+        this.navigateToEditFeedInStepper();
         //Apply the entity access permissions
         this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, 
                                                              this.model, 
                                                              this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
-                                              .then((access)=>{
+                                              .then((access: any)=>{
                                                          this.allowEdit = access;
                                                         });
                  }
+
+        navigateToEditFeedInStepper(){
+            this.VisualQueryService.resetModel();
+            this.StateService.FeedManager().Feed().navigateToEditFeedInStepper(this.model.feedId);
+        }
 
         /**
          * Indicates if the feed NiFi properties may be edited.
@@ -53,17 +55,6 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
         model: any = this.FeedService.editFeedModel;
 
 }
-export class kyloDataTransformProperties extends ng.IDirective
-{
-    constructor(){
-          return {
-            controller: "DataTransformPropertiesController",
-            controllerAs: "vm",
-            restrict: "E",
-            templateUrl: "js/plugin/template-table-option/data-transformation/data-transform-properties.html"
-        };
-        }
-}
 
   angular.module("kylo.plugin.template-table-option.data-transformation", [])
         .controller('DataTransformPropertiesController', 
@@ -74,4 +65,13 @@ export class kyloDataTransformProperties extends ng.IDirective
                     "StateService", 
                     "VisualQueryService", 
                     DataTransformPropertiesController])
-        .directive('kyloDataTransformProperties', kyloDataTransformProperties);
+        .directive('kyloDataTransformProperties', [()=>
+                               { return {
+                                    controller: "DataTransformPropertiesController",
+                                    controllerAs: "vm",
+                                    restrict: "E",
+                                    templateUrl: "js/plugin/template-table-option/data-transformation/data-transform-properties.html"
+                                };
+                                }
+        ]
+        );
