@@ -821,9 +821,7 @@
     "Monitors All Service Health":"Monitors All Service Health",
     "Total":"Total",
 
-    "service-component-detail.time-locale": "{{date|date:'MM/dd/yyyy'}}",
-    "service-component-detail.time-locale2": "{{date|date:'h:mm'}}",
-    "service-component-detail.at": "at",
+    "service-component-detail.time-locale": "{{date|date:'dd/MM/yyyy @ H:mm'}}",
     "registered-template.time_locale": "{{date|date:MM/dd/yyyy h:mm:ssa}}",
     "jobs-template.time-locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
     "job-details-template.time-locale": "{{date|date:'MMM d, yyyy HH:mm:ss'}}",
