@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,14 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * limitations under the License.
  * #L%
  */
+
+import com.thinkbiganalytics.nifi.savepoint.api.SavepointProvenanceProperties;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidLockException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidSetpointException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.Lock;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointController;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointEntry;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointProvider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -37,6 +45,7 @@ import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
+import org.apache.nifi.processor.FlowFileFilter;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
@@ -48,16 +57,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-
-import com.thinkbiganalytics.nifi.savepoint.api.SavepointProvenanceProperties;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidLockException;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidSetpointException;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.Lock;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointController;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointEntry;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointProvider;
 
 @EventDriven
 @SupportsBatching
@@ -81,6 +83,8 @@ public class SetSavepoint extends AbstractProcessor {
 
     public static final String SAVEPOINT_RETRY_COUNT = "savepoint.retry.count";
     public static final String SAVEPOINT_START_TIMESTAMP = "savepoint.start.timestamp";
+
+    public static final String SAVEPOINT_EXCEPTION = "savepoint.exception";
 
 
     // Identifies the savepoint service
@@ -120,8 +124,13 @@ public class SetSavepoint extends AbstractProcessor {
         .description("A FlowFile will be cloned upon new entry or receiving a retry signal from the controller and routed to this relationship")
         .build();
 
-    public static final Relationship REL_RELEASE = new Relationship.Builder()
-        .name("release")
+    public static final Relationship REL_RELEASE_SUCCESS = new Relationship.Builder()
+        .name("release-success")
+        .description("A FlowFile with a release signal from controller will be routed to this relationship")
+        .build();
+
+    public static final Relationship REL_RELEASE_FAILURE = new Relationship.Builder()
+        .name("release-failure")
         .description("A FlowFile with a release signal from controller will be routed to this relationship")
         .build();
 
@@ -142,7 +151,8 @@ public class SetSavepoint extends AbstractProcessor {
     public SetSavepoint() {
         final Set<Relationship> rels = new HashSet<>();
         rels.add(REL_TRY);
-        rels.add(REL_RELEASE);
+        rels.add(REL_RELEASE_SUCCESS);
+        rels.add(REL_RELEASE_FAILURE);
         rels.add(REL_EXPIRED);
         rels.add(REL_FAILURE);
         relationships = Collections.unmodifiableSet(rels);
@@ -163,21 +173,54 @@ public class SetSavepoint extends AbstractProcessor {
         return relationships;
     }
 
+
+    /**
+     * Check to see if a flowfile in queue has an expired savepoint
+     *
+     * @param flowFile           the flowfile
+     * @param expirationDuration the expire duration
+     * @return true if expired, false if not
+     */
+    private boolean isExpired(FlowFile flowFile, long expirationDuration) {
+        boolean expired = false;
+        // Set wait start timestamp if it's not set yet
+        String waitStartTimestamp = flowFile.getAttribute(SAVEPOINT_START_TIMESTAMP);
+        if (waitStartTimestamp != null) {
+            long lWaitStartTimestamp = 0L;
+            try {
+                lWaitStartTimestamp = Long.parseLong(waitStartTimestamp);
+            } catch (NumberFormatException nfe) {
+                expired = false;
+            }
+
+            // check for expiration
+            long now = System.currentTimeMillis();
+            if (now > (lWaitStartTimestamp + expirationDuration)) {
+                expired = true;
+            }
+        }
+        return expired;
+    }
+
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
 
-        FlowFile flowFile = session.get();
-        if (flowFile == null) {
-            return;
-        }
-
-        // Fetch the controller
         final SavepointController controller = context.getProperty(SAVEPOINT_SERVICE).asControllerService(SavepointController.class);
         final SavepointProvider provider = controller.getProvider();
 
-        final ComponentLog logger = getLogger();
-
         final PropertyValue pvSavepointId = context.getProperty(SAVEPOINT_ID);
+        final String processorId = getIdentifier();
+
+        FlowFile flowFile = null;
+        Optional<FlowFile> nextFlowfile = getNextFlowFile(context, session, provider, pvSavepointId);
+
+        if (!nextFlowfile.isPresent()) {
+            return;
+        } else {
+            flowFile = nextFlowfile.get();
+        }
+
+        final ComponentLog logger = getLogger();
 
         // We do processing on each flowfile here
         final String savepointIdStr = pvSavepointId.evaluateAttributeExpressions(flowFile).getValue();
@@ -185,7 +228,6 @@ public class SetSavepoint extends AbstractProcessor {
         try {
             lock = provider.lock(savepointIdStr);
             if (lock != null) {
-                String processorId = getIdentifier();
                 SavepointEntry entry = provider.lookupEntry(savepointIdStr);
 
                 // Set wait start timestamp if it's not set yet
@@ -223,9 +265,17 @@ public class SetSavepoint extends AbstractProcessor {
                 } else {
                     SavepointEntry.SavePointState state = entry.getState(processorId);
                     switch (state) {
-                        case RELEASE:
+                        case RELEASE_SUCCESS:
                             provider.commitRelease(savepointIdStr, processorId, lock);
-                            session.transfer(flowFile, REL_RELEASE);
+                            //add provenance to indicate success
+                            flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.RELEASE_STATUS_KEY, SavepointProvenanceProperties.RELEASE_STATUS.SUCCESS.name());
+                            session.transfer(flowFile, REL_RELEASE_SUCCESS);
+                            break;
+                        case RELEASE_FAILURE:
+                            provider.commitRelease(savepointIdStr, processorId, lock);
+                            //add provenance to indicate failure
+                            flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.RELEASE_STATUS_KEY, SavepointProvenanceProperties.RELEASE_STATUS.FAILURE.name());
+                            session.transfer(flowFile, REL_RELEASE_FAILURE);
                             break;
                         case RETRY:
                             String retryCount = flowFile.getAttribute(SAVEPOINT_RETRY_COUNT);
@@ -240,6 +290,7 @@ public class SetSavepoint extends AbstractProcessor {
                             break;
                         default:
                             logger.warn("Unexpected savepoint state.");
+                            session.transfer(flowFile, REL_FAILURE);
 
                     }
                 }
@@ -250,6 +301,8 @@ public class SetSavepoint extends AbstractProcessor {
             }
         } catch (IOException | InvalidLockException | InvalidSetpointException e) {
             logger.warn("Failed to process flowfile for savepoint {}", new String[]{savepointIdStr}, e);
+            flowFile = session.putAttribute(flowFile, SAVEPOINT_EXCEPTION, "Failed to process flowfile for savepoint " + savepointIdStr + ". " + e.getMessage());
+            session.transfer(flowFile, REL_FAILURE);
         } finally {
             if (lock != null) {
                 try {
@@ -263,14 +316,41 @@ public class SetSavepoint extends AbstractProcessor {
     }
 
     /**
+     * Return the next available flow file in the queue that is not in a waiting state.
+     *
+     * @param session       the process session
+     * @param provider      the save point provider
+     * @param pvSavepointId the savepoint id
+     * @return the first flowfile not in a waiting savepoint state
+     */
+    private Optional<FlowFile> getNextFlowFile(ProcessContext context, ProcessSession session, SavepointProvider provider, PropertyValue pvSavepointId) {
+        long expirationDuration = context.getProperty(EXPIRATION_DURATION)
+            .asTimePeriod(TimeUnit.MILLISECONDS);
+
+        String processorId = getIdentifier();
+        return session.get(f -> {
+            final String savepointIdStr = pvSavepointId.evaluateAttributeExpressions(f).getValue();
+            SavepointEntry entry = provider.lookupEntry(savepointIdStr);
+            if (entry == null || entry.getState(processorId) == null || isExpired(f, expirationDuration)) {
+                return FlowFileFilter.FlowFileFilterResult.ACCEPT_AND_TERMINATE;
+            } else if (SavepointEntry.SavePointState.WAIT != entry.getState(processorId)) {
+                return FlowFileFilter.FlowFileFilterResult.ACCEPT_AND_TERMINATE;
+            } else {
+                return FlowFileFilter.FlowFileFilterResult.REJECT_AND_CONTINUE;
+            }
+        }).stream().findFirst();
+    }
+
+    /**
      * Try or retry a flowfile
      */
     private void tryFlowFile(final ProcessSession session, final FlowFile flowFile, String retryCount) {
         FlowFile flowFileModified = session.putAttribute(flowFile, SAVEPOINT_RETRY_COUNT, StringUtils.defaultString(String.valueOf(Integer.parseInt(retryCount) + 1), "1"));
         FlowFile clonedFlowFile = session.clone(flowFileModified);
 
-        flowFileModified = session.putAttribute(flowFileModified, SavepointProvenanceProperties.CLONE_FLOWFILE_ID, clonedFlowFile.getAttribute(CoreAttributes.UUID.key()) );
-        clonedFlowFile = session.putAttribute(clonedFlowFile, SavepointProvenanceProperties.PARENT_FLOWFILE_ID, flowFileModified.getAttribute(CoreAttributes.UUID.key()) );
+        flowFileModified = session.putAttribute(flowFileModified, SavepointProvenanceProperties.CLONE_FLOWFILE_ID, clonedFlowFile.getAttribute(CoreAttributes.UUID.key()));
+        clonedFlowFile = session.putAttribute(clonedFlowFile, SavepointProvenanceProperties.PARENT_FLOWFILE_ID, flowFileModified.getAttribute(CoreAttributes.UUID.key()));
+
         session.transfer(flowFileModified, REL_SELF);
         session.transfer(clonedFlowFile, REL_TRY);
     }

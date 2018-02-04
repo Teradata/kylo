@@ -26,7 +26,6 @@ import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.JmsService;
-import com.thinkbiganalytics.jms.SendJmsMessage;
 import com.thinkbiganalytics.jms.Topics;
 import com.thinkbiganalytics.metadata.api.cache.CacheBackedProviderListener;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
@@ -66,9 +65,6 @@ public class StreamingFeedJmsNotificationService {
 
     @Inject
     private NifiFlowCache nifiFlowCache;
-
-    @Inject
-    private SendJmsMessage sendJmsMessage;
 
     @Autowired
     @Qualifier("jmsTemplate")

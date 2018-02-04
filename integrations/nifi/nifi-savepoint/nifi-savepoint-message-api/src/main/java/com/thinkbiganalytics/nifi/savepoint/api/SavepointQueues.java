@@ -18,26 +18,8 @@ package com.thinkbiganalytics.nifi.savepoint.api;
  * limitations under the License.
  * #L%
  */
-public class SavepointProvenanceProperties {
+public interface SavepointQueues {
 
-    public static final String CLONE_FLOWFILE_ID = "savepoint.clone.flowfile.id";
-    public static final String PARENT_FLOWFILE_ID = "savepoint.parent.flowfile.id";
-
-    /**
-     * Status flag that is added to provenance to track history in kylo
-     */
-    public static final String SAVE_POINT_BEHAVIOR_STATUS = "savepoint.behavior.status";
-
-    /**
-     * The parent flow file that is to be used to trigger this last savepoint
-     */
-    public static final String SAVE_POINT_TRIGGER_FLOWFILE= "savepoint.trigger.flowfile";
-
-
-    public static final String RELEASE_STATUS_KEY = "savepoint.release";
-
-    public enum RELEASE_STATUS {
-        SUCCESS, FAILURE
-    }
+    String REPLAY_SAVEPOINT_RESPONE_QUEUE = "kylo.savepoint.replay.response";
 
 }

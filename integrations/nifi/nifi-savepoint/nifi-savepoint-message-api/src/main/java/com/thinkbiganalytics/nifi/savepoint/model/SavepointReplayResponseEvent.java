@@ -1,7 +1,4 @@
 package com.thinkbiganalytics.nifi.savepoint.model;
-
-import java.io.Serializable;
-
 /*-
  * #%L
  * kylo-nifi-savepoint-model
@@ -21,18 +18,25 @@ import java.io.Serializable;
  * limitations under the License.
  * #L%
  */
-public class SavepointReplayEvent implements Serializable{
+import java.io.Serializable;
+
+public class SavepointReplayResponseEvent implements Serializable {
 
     private Long jobExecutionId;
     private String flowfileId;
-    public enum Action {
-        RETRY, RELEASE
+    private RESPONSE response;
+    private SavepointReplayEvent.Action action;
+    private String message;
+    public static enum RESPONSE {
+        SUCCESS,FAILURE
     }
-    private Action action;
 
+    public SavepointReplayEvent.Action getAction() {
+        return action;
+    }
 
-    public SavepointReplayEvent(){
-
+    public void setAction(SavepointReplayEvent.Action action) {
+        this.action = action;
     }
 
     public Long getJobExecutionId() {
@@ -51,20 +55,19 @@ public class SavepointReplayEvent implements Serializable{
         this.flowfileId = flowfileId;
     }
 
-    public Action getAction() {
-        return action;
+    public RESPONSE getResponse() {
+        return response;
     }
 
-    public void setAction(Action action) {
-        this.action = action;
+    public void setResponse(RESPONSE response) {
+        this.response = response;
     }
 
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("SavepointReplayEvent{");
-        sb.append("flowfileId='").append(flowfileId).append('\'');
-        sb.append(", action=").append(action);
-        sb.append('}');
-        return sb.toString();
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

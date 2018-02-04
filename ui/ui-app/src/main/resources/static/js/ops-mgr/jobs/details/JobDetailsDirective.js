@@ -19,7 +19,7 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
 
 
 
-    function JobDetailsDirectiveController($scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
+    function JobDetailsDirectiveController($scope,$http, $state, $interval, $timeout, $q,$mdToast,  OpsManagerRestUrlService,OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
         var self = this;
 
         /**
@@ -85,12 +85,46 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
         this.navigateToLogsForStep = navigateToLogsForStep;
         this.logUiEnabled = false;
 
-        this.init = function() {
+        this.init = function () {
             var executionId = self.executionId;
             self.jobExecutionId = executionId;
             this.relatedJob = self.jobExecutionId;
             loadJobData();
             //   loadRelatedJobs();
+        }
+        this.triggerSavepointRetry = function () {
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                console.log('TRIGGER SAVE replay for ',self.jobData.triggerRetryFlowfile);
+                self.jobData.renderTriggerRetry = false;
+                $http.post(OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(){
+
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Triggered the retry')
+                            .hideDelay(3000)
+                    );
+                    loadJobData(true);
+                });
+            }
+        }
+
+        this.triggerSavepointReleaseFailure = function (callbackFn) {
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                $http.post(OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(response){
+                    console.log('TRIGGERD FAILURE ',response)
+
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Triggered the release and failure')
+                            .hideDelay(3000)
+                    );
+                    if(angular.isDefined(callbackFn)){
+                        callbackFn();
+                    }
+                    loadJobData(true);
+
+                });
+            }
         }
 
         this.init();
@@ -266,33 +300,58 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
             loadJobExecution(relatedJob)
         }
 
-        function mapToArray(map, obj, fieldName, removeKeys) {
+        function mapToArray(map, obj, type, fieldName, removeKeys) {
             if (removeKeys == undefined) {
                 removeKeys = [];
             }
             var arr = [];
+            var renderTriggerSavepointRetry = false;
+            var jobComplete = false;
             for (var key in map) {
                 if (_.indexOf(removeKeys, key) == -1) {
                     if (map.hasOwnProperty(key)) {
                         arr.push({key: key, value: map[key]});
+                        if (type == 'JOB' && fieldName == 'executionContextArray') {
+                            if(key == 'kylo.job.finished') {
+                                jobComplete = true;
+                            }
+                            if(!renderTriggerSavepointRetry) {
+                            renderTriggerSavepointRetry = checkTriggerSavepoint(obj, key, map[key]);
+                            }
+                          }
                     }
                 }
+            }
+
+            if (type == 'JOB' && fieldName == 'executionContextArray' && (!renderTriggerSavepointRetry || jobComplete)) {
+                obj.renderTriggerRetry = false;
             }
             obj[fieldName] = arr;
         }
 
-        function assignParameterArray(obj) {
+        function checkTriggerSavepoint(job,key,value){
+           if(key == 'savepoint.trigger.flowfile' && angular.isDefined(value)) {
+                {
+                    job.renderTriggerRetry = true;
+                    job.triggerRetryFlowfile = value;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        function assignParameterArray(obj, type) {
             if (obj) {
                 if (obj.jobParameters) {
 
-                    mapToArray(obj.jobParameters, obj, 'jobParametersArray')
+                    mapToArray(obj.jobParameters, obj, type,'jobParametersArray')
                 }
                 else {
                     obj['jobParametersArray'] = [];
                 }
 
                 if (obj.executionContext) {
-                    mapToArray(obj.executionContext, obj, 'executionContextArray', ['batch.stepType', 'batch.taskletType'])
+                    mapToArray(obj.executionContext, obj,type, 'executionContextArray', ['batch.stepType', 'batch.taskletType'])
                 }
                 else {
                     obj['executionContextArray'] = [];
@@ -321,9 +380,10 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
         }
 
         function transformJobData(job) {
-            assignParameterArray(job);
-            job.name = job.jobName;
             job.running = false;
+            assignParameterArray(job,'JOB');
+            job.name = job.jobName;
+
             job.stopping = false;
             job.exitDescription = job.exitStatus;
             if (job.exitDescription == undefined || job.exitDescription == '') {
@@ -397,7 +457,7 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
                 step.disabled = false;
             }
 
-            assignParameterArray(step);
+            assignParameterArray(step,'STEP');
             return step;
         }
 
@@ -502,11 +562,23 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
         this.failJob = function(event) {
             event.stopPropagation();
             event.preventDefault();
-            var executionId = self.jobData.executionId;
-            OpsManagerJobService.failJob(self.jobData.executionId, {includeSteps: true}, function(response) {
-                updateJob(executionId, response.data)
-                //  loadJobs(true);
-            })
+
+            function _fail(){
+                OpsManagerJobService.failJob(self.jobData.executionId, {includeSteps: true}, function(response) {
+                    updateJob(executionId, response.data)
+                    //  loadJobs(true);
+                })
+            }
+
+            if(self.jobData.renderTriggerRetry){
+                self.triggerSavepointReleaseFailure(_fail)
+            }
+            else {
+                _fail()
+            }
+
+
+
         };
 
         $scope.$on('$destroy', function(){
@@ -522,6 +594,6 @@ define(['angular','ops-mgr/jobs/details/module-name','pascalprecht.translate'], 
                 });
     }
 
-    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService","$filter",JobDetailsDirectiveController]);
+    angular.module(moduleName).controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q","$mdToast","OpsManagerRestUrlService","OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService","$filter",JobDetailsDirectiveController]);
     angular.module(moduleName).directive("tbaJobDetails", directive);
 });

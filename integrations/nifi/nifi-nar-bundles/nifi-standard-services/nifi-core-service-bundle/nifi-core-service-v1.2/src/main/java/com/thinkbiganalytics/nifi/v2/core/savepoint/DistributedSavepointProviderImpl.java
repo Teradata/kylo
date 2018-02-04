@@ -110,7 +110,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     private static final Deserializer<Lock> lockValueDeserializer = (value) -> {
         String sValue = new String(value, StandardCharsets.UTF_8);
         logger.debug("Deserializing lock {}", sValue);
-         return (StringUtils.isEmpty(sValue) ? null : objectMapper.readValue(sValue, Lock.class));
+        return (StringUtils.isEmpty(sValue) ? null : objectMapper.readValue(sValue, Lock.class));
     };
 
     private static final Deserializer<String> stringDeserializer = input -> input == null ? null : new String(input, StandardCharsets.UTF_8);
@@ -119,8 +119,8 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     public DistributedSavepointProviderImpl(DistributedMapCacheClient cacheClient) {
 
         this.savePoints = new CacheWrapper<>(cacheKeySerializer, objectValueSerializer, entryValueDeserializer, cacheClient);
-        this.locks = new CacheWrapper<>(lockKeySerializer, objectValueSerializer,  lockValueDeserializer, cacheClient);
-        this.reverseCache = new CacheWrapper<>(reverseKeySerializer, stringSerializer,  stringDeserializer, cacheClient);
+        this.locks = new CacheWrapper<>(lockKeySerializer, objectValueSerializer, lockValueDeserializer, cacheClient);
+        this.reverseCache = new CacheWrapper<>(reverseKeySerializer, stringSerializer, stringDeserializer, cacheClient);
     }
 
     @Override
@@ -185,13 +185,13 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     /**
      * Releases any flowfiles held by a savepoint
      */
-    public void release(String savepointId, Lock lock) throws InvalidLockException, InvalidSetpointException {
+    public void release(String savepointId, Lock lock, boolean success) throws InvalidLockException, InvalidSetpointException {
         if (!isValidLock(lock)) {
             throw new InvalidLockException();
         }
         logger.debug("Release savepointId {}", savepointId);
         SavepointEntry entry = lookupEntryWithGuarantee(savepointId);
-        entry.releaseAll();
+        entry.releaseAll(success);
         savePoints.put(savepointId, entry);
     }
 
@@ -282,8 +282,6 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
     /**
      * Wrapper for distributed cache
-     * @param <K>
-     * @param <V>
      */
     static class CacheWrapper<K, V> {
 
@@ -313,7 +311,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public void put(K key, V value) {
             try {
-                cacheClient.put(key, value, (Serializer<K>) keySerializer,valueSerializer);
+                cacheClient.put(key, value, (Serializer<K>) keySerializer, valueSerializer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -339,7 +337,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public V get(K key) {
             try {
-                return cacheClient.get(key, (Serializer<K>) keySerializer,  valueDeserializer);
+                return cacheClient.get(key, (Serializer<K>) keySerializer, valueDeserializer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

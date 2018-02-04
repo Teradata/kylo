@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,7 +20,6 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.core.api.cleanup.CleanupEventConsumer;
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 import com.thinkbiganalytics.nifi.savepoint.api.SavepointReplayEventConsumer;
 import com.thinkbiganalytics.nifi.v2.core.savepoint.DistributedSavepointController;
@@ -81,7 +80,7 @@ public class SetSavepointTest {
         runner.addControllerService("client", client, clientProperties);
         runner.enableControllerService(client);
 
-        DistributedSavepointController service= new DistributedSavepointController();
+        DistributedSavepointController service = new DistributedSavepointController();
         final Map<String, String> serviceProperties = new HashMap<>();
         serviceProperties.put("distributed-cache-service", "client");
 
@@ -139,7 +138,7 @@ public class SetSavepointTest {
         testIteration.expectedRetry.add("1");
         testIteration.run();
 
-        for (int i=1; i <= 5; i++) {
+        for (int i = 1; i <= 5; i++) {
 
             Lock lock = provider.lock(savepointId);
             provider.retry(savepointId, lock);
@@ -176,14 +175,14 @@ public class SetSavepointTest {
 
         lock = provider.lock(savepointId);
         assertNotNull("Expecting lock", lock);
-        provider.release(savepointId, lock);
+        provider.release(savepointId, lock, true);
         provider.unlock(lock);
 
-        testIteration.expectedReleased.add("1");
+        testIteration.expectedReleasedSuccess.add("1");
         testIteration.expectedQueueSize = 0;
         testIteration.run();
 
-        String retryCount = testIteration.released.get(0).getAttribute(SetSavepoint.SAVEPOINT_RETRY_COUNT);
+        String retryCount = testIteration.releasedSuccess.get(0).getAttribute(SetSavepoint.SAVEPOINT_RETRY_COUNT);
         assertEquals("Expecting retry count of 1", "1", retryCount);
     }
 
@@ -202,11 +201,11 @@ public class SetSavepointTest {
 
         Lock lock = provider.lock(savepointId);
         assertNotNull("Expecting lock", lock);
-        provider.release(savepointId, lock);
+        provider.release(savepointId, lock, true);
         provider.unlock(lock);
 
         testIteration.expectedQueueSize = 0;
-        testIteration.expectedReleased.add("1");
+        testIteration.expectedReleasedSuccess.add("1");
         testIteration.run();
     }
 
@@ -229,43 +228,73 @@ public class SetSavepointTest {
         testIteration.run();
 
         SavepointEntry entry = provider.lookupEntry(savepointId);
-        Assert.assertEquals(SavepointEntry.SavePointState.RELEASE, entry.getState("processor1"));
+        Assert.assertEquals(SavepointEntry.SavePointState.RELEASE_SUCCESS, entry.getState("processor1"));
+    }
+
+
+    @Test
+    public void testReleaseFailure() throws InitializationException, IOException, InvalidLockException, InvalidSetpointException {
+
+        enqueue("sp1");
+
+        final TestIteration testIteration = new TestIteration();
+        testIteration.expectedQueueSize = 1;
+        testIteration.expectedRetry.add("1");
+        testIteration.run();
+
+        testIteration.expectedQueueSize = 1;
+        testIteration.run();
+
+        Lock lock = provider.lock(savepointId);
+        assertNotNull("Expecting lock", lock);
+        provider.release(savepointId, lock, false);
+        provider.unlock(lock);
+
+        testIteration.expectedQueueSize = 0;
+        testIteration.expectedReleasedFailures.add("1");
+        testIteration.run();
+
     }
 
     private class TestIteration {
 
-        final List<MockFlowFile> released = new ArrayList<>();
+        final List<MockFlowFile> releasedSuccess = new ArrayList<>();
+        final List<MockFlowFile> releasedFailures = new ArrayList<>();
         final List<MockFlowFile> retry = new ArrayList<>();
         final List<MockFlowFile> failed = new ArrayList<>();
         final List<MockFlowFile> expired = new ArrayList<>();
 
-        final List<String> expectedReleased = new ArrayList<>();
+        final List<String> expectedReleasedSuccess = new ArrayList<>();
+        final List<String> expectedReleasedFailures = new ArrayList<>();
         final List<String> expectedRetry = new ArrayList<>();
         final List<String> expectedFailed = new ArrayList<>();
         final List<String> expectedExpired = new ArrayList<>();
         int expectedQueueSize = 0;
         boolean clearRunnerState = true;
 
-        void doNotClearRunnerState()  {
+        void doNotClearRunnerState() {
             clearRunnerState = false;
         }
 
         void run() {
-            released.clear();
+            releasedSuccess.clear();
+            releasedFailures.clear();
             retry.clear();
             failed.clear();
             expired.clear();
 
             runner.run();
 
-            released.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_RELEASE));
+            releasedSuccess.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_RELEASE_SUCCESS));
+            releasedFailures.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_RELEASE_FAILURE));
             retry.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_TRY));
             failed.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_FAILURE));
             expired.addAll(runner.getFlowFilesForRelationship(SetSavepoint.REL_EXPIRED));
             int queueSize = runner.getQueueSize().getObjectCount();
 
             assertEquals(expectedQueueSize, queueSize);
-            assertEquals(expectedReleased.size(), released.size());
+            assertEquals(expectedReleasedSuccess.size(), releasedSuccess.size());
+            assertEquals(expectedReleasedFailures.size(), releasedFailures.size());
             assertEquals(expectedRetry.size(), retry.size());
             assertEquals(expectedFailed.size(), failed.size());
             assertEquals(expectedExpired.size(), expired.size());
@@ -275,16 +304,13 @@ public class SetSavepointTest {
             }
 
             expectedQueueSize = 0;
-            expectedReleased.clear();
+            expectedReleasedSuccess.clear();
+            expectedReleasedFailures.clear();
             expectedRetry.clear();
             expectedFailed.clear();
             expectedExpired.clear();
         }
     }
-
-
-
-
 
 
     /**
