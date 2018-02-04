@@ -296,7 +296,9 @@ public class TriggerSavepoint extends AbstractProcessor {
             // Route to failure
             flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS, behavior);
             String triggerFlowFile = flowFile.getAttribute(SavepointProvenanceProperties.PARENT_FLOWFILE_ID);
-            flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
+            if(StringUtils.isNotBlank(triggerFlowFile)) {
+                flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
+            }
             session.transfer(flowFile, REL_FAILURE);
         }
     }
