@@ -273,8 +273,9 @@ public class TriggerSavepoint extends AbstractProcessor {
 
                     //add in the trigger flow id so ops manager can get the key to retry if needed
                     String triggerFlowFile = flowFile.getAttribute(SavepointProvenanceProperties.PARENT_FLOWFILE_ID);
-                    flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
-
+                    if(StringUtils.isNotBlank(triggerFlowFile)) {
+                        flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
+                    }
                     session.transfer(flowFile, REL_FAILURE);
                 } else {
                     logger.info("Failed to process flowfile for savepoint {}", new String[]{savepointIdStr}, e);
