@@ -598,6 +598,7 @@
     "views.kylo-options.AK": "О платформе",
 
     "views.TableController.Tables": "Озеро данных",
+    "views.TableController.Schemas": "Схемы",
 
     "view.login.KL": "Вход в ЕИАП",
     "view.login.Login": "Проверка пользователя",

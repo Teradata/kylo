@@ -602,6 +602,7 @@
     "views.kylo-options.AK": "About Kylo",
 
     "views.TableController.Tables": "Tables",
+    "views.TableController.Schemas": "Schemas",
 
     "view.login.KL": "Kylo Login",
     "view.login.Login": "Login",

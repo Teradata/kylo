@@ -1,6 +1,6 @@
 define(['angular', "search/module-name"], function (angular, moduleName) {
 
-    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService,PaginationDataService) {
+    var controller = function ($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService,PaginationDataService,DatasourcesService) {
 
         var self = this;
         /**
@@ -26,6 +26,8 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
         this.paginationData = PaginationDataService.paginationData(this.pageName, this.pageName,10);
         PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
         this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
+
+        var hiveDatasource = DatasourcesService.getHiveDatasource();
 
         this.categoryForIndex = function (indexName) {
             var category = CategoriesService.findCategoryByName(indexName);
@@ -92,14 +94,13 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
         };
 
         this.onSearchResultItemClick = function ($event, result) {
-
             switch (result.type) {
                 case "KYLO_DATA":
-                    StateService.Tables().navigateToTable(this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
+                    StateService.Tables().navigateToTable(hiveDatasource.id, this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
                     break;
 
                 case "KYLO_SCHEMA":
-                    StateService.Tables().navigateToTable(this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
+                    StateService.Tables().navigateToTable(hiveDatasource.id, this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
                     break;
 
                 case "KYLO_FEEDS":
@@ -135,7 +136,7 @@ define(['angular', "search/module-name"], function (angular, moduleName) {
     };
 
     angular.module(moduleName).controller('SearchController',
-        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "$transition$", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService","PaginationDataService", controller]);
+        ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "$transition$", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService","PaginationDataService","DatasourcesService", controller]);
 });
 
 
