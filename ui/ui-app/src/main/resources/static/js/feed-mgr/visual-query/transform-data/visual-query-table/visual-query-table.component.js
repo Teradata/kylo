@@ -246,6 +246,10 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
          */
         VisualQueryTable.prototype.onRowsChange = function () {
             var self = this;
+            // Add index column
+            if (this.rows.length > 0 && this.rows[0].length === this.columns.length) {
+                this.rows.forEach(function (row, index) { return row.push(index); });
+            }
             // Filter rows
             this.dataService.rows_ = _.filter(this.rows, function (row) {
                 return _.every(self.dataService.columns_, function (column, index) {

@@ -352,6 +352,11 @@ export class VisualQueryTable {
     private onRowsChange() {
         const self = this;
 
+        // Add index column
+        if (this.rows.length > 0 && this.rows[0].length === this.columns.length) {
+            this.rows.forEach((row, index) => row.push(index));
+        }
+
         // Filter rows
         this.dataService.rows_ = _.filter(this.rows, function (row) {
             return _.every(self.dataService.columns_, function (column: any, index) {
