@@ -1,6 +1,9 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.moduleRequire = angular.module(module_name_1.moduleName);
+define(['angular',
+        'side-nav/module-name',
+        'side-nav/side-nav'
+        ],function(angular, moduleName){
+    return angular.module(moduleName);
 });
-//# sourceMappingURL=module-require.js.map
+
+
+
