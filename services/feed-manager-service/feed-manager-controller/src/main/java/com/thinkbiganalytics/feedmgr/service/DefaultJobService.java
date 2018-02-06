@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,23 +22,22 @@ package com.thinkbiganalytics.feedmgr.service;
 
 
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.feedmgr.service.feed.SavepointReplayJmsEventService;
+import com.thinkbiganalytics.jobrepo.model.SavepointReplayJobExecution;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
+import com.thinkbiganalytics.jobrepo.service.ReplayJobExecution;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
-import com.thinkbiganalytics.metadata.api.event.feed.OperationStatus;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayEvent;
 
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,31 +59,63 @@ public class DefaultJobService implements JobService {
     @Autowired
     private BatchJobExecutionProvider jobExecutionProvider;
 
+    @Inject
+    private SavepointReplayJmsEventService savepointReplayJmsEventService;
+
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
     private LegacyNifiRestClient nifiRestClient;
 
     @Override
-    public Long restartJobExecution(Long executionId) throws JobExecutionException {
-        //not supported now
-        return null;
+    public Long restartJobExecution(ReplayJobExecution replayJobExecution) throws JobExecutionException {
 
+        SavepointReplayJobExecution savepointReplayJobExecution = ((SavepointReplayJobExecution) replayJobExecution);
+        return metadataAccess.commit(() -> {
+            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+            if (jobExecution != null) {
+                ((JpaBatchJobExecution) jobExecution).markAsRunning();
+                //trigger the jms message
+                SavepointReplayEvent event = new SavepointReplayEvent();
+                event.setJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+
+                event.setFlowfileId(savepointReplayJobExecution.getFlowFileId());
+                event.setAction(SavepointReplayEvent.Action.RETRY);
+                savepointReplayJmsEventService.triggerSavepoint(event);
+                return jobExecution.getJobExecutionId();
+            }
+            return null;
+        });
     }
-
 
     public boolean canReplay(ProvenanceEventDTO event) {
         return event.getReplayAvailable() != null ? event.getReplayAvailable().booleanValue() : false;
     }
 
     @Override
-    public boolean stopJobExecution(Long executionId) throws JobExecutionException {
-        throw new UnsupportedOperationException("Unable to stop Nifi Job Execution at this time.  Please mark the job as Failed and Abandoned, if necessary.");
+    public boolean stopJobExecution(ReplayJobExecution replayJobExecution) throws JobExecutionException {
+        SavepointReplayJobExecution savepointReplayJobExecution = ((SavepointReplayJobExecution) replayJobExecution);
+        return metadataAccess.commit(() -> {
+            BatchJobExecution jobExecution = this.jobExecutionProvider.findByJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+            if (jobExecution != null) {
+                ((JpaBatchJobExecution) jobExecution).markAsRunning();
+                //  ((JpaBatchJobExecution)jobExecution).failJob();
+                //trigger the jms message
+                SavepointReplayEvent event = new SavepointReplayEvent();
+                event.setJobExecutionId(savepointReplayJobExecution.getJobExecutionId());
+                event.setFlowfileId(savepointReplayJobExecution.getFlowFileId());
+                event.setAction(SavepointReplayEvent.Action.RELEASE);
+                savepointReplayJmsEventService.triggerSavepoint(event);
+
+            }
+            return true;
+        });
+
     }
 
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         metadataAccess.commit(() -> {
-          return  this.jobExecutionProvider.abandonJob(executionId);
+            return this.jobExecutionProvider.abandonJob(executionId);
         });
     }
 
@@ -119,7 +150,7 @@ public class DefaultJobService implements JobService {
                 execution.setExitMessage(msg);
                 OpsManagerFeed feed = execution.getJobInstance().getFeed();
                 this.jobExecutionProvider.save(execution);
-                this.jobExecutionProvider.notifyFailure(execution,feed,false,"Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
+                this.jobExecutionProvider.notifyFailure(execution, feed, false, "Job manually failed @ " + DateTimeUtil.getNowFormattedWithTimeZone());
 
             }
             return execution;

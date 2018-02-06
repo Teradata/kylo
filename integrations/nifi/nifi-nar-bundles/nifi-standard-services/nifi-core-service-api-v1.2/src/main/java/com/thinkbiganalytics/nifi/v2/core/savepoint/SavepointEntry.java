@@ -35,7 +35,11 @@ import java.util.Map;
  */
 public class SavepointEntry {
 
-    public enum SavePointState {WAIT, RETRY, RELEASE}
+    public enum SavePointState {WAIT, RETRY, RELEASE_SUCCESS, RELEASE_FAILURE;
+    public boolean isRelease(){
+        return this == RELEASE_FAILURE || this == RELEASE_SUCCESS;
+    }
+    }
 
     @JsonProperty
     private Map<String, Processor> processors = new HashMap<>();
@@ -56,7 +60,7 @@ public class SavepointEntry {
     public void register(String processorId, String flowFileId) {
         Processor processor = processors.getOrDefault(processorId, new Processor());
         if (processor.isEmpty()) {
-            releaseAll();
+            releaseAll(true);
             processor.setFlowFileId(flowFileId);
             processors.put(processorId, processor);
         } else {
@@ -64,10 +68,15 @@ public class SavepointEntry {
         }
     }
 
-    public void releaseAll() {
+    public void releaseAll(boolean success) {
         if (!processors.isEmpty()) {
             processors.forEach((pid, p) -> {
-                p.setState(SavePointState.RELEASE);
+                if(success) {
+                    p.setState(SavePointState.RELEASE_SUCCESS);
+                }
+                else {
+                    p.setState(SavePointState.RELEASE_FAILURE);
+                }
             });
         }
     }
@@ -93,12 +102,17 @@ public class SavepointEntry {
         return (processor == null ? null : processor.state);
     }
 
-    public void release(String processorId) {
+    public void release(String processorId, boolean success) {
         Processor processor = processors.get(processorId);
         if (processor == null) {
             throw new RuntimeException("Unable to release savepoint for processor [" + processorId + "]. No flowfiles registered.");
         }
-        processor.setState(SavePointState.RELEASE);
+        if(success) {
+            processor.setState(SavePointState.RELEASE_SUCCESS);
+        }
+        else {
+            processor.setState(SavePointState.RELEASE_FAILURE);
+        }
     }
 
     public void retry(String processorId) {
@@ -106,7 +120,7 @@ public class SavepointEntry {
         if (processor == null) {
             throw new RuntimeException("Unable to retry savepoint for processor [" + processorId + "]. No flowfiles registered.");
         }
-        if (processor.state == SavePointState.RELEASE) {
+        if (processor.state.isRelease()) {
             throw new RuntimeException("Unable to retry savepoint for processor [" + processorId + "]. Already released.");
         }
         processor.setState(SavePointState.RETRY);
@@ -117,7 +131,7 @@ public class SavepointEntry {
         if (processor == null) {
             throw new RuntimeException("Unable to retry savepoint for processor [" + processorId + "]. No flowfiles registered.");
         }
-        if (processor.state == SavePointState.RELEASE) {
+        if (processor.state.isRelease()) {
             throw new RuntimeException("Already released.");
         }
         processor.setState(SavePointState.WAIT);

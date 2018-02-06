@@ -224,7 +224,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         }).state({
             name: 'schemas.**',
-            url: '/schemas',
+            url: '/catalog/{datasource}/schemas',
             params: {
                 datasource: null
             },
@@ -240,7 +240,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         }).state({
             name: 'schemas-schema.**',
-            url: '/schemas/{schema}',
+            url: '/catalog/{datasource}/schemas/{schema}',
             params: {
                 datasource: null,
                 schema: null
@@ -257,7 +257,7 @@ define(['angular', 'kylo-common', '@uirouter/angular', 'kylo-services',
             }
         }).state({
             name: 'schemas-schema-table.**',
-            url: '/schemas/{schema}/{tableName}',
+            url: '/catalog/{datasource}/schemas/{schema}/{tableName}',
             params: {
                 datasource: null,
                 schema: null,

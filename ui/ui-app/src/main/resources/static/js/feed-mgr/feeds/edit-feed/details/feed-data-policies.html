@@ -22,7 +22,7 @@
 
   <readonly-section>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+    <div layout="row" class="feed-property" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF" | translate}}</span>
 
       <div flex layout="column">
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property">
       <span flex="25" class="property-name">{{"views.feed-data-policies.DTN" | translate}}</span>
 
       <div flex layout="column">
@@ -39,50 +39,54 @@
     </div>
 
 
-    <md-list flex layout-fill class="list-item-table list-condensed data-policy-header">
+    <md-list flex layout-fill class="list-item-table list-condensed data-policy-header feed-property">
 
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text hint">
             {{"views.feed-data-policies.FN" | translate}}
           </div>
-          <div flex="10" class="md-list-item-text hint">
-            {{"views.feed-data-policies.Domain" | translate}}<br/>{{"views.feed-data-policies.Type" | translate}}
+          <div flex="10" layout="column" layout-align="center center" class="md-list-item-text hint">
+            <div>{{"views.feed-data-policies.Domain" | translate}}</div>
+            <div>{{"views.feed-data-policies.Type" | translate}}</div>
           </div>
           <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               {{"views.feed-data-policies.Primary" | translate}}
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.ItcitPKftr" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
-              <span>{{"views.feed-data-policies.Created" | translate}}<br/>{{"views.feed-data-policies.Date" | translate}}</span>
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
+              <div>{{"views.feed-data-policies.Created" | translate}}</div>
+              <div>{{"views.feed-data-policies.Date" | translate}}</div>
               <md-tooltip md-direction="top">
               {{"views.feed-data-policies.Itfaiowtrwc" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
-              <span>{{"views.feed-data-policies.Updated" | translate}}<br/>{{"views.feed-data-policies.UDate" | translate}}</span>
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
+              <div>{{"views.feed-data-policies.Updated" | translate}}</div>
+              <div>{{"views.feed-data-policies.UDate" | translate}}</div>
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.Itfaiowtrwu" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               {{"views.feed-data-policies.Index" | translate}}
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.DwsbstGS" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               {{"views.feed-data-policies.Profile" | translate}}
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.Stfbp" | translate}}
               </md-tooltip>
             </div>
           </div>
-          <div flex="25" class="md-list-item-text hint layout-margin-left-10">
-            {{"views.feed-data-policies.Standardize" | translate}} <br/>{{"views.feed-data-policies.Validate" | translate}}
+          <div flex="25" class="md-list-item-text hint layout-margin-left-10" layout="column" layout-align="center start" >
+            <div>{{"views.feed-data-policies.Standardize" | translate}}</div>
+            <div>{{"views.feed-data-policies.Validate" | translate}}</div>
           </div>
         </div>
       </md-list-item>
@@ -134,7 +138,7 @@
 
 
       <md-list-item ng-repeat="field in vm.model.table.partitions">
-        <div layout="row" layout-fill>
+        <div layout="row" layout-fill class="feed-property">
           <div flex="50" class="md-list-item-text">
             <div>{{field.field}}</div>
           </div>
@@ -149,56 +153,80 @@
       </md-list-item>
     </md-list>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.partitions.length ==0">
+    <div layout="row" class="feed-property" ng-if="vm.model.table.partitions.length ==0">
       <span flex class="property-name">{{"views.feed-data-policies.NPIE" | translate}}</span>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/targetMergeStrategy')}}"
+         ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">{{"views.feed-data-policies.MS" | translate}}</span>
 
       <div flex layout="column">
-        <span>{{vm.mergeStrategyDisplayName()}}</span>
+        <span>{{vm.mergeStrategyDisplayName(vm.model)}}</span>
+      </div>
+      <div flex layout="column" ng-if="vm.versions">
+        <span>{{vm.mergeStrategyDisplayName(vm.versionFeedModel)}}</span>
       </div>
     </div>
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/targetFormat')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.TF" | translate}}</span>
-      <span>{{vm.model.table.targetFormat}}</span>
+      <span flex>{{vm.model.table.targetFormat}}</span>
+      <span flex ng-if="vm.versions">{{vm.versionFeedModel.table.targetFormat}}</span>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/table/options/compressionFormat')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.Co" | translate}}</span>
-      <span>{{vm.model.table.options.compressionFormat}}</span>
+      <span flex>{{vm.model.table.options.compressionFormat}}</span>
+      <span flex ng-if="vm.versions">{{vm.versionFeedModel.table.options.compressionFormat}}</span>
     </div>
 
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property versions-{{vm.diff('/options/skipHeader')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.Options" | translate}}</span>
 
       <div flex layout="row" layout-align="start start" layout-wrap="true">
-        <div layout="row">
+        <div layout="row" layout-align="start center" >
           <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.options.skipHeader"></ng-md-icon>
           <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.options.skipHeader"></ng-md-icon>
           <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
         </div>
       </div>
-    </div>
-
-
-    <div layout="row" class="layout-padding-top-bottom">
-      <span flex="25" class="property-name">{{"views.feed-data-policies.Rip" | translate}}</span>
-
-      <div flex layout="row" layout-align="start start" layout-wrap="true">
-        <div layout="row">
-          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.shouldIndexingOptionsBeDisabled()"></ng-md-icon>
-          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="vm.shouldIndexingOptionsBeEnabled()"></ng-md-icon>
+      <div flex layout="row" layout-align="start start" ng-if="vm.versions && vm.versionFeedModel.options">
+        <div layout="row" layout-align="start center" >
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.versionFeedModel.options.skipHeader"></ng-md-icon>
+            <span class="property-name">{{"views.feed-data-policies.Sh" | translate}}</span>
         </div>
       </div>
     </div>
 
-    <div ng-if="vm.shouldIndexingOptionsBeEnabled()" layout="row" class="layout-padding-top-bottom">
+
+    <div layout="row" class="feed-property  versions-{{vm.diff('/options/rip')}}">
+      <span flex="25" class="property-name">{{"views.feed-data-policies.Rip" | translate}}</span>
+
+      <div flex layout="row" layout-align="start start" layout-wrap="true">
+        <div layout="row">
+          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.shouldIndexingOptionsBeDisabled(vm.model)"></ng-md-icon>
+          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="vm.shouldIndexingOptionsBeEnabled(vm.model)"></ng-md-icon>
+        </div>
+      </div>
+      <div flex layout="row" layout-align="start start" layout-wrap="true" ng-if="vm.versions && vm.versionFeedModel.historyReindexingStatus">
+        <div layout="row">
+          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.shouldIndexingOptionsBeDisabled(vm.versionFeedModel)"></ng-md-icon>
+          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="vm.shouldIndexingOptionsBeEnabled(vm.versionFeedModel)"></ng-md-icon>
+        </div>
+      </div>
+    </div>
+
+    <div ng-if="vm.shouldIndexingOptionsBeEnabled()" layout="row" class="feed-property  versions-{{vm.diff('/options/rls')}}">
       <span flex="25" class="property-name">{{"views.feed-data-policies.Rls" | translate}}</span>
 
       <div flex layout="row" layout-align="start start" layout-wrap="true">
+        <div layout="row">
+          <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | lowercase}}</span>
+        </div>
+      </div>
+      <div flex layout="row" layout-align="start start" layout-wrap="true" ng-if="vm.versions && vm.versionFeedModel.historyReindexingStatus">
         <div layout="row">
           <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | lowercase}}</span>
         </div>
@@ -209,7 +237,7 @@
   </readonly-section>
   <editable-section>
     <ng-form name="vm.editFeedDataPoliciesForm">
-    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+    <div layout="row" class="feed-property" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
       <span flex="25" class="property-name">{{"views.feed-data-policies.SFRF2" | translate}}</span>
 
       <div flex layout="column">
@@ -217,7 +245,7 @@
       </div>
     </div>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="feed-property">
       <span flex="25" class="property-name">{{"views.feed-data-policies.DTN2" | translate}}</span>
 
       <div flex layout="column">
@@ -227,36 +255,39 @@
 
     <md-list flex
              layout-fill
-             class="list-item-table list-condensed data-policy-header">
+             class="list-item-table list-condensed data-policy-header feed-property">
 
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="25" class="md-list-item-text hint">
             {{"views.feed-data-policies.FN2" | translate}}
           </div>
-          <div flex="10" class="md-list-item-text hint">
-            {{"views.feed-data-policies.Domain2" | translate}}<br/>{{"views.feed-data-policies.Type2" | translate}}
+          <div flex="10" layout="column" layout-align="start center" class="md-list-item-text hint">
+            <div>{{"views.feed-data-policies.Domain2" | translate}}</div>
+            <div>{{"views.feed-data-policies.Type2" | translate}}</div>
           </div>
           <div flex="40" class="md-list-item-text hint" layout="row" layout-align="space-between start">
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               {{"views.feed-data-policies.Primary2" | translate}}
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.ItcitPKftr2" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
-              <span>{{"views.feed-data-policies.Created2" | translate}}<br/>{{"views.feed-data-policies.Date2" | translate}}</span>
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
+              <div>{{"views.feed-data-policies.Created2" | translate}}</div>
+              <div>{{"views.feed-data-policies.Date2" | translate}}</div>
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.Itfaiowtrwc2" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
-              <span>{{"views.feed-data-policies.Updated2" | translate}}<br/>{{"views.feed-data-policies.UDate2" | translate}}</span>
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
+              <div>{{"views.feed-data-policies.Updated2" | translate}}</div>
+              <div>{{"views.feed-data-policies.UDate2" | translate}}</div>
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.Itfaiowtrwu2" | translate}}
               </md-tooltip>
             </div>
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               <div ng-if="vm.shouldIndexingOptionsBeEnabled()" flex="10" class="md-list-item-text hint">{{"views.feed-data-policies.Index2" | translate}}</div>
               <div ng-if="vm.shouldIndexingOptionsBeDisabled()" flex="10" class="md-list-item-text hint">{{"view.feed-data-policies.Index2Star" | translate}}</div>
               <md-tooltip md-direction="top" ng-if="vm.shouldIndexingOptionsBeEnabled()">
@@ -274,7 +305,7 @@
                              style="margin-left:-1px;"></md-checkbox>
               </md-input-container>
             </div>
-            <div class="data-policy-item-check-box">
+            <div class="data-policy-item-check-box" layout="column" layout-align="center center" >
               {{"views.feed-data-policies.Profile2" | translate}}
               <md-tooltip md-direction="top">
                 {{"views.feed-data-policies.Stfbp2" | translate}}
@@ -289,8 +320,9 @@
               </md-input-container>
             </div>
           </div>
-          <div flex="25" class="md-list-item-text hint layout-margin-left-10">
-            {{"views.feed-data-policies.Standardize2" | translate}} <br/>{{"views.feed-data-policies.Validate2" | translate}}
+          <div flex="25" class="md-list-item-text hint layout-margin-left-10" layout="column" layout-align="start start" >
+            <div>{{"views.feed-data-policies.Standardize2" | translate}}</div>
+            <div>{{"views.feed-data-policies.Validate2" | translate}}</div>
           </div>
         </div>
       </md-list-item>

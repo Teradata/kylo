@@ -29,7 +29,7 @@ import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
@@ -604,7 +604,7 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
             return sla;
         } else {
             log.error("Error attempting to save and Schedule the Feed SLA {} ({}) ", feed != null ? feed.getCategoryAndFeedName() : " NULL Feed ", feedId);
-            throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
+            throw new FeedNotFoundException("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
         }
 
 

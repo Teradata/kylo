@@ -30,10 +30,11 @@ import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
-//import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
 import java.util.List;
+
+//import org.springframework.jms.annotation.JmsListener;
 
 /**
  * Consumes the savepoint replay events in JMS
@@ -53,7 +54,7 @@ public class JmsSavepointReplayEventConsumer implements SavepointReplayEventCons
     @JmsListener(destination = SavepointTopics.REPLAY_SAVEPOINT_TOPIC, containerFactory = JmsConstants.TOPIC_LISTENER_CONTAINER_FACTORY)
     public void receiveEvent(SavepointReplayEvent event) {
         LOG.debug("{} Received JMS message - topic: {}, message: {}", this, SavepointTopics.REPLAY_SAVEPOINT_TOPIC, event);
-        LOG.info("{} Received feed savepoint replay trigger event with {} listeners.  Event: {}", this, listeners.size(),event);
+        LOG.info("{} Received feed savepoint replay trigger event with {} listeners.  Event: {}", this, listeners.size(), event);
 
         this.listeners.stream().forEach(listener -> listener.triggered(event));
 

@@ -68,10 +68,11 @@ public interface SavepointProvider {
      * Releases any flowfiles held by a savepoint
      * @param savepointId the savepoint id
      * @param lock the lock
+     * @param success
      * @throws InvalidLockException
      * @throws InvalidSetpointException
      */
-    void release(String savepointId, Lock lock) throws InvalidLockException, InvalidSetpointException;
+    void release(String savepointId, Lock lock, boolean success) throws InvalidLockException, InvalidSetpointException;
 
     /**
      * Instructs a savepoint to retry the flowfile

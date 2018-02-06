@@ -339,17 +339,21 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             self.addHistoryItem(columnDef);
 
             //remove any partitions using this field
-            var matchingPartitions = _.filter(self.model.table.partitions, function (partition) {
-                return partition.columnDef.name == columnDef.name;
-            });
-            if (matchingPartitions) {
-                _.each(matchingPartitions, function (partition) {
-                    var idx = _.indexOf(self.model.table.partitions, partition.sourceField)
-                    if (idx >= 0) {
-                        self.removePartitionField(idx);
+            self.model.table.partitions
+                .filter(function (partition) {
+                    return partition.columnDef.name === columnDef.name;
+                })
+                .map(function (partition) {
+                    return partition._id;
+                })
+                .forEach(function (id) {
+                    var index = self.model.table.partitions.findIndex(function (partition) {
+                        return partition._id === id;
+                    });
+                    if (index > -1) {
+                        self.removePartitionField(index);
                     }
                 });
-            }
 
             //ensure the field names on the columns are unique again as removing a column might fix a "notUnique" error
             self.validateColumn(columnDef);

@@ -17,6 +17,8 @@ export declare namespace DatasourcesServiceStatic {
 
         newJdbcDatasource(): JdbcDatasource;
 
+        getHiveDatasource(): JdbcDatasource;
+
         save(datasource: JdbcDatasource): angular.IPromise<JdbcDatasource>;
 
         defaultIconName(): string;

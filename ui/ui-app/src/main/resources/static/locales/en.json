@@ -211,6 +211,9 @@
     "views.feed-additional-properties.Tags": "Tags",
     "views.feed-additional-properties.AaT": "Add a Tag",
     "views.feed-additional-properties.Saving": "Saving...",
+    "views.feed-versions-compare.Current": "Current",
+    "views.feed-data-policies.Current": "Current",
+    "views.feed-data-policies.Version": "Version",
     "views.feed-schedule.Schedule": "Schedule",
     "views.feed-schedule.Strategy": "Strategy",
     "views.feed-schedule.Period": "Period",
@@ -599,6 +602,7 @@
     "views.kylo-options.AK": "About Kylo",
 
     "views.TableController.Tables": "Tables",
+    "views.TableController.Schemas": "Schemas",
 
     "view.login.KL": "Kylo Login",
     "view.login.Login": "Login",

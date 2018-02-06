@@ -42,7 +42,7 @@ public class SparkShellIT extends IntegrationTestBase {
     public void testCompileError() {
         final TransformResponse response = executeScript("import org.apache.spark.sql._\nfunctions.abs(-1)", HTTP_INTERNAL_ERROR);
         Assert.assertEquals(TransformResponse.Status.ERROR, response.getStatus());
-        Assert.assertEquals("error: type mismatch; in <console> at line number 8", response.getMessage());
+        Assert.assertEquals("error: type mismatch; in <console> at line number 9", response.getMessage());
     }
 
     /**

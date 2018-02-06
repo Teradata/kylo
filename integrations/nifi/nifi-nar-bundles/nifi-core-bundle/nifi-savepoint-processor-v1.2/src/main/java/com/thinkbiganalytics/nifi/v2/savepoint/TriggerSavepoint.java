@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,6 +19,13 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * limitations under the License.
  * #L%
  */
+
+import com.thinkbiganalytics.nifi.savepoint.api.SavepointProvenanceProperties;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidLockException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidSetpointException;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.Lock;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointController;
+import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointProvider;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -46,12 +53,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidLockException;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.InvalidSetpointException;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.Lock;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointController;
-import com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointProvider;
-
 @EventDriven
 @SupportsBatching
 @Tags({"savepoint", "thinkbig", "kylo"})
@@ -74,14 +75,15 @@ public class TriggerSavepoint extends AbstractProcessor {
 
     /**
      * Flowfile attr indicating max retries exceeded
-     *
      */
     public static final String SAVE_POINT_MAX_RETRIES_EXCEEDED = "savepoint.max.retries.exceeded";
 
+
     /**
-     * Status flag that is added to provenance to track history in kylo
+     * Status description
      */
-    public static final String SAVE_POINT_BEHAVIOR_STATUS = "savepoint.behavior.status";
+    public static final String SAVE_POINT_BEHAVIOR_STATUS_DESC = "savepoint.behavior.status.desc";
+
 
     public static final String RETRY = "RETRY";
     public static final String RELEASE = "RELEASE";
@@ -208,8 +210,8 @@ public class TriggerSavepoint extends AbstractProcessor {
                 if (lock != null) {
 
                     if (RELEASE.equals(behavior)) {
-                        provider.release(savepointIdStr, lock);
-                        flowFile = session.putAttribute(flowFile, TriggerSavepoint.SAVE_POINT_BEHAVIOR_STATUS, behavior);
+                        provider.release(savepointIdStr, lock, true);
+                        flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS, behavior);
                         session.transfer(flowFile, REL_SUCCESS);
 
                     } else if (RETRY.equals(behavior)) {
@@ -244,10 +246,6 @@ public class TriggerSavepoint extends AbstractProcessor {
                         provider.retry(savepointIdStr, lock);
                         session.transfer(flowFile, REL_SUCCESS);
 
-                    } else if (RELEASE.equals(behavior)) {
-                        provider.release(savepointIdStr, lock);
-                        flowFile = session.putAttribute(flowFile, TriggerSavepoint.SAVE_POINT_BEHAVIOR_STATUS, behavior);
-                        session.transfer(flowFile, REL_SUCCESS);
                     }
                 } else {
                     // Unable to obtain lock. Try again
@@ -270,7 +268,14 @@ public class TriggerSavepoint extends AbstractProcessor {
 
                 if (triggerFailureCount > MAX_FAILURES_ALLOWED) {
                     logger.info("Maximum failures reached for sp {}, will route to fail.", new String[]{savepointIdStr});
-                    flowFile = session.putAttribute(flowFile, TriggerSavepoint.SAVE_POINT_BEHAVIOR_STATUS, "Maximum failues reached. Routing to failure");
+                    flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS, FAIL);
+                    flowFile = session.putAttribute(flowFile, TriggerSavepoint.SAVE_POINT_BEHAVIOR_STATUS_DESC, "Maximum failures at " + triggerFailureCount + " were reached.  Failing the flow");
+
+                    //add in the trigger flow id so ops manager can get the key to retry if needed
+                    String triggerFlowFile = flowFile.getAttribute(SavepointProvenanceProperties.PARENT_FLOWFILE_ID);
+                    if(StringUtils.isNotBlank(triggerFlowFile)) {
+                        flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
+                    }
                     session.transfer(flowFile, REL_FAILURE);
                 } else {
                     logger.info("Failed to process flowfile for savepoint {}", new String[]{savepointIdStr}, e);
@@ -289,7 +294,11 @@ public class TriggerSavepoint extends AbstractProcessor {
             }
         } else {
             // Route to failure
-            flowFile = session.putAttribute(flowFile, TriggerSavepoint.SAVE_POINT_BEHAVIOR_STATUS, behavior);
+            flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS, behavior);
+            String triggerFlowFile = flowFile.getAttribute(SavepointProvenanceProperties.PARENT_FLOWFILE_ID);
+            if(StringUtils.isNotBlank(triggerFlowFile)) {
+                flowFile = session.putAttribute(flowFile, SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerFlowFile);
+            }
             session.transfer(flowFile, REL_FAILURE);
         }
     }

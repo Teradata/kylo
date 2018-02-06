@@ -88,6 +88,14 @@
       <version>${project.version}</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-metadata-rest-controller</artifactId>
@@ -321,6 +329,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.flipkart.zjsonpatch</groupId>
+      <artifactId>zjsonpatch</artifactId>
+      <version>0.4.1</version>
     </dependency>
 
 
