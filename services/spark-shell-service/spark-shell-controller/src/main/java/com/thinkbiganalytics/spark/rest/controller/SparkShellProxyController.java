@@ -91,6 +91,9 @@ public class SparkShellProxyController {
 
     public static final String BASE = "/v1/spark/shell";
     public static final String TRANSFORM = "/transform";
+    public static final String TRANSFORM_DOWNLOAD = "/transform/{transform}/save/{save}/zip";
+    public static final String TRANSFORM_SAVE = "/transform/{transform}/save";
+    public static final String TRANSFORM_SAVE_RESULT = "/transform/{transform}/save/{save}";
 
     /**
      * Pattern for matching exceptions in messages.
@@ -170,7 +173,7 @@ public class SparkShellProxyController {
      * @return the download response
      */
     @GET
-    @Path("/transform/{transform}/save/{save}/zip")
+    @Path(TRANSFORM_DOWNLOAD)
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads the saved results in a ZIP file")
     @ApiResponses({
@@ -271,7 +274,7 @@ public class SparkShellProxyController {
      * @return the save status
      */
     @GET
-    @Path("/transform/{transform}/save/{save}")
+    @Path(TRANSFORM_SAVE_RESULT)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Fetches the status of a save")
     @ApiResponses({
@@ -348,7 +351,7 @@ public class SparkShellProxyController {
      * Saves the results of a Spark script.
      */
     @POST
-    @Path("/transform/{transform}/save")
+    @Path(TRANSFORM_SAVE)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Saves the results of a transformation.")
@@ -431,7 +434,7 @@ public class SparkShellProxyController {
      * @return the transformation status
      */
     @POST
-    @Path(SparkShellProxyController.TRANSFORM)
+    @Path(TRANSFORM)
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Queries a Hive table and applies a series of transformations on the rows.")
