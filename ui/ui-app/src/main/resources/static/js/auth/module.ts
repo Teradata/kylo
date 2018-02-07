@@ -1,5 +1,6 @@
 import * as angular from 'angular';
-const AccessConstants = require('../constants/AccessConstants');
+//import AccessConstants from "../constants/AccessConstants";
+import AccessConstants from "../constants/AccessConstants";
 const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import UserDetailsController from "./users/user-details/UserDetailsController";
 import GroupDetailsController from "./groups/group-details/GroupDetailsController";
@@ -92,7 +93,7 @@ class ModuleFactory  {
                 }
             },
             resolve: {
-                loadMyCtrl: this.lazyLoadController(['auth/groups/group-details/GroupDetailsController'])
+                loadMyCtrl:this.lazyLoadController(['auth/groups/group-details/GroupDetailsController'])
             },
             data: {
                 breadcrumbRoot: false,
@@ -101,10 +102,7 @@ class ModuleFactory  {
                 permissions:AccessConstants.UI_STATES.GROUP_DETAILS.permissions
             }
         });
-    }
-
-
-    
+    }  
 
     lazyLoadController(path:any){
         return lazyLoadUtil.lazyLoadController(path,"auth/module-require");
