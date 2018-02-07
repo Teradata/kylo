@@ -1,7 +1,8 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "./module-name";
-const AccessConstants = require('../constants/AccessConstants');
+//const AccessConstants = require('../constants/AccessConstants');
+import AccessConstants from "../constants/AccessConstants";
 import "./module";
 import "../services/services.module";
 import "pascalprecht.translate";
@@ -40,15 +41,18 @@ export class directive implements ng.IDirective {
       }
       return sidedirective;
     }
+    
     link=($scope: any, $element: any)=>{             
               /**
              * Build the Feed Manager Left Nav
              * @param allowed
              */
+           // let AccessConstants = new AccessConstants();
             let buildFeedManagerMenu: any=()=>{
-            
                 let links: any[] = [];
-                links.push({sref: "feeds",type:'link', icon: "linear_scale", text: this.$filter('translate')('views.main.feeds'), permission: AccessConstants.UI_STATES.FEEDS.permissions});
+                links.push({sref: "feeds",type:'link', icon: "linear_scale", 
+                            text: this.$filter('translate')('views.main.feeds'), 
+                            permission: AccessConstants.UI_STATES.FEEDS.permissions});
                 links.push({sref: "categories",type:'link', icon: "folder_special", text: this.$filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
                 links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                 links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
@@ -70,6 +74,7 @@ export class directive implements ng.IDirective {
              * TODO Switch Permissions to correct ones (i.e remove OPERATIONS_MANAGER_ACCESS, add in detailed permission AccessConstants.CHARTS_ACCESS)
              * @param allowed
              */
+  
             let buildOpsManagerMenu: any =()=> {
                 
                 let links: any[] = [];
