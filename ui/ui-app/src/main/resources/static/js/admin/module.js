@@ -1,9 +1,9 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "./module-name"], function (require, exports, angular, AccessConstants_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var AccessConstants = require('../constants/AccessConstants');
     var lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
     var codeMirrorRequire = require('../codemirror-require/module');
+    //export * from "../codemirror-require/module"; 
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.module = angular.module(module_name_1.moduleName, []);
@@ -27,7 +27,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                     breadcrumbRoot: false,
                     displayName: 'JCR Admin',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.JCR_ADMIN.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.JCR_ADMIN.permissions
                 }
             });
             $stateProvider.state('cluster', {
