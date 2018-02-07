@@ -1,8 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "pascalprecht.translate"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    // const fdsfd  = require('pascalprecht.translate');
-    var $translateProvider = require('pascalprecht.translate');
     var moduleName = require('./module-name');
     var FeedsTableController = /** @class */ (function () {
         function FeedsTableController($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService, $filter, EntityAccessControlService) {
@@ -48,8 +46,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             });
             PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
             this.filter = PaginationDataService.filter(this.pageName);
-            //TODO 
-            this.cardTitle = "Feeds"; //this.$filter('views.main.feeds-title');
+            this.cardTitle = $filter('translate')('views.main.feeds-title');
             $scope.$watch(function () {
                 return _this.viewType;
             }, function (newVal) {
@@ -179,7 +176,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     exports.default = FeedsTableController;
     angular.module(moduleName)
         .controller('FeedsTableController', ["$scope", "$http", "AccessControlService", "RestUrlService", "PaginationDataService",
-        "TableOptionsService", "AddButtonService", "FeedService", "StateService", "EntityAccessControlService", '$filter',
+        "TableOptionsService", "AddButtonService", "FeedService", "StateService", '$filter', "EntityAccessControlService",
         FeedsTableController]);
 });
 //# sourceMappingURL=FeedsTableController.js.map

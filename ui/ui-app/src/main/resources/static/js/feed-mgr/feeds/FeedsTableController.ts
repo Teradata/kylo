@@ -1,7 +1,6 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-// const fdsfd  = require('pascalprecht.translate');
-const $translateProvider = require('pascalprecht.translate');
+import 'pascalprecht.translate';
 const moduleName = require('./module-name');
 export default class FeedsTableController implements ng.IComponentController {
 
@@ -50,8 +49,7 @@ export default class FeedsTableController implements ng.IComponentController {
         PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
 
         this.filter = PaginationDataService.filter(this.pageName);
-        //TODO 
-        this.cardTitle = "Feeds";//this.$filter('views.main.feeds-title');
+        this.cardTitle = $filter('translate')('views.main.feeds-title');
         $scope.$watch(() => {
             return this.viewType;
         }, (newVal) => {
@@ -210,7 +208,7 @@ export default class FeedsTableController implements ng.IComponentController {
     angular.module(moduleName)
         .controller('FeedsTableController',
             ["$scope","$http","AccessControlService","RestUrlService","PaginationDataService",
-            "TableOptionsService","AddButtonService","FeedService","StateService", "EntityAccessControlService", '$filter', 
+            "TableOptionsService","AddButtonService","FeedService","StateService", '$filter', "EntityAccessControlService", 
             FeedsTableController]);
 
 
