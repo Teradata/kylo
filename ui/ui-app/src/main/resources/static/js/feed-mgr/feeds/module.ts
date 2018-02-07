@@ -1,5 +1,7 @@
 import * as angular from 'angular';
-const AccessConstants = require('../../constants/AccessConstants');
+//const AccessConstants = require('../../constants/AccessConstants');
+
+import AccessConstants from "../../constants/AccessConstants";
 const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
 const moduleName = require('./module-name');
 const feedManager = require('kylo-feedmgr');
