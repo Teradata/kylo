@@ -73,6 +73,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -345,14 +346,26 @@ public class IntegrationTestBase {
         return response.as(PortDTO[].class);
     }
 
-    protected void cleanup() {
 
+    protected NifiFlowProcessGroup getFlow(String processGroupId) {
+        Response response = given(NifiIntegrationRestController.BASE)
+            .when()
+            .get(NifiIntegrationRestController.FLOW+"/"+processGroupId);
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(NifiFlowProcessGroup.class);
+    }
+
+    protected void cleanup() {
+/*
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
+        */
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
 
     }
@@ -510,7 +523,7 @@ public class IntegrationTestBase {
         Response response = given(JobsRestController.BASE)
             .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get("?filter=" + filter + "&limit=50&sort=-createdTime&start=0");
+            .get("?filter=" + filter + "&limit=50&sort=-createTime&start=0");
 
         response.then().statusCode(HTTP_OK);
 

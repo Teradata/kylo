@@ -106,6 +106,7 @@ public class NifiIntegrationRestController {
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
     public static final String BASE = "/v1/feedmgr/nifi";
     public static final String FLOWS = "/flows";
+    public static final String FLOW = "/flow";
     public static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
     DBCPConnectionPoolService dbcpConnectionPoolTableInfo;
@@ -196,7 +197,7 @@ public class NifiIntegrationRestController {
     }
 
     @GET
-    @Path("/flow/{processGroupId}")
+    @Path(FLOW+"/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow of the specified process group.")
     @ApiResponses({

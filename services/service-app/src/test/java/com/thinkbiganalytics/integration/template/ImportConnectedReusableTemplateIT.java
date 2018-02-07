@@ -34,17 +34,7 @@ import java.util.Arrays;
 
 public class ImportConnectedReusableTemplateIT extends IntegrationTestBase {
 
-
-    /**
-     *  - Imports a reusable template (template1)
-     *  - Imports another reusable template (template2) with an output ports
-     *  - connects template2 to template 1
-     *  - verifies the connection is made correctly
-     *
-     * @throws Exception
-     */
-    @Test
-    public void testConnectedReusableFlow() throws Exception {
+    public ConnectedTemplate registerConnectedReusableTemplate(){
         URL resource = IntegrationTestBase.class.getResource("connecting_reusable_flow.xml");
 
         ImportTemplate template1 = importReusableFlowXmlTemplate(resource.getPath(), null);
@@ -88,6 +78,43 @@ public class ImportConnectedReusableTemplateIT extends IntegrationTestBase {
         Assert.assertNotNull(flow);
         boolean testUpdate2ProcessorExists = flow.getProcessorMap().values().stream().anyMatch(p -> "test-update2".equalsIgnoreCase(p.getName()));
         Assert.assertTrue(testUpdate2ProcessorExists);
+        return new ConnectedTemplate(template1,template2);
+
+    }
+
+    public static class ConnectedTemplate {
+        ImportTemplate template1;
+
+        ImportTemplate template2;
+
+        public ConnectedTemplate(ImportTemplate template1, ImportTemplate template2) {
+            this.template1 = template1;
+            this.template2 = template2;
+        }
+
+        public ImportTemplate getTemplate1() {
+            return template1;
+        }
+
+        public ImportTemplate getTemplate2() {
+            return template2;
+        }
+    }
+
+
+    /**
+     *  - Imports a reusable template (template1)
+     *  - Imports another reusable template (template2) with an output ports
+     *  - connects template2 to template 1
+     *  - verifies the connection is made correctly
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testConnectedReusableFlow() throws Exception {
+        registerConnectedReusableTemplate();
+
+
 
 
     }
