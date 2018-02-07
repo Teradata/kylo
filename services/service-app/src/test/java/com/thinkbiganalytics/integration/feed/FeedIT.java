@@ -2,9 +2,9 @@ package com.thinkbiganalytics.integration.feed;
 
 /*-
  * #%L
- * kylo-feed-manager-controller
+ * kylo-service-app
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.

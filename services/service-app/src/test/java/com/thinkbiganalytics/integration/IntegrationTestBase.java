@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.mapping.Jackson2Mapper;
 import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import com.jayway.restassured.path.json.JsonPath;
@@ -41,6 +42,7 @@ import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminControllerV2;
+import com.thinkbiganalytics.feedmgr.rest.controller.DatasourceController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
@@ -69,6 +71,7 @@ import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -118,6 +121,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import static com.jayway.restassured.http.ContentType.JSON;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -280,10 +284,10 @@ public class IntegrationTestBase {
         String username = UserContext.getUser().getUsername();
         LOG.info("Making request as " + username);
 
-        return RestAssured.given()
+        return RestAssured.given().accept(JSON)
             .log().method().log().path()
             .auth().preemptive().basic(username, UserContext.getUser().getPassword())
-            .contentType("application/json");
+            .contentType(JSON);
     }
 
     protected final void scp(final String localFile, final String remoteDir) {
@@ -1055,5 +1059,58 @@ public class IntegrationTestBase {
         return response.as(AlertRange.class);
 
     }
+
+    protected JdbcDatasource createDatasource(JdbcDatasource ds) {
+        LOG.info("Creating datasource '{}'", ds.getName());
+
+        Response response = given(DatasourceController.BASE)
+            .body(ds)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(JdbcDatasource.class);
+    }
+
+    protected JdbcDatasource[] getDatasources() {
+        LOG.info("Getting datasources");
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .get("?type=UserDatasource");
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(JdbcDatasource[].class);
+    }
+
+
+    protected JdbcDatasource getDatasource(String datasourceId) {
+        LOG.info("Getting datasource {}", datasourceId);
+        return getDatasourceExpectingStatus(datasourceId, HTTP_OK).as(JdbcDatasource.class);
+    }
+
+    protected Response getDatasourceExpectingStatus(String datasourceId, int status) {
+        LOG.info("Getting datasource {}, expecting status {}", datasourceId, status);
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .get("/" + datasourceId);
+
+        response.then().statusCode(status);
+        return response;
+    }
+
+    protected void deleteDatasource(String controllerServiceId) {
+        LOG.info("Getting datasources");
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .delete("/" + controllerServiceId);
+
+        response.then().statusCode(HTTP_NO_CONTENT);
+    }
+
 
 }

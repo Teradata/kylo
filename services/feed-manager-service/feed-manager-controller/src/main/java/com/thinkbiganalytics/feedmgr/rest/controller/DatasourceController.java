@@ -87,11 +87,13 @@ import io.swagger.annotations.Tag;
 
 @Api(tags = "Feed Manager - Data Sources", produces = "application/json")
 @Component
-@Path("/v1/metadata/datasource")
+@Path(DatasourceController.BASE)
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Data Sources", description = "manages data sources"))
 public class DatasourceController {
 
     private static final Logger log = LoggerFactory.getLogger(DatasourceController.class);
+
+    public static final String BASE = "/v1/metadata/datasource";
 
     /**
      * Ensures the user has the correct permissions.
