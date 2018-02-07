@@ -1,31 +1,31 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var HomeController = /** @class */ (function () {
-        function HomeController($scope, $mdDialog, AccessControlService, StateService) {
-            var _this = this;
-            this.$scope = $scope;
-            this.$mdDialog = $mdDialog;
-            this.AccessControlService = AccessControlService;
-            this.StateService = StateService;
-            /**
-             * Indicates that the page is currently being loaded.
-             * @type {boolean}
-             */
-            this.loading = true;
-            //$scope, $mdDialog, AccessControlService, StateService
-            // Fetch the list of allowed actions
-            this.AccessControlService.getUserAllowedActions()
-                .then(function (actionSet) {
-                _this.onLoad(actionSet.actions);
-            });
+import * as angular from 'angular';
+
+export class HomeController implements ng.IComponentController{
+constructor(
+        private $scope:angular.IScope,
+        private $mdDialog:any,
+        private AccessControlService:any,
+        private StateService:any,  
+        ){
+        //$scope, $mdDialog, AccessControlService, StateService
+          // Fetch the list of allowed actions
+       this.AccessControlService.getUserAllowedActions()
+                                .then((actionSet: any)=>{
+                                    this.onLoad(actionSet.actions);
+                                });
         }
+        /**
+         * Indicates that the page is currently being loaded.
+         * @type {boolean}
+         */
+        loading = true;
+
         /**
          * Determines the home page based on the specified allowed actions.
          *
          * @param actions the allowed actions
          */
-        HomeController.prototype.onLoad = function (actions) {
+        onLoad(actions: any) {
             // Determine the home page
             if (this.AccessControlService.hasAction(this.AccessControlService.FEEDS_ACCESS, actions)) {
                 return this.StateService.FeedManager().Feed().navigateToFeeds();
@@ -45,6 +45,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             if (this.AccessControlService.hasAction(this.AccessControlService.GROUP_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToGroups();
             }
+
             /*
             // Determine if Feed Manager is allowed at all
             if (!AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, actions) && !AccessControlService.hasAction(AccessControlService.USERS_GROUPS_ACCESS, actions)) {
@@ -60,16 +61,16 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 return;
             }
             */
+
             // Otherwise, let the user pick
             this.loading = false;
-        };
-        return HomeController;
-    }());
-    exports.HomeController = HomeController;
-    angular.module('kylo').controller('HomeController', ['$scope',
-        '$mdDialog',
-        'AccessControlService',
-        'StateService',
-        HomeController]);
-});
-//# sourceMappingURL=HomeController.js.map
+        }
+}
+
+
+  angular.module('kylo').controller('HomeController', 
+                                    ['$scope',
+                                    '$mdDialog', 
+                                    'AccessControlService', 
+                                    'StateService',
+                                    HomeController]);

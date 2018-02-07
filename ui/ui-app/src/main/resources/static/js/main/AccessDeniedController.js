@@ -1,30 +1,29 @@
-define(['angular'], function (angular) {
-    /**
-     * Displays the home page.
-     *
-     * @constructor
-     * @param {Object} $scope the application model
-     * @param $mdDialog the dialog service
-     * @param {AccessControlService} AccessControlService the access control service
-     * @param StateService the state service
-     */
-    function AccessDeniedController($scope, $mdDialog, AccessControlService, StateService, $transition$) {
-        var self = this;
-
-
-        self.attemptedState = $transition$.params().attemptedState;
-        if( self.attemptedState == undefined){
-            self.attemptedState = {displayName:'the page'};
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var AccessDeniedController = /** @class */ (function () {
+        function AccessDeniedController($scope, $mdDialog, AccessControlService, StateService, $transition$) {
+            this.$scope = $scope;
+            this.$mdDialog = $mdDialog;
+            this.AccessControlService = AccessControlService;
+            this.StateService = StateService;
+            this.$transition$ = $transition$;
+            var attemptedState = this.$transition$.params().attemptedState;
+            if (attemptedState == undefined) {
+                attemptedState = { displayName: 'the page' };
+            }
+            else if (attemptedState.displayName == undefined) {
+                attemptedState.displayName = attemptedState.name;
+            }
         }
-        else if( self.attemptedState.displayName == undefined){
-            self.attemptedState.displayName = self.attemptedState.name;
-        }
-
-
-
-
-    }
-
-    angular.module('kylo').controller('AccessDeniedController', ["$scope", "$mdDialog", "AccessControlService", "StateService", "$transition$",AccessDeniedController]);
-
+        return AccessDeniedController;
+    }());
+    exports.AccessDeniedController = AccessDeniedController;
+    angular.module('kylo').controller('AccessDeniedController', ["$scope",
+        "$mdDialog",
+        "AccessControlService",
+        "StateService",
+        "$transition$",
+        AccessDeniedController]);
 });
+//# sourceMappingURL=AccessDeniedController.js.map
