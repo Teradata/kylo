@@ -1,8 +1,9 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
-const AccessConstants = require('../constants/AccessConstants');
-export {KyloServicesModule} from "../services/services.module";
+//const AccessConstants = require('../constants/AccessConstants');
+import AccessConstants from "../constants/AccessConstants";
+import "../services/services.module";
 const {KyloFeedManager} = require('../feed-mgr/module');
 
 class ModuleFactory  {
