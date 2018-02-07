@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
@@ -425,22 +426,28 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         return endTimeMillis;
     }
 
+
     /**
      * Complete a job and mark it as failed setting its status to {@link com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution.JobStatus#FAILED}
      */
     public void failJob() {
         StringBuffer stringBuffer = null;
+        String stepExecutionFailuresString = "Step Execution Failures:\n";
         setStatus(JpaBatchJobExecution.JobStatus.FAILED);
         setExitCode(ExecutionConstants.ExitCode.FAILED);
         if (endTime == null) {
             endTime = DateTimeUtil.getNowUTCTime();
         }
         Set<BatchStepExecution> steps = getStepExecutions();
+        String existingExitMessage = getExitMessage();
+        if(StringUtils.isNotBlank(existingExitMessage)){
+            existingExitMessage = StringUtils.substringBefore(existingExitMessage,stepExecutionFailuresString);
+        }
         if (steps != null) {
             for (BatchStepExecution se : steps) {
                 if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
                     if (stringBuffer == null) {
-                        stringBuffer = new StringBuffer();
+                        stringBuffer = new StringBuffer(stepExecutionFailuresString);
                     } else {
                         stringBuffer.append("\n");
                     }
@@ -450,9 +457,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
                     ((JpaBatchStepExecution) se).setEndTime(DateTimeUtil.getNowUTCTime());
                 }
             }
+
             if (stringBuffer != null) {
                 //append the exit message
-                setExitMessage(getExitMessage() != null ? getExitMessage() + "\n" + stringBuffer.toString() : stringBuffer.toString());
+                String msg = existingExitMessage != null ? existingExitMessage+"\n" : "" + stringBuffer.toString();
+                setExitMessage(msg);
             }
         }
     }
@@ -481,6 +490,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
             endTime = DateTimeUtil.getNowUTCTime();
         }
     }
+
 
     /**
      * Finish the job and update teh status and end time as being completed, or failed, based upon the status of the {@link BatchStepExecution}'s
