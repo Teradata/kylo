@@ -40,4 +40,8 @@ public class SavepointProvenanceProperties {
         SUCCESS, FAILURE
     }
 
+    public enum TRIGGER_SAVE_POINT_STATE {
+        RETRY,RELEASE,FAIL
+    }
+
 }

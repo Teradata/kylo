@@ -23,8 +23,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         WranglerDataService.prototype.getCellSync = function (i, j) {
             var column = this.columns_[j];
             if (i >= 0 && i < this.rows_.length) {
-                var validation = (this.validationResults != null && i < this.validationResults.length && this.validationResults[i] != null)
-                    ? this.validationResults[i].filter(function (result) { return result.field === column.headerTooltip; })
+                var originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
+                var validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
+                    ? this.validationResults[originalIndex].filter(function (result) { return result.field === column.headerTooltip; })
                     : null;
                 return {
                     column: j,

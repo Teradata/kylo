@@ -376,20 +376,6 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
                     .map(portEntity -> {
                         PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
                         //find the connection destination processgroup id
-
-                        List<ConnectionDTO> connList = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent()).collect(Collectors.toList());
-
-                        Optional<ConnectionDTO> connection = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent())
-                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                            .findFirst();
-
-                        Optional<ProcessGroupDTO> pg1 = processGroup.getFlow().getProcessGroups().stream()
-                            .map(processGroupEntity -> processGroupEntity.getComponent())
-                            .filter(processGroupDTO -> processGroupDTO.getId().equals(connection.get().getDestination().getGroupId()))
-                            .findFirst();
-
                         Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
                             .map(connectionEntity -> connectionEntity.getComponent())
                             .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))

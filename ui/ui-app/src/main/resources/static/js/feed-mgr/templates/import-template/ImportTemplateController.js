@@ -189,7 +189,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                             self.inputPortList = [];
                             if (inputPortsResponse.data) {
                                 angular.forEach(inputPortsResponse.data, function (port, i) {
-                                    var disabled = angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName ==processGroupName
+                                    var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName ==processGroupName);
                                     self.inputPortList.push({label: port.name, value: port.name, description:port.destinationProcessGroupName, disabled:disabled});
                                     self.connectionMap[port.name] = port;
                                 });

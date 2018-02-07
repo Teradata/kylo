@@ -38,7 +38,9 @@ import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
+import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
+import com.thinkbiganalytics.feedmgr.rest.controller.AdminControllerV2;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
@@ -48,9 +50,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOptionBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
@@ -62,11 +67,13 @@ import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
 import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -105,6 +112,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
@@ -338,14 +346,28 @@ public class IntegrationTestBase {
         return response.as(PortDTO[].class);
     }
 
+
+    protected NifiFlowProcessGroup getFlow(String processGroupId) {
+        Response response = given(NifiIntegrationRestController.BASE)
+            .when()
+            .get(NifiIntegrationRestController.FLOW+"/"+processGroupId);
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(NifiFlowProcessGroup.class);
+    }
+
     protected void cleanup() {
+/*
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
+        */
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
+
     }
 
     protected void deleteExistingSla() {
@@ -501,7 +523,7 @@ public class IntegrationTestBase {
         Response response = given(JobsRestController.BASE)
             .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get("?filter=" + filter + "&limit=50&sort=-createdTime&start=0");
+            .get("?filter=" + filter + "&limit=50&sort=-createTime&start=0");
 
         response.then().statusCode(HTTP_OK);
 
@@ -599,10 +621,9 @@ public class IntegrationTestBase {
 
     protected FeedCategory getorCreateCategoryByName(String name) {
         Response response = getCategoryByName(name);
-        if(response.statusCode() == HTTP_BAD_REQUEST){
+        if (response.statusCode() == HTTP_BAD_REQUEST) {
             return createCategory(name);
-        }
-        else {
+        } else {
             return response.as(FeedCategory.class);
         }
     }
@@ -677,6 +698,31 @@ public class IntegrationTestBase {
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_TEMPLATE);
+
+        post.then().statusCode(HTTP_OK);
+
+        return post.as(ImportTemplate.class);
+    }
+
+    protected ImportTemplate importReusableFlowXmlTemplate(String templatePath, ReusableTemplateConnectionInfo connectionInfo) {
+        LOG.info("Importing template {}", templatePath);
+        List<ImportComponentOption> importComponentOptions = new ArrayList<>();
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.TEMPLATE_DATA).alwaysImport().build());
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.NIFI_TEMPLATE).alwaysImport().build());
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.REUSABLE_TEMPLATE).alwaysImport().build());
+        if (connectionInfo != null) {
+            importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.TEMPLATE_CONNECTION_INFORMATION).alwaysImport().connectionInfo(connectionInfo).build());
+        }
+
+        String importOptions = ObjectMapperSerializer.serialize(importComponentOptions);
+        String uploadKey = UUID.randomUUID().toString();
+
+        Response post = given(AdminControllerV2.BASE)
+            .contentType("multipart/form-data")
+            .multiPart(new File(templatePath))
+            .multiPart("uploadKey", uploadKey)
+            .multiPart("importComponents", importOptions)
+            .when().post(AdminControllerV2.IMPORT_TEMPLATE);
 
         post.then().statusCode(HTTP_OK);
 

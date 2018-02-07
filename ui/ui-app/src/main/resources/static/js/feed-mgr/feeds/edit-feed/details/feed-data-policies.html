@@ -94,7 +94,7 @@
       <md-list-item
           style="height: 55px"
           ng-if="vm.model.table.fieldPolicies.length > 0 && vm.model.table.fieldPolicies.length < 30"
-          ng-repeat="(policyIdx, policy) in vm.model.table.fieldPolicies">
+          ng-repeat="policy in vm.model.table.fieldPolicies">
         <ng-include
             layout="row" layout-fill
             src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-readonly.html'"></ng-include>
@@ -105,7 +105,7 @@
           class="virtual-repeat-scroller-overlay">
         <div
             style="height: 40px;"
-            md-virtual-repeat="(policyIdx, policy) in vm.model.table.fieldPolicies">
+            md-virtual-repeat="policy in vm.model.table.fieldPolicies">
           <ng-include
               layout="row" layout-fill
               src="'js/feed-mgr/feeds/edit-feed/details/feed-data-policies-row-readonly.html'"></ng-include>

@@ -207,23 +207,14 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
     }
 
     private void checkForSavepointTriggerFailure(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
-        if (event.getComponentType().equalsIgnoreCase("TriggerSavepoint") && "FAIL".equalsIgnoreCase(event.getUpdatedAttributes().get(SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS))) {
+        if (event.getComponentType().equalsIgnoreCase("TriggerSavepoint") && SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.FAIL.name().equalsIgnoreCase(event.getUpdatedAttributes().get(SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS))) {
             Map<String, String> stepExecutionMap = stepExecution.getStepExecutionContextAsMap();
             if (stepExecutionMap != null && stepExecutionMap.containsKey(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE)) {
-                //
-                /*
-                JpaBatchStepExecutionContextValue contextValue = new JpaBatchStepExecutionContextValue(stepExecution, "savepoint.trigger");
-                contextValue.setStringVal(event.getJobFlowFileId());
-                stepExecution.addStepExecutionContext(contextValue);
-                log.info("TriggerSavepoint failure detected. added trigger for flow file {}",event.getJobFlowFileId());
-                */
                 //notify the job that we have a possible trigger
                 //add it to the jobexecution
                 String triggerId = stepExecutionMap.get(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE);
-
                 ((JpaBatchJobExecution) stepExecution.getJobExecution()).updateJobExecutionContext(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerId);
                 ((JpaBatchJobExecution) stepExecution.getJobExecution()).failJob();
-
             }
         } else if (event.getComponentType().equalsIgnoreCase("SetSavepoint")) {
             if (event.getEventType().equalsIgnoreCase("DROP")) {
