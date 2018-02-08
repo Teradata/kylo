@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionDat
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowConnectionConverter;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -89,8 +90,10 @@ public class DefaultNiFiFlowCompletionCallback implements NiFiFlowInspectionCall
 
         feedProcessGroupInspections.stream().forEach(f ->
                                                      {
-
-                                                         String feedName = FeedNameUtil.fullName(f.getParent().getProcessGroupName(), f.getProcessGroupName());
+                                                         //strip the kylo version suffix if it is there
+                                                         String feedProcessGroupName = NifiTemplateNameUtil.parseVersionedProcessGroupName(f.getProcessGroupName());
+                                                         //create the feed name with the category prefix
+                                                         String feedName = FeedNameUtil.fullName(f.getParent().getProcessGroupName(), feedProcessGroupName);
                                                          feedNames.add(feedName);
                                                          // log.info("process feed {} ",feedName);
                                                          List<ProcessorDTO> feedChildren = f.getAllProcessors();
