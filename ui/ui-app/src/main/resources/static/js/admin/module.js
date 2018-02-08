@@ -1,8 +1,6 @@
-define(["require", "exports", "angular", "../constants/AccessConstants", "./module-name"], function (require, exports, angular, AccessConstants_1, module_name_1) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "../kylo-utils/LazyLoadUtil", "./module-name", "../codemirror-require/module"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
-    var codeMirrorRequire = require('../codemirror-require/module');
     //export * from "../codemirror-require/module"; 
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
@@ -58,7 +56,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "./modu
             });
         };
         ModuleFactory.prototype.lazyLoadController = function (path) {
-            return lazyLoadUtil.lazyLoadController(path, "admin/module-require");
+            return LazyLoadUtil_1.default.lazyLoadController(path, "admin/module-require");
         };
         return ModuleFactory;
     }());
