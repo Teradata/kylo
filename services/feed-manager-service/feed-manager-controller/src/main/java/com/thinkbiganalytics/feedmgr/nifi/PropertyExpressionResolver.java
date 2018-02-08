@@ -179,7 +179,7 @@ public class PropertyExpressionResolver {
 
 
     public boolean containsVariablesPatterns(String str) {
-        return str.contains(VAR_PREFIX);
+        return StringUtils.isNotBlank(str) && str.contains(VAR_PREFIX);
     }
 
     public static class ResolvedVariables {
