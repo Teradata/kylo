@@ -24,6 +24,7 @@ import com.google.common.base.Stopwatch;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.CharStreams;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.response.Response;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.spark.rest.controller.SparkShellProxyController;
@@ -97,7 +98,11 @@ public class SparkShellIT extends IntegrationTestBase {
         Assert.assertEquals(SaveResponse.Status.SUCCESS, save.getStatus());
         Assert.assertEquals("./zip", save.getLocation());
 
-        final InputStream stream = given(SparkShellProxyController.BASE).get(SparkShellProxyController.TRANSFORM_DOWNLOAD, transform.getTable(), save.getId()).asInputStream();
+        final InputStream stream = given(SparkShellProxyController.BASE)
+            .accept(ContentType.ANY)
+            .get(SparkShellProxyController.TRANSFORM_DOWNLOAD, transform.getTable(), save.getId())
+            .then().statusCode(HTTP_OK)
+            .extract().asInputStream();
         final ZipInputStream zip = new ZipInputStream(stream);
 
         final ZipEntry success = zip.getNextEntry();

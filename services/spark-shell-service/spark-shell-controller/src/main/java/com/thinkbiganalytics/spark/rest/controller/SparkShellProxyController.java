@@ -84,6 +84,7 @@ import io.swagger.annotations.Tag;
 @Api(tags = "Feed Manager - Data Wrangler")
 @Component
 @Path(SparkShellProxyController.BASE)
+@SuppressWarnings("RSReferenceInspection")
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Data Wrangler", description = "data transformations"))
 public class SparkShellProxyController {
 
