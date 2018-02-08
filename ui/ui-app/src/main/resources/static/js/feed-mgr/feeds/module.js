@@ -1,7 +1,7 @@
-define(["require", "exports", "angular", "../../constants/AccessConstants"], function (require, exports, angular, AccessConstants_1) {
+define(["require", "exports", "angular", "../../constants/AccessConstants", "../../kylo-utils/LazyLoadUtil"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
+    //const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
     var moduleName = require('./module-name');
     var feedManager = require('kylo-feedmgr');
     var ModuleFactory = /** @class */ (function () {
@@ -35,7 +35,7 @@ define(["require", "exports", "angular", "../../constants/AccessConstants"], fun
             });
         };
         ModuleFactory.prototype.lazyLoadController = function (path) {
-            return lazyLoadUtil.lazyLoadController(path, ['feed-mgr/feeds/module-require']);
+            return LazyLoadUtil_1.default.lazyLoadController(path, ['feed-mgr/feeds/module-require']);
         };
         return ModuleFactory;
     }());
