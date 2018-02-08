@@ -68,7 +68,7 @@
             </md-card-title>
         <md-card-content>
 
-        <div ng-show="vm.error" class="alert alert-danger">{{"view.login-app.Iuop" | translate}}</div>
+        <div ng-show="vm.error" class="alert alert-danger">{{"view.login-app.login-error" | translate}}</div>
         <form name="form" action="/login" role="form" method="post">
             <div layout="column" flex layout-fill>
                 <md-input-container  ng-class="{ 'has-error': form.password.$dirty && form.password.$error.required }">

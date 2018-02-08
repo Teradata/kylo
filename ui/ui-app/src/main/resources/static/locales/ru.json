@@ -607,7 +607,7 @@
     "view.login.Password": "Пароль",
     "view.login.Pir": "Введите пароль",
     "view.login.Login-btn": "Войти",
-    "view.login-app.Invalid username or password.": "Неверное имя пользователя или пароль.",
+    "view.login-app.login-error": "Неверное имя пользователя или пароль.",
 
     "views.module.Categories": "Разделы библиотеки заданий",
 

@@ -611,7 +611,7 @@
     "view.login.Password": "Password",
     "view.login.Pir": "Password is required",
     "view.login.Login-btn": "Login",
-    "view.login-app.Invalid username or password.": "Invalid username or password.",
+    "view.login-app.login-error": "Invalid username or password.",
 
     "views.module.Categories": "Categories",
 
