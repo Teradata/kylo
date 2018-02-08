@@ -84,9 +84,11 @@ public class ConfigurationPropertyReplacer {
     }
 
     private static Set<String> getConfigPropertyKeysForNiFi(NifiProperty property){
-        String key = toPropertyName(property.getPropertyDescriptor().getDisplayName());
         Set<String> keys = new HashSet<>();
-        keys.add(key);
+        if(property.getPropertyDescriptor() != null) {
+            String key = toPropertyName(property.getPropertyDescriptor().getDisplayName());
+            keys.add(key);
+        }
         keys.add(property.getKey());
         return keys;
     }
