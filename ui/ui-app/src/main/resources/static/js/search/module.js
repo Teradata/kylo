@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "./module-name", "../constants/AccessConstants", "../services/services.module"], function (require, exports, angular, module_name_1, AccessConstants_1) {
+define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoadUtil", "../constants/AccessConstants", "../services/services.module"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
     var KyloFeedManager = require('../feed-mgr/module').KyloFeedManager;
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
@@ -33,7 +32,7 @@ define(["require", "exports", "angular", "./module-name", "../constants/AccessCo
             });
         };
         ModuleFactory.prototype.lazyLoadController = function (path) {
-            return lazyLoadUtil.lazyLoadController(path, "search/module-require");
+            return LazyLoadUtil_1.default.lazyLoadController(path, "search/module-require");
         };
         return ModuleFactory;
     }());
