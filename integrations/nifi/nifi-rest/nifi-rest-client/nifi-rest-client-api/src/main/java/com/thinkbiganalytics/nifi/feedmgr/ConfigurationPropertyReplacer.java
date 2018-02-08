@@ -29,10 +29,13 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Auto Inject Property Values stored in the application.properties file
@@ -57,39 +60,46 @@ public class ConfigurationPropertyReplacer {
 
 
 
+
     /**
-     * return the application.properties property key for the specific property using the proocessor type as the key reference
+     * return the application.properties property keys for the specific property using the proocessor type as the key reference
      *
      * @param property the nifi property
-     * @return the property key prepended with the "nifi.<processor type>."
+     * @return the property keys prepended with the "nifi.<processor type>."
      */
-    public static String getProcessorPropertyConfigName(NifiProperty property) {
-        String processorTypeName = "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey());
-        return processorTypeName;
+    public static List<String> getProcessorPropertyConfigNames(NifiProperty property) {
+        return   getConfigPropertyKeysForNiFi(property).stream().map(k -> "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." +k)).collect(Collectors.toList());
     }
 
 
     /**
-     * return the application.properties property key for the specific property using the proocessor type as the key reference
+     * return the application.properties property keys for the specific property using the proocessor type as the key reference
      *
      * @param property the nifi property
-     * @return the property key prepended with the "nifi.<processor type>[<processor name>]."
+     * @return the list of possible property key prepended with the "nifi.<processor type>[<processor name>]."
      */
-    public static String getProcessorNamePropertyConfigName(NifiProperty property) {
-        String processorTypeName = "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "["+property.getProcessorName()+"]." + property.getKey());
-        return processorTypeName;
+    public static List<String> getProcessorNamePropertyConfigNames(NifiProperty property) {
+
+        return getConfigPropertyKeysForNiFi(property).stream().map(k -> "nifi." + toPropertyName(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "["+property.getProcessorName()+"]." + k)).collect(Collectors.toList());
+    }
+
+    private static Set<String> getConfigPropertyKeysForNiFi(NifiProperty property){
+        String key = toPropertyName(property.getPropertyDescriptor().getDisplayName());
+        Set<String> keys = new HashSet<>();
+        keys.add(key);
+        keys.add(property.getKey());
+        return keys;
     }
 
 
     /**
-     * Return the application.properties property key for 'all_processors' matching the supplied NiFi property.
+     * Return the application.properties property keys for 'all_processors' matching the supplied NiFi property.
      *
      * @param property the nifi property to inspect
-     * @return the property key prepended with the "nifi.all_processors."
+     * @return the property keys prepended with the "nifi.all_processors."
      */
-    public static String getGlobalAllProcessorsPropertyConfigName(NifiProperty property) {
-        String processorTypeName = "nifi.all_processors." + toPropertyName(property.getKey());
-        return processorTypeName;
+    public static List<String> getGlobalAllProcessorsPropertyConfigNames(NifiProperty property) {
+       return getConfigPropertyKeysForNiFi(property).stream().map(k ->"nifi.all_processors." + toPropertyName(k)).collect(Collectors.toList());
     }
 
     /**
@@ -139,21 +149,11 @@ public class ConfigurationPropertyReplacer {
     }
 
     private static String resolveValue(NifiProperty property, Map<String,Object> configProperties){
-        Object value = null;
         if(configProperties != null) {
-            //see if the processorType is configured
-            String processorTypeWithProcessorNameProperty = getProcessorNamePropertyConfigName(property);
-            value = configProperties.get(processorTypeWithProcessorNameProperty);
-            if (value == null || StringUtils.isBlank(value.toString())) {
-                String processorTypeProperty = getProcessorPropertyConfigName(property);
-                value = configProperties.get(processorTypeProperty);
-                if (value == null || StringUtils.isBlank(value.toString())) {
-                    String globalPropertyType = getGlobalAllProcessorsPropertyConfigName(property);
-                    value = configProperties.get(globalPropertyType);
-                }
-            }
-            if(value != null){
-                String updatedPropertyValue = fixNiFiExpressionPropertyValue(value.toString());
+
+            Optional<String> value = findMatchingConfigurationProperty(property,configProperties);
+            if(value.isPresent()){
+                String updatedPropertyValue = fixNiFiExpressionPropertyValue(value.get());
                 return updatedPropertyValue;
             }
         }
@@ -161,6 +161,23 @@ public class ConfigurationPropertyReplacer {
 
 
     }
+
+    private static Optional<String> getConfigPropertyValue(List<String> properties, Map<String,Object> configProperties){
+        return properties.stream().filter(p-> configProperties.containsKey(p)).map(p -> configProperties.get(p).toString()).findFirst();
+    }
+
+    private static Optional<String> findMatchingConfigurationProperty(NifiProperty property,Map<String,Object> configProperties)
+    {
+        Optional<String> value = getConfigPropertyValue(ConfigurationPropertyReplacer.getProcessorNamePropertyConfigNames(property),configProperties);
+        if(!value.isPresent()) {
+            value = getConfigPropertyValue(ConfigurationPropertyReplacer.getProcessorPropertyConfigNames(property),configProperties);
+            if (!value.isPresent()) {
+                value = getConfigPropertyValue(ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigNames(property),configProperties);
+            }
+        }
+        return value;
+    }
+
 
 
     /**

@@ -576,8 +576,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
 
+        //skip any properties that the user supplied which are not ${ values
+        List<NifiProperty> propertiesToSkip = originalFeedProperties.stream().filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream().filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        if(templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()){
+            propertiesToSkip.addAll(templatePropertiesToSkip);
+        }
         //resolve any ${metadata.} properties
-        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
+        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata,propertiesToSkip);
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
