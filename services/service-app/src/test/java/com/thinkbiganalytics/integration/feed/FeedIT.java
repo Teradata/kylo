@@ -20,27 +20,30 @@ package com.thinkbiganalytics.integration.feed;
  * #L%
  */
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.base.CharMatcher;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.Tag;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityDifference;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
+import com.thinkbiganalytics.integration.Diff;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutionStatus;
 import com.thinkbiganalytics.jobrepo.query.model.ExitStatus;
@@ -58,8 +61,10 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +93,7 @@ public class FeedIT extends IntegrationTestBase {
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private static final int VALID_RESULTS = 879;
     private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
-    private static String FEED_NAME = "users_" + System.currentTimeMillis();
+    private static String FEED_NAME = "users_";
     private static String CATEGORY_NAME = "Functional Tests";
 
     private String sampleFeedsPath;
@@ -105,12 +110,10 @@ public class FeedIT extends IntegrationTestBase {
     private FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
     private FieldValidationRule length = new FieldValidationRule();
     private FieldValidationRule ipAddress = new FieldValidationRule();
+    private int feedCount = 0;
 
-    @Override
-    protected void configureObjectMapper(ObjectMapper om) {
-        SimpleModule m = new SimpleModule();
-        m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
-        om.registerModule(m);
+    private String createNewFeedName() {
+        return FEED_NAME + feedCount++;
     }
 
     @Test
@@ -127,7 +130,7 @@ public class FeedIT extends IntegrationTestBase {
         ImportTemplate ingest = importDataIngestTemplate();
 
         //create standard ingest feed
-        FeedMetadata feed = getCreateFeedRequest(category, ingest, FEED_NAME);
+        FeedMetadata feed = getCreateFeedRequest(category, ingest, createNewFeedName());
         FeedMetadata response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
@@ -148,7 +151,7 @@ public class FeedIT extends IntegrationTestBase {
         final ImportTemplate template = importDataIngestTemplate();
 
         // Create feed
-        FeedMetadata feed = getCreateFeedRequest(category, template, FEED_NAME);
+        FeedMetadata feed = getCreateFeedRequest(category, template, createNewFeedName());
         feed.setDescription("Test feed");
         feed.setDataOwner("Some Guy");
 
@@ -157,22 +160,87 @@ public class FeedIT extends IntegrationTestBase {
         Assert.assertEquals(feed.getDataOwner(), response.getDataOwner());
 
         // Edit feed
-        feed = response;
+        feed.setId(response.getId());
+        feed.setFeedId(response.getFeedId());
+        feed.setIsNew(false);
         feed.setDescription(null);
+        feed.setDataOwner("Some Other Guy");
+        NifiProperty fileFilter = feed.getProperties().get(0);
+        fileFilter.setTemplateValue("some-file.csv");
+
+        List<FieldPolicy> policies = feed.getTable().getFieldPolicies();
+
+        FieldPolicy id = policies.get(1);
+        id.getValidation().add(notNull); //add new validator
+        feed.getTable().setPrimaryKeyFields("id");
+
+        FieldPolicy firstName = policies.get(2);
+        firstName.setProfile(false); //flip profiling
+
+        FieldPolicy secondName = policies.get(3);
+        secondName.setIndex(false); //flip indexing
+        secondName.getStandardization().add(toUpperCase); //add new standardiser
+
+        FieldPolicy email = policies.get(4);
+        email.setValidation(Collections.emptyList()); //remove validators
+
+        FieldPolicy gender = policies.get(5);
+        FieldValidationRule lookup = gender.getValidation().get(0);
+        lookup.getProperties().get(0).setValue("new value"); //change existing validator property
+        gender.setProfile(true); //add profiling
+        gender.setIndex(true); //add indexing
+
+        FieldPolicy creditCard = policies.get(7);
+        FieldStandardizationRule base64EncodeBinary = creditCard.getStandardization().get(0);
+        base64EncodeBinary.getProperties().get(0).setValue("STRING"); //change existing standardiser property
+
+        feed.getOptions().setSkipHeader(false);
+
+        feed.getTable().setTargetMergeStrategy("ROLLING_SYNC");
+
+        feed.getTags().add(new DefaultTag("updated"));
+
+        feed.getSchedule().setSchedulingPeriod("20 sec");
+
 
         response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
         Assert.assertEquals(feed.getDescription(), response.getDescription());
+
+
+        FeedVersions feedVersions = getVersions(feed.getFeedId());
+        List<EntityVersion> versions = feedVersions.getVersions();
+        Assert.assertEquals(2, versions.size());
+
+
+        EntityVersionDifference entityDiff = getVersionDiff(feed.getFeedId(), versions.get(1).getId(), versions.get(0).getId());
+        EntityDifference diff = entityDiff.getDifference();
+        JsonNode patch = diff.getPatch();
+        ArrayNode diffs = (ArrayNode) patch;
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/0/templateValue", "some-file.csv")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/schedule/schedulingPeriod", "20 sec")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/description")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/tags/1")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/dataOwner", "Some Other Guy")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/table/fieldPolicies/1/validation/0")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/2/profile", "false")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/3/index", "false")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/table/fieldPolicies/3/standardization/0")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/table/fieldPolicies/4/validation/0")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/profile", "true")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/index", "true")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/validation/0/properties/0/value", "new value")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/7/standardization/0/properties/0/value", "STRING")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/8/standardization/0/properties/0/value", "STRING")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/targetMergeStrategy", "ROLLING_SYNC")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldIndexString", "first_name,gender")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/options/skipHeader", "false")));
     }
+
 
     @Override
     public void startClean() {
         super.startClean();
-    }
-
-//    @Test
-    public void temp() {
-//        failJobs("system.index_text_service");
     }
 
     protected void prepare() throws Exception {
@@ -265,17 +333,11 @@ public class FeedIT extends IntegrationTestBase {
     protected ImportTemplate importFeedTemplate(String templatePath) {
         LOG.info("Importing feed template {}", templatePath);
 
-        //get number of templates already there
-        int existingTemplateNum = getTemplates().length;
-
         //import standard feedTemplate template
         ImportTemplate feedTemplate = importTemplate(templatePath);
         Assert.assertTrue(templatePath.contains(feedTemplate.getFileName()));
         Assert.assertTrue(feedTemplate.isSuccess());
 
-        //assert new template is there
-        RegisteredTemplate[] templates = getTemplates();
-        Assert.assertTrue(templates.length == existingTemplateNum + 1);
         return feedTemplate;
     }
 

@@ -21,8 +21,11 @@ package com.thinkbiganalytics.integration;
  */
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.RestAssured;
@@ -48,10 +51,12 @@ import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.ServiceLevelAgreementRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.TemplatesRestController;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOptionBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
@@ -66,6 +71,8 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
@@ -113,6 +120,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -264,12 +272,10 @@ public class IntegrationTestBase {
         cleanup();
     }
 
-    /**
-     * Do nothing implementation, but subclasses may override to add extra
-     * json serialisation/de-serialisation modules
-     */
-    protected void configureObjectMapper(ObjectMapper om) {
-
+    private void configureObjectMapper(ObjectMapper om) {
+        SimpleModule m = new SimpleModule();
+        m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
+        om.registerModule(m);
     }
 
     protected RequestSpecification given() {
@@ -1110,6 +1116,47 @@ public class IntegrationTestBase {
             .delete("/" + controllerServiceId);
 
         response.then().statusCode(HTTP_NO_CONTENT);
+    }
+
+    protected FeedVersions getVersions(String feedId) {
+        LOG.info("Getting versions for feed {}", feedId);
+
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/versions", feedId));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(FeedVersions.class);
+    }
+
+    protected EntityVersionDifference getVersionDiff(String feedId, String fromVersion, String toVersion) {
+        LOG.info("Getting difference from version {} to version {} for feed {}", fromVersion, toVersion, feedId);
+
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/versions/%s/diff/%s", feedId, fromVersion, toVersion));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(EntityVersionDifference.class);
+    }
+
+    protected boolean versionPatchContains(ArrayNode diffs, Diff diff) {
+        Iterator<JsonNode> elements = diffs.elements();
+        while (elements.hasNext()) {
+            JsonNode node = elements.next();
+            if (diff.path.equals(node.findValue("path").textValue())) {
+                boolean match = diff.op.equals(node.findValue("op").textValue());
+                if (diff.value != null) {
+                    JsonNode value = node.findValue("value");
+                    return value != null && match && diff.value.equals(value.asText());
+                } else {
+                    return match;
+                }
+            }
+        }
+        return false;
     }
 
 
