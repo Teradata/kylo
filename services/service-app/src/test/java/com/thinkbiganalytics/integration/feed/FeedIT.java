@@ -169,7 +169,7 @@ public class FeedIT extends IntegrationTestBase {
         feed.setDescription(null);
         feed.setDataOwner("Some Other Guy");
         NifiProperty fileFilter = feed.getProperties().get(0);
-        fileFilter.setTemplateValue("some-file.csv");
+        fileFilter.setValue("some-file.csv");
 
         List<FieldPolicy> policies = feed.getTable().getFieldPolicies();
 
@@ -220,7 +220,7 @@ public class FeedIT extends IntegrationTestBase {
         EntityDifference diff = entityDiff.getDifference();
         JsonNode patch = diff.getPatch();
         ArrayNode diffs = (ArrayNode) patch;
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/0/templateValue", "some-file.csv")));
+        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/0/value", "some-file.csv")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/schedule/schedulingPeriod", "20 sec")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/description")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/tags/1")));
