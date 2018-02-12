@@ -66,7 +66,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -95,7 +94,6 @@ public class FeedIT extends IntegrationTestBase {
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
     private static final int VALID_RESULTS = 879;
     private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
-    private static String FEED_NAME = "users_";
     private static String CATEGORY_NAME = "Functional Tests";
 
     private String sampleFeedsPath;
@@ -116,7 +114,7 @@ public class FeedIT extends IntegrationTestBase {
     private String createNewFeedName() {
         LocalDateTime now = LocalDateTime.now();
         String time = now.format(DateTimeFormatter.ofPattern("HH_mm_ss_SSS"));
-        return FEED_NAME + time;
+        return "users_" + time;
     }
 
     @Test
@@ -139,7 +137,7 @@ public class FeedIT extends IntegrationTestBase {
 
         waitForFeedToComplete();
 
-        assertExecutedJobs(response);
+        assertExecutedJobs(response.getFeedName(), response.getFeedId());
 
         failJobs(response.getCategoryAndFeedName());
         abandonAllJobs(response.getCategoryAndFeedName());
@@ -366,14 +364,12 @@ public class FeedIT extends IntegrationTestBase {
         Arrays.stream(jobs).map(this::failJob).forEach(job -> Assert.assertEquals(ExecutionStatus.FAILED, job.getStatus()));
     }
 
-    public void assertExecutedJobs(FeedMetadata feed) throws IOException {
+    public void assertExecutedJobs(String feedName, String feedId) throws IOException {
         LOG.info("Asserting there are 2 completed jobs: userdata ingest job, index text service system jobs");
         DefaultExecutedJob[] jobs = getJobs();
-        Assert.assertEquals(2, jobs.length);
 
         //TODO assert all executed jobs are successful
-
-        DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feed.getFeedName().toLowerCase()).equals(job.getFeedName())).findFirst().get();
+        DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feedName.toLowerCase()).equals(job.getFeedName())).findFirst().get();
         Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());
         Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), ingest.getExitCode());
 
@@ -386,26 +382,25 @@ public class FeedIT extends IntegrationTestBase {
             Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
         }
 
-        String feedId = feed.getFeedId();
         LOG.info("Asserting number of total/valid/invalid rows");
         Assert.assertEquals(1000, getTotalNumberOfRecords(feedId));
         Assert.assertEquals(VALID_RESULTS, getNumberOfValidRecords(feedId));
         Assert.assertEquals(121, getNumberOfInvalidRecords(feedId));
 
-        assertValidatorsAndStandardisers(feedId);
+        assertValidatorsAndStandardisers(feedId, feedName);
 
         //TODO assert data via global search
-        assertHiveData();
+        assertHiveData(feedName);
     }
 
-    private void assertValidatorsAndStandardisers(String feedId) {
+    private void assertValidatorsAndStandardisers(String feedId, String feedName) {
         LOG.info("Asserting Validators and Standardisers");
 
         String processingDttm = getProcessingDttm(feedId);
 
         assertNamesAreInUppercase(feedId, processingDttm);
         assertMultipleBase64Encodings(feedId, processingDttm);
-        assertBinaryColumnData();
+        assertBinaryColumnData(feedName);
 
         assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
         assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
@@ -414,20 +409,20 @@ public class FeedIT extends IntegrationTestBase {
         assertValidatorResults(feedId, processingDttm, "IPAddressValidator", 4);
     }
 
-    private void assertHiveData() {
-        assertHiveTables("functional_tests", FEED_NAME);
-        getHiveSchema("functional_tests", FEED_NAME);
-        List<HashMap<String, String>> rows = getHiveQuery("SELECT * FROM " + "functional_tests" + "." + FEED_NAME + " LIMIT 880");
+    private void assertHiveData(String feedName) {
+        assertHiveTables("functional_tests", feedName);
+        getHiveSchema("functional_tests", feedName);
+        List<HashMap<String, String>> rows = getHiveQuery("SELECT * FROM " + "functional_tests" + "." + feedName + " LIMIT 880");
         Assert.assertEquals(VALID_RESULTS, rows.size());
     }
 
-    private void assertBinaryColumnData() {
+    private void assertBinaryColumnData(String feedName) {
         LOG.info("Asserting binary CC column data");
-        DefaultHiveSchema schema = getHiveSchema("functional_tests", FEED_NAME);
+        DefaultHiveSchema schema = getHiveSchema("functional_tests", feedName);
         Field ccField = schema.getFields().stream().filter(field -> field.getName().equals("cc")).iterator().next();
         Assert.assertEquals("binary", ccField.getDerivedDataType());
 
-        List<HashMap<String, String>> rows = getHiveQuery("SELECT cc FROM " + "functional_tests" + "." + FEED_NAME + " where id = 1");
+        List<HashMap<String, String>> rows = getHiveQuery("SELECT cc FROM " + "functional_tests" + "." + feedName + " where id = 1");
         Assert.assertEquals(1, rows.size());
         HashMap<String, String> row = rows.get(0);
 
