@@ -59,6 +59,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,10 +112,11 @@ public class FeedIT extends IntegrationTestBase {
     private FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
     private FieldValidationRule length = new FieldValidationRule();
     private FieldValidationRule ipAddress = new FieldValidationRule();
-    private int feedCount = 0;
 
     private String createNewFeedName() {
-        return FEED_NAME + feedCount++;
+        LocalDateTime now = LocalDateTime.now();
+        String time = now.format(DateTimeFormatter.ofPattern("HH_mm_ss_SSS"));
+        return FEED_NAME + time;
     }
 
     @Test
