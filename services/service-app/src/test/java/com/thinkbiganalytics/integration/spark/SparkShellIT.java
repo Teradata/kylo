@@ -124,7 +124,7 @@ public class SparkShellIT extends IntegrationTestBase {
     public void testScriptSave() {
         final TransformResponse transform = executeScript(SCRIPT, true);
 
-        final String tableName = UUID.randomUUID().toString().replaceAll("-", "");
+        final String tableName = newTableName();
         final SaveResponse save = saveScript(transform.getTable(), "orc", null, tableName);
         Assert.assertEquals(SaveResponse.Status.SUCCESS, save.getStatus());
 
@@ -190,6 +190,22 @@ public class SparkShellIT extends IntegrationTestBase {
         // Verify response
         response.then().statusCode(expectedStatusCode);
         return response.as(TransformResponse.class);
+    }
+
+    /**
+     * Generates a new, unique table name.
+     *
+     * @return the table name
+     * @throws IllegalStateException if a table name cannot be generated
+     */
+    private String newTableName() {
+        for (int i = 0; i < 100; ++i) {
+            final String name = UUID.randomUUID().toString();
+            if (name.matches("^[a-fA-F].*")) {
+                return name.replace("-", "");
+            }
+        }
+        throw new IllegalStateException("Unable to generate a new table name");
     }
 
     /**
