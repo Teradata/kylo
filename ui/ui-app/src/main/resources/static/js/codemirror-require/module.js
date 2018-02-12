@@ -1,9 +1,7 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "./module-name", "../../bower_components/angular-ui-codemirror/ui-codemirror"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
     var CodeMirror = require('../../bower_components/codemirror/lib/codemirror');
-    var ui_code_mirror = require('../../bower_components/angular-ui-codemirror/ui-codemirror');
     /*declare global {
         interface Window { CodeMirror: any; }
     }

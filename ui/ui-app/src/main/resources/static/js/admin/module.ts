@@ -1,10 +1,14 @@
 import * as angular from 'angular';
-const AccessConstants = require('../constants/AccessConstants');
-const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
-const codeMirrorRequire = require('../codemirror-require/module');
+//const AccessConstants = require('../constants/AccessConstants');
+import AccessConstants from "../constants/AccessConstants";
+//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
+import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
+//const codeMirrorRequire = require('../codemirror-require/module');
+import "../codemirror-require/module";
 import {KyloServicesModule} from "../services/services.module";
 //const moduleName =require("./module-name");
 import {moduleName} from "./module-name";
+//export * from "../codemirror-require/module"; 
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -14,7 +18,6 @@ class ModuleFactory  {
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]); 
     }
     configFn($stateProvider:any) {
-            
        $stateProvider.state('jcr-query',{
             url:'/admin/jcr-query',
             views: {

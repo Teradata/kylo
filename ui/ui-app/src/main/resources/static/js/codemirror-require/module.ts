@@ -1,7 +1,10 @@
 import * as angular from 'angular';
-const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
+//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
+import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 const CodeMirror = require('../../bower_components/codemirror/lib/codemirror');
-const ui_code_mirror = require('../../bower_components/angular-ui-codemirror/ui-codemirror');
+//import * as CodeMirror from "../../bower_components/codemirror/lib/codemirror";
+import "../../bower_components/angular-ui-codemirror/ui-codemirror";
+//const ui_code_mirror = require('../../bower_components/angular-ui-codemirror/ui-codemirror');
 //const moduleName =require("./module-name");
 import {moduleName} from "./module-name";
 

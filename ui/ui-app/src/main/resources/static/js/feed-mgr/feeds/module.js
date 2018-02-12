@@ -1,8 +1,7 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../constants/AccessConstants", "../../kylo-utils/LazyLoadUtil"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var AccessConstants = require('../../constants/AccessConstants');
-    var lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
+    //const lazyLoadUtil = require('../../kylo-utils/LazyLoadUtil');
     var moduleName = require('./module-name');
     var feedManager = require('kylo-feedmgr');
     var ModuleFactory = /** @class */ (function () {
@@ -12,7 +11,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         }
         ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
             $compileProvider.preAssignBindingsEnabled(true);
-            $stateProvider.state(AccessConstants.UI_STATES.FEEDS.state, {
+            $stateProvider.state(AccessConstants_1.default.UI_STATES.FEEDS.state, {
                 url: '/feeds',
                 params: {
                     tab: null
@@ -31,12 +30,12 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     breadcrumbRoot: true,
                     displayName: 'Feeds',
                     module: moduleName,
-                    permissions: AccessConstants.UI_STATES.FEEDS.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.FEEDS.permissions
                 }
             });
         };
         ModuleFactory.prototype.lazyLoadController = function (path) {
-            return lazyLoadUtil.lazyLoadController(path, ['feed-mgr/feeds/module-require']);
+            return LazyLoadUtil_1.default.lazyLoadController(path, ['feed-mgr/feeds/module-require']);
         };
         return ModuleFactory;
     }());
