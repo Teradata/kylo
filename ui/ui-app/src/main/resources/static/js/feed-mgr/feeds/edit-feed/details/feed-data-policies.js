@@ -332,6 +332,17 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             return FeedFieldPolicyRuleService.getAllPolicyRules(field);
         };
 
+        this.getAllVersionedFieldPolicies = function(policyIndex) {
+            return this.getAllFieldPolicies(this.findVersionedPolicy(policyIndex));
+        };
+
+        this.findVersionedPolicy = function(policyIndex) {
+            if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                return self.versionFeedModel.table.fieldPolicies[policyIndex];
+            }
+            return '';
+        };
+
         this.findVersionedRuleName = function(policyIndex, ruleIndex) {
             if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
                 var field = self.versionFeedModel.table.fieldPolicies[policyIndex];
