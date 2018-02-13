@@ -147,7 +147,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         noCache: true,
         querySearch: this.onAutocompleteQuerySearch.bind(this),
         refreshCache: this.onAutocompleteRefreshCache.bind(this),
-        delay: 900
+        delay: 0
     };
 
     /**
