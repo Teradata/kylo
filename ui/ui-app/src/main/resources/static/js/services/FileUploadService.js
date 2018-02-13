@@ -2,14 +2,17 @@ define(['angular','services/module-name'], function (angular,moduleName) {
     angular.module(moduleName).service('FileUpload', ['$http', function ($http) {
         this.uploadFileToUrl = function (files, uploadUrl, successFn, errorFn, params) {
             var fd = new FormData();
-
-            if (files.length > 1) {
-                angular.forEach(files, function(file, index) {
+            var arr = files;
+            if(!_.isArray(files)) {
+                arr = [files];
+            }
+            if (arr.length > 1) {
+                angular.forEach(arr, function(file, index) {
                     index += 1;
                     fd.append('file' + index, file);
                 });
             } else {
-                fd.append('file', files[0]);
+                fd.append('file', arr[0]);
             }
 
             if (params) {
