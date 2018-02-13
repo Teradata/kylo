@@ -20,6 +20,8 @@ package com.thinkbiganalytics.nifi.v2.savepoint;
  * #L%
  */
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 import com.thinkbiganalytics.nifi.savepoint.api.SavepointReplayEventConsumer;
 import com.thinkbiganalytics.nifi.v2.core.savepoint.DistributedSavepointController;
@@ -107,6 +109,17 @@ public class SetSavepointTest {
         props1.put("savepointid", savepointId);
         runner.enqueue(new byte[]{}, props1);
     }
+
+    @Test
+    public void testDeserializer() throws  Exception{
+        ObjectMapper objectMapper = new ObjectMapper();
+        String sValue = "{\"processorLists\":[{\"processorId\":\"d4de4ba6-94d5-3937-6198-312f10c44f04\",\"state\":\"WAIT\",\"flowFileId\":\"587d8f60-ae9b-41a2-8263-6807b801cbbe\"}]}";
+        SavepointEntry s1 = ObjectMapperSerializer.deserialize(sValue,SavepointEntry.class);
+        SavepointEntry s2 = objectMapper.readValue(sValue,SavepointEntry.class);
+        int i = 0;
+
+    }
+
 
     @Test
     public void testExpired() throws InitializationException, IOException, InvalidLockException, InterruptedException {

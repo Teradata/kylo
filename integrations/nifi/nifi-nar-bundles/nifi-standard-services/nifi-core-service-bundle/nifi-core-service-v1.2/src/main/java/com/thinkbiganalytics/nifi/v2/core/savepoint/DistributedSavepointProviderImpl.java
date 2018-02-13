@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -123,6 +125,15 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
         this.reverseCache = new CacheWrapper<>(reverseKeySerializer, stringSerializer, stringDeserializer, cacheClient);
     }
 
+    /**
+     * Listen for changes on the Distributed Cache
+     *
+     * @param listener the listener for the cache changes
+     */
+    public void subscribeDistributedSavepointChanges(DistributedCacheListener listener) {
+        this.savePoints.addListener(listener);
+    }
+
     @Override
     public String resolveByFlowFileUUID(String uuid) {
         return reverseCache.get(uuid);
@@ -193,6 +204,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
         SavepointEntry entry = lookupEntryWithGuarantee(savepointId);
         entry.releaseAll(success);
         savePoints.put(savepointId, entry);
+
     }
 
     @Override
@@ -208,6 +220,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
         SavepointEntry entry = lookupEntryWithGuarantee(savepointId);
         entry.retry();
         savePoints.put(savepointId, entry);
+
     }
 
     private SavepointEntry lookupEntryWithGuarantee(String savepointId) throws InvalidSetpointException {
@@ -293,6 +306,8 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         private Deserializer<V> valueDeserializer;
 
+        private List<DistributedCacheListener<K, V>> distributedCacheListeners = new ArrayList<>();
+
         public CacheWrapper(Serializer<String> keySerializer, Serializer<Object> valueSerializer, Deserializer<V> valueDeserializer, DistributedMapCacheClient
             cacheClient) {
             this.keySerializer = keySerializer;
@@ -301,9 +316,15 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
             this.cacheClient = cacheClient;
         }
 
+        public void addListener(DistributedCacheListener listener) {
+            this.distributedCacheListeners.add(listener);
+        }
+
         public boolean remove(K key) {
             try {
-                return cacheClient.remove(key, (Serializer<K>) keySerializer);
+                boolean removed = cacheClient.remove(key, (Serializer<K>) keySerializer);
+                distributedCacheListeners.stream().forEach(l -> l.removed(key));
+                return removed;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -312,6 +333,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
         public void put(K key, V value) {
             try {
                 cacheClient.put(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                distributedCacheListeners.stream().forEach(l -> l.put(key, value));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -319,7 +341,11 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public boolean putIfAbsent(K key, V value) {
             try {
-                return cacheClient.putIfAbsent(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                boolean put = cacheClient.putIfAbsent(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                if (put) {
+                    distributedCacheListeners.stream().forEach(l -> l.put(key, value));
+                }
+                return put;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -329,6 +355,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
             try {
                 // TODO: emulate atomic replace
                 cacheClient.put(key, newValue, (Serializer<K>) keySerializer, valueSerializer);
+                distributedCacheListeners.stream().forEach(l -> l.put(key, newValue));
                 return true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
