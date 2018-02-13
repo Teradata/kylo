@@ -189,6 +189,16 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                        });
             },
 
+
+            query: function(datasourceId, sql) {
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
+                    .then(function (response) {
+                        return response;
+                    }).catch(function(e){
+                        throw e;
+                    });
+            },
+
             /**
              * Creates a new JDBC data source.
              * @returns {JdbcDatasource} the JDBC data source
