@@ -63,6 +63,7 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -211,9 +212,9 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      */
     @Override
     protected void onLoginSuccess(@Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response, @Nonnull final Authentication authentication) {
-        final Stream<String> user = Stream.of(authentication.getPrincipal().toString());
-        final Stream<String> token = Stream.of(generatePrincipalsToken(authentication.getAuthorities()));
-        final String[] tokens = Stream.concat(user, token).toArray(String[]::new);
+        final String user = authentication.getPrincipal().toString();
+        final String principals = generatePrincipalsToken(authentication.getAuthorities());
+        final String[] tokens =  Arrays.asList(user, principals).stream().toArray(String[]::new);
 
         setCookie(tokens, getTokenValiditySeconds(), request, response);
     }
@@ -277,7 +278,8 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      */
     @Override
     protected UserDetails processAutoLoginCookie(@Nonnull final String[] tokens, @Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response) {
-        final Collection<? extends GrantedAuthority> authorities = generateAuthorities(tokens[1]);
+        // KYLO-1504: At least once the tokens array size was observed to be less than 2 (should always be 2) so accounting for that.
+        final Collection<? extends GrantedAuthority> authorities = tokens.length > 1 ? generateAuthorities(tokens[1]) : Collections.emptySet();
         return new User(tokens[0], "", authorities);
     }
 
