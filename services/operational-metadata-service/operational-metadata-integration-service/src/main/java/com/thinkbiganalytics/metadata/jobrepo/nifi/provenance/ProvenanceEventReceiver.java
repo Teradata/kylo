@@ -275,7 +275,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         //   NifiEvent nifiEvent = null;
         log.debug("Received ProvenanceEvent {}.  is ending flowfile:{}", event, event.isEndingFlowFileEvent());
         //query it again
-        jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+        jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId(),true);
         BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event);
         if (job == null) {
             log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, ", event, event.isEndingFlowFileEvent(),
@@ -321,7 +321,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
                     BatchJobExecution batchJobExecution = jobExecution;
                     if ((!event.isStream() && batchJobExecution.isFailed()) || (event.isStream() && event.isFailure())) {
                         //requery for failure events as we need to access the map of data for alert generation
-                        batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+                        batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId(),false);
                         failedJob(batchJobExecution, event);
                     } else {
                         successfulJob(batchJobExecution, event);

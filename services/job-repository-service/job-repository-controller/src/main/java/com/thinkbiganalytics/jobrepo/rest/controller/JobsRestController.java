@@ -116,7 +116,7 @@ public class JobsRestController {
 
         return metadataAccess.read(() -> {
             ExecutedJob executedJob = null;
-            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId));
+            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId),false);
             if (jobExecution != null) {
                 if (includeSteps) {
                     executedJob = JobModelTransform.executedJob(jobExecution);

@@ -48,11 +48,11 @@ public class JpaNifiEventStepExecution implements Serializable, NifiEventStepExe
     @EmbeddedId
     private NifiEventStepExecutionPK eventStepExecutionPK;
 
-    @OneToOne(targetEntity = JpaBatchJobExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = JpaBatchJobExecution.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobExecution jobExecution;
 
-    @OneToOne(targetEntity = JpaBatchStepExecution.class, cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToOne(targetEntity = JpaBatchStepExecution.class, fetch = FetchType.LAZY)
     @JoinColumn(name = "STEP_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private BatchStepExecution stepExecution;
 
@@ -68,6 +68,9 @@ public class JpaNifiEventStepExecution implements Serializable, NifiEventStepExe
 
     @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
     private String flowFileId;
+
+    @Column(name = "STEP_EXECUTION_ID", insertable = false, updatable = false)
+    private Long stepExecutionId;
 
 
     public JpaNifiEventStepExecution() {
