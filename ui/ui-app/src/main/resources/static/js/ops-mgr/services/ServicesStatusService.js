@@ -1,8 +1,9 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlService", "../services/AlertsService", "../services/IconStatusService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ServicesStatusData = /** @class */ (function () {
         function ServicesStatusData($q, $http, $interval, $timeout, AlertsService, IconService, OpsManagerRestUrlService) {
+            var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$interval = $interval;
@@ -10,29 +11,44 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.AlertsService = AlertsService;
             this.IconService = IconService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.factory('ServicesStatusData', ['$q', '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 'OpsManagerRestUrlService', this.factoryFn.bind(this)]);
-        }
-        ServicesStatusData.prototype.factoryFn = function () {
-            var ServicesStatusData = {};
-            ServicesStatusData.SERVICES_URL = this.OpsManagerRestUrlService.SERVICES_URL;
-            ServicesStatusData.fetchServiceInterval = null;
-            ServicesStatusData.services = {};
-            ServicesStatusData.FETCH_INTERVAL = 5000;
-            ServicesStatusData.fetchServiceStatusErrorCount = 0;
-            ServicesStatusData.setFetchTimeout = function (timeout) {
-                ServicesStatusData.FETCH_INTERVAL = timeout;
+            this.ServicesStatusData = {};
+            this.ServicesStatusData.SERVICES_URL = this.OpsManagerRestUrlService.SERVICES_URL;
+            this.ServicesStatusData.fetchServiceInterval = null;
+            this.ServicesStatusData.services = {};
+            this.ServicesStatusData.FETCH_INTERVAL = 5000;
+            this.ServicesStatusData.fetchServiceStatusErrorCount = 0;
+            this.ServicesStatusData.setFetchTimeout = function (timeout) {
+                _this.ServicesStatusData.FETCH_INTERVAL = timeout;
             };
-            ServicesStatusData.transformServicesResponse = function (services) {
+            this.ServicesStatusData.fetchServiceStatus = function (successCallback, errorCallback) {
+                var successFn = function (response) {
+                    var data = response.data;
+                    _this.ServicesStatusData.transformServicesResponse(data);
+                    if (successCallback) {
+                        successCallback(data);
+                    }
+                };
+                var errorFn = function (err) {
+                    _this.ServicesStatusData.fetchServiceStatusErrorCount++;
+                    if (errorCallback) {
+                        errorCallback(err);
+                    }
+                    if (_this.ServicesStatusData.fetchServiceStatusErrorCount >= 10) {
+                        _this.ServicesStatusData.FETCH_INTERVAL = 20000;
+                    }
+                };
+                return _this.$http.get(_this.ServicesStatusData.SERVICES_URL).then(successFn, errorFn);
+            };
+            this.ServicesStatusData.transformServicesResponse = function (services) {
                 var data = services;
-                ServicesStatusData.fetchServiceStatusErrorCount = 0;
+                _this.ServicesStatusData.fetchServiceStatusErrorCount = 0;
                 angular.forEach(data, function (service, i) {
                     service.componentsCount = service.components.length;
                     service.alertsCount = (service.alerts != null && service.alerts.length) ? service.alerts.length : 0;
                     if (service.state == 'UNKNOWN') {
                         service.state = 'WARNING';
                     }
-                    var serviceHealth = this.IconService.iconForHealth(service.state);
+                    var serviceHealth = _this.IconService.iconForHealth(service.state);
                     service.healthText = serviceHealth.text;
                     service.icon = serviceHealth.icon;
                     service.iconstyle = serviceHealth.style;
@@ -45,7 +61,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                             }
                             if (component.alerts != null) {
                                 angular.forEach(component.alerts, function (alert) {
-                                    var alertHealth = this.IconService.iconForServiceComponentAlert(alert.state);
+                                    var alertHealth = _this.IconService.iconForServiceComponentAlert(alert.state);
                                     alert.icon = alertHealth.icon;
                                     alert.iconstyle = alertHealth.style;
                                     alert.healthText = alertHealth.text;
@@ -58,43 +74,32 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                             if (maxAlertState != null) {
                                 component.state = maxAlertState;
                             }
-                            var componentHealth = this.IconService.iconForHealth(component.state);
+                            var componentHealth = _this.IconService.iconForHealth(component.state);
                             component.healthText = componentHealth.text;
                             component.icon = componentHealth.icon;
                             component.iconstyle = componentHealth.style;
                         });
                     }
-                    if (ServicesStatusData.services[service.serviceName]) {
-                        angular.extend(ServicesStatusData.services[service.serviceName], service);
+                    if (_this.ServicesStatusData.services[service.serviceName]) {
+                        angular.extend(_this.ServicesStatusData.services[service.serviceName], service);
                     }
                     else {
-                        ServicesStatusData.services[service.serviceName] = service;
+                        _this.ServicesStatusData.services[service.serviceName] = service;
                     }
                 });
             };
-            ServicesStatusData.fetchServiceStatus = function (successCallback, errorCallback) {
-                var successFn = function (response) {
-                    var data = response.data;
-                    ServicesStatusData.transformServicesResponse(data);
-                    if (successCallback) {
-                        successCallback(data);
-                    }
-                };
-                var errorFn = function (err) {
-                    ServicesStatusData.fetchServiceStatusErrorCount++;
-                    if (errorCallback) {
-                        errorCallback(err);
-                    }
-                    if (ServicesStatusData.fetchServiceStatusErrorCount >= 10) {
-                        ServicesStatusData.FETCH_INTERVAL = 20000;
-                    }
-                };
-                return this.$http.get(ServicesStatusData.SERVICES_URL).then(successFn, errorFn);
-            };
-            return ServicesStatusData;
-        };
+            return this.ServicesStatusData;
+        }
+        ServicesStatusData.$inject = ['OpsManagerRestUrlService'];
         return ServicesStatusData;
     }());
     exports.default = ServicesStatusData;
+    angular.module(module_name_1.moduleName)
+        .service("AlertsService", [AlertsService_1.default])
+        .service("IconService", [IconStatusService_1.default])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
+        .factory('ServicesStatusData', ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService',
+        'OpsManagerRestUrlService',
+        ServicesStatusData]);
 });
 //# sourceMappingURL=ServicesStatusService.js.map
