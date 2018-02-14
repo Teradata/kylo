@@ -58,10 +58,12 @@
     </md-input-container>
   </div>
   <md-progress-linear md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
-  <div class="browse-results" ng-if="vm.queryResults.columns && vm.queryResults.rows.length >0">
-
-    <div ui-grid-auto-resize style="width:100%;height:500px;"
-         ui-grid="vm.gridOptions"
-    ></div>
+  <div class="browse-results">
+    <div id="query-table"
+         flex
+         browser-height
+         browser-height-scroll-y="false"
+         browser-height-offset="500">
+    </div>
   </div>
 </div>

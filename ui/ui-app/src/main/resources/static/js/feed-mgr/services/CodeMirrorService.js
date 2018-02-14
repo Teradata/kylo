@@ -47,7 +47,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
 
         var data = {
             transformToCodeMirrorData: function (response) {
-                console.log('transformToCodeMirrorData', response);
                 return populateCodeMirrorTablesAndColumns(response.data);
             }
         };

@@ -31,7 +31,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         };
     };
 
-    var controller = function($scope, $element, $mdDialog, $mdToast, $http, $filter, RestUrlService, StateService, HiveService, DatasourcesService, CodeMirrorService) {
+    var controller = function($scope, $element, $mdDialog, $mdToast, $http, $filter, RestUrlService, StateService, HiveService, DatasourcesService, CodeMirrorService, FattableService) {
 
         var self = this;
         var init = function() {
@@ -126,10 +126,13 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         this.query = function() {
             this.executingQuery = true;
             var successFn = function(tableData) {
-                self.executingQuery = false;
                 var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
-                self.gridOptions.columnDefs = result.columns;
-                self.gridOptions.data = result.rows;
+                FattableService.setupTable({
+                    tableContainerId: "query-table",
+                    headers: result.columns,
+                    rows: result.rows
+                });
+                self.executingQuery = false;
             };
             var errorFn = function (err) {
                 self.executingQuery = false;
@@ -141,15 +144,6 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                 promise = DatasourcesService.query(self.datasourceId, self.sql);
             }
             return promise.then(successFn, errorFn);
-        };
-
-        //Setup initial grid options
-        this.gridOptions = {
-            columnDefs: [],
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true,
-            flatEntityAccess: true
         };
 
         this.fullscreen = function() {
@@ -210,7 +204,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         getDatasource(self.datasourceId).then(init);
     };
 
-    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","$filter","RestUrlService","StateService","HiveService","DatasourcesService","CodeMirrorService",controller]);
+    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","$filter","RestUrlService","StateService","HiveService","DatasourcesService","CodeMirrorService","FattableService", controller]);
     angular.module(moduleName).directive('thinkbigHqlEditor', directive);
 
 
