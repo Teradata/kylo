@@ -51,6 +51,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         self.tagChips.searchText = null;
         self.isValid = true;
 
+        if(angular.isUndefined(self.model.tags)){
+            self.model.tags = []
+        }
 
         // Update user fields when category changes
         $scope.$watch(
