@@ -24,8 +24,15 @@
         <span flex></span>
     </div>
     <md-dialog-content layout="column" layout-padding style="width:100%;height:100%;">
-        <thinkbig-hql-editor ng-model="vm.hql" scroll-results="true" mode="fullscreen" default-schema-name="{{vm.defaultSchemaName}}" default-table-name="{{vm.defaultTableName}}"
-                             allow-database-browse="vm.allowDatabaseBrowse" allow-execute-query="vm.allowExecuteQuery"></thinkbig-hql-editor>
+        <thinkbig-hql-editor ng-model="vm.hql"
+                             scroll-results="true"
+                             default-schema-name="{{vm.defaultSchemaName}}"
+                             default-table-name="{{vm.defaultTableName}}"
+                             datasource-id="{{vm.datasourceId}}"
+                             table-id="query-table-fullscreen"
+                             allow-fullscreen="false"
+                             allow-database-browse="vm.allowDatabaseBrowse"
+                             allow-execute-query="vm.allowExecuteQuery"></thinkbig-hql-editor>
     </md-dialog-content>
         <md-dialog-actions layout="row" layout-align="start center" flex>
             <span flex></span>

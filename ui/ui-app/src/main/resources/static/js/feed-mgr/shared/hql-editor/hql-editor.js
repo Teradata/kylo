@@ -4,14 +4,14 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         return {
             restrict: "EA",
             bindToController: {
-                mode: '@',
                 scrollResults: '=?',
                 allowExecuteQuery: '=?',
                 allowDatabaseBrowse: '=?',
                 allowFullscreen: '=?',
                 defaultSchemaName: '@',
                 defaultTableName: '@',
-                datasourceId: '@'
+                datasourceId: '@',
+                tableId: '@'
             },
             controllerAs: 'vm',
             scope: {},
@@ -128,7 +128,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             var successFn = function(tableData) {
                 var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
                 FattableService.setupTable({
-                    tableContainerId: "query-table",
+                    tableContainerId: self.tableId,
                     headers: result.columns,
                     rows: result.rows
                 });
@@ -160,7 +160,8 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                     defaultTableName: self.defaultTableName,
                     allowExecuteQuery: self.allowExecuteQuery,
                     allowDatabaseBrowse: self.allowDatabaseBrowse,
-                    mode: self.mode
+                    datasourceId: self.datasourceId,
+                    tableId: self.tableId
                 }
             }).then(function(msg) {
 
@@ -209,7 +210,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
 
 
 
-    var HqlFullScreenEditorController = function ($scope, $mdDialog, hql, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, mode) {
+    var HqlFullScreenEditorController = function ($scope, $mdDialog, hql, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, datasourceId, tableId) {
 
         var self = this;
         this.hql = hql;
@@ -217,14 +218,15 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         this.defaultTableName = defaultTableName;
         this.allowExecuteQuery = allowExecuteQuery;
         this.allowDatabaseBrowse = allowDatabaseBrowse;
-        this.mode = mode;
+        this.datasourceId = datasourceId;
+        this.tableId = tableId;
 
         $scope.cancel = function($event) {
             $mdDialog.hide();
         };
 
     };
-    angular.module(moduleName).controller('HqlFullScreenEditorController', ["$scope","$mdDialog","hql","defaultSchemaName","defaultTableName","allowExecuteQuery","allowDatabaseBrowse","mode",HqlFullScreenEditorController]);
+    angular.module(moduleName).controller('HqlFullScreenEditorController', ["$scope","$mdDialog","hql","defaultSchemaName","defaultTableName","allowExecuteQuery","allowDatabaseBrowse","datasourceId", "tableId",HqlFullScreenEditorController]);
 
 
 });

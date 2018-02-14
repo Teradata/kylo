@@ -34,7 +34,7 @@
       {{"views.hql-editor.ExecuteQ" | translate}}
     </md-button>
     <span flex></span>
-    <md-button ng-if="vm.allowFullscreen" class="md-raised" ng-if="vm.mode != 'fullscreen'" ng-click="vm.fullscreen()">
+    <md-button ng-if="vm.allowFullscreen" class="md-raised" ng-click="vm.fullscreen()">
       {{"views.hql-editor.FS" | translate}}
     </md-button>
   </div>
@@ -59,7 +59,7 @@
   </div>
   <md-progress-linear md-mode="indeterminate" ng-if="vm.executingQuery"></md-progress-linear>
   <div class="browse-results">
-    <div id="query-table"
+    <div id="{{vm.tableId}}"
          flex
          browser-height
          browser-height-scroll-y="false"
