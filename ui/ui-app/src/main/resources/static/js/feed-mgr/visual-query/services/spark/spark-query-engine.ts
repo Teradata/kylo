@@ -305,7 +305,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Map result to SaveResponse
             .map(response => {
                 const save = response.data;
-                if (save.location !== null && save.location.startsWith("./")) {
+                if (save.location != null && save.location.startsWith("./")) {
                     save.location = this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
                 }
                 return save;

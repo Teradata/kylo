@@ -50,6 +50,8 @@ define(['angular','common/module-name'], function (angular,moduleName) {
 
                 var model = $parse(attrs.uploadFileModel);
                 var modelSetter = model.assign;
+                var isModelArray = _.isArray(model);
+
 
                 if (input.length && button.length && textInput.length) {
                     button.click(function (e) {
@@ -71,7 +73,12 @@ define(['angular','common/module-name'], function (angular,moduleName) {
                         button.addClass('md-primary')
                     }
                     scope.$apply(function () {
-                        modelSetter(scope, files);
+                        if(isModelArray) {
+                            modelSetter(scope, files);
+                        }
+                        else {
+                            modelSetter(scope, files[0]);
+                        }
                     });
                 });
             }

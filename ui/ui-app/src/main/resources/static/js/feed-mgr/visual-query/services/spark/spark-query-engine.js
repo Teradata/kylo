@@ -279,7 +279,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             })
                 .map(function (response) {
                 var save = response.data;
-                if (save.location !== null && save.location.startsWith("./")) {
+                if (save.location != null && save.location.startsWith("./")) {
                     save.location = _this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
                 }
                 return save;

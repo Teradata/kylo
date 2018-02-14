@@ -659,7 +659,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         }
         Stopwatch stopwatch = Stopwatch.createStarted();
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
-        log.info("Time to create step {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        log.debug("Time to create step {} ms ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return jobExecution;
     }
 
