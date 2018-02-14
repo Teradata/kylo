@@ -22,6 +22,8 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.Formatters;
+import com.thinkbiganalytics.discovery.model.DefaultDatabaseMetadata;
+import com.thinkbiganalytics.discovery.schema.DatabaseMetadata;
 import com.thinkbiganalytics.discovery.schema.QueryResult;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
@@ -54,6 +56,7 @@ import org.springframework.stereotype.Component;
 
 import java.security.AccessControlException;
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -404,6 +407,60 @@ public class DatasourceController {
                 .map(JdbcDatasource.class::cast)
                 .map(datasource -> dbcpConnectionPoolTableInfo.getTableNamesForDatasource(datasource, schema, tableName))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(tables).build();
+        }, MetadataAccess.SERVICE);
+    }
+
+    /**
+     * Gets the tables and their columns from the specified data source for given schema
+     *
+     * @param idStr  the data source id
+     * @param schema the schema name, or {@code null} for all schemas
+     * @return the list of tables and their columns
+     */
+    @GET
+    @Path("{id}/table-columns")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the tables and their columns from the data source for given schema", notes = "Connects to the database specified by the data source.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns tables and columns", response = String.class, responseContainer = "List"),
+                      @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+                  })
+    public Response getTablesAndColumns(@PathParam("id") final String idStr, @QueryParam("schema") final String schema) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+
+        // Retrieve table names using system user
+        return metadata.read(() -> {
+            JdbcDatasource datasource = id.map(datasetProvider::getDatasource)
+                .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                .filter(JdbcDatasource.class::isInstance)
+                .map(JdbcDatasource.class::cast)
+                .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+
+            List<String> tableNamesForDatasource = dbcpConnectionPoolTableInfo.getTableNamesForDatasource(datasource, schema, null);
+            List<DatabaseMetadata> tables = new ArrayList<>();
+            if (tableNamesForDatasource != null) {
+                tables = tableNamesForDatasource.stream().flatMap(schemaNameDotTableName -> {
+                    String tableName = schemaNameDotTableName.substring(schema.length() + 1);
+                    TableSchema tableSchema = dbcpConnectionPoolTableInfo.describeTableForDatasource(datasource, schema, tableName);
+                    return tableSchema.getFields().stream().map(field -> {
+                        DefaultDatabaseMetadata meta = new DefaultDatabaseMetadata();
+                        meta.setDatabaseName(schema);
+                        meta.setColumnName(field.getName());
+                        meta.setTableName(tableName);
+                        return meta;
+                    });
+                }).collect(Collectors.toList());
+            }
+
             return Response.ok(tables).build();
         }, MetadataAccess.SERVICE);
     }

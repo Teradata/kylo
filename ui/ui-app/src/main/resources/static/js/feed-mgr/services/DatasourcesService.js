@@ -199,6 +199,11 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     });
             },
 
+            getTablesAndColumns: function(datasourceId, schema) {
+                var params = {schema: schema};
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
+            },
+
             /**
              * Creates a new JDBC data source.
              * @returns {JdbcDatasource} the JDBC data source
