@@ -25,7 +25,7 @@
   </div>
   <div id="hqlEditorContainer">
     <span class="md-input-label">{{"views.hql-editor.EQ" | translate}}</span>
-    <div class="hql-editor" ui-codemirror ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
+    <div id="codemirror-editor" class="hql-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }" ng-model="vm.sql" ui-codemirror-opts="vm.codemirrorOptions">
     </div>
   </div>
   <span class="hint">{{vm.metadataMessage}}</span>

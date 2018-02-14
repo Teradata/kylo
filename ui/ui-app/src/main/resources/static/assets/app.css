@@ -1365,3 +1365,7 @@ md-input-container.global-search .md-input {
   padding-top: 10px;
   padding-bottom: 10px;
 }
+
+.browse-results {
+  margin-top: 20px;
+}

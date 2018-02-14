@@ -53,11 +53,15 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                 self.allowDatabaseBrowse = false;
             }
             if (self.defaultSchemaName != null && self.defaultTableName != null) {
-                self.sql = "SELECT * FROM " + quote(self.defaultSchemaName) + "." + quote(self.defaultTableName) + " LIMIT 20";
+                if (!self.sql) {
+                    self.sql = "SELECT * FROM " + quote(self.defaultSchemaName) + "." + quote(self.defaultTableName) + " LIMIT 20";
+                }
                 if (self.allowExecuteQuery) {
                     self.query();
                 }
             }
+            self.editor.setValue(self.sql);
+            self.editor.focus();
         };
         this.loadingHiveSchemas = false;
         this.metadataMessage = "";
@@ -201,6 +205,10 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             };
             return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
         }
+
+        this.codemirrorLoaded = function(_editor) {
+            self.editor = _editor;
+        };
 
         getDatasource(self.datasourceId).then(init);
     };
