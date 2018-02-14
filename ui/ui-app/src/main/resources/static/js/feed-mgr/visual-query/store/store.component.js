@@ -12,6 +12,7 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
     Object.defineProperty(exports, "__esModule", { value: true });
     var VisualQueryStoreComponent = /** @class */ (function () {
         function VisualQueryStoreComponent($http, DatasourcesService, RestUrlService, VisualQuerySaveService) {
+            var _this = this;
             this.$http = $http;
             this.DatasourcesService = DatasourcesService;
             this.RestUrlService = RestUrlService;
@@ -28,6 +29,13 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
              * Output configuration
              */
             this.target = {};
+            // Listen for notification removals
+            this.removeSubscription = this.VisualQuerySaveService.subscribeRemove(function (event) {
+                if (event.id === _this.downloadId) {
+                    _this.downloadId = null;
+                    _this.downloadUrl = null;
+                }
+            });
         }
         ;
         VisualQueryStoreComponent.prototype.$onDestroy = function () {
@@ -40,8 +48,11 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
          * Release resources when component is destroyed.
          */
         VisualQueryStoreComponent.prototype.ngOnDestroy = function () {
-            if (this.subscription) {
-                this.subscription.unsubscribe();
+            if (this.removeSubscription) {
+                this.removeSubscription.unsubscribe();
+            }
+            if (this.saveSubscription) {
+                this.saveSubscription.unsubscribe();
             }
         };
         /**
@@ -71,6 +82,10 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
          */
         VisualQueryStoreComponent.prototype.download = function () {
             window.open(this.downloadUrl, "_blank");
+            // Clear download buttons
+            this.VisualQuerySaveService.removeNotification(this.downloadId);
+            this.downloadId = null;
+            this.downloadUrl = null;
         };
         /**
          * Find tables matching the specified name.
@@ -101,9 +116,9 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
         VisualQueryStoreComponent.prototype.save = function () {
             var _this = this;
             // Remove current subscription
-            if (this.subscription) {
-                this.subscription.unsubscribe();
-                this.subscription = null;
+            if (this.saveSubscription) {
+                this.saveSubscription.unsubscribe();
+                this.saveSubscription = null;
             }
             // Build request
             var request;
@@ -119,10 +134,11 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             this.downloadUrl = null;
             this.error = null;
             this.loading = true;
-            this.subscription = this.VisualQuerySaveService.save(request, this.engine)
+            this.saveSubscription = this.VisualQuerySaveService.save(request, this.engine)
                 .subscribe(function (response) {
                 _this.loading = false;
                 if (response.status === rest_model_1.SaveResponseStatus.SUCCESS && _this.destination === "DOWNLOAD") {
+                    _this.downloadId = response.id;
                     _this.downloadUrl = response.location;
                 }
             }, function (response) {

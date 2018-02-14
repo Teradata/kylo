@@ -7,6 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 define(["require", "exports", "@angular/core", "../../services/notification.service"], function (require, exports, core_1, notification_service_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -14,7 +17,8 @@ define(["require", "exports", "@angular/core", "../../services/notification.serv
      * Displays a toolbar button that opens a menu containing notifications from {@link NotificationService}.
      */
     var NotificationMenuComponent = /** @class */ (function () {
-        function NotificationMenuComponent(service) {
+        function NotificationMenuComponent(service, $injector) {
+            this.$injector = $injector;
             /**
              * Duration since each notification was created.
              */
@@ -56,12 +60,13 @@ define(["require", "exports", "@angular/core", "../../services/notification.serv
          * Called when the menu is opened.
          */
         NotificationMenuComponent.prototype.onMenuOpened = function () {
+            var _this = this;
             this.lastOpened = new Date();
             this.newCount = 0;
             // Update durations
             var now = new Date().getTime();
             this.durations = this.notifications.map(function (notification) {
-                return DateTimeUtils.formatMillisAsText(now - notification.createTime.getTime(), true, false);
+                return DateTimeUtils(_this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
             });
         };
         /**
@@ -93,7 +98,8 @@ define(["require", "exports", "@angular/core", "../../services/notification.serv
                 selector: "notification-menu",
                 template: "\n      <button class=\"kylo-notification-button overflow-visible\" mat-icon-button [matMenuTriggerFor]=\"notificationsMenu\" (menuOpened)=\"onMenuOpened()\" [ngClass]=\"{'loading': loading}\">\n        <ng-template tdLoading [tdLoadingUntil]=\"!loading\" tdLoadingColor=\"accent\" tdLoadingStrategy=\"overlay\">\n          <td-notification-count color=\"accent\" [notifications]=\"loading ? 0 : newCount\">\n            <mat-icon>notifications</mat-icon>\n          </td-notification-count>\n        </ng-template>\n      </button>\n      <mat-menu #notificationsMenu=\"matMenu\" class=\"kylo-notification-menu\">\n        <td-menu>\n          <div td-menu-header class=\"mat-subheading-2\" style=\"margin: 0;\">Notifications</div>\n          <mat-nav-list dense>\n            <ng-template ngFor let-item let-index=\"index\" let-last=\"last\" [ngForOf]=\"notifications\">\n              <a mat-list-item [ngClass]=\"{'not-clickable': item.callback == null}\" (click)=\"onClick(item)\">\n                <mat-icon *ngIf=\"!item.loading; else loadingIcon\" mat-list-icon>{{item.icon}}</mat-icon>\n                <ng-template #loadingIcon>\n                  <mat-progress-spinner [diameter]=\"20\" matListIcon mode=\"indeterminate\"></mat-progress-spinner>\n                </ng-template>\n                <h4 matLine>{{item.message}}</h4>\n                <p matLine>{{durations[index]}}</p>\n              </a>\n              <mat-divider *ngIf=\"!last\"></mat-divider>\n            </ng-template>\n          </mat-nav-list>\n        </td-menu>\n      </mat-menu>\n    "
             }),
-            __metadata("design:paramtypes", [notification_service_1.NotificationService])
+            __param(1, core_1.Inject("$injector")),
+            __metadata("design:paramtypes", [notification_service_1.NotificationService, Object])
         ], NotificationMenuComponent);
         return NotificationMenuComponent;
     }());

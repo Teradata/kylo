@@ -19,6 +19,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     destination: string;
 
     /**
+     * Identifier for download
+     */
+    downloadId: string;
+
+    /**
      * Url to download results
      */
     downloadUrl: string;
@@ -61,9 +66,14 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     model: any;
 
     /**
+     * Subscription to notification removal
+     */
+    removeSubscription: Subscription;
+
+    /**
      * Subscription to save response
      */
-    subscription: Subscription;
+    saveSubscription: Subscription;
 
     /**
      * Index of this step
@@ -78,6 +88,13 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     static readonly $inject: string[] = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService"];
 
     constructor(private $http: angular.IHttpService, private DatasourcesService: DatasourcesService, private RestUrlService: any, private VisualQuerySaveService: VisualQuerySaveService) {
+        // Listen for notification removals
+        this.removeSubscription = this.VisualQuerySaveService.subscribeRemove((event) => {
+            if (event.id === this.downloadId) {
+                this.downloadId = null;
+                this.downloadUrl = null;
+            }
+        });
     };
 
     $onDestroy(): void {
@@ -92,8 +109,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Release resources when component is destroyed.
      */
     ngOnDestroy(): void {
-        if (this.subscription) {
-            this.subscription.unsubscribe();
+        if (this.removeSubscription) {
+            this.removeSubscription.unsubscribe();
+        }
+        if (this.saveSubscription) {
+            this.saveSubscription.unsubscribe();
         }
     }
 
@@ -126,6 +146,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     download(): void {
         window.open(this.downloadUrl, "_blank");
+
+        // Clear download buttons
+        this.VisualQuerySaveService.removeNotification(this.downloadId);
+        this.downloadId = null;
+        this.downloadUrl = null;
     }
 
     /**
@@ -157,9 +182,9 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     save(): void {
         // Remove current subscription
-        if (this.subscription) {
-            this.subscription.unsubscribe();
-            this.subscription = null;
+        if (this.saveSubscription) {
+            this.saveSubscription.unsubscribe();
+            this.saveSubscription = null;
         }
 
         // Build request
@@ -177,10 +202,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         this.downloadUrl = null;
         this.error = null;
         this.loading = true;
-        this.subscription = this.VisualQuerySaveService.save(request, this.engine)
+        this.saveSubscription = this.VisualQuerySaveService.save(request, this.engine)
             .subscribe(response => {
                     this.loading = false;
                     if (response.status === SaveResponseStatus.SUCCESS && this.destination === "DOWNLOAD") {
+                        this.downloadId = response.id;
                         this.downloadUrl = response.location;
                     }
                 },

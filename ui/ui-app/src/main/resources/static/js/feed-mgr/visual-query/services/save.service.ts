@@ -1,11 +1,20 @@
 import * as angular from "angular";
-import "rxjs/add/operator/let";
 import "rxjs/add/operator/share";
 import {Observable} from "rxjs/Observable";
+import {Subject} from "rxjs/Subject";
+import {Subscription} from "rxjs/Subscription";
 
 import {KyloNotification, NotificationService} from "../../../services/notification.service";
 import {QueryEngine} from "../wrangler";
 import {SaveRequest, SaveResponse, SaveResponseStatus} from "../wrangler/api/rest-model";
+
+/**
+ * Event for when a notification is removed.
+ */
+export interface RemoveEvent {
+    id: string;
+    notification: KyloNotification;
+}
 
 /**
  * Handles saving a transformation.
@@ -17,10 +26,24 @@ export class VisualQuerySaveService {
      */
     private notifications: { [k: string]: KyloNotification } = {};
 
+    /**
+     * Subject for notification removal.
+     */
+    private removeSubject = new Subject<RemoveEvent>();
+
     static readonly $inject: string[] = ["$mdDialog", "NotificationService"];
 
     constructor(private $mdDialog: angular.material.IDialogService, private notificationService: NotificationService) {
+    }
 
+    /**
+     * Removes the notification for the specified save identifier.
+     */
+    removeNotification(id: string): void {
+        if (this.notifications[id]) {
+            this.notificationService.removeNotification(this.notifications[id]);
+            delete this.notifications[id];
+        }
     }
 
     /**
@@ -34,6 +57,13 @@ export class VisualQuerySaveService {
         const save = engine.saveResults(request).share();
         save.subscribe(response => this.onSaveNext(request, response), response => this.onSaveError(response));
         return save;
+    }
+
+    /**
+     * Subscribes to notification removal events.
+     */
+    subscribeRemove(cb: (event: RemoveEvent) => void): Subscription {
+        return this.removeSubject.subscribe(cb);
     }
 
     /**
@@ -94,13 +124,20 @@ export class VisualQuerySaveService {
                 this.notificationService.addNotification("Transformation saved to " + request.tableName, "grid_on");
             } else {
                 const download = this.notificationService.addNotification("Transformation ready for download", "file_download");
-                download.callback = () => window.open(response.location, "_blank");
+                download.callback = () => {
+                    window.open(response.location, "_blank");
+                    this.removeNotification(download.id);
+                    this.removeSubject.next({id: response.id, notification: download});
+                };
+                this.notifications[response.id] = download;
             }
 
             // Remove old notification
             if (notification) {
                 this.notificationService.removeNotification(notification);
-                delete this.notifications[response.id];
+                if (this.notifications[response.id] === notification) {
+                    delete this.notifications[response.id];
+                }
             }
         }
     }
