@@ -1,8 +1,9 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "moment"], function (require, exports, angular, module_name_1, _, moment) {
+define(["require", "exports", "angular", "../module-name", "underscore", "moment", "./OpsManagerRestUrlService", "./services/AlertsService", "./services/IconStatusService", "./services/OpsManagerFeedService"], function (require, exports, angular, module_name_1, _, moment, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1, OpsManagerFeedService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerDashboardService = /** @class */ (function () {
         function OpsManagerDashboardService($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService, BroadcastService, OpsManagerFeedService) {
+            var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$interval = $interval;
@@ -13,11 +14,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.BroadcastService = BroadcastService;
             this.OpsManagerFeedService = OpsManagerFeedService;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.factory('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', this.factoryFn.bind(this)]);
-        }
-        OpsManagerDashboardService.prototype.factoryFn = function () {
-            var data = {
+            this.data = {
                 DASHBOARD_UPDATED: 'DASHBOARD_UPDATED',
                 FEED_SUMMARY_UPDATED: 'FEED_SUMMARY_UPDATED',
                 TAB_SELECTED: 'TAB_SELECTED',
@@ -36,7 +33,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 },
                 feedHealthQueryParams: { fixedFilter: 'All', filter: '', start: 0, limit: 10, sort: '' }
             };
-            var setupFeedHealth = function (feedsArray) {
+            this.datasetupFeedHealth = function (feedsArray) {
                 var processedFeeds = [];
                 if (feedsArray) {
                     var processed = [];
@@ -58,7 +55,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                         if (feedData.lastUnhealthyTime) {
                             feedData.sinceTimeString = moment(feedData.lastUnhealthyTime).fromNow();
                         }
-                        this.OpsManagerFeedService.decorateFeedSummary(feedData);
+                        _this.OpsManagerFeedService.decorateFeedSummary(feedData);
                         if (feedData.stream == true && feedData.feedHealth) {
                             feedData.runningCount = feedData.feedHealth.runningCount;
                             if (feedData.runningCount == null) {
@@ -81,16 +78,16 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 }
                 return processedFeeds;
             };
-            data.isFetchingFeedHealth = function () {
+            this.data.isFetchingFeedHealth = function () {
                 return data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest);
             };
-            data.isFetchingDashboard = function () {
+            this.data.isFetchingDashboard = function () {
                 return data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest);
             };
-            data.setSkipDashboardFeedHealth = function (skip) {
+            this.data.setSkipDashboardFeedHealth = function (skip) {
                 data.skipDashboardFeedHealth = skip;
             };
-            data.fetchFeeds = function (tab, filter, start, limit, sort) {
+            this.data.fetchFeeds = function (tab, filter, start, limit, sort) {
                 if (data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)) {
                     data.activeFeedRequest.reject();
                 }
@@ -98,7 +95,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 if (data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)) {
                     data.skipDashboardFeedHealth = true;
                 }
-                var canceler = this.$q.defer();
+                var canceler = _this.$q.defer();
                 data.activeFeedRequest = canceler;
                 var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
                 var successFn = function (response) {
@@ -117,19 +114,19 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     data.activeFeedRequest = null;
                     data.skipDashboardFeedHealth = false;
                 };
-                var promise = this.$http.get(this.OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { timeout: canceler.promise, params: params });
+                var promise = _this.$http.get(_this.OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { timeout: canceler.promise, params: params });
                 promise.then(successFn, errorFn);
                 return promise;
             };
-            data.updateFeedHealthQueryParams = function (tab, filter, start, limit, sort) {
+            this.data.updateFeedHealthQueryParams = function (tab, filter, start, limit, sort) {
                 var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
                 angular.extend(data.feedHealthQueryParams, params);
             };
-            data.fetchDashboard = function () {
+            this.data.fetchDashboard = function () {
                 if (data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)) {
                     data.activeDashboardRequest.reject();
                 }
-                var canceler = this.$q.defer();
+                var canceler = _this.$q.defer();
                 data.activeDashboardRequest = canceler;
                 var successFn = function (response) {
                     data.dashboard = response.data;
@@ -155,7 +152,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'] || 0;
                     data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'] || 0;
                     data.activeDashboardRequest = null;
-                    this.BroadcastService.notify(data.DASHBOARD_UPDATED, data.dashboard);
+                    _this.BroadcastService.notify(data.DASHBOARD_UPDATED, data.dashboard);
                 };
                 var errorFn = function (err) {
                     canceler.reject();
@@ -165,14 +162,20 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     console.error("Dashboard error!!!");
                 };
                 var params = data.feedHealthQueryParams;
-                var promise = this.$http.get(this.OpsManagerRestUrlService.DASHBOARD_URL, { timeout: canceler.promise, params: params });
+                var promise = _this.$http.get(_this.OpsManagerRestUrlService.DASHBOARD_URL, { timeout: canceler.promise, params: params });
                 promise.then(successFn, errorFn);
                 return promise;
             };
             return data;
-        };
+        }
         return OpsManagerDashboardService;
     }());
     exports.default = OpsManagerDashboardService;
+    angular.module(module_name_1.moduleName, [])
+        .service("AlertsService", [AlertsService_1.default])
+        .service("IconService", [IconStatusService_1.default])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
+        .service("OpsManagerFeedService", [['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerFeedService_1.default]])
+        .factory('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService]);
 });
 //# sourceMappingURL=OpsManagerDashboardService.js.map

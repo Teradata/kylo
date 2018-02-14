@@ -3,9 +3,12 @@ import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
 
+import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import AlertsService from "./services/AlertsService";
+import IconService from "./services/IconStatusService";
+
 export default class OpsManagerFeedService{
-    module: ng.IModule;
-    constructor(private $q: any,
+     constructor(private $q: any,
                 private $http: any,
                 private $interval: any,
                 private $timeout: any,
@@ -14,25 +17,19 @@ export default class OpsManagerFeedService{
                 private AlertsService: any,
                 private OpsManagerRestUrlService: any
     ){
-    this.module = angular.module(moduleName,[]);
-    this.module.factory('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',this.factoryFn.bind(this)]);
-    }
-
-      factoryFn() {
-
-   var data: any = {};
-         data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
-         data.FEED_NAMES_URL = this.OpsManagerRestUrlService.FEED_NAMES_URL;
-         data.FEED_HEALTH_COUNT_URL = this.OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
+         let data: any = {};
+         data.FEED_HEALTH_URL = OpsManagerRestUrlService.FEED_HEALTH_URL;
+         data.FEED_NAMES_URL = OpsManagerRestUrlService.FEED_NAMES_URL;
+         data.FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
          data.FETCH_FEED_HEALTH_INTERVAL = 5000;
          data.fetchFeedHealthInterval = null;
          data.feedHealth = {};
 
         // data.SPECIFIC_FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
 
-         data.SPECIFIC_FEED_HEALTH_URL = this.OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
+         data.SPECIFIC_FEED_HEALTH_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
 
-         data.DAILY_STATUS_COUNT_URL = this.OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
+         data.DAILY_STATUS_COUNT_URL = OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
 
          data.feedSummaryData = {};
          data.feedUnhealthyCount = 0;
@@ -40,7 +37,7 @@ export default class OpsManagerFeedService{
 
          data.feedHealth = 0;
 
-         data.emptyFeed = function () {
+         data.emptyFeed =  ()=> {
              var feed: any = {};
              feed.displayStatus = 'LOADING';
              feed.lastStatus = 'LOADING',
@@ -49,7 +46,7 @@ export default class OpsManagerFeedService{
              return feed;
          }
 
-         data.decorateFeedSummary = function (feed: any) {
+         data.decorateFeedSummary =  (feed: any) =>{
              //GROUP FOR FAILED
 
              if (feed.isEmpty == undefined) {
@@ -59,7 +56,7 @@ export default class OpsManagerFeedService{
              var health: string = "---";
              if (!feed.isEmpty) {
                  health = feed.healthy ? 'HEALTHY' : 'UNHEALTHY';
-                 var iconData: any = this.IconService.iconForFeedHealth(health);
+                 var iconData: any = IconService.iconForFeedHealth(health);
                  feed.icon = iconData.icon
                  feed.iconstyle = iconData.style
              }
@@ -85,35 +82,35 @@ export default class OpsManagerFeedService{
                  feed.displayStatus = feed.lastStatus;
              }
 
-             feed.statusStyle = this.IconService.iconStyleForJobStatus(feed.displayStatus);
+             feed.statusStyle = IconService.iconStyleForJobStatus(feed.displayStatus);
          }
 
-         data.fetchFeedSummaryData = function () {
-             var successFn = function (response: any) {
+         data.fetchFeedSummaryData =  ()=> {
+             var successFn =  (response: any)=> {
                  data.feedSummaryData = response.data;
                  if (response.data) {
                      data.feedUnhealthyCount = response.data.failedCount;
                      data.feedHealthyCount = response.data.healthyCount;
                  }
              }
-             var errorFn = function (err: any) {
+             var errorFn =  (err: any)=>{
 
              }
-             var finallyFn = function () {
+             var finallyFn =  ()=>{
 
              }
 
-             var promise = this.$http.get(data.FEED_HEALTH_URL);
+             var promise = $http.get(data.FEED_HEALTH_URL);
              promise.then(successFn, errorFn);
              return promise;
          };
 
-         data.fetchFeedHealth = function () {
-             var successFn = function (response: any) {
+         data.fetchFeedHealth =  ()=> {
+             var successFn =  (response: any)=> {
 
                  var unhealthyFeedNames: any[] = [];
                  if (response.data) {
-                     angular.forEach(response.data, function (feedHealth: any) {
+                     angular.forEach(response.data,  (feedHealth: any)=> {
                          if (data.feedHealth[feedHealth.feed]) {
                              angular.extend(data.feedHealth[feedHealth.feed], feedHealth);
                          }
@@ -143,42 +140,49 @@ export default class OpsManagerFeedService{
                  }
                  data.fetchFeedHealthTimeout();
              }
-             var errorFn = function (err: any) {
+             var errorFn =  (err: any)=> {
                  data.fetchFeedHealthTimeout();
              }
-             var finallyFn = function () {
+             var finallyFn =  ()=> {
 
              }
 
-             var promise = this.$http.get(data.FEED_HEALTH_COUNT_URL);
+             var promise = $http.get(data.FEED_HEALTH_COUNT_URL);
              promise.then(successFn, errorFn);
              return promise;
          };
 
-         data.startFetchFeedHealth = function () {
+         data.startFetchFeedHealth =  ()=> {
              if (data.fetchFeedHealthInterval == null) {
                  data.fetchFeedHealth();
 
-                 data.fetchFeedHealthInterval = this.$interval(function () {
+                 data.fetchFeedHealthInterval = $interval( () =>{
                      data.fetchFeedHealth();
                  }, data.FETCH_FEED_HEALTH_INTERVAL)
              }
          }
 
-         data.fetchFeedHealthTimeout = function () {
+         data.fetchFeedHealthTimeout =  ()=>{
              data.stopFetchFeedHealthTimeout();
 
-             data.fetchFeedHealthInterval = this.$timeout(function () {
+             data.fetchFeedHealthInterval = $timeout( () =>{
                  data.fetchFeedHealth();
              }, data.FETCH_FEED_HEALTH_INTERVAL);
          }
 
-         data.stopFetchFeedHealthTimeout = function () {
+         data.stopFetchFeedHealthTimeout =  () =>{
              if (data.fetchFeedHealthInterval != null) {
-                 this.$timeout.cancel(data.fetchFeedHealthInterval);
+                 $timeout.cancel(data.fetchFeedHealthInterval);
              }
          }
 
          return data;
-      }
+    }
 }
+
+ angular.module(moduleName,[])
+  .service("AlertsService", [AlertsService])
+        .service("IconService",[IconService])
+        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
+ factory('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService]);
+   

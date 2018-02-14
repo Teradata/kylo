@@ -1,18 +1,15 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerJobService = /** @class */ (function () {
         function OpsManagerJobService($q, $http, $log, HttpService, NotificationService, OpsManagerRestUrlService) {
+            var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$log = $log;
             this.HttpService = HttpService;
             this.NotificationService = NotificationService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.factory('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', this.factoryFn.bind(this)]);
-        }
-        OpsManagerJobService.prototype.factoryFn = function () {
             var data = {};
             data.JOBS_QUERY_URL = this.OpsManagerRestUrlService.JOBS_QUERY_URL;
             data.JOBS_CHARTS_QUERY_URL = this.OpsManagerRestUrlService.JOBS_CHARTS_QUERY_URL;
@@ -29,7 +26,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             data.LOAD_JOB_URL = this.OpsManagerRestUrlService.LOAD_JOB_URL;
             data.RELATED_JOBS_URL = this.OpsManagerRestUrlService.RELATED_JOBS_URL;
             data.restartJob = function (executionId, params, callback, errorCallback) {
-                return this.$http.post(data.RESTART_JOB_URL(executionId), params).then(function (data) {
+                return _this.$http.post(data.RESTART_JOB_URL(executionId), params).then(function (data) {
                     callback(data);
                 }, function (msg) {
                     var errorMessage;
@@ -46,7 +43,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 });
             };
             data.failJob = function (executionId, params, callback) {
-                return this.$http.post(data.FAIL_JOB_URL(executionId), params).then(function (data) {
+                return _this.$http.post(data.FAIL_JOB_URL(executionId), params).then(function (data) {
                     callback(data);
                 }, function (msg) {
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -55,7 +52,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 });
             };
             data.abandonJob = function (executionId, params, callback) {
-                this.$http.post(data.ABANDON_JOB_URL(executionId), params).then(function (data) {
+                _this.$http.post(data.ABANDON_JOB_URL(executionId), params).then(function (data) {
                     callback(data);
                 }, function (msg) {
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -64,7 +61,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 });
             };
             data.abandonAllJobs = function (feed, callback, errorCallback) {
-                this.$http.post(data.ABANDON_ALL_JOBS_URL(feed)).then(function (data) {
+                _this.$http.post(data.ABANDON_ALL_JOBS_URL(feed)).then(function (data) {
                     callback(data);
                 }, function (msg) {
                     if (errorCallback && angular.isFunction(errorCallback)) {
@@ -73,7 +70,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 });
             };
             data.stopJob = function (executionId, params, callback) {
-                this.$http.post(data.STOP_JOB_URL(executionId), params).then(function (data) {
+                _this.$http.post(data.STOP_JOB_URL(executionId), params).then(function (data) {
                     callback(data);
                 }, function (msg) {
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -86,19 +83,22 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
              * @returns {*|{promise, cancel, abort}|{requests, promise, abort}}
              */
             data.getJobCountByStatus = function () {
-                return new this.HttpService.get(data.JOB_COUNT_BY_STATUS_URL);
+                return new _this.HttpService.get(data.JOB_COUNT_BY_STATUS_URL);
             };
             data.findAllJobs = function (successFn, errorFn, finallyFn) {
-                return new this.HttpService.newRequestBuilder(data.ALL_JOBS_URL).then(successFn, errorFn).finally(finallyFn).build();
+                return new _this.HttpService.newRequestBuilder(data.ALL_JOBS_URL).then(successFn, errorFn).finally(finallyFn).build();
             };
             data.loadJob = function (instanceId) {
-                return this.$http.get(data.LOAD_JOB_URL(instanceId));
+                return _this.$http.get(data.LOAD_JOB_URL(instanceId));
             };
             data.lastSelectedTab = 'ALL';
             return data;
-        };
+        }
         return OpsManagerJobService;
     }());
     exports.default = OpsManagerJobService;
+    angular.module(module_name_1.moduleName, [])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default]).
+        factory('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService]);
 });
 //# sourceMappingURL=OpsManagerJobService.js.map

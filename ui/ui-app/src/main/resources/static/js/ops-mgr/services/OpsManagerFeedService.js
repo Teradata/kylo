@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "moment"], function (require, exports, angular, module_name_1, moment) {
+define(["require", "exports", "angular", "../module-name", "moment", "./OpsManagerRestUrlService", "./services/AlertsService", "./services/IconStatusService"], function (require, exports, angular, module_name_1, moment, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerFeedService = /** @class */ (function () {
@@ -11,20 +11,16 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
             this.IconService = IconService;
             this.AlertsService = AlertsService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', this.factoryFn.bind(this)]);
-        }
-        OpsManagerFeedService.prototype.factoryFn = function () {
             var data = {};
-            data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
-            data.FEED_NAMES_URL = this.OpsManagerRestUrlService.FEED_NAMES_URL;
-            data.FEED_HEALTH_COUNT_URL = this.OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
+            data.FEED_HEALTH_URL = OpsManagerRestUrlService.FEED_HEALTH_URL;
+            data.FEED_NAMES_URL = OpsManagerRestUrlService.FEED_NAMES_URL;
+            data.FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
             data.FETCH_FEED_HEALTH_INTERVAL = 5000;
             data.fetchFeedHealthInterval = null;
             data.feedHealth = {};
             // data.SPECIFIC_FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
-            data.SPECIFIC_FEED_HEALTH_URL = this.OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
-            data.DAILY_STATUS_COUNT_URL = this.OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
+            data.SPECIFIC_FEED_HEALTH_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
+            data.DAILY_STATUS_COUNT_URL = OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
             data.feedSummaryData = {};
             data.feedUnhealthyCount = 0;
             data.feedHealthyCount = 0;
@@ -45,7 +41,7 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
                 var health = "---";
                 if (!feed.isEmpty) {
                     health = feed.healthy ? 'HEALTHY' : 'UNHEALTHY';
-                    var iconData = this.IconService.iconForFeedHealth(health);
+                    var iconData = IconService.iconForFeedHealth(health);
                     feed.icon = iconData.icon;
                     feed.iconstyle = iconData.style;
                 }
@@ -70,7 +66,7 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
                 else {
                     feed.displayStatus = feed.lastStatus;
                 }
-                feed.statusStyle = this.IconService.iconStyleForJobStatus(feed.displayStatus);
+                feed.statusStyle = IconService.iconStyleForJobStatus(feed.displayStatus);
             };
             data.fetchFeedSummaryData = function () {
                 var successFn = function (response) {
@@ -84,7 +80,7 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
                 };
                 var finallyFn = function () {
                 };
-                var promise = this.$http.get(data.FEED_HEALTH_URL);
+                var promise = $http.get(data.FEED_HEALTH_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
@@ -126,33 +122,38 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
                 };
                 var finallyFn = function () {
                 };
-                var promise = this.$http.get(data.FEED_HEALTH_COUNT_URL);
+                var promise = $http.get(data.FEED_HEALTH_COUNT_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
             data.startFetchFeedHealth = function () {
                 if (data.fetchFeedHealthInterval == null) {
                     data.fetchFeedHealth();
-                    data.fetchFeedHealthInterval = this.$interval(function () {
+                    data.fetchFeedHealthInterval = $interval(function () {
                         data.fetchFeedHealth();
                     }, data.FETCH_FEED_HEALTH_INTERVAL);
                 }
             };
             data.fetchFeedHealthTimeout = function () {
                 data.stopFetchFeedHealthTimeout();
-                data.fetchFeedHealthInterval = this.$timeout(function () {
+                data.fetchFeedHealthInterval = $timeout(function () {
                     data.fetchFeedHealth();
                 }, data.FETCH_FEED_HEALTH_INTERVAL);
             };
             data.stopFetchFeedHealthTimeout = function () {
                 if (data.fetchFeedHealthInterval != null) {
-                    this.$timeout.cancel(data.fetchFeedHealthInterval);
+                    $timeout.cancel(data.fetchFeedHealthInterval);
                 }
             };
             return data;
-        };
+        }
         return OpsManagerFeedService;
     }());
     exports.default = OpsManagerFeedService;
+    angular.module(module_name_1.moduleName, [])
+        .service("AlertsService", [AlertsService_1.default])
+        .service("IconService", [IconStatusService_1.default])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default]);
+    factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
 });
 //# sourceMappingURL=OpsManagerFeedService.js.map
