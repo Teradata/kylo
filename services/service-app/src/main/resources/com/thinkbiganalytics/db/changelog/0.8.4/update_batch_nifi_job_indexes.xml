@@ -86,8 +86,9 @@
 
 
   <changeSet id="create_batch_nifi_job_pk" author="sr186054">
+    <validCheckSum>ANY</validCheckSum>
+    <preConditions onFail="MARK_RAN"><not><primaryKeyExists tableName="BATCH_NIFI_JOB"/></not></preConditions>
     <addPrimaryKey columnNames="FLOW_FILE_ID" tableName="BATCH_NIFI_JOB"/>
   </changeSet>
-
 
 </databaseChangeLog>
