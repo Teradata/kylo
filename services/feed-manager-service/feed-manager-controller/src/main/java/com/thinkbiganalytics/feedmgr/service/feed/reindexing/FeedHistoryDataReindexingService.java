@@ -19,6 +19,7 @@
  */
 package com.thinkbiganalytics.feedmgr.service.feed.reindexing;
 
+import com.thinkbiganalytics.feedmgr.config.HistoryDataReindexingFeedsAvailableCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiFeedStatisticsRepository;
@@ -34,11 +35,14 @@ import javax.inject.Inject;
 @Component
 public class FeedHistoryDataReindexingService {
 
-    @org.springframework.beans.factory.annotation.Value("${search.history.data.reindexing.enabled:false}")
+    @org.springframework.beans.factory.annotation.Value("${search.history.data.reindexing.enabled:true}")
     private boolean historyDataReindexingEnabled;
 
     @Inject
     NifiFeedStatisticsRepository nifiFeedStatisticsRepository;
+
+    @Inject
+    HistoryDataReindexingFeedsAvailableCache historyDataReindexingFeedsAvailableCache;
 
     public FeedHistoryDataReindexingService() {
 
@@ -46,6 +50,10 @@ public class FeedHistoryDataReindexingService {
 
     public boolean isHistoryDataReindexingEnabled() {
         return historyDataReindexingEnabled;
+    }
+
+    private boolean areHistoryDataReindexingFeedsAvailable() {
+        return historyDataReindexingFeedsAvailableCache.areKyloHistoryDataReindexingFeedsAvailable();
     }
 
     public void setHistoryDataReindexingEnabled(boolean historyDataReindexingEnabled) {
@@ -61,8 +69,9 @@ public class FeedHistoryDataReindexingService {
     }
 
     //Accept feed data history reindexing request only if:
-    // (1) enabled via Kylo services
-    // (2) feed is not currently running
+    // (1) enabled via Kylo configuration
+    // (2) feeds supporting history data reindexing are available
+    // (3) feed is not currently running
     public void checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(FeedMetadata feedMetadata) {
         if (!feedMetadata.getHistoryReindexingStatus().equals(HistoryReindexingState.DIRTY.toString())) {
             return;
@@ -72,8 +81,20 @@ public class FeedHistoryDataReindexingService {
             throw new FeedHistoryDataReindexingNotEnabledException();
         }
 
+        if (!areHistoryDataReindexingFeedsAvailable()) {
+            throw new FeedHistoryDataReindexingFeedsNotAvailable();
+        }
+
         if (isFeedRunning(feedMetadata)) {
             throw new FeedCurrentlyRunningException(feedMetadata.getCategoryName(), feedMetadata.getFeedName());
         }
+    }
+
+    public void updateHistoryDataReindexingFeedsAvailableCache(FeedMetadata feedMetadata) {
+        historyDataReindexingFeedsAvailableCache.updateCache(feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+    }
+
+    public void updateHistoryDataReindexingFeedsAvailableCache(String categorySystemName, String feedSystemName) {
+        historyDataReindexingFeedsAvailableCache.updateCache(categorySystemName, feedSystemName);
     }
 }

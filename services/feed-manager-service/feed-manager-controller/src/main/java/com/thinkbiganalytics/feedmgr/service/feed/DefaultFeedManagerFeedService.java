@@ -496,6 +496,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             //update the access control
             feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(), roleMembershipChange));
         }
+
+        feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
         return feed;
 
     }
@@ -935,10 +937,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
+
+            String feedCategorySystemName = feed.getCategory().getSystemName();
+            String feedSystemName = feed.getName();
+
             //unschedule any SLAs
             serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier, feed.getQualifiedName());
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
+            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
             return true;
         });
     }
