@@ -75,6 +75,9 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
         if (request.getMode() != null) {
             writer.mode(request.getMode());
         }
+        if (request.getOptions() != null) {
+            writer.options(request.getOptions());
+        }
 
         // Save transformation
         final SaveResult result = new SaveResult();

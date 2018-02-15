@@ -111,6 +111,12 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             return tables;
         };
         /**
+         * Reset options when format changes.
+         */
+        VisualQueryStoreComponent.prototype.onFormatChange = function () {
+            this.target.options = {};
+        };
+        /**
          * Saves the results.
          */
         VisualQueryStoreComponent.prototype.save = function () {
@@ -124,7 +130,8 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             var request;
             if (this.destination === "DOWNLOAD") {
                 request = {
-                    format: this.target.format
+                    format: this.target.format,
+                    options: this.target.options
                 };
             }
             else {

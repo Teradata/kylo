@@ -178,6 +178,13 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     }
 
     /**
+     * Reset options when format changes.
+     */
+    onFormatChange(): void {
+        this.target.options = {};
+    }
+
+    /**
      * Saves the results.
      */
     save(): void {
@@ -192,7 +199,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
 
         if (this.destination === "DOWNLOAD") {
             request = {
-                format: this.target.format
+                format: this.target.format,
+                options: this.target.options
             };
         } else {
             request = angular.copy(this.target);

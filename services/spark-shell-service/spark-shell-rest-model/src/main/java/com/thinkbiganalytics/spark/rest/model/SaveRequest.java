@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.Map;
+
 /**
  * Request to save data wrangler results.
  */
@@ -31,6 +33,7 @@ public class SaveRequest {
     private String format;
     private JdbcDatasource jdbc;
     private String mode;
+    private Map<String, String> options;
     private String tableName;
 
     public String getFormat() {
@@ -55,6 +58,14 @@ public class SaveRequest {
 
     public void setMode(String mode) {
         this.mode = mode;
+    }
+
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public void setOptions(Map<String, String> options) {
+        this.options = options;
     }
 
     public String getTableName() {

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.repl;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,7 +29,6 @@ import com.thinkbiganalytics.spark.util.ArrayUtils;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
-import org.apache.spark.sql.hive.HiveContext;
 
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
@@ -193,7 +192,7 @@ public abstract class ScriptEngine {
     @Nonnull
     public SQLContext getSQLContext() {
         if (this.sqlContext == null) {
-            this.sqlContext = new HiveContext(getSparkContext());
+            this.sqlContext = createSQLContext();
         }
         return this.sqlContext;
     }
@@ -205,6 +204,14 @@ public abstract class ScriptEngine {
      */
     @Nonnull
     protected abstract SparkContext createSparkContext();
+
+    /**
+     * Creates the {@code SQLContext} that will be available to scripts as {@code sqlContext}.
+     *
+     * @return the Spark SQL context
+     */
+    @Nonnull
+    protected abstract SQLContext createSQLContext();
 
     /**
      * Executes the specified script.

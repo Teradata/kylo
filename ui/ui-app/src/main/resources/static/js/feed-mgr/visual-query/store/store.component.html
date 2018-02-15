@@ -73,12 +73,18 @@
 
           <md-input-container ng-if="$st.destination == 'DOWNLOAD' || ($st.destination == 'TABLE' && $st.target.jdbc['@type'] != 'JdbcDatasource')">
             <label>File Format</label>
-            <md-select name="format" ng-model="$st.target.format" placeholder="Format" required>
+            <md-select name="format" ng-model="$st.target.format" ng-change="$st.onFormatChange()" placeholder="Format" required>
               <md-option ng-repeat="format in $st.formats" ng-value="format">{{format}}</md-option>
             </md-select>
             <div ng-messages="$st.form.format.$error" ng-if="$st.form.format.$touched">
               <div ng-message="required">Required</div>
             </div>
+          </md-input-container>
+
+          <md-input-container ng-if="$st.destination == 'DOWNLOAD' && $st.target.format == 'csv'">
+            <md-checkbox name="header" ng-model="$st.target.options.header">
+              Include header row
+            </md-checkbox>
           </md-input-container>
 
           <md-input-container ng-if="$st.destination == 'TABLE'">
