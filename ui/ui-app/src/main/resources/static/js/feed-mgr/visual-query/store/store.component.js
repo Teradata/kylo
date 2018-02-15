@@ -117,29 +117,49 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             }
             return tables;
         };
+        /**
+         * Should the Results card be shown, or the one showing the Download options
+         * @return {boolean}
+         */
         VisualQueryStoreComponent.prototype.showSaveResultsCard = function () {
             return this.saveMode == SaveMode.SAVING || this.saveMode == SaveMode.SAVED;
         };
+        /**
+         * Is a save for a file download in progress
+         * @return {boolean}
+         */
         VisualQueryStoreComponent.prototype.isSavingFile = function () {
             return this.saveMode == SaveMode.SAVING && this.destination === "DOWNLOAD";
         };
+        /**
+         * is a save for a table export in progress
+         * @return {boolean}
+         */
         VisualQueryStoreComponent.prototype.isSavingTable = function () {
             return this.saveMode == SaveMode.SAVING && this.destination === "TABLE";
         };
+        /**
+         * is a save for a table export complete
+         * @return {boolean}
+         */
         VisualQueryStoreComponent.prototype.isSavedTable = function () {
             return this.saveMode == SaveMode.SAVED && this.destination === "TABLE";
         };
+        /**
+         * have we successfully saved either to a file or table
+         * @return {boolean}
+         */
         VisualQueryStoreComponent.prototype.isSaved = function () {
             return this.saveMode == SaveMode.SAVED;
         };
         /**
-         * Shows the download options
+         * Navigate back from the saved results card and show the download options
          */
         VisualQueryStoreComponent.prototype.downloadAgainAs = function () {
             this._reset();
         };
         /**
-         * Returns the user from the Save/store screen to the Transform table screen
+         * Navigate back and take the user from the Save/store screen to the Transform table screen
          */
         VisualQueryStoreComponent.prototype.modifyTransformation = function () {
             this._reset();
@@ -148,12 +168,19 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
                 this.stepperController.selectedStepIndex = prevStep.index;
             }
         };
+        /**
+         * Reset download options
+         * @private
+         */
         VisualQueryStoreComponent.prototype._reset = function () {
             this.saveMode = SaveMode.INITIAL;
             this.downloadUrl = null;
             this.error = null;
             this.loading = false;
         };
+        /**
+         * Exit the Visual Query and go to the Feeds list
+         */
         VisualQueryStoreComponent.prototype.exit = function () {
             this.stepperController.cancelStepper();
         };
@@ -179,11 +206,12 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             if (this.destination === "DOWNLOAD") {
                 request = {
                     format: this.target.format,
-                    options: this.target.options
+                    options: this.getOptions()
                 };
             }
             else {
                 request = angular.copy(this.target);
+                request.options = this.getOptions();
             }
             // Save transformation
             this.downloadUrl = null;
@@ -205,6 +233,14 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
                 _this.loading = false;
                 _this.saveMode = SaveMode.INITIAL;
             }, function () { return _this.loading = false; });
+        };
+        /**
+         * Gets the target output options by parsing the properties object.
+         */
+        VisualQueryStoreComponent.prototype.getOptions = function () {
+            var options = angular.copy(this.target.options);
+            this.properties.forEach(function (property) { return options[property.systemName] = property.value; });
+            return options;
         };
         VisualQueryStoreComponent.$inject = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService"];
         __decorate([

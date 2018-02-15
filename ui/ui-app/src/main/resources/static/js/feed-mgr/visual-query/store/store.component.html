@@ -79,6 +79,8 @@
             </md-checkbox>
           </md-input-container>
 
+          <thinkbig-property-list-editor ng-if="$st.destination" properties="$st.properties" is-valid="$st.isValid"></thinkbig-property-list-editor>
+
           <md-input-container ng-if="$st.destination == 'TABLE'">
             <label>Save mode</label>
             <md-select name="mode" ng-model="$st.target.mode" placeholder="Mode" required>

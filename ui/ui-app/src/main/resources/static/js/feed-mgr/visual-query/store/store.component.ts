@@ -55,6 +55,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     form: any;
 
     /**
+     * Indicates if the properties are valid.
+     */
+    isValid: boolean;
+
+    /**
      * List of Kylo data sources
      */
     kyloDataSources: UserDatasource[] = [];
@@ -69,6 +74,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      */
     @Input()
     model: any;
+
+    /**
+     * Additional options for the output format.
+     */
+    properties: any[];
 
     /**
      * Subscription to notification removal
@@ -284,10 +294,11 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         if (this.destination === "DOWNLOAD") {
             request = {
                 format: this.target.format,
-                options: this.target.options
+                options: this.getOptions()
             };
         } else {
             request = angular.copy(this.target);
+            request.options = this.getOptions();
         }
 
         // Save transformation
@@ -312,6 +323,15 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                     this.saveMode = SaveMode.INITIAL;
                 },
                 () => this.loading = false);
+    }
+
+    /**
+     * Gets the target output options by parsing the properties object.
+     */
+    private getOptions(): { [k: string]: string } {
+        let options = angular.copy(this.target.options);
+        this.properties.forEach(property => options[property.systemName] = property.value);
+        return options;
     }
 }
 

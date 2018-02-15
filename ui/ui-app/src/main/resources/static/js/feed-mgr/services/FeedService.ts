@@ -200,7 +200,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             data.createFeedModel.feedName += "_copy";
             data.createFeedModel.systemFeedName += "_copy";
             data.createFeedModel.owner = undefined;
-            _.each(data.createFeedModel.table.tableSchema.fields, function(field) {
+            _.each(data.createFeedModel.table.tableSchema.fields, function(field: any) {
                 field._id = _.uniqueId();
             });
             return data.createFeedModel;
