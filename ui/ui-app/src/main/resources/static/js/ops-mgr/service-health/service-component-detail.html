@@ -42,7 +42,7 @@
                             <span class="column-title column-title-bottom">Message</span>
                         </div>
                         <div flex="20" layout="column" hide show-gt-md class="item-column md-list-item-text">
-                            <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:alert.latestTimestamp} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:alert.latestTimestamp} }}</span>
+                            <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:alert.latestTimestamp} }}</span>
                             <span class="column-title column-title-bottom">Time</span>
                         </div>
                         <md-divider ng-if="!$last"></md-divider>
@@ -94,7 +94,7 @@
                         <td md-cell>
                             {{alert.message}}
                         </td>
-                        <td md-cell hide show-gt-md >{{'service-component-detail.time-locale' | translate:{date:alert.latestTimestamp} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:alert.latestTimestamp} }}</td>
+                        <td md-cell hide show-gt-md >{{'service-component-detail.time-locale' | translate:{date:alert.latestTimestamp} }}</td>
                         </tr>
                         </tbody>
                     </table>
@@ -121,7 +121,7 @@
                 <md-divider></md-divider>
                 <md-list-item>
                     <div layout="column"  class="item-column md-list-item-text">
-                        <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:vm.component.checkDate} }} {{"service-component-detail.at" | translate}} {{'service-component-detail.time-locale2' | translate:{date:vm.component.checkDate} }}</span>
+                        <span class="item-title">{{'service-component-detail.time-locale' | translate:{date:vm.component.checkDate} }}</span>
                         <span class="column-title column-title-bottom">Last Checked</span>
                     </div>
                 </md-list-item>
