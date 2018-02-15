@@ -11,7 +11,12 @@ import DatasourcesService = DatasourcesServiceStatic.DatasourcesService;
 import JdbcDatasource = DatasourcesServiceStatic.JdbcDatasource;
 import TableReference = DatasourcesServiceStatic.TableReference;
 
+
+export enum SaveMode { INITIAL, SAVING, SAVED}
+
 export class VisualQueryStoreComponent implements OnDestroy, OnInit {
+
+    stepperController : any;
 
     /**
      * Target destination type. Either DOWNLOAD or TABLE.
@@ -79,6 +84,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Index of this step
      */
     stepIndex: string;
+
+    saveMode: SaveMode = SaveMode.INITIAL;
 
     /**
      * Output configuration
@@ -178,6 +185,82 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     }
 
     /**
+     * Should the Results card be shown, or the one showing the Download options
+     * @return {boolean}
+     */
+    showSaveResultsCard() : boolean {
+        return this.saveMode == SaveMode.SAVING || this.saveMode == SaveMode.SAVED;
+    }
+
+    /**
+     * Is a save for a file download in progress
+     * @return {boolean}
+     */
+    isSavingFile():boolean {
+        return this.saveMode == SaveMode.SAVING && this.destination === "DOWNLOAD";
+    }
+
+    /**
+     * is a save for a table export in progress
+     * @return {boolean}
+     */
+    isSavingTable():boolean {
+        return this.saveMode == SaveMode.SAVING && this.destination === "TABLE";
+    }
+
+    /**
+     * is a save for a table export complete
+     * @return {boolean}
+     */
+    isSavedTable():boolean {
+        return this.saveMode == SaveMode.SAVED && this.destination === "TABLE";
+    }
+
+    /**
+     * have we successfully saved either to a file or table
+     * @return {boolean}
+     */
+    isSaved():boolean {
+        return this.saveMode == SaveMode.SAVED;
+    }
+
+    /**
+     * Navigate back from the saved results card and show the download options
+     */
+    downloadAgainAs(): void {
+        this._reset();
+    }
+
+    /**
+     * Navigate back and take the user from the Save/store screen to the Transform table screen
+     */
+    modifyTransformation(): void {
+        this._reset();
+        let prevStep : any = this.stepperController.previousActiveStep(parseInt(this.stepIndex));
+        if(angular.isDefined(prevStep)){
+            this.stepperController.selectedStepIndex = prevStep.index;
+        }
+    }
+
+    /**
+     * Reset download options
+     * @private
+     */
+    _reset():void {
+        this.saveMode = SaveMode.INITIAL;
+        this.downloadUrl = null;
+        this.error = null;
+        this.loading = false;
+    }
+
+    /**
+     * Exit the Visual Query and go to the Feeds list
+     */
+    exit(): void {
+        this.stepperController.cancelStepper();
+    }
+
+    /**
      * Reset options when format changes.
      */
     onFormatChange(): void {
@@ -188,6 +271,7 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
      * Saves the results.
      */
     save(): void {
+        this.saveMode = SaveMode.SAVING;
         // Remove current subscription
         if (this.saveSubscription) {
             this.saveSubscription.unsubscribe();
@@ -216,11 +300,16 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
                     if (response.status === SaveResponseStatus.SUCCESS && this.destination === "DOWNLOAD") {
                         this.downloadId = response.id;
                         this.downloadUrl = response.location;
+                        //reset the save mode if its Saving
+                        if(this.saveMode == SaveMode.SAVING) {
+                            this.saveMode = SaveMode.SAVED;
+                        }
                     }
                 },
                 response => {
                     this.error = response.message;
                     this.loading = false;
+                    this.saveMode = SaveMode.INITIAL;
                 },
                 () => this.loading = false);
     }

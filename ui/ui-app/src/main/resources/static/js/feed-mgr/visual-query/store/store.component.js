@@ -10,6 +10,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-model", "../wrangler/query-engine"], function (require, exports, core_1, angular, rest_model_1, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var SaveMode;
+    (function (SaveMode) {
+        SaveMode[SaveMode["INITIAL"] = 0] = "INITIAL";
+        SaveMode[SaveMode["SAVING"] = 1] = "SAVING";
+        SaveMode[SaveMode["SAVED"] = 2] = "SAVED";
+    })(SaveMode = exports.SaveMode || (exports.SaveMode = {}));
     var VisualQueryStoreComponent = /** @class */ (function () {
         function VisualQueryStoreComponent($http, DatasourcesService, RestUrlService, VisualQuerySaveService) {
             var _this = this;
@@ -25,6 +31,7 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
              * Indicates the page is loading
              */
             this.loading = true;
+            this.saveMode = SaveMode.INITIAL;
             /**
              * Output configuration
              */
@@ -110,6 +117,46 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             }
             return tables;
         };
+        VisualQueryStoreComponent.prototype.showSaveResultsCard = function () {
+            return this.saveMode == SaveMode.SAVING || this.saveMode == SaveMode.SAVED;
+        };
+        VisualQueryStoreComponent.prototype.isSavingFile = function () {
+            return this.saveMode == SaveMode.SAVING && this.destination === "DOWNLOAD";
+        };
+        VisualQueryStoreComponent.prototype.isSavingTable = function () {
+            return this.saveMode == SaveMode.SAVING && this.destination === "TABLE";
+        };
+        VisualQueryStoreComponent.prototype.isSavedTable = function () {
+            return this.saveMode == SaveMode.SAVED && this.destination === "TABLE";
+        };
+        VisualQueryStoreComponent.prototype.isSaved = function () {
+            return this.saveMode == SaveMode.SAVED;
+        };
+        /**
+         * Shows the download options
+         */
+        VisualQueryStoreComponent.prototype.downloadAgainAs = function () {
+            this._reset();
+        };
+        /**
+         * Returns the user from the Save/store screen to the Transform table screen
+         */
+        VisualQueryStoreComponent.prototype.modifyTransformation = function () {
+            this._reset();
+            var prevStep = this.stepperController.previousActiveStep(parseInt(this.stepIndex));
+            if (angular.isDefined(prevStep)) {
+                this.stepperController.selectedStepIndex = prevStep.index;
+            }
+        };
+        VisualQueryStoreComponent.prototype._reset = function () {
+            this.saveMode = SaveMode.INITIAL;
+            this.downloadUrl = null;
+            this.error = null;
+            this.loading = false;
+        };
+        VisualQueryStoreComponent.prototype.exit = function () {
+            this.stepperController.cancelStepper();
+        };
         /**
          * Reset options when format changes.
          */
@@ -121,6 +168,7 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
          */
         VisualQueryStoreComponent.prototype.save = function () {
             var _this = this;
+            this.saveMode = SaveMode.SAVING;
             // Remove current subscription
             if (this.saveSubscription) {
                 this.saveSubscription.unsubscribe();
@@ -147,10 +195,15 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
                 if (response.status === rest_model_1.SaveResponseStatus.SUCCESS && _this.destination === "DOWNLOAD") {
                     _this.downloadId = response.id;
                     _this.downloadUrl = response.location;
+                    //reset the save mode if its Saving
+                    if (_this.saveMode == SaveMode.SAVING) {
+                        _this.saveMode = SaveMode.SAVED;
+                    }
                 }
             }, function (response) {
                 _this.error = response.message;
                 _this.loading = false;
+                _this.saveMode = SaveMode.INITIAL;
             }, function () { return _this.loading = false; });
         };
         VisualQueryStoreComponent.$inject = ["$http", "DatasourcesService", "RestUrlService", "VisualQuerySaveService"];
