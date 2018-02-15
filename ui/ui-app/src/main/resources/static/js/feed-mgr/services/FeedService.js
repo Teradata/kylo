@@ -468,6 +468,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 model.properties = properties;
                 //prepare access control changes if any
                 EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+                if (model.cloned) {
+                    model.state = null;
+                }
                 if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                     // Set feed
                     var newFields = [];
