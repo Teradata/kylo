@@ -263,7 +263,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
         this.onEdit = function(){
             //copy the model
             self.editModel.category = {systemName: FeedService.editFeedModel.category.systemName};
-            self.editModel.systemFeedName = FeedService.editFeedModelsystemFeedName;
+            self.editModel.systemFeedName = FeedService.editFeedModel.systemFeedName;
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
             self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
             if (self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && (!self.isClustered || self.supportsExecutionNode)) {
