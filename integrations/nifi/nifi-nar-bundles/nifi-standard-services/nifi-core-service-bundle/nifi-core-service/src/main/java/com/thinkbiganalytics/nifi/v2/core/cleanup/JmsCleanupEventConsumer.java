@@ -58,7 +58,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     @Override
     public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
         String key = generateKey(category, feedName);
-        LOG.debug("Adding listener for {}", key);
+        LOG.debug("Adding listener for {}, consumer {}", key, this);
         listeners.put(key, listener);
     }
 
@@ -69,7 +69,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
      */
     @JmsListener(destination = MetadataQueues.CLEANUP_TRIGGER, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
     public void receiveEvent(@Nonnull final FeedCleanupTriggerEvent event) {
-        LOG.debug("Received JMS message - topic: {}, message: {}", MetadataQueues.CLEANUP_TRIGGER, event);
+        LOG.debug("Received JMS message - topic: {}, message: {}, consumer {}", MetadataQueues.CLEANUP_TRIGGER, event, this);
         LOG.info("Received feed cleanup trigger event: {}", event);
 
         String key = generateKey(event.getCategoryName(), event.getFeedName());

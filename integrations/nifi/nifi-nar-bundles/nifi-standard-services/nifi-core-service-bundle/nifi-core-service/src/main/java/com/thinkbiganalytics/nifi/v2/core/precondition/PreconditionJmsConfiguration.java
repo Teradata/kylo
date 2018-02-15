@@ -22,6 +22,8 @@ package com.thinkbiganalytics.nifi.v2.core.precondition;
 
 import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ConfigurationClassPostProcessor;
@@ -32,6 +34,8 @@ import org.springframework.context.annotation.ConfigurationClassPostProcessor;
 @Configuration
 public class PreconditionJmsConfiguration {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PreconditionJmsConfiguration.class);
+
     @Bean
     public ConfigurationClassPostProcessor configurationClassPostProcessor() {
         return new ConfigurationClassPostProcessor();
@@ -39,7 +43,9 @@ public class PreconditionJmsConfiguration {
 
     @Bean
     public PreconditionEventConsumer preconditionEventJmsConsumer() {
-        return new JmsPreconditionEventConsumer();
+        JmsPreconditionEventConsumer consumer = new JmsPreconditionEventConsumer();
+        LOG.debug("Created new JmsPreconditionEventConsumer bean {}", consumer);
+        return consumer;
     }
 
 }
