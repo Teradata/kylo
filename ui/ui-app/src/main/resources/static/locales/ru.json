@@ -575,6 +575,7 @@
     "views.alerts-template.ALERT2": "Оповещения",
     "views.alerts-template.ALERT5": "Оповещений",
     "views.alerts-template. Job Failure": "Ошибка",
+    "views.alerts-template. Service": "Ошибка Сервиса",
 
     "views.vertical-section-layout-template.Delete": "Удалить",
     "views.vertical-section-layout-template.Cancel": "Отмена",
