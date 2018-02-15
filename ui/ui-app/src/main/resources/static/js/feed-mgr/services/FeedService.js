@@ -188,6 +188,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 data.createFeedModel.feedName += "_copy";
                 data.createFeedModel.systemFeedName += "_copy";
                 data.createFeedModel.owner = undefined;
+                _.each(data.createFeedModel.table.tableSchema.fields, function(field) {
+                    field._id = _.uniqueId();
+                });
                 return data.createFeedModel;
             },
             /**
