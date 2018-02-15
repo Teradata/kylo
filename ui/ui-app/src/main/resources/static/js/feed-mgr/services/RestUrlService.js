@@ -265,6 +265,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
             return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
         };
 
+        // Feed history data reindexing endpoint
+        this.FEED_HISTORY_CONFIGURED = self.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
+
+
         /**
          * Generates a URL for listing the controller services under the specified process group.
          *

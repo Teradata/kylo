@@ -666,6 +666,14 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
 
         },
         /**
+         * Call out to the server to get info on whether feed history data reindexing is configured in Kylo
+         * @returns {HttpPromise}
+         */
+        isKyloConfiguredForFeedHistoryDataReindexing: function() {
+            return $http.get(RestUrlService.FEED_HISTORY_CONFIGURED);
+        }
+        ,
+        /**
          * When creating a Feed find the First Column/Field that matches the given name
          * @param name
          * @returns {*|{}}

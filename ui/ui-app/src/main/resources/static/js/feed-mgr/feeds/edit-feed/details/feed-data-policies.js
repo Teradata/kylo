@@ -371,44 +371,54 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             }
 
             if (Object.keys(indexChanges).length > 0) {
-                var displayIndexChanges = "";
-                var displayIndexChangedStatus = "";
-                var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
+                //Indexing options have changed
+                FeedService.isKyloConfiguredForFeedHistoryDataReindexing()
+                    .then(function (response) {
+                        if (response.data === 'true')  {
+                            var displayIndexChanges = "";
+                            var displayIndexChangedStatus = "";
+                            var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
 
-                //using styles does not render correctly.
-                displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below. This will take effect going forward.<br>"
-                                                + "Apply changes to historical feed data as well? "
-                                                + "(If you choose YES, further indexing changes will not be allowed for feed till historical processing is complete)</font></div><br>"
-                                                + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
+                            //using styles does not render correctly.
+                            displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below, and take effect going forward.<br>"
+                                                   + "Do you wish to apply these changes to historical data as well?</font></div><br>"
+                                                   + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
 
-                for (var key in indexChanges) {
-                    displayIndexChanges+="<tr>";
-                    if (indexChanges[key] == true) {
-                        displayIndexChangedStatus = "<font color='green'>enabled</font>";
-                    } else {
-                        displayIndexChangedStatus = "<font color='red'>disabled</font>";
-                    }
-                    displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
-                    displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
-                    displayIndexChanges+="</tr>";
-                }
-                displayIndexChanges += "</table></div>";
+                            for (var key in indexChanges) {
+                                displayIndexChanges += "<tr>";
+                                if (indexChanges[key] == true) {
+                                    displayIndexChangedStatus = "<font color='green'>enabled</font>";
+                                } else {
+                                    displayIndexChangedStatus = "<font color='red'>disabled</font>";
+                                }
+                                displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
+                                displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
+                                displayIndexChanges += "</tr>";
+                            }
+                            displayIndexChanges += "</table></div>";
 
-                var confirm = $mdDialog.confirm()
-                    .title("Apply data indexing changes to historical data?")
-                    .htmlContent(displayIndexChanges)
-                    .ariaLabel("Apply data indexing changes to historical data?")
-                    .ok("Yes")
-                    .cancel("No");
+                            var confirm = $mdDialog.confirm()
+                                .title("Apply indexing changes to history data?")
+                                .htmlContent(displayIndexChanges)
+                                .ariaLabel("Apply indexing changes to history data?")
+                                .ok("Yes")
+                                .cancel("No");
 
-                $mdDialog.show(confirm).then(function () {
-                    self.editModel.historyReindexingStatus = 'DIRTY';
-                    self.goAheadWithSave(ev, true);
-                }, function() {
-                    self.goAheadWithSave(ev, false);
-                });
+                            $mdDialog.show(confirm).then(function () {
+                                self.editModel.historyReindexingStatus = 'DIRTY';
+                                self.goAheadWithSave(ev, true); //indexing changed, kylo configured, user opt-in for history reindexing
+                            }, function () {
+                                self.goAheadWithSave(ev, false); //indexing changed, kylo configured, user opt-out for history reindexing
+                            });
+                        } else {
+                            self.goAheadWithSave(ev, false); //indexing changed, kylo not configured
+                        }
+                    }, function(response) {
+                        console.log("Unable to determine if Kylo is configured to support data history reindexing. Please check Kylo services. Moving ahead assuming it is not configured.");
+                        self.goAheadWithSave(ev, false);
+                    });
             } else {
-                self.goAheadWithSave(ev, false);
+                self.goAheadWithSave(ev, false); //indexing not changed
             }
         };
 
