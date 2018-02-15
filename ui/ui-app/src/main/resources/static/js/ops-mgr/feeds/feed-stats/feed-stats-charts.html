@@ -28,7 +28,7 @@
             <div layout="column" layout-align="start start">
               <div layout="row" layout-align="space-between start" layout-fill>
                 <span class="card-title right-card-title-text">{{vm.timeFrameOptions[vm.timeFrameOptionIndex].label}}</span>
-                <span style="margin-top: 5px;">Date Range: {{'feed-stats-charts.time_locale' | translate:{date:vm.minDisplayTime} }} - {{'feed-stats-charts.time_locale' | translate:{date:vm.maxDisplayTime} }}</span>
+                <span style="margin-top: 5px;">Date Range: {{'feed-stats-charts.time-locale' | translate:{date:vm.minDisplayTime} }} - {{'feed-stats-charts.time-locale' | translate:{date:vm.maxDisplayTime} }}</span>
               </div>
             </div>
             <div flex>
@@ -98,7 +98,7 @@
                 ng-repeat="item in vm.feedProcessorErrors.visibleData | filter: vm.feedProcessorErrorsTable.filter | orderBy:  vm.feedProcessorErrorsTable.sortOrder | limitTo: vm.feedProcessorErrorsTable.rowLimit : (vm.feedProcessorErrorsTable.page -1) * vm.feedProcessorErrorsTable.rowLimit">
               <td md-cell>{{item.processorName}}</td>
               <td md-cell>{{item.errorMessages}}</td>
-              <td md-cell>{{'feed-statscharts.time_locale2' | translate:{date:item.errorMessageTimestamp} }}</td>
+              <td md-cell>{{'feed-stats-charts.time-locale2' | translate:{date:item.errorMessageTimestamp} }}</td>
             </tr>
             </tbody>
           </table>
@@ -244,7 +244,7 @@
 
                 <md-list-item>
                   <div layout="column" class="item-column md-list-item-text ">
-                    {{'feed-stats-charts.time_locale' | translate:{date:vm.minDisplayTime} }} - {{'feed-stats-charts.time_locale' | translate:{date:vm.maxDisplayTime} }}</span>
+                    {{'feed-stats-charts.time-locale' | translate:{date:vm.minDisplayTime} }} - {{'feed-stats-charts.time-locale' | translate:{date:vm.maxDisplayTime} }}</span>
                     <span class="column-title column-title-bottom">Date Range</span>
                   </div>
                   <md-divider></md-divider>
