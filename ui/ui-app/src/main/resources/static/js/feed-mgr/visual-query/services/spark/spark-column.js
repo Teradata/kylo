@@ -73,18 +73,18 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
         SparkColumnDelegate.prototype.castTo = function (dataType) {
             if (dataType === SparkDataType.BIGINT) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to bigint" });
+                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to bigint" });
             }
             if (dataType === SparkDataType.DATE) {
                 return this.castToDate();
             }
             if (dataType === SparkDataType.DOUBLE) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to double" });
+                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to double" });
             }
             if (dataType === SparkDataType.INT) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to int" });
+                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to int" });
             }
             if (dataType === SparkDataType.STRING) {
                 return this.castToString();

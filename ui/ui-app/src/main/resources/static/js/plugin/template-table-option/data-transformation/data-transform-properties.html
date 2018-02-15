@@ -15,7 +15,7 @@
 
       <md-list class="layout-padding-top-bottom">
         <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
-          <md-icon>{{state.context.icon}}</md-icon>
+          <ng-md-icon icon="{{state.context.icon}}"></ng-md-icon>
           <p title="{{state.context.name}}">{{state.context.name}}</p>
         </md-list-item>
         <md-divider ng-repeat-end></md-divider>
