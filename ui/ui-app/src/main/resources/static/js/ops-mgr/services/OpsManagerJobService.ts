@@ -5,7 +5,7 @@ import * as moment from "moment";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 
 export default class OpsManagerJobService{
-
+data: any = {};
     constructor(private $q: any,
                 private $http: any,
                 private $log: any,
@@ -13,35 +13,24 @@ export default class OpsManagerJobService{
                 private NotificationService: any,
                 private OpsManagerRestUrlService: any
     ){
-        var data = {};
-        data.JOBS_QUERY_URL = this.OpsManagerRestUrlService.JOBS_QUERY_URL;
-        data.JOBS_CHARTS_QUERY_URL = this.OpsManagerRestUrlService.JOBS_CHARTS_QUERY_URL;
-        data.JOB_NAMES_URL = this.OpsManagerRestUrlService.JOB_NAMES_URL;
-        data.DAILY_STATUS_COUNT_URL = this.OpsManagerRestUrlService.DAILY_STATUS_COUNT_URL;
-
+        
+        this.data.JOBS_QUERY_URL = OpsManagerRestUrlService.JOBS_QUERY_URL;
+        this.data.JOBS_CHARTS_QUERY_URL = OpsManagerRestUrlService.JOBS_CHARTS_QUERY_URL;
+        this.data.JOB_NAMES_URL = OpsManagerRestUrlService.JOB_NAMES_URL;
+        this.data.DAILY_STATUS_COUNT_URL = OpsManagerRestUrlService.DAILY_STATUS_COUNT_URL;
         //data.RUNNING_OR_FAILED_COUNTS_URL = OpsManagerRestUrlService.RUNNING_OR_FAILED_COUNTS_URL;
-
-        data.RUNNING_JOB_COUNTS_URL = this.OpsManagerRestUrlService.RUNNING_JOB_COUNTS_URL;
-
+        this.data.RUNNING_JOB_COUNTS_URL = OpsManagerRestUrlService.RUNNING_JOB_COUNTS_URL;
         //  data.DATA_CONFIDENCE_URL = OpsManagerRestUrlService.DATA_CONFIDENCE_URL;
+        this.data.RESTART_JOB_URL = OpsManagerRestUrlService.RESTART_JOB_URL;
+        this.data.STOP_JOB_URL = OpsManagerRestUrlService.STOP_JOB_URL;
+        this.data.ABANDON_JOB_URL = OpsManagerRestUrlService.ABANDON_JOB_URL;
+        this.data.ABANDON_ALL_JOBS_URL = OpsManagerRestUrlService.ABANDON_ALL_JOBS_URL;
+        this.data.FAIL_JOB_URL = OpsManagerRestUrlService.FAIL_JOB_URL;
+        this.data.LOAD_JOB_URL = OpsManagerRestUrlService.LOAD_JOB_URL;
+        this.data.RELATED_JOBS_URL = OpsManagerRestUrlService.RELATED_JOBS_URL;
 
-        data.RESTART_JOB_URL = this.OpsManagerRestUrlService.RESTART_JOB_URL;
-
-        data.STOP_JOB_URL = this.OpsManagerRestUrlService.STOP_JOB_URL;
-
-        data.ABANDON_JOB_URL = this.OpsManagerRestUrlService.ABANDON_JOB_URL;
-
-        data.ABANDON_ALL_JOBS_URL = this.OpsManagerRestUrlService.ABANDON_ALL_JOBS_URL;
-
-        data.FAIL_JOB_URL = this.OpsManagerRestUrlService.FAIL_JOB_URL;
-
-        data.LOAD_JOB_URL = this.OpsManagerRestUrlService.LOAD_JOB_URL;
-
-        data.RELATED_JOBS_URL = this.OpsManagerRestUrlService.RELATED_JOBS_URL;
-
-
-  data.restartJob =  (executionId: any, params: any, callback: any, errorCallback: any)=>{
-                return this.$http.post(data.RESTART_JOB_URL(executionId), params).then( (data: any) =>{
+          this.data.restartJob = (executionId: any, params: any, callback: any, errorCallback: any)=>{
+                return $http.post(this.data.RESTART_JOB_URL(executionId), params).then( (data: any) =>{
                     callback(data);
                 }, (msg: any)=> {
                     var errorMessage;
@@ -59,8 +48,8 @@ export default class OpsManagerJobService{
                 })
             }
 
-            data.failJob = (executionId: any, params: any, callback: any)=> {
-                return this.$http.post(data.FAIL_JOB_URL(executionId), params).then( (data: any)=> {
+           this.data.failJob = (executionId: any, params: any, callback: any)=> {
+                return $http.post(this.data.FAIL_JOB_URL(executionId), params).then( (data: any)=> {
                     callback(data);
                 }, (msg: any) =>{
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -68,8 +57,8 @@ export default class OpsManagerJobService{
                     //    NotificationService.error( errorMessasge);
                 })
             }
-            data.abandonJob =  (executionId: any, params: any, callback: any)=>{
-                this.$http.post(data.ABANDON_JOB_URL(executionId), params).then( (data: any) =>{
+            this.data.abandonJob =  (executionId: any, params: any, callback: any)=>{
+                $http.post(this.data.ABANDON_JOB_URL(executionId), params).then( (data: any) =>{
                     callback(data);
                 }, (msg: any)=>{
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -78,8 +67,8 @@ export default class OpsManagerJobService{
                 })
             };
 
-            data.abandonAllJobs =  (feed: any, callback: any,errorCallback: any)=> {
-                this.$http.post(data.ABANDON_ALL_JOBS_URL(feed)).then( (data: any)=>{
+            this.data.abandonAllJobs =  (feed: any, callback: any,errorCallback: any)=> {
+                $http.post(this.data.ABANDON_ALL_JOBS_URL(feed)).then( (data: any)=>{
                     callback(data);
                 }, (msg: any) =>{
                     if(errorCallback && angular.isFunction(errorCallback)) {
@@ -88,8 +77,8 @@ export default class OpsManagerJobService{
                 })
             };
 
-            data.stopJob =  (executionId: any, params: any, callback: any)=> {
-                this.$http.post(data.STOP_JOB_URL(executionId), params).then( (data: any) =>{
+           this.data.stopJob =  (executionId: any, params: any, callback: any)=> {
+                $http.post(this.data.STOP_JOB_URL(executionId), params).then( (data: any) =>{
                     callback(data);
                 }, (msg: any)=>{
                     var errorMessasge = msg.error != undefined ? msg.error + ': ' : '';
@@ -102,25 +91,27 @@ export default class OpsManagerJobService{
              *
              * @returns {*|{promise, cancel, abort}|{requests, promise, abort}}
              */
-            data.getJobCountByStatus =  ()=> {
-                return new this.HttpService.get(data.JOB_COUNT_BY_STATUS_URL);
+            this.data.getJobCountByStatus =  ()=> {
+                return new HttpService.get(this.data.JOB_COUNT_BY_STATUS_URL);
 
             }
 
-            data.findAllJobs =  (successFn: any, errorFn: any, finallyFn: any) =>{
-                return new this.HttpService.newRequestBuilder(data.ALL_JOBS_URL).then(successFn,errorFn).finally(finallyFn).build();
+            this.data.findAllJobs =  (successFn: any, errorFn: any, finallyFn: any) =>{
+                return new HttpService.newRequestBuilder(this.data.ALL_JOBS_URL).then(successFn,errorFn).finally(finallyFn).build();
             };
-            data.loadJob =  (instanceId: any) =>{
-                return this.$http.get(data.LOAD_JOB_URL(instanceId));
+            this.data.loadJob =  (instanceId: any) =>{
+                return $http.get(this.data.LOAD_JOB_URL(instanceId));
             };
 
-            data.lastSelectedTab = 'ALL';
+            this.data.lastSelectedTab = 'ALL';
 
-            return data;
+            return this.data;
    }
+       
+
 }
 
 angular.module(moduleName,[])
-        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService]).
-        factory('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService]);
+        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
+        .factory('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService]);
     

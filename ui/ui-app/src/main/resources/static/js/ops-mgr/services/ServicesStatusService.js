@@ -2,6 +2,7 @@ define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlS
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ServicesStatusData = /** @class */ (function () {
+        //static $inject = ['OpsManagerRestUrlService'];
         function ServicesStatusData($q, $http, $interval, $timeout, AlertsService, IconService, OpsManagerRestUrlService) {
             var _this = this;
             this.$q = $q;
@@ -90,7 +91,6 @@ define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlS
             };
             return this.ServicesStatusData;
         }
-        ServicesStatusData.$inject = ['OpsManagerRestUrlService'];
         return ServicesStatusData;
     }());
     exports.default = ServicesStatusData;

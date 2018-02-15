@@ -2,9 +2,10 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Nvd3ChartService = /** @class */ (function () {
-        function Nvd3ChartService(timeout, filter) {
-            this.timeout = timeout;
-            this.filter = filter;
+        function Nvd3ChartService($timeout, $filter) {
+            var _this = this;
+            this.$timeout = $timeout;
+            this.$filter = $filter;
             this.renderEndUpdated = {};
             this.timeoutMap = {};
             this.addToDataMap = function (dataMap, labelValueMapArr, x, value, label) {
@@ -24,16 +25,16 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                 }
             };
             this.expireRenderEnd = function (chart) {
-                delete this.renderEndUpdated[chart];
+                delete _this.renderEndUpdated[chart];
             };
             this.shouldManualUpdate = function (chart) {
-                if (this.renderEndUpdated[chart] == undefined) {
-                    this.renderEndUpdated[chart] = chart;
-                    if (this.timeoutMap[chart] != undefined) {
-                        this.$timeout.cancel(this.timeoutMap[chart]);
+                if (_this.renderEndUpdated[chart] == undefined) {
+                    _this.renderEndUpdated[chart] = chart;
+                    if (_this.timeoutMap[chart] != undefined) {
+                        _this.$timeout.cancel(_this.timeoutMap[chart]);
                     }
-                    this.timeoutMap[chart] = this.$timeout(function () {
-                        this.expireRenderEnd(chart);
+                    _this.timeoutMap[chart] = _this.$timeout(function () {
+                        _this.expireRenderEnd(chart);
                     }, 3000);
                     return true;
                 }

@@ -5,14 +5,16 @@ import "pascalprecht.translate";
 import "d3";
 
 export default class Nvd3ChartService{
-     constructor(private timeout: any,
-                private filter: any){}
+     constructor(private $timeout: any,
+                private $filter: any){
+
+                }
     renderEndUpdated: any = {};
     timeoutMap: any = {};
     
-     addToDataMap = function(dataMap: any, labelValueMapArr: any,x: any,value: any,label: any) {
+     addToDataMap = (dataMap: any, labelValueMapArr: any,x: any,value: any,label: any)=> {
         if(angular.isUndefined(label)) {
-            _.each(labelValueMapArr, function (lv: any) {
+            _.each(labelValueMapArr,  (lv: any)=> {
                 if (dataMap[lv.label] == undefined) {
                     dataMap[lv.label] = {};
                 }
@@ -27,17 +29,17 @@ export default class Nvd3ChartService{
         }
     }
 
-    expireRenderEnd = function(chart: any){
+    expireRenderEnd = (chart: any)=>{
         delete this.renderEndUpdated[chart];
     }
 
-    shouldManualUpdate = function(chart: any){
+    shouldManualUpdate = (chart: any)=>{
         if(this.renderEndUpdated[chart] == undefined){
             this.renderEndUpdated[chart] = chart;
             if(this.timeoutMap[chart] != undefined){
                 this.$timeout.cancel(this.timeoutMap[chart]);
             }
-            this.timeoutMap[chart] = this.$timeout(function(){
+            this.timeoutMap[chart] = this.$timeout(()=>{
                 this.expireRenderEnd(chart) ;
             },3000);
             return true;

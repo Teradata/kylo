@@ -3,54 +3,55 @@ import {moduleName} from "../module-name";
 import module from "../module";
 import * as _ from 'underscore';
 import * as moment from "moment";
+import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 
 export default class AlertsServiceV2{
-    module: ng.IModule;
     constructor(private $q: any,
             private $http: any,
             private $interval:any,
             private OpsManagerRestUrlService: any
-    ){
-    this.module = angular.module(moduleName,[]);
-    this.module.factory('AlertsService',["$q","$http","$interval","OpsManagerRestUrlService",this.factoryFn.bind(this)]);
-    }
-    
-      factoryFn() {
-    /**
+    ){  
+            /**
          * Flag to indicate the alerts have been loaded at least once
          * @type {boolean}
          */
-        var loadedGlobalAlertsSummary = false;
+        let loadedGlobalAlertsSummary = false;
 
-        var alertSummaryRefreshTimeMillis = 5000;
+        let alertSummaryRefreshTimeMillis = 5000;
         /**
          * ref to the refresh interval so we can cancel it
          * @type {null}
          */
-        var alertsSummaryIntervalObject = null;
+        let alertsSummaryIntervalObject = null;
 
-        var transformAlertSummaryResponse = function(alertSummaries: any){
-            _.each(alertSummaries,function(summary: any){
-                summary.since =  moment(summary.lastAlertTimestamp).fromNow();
+    
 
-            });
-        }
+     
+      }
+  
+alertSummData: any[];  
+transformAlertSummaryResponse = (alertSummaries: any)=>{
+    _.each(alertSummaries,function(summary: any){
+        summary.since =  moment(summary.lastAlertTimestamp).fromNow();
 
-        var alertSummData: any[];
-        var data =
+    });
+}
+factoryFn()
+{
+       let data =
         {
             alertsSummary:{
                 lastRefreshTime:'',
-                data:alertSummData
+                data:this.alertSummData
             },
-            transformAlerts:transformAlertSummaryResponse,
-            fetchFeedAlerts:function(feedName: any, feedId: any) {
+            transformAlerts:this.transformAlertSummaryResponse,
+            fetchFeedAlerts:(feedName: any, feedId: any)=> {
                 var deferred = this.$q.defer();
                 this.$http.get(this.OpsManagerRestUrlService.FEED_ALERTS_URL(feedName),
-                          {params:{"feedId":feedId}}).then(function (response: any) {
-                                    transformAlertSummaryResponse(response.data)
+                          {params:{"feedId":feedId}}).then( (response: any)=> {
+                                    this.transformAlertSummaryResponse(response.data)
                                     deferred.resolve(response.data);
-                            }, function(err: any){
+                            }, (err: any)=>{
                                     deferred.reject(err)
                                 });
                 return deferred.promise;
@@ -58,5 +59,11 @@ export default class AlertsServiceV2{
 
         };
         return data;
-      }
 }
+      
+}
+
+angular.module(moduleName,[])
+.service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
+.factory('AlertsService',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2]);
+   

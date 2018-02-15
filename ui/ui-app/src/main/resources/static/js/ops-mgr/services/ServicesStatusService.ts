@@ -7,7 +7,7 @@ import IconService from "../services/IconStatusService";
 export default class ServicesStatusData{
     ServicesStatusData: any;
     
-    static $inject = ['OpsManagerRestUrlService'];
+    //static $inject = ['OpsManagerRestUrlService'];
     constructor(private $q: any,
                 private $http: any,
                 private $interval: any,
@@ -109,7 +109,7 @@ angular.module(moduleName)
         .service("AlertsService", [AlertsService])
         .service("IconService",[IconService])
         .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
-       .factory('ServicesStatusData',
+        .factory('ServicesStatusData',
                 ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 
                 'OpsManagerRestUrlService',
                 ServicesStatusData]);

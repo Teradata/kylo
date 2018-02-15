@@ -3,12 +3,12 @@ import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
-import AlertsService from "./services/AlertsService";
-import IconService from "./services/IconStatusService";
-import OpsManagerFeedService from "./services/OpsManagerFeedService";
+import AlertsService from "./AlertsService";
+import IconService from "./IconStatusService";
+import OpsManagerFeedService from "./OpsManagerFeedService";
 
 export default class OpsManagerDashboardService{
-    data: any;
+
     constructor(private $q: any,
                 private $http: any,
                 private $interval: any,
@@ -20,8 +20,8 @@ export default class OpsManagerDashboardService{
                 private BroadcastService: any,
                 private OpsManagerFeedService: any
     ){
-
-         this.data= {
+       let data: any;
+        data= {
              DASHBOARD_UPDATED:'DASHBOARD_UPDATED',
              FEED_SUMMARY_UPDATED:'FEED_SUMMARY_UPDATED',
              TAB_SELECTED:'TAB_SELECTED',
@@ -35,13 +35,13 @@ export default class OpsManagerDashboardService{
              activeFeedRequest:null,
              activeDashboardRequest:null,
              skipDashboardFeedHealth:false,
-             selectFeedHealthTab:function(tab: any) {
-                 this.BroadcastService.notify(this.data.TAB_SELECTED,tab);
+             selectFeedHealthTab:(tab: any)=> {
+                 this.BroadcastService.notify(data.TAB_SELECTED,tab);
              },
              feedHealthQueryParams:{fixedFilter:'All',filter:'',start:0,limit:10, sort:''}
             };
 
-            this.datasetupFeedHealth = (feedsArray: any)=>{
+            data.setupFeedHealth = (feedsArray: any)=>{
              var processedFeeds: any[] = [];
              if(feedsArray) {
                      var processed: any[] = [];
@@ -91,19 +91,19 @@ export default class OpsManagerDashboardService{
 
          };
 
-         this.data.isFetchingFeedHealth = ()=>{
+         data.isFetchingFeedHealth = ()=>{
              return data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest);
          }
 
-         this.data.isFetchingDashboard = ()=>{
+         data.isFetchingDashboard = ()=>{
              return data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest);
          }
 
-         this.data.setSkipDashboardFeedHealth = (skip: any)=>{
+         data.setSkipDashboardFeedHealth = (skip: any)=>{
              data.skipDashboardFeedHealth = skip;
          }
 
-         this.data.fetchFeeds = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
+         data.fetchFeeds = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
              if(data.activeFeedRequest != null && angular.isDefined(data.activeFeedRequest)){
                  data.activeFeedRequest.reject();
              }
@@ -121,7 +121,7 @@ export default class OpsManagerDashboardService{
              var successFn = (response: any) =>{
                  data.feedsSearchResult = response.data;
                  if(response.data && response.data.data) {
-                     setupFeedHealth(response.data.data);
+                     data.setupFeedHealth(response.data.data);
                      //reset data.dashboard.feeds.data ?
                      data.totalFeeds = response.data.recordsFiltered;
                  }
@@ -139,16 +139,16 @@ export default class OpsManagerDashboardService{
              return promise;
          }
 
-         this.data.updateFeedHealthQueryParams = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
+         data.updateFeedHealthQueryParams = (tab: any,filter: any,start: any,limit: any, sort: any)=>{
              var params = {start: start, limit: limit, sort: sort, filter:filter, fixedFilter:tab};
              angular.extend(data.feedHealthQueryParams,params);
          }
 
-         this.data.fetchDashboard = ()=>{
+         data.fetchDashboard = ()=>{
              if(data.activeDashboardRequest != null && angular.isDefined(data.activeDashboardRequest)){
                  data.activeDashboardRequest.reject();
              }
-             var canceler = this.$q.defer();
+             var canceler = $q.defer();
              data.activeDashboardRequest = canceler;
 
              var successFn = (response: any)=>{
@@ -159,7 +159,7 @@ export default class OpsManagerDashboardService{
                  if(!data.skipDashboardFeedHealth) {
                      data.feedsSearchResult = response.data.feeds;
                      if (data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
-                         var processedFeeds = setupFeedHealth(data.dashboard.feeds.data);
+                         var processedFeeds = data.setupFeedHealth(data.dashboard.feeds.data);
                          data.dashboard.feeds.data = processedFeeds;
                          data.totalFeeds = data.dashboard.feeds.recordsFiltered;
                      }
@@ -194,16 +194,16 @@ export default class OpsManagerDashboardService{
          };
 
          return data;
-      
      }
-
     
 }
 
 angular.module(moduleName,[])
-  .service("AlertsService", [AlertsService])
-        .service("IconService",[IconService])
-        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
-        .service("OpsManagerFeedService",[['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerFeedService])
-.factory('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService]);
+.service("AlertsService", [AlertsService])
+.service("IconService",[IconService])
+.service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
+.service("OpsManagerFeedService",['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
+.factory('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
+                                        'AlertsService', 'OpsManagerRestUrlService','BroadcastService',
+                                        'OpsManagerFeedService',OpsManagerDashboardService]);
    

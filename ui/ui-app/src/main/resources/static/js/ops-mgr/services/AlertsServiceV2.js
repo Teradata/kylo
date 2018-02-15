@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "moment"], function (require, exports, angular, module_name_1, _, moment) {
+define(["require", "exports", "angular", "../module-name", "underscore", "moment", "./OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, _, moment, OpsManagerRestUrlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsServiceV2 = /** @class */ (function () {
@@ -7,14 +7,15 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
             this.$http = $http;
             this.$interval = $interval;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.factory('AlertsService', ["$q", "$http", "$interval", "OpsManagerRestUrlService", this.factoryFn.bind(this)]);
-        }
-        AlertsServiceV2.prototype.factoryFn = function () {
+            this.transformAlertSummaryResponse = function (alertSummaries) {
+                _.each(alertSummaries, function (summary) {
+                    summary.since = moment(summary.lastAlertTimestamp).fromNow();
+                });
+            };
             /**
-                 * Flag to indicate the alerts have been loaded at least once
-                 * @type {boolean}
-                 */
+         * Flag to indicate the alerts have been loaded at least once
+         * @type {boolean}
+         */
             var loadedGlobalAlertsSummary = false;
             var alertSummaryRefreshTimeMillis = 5000;
             /**
@@ -22,22 +23,19 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
              * @type {null}
              */
             var alertsSummaryIntervalObject = null;
-            var transformAlertSummaryResponse = function (alertSummaries) {
-                _.each(alertSummaries, function (summary) {
-                    summary.since = moment(summary.lastAlertTimestamp).fromNow();
-                });
-            };
-            var alertSummData;
+        }
+        AlertsServiceV2.prototype.factoryFn = function () {
+            var _this = this;
             var data = {
                 alertsSummary: {
                     lastRefreshTime: '',
-                    data: alertSummData
+                    data: this.alertSummData
                 },
-                transformAlerts: transformAlertSummaryResponse,
+                transformAlerts: this.transformAlertSummaryResponse,
                 fetchFeedAlerts: function (feedName, feedId) {
-                    var deferred = this.$q.defer();
-                    this.$http.get(this.OpsManagerRestUrlService.FEED_ALERTS_URL(feedName), { params: { "feedId": feedId } }).then(function (response) {
-                        transformAlertSummaryResponse(response.data);
+                    var deferred = _this.$q.defer();
+                    _this.$http.get(_this.OpsManagerRestUrlService.FEED_ALERTS_URL(feedName), { params: { "feedId": feedId } }).then(function (response) {
+                        _this.transformAlertSummaryResponse(response.data);
                         deferred.resolve(response.data);
                     }, function (err) {
                         deferred.reject(err);
@@ -50,5 +48,8 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
         return AlertsServiceV2;
     }());
     exports.default = AlertsServiceV2;
+    angular.module(module_name_1.moduleName, [])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
+        .factory('AlertsService', ["$q", "$http", "$interval", "OpsManagerRestUrlService", AlertsServiceV2]);
 });
 //# sourceMappingURL=AlertsServiceV2.js.map

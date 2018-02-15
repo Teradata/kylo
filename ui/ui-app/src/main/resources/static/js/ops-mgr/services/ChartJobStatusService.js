@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "./IconStatusService", "./Nvd3ChartService"], function (require, exports, angular, module_name_1, IconStatusService_1, Nvd3ChartService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ChartJobStatusService = /** @class */ (function () {
@@ -19,9 +19,14 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 }
             };
         }
+        ;
+        ;
         return ChartJobStatusService;
     }());
     exports.default = ChartJobStatusService;
-    angular.module(module_name_1.moduleName).service('ChartJobStatusService', ["IconService", "Nvd3ChartService", ChartJobStatusService]);
+    angular.module(module_name_1.moduleName)
+        .service('IconService', [IconStatusService_1.default])
+        .service('Nvd3ChartService', ["$timeout", "$filter", Nvd3ChartService_1.default])
+        .service('ChartJobStatusService', ["IconService", "Nvd3ChartService", ChartJobStatusService]);
 });
 //# sourceMappingURL=ChartJobStatusService.js.map
