@@ -1,12 +1,5 @@
-/**
- * Include all common services/directives are are used for the kylo.feedmgr module
- */
-define(['angular',
-        'ops-mgr/alerts/alerts-table',
-        'ops-mgr/alerts/AlertDetailsController'
-        ],function() {
-
+define(["require", "exports", "./alerts-table", "./AlertDetailsController"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
-
-
-
+//# sourceMappingURL=module-require.js.map
