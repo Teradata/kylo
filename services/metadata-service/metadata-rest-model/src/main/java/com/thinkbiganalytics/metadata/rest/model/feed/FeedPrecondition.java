@@ -42,6 +42,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedPrecondition implements Serializable {
 
+    private static final long serialVersionUID = 8728557468456064614L;
+
     private ServiceLevelAgreement sla;
 
     public FeedPrecondition() {

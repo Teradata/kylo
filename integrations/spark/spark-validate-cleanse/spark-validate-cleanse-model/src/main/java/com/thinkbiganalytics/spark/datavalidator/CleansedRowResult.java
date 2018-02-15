@@ -31,6 +31,8 @@ import javax.annotation.Nonnull;
  */
 public class CleansedRowResult implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Nonnull
     private final Row row;
 

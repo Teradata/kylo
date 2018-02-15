@@ -27,6 +27,8 @@ import java.util.List;
  */
 public class CacheBackedProviderClusterMessage<T> implements Serializable {
 
+    private static final long serialVersionUID = 7885759295819771699L;
+
     public static enum Type {
         REMOVED, ADDED, REFRESHED
     }

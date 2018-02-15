@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
  */
 public class FeedFlowFileJobTrackingStats implements Serializable{
 
+    private static final long serialVersionUID = -6092283143558777891L;
+
     //track flows sent vs actual
 
     private Map<String,Integer> actualProcessorIdParentFlowFileCount = null;

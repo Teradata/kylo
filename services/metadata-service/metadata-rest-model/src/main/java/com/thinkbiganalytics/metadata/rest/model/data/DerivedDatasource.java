@@ -29,6 +29,8 @@ import java.util.Map;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DerivedDatasource extends Datasource {
 
+    private static final long serialVersionUID = -4861291017934676961L;
+
     private Map<String, Object> properties;
 
     private String datasourceType;

@@ -52,8 +52,9 @@ import javax.annotation.Nonnull;
 /**
  * Class to store the profile statistics
  */
-@SuppressWarnings("serial")
 public class StandardStatisticsModel implements Serializable, StatisticsModel {
+
+    private static final long serialVersionUID = -6115368868245871747L;
 
     private static final Logger log = LoggerFactory.getLogger(StandardStatisticsModel.class);
     private final Map<Integer, StandardColumnStatistics> columnStatisticsMap = new HashMap<>();

@@ -33,6 +33,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class FeedEventStatisticsData implements Serializable {
 
+    private static final long serialVersionUID = 2553717886105461053L;
+
     protected Map<String, String> feedFlowFileIdToFeedProcessorId = new ConcurrentHashMap<>();
 
     ////Track feedFlowFile relationships to parent/child flow files for lifetime feed job execution

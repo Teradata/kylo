@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of boolean data type <br>
  * [Hive data type: BOOLEAN]
  */
-@SuppressWarnings("serial")
 public class BooleanColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 2676008710763738295L;
 
     /* Boolean specific metrics */
     private long trueCount;

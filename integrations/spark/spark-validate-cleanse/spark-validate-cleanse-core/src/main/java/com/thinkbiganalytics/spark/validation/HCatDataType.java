@@ -39,6 +39,8 @@ import java.util.Map;
  */
 public class HCatDataType implements Cloneable, Serializable {
 
+    private static final long serialVersionUID = 7800654707897465875L;
+
     private static final HCatDataType UNCHECKED_TYPE = new HCatDataType();
     private static final Map<String, HCatDataType> dataTypes = new HashMap<>();
 

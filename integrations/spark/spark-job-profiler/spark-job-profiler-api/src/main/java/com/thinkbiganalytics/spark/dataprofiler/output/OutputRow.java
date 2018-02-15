@@ -28,8 +28,10 @@ import java.io.Serializable;
  *
  * ColumnName, MetricType, MetricValue
  */
-@SuppressWarnings({"unused", "serial"})
+@SuppressWarnings("unused")
 public class OutputRow implements Serializable {
+
+    private static final long serialVersionUID = -8872905670704304249L;
 
     private String columnName;
     private String metricType;

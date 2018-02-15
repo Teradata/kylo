@@ -28,6 +28,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class FeedEventStatisticsDataV2 extends FeedEventStatisticsData {
 
+    private static final long serialVersionUID = -1800168647080612138L;
+
     /**
      * Count of the flows running by feed processor
      */

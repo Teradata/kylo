@@ -45,6 +45,8 @@ import javax.persistence.Table;
 @Table(name = "BATCH_NIFI_STEP")
 public class JpaNifiEventStepExecution implements Serializable, NifiEventStepExecution {
 
+    private static final long serialVersionUID = -7469099741665710069L;
+
     @EmbeddedId
     private NifiEventStepExecutionPK eventStepExecutionPK;
 

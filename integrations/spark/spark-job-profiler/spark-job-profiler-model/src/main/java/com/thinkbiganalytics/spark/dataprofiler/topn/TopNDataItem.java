@@ -27,8 +27,9 @@ import javax.annotation.Nonnull;
 /**
  * Class for an item in Top-N list<br>*
  */
-@SuppressWarnings("serial")
 public class TopNDataItem implements Serializable, Comparable<TopNDataItem> {
+
+    private static final long serialVersionUID = -6767156921667666466L;
 
     private Object value;
     private Long count;

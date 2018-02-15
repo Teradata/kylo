@@ -36,6 +36,8 @@ import java.util.Map;
  */
 public class ProvenanceEventRecordConverter implements Serializable {
 
+    private static final long serialVersionUID = -5171655677407369400L;
+
 
     public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event) {
         ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();

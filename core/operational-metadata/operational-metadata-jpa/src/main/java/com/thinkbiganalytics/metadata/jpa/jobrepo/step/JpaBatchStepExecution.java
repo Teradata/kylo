@@ -63,6 +63,8 @@ import javax.persistence.Version;
 @Table(name = "BATCH_STEP_EXECUTION")
 public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
 
+    private static final long serialVersionUID = -4282924110260629615L;
+
 
     @TableGenerator(
         name = "STEP_EXECUTION_KEY_GENERATOR",

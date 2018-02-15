@@ -43,6 +43,8 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NifiFlowProcessor implements Serializable {
 
+    private static final long serialVersionUID = 3637724741306167250L;
+
     private static final Logger log = LoggerFactory.getLogger(NifiFlowProcessor.class);
 
     @JsonProperty("id")
