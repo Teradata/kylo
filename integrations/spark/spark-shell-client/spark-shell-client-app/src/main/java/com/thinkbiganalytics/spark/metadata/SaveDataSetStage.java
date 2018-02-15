@@ -22,13 +22,17 @@ package com.thinkbiganalytics.spark.metadata;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
+import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
+import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrameWriter;
+import org.apache.spark.sql.types.StructType;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -67,7 +71,7 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
         Preconditions.checkNotNull(transform);
 
         // Configure writer
-        final DataFrameWriter writer = transform.getDataSet().write();
+        final DataFrameWriter writer = getDataSet(transform).write();
 
         if (request.getFormat() != null) {
             writer.format(request.getFormat());
@@ -100,5 +104,31 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
         }
 
         return result;
+    }
+
+    /**
+     * Gets the data set for the specified transformation result.
+     */
+    private DataSet getDataSet(@Nonnull final TransformResult transform) {
+        DataSet dataset = transform.getDataSet();
+
+        if (request.getFormat() != null && request.getFormat().equals("orc")) {
+            // Ensure that column names comply with ORC standards
+            final StructType schema = dataset.schema();
+            final Column[] columns = new Column[schema.size()];
+            final DefaultQueryResultColumn[] queryColumns = new QueryResultRowTransform(schema, "orc").columns();
+
+            for (int i = 0; i < schema.size(); ++i) {
+                if (!queryColumns[i].getField().equals(schema.apply(i).name())) {
+                    columns[i] = new Column(schema.apply(i).name()).as(queryColumns[i].getField());
+                } else {
+                    columns[i] = new Column(schema.apply(i).name());
+                }
+            }
+
+            dataset = dataset.select(columns);
+        }
+
+        return dataset;
     }
 }
