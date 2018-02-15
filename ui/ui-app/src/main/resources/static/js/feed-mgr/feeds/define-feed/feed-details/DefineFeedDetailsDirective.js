@@ -129,6 +129,14 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 RegisterTemplateService.setProcessorRenderTemplateUrl(self.model, 'create');
                var inputProcessors = self.model.inputProcessors;
                 self.inputProcessors = _.sortBy(inputProcessors,'name')
+                // Find controller services
+                _.chain( self.inputProcessors .concat(self.model.nonInputProcessors))
+                    .pluck("properties")
+                    .flatten(true)
+                    .filter(function (property) {
+                        return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                    })
+                    .each(findControllerServicesForProperty);
 
             }else {
                 RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
