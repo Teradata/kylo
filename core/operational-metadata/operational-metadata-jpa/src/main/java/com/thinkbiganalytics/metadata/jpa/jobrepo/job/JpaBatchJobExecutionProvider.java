@@ -563,6 +563,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
             if (updatedJobType) {
                 //notify operations status
+                if(feed instanceof  JpaOpsManagerFeed){
+                    ((JpaOpsManagerFeed)feed).setFeedType(OpsManagerFeed.FeedType.CHECK);
+                }
                 jobExecutionChangedNotifier.notifyDataConfidenceJob(jobExecution, feed, "Data Confidence Job detected ");
             }
 
