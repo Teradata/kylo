@@ -3,6 +3,7 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerFeedService = /** @class */ (function () {
         function OpsManagerFeedService($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService) {
+            var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$interval = $interval;
@@ -11,21 +12,21 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
             this.IconService = IconService;
             this.AlertsService = AlertsService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            var data = {};
-            data.FEED_HEALTH_URL = OpsManagerRestUrlService.FEED_HEALTH_URL;
-            data.FEED_NAMES_URL = OpsManagerRestUrlService.FEED_NAMES_URL;
-            data.FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
-            data.FETCH_FEED_HEALTH_INTERVAL = 5000;
-            data.fetchFeedHealthInterval = null;
-            data.feedHealth = {};
-            // data.SPECIFIC_FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
-            data.SPECIFIC_FEED_HEALTH_URL = OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
-            data.DAILY_STATUS_COUNT_URL = OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
-            data.feedSummaryData = {};
-            data.feedUnhealthyCount = 0;
-            data.feedHealthyCount = 0;
-            data.feedHealth = 0;
-            data.emptyFeed = function () {
+            this.data = {};
+            this.data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
+            this.data.FEED_NAMES_URL = this.OpsManagerRestUrlService.FEED_NAMES_URL;
+            this.data.FEED_HEALTH_COUNT_URL = this.OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
+            this.data.FETCH_FEED_HEALTH_INTERVAL = 5000;
+            this.data.fetchFeedHealthInterval = null;
+            this.data.feedHealth = {};
+            // this.data.SPECIFIC_FEED_HEALTH_COUNT_URL =  this.OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_COUNT_URL;
+            this.data.SPECIFIC_FEED_HEALTH_URL = this.OpsManagerRestUrlService.SPECIFIC_FEED_HEALTH_URL;
+            this.data.DAILY_STATUS_COUNT_URL = this.OpsManagerRestUrlService.FEED_DAILY_STATUS_COUNT_URL;
+            this.data.feedSummaryData = {};
+            this.data.feedUnhealthyCount = 0;
+            this.data.feedHealthyCount = 0;
+            this.data.feedHealth = 0;
+            this.data.emptyFeed = function () {
                 var feed = {};
                 feed.displayStatus = 'LOADING';
                 feed.lastStatus = 'LOADING',
@@ -33,7 +34,7 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
                 feed.isEmpty = true;
                 return feed;
             };
-            data.decorateFeedSummary = function (feed) {
+            this.data.decorateFeedSummary = function (feed) {
                 //GROUP FOR FAILED
                 if (feed.isEmpty == undefined) {
                     feed.isEmpty = false;
@@ -41,7 +42,7 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
                 var health = "---";
                 if (!feed.isEmpty) {
                     health = feed.healthy ? 'HEALTHY' : 'UNHEALTHY';
-                    var iconData = IconService.iconForFeedHealth(health);
+                    var iconData = _this.IconService.iconForFeedHealth(health);
                     feed.icon = iconData.icon;
                     feed.iconstyle = iconData.style;
                 }
@@ -66,34 +67,34 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
                 else {
                     feed.displayStatus = feed.lastStatus;
                 }
-                feed.statusStyle = IconService.iconStyleForJobStatus(feed.displayStatus);
+                feed.statusStyle = _this.IconService.iconStyleForJobStatus(feed.displayStatus);
             };
-            data.fetchFeedSummaryData = function () {
+            this.data.fetchFeedSummaryData = function () {
                 var successFn = function (response) {
-                    data.feedSummaryData = response.data;
+                    _this.data.feedSummaryData = response.data;
                     if (response.data) {
-                        data.feedUnhealthyCount = response.data.failedCount;
-                        data.feedHealthyCount = response.data.healthyCount;
+                        _this.data.feedUnhealthyCount = response.data.failedCount;
+                        _this.data.feedHealthyCount = response.data.healthyCount;
                     }
                 };
                 var errorFn = function (err) {
                 };
                 var finallyFn = function () {
                 };
-                var promise = $http.get(data.FEED_HEALTH_URL);
+                var promise = _this.$http.get(_this.data.FEED_HEALTH_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
-            data.fetchFeedHealth = function () {
+            this.data.fetchFeedHealth = function () {
                 var successFn = function (response) {
                     var unhealthyFeedNames = [];
                     if (response.data) {
                         angular.forEach(response.data, function (feedHealth) {
-                            if (data.feedHealth[feedHealth.feed]) {
-                                angular.extend(data.feedHealth[feedHealth.feed], feedHealth);
+                            if (_this.data.feedHealth[feedHealth.feed]) {
+                                angular.extend(_this.data.feedHealth[feedHealth.feed], feedHealth);
                             }
                             else {
-                                data.feedHealth[feedHealth.feed] = feedHealth;
+                                _this.data.feedHealth[feedHealth.feed] = feedHealth;
                             }
                             if (feedHealth.lastUnhealthyTime) {
                                 feedHealth.sinceTimeString = moment(feedHealth.lastUnhealthyTime).fromNow();
@@ -115,45 +116,47 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
                         //            }
                         //       });
                     }
-                    data.fetchFeedHealthTimeout();
+                    _this.data.fetchFeedHealthTimeout();
                 };
                 var errorFn = function (err) {
-                    data.fetchFeedHealthTimeout();
+                    _this.data.fetchFeedHealthTimeout();
                 };
                 var finallyFn = function () {
                 };
-                var promise = $http.get(data.FEED_HEALTH_COUNT_URL);
+                var promise = _this.$http.get(_this.data.FEED_HEALTH_COUNT_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
-            data.startFetchFeedHealth = function () {
-                if (data.fetchFeedHealthInterval == null) {
-                    data.fetchFeedHealth();
-                    data.fetchFeedHealthInterval = $interval(function () {
-                        data.fetchFeedHealth();
-                    }, data.FETCH_FEED_HEALTH_INTERVAL);
+            this.data.startFetchFeedHealth = function () {
+                if (_this.data.fetchFeedHealthInterval == null) {
+                    _this.data.fetchFeedHealth();
+                    _this.data.fetchFeedHealthInterval = _this.$interval(function () {
+                        _this.data.fetchFeedHealth();
+                    }, _this.data.FETCH_FEED_HEALTH_INTERVAL);
                 }
             };
-            data.fetchFeedHealthTimeout = function () {
-                data.stopFetchFeedHealthTimeout();
-                data.fetchFeedHealthInterval = $timeout(function () {
-                    data.fetchFeedHealth();
-                }, data.FETCH_FEED_HEALTH_INTERVAL);
+            this.data.fetchFeedHealthTimeout = function () {
+                _this.data.stopFetchFeedHealthTimeout();
+                _this.data.fetchFeedHealthInterval = _this.$timeout(function () {
+                    _this.data.fetchFeedHealth();
+                }, _this.data.FETCH_FEED_HEALTH_INTERVAL);
             };
-            data.stopFetchFeedHealthTimeout = function () {
-                if (data.fetchFeedHealthInterval != null) {
-                    $timeout.cancel(data.fetchFeedHealthInterval);
+            this.data.stopFetchFeedHealthTimeout = function () {
+                if (_this.data.fetchFeedHealthInterval != null) {
+                    _this.$timeout.cancel(_this.data.fetchFeedHealthInterval);
                 }
             };
-            return data;
+            return this.data;
         }
+        OpsManagerFeedService.$inject = ['OpsManagerRestUrlService'];
         return OpsManagerFeedService;
     }());
     exports.default = OpsManagerFeedService;
-    angular.module(module_name_1.moduleName, [])
+    angular.module(module_name_1.moduleName)
         .service("AlertsService", [AlertsService_1.default])
         .service("IconService", [IconStatusService_1.default])
         .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
-        .factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
+        .factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService',
+        'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
 });
 //# sourceMappingURL=OpsManagerFeedService.js.map

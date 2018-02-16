@@ -202,7 +202,7 @@ angular.module(moduleName,[])
 .service("AlertsService", [AlertsService])
 .service("IconService",[IconService])
 .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
-.service("OpsManagerFeedService",['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
+.service("OpsManagerFeedService",['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService','OpsManagerRestUrlService',OpsManagerFeedService])
 .factory('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
                                         'AlertsService', 'OpsManagerRestUrlService','BroadcastService',
                                         'OpsManagerFeedService',OpsManagerDashboardService]);
