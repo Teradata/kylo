@@ -201,37 +201,7 @@
     </div>
 
 
-    <div layout="row" class="feed-property  versions-{{vm.diff('/options/rip')}}">
-      <span flex="25" class="property-name">{{"views.feed-data-policies.Rip" | translate}}</span>
 
-      <div flex layout="row" layout-align="start start" layout-wrap="true">
-        <div layout="row">
-          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.shouldIndexingOptionsBeDisabled(vm.model)"></ng-md-icon>
-          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="vm.shouldIndexingOptionsBeEnabled(vm.model)"></ng-md-icon>
-        </div>
-      </div>
-      <div flex layout="row" layout-align="start start" layout-wrap="true" ng-if="vm.versions && vm.versionFeedModel.historyReindexingStatus">
-        <div layout="row">
-          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.shouldIndexingOptionsBeDisabled(vm.versionFeedModel)"></ng-md-icon>
-          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="vm.shouldIndexingOptionsBeEnabled(vm.versionFeedModel)"></ng-md-icon>
-        </div>
-      </div>
-    </div>
-
-    <div ng-if="vm.shouldIndexingOptionsBeEnabled()" layout="row" class="feed-property  versions-{{vm.diff('/options/rls')}}">
-      <span flex="25" class="property-name">{{"views.feed-data-policies.Rls" | translate}}</span>
-
-      <div flex layout="row" layout-align="start start" layout-wrap="true">
-        <div layout="row">
-          <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | lowercase}}</span>
-        </div>
-      </div>
-      <div flex layout="row" layout-align="start start" layout-wrap="true" ng-if="vm.versions && vm.versionFeedModel.historyReindexingStatus">
-        <div layout="row">
-          <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | lowercase}}</span>
-        </div>
-      </div>
-    </div>
 
 
   </readonly-section>

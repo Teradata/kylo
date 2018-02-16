@@ -270,14 +270,6 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             return !this.shouldIndexingOptionsBeDisabled();
         };
 
-        this.findAndReplaceString = function(str, findStr, replacementStr) {
-            var i = 0;
-            var strLength = str.length;
-            for (i; i < strLength; i++) {
-                str = str.replace(findStr, replacementStr);
-            }
-            return str;
-        };
 
             this.onEdit = function () {
             //copy the model
