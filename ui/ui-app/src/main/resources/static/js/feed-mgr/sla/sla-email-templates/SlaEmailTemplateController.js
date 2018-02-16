@@ -111,7 +111,7 @@ define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
 
 
         this.exampleTemplate = function(){
-            self.template.subject = 'SlA Violation for $sla.name';
+            self.template.subject = 'SLA Violation for $sla.name';
             self.template.template = '<html>\n<body> \n'+
                                      '\t<table>\n'+
                                      '\t\t<tr>\n'+
