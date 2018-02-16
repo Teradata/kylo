@@ -24,10 +24,12 @@
     <readonly-section>
       <div layout="row" class="start center">
         <span flex="25" class="property-name">Compare versions</span>
-        <md-select flex ng-model="vm.leftVersion" ng-change="vm.changeLeftVersion()" style="margin-bottom: 0; margin-top: -7px; margin-right: 20px;">
+        <span flex >{{vm.leftVersion}}</span>
+       <!-- <md-select flex ng-model="vm.leftVersion" ng-change="vm.changeLeftVersion()" style="margin-bottom: 0; margin-top: -7px; margin-right: 20px;">
           <md-option ng-value="vm.leftVersion">
             {{vm.leftVersion}}
           </md-option>
+          -->
         </md-select>
         <md-select flex ng-model="vm.rightVersion" ng-change="vm.changeRightVersion()" style="margin-bottom: 0; margin-top: -7px; margin-right: 20px;">
           <md-option ng-repeat="version in vm.versions" ng-value="version.id">
