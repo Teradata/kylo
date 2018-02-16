@@ -111,7 +111,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
          * All possible schedule strategies
          * @type {*[]}
          */
-        var allScheduleStrategies = [{label: $filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.TE'), value: "TRIGGER_DRIVEN"},
+        var allScheduleStrategies = [{label: $filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.T/E'), value: "TRIGGER_DRIVEN"},
             {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
         /**
