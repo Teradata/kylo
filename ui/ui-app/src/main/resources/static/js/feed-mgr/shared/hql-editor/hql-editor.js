@@ -31,7 +31,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         };
     };
 
-    var controller = function($scope, $element, $mdDialog, $mdToast, $http, $filter, RestUrlService, StateService, HiveService, DatasourcesService, CodeMirrorService, FattableService) {
+    var controller = function($scope, $element, $mdDialog, $mdToast, $http, $filter,$q, RestUrlService, StateService, HiveService, DatasourcesService, CodeMirrorService, FattableService) {
 
         var self = this;
         var init = function() {
@@ -118,11 +118,16 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             };
 
             var promise;
-            if (self.datasource.isHive) {
-                promise = HiveService.getTablesAndColumns();
-            } else {
-                promise = DatasourcesService.getTablesAndColumns(self.datasourceId, self.defaultSchemaName);
-            }
+
+                if (angular.isDefined(self.datasource) && self.datasource.isHive) {
+                    promise = HiveService.getTablesAndColumns();
+                } else if(angular.isDefined(self.datasourceId)){
+                    promise = DatasourcesService.getTablesAndColumns(self.datasourceId, self.defaultSchemaName);
+                }
+                else {
+                    promise = $q.defer().promise;
+                    return promise;
+                }
             promise.then(successFn, errorFn);
             return promise;
         }
@@ -210,10 +215,15 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             self.editor = _editor;
         };
 
-        getDatasource(self.datasourceId).then(init);
+        if(angular.isDefined(self.datasourceId)) {
+            getDatasource(self.datasourceId).then(init);
+        }
+        else {
+          //.  init();
+        }
     };
 
-    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","$filter","RestUrlService","StateService","HiveService","DatasourcesService","CodeMirrorService","FattableService", controller]);
+    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","$filter","$q","RestUrlService","StateService","HiveService","DatasourcesService","CodeMirrorService","FattableService", controller]);
     angular.module(moduleName).directive('thinkbigHqlEditor', directive);
 
 
