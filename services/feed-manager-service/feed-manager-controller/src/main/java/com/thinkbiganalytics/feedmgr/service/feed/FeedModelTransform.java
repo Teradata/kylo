@@ -209,7 +209,7 @@ public class FeedModelTransform {
             feedMetadata.setDescription("");
         }
         domain.setDescription(feedMetadata.getDescription());
-        domain.setAllowIndexing(feedMetadata.getAllowIndexing());
+        domain.setAllowIndexing(feedMetadata.isAllowIndexing());
 
         if (StringUtils.isNotBlank(feedMetadata.getHistoryReindexingStatus())) {
             domain.updateHistoryReindexingStatus(
@@ -378,7 +378,7 @@ public class FeedModelTransform {
         feed.setFeedName(domain.getDisplayName());
         feed.setSystemFeedName(domain.getName());
         feed.setDescription(domain.getDescription());
-        feed.setAllowIndexing(domain.getAllowIndexing());
+        feed.setAllowIndexing(domain.isAllowIndexing());
         feed.setHistoryReindexingStatus(domain.getCurrentHistoryReindexingStatus().getHistoryReindexingState().toString());
         feed.setOwner(domain.getOwner() != null ? new User(domain.getOwner().getName()) : null);
         

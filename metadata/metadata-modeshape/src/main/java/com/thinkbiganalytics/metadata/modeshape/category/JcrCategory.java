@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -209,13 +210,14 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     @Override
-    public String getAllowIndexing() {
-        return super.getProperty(ALLOW_INDEXING, String.class);
+    public boolean isAllowIndexing() {
+        String allowIndexing = JcrPropertyUtil.getProperty(getNode(),ALLOW_INDEXING, "Y"); //returns Y if property doesn't exist
+        return allowIndexing.equals("Y");
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
-        super.setProperty(ALLOW_INDEXING, allowIndexing);
+    public void setAllowIndexing(boolean allowIndexing) {
+        super.setProperty(ALLOW_INDEXING, allowIndexing?"Y":"N");
     }
 
     @Override

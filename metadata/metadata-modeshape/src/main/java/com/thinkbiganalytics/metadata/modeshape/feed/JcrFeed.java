@@ -580,16 +580,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     }
 
     @Override
-    public String getAllowIndexing() {
-        Optional<FeedSummary> feedSummary = getFeedSummary();
-        if (feedSummary.isPresent()) {
-          return String.valueOf(feedSummary.get().getProperty(FeedSummary.ALLOW_INDEXING));
-        }
-        return null;
+    public boolean isAllowIndexing() {
+        return getFeedSummary().map(s -> s.isAllowIndexing()).orElse(true); //default is true
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
-        getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.ALLOW_INDEXING, allowIndexing));
+    public void setAllowIndexing(boolean allowIndexing) {
+        getFeedSummary().ifPresent(s -> s.setAllowIndexing(allowIndexing));
     }
 }

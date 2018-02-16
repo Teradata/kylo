@@ -285,7 +285,7 @@ define(['angular', 'feed-mgr/module-name','constants/AccessConstants'], function
         $scope.onSave = function ($event) {
             if ($scope.allowIndexing != $scope.entity.allowIndexing) {
                 var indexInfoForDisplay = "";
-                if ($scope.allowIndexing === 'N') {
+                if (!$scope.allowIndexing) {
                     indexInfoForDisplay = "Disabling indexing of metadata and schema...";
                 } else {
                     indexInfoForDisplay = "Enabling indexing of metadata and schema...";

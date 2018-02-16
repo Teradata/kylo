@@ -20,6 +20,8 @@ package com.thinkbiganalytics.metadata.modeshape.common;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+
 import javax.jcr.Node;
 
 /**
@@ -59,12 +61,13 @@ public class AbstractJcrSystemEntity extends JcrPropertiesEntity {
         setProperty(TITLE, title);
     }
 
-    public String getAllowIndexing() {
-        return getProperty(ALLOW_INDEXING, String.class);
+    public boolean isAllowIndexing() {
+        String allowIndexing = JcrPropertyUtil.getProperty(getNode(),ALLOW_INDEXING, "Y"); // returns Y if property doesn't exist
+        return allowIndexing.equals("Y");
     }
 
-    public void setAllowIndexing(String allowIndexing) {
-        setProperty(ALLOW_INDEXING, allowIndexing);
+    public void setAllowIndexing(boolean allowIndexing) {
+        setProperty(ALLOW_INDEXING, allowIndexing?"Y":"N");
     }
 
 }

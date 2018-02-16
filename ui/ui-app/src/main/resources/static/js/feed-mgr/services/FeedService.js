@@ -154,7 +154,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     tableOption: {},
                     cloned: false,
                     usedByFeeds: [],
-                    allowIndexing: 'Y',
+                    allowIndexing: true,
                     historyReindexingStatus: 'NEVER_RUN',
                     view: {
                         generalInfo: { disabled: false },

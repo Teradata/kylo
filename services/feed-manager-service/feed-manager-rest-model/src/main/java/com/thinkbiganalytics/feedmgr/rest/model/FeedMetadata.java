@@ -154,7 +154,7 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
      */
     private Map<String, Object> tableOption;
 
-    private String allowIndexing = "Y";
+    private boolean allowIndexing = true;
     private String historyReindexingStatus = "";
 
     public String getHistoryReindexingStatus() {
@@ -276,11 +276,11 @@ public class FeedMetadata extends EntityAccessControl implements UIFeed {
         this.systemFeedName = systemFeedName;
     }
 
-    public String getAllowIndexing() {
+    public boolean isAllowIndexing() {
         return allowIndexing;
     }
 
-    public void setAllowIndexing(String allowIndexing) {
+    public void setAllowIndexing(boolean allowIndexing) {
         this.allowIndexing = allowIndexing;
     }
 

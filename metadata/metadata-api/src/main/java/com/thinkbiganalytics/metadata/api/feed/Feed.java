@@ -92,9 +92,9 @@ public interface Feed extends Propertied, AccessControlled, Serializable {
 
     boolean removeUsedByFeed(Feed feed);
 
-    String getAllowIndexing();
+    boolean isAllowIndexing();
 
-    void setAllowIndexing(String allowIndexing);
+    void setAllowIndexing(boolean allowIndexing);
 
     Category getCategory();
 
