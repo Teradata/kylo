@@ -40,7 +40,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
              */
             this.loadSortOptions = function () {
                 var options = { 'Component Name': 'name', 'Components': 'componentsCount', 'Alerts': 'alertsCount', 'Update Date': 'latestAlertTimestamp' };
-                var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'latestAlertTimestamp', 'asc');
+                var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'name', 'asc');
                 this.TableOptionsService.initializeSortOption(this.pageName);
                 return sortOptions;
             };

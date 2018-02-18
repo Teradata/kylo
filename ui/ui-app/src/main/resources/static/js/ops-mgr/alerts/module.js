@@ -1,13 +1,14 @@
-define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
+define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "kylo-common", "kylo-services", "kylo-opsmgr"], function (require, exports, angular, module_name_1, LazyLoadUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var AccessConstants = require("../../constants/AccessConstants");
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.module = angular.module(module_name_1.moduleName, []);
             this.module.config(['$stateProvider', '$compileProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
-            $stateProvider.state(AccessConstants_1.default.UI_STATES.ALERTS.state, {
+            $stateProvider.state(AccessConstants.UI_STATES.ALERTS.state, {
                 url: '/alerts',
                 views: {
                     'content': {
@@ -25,9 +26,9 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 data: {
                     displayName: 'Alerts',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.ALERTS.permissions
+                    permissions: AccessConstants.UI_STATES.ALERTS.permissions
                 }
-            }).state(AccessConstants_1.default.UI_STATES.ALERT_DETAILS.state, {
+            }).state(AccessConstants.UI_STATES.ALERT_DETAILS.state, {
                 url: "/alert-details/{alertId}",
                 views: {
                     'content': {
@@ -45,7 +46,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 data: {
                     displayName: 'Alert Details',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.ALERT_DETAILS.permissions
+                    permissions: AccessConstants.UI_STATES.ALERT_DETAILS.permissions
                 }
             });
         };

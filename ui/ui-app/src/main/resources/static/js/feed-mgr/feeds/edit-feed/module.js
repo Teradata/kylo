@@ -57,7 +57,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
             })
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
+            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
         }
     }]);
 

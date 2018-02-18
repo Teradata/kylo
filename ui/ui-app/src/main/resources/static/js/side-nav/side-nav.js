@@ -1,6 +1,7 @@
-define(["require", "exports", "angular", "underscore", "./module-name", "../constants/AccessConstants", "./module", "../services/services.module", "pascalprecht.translate"], function (require, exports, angular, _, module_name_1, AccessConstants_1) {
+define(["require", "exports", "angular", "underscore", "./module-name", "./module", "../services/services.module", "pascalprecht.translate"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var AccessConstants = require('../constants/AccessConstants');
     var directive = /** @class */ (function () {
         function directive($mdSidenav, $mdDialog, $rootScope, $transitions, $timeout, SideNavService, AccessControlService, StateService, AccordionMenuService, AngularModuleExtensionService, $filter) {
             var _this = this;
@@ -28,11 +29,11 @@ define(["require", "exports", "angular", "underscore", "./module-name", "../cons
                     var links = [];
                     links.push({ sref: "feeds", type: 'link', icon: "linear_scale",
                         text: _this.$filter('translate')('views.main.feeds'),
-                        permission: AccessConstants_1.default.UI_STATES.FEEDS.permissions });
-                    links.push({ sref: "categories", type: 'link', icon: "folder_special", text: _this.$filter('translate')('views.main.categories'), permission: AccessConstants_1.default.UI_STATES.CATEGORIES.permissions });
-                    links.push({ sref: "service-level-agreements", type: 'link', icon: "beenhere", text: _this.$filter('translate')('views.main.sla'), permission: AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions });
-                    links.push({ sref: "visual-query", type: 'link', icon: "transform", text: _this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission: AccessConstants_1.default.UI_STATES.VISUAL_QUERY.permissions });
-                    links.push({ sref: "catalog", type: 'link', icon: "grid_on", text: _this.$filter('translate')('views.main.tables'), permission: AccessConstants_1.default.UI_STATES.TABLES.permissions });
+                        permission: AccessConstants.UI_STATES.FEEDS.permissions });
+                    links.push({ sref: "categories", type: 'link', icon: "folder_special", text: _this.$filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.CATEGORIES.permissions });
+                    links.push({ sref: "service-level-agreements", type: 'link', icon: "beenhere", text: _this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions });
+                    links.push({ sref: "visual-query", type: 'link', icon: "transform", text: _this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission: AccessConstants.UI_STATES.VISUAL_QUERY.permissions });
+                    links.push({ sref: "catalog", type: 'link', icon: "grid_on", text: _this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions });
                     addExtensionLinks(MENU_KEY.FEED_MGR, links);
                     var menu = ({ type: 'toggle',
                         text: _this.$filter('translate')('views.main.feed-manage'),
@@ -51,13 +52,13 @@ define(["require", "exports", "angular", "underscore", "./module-name", "../cons
                  */
                 var buildOpsManagerMenu = function () {
                     var links = [];
-                    links.push({ sref: "dashboard", type: 'link', icon: "dashboard", text: _this.$filter('translate')('views.main.dashboard'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.DASHBOARD.permissions });
-                    links.push({ sref: "service-health", type: 'link', icon: "vector_triangle", text: _this.$filter('translate')('views.main.services'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.SERVICE_HEALTH.permissions });
-                    links.push({ sref: "jobs", type: 'link', icon: "settings", text: _this.$filter('translate')('views.main.jobs'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.JOBS.permissions });
-                    links.push({ sref: "alerts", icon: "notifications", text: _this.$filter('translate')('views.main.alerts'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.ALERTS.permissions });
-                    links.push({ sref: "service-level-assessments", type: 'link', icon: "work", text: _this.$filter('translate')('views.main.sla-assessments'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions });
-                    links.push({ sref: "scheduler", type: 'link', icon: "today", text: _this.$filter('translate')('views.main.sla-schedule'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.SCHEDULER.permissions });
-                    links.push({ sref: "charts", type: 'link', icon: "insert_chart", text: _this.$filter('translate')('views.main.charts'), defaultActive: false, permission: AccessConstants_1.default.UI_STATES.CHARTS.permissions });
+                    links.push({ sref: "dashboard", type: 'link', icon: "dashboard", text: _this.$filter('translate')('views.main.dashboard'), defaultActive: false, permission: AccessConstants.UI_STATES.DASHBOARD.permissions });
+                    links.push({ sref: "service-health", type: 'link', icon: "vector_triangle", text: _this.$filter('translate')('views.main.services'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_HEALTH.permissions });
+                    links.push({ sref: "jobs", type: 'link', icon: "settings", text: _this.$filter('translate')('views.main.jobs'), defaultActive: false, permission: AccessConstants.UI_STATES.JOBS.permissions });
+                    links.push({ sref: "alerts", icon: "notifications", text: _this.$filter('translate')('views.main.alerts'), defaultActive: false, permission: AccessConstants.UI_STATES.ALERTS.permissions });
+                    links.push({ sref: "service-level-assessments", type: 'link', icon: "work", text: _this.$filter('translate')('views.main.sla-assessments'), defaultActive: false, permission: AccessConstants.UI_STATES.SERVICE_LEVEL_ASSESSMENTS.permissions });
+                    links.push({ sref: "scheduler", type: 'link', icon: "today", text: _this.$filter('translate')('views.main.sla-schedule'), defaultActive: false, permission: AccessConstants.UI_STATES.SCHEDULER.permissions });
+                    links.push({ sref: "charts", type: 'link', icon: "insert_chart", text: _this.$filter('translate')('views.main.charts'), defaultActive: false, permission: AccessConstants.UI_STATES.CHARTS.permissions });
                     addExtensionLinks(MENU_KEY.OPS_MGR, links);
                     var menu = ({ type: 'toggle',
                         text: _this.$filter('translate')('views.main.operations'),
@@ -76,10 +77,10 @@ define(["require", "exports", "angular", "underscore", "./module-name", "../cons
                     var links = [];
                     links.push({ sref: "datasources", type: "link", icon: "storage", text: _this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: _this.AccessControlService.DATASOURCE_ACCESS });
                     links.push({ sref: "domain-types", type: "link", icon: "local_offer", text: _this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: _this.AccessControlService.FEEDS_ADMIN });
-                    links.push({ sref: "business-metadata", type: 'link', icon: "business", text: _this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants_1.default.CATEGORIES_ADMIN });
-                    links.push({ sref: "registered-templates", type: 'link', icon: "layers", text: _this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants_1.default.TEMPLATES_ACCESS });
-                    links.push({ sref: "users", type: 'link', icon: "account_box", text: _this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants_1.default.USERS_ACCESS });
-                    links.push({ sref: "groups", type: 'link', icon: "group", text: _this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants_1.default.GROUP_ACCESS });
+                    links.push({ sref: "business-metadata", type: 'link', icon: "business", text: _this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN });
+                    links.push({ sref: "registered-templates", type: 'link', icon: "layers", text: _this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS });
+                    links.push({ sref: "users", type: 'link', icon: "account_box", text: _this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS });
+                    links.push({ sref: "groups", type: 'link', icon: "group", text: _this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS });
                     //links.push({sref: "sla-email-templates",type:'link', icon: "email", text: $filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
                     addExtensionLinks(MENU_KEY.ADMIN, links);
                     var menu = ({ type: 'toggle',

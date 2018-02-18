@@ -6,4 +6,4 @@ import * as DataConfidenceIndicatorDirective from "./data-confidence-indicator/D
 import FeedHealthTableCardController from "./feed-health/FeedHealthTableCardDirective";
 import * as FeedStatusIndicatorController from "./feed-status-indicator/FeedsStatusIndicatorDirective";
 import * as JobStatusIndicatorController from "./job-status-indicator/JobStatusIndicatorDirective";
-import * as ServicesIndicatorDirective from  "./services-indicator/ServicesIndicatorDirective";
+// import * as ServicesIndicatorDirective from  "./services-indicator/ServicesIndicatorDirective";

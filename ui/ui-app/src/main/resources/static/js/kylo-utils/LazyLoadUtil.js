@@ -31,7 +31,7 @@ define(["require", "exports", "underscore"], function (require, exports, _) {
                                 return 0;
                             });
                             _.each(dependencies, function (dependency) {
-                                if (_.indexOf(dependencies, dependency) < 0) {
+                                if (_.indexOf(path, dependency) < 0) {
                                     path.unshift(dependency);
                                 }
                             });

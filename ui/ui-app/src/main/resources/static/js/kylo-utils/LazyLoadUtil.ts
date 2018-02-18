@@ -30,7 +30,7 @@ class LazyLoadUtilClass{
 
                     _.each(dependencies,(dependency: any)=> {
 
-                        if (_.indexOf(dependencies,dependency) < 0) {
+                        if (_.indexOf(path,dependency) < 0) {
                             path.unshift(dependency);
                         }
 
