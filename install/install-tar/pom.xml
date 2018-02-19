@@ -5,7 +5,7 @@
   <parent>
     <artifactId>kylo-install</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.0</version>
+    <version>0.9.0.1-SNAPSHOT</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>kylo-install-tar</artifactId>
@@ -19,117 +19,117 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-elasticsearch-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-processors</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-provenance-repo-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-provenance-repo-v1.2-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-core-service-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-hadoop-service-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-spark-service-v1-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-nifi-standard-services-nar</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
       <type>nar</type>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-shell-client-v1</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-shell-client-v2</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-spark-v1</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-interpreter-spark-v1</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-interpreter-spark-v2</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-job-profiler-spark-v2</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-validate-cleanse-spark-v2</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-precondition-default</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
       <artifactId>kylo-schema-discovery-default</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.0.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
