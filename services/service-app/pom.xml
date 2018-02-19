@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-services</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.0</version>
+    <version>0.9.1-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
 
@@ -245,7 +245,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-kerberos-core</artifactId>
-      <version>0.9.0</version>
+      <version>0.9.1-SNAPSHOT</version>
     </dependency>
 
     <!-- NiFi REST clients -->
