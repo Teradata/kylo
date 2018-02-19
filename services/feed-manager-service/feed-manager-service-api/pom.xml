@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>

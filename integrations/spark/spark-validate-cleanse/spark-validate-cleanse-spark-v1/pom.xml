@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-spark-validate-cleanse</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.0</version>
   </parent>
   <properties>
     <jackson.databind.version>2.4.4</jackson.databind.version>
@@ -15,7 +15,7 @@
   </properties>
 
   <artifactId>kylo-spark-validate-cleanse-spark-v1</artifactId>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.0</version>
 
   <dependencies>
 
