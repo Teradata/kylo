@@ -496,6 +496,23 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             StateService.OpsManager().Feed().navigateToFeedDetails(feedName);
         };
 
+        this.shouldIndexingOptionsBeDisabled = function() {
+            return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+        };
+
+        this.shouldIndexingOptionsBeEnabled = function() {
+            return !this.shouldIndexingOptionsBeDisabled();
+        };
+
+        this.findAndReplaceString = function(str, findStr, replacementStr) {
+            var i = 0;
+            var strLength = str.length;
+            for (i; i < strLength; i++) {
+                str = str.replace(findStr, replacementStr);
+            }
+           return str;
+        };
+
         init();
     };
 
@@ -536,6 +553,18 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
 
     };
+
+    angular.module(moduleName).filter('capitalizeFirstLetterOfEachWord', function() {
+        return function(str) {
+            return (!!str) ?
+                   str.split(' ')
+                        .map(function(word) {
+                            return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+                        })
+                       .join(' ')
+                    : '';
+        }
+    });
 
     angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService","UiComponentsService",controller]);
 

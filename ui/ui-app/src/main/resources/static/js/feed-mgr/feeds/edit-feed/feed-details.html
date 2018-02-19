@@ -166,6 +166,21 @@
                     <span class="hint"> {{"views.feed-details.Category" | translate}} </span>
                 </div>
 
+                <div layout="column" class="layout-padding-top-bottom">
+                  <div>
+                    <span ng-if="vm.shouldIndexingOptionsBeDisabled()">{{"views.feed-data-policies.Rip.Yes" | translate}}</span>
+                    <span ng-if="vm.shouldIndexingOptionsBeEnabled()">{{"views.feed-data-policies.Rip.No" | translate}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rip" | translate}} </span>
+                </div>
+
+                <div layout="column" class="layout-padding-top-bottom" ng-if="vm.shouldIndexingOptionsBeEnabled()">
+                  <div>
+                    <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | capitalizeFirstLetterOfEachWord}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rls" | translate}} </span>
+                </div>
+
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
                 <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div>
