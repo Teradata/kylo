@@ -329,7 +329,7 @@
     "views.feed-data-policies.Index2": "Index",
     "view.feed-data-policies.Index2Star": "Index(*)",
     "views.feed-data-policies.DwsbstGS2": "Define what should be sent to «Global Search»",
-    "views.feed-data-policies.HripCd": "History data reindexing is in progress. Changes will be allowed after completion.",
+    "views.feed-data-policies.HripCd": "History data reindexing changes already pending. Further indexing changes will be allowed after those have completed.",
     "views.feed-data-policies.Profile2": "Profile",
     "views.feed-data-policies.Stfbp2": "Should this field be profiled?",
     "views.feed-data-policies.Standardize2": "Standardize",
