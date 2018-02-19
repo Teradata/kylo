@@ -151,7 +151,6 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 columnDef.origDataType = columnDef.derivedDataType;
                 columnDef.deleted = false;
                 columnDef.history = [];
-                initValidationErrors(columnDef); //this is required when schema is created from db connection
                 self.addHistoryItem(columnDef);
             }
         }
@@ -525,14 +524,16 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
 
         this.validateColumn = function(columnDef) {
             // console.log("validateColumn");
+            if (columnDef.validationErrors === undefined) {
+                initValidationErrors(columnDef);
+            }
+
             if (!isDeleted(columnDef)) {
                 columnDef.validationErrors.name.reserved = columnDef.name === "processing_dttm";
                 columnDef.validationErrors.name.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
                 columnDef.validationErrors.name.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
                 columnDef.validationErrors.name.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
                 columnDef.validationErrors.precision.pattern = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
-            } else {
-                initValidationErrors(columnDef);
             }
 
             //update all columns at all times, because column removal may fix not unique name error on other columns
@@ -572,6 +573,10 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         };
 
         this.errorMessage = function(columnDef) {
+            if (columnDef.validationErrors === undefined) {
+                return;
+            }
+
             if (columnDef.validationErrors.name.required) {
                 return self.messages.name.required;
             }
