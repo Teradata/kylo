@@ -39,9 +39,6 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             });
         };
 
-        this.changeLeftVersion = function() {
-        };
-
         function getCurrentVersion() {
             return self.versions[0];
         }
@@ -52,6 +49,7 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             });
             self.loading = true;
             var diff = FeedService.diffFeedVersions(this.model.feedId, self.rightVersion, getCurrentVersion().id).then(function(result) {
+                // console.log('diff', result.difference);
                 FeedService.versionFeedModelDiff = [];
                 _.each(result.difference.patch, function(patch) {
                     FeedService.versionFeedModelDiff[patch.path] = patch;

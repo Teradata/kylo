@@ -27,6 +27,7 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
      * @type {Object}
      */
     model: any = this.FeedService.editFeedModel;
+    versionModel: any = this.FeedService.versionFeedModel;
 
     static readonly $inject = ["$scope", "$q", "AccessControlService", "FeedService", "StateService", "VisualQueryService"];
 
@@ -42,6 +43,15 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
                 }
             });
 
+        if (this.versions) {
+            this.$scope.$watch(() => {
+                    return FeedService.versionFeedModel;
+                },
+                () => {
+                   this.versionModel = angular.copy(FeedService.versionFeedModel);
+                });
+        }
+
         //Apply the entity access permissions
         this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
             .then((access: any) => {
@@ -56,6 +66,15 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
         this.VisualQueryService.resetModel();
         this.StateService.FeedManager().Feed().navigateToEditFeedInStepper(this.model.feedId);
     }
+
+    diff = function(path: any) {
+        return this.FeedService.diffOperation(path);
+    };
+
+    diffCollection = function(path: any) {
+        return this.FeedService.diffCollectionOperation(path);
+    };
+
 }
 
 angular.module("kylo.plugin.template-table-option.data-transformation", [])

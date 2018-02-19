@@ -34,6 +34,13 @@ define(["require", "exports", "angular", "@angular/core"], function (require, ex
              * @type {Object}
              */
             this.model = this.FeedService.editFeedModel;
+            this.versionModel = this.FeedService.versionFeedModel;
+            this.diff = function (path) {
+                return this.FeedService.diffOperation(path);
+            };
+            this.diffCollection = function (path) {
+                return this.FeedService.diffCollectionOperation(path);
+            };
             // Watch for model changes
             this.$scope.$watch(function () {
                 return FeedService.editFeedModel;
@@ -43,6 +50,13 @@ define(["require", "exports", "angular", "@angular/core"], function (require, ex
                     _this.model = angular.copy(FeedService.editFeedModel);
                 }
             });
+            if (this.versions) {
+                this.$scope.$watch(function () {
+                    return FeedService.versionFeedModel;
+                }, function () {
+                    _this.versionModel = angular.copy(FeedService.versionFeedModel);
+                });
+            }
             //Apply the entity access permissions
             this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
                 .then(function (access) {
