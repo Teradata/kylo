@@ -8,6 +8,7 @@ define(['angular','side-nav/module-name',  'constants/AccessConstants', 'side-na
             link: function ($scope,$element) {
                 $scope.sideNavService = SideNavService;
 
+            
                 /**
                  * a pointer to the highlighted menu item
                  * @type {null}
@@ -211,18 +212,18 @@ define(['angular','side-nav/module-name',  'constants/AccessConstants', 'side-na
                 function collapse(){
                     $scope.collapsed = true;
                    // angular.element('md-sidenav > md-content >div:first').css('overflow-','hidden')
-                    angular.element('md-sidenav').css('overflow','hidden')
-                    angular.element('md-sidenav > md-content').css('overflow','hidden')
-                    angular.element('md-sidenav').addClass('collapsed');
+                    angular.element('md-sidenav.site-sidenav').css('overflow','hidden')
+                    angular.element('md-sidenav.site-sidenav > md-content').css('overflow','hidden')
+                    angular.element('md-sidenav.site-sidenav').addClass('collapsed');
                     updateMenuText();
                 }
 
                 function expand(){
                     $scope.collapsed = false;
                   //  angular.element('md-sidenav > md-content >div:first').css('overflow-y','auto')
-                    angular.element('md-sidenav').css('overflow','auto')
-                    angular.element('md-sidenav > md-content').css('overflow','auto')
-                    angular.element('md-sidenav').removeClass('collapsed');
+                    angular.element('md-sidenav.site-sidenav').css('overflow','auto')
+                    angular.element('md-sidenav.site-sidenav > md-content').css('overflow','auto')
+                    angular.element('md-sidenav.site-sidenav').removeClass('collapsed');
                     updateMenuText();
                 }
 
