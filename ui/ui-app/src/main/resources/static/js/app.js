@@ -45,8 +45,7 @@ define([
                                           'pascalprecht.translate', 'tmh.dynamicLocale', 'ngCookies']);
     module.constant('LOCALES', {
            'locales': {
-               'en_US': 'English',
-               'ru_RU': 'Русский'
+               'en_US': 'English'
             },
             'preferredLocale': 'en_US'
         });
@@ -63,9 +62,8 @@ define([
         });
 
         $translateProvider
-            .registerAvailableLanguageKeys(["en", "ru"], {
+            .registerAvailableLanguageKeys(["en"], {
                 "en_*": "en",
-                "ru_*": "ru",
                 "*": "en"
             })
             .determinePreferredLanguage()
