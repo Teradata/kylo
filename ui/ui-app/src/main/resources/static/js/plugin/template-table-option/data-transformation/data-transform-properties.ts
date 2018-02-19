@@ -1,4 +1,5 @@
 import * as angular from 'angular';
+import {Input} from '@angular/core';
 
 export class DataTransformPropertiesController implements ng.IComponentController {
 
@@ -7,6 +8,13 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
      * @type {boolean}
      */
     allowEdit: boolean = false;
+
+    /**
+     * Indicates if version information is to be displayed
+     * @type {boolean}
+     */
+    @Input()
+    versions: boolean;
 
     /**
      * Indicates that the editable section is visible.
@@ -37,7 +45,7 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
         //Apply the entity access permissions
         this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
             .then((access: any) => {
-                this.allowEdit = access;
+                this.allowEdit = !this.versions && access;
             });
     }
 
@@ -52,6 +60,9 @@ export class DataTransformPropertiesController implements ng.IComponentControlle
 
 angular.module("kylo.plugin.template-table-option.data-transformation", [])
     .component("kyloDataTransformProperties", {
+        bindings: {
+            versions: "<"
+        },
         controller: DataTransformPropertiesController,
         controllerAs: "vm",
         templateUrl: "js/plugin/template-table-option/data-transformation/data-transform-properties.html"
