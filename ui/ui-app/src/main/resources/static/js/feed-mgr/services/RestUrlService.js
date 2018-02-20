@@ -304,6 +304,13 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
 
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.QUERY_DATASOURCE_URL = function (id) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
+
         this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id) {
             return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
         }
