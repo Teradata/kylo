@@ -48,6 +48,7 @@ public class Configuration {
     private Integer id;
     private String version;
     private String buildDate;
+    private final String servicesConfigLocation;
 
     public Configuration(int id, Path path) {
         this.path = path;
@@ -64,7 +65,8 @@ public class Configuration {
         }
 
         uiFactory = createConfiguration(uiLocation + APPLICATION_PROPERTIES);
-        servicesFactory = createConfiguration(servicesLocation + APPLICATION_PROPERTIES);
+        servicesConfigLocation = servicesLocation + APPLICATION_PROPERTIES;
+        servicesFactory = createConfiguration(servicesConfigLocation);
 
         initBuildProperties(servicesLocation);
     }
@@ -118,5 +120,9 @@ public class Configuration {
 
     public String getBuildDate() {
         return buildDate;
+    }
+
+    public Object getServicesConfigLocation() {
+        return servicesConfigLocation;
     }
 }

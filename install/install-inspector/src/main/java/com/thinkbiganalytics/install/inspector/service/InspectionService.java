@@ -57,7 +57,7 @@ public class InspectionService {
         } catch (Exception e) {
             String msg = String.format("An error occurred while running configuration inspection '%s'", inspection.getName());
             InspectionStatus status = new InspectionStatus(false);
-            status.setError(msg + ": " + e.getMessage());
+            status.addError(msg + ": " + e.getMessage());
             return status;
         }
     }

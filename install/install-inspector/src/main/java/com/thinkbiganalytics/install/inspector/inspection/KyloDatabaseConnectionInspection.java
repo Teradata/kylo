@@ -9,9 +9,9 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KyloDatabaseConnectionInspection extends AbstractInspection {
 
-    private final Logger log = LoggerFactory.getLogger(KyloDatabaseConnectionInspection.class);
+    private final Logger LOG = LoggerFactory.getLogger(KyloDatabaseConnectionInspection.class);
 
     @Override
     public String getName() {
@@ -40,4 +40,10 @@ public class KyloDatabaseConnectionInspection extends AbstractInspection {
         return "Checks whether Kylo can connect to its own database";
     }
 
+    @Override
+    public InspectionStatus inspect(Configuration configuration) {
+        LOG.debug("KyloDatabaseConnectionInspection.inspect");
+        String brokerUrl = configuration.getServicesProperty("");
+        throw new IllegalStateException("not implemented yet");
+    }
 }

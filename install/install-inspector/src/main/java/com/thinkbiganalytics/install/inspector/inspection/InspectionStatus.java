@@ -21,11 +21,15 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class InspectionStatus {
 
     private boolean valid;
-    private String description;
-    private String error;
+    private List<String> descriptions = new ArrayList<>();
+    private List<String> errors = new ArrayList<>();
+    private String docsLink;
 
     public InspectionStatus(boolean isValid) {
         this.valid = isValid;
@@ -35,19 +39,36 @@ public class InspectionStatus {
         return valid;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void addDescription(String description) {
+        this.descriptions.add(description);
     }
 
-    public String getDescription() {
-        return description;
+    public List<String> getDescriptions() {
+        return descriptions;
     }
 
-    public void setError(String error) {
-        this.error = error;
+    public void addError(String error) {
+        this.errors.add(error);
     }
 
-    public String getError() {
-        return error;
+    public List<String> getErrors() {
+        return errors;
+    }
+
+    public InspectionStatus and(InspectionStatus other) {
+        InspectionStatus status = new InspectionStatus(this.valid && other.valid);
+        status.getErrors().addAll(this.errors);
+        status.getErrors().addAll(other.errors);
+        status.getDescriptions().addAll(this.descriptions);
+        status.getDescriptions().addAll(other.descriptions);
+        return status;
+    }
+
+    public void setDocsLink(String docsLink) {
+        this.docsLink = docsLink;
+    }
+
+    public String getDocsLink() {
+        return docsLink;
     }
 }

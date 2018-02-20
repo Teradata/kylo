@@ -27,6 +27,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
+
 import javax.jms.Connection;
 import javax.jms.JMSException;
 
@@ -36,6 +38,8 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     private static final String JMS_ACTIVEMQ_BROKER_USERNAME = "jms.activemq.broker.username";
     private static final String JMS_ACTIVEMQ_BROKER_PASSWORD = "jms.activemq.broker.password";
     private static final String JMS_ACTIVEMQ_BROKER_URL = "jms.activemq.broker.url";
+    private static final String SPRING_PROFILES_INCLUDE = "spring.profiles.include";
+    private static final String JMS_ACTIVEMQ = "jms-activemq";
     private final Logger LOG = LoggerFactory.getLogger(ActiveMqConnectionInspection.class);
 
     @Override
@@ -51,6 +55,28 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     @Override
     public InspectionStatus inspect(Configuration configuration) {
         LOG.debug("ActiveMqConnectionInspection.inspect");
+        InspectionStatus connInspection = inspectConnection(configuration);
+        InspectionStatus profileInspection = inspectProfile(configuration);
+        InspectionStatus status = connInspection.and(profileInspection);
+        status.setDocsLink("/how-to-guides/JmsProviders.html");
+        return status;
+
+    }
+
+    private InspectionStatus inspectProfile(Configuration configuration) {
+        String profilesProperty = configuration.getServicesProperty(SPRING_PROFILES_INCLUDE);
+        String[] profiles = profilesProperty.split(",");
+        boolean profileSet = Arrays.stream(profiles).anyMatch(JMS_ACTIVEMQ::equals);
+        InspectionStatus status = new InspectionStatus(profileSet);
+        if (!profileSet) {
+            status.addError(String.format("ActiveMQ profile is not enabled in kylo-services configuration file %s. "
+                                          + "To enable ActiveMQ profile add '%s' to '%s' property, e.g. '%s=<all-other-profiles>,%s'",
+                                          configuration.getServicesConfigLocation(), JMS_ACTIVEMQ, SPRING_PROFILES_INCLUDE, SPRING_PROFILES_INCLUDE, JMS_ACTIVEMQ));
+        }
+        return status;
+    }
+
+    private InspectionStatus inspectConnection(Configuration configuration) {
         String brokerUrl = configuration.getServicesProperty(JMS_ACTIVEMQ_BROKER_URL);
         String username = configuration.getServicesProperty(JMS_ACTIVEMQ_BROKER_USERNAME);
         String password = configuration.getServicesProperty(JMS_ACTIVEMQ_BROKER_PASSWORD);
@@ -62,7 +88,7 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
             return new InspectionStatus(true);
         } catch (JMSException e) {
             InspectionStatus status = new InspectionStatus(false);
-            status.setError(String.format("Failed to connect to ActiveMQ at %s. Following error occurred: %s", brokerUrl, e.getMessage()));
+            status.addError(String.format("Failed to connect to ActiveMQ at %s: %s", brokerUrl, e.getMessage()));
             return status;
         } finally {
             if (connection != null) {
@@ -73,6 +99,5 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
                 }
             }
         }
-
     }
 }
