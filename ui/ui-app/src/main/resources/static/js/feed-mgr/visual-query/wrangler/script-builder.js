@@ -87,6 +87,9 @@ define(["require", "exports", "./query-engine-constants", "./parse-exception", "
                 case "<=":
                     def = this.functions.lessThanOrEqual;
                     break;
+                case "%":
+                    def = this.functions.mod;
+                    break;
                 default:
             }
             if (def == null) {
