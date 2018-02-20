@@ -70,8 +70,8 @@
                     <div fxFlex fxLayout="column">
                         <div>
                             <span class="inspection-header">{{check.name}}</span>
-                            <span *ngIf="check.status.docsLink" class="inspection-docs">
-                                <a target="_blank" href="http://kylo.readthedocs.io/en/latest/{{check.status.docsLink}}" title="More Information">
+                            <span *ngIf="check.docsUrl" class="inspection-docs">
+                                <a target="_blank" href="http://kylo.readthedocs.io/en/latest/{{check.docsUrl}}" title="More Information">
                                     <i class="fa fa-external-link"></i>
                                 </a>
                             </span>

@@ -53,13 +53,16 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     }
 
     @Override
+    public String getDocsUrl() {
+        return "/how-to-guides/JmsProviders.html";
+    }
+
+    @Override
     public InspectionStatus inspect(Configuration configuration) {
         LOG.debug("ActiveMqConnectionInspection.inspect");
         InspectionStatus connInspection = inspectConnection(configuration);
         InspectionStatus profileInspection = inspectProfile(configuration);
-        InspectionStatus status = connInspection.and(profileInspection);
-        status.setDocsLink("/how-to-guides/JmsProviders.html");
-        return status;
+        return connInspection.and(profileInspection);
 
     }
 
