@@ -29,7 +29,6 @@ public class InspectionStatus {
     private boolean valid;
     private List<String> descriptions = new ArrayList<>();
     private List<String> errors = new ArrayList<>();
-    private String docsLink;
 
     public InspectionStatus(boolean isValid) {
         this.valid = isValid;
@@ -62,13 +61,5 @@ public class InspectionStatus {
         status.getDescriptions().addAll(this.descriptions);
         status.getDescriptions().addAll(other.descriptions);
         return status;
-    }
-
-    public void setDocsLink(String docsLink) {
-        this.docsLink = docsLink;
-    }
-
-    public String getDocsLink() {
-        return docsLink;
     }
 }
