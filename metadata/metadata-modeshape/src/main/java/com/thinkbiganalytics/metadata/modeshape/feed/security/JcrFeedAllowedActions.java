@@ -147,10 +147,10 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 Collections.addAll(dataPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
                 //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
-                }
+//                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
+//                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+//                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
+//                }
                 //If a user has Edit access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
                     .map(FeedDetails::getTemplate)
@@ -163,18 +163,19 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 dataPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
                 //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
-                }
+//                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
+//                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+//                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+//                }
                 
                 summaryPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
                 //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
-                }
+//                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
+//                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+//                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
+//                }
+                
                 //If a user has Read access for the feed, they need to be able to also Read the template
                 this.feed.getFeedDetails()
                     .map(FeedDetails::getTemplate)
@@ -187,10 +188,10 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 dataPrivs.add(Privilege.JCR_READ);                
             } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
                 //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
-                }
+//                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
+//                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
+//                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
+//                }
                 
                 summaryPrivs.add(Privilege.JCR_READ);
             }

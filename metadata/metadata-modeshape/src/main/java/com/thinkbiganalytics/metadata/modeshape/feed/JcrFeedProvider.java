@@ -566,9 +566,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public List<? extends Feed> findByCategoryId(Category.ID categoryId) {
 
+//        String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
+//                        + "INNER JOIN ['tba:feedSummary'] as summary on ISCHILDNODE(summary,e)"
+//                        + "WHERE summary." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
         String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-                       + "INNER JOIN ['tba:feedSummary'] as summary on ISCHILDNODE(summary,e)"
-                       + "WHERE summary." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
+                       + "INNER JOIN ['" + JcrCategory.NODE_TYPE + "'] as cat on ISCHILDNODE(e, cat)"
+                       + "WHERE cat.[mode:id] = $id";
 
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());
@@ -933,15 +936,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 cond.append(EntityUtil.asQueryProperty(JcrFeed.SYSTEM_NAME) + " = $name");
                 params.put("name", this.name);
             }
-            if (this.category != null) {
-                //TODO FIX SQL
-                join.append(
-                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
-                    + EntityUtil
-                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
-                cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
-                params.put("category", this.category);
-            }
+//            if (this.category != null) {
+//                //TODO FIX SQL
+//                join.append(
+//                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
+//                    + EntityUtil
+//                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
+//                cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
+//                params.put("category", this.category);
+//            }
 
             applyIdFilter(cond, join, this.sourceIds, "sources", params);
             applyIdFilter(cond, join, this.destIds, "destinations", params);
