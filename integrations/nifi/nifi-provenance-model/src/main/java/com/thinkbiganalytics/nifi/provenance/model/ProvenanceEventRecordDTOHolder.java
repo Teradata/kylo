@@ -29,6 +29,8 @@ import java.util.UUID;
  */
 public class ProvenanceEventRecordDTOHolder implements Serializable {
 
+    private static final long serialVersionUID = -1618204003961560699L;
+
     /**
      * Unique UUID for the group of events
      */

@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.cluster.ClusterMessage;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
+import com.thinkbiganalytics.metadata.api.cache.CacheBackedProviderListener;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

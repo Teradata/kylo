@@ -81,7 +81,7 @@ define(["require", "exports", "angular", "underscore", "./module-name", "./modul
                     links.push({ sref: "registered-templates", type: 'link', icon: "layers", text: _this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS });
                     links.push({ sref: "users", type: 'link', icon: "account_box", text: _this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS });
                     links.push({ sref: "groups", type: 'link', icon: "group", text: _this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS });
-                    //links.push({sref: "sla-email-templates",type:'link', icon: "email", text: $filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
+                    links.push({ sref: "sla-email-templates", type: 'link', icon: "email", text: _this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS });
                     addExtensionLinks(MENU_KEY.ADMIN, links);
                     var menu = ({ type: 'toggle',
                         text: _this.$filter('translate')('views.main.admin'),
@@ -199,17 +199,17 @@ define(["require", "exports", "angular", "underscore", "./module-name", "./modul
                 function collapse() {
                     $scope.collapsed = true;
                     // angular.element('md-sidenav > md-content >div:first').css('overflow-','hidden')
-                    angular.element('md-sidenav').css('overflow', 'hidden');
-                    angular.element('md-sidenav > md-content').css('overflow', 'hidden');
-                    angular.element('md-sidenav').addClass('collapsed');
+                    angular.element('md-sidenav.site-sidenav').css('overflow', 'hidden');
+                    angular.element('md-sidenav.site-sidenav > md-content').css('overflow', 'hidden');
+                    angular.element('md-sidenav.site-sidenav').addClass('collapsed');
                     updateMenuText();
                 }
                 function expand() {
                     $scope.collapsed = false;
                     //  angular.element('md-sidenav > md-content >div:first').css('overflow-y','auto')
-                    angular.element('md-sidenav').css('overflow', 'auto');
-                    angular.element('md-sidenav > md-content').css('overflow', 'auto');
-                    angular.element('md-sidenav').removeClass('collapsed');
+                    angular.element('md-sidenav.site-sidenav').css('overflow', 'auto');
+                    angular.element('md-sidenav.site-sidenav > md-content').css('overflow', 'auto');
+                    angular.element('md-sidenav.site-sidenav').removeClass('collapsed');
                     updateMenuText();
                 }
                 /**

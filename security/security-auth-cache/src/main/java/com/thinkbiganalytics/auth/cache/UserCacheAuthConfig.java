@@ -57,6 +57,9 @@ public class UserCacheAuthConfig {
     @Value("${security.auth.cache.spec:expireAfterWrite=30s,maximumSize=512}")
     private String cacheSpec;
     
+    @Value("${security.auth.cache.digest.alg:SHA-256}")
+    private String digestAlgorithm;
+    
     @Value("${security.auth.file.login.check.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).LOWEST_ORDER}}")
     private int loginCheckOrder;
     
@@ -83,6 +86,7 @@ public class UserCacheAuthConfig {
                             .controlFlag(LoginModuleControlFlag.SUFFICIENT)      
                             .option(UserCacheLoginModule.MODE_OPTION, UserCacheLoginModule.Mode.AUTHENTICATE)
                             .option(UserCacheLoginModule.CACHE_OPTION, cache)
+                            .option(UserCacheLoginModule.DIGEST_ALG_OPTION, this.digestAlgorithm)
                             .add()
                         .build();
 
@@ -103,6 +107,7 @@ public class UserCacheAuthConfig {
                             .controlFlag(LoginModuleControlFlag.OPTIONAL)      
                             .option(UserCacheLoginModule.MODE_OPTION, UserCacheLoginModule.Mode.CACHE)
                             .option(UserCacheLoginModule.CACHE_OPTION, cache)
+                            .option(UserCacheLoginModule.DIGEST_ALG_OPTION, this.digestAlgorithm)
                             .add()
                         .build();
         

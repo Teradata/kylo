@@ -32,6 +32,8 @@ export class controller implements ng.IComponentController{
             this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
         }*/
      //  this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
+     
+        hiveDatasource: any = this.DatasourcesService.getHiveDatasource();
       
         currentPage: any = this.PaginationDataService.currentPage(this.pageName) || 1;
 
@@ -54,7 +56,8 @@ constructor(private $scope: any,
             private CategoriesService: any,
             private StateService: any,
             private FeedService: any,
-            private PaginationDataService: any){
+            private PaginationDataService: any,
+            private DatasourcesService: any){
         
                 this.$scope.$watch(() => {
                     return this.SearchService.searchQuery;
@@ -119,11 +122,11 @@ constructor(private $scope: any,
     onSearchResultItemClick($event: any, result: any) {
             switch (result.type) {
                 case "KYLO_DATA":
-                    this.StateService.Tables().navigateToTable(this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
+                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
                     break;
 
                 case "KYLO_SCHEMA":
-                    this.StateService.Tables().navigateToTable(this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
+                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
                     break;
 
                 case "KYLO_FEEDS":
@@ -175,4 +178,5 @@ angular.module(moduleName).controller('SearchController',
                         "StateService", 
                         "FeedService",
                         "PaginationDataService", 
+                        "DatasourcesService",
                         controller]);

@@ -26,6 +26,8 @@ import java.io.Serializable;
  */
 public class BaseStatistics implements Serializable {
 
+    private static final long serialVersionUID = 8150307058243131533L;
+
     protected Long time;
     protected long bytesIn = 0L;
     protected long bytesOut = 0L;

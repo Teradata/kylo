@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService, PaginationDataService) {
+        function controller($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService, PaginationDataService, DatasourcesService) {
             var _this = this;
             this.$scope = $scope;
             this.$sce = $sce;
@@ -16,6 +16,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.StateService = StateService;
             this.FeedService = FeedService;
             this.PaginationDataService = PaginationDataService;
+            this.DatasourcesService = DatasourcesService;
             /**
              * The result object of what is returned from the search query
              * @type {null}
@@ -40,6 +41,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                     this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
                 }*/
             //  this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
+            this.hiveDatasource = this.DatasourcesService.getHiveDatasource();
             this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
             this.categoryForIndex = function (indexName) {
                 var category = _this.CategoriesService.findCategoryByName(indexName);
@@ -107,10 +109,10 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             var _this = this;
             switch (result.type) {
                 case "KYLO_DATA":
-                    this.StateService.Tables().navigateToTable(this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
+                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.schemaName), this.cleanValue(result.tableName));
                     break;
                 case "KYLO_SCHEMA":
-                    this.StateService.Tables().navigateToTable(this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
+                    this.StateService.Tables().navigateToTable(this.hiveDatasource.id, this.cleanValue(result.databaseName), this.cleanValue(result.tableName));
                     break;
                 case "KYLO_FEEDS":
                     var category;
@@ -157,6 +159,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
         "StateService",
         "FeedService",
         "PaginationDataService",
+        "DatasourcesService",
         controller]);
 });
 //# sourceMappingURL=SearchController.js.map

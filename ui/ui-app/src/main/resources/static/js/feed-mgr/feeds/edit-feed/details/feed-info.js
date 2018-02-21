@@ -8,19 +8,28 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
             bindToController: {
                 selectedTabIndex: "="
             },
+            scope: {
+                versions: '=?'
+            },
             controllerAs: "vm",
-            scope: {},
             templateUrl: "js/feed-mgr/feeds/edit-feed/details/feed-info.html",
-            controller: "FeedInfoController"
+            controller: "FeedInfoController",
+            link: function ($scope, element, attrs, controller) {
+                if ($scope.versions == undefined) {
+                    $scope.versions = false;
+                }
+            }
         };
     };
     var FeedInfoController = /** @class */ (function () {
         // define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, moduleName) {
-        function FeedInfoController($injector, $ocLazyLoad, FeedService, UiComponentsService) {
+        function FeedInfoController($scope, $injector, $ocLazyLoad, FeedService, UiComponentsService) {
+            this.$scope = $scope;
             this.$injector = $injector;
             this.$ocLazyLoad = $ocLazyLoad;
             this.FeedService = FeedService;
             this.UiComponentsService = UiComponentsService;
+            this.versions = this.$scope.versions;
             /**
              * Flag if we have fully initialized or not
              * @type {boolean}
@@ -80,7 +89,7 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
         return FeedInfoController;
     }());
     exports.FeedInfoController = FeedInfoController;
-    angular.module(moduleName).controller("FeedInfoController", ["$injector", "$ocLazyLoad", "FeedService", "UiComponentsService", FeedInfoController]);
+    angular.module(moduleName).controller("FeedInfoController", ["$scope", "$injector", "$ocLazyLoad", "FeedService", "UiComponentsService", FeedInfoController]);
     angular.module(moduleName).directive("thinkbigFeedInfo", [thinkbigFeedInfo]);
 });
 //# sourceMappingURL=feed-info.js.map

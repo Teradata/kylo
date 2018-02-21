@@ -238,7 +238,6 @@ export class DefineFeedTableController {
                 columnDef.origDataType = columnDef.derivedDataType;
                 columnDef.deleted = false;
                 columnDef.history = [];
-                initValidationErrors(columnDef); //this is required when schema is created from db connection
                 self.addHistoryItem(columnDef);
             }
         }
@@ -426,17 +425,21 @@ export class DefineFeedTableController {
             self.addHistoryItem(columnDef);
 
             //remove any partitions using this field
-            var matchingPartitions = _.filter(self.model.table.partitions, function (partition:any) {
-                return partition.columnDef.name == columnDef.name;
-            });
-            if (matchingPartitions) {
-                _.each(matchingPartitions, function (partition:any) {
-                    var idx = _.indexOf(self.model.table.partitions, partition.sourceField)
-                    if (idx >= 0) {
-                        self.removePartitionField(idx);
+            self.model.table.partitions
+                .filter(function (partition:any) {
+                    return partition.columnDef.name === columnDef.name;
+                })
+                .map(function (partition:any) {
+                    return partition._id;
+                })
+                .forEach(function (id:any) {
+                    var index = self.model.table.partitions.findIndex(function (partition:any) {
+                        return partition._id === id;
+                    });
+                    if (index > -1) {
+                        self.removePartitionField(index);
                     }
                 });
-            }
 
             //ensure the field names on the columns are unique again as removing a column might fix a "notUnique" error
             self.validateColumn(columnDef);
@@ -608,14 +611,16 @@ export class DefineFeedTableController {
 
         this.validateColumn = function(columnDef:any) {
             // console.log("validateColumn");
+            if (columnDef.validationErrors === undefined) {
+                initValidationErrors(columnDef);
+            }
+
             if (!isDeleted(columnDef)) {
                 columnDef.validationErrors.name.reserved = columnDef.name === "processing_dttm";
                 columnDef.validationErrors.name.required = _.isUndefined(columnDef.name) || columnDef.name.trim() === "";
                 columnDef.validationErrors.name.length = !_.isUndefined(columnDef.name) && columnDef.name.length > MAX_COLUMN_LENGTH;
                 columnDef.validationErrors.name.pattern = !_.isUndefined(columnDef.name) && !NAME_PATTERN.test(columnDef.name);
                 columnDef.validationErrors.precision.pattern = columnDef.derivedDataType === 'decimal' && (_.isUndefined(columnDef.precisionScale) || !PRECISION_SCALE_PATTERN.test(columnDef.precisionScale));
-            } else {
-                initValidationErrors(columnDef);
             }
 
             //update all columns at all times, because column removal may fix not unique name error on other columns
@@ -655,6 +660,10 @@ export class DefineFeedTableController {
         };
 
         this.errorMessage = function(columnDef:any) {
+            if (columnDef.validationErrors === undefined) {
+                return;
+            }
+
             if (columnDef.validationErrors.name.required) {
                 return self.messages.name.required;
             }

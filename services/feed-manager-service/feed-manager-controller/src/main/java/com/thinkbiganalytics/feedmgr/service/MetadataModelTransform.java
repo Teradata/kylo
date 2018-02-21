@@ -36,6 +36,8 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingState;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -63,6 +65,15 @@ public class MetadataModelTransform {
             status.setState(InitializationStatus.State.valueOf(domain.getState().name()));
             status.setTimestamp(domain.getTimestamp());
             return status;
+        };
+    }
+
+    public Function<com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus, HistoryReindexingStatus> domainToHistoryReindexingStatus() {
+        return (domain) -> {
+            HistoryReindexingStatus historyReindexingStatus = new HistoryReindexingStatus();
+            historyReindexingStatus.setHistoryReindexingState(HistoryReindexingState.valueOf(domain.getHistoryReindexingState().name()));
+            historyReindexingStatus.setLastModifiedTimestamp(domain.getLastModifiedTimestamp());
+            return historyReindexingStatus;
         };
     }
 
@@ -164,7 +175,9 @@ public class MetadataModelTransform {
             if (domain.getState() != null) feed.setState(Feed.State.valueOf(domain.getState().name()));
             if (domain.getCreatedTime() != null) feed.setCreatedTime(domain.getCreatedTime());
             if (domain.getCurrentInitStatus() != null) feed.setCurrentInitStatus(domainToInitStatus().apply(domain.getCurrentInitStatus()));
-            
+
+            if (domain.getCurrentHistoryReindexingStatus() != null) feed.setCurrentHistoryReindexingStatus(domainToHistoryReindexingStatus().apply(domain.getCurrentHistoryReindexingStatus()));
+
             if (domain.getCategory() != null) {
                 feed.setCategory(domainToFeedCategory().apply(domain.getCategory()));
             }

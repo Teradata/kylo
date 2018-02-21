@@ -129,7 +129,7 @@ public class NiFiFlowInspection {
         return processGroupName;
     }
 
-    public void addChild(NiFiFlowInspection child) {
+    private void addChild(NiFiFlowInspection child) {
         children.add(child);
     }
 

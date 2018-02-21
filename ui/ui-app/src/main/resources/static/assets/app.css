@@ -199,6 +199,14 @@ md-sidenav .collapse-btn {
   padding-right: 10px;
 }
 
+.layout-padding-left-4 {
+  padding-left: 4px;
+}
+
+.layout-padding-right-4 {
+  padding-right: 4px;
+}
+
 .layout-padding-left {
   padding-left: 10px;
 }
@@ -236,6 +244,10 @@ md-sidenav .collapse-btn {
   padding-bottom: 10px;
 }
 
+.layout-padding-top-1 {
+  padding-top: 1px;
+}
+
 .layout-padding-top {
   padding-top: 10px;
 }
@@ -269,8 +281,16 @@ md-sidenav .collapse-btn {
   margin-left: 10px;
 }
 
+.layout-margin-left-20 {
+  margin-left: 20px;
+}
+
 .layout-margin-right-10 {
   margin-right: 10px;
+}
+
+.layout-margin-right-20 {
+  margin-right: 20px;
 }
 
 .layout-margin-top-3 {
@@ -1299,4 +1319,53 @@ md-input-container.global-search .md-input {
 .mat-menu-panel.kylo-notification-menu .mat-nav-list[dense] .mat-list-item mat-progress-spinner.mat-list-icon {
   margin: 4px;
   padding: 0;
+}
+
+/* Full-screen dialogs */
+.full-screen-dialog .mat-dialog-container {
+  padding: 0;
+  overflow: hidden;
+}
+.full-screen-dialog .mat-dialog-content {
+  margin: 0;
+}
+.full-screen-dialog .mat-dialog-actions:last-child {
+  margin-bottom: 0;
+  padding: 20px 30px;
+}
+
+
+.versions-add {
+  background-color: lightgreen;
+}
+
+.versions-remove {
+  background-color: lightsalmon;
+}
+
+.versions-replace {
+  background-color: lightskyblue;
+}
+
+.versions-tooltip {
+  min-width: 300px;
+}
+
+.versions-tooltip-header {
+  font-weight: bold;
+  color: white;
+}
+
+#versions-tooltip-divider {
+  border-top-color: white;
+}
+
+.feed-property {
+  padding-left: 4px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.browse-results {
+  margin-top: 20px;
 }

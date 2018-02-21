@@ -56,6 +56,8 @@ import java.util.Map;
 public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
     private static final Logger log = LoggerFactory.getLogger(HiveShellTableMergeSyncSupport.class);
 
+    private static final long serialVersionUID = 3459574380840626975L;
+
     private HiveShell shell;
 
     public HiveShellTableMergeSyncSupport(HiveShell shell) throws SQLException {

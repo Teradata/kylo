@@ -1,4 +1,5 @@
 import * as angular from 'angular';
+import * as _ from 'underscore';
 import 'pascalprecht.translate';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 var directive = function() {
@@ -6,13 +7,16 @@ var directive = function() {
         restrict: "EA",
         bindToController: {},
         controllerAs: 'vm',
-        scope: {},
+            scope: {
+                versions: '=?'
+            },
         templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-additional-properties.html',
         controller: "FeedAdditionalPropertiesController",
         link: function($scope:any, element:any, attrs:any, controller:any) {
-
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
         }
-
     };
 };
 
@@ -20,14 +24,16 @@ var directive = function() {
 
 export class FeedAdditionalPropertiesController {
 // define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-
+        versions:any = this.$scope.versions;
         /**
          * Indicates if the feed properties may be edited.
          * @type {boolean}
          */
-        allowEdit:boolean = false;
+        allowEdit:boolean = !this.versions;
         
         model:any = this.FeedService.editFeedModel;
+        versionFeedModel:any = this.FeedService.versionFeedModel;
+        versionFeedModelDiff:any = this.FeedService.versionFeedModelDiff;
         editModel:any = {};
         editableSection:boolean = false;
 
@@ -80,6 +86,8 @@ export class FeedAdditionalPropertiesController {
             copy.dataOwner = this.editModel.dataOwner;
             copy.userProperties = this.editModel.userProperties;
             copy.securityGroups = this.editModel.securityGroups;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
 
             this.FeedService.saveFeedModel(copy).then((response:any) => {
                 this.FeedService.hideFeedSavingDialog();
@@ -89,6 +97,8 @@ export class FeedAdditionalPropertiesController {
                 this.model.dataOwner = this.editModel.dataOwner;
                 this.model.userProperties = this.editModel.userProperties;
                 this.model.securityGroups = this.editModel.securityGroups;
+                //Get the updated value from the server.
+                this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, (response:any) => {
                 this.FeedService.hideFeedSavingDialog();
                 this.FeedService.buildErrorData(this.model.feedName, response);
@@ -127,14 +137,42 @@ export class FeedAdditionalPropertiesController {
                 self.model = FeedService.editFeedModel;
             }
         });
+        
+        if (self.versions) {
+            $scope.$watch(function(){
+                return self.FeedService.versionFeedModel;
+            },function(newVal:any) {
+                self.versionFeedModel = self.FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return self.FeedService.versionFeedModelDiff;
+            },function(newVal:any) {
+                self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+            });
+        }
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
-            self.allowEdit = access && !self.model.view.properties.disabled;
+            self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
         });
     }
 
+    findVersionedUserProperty(property:any) {
+        var versionedProperty = _.find(this.versionFeedModel.userProperties, function(p:any) {
+            return p.systemName === property.systemName;
+        });
+        if (versionedProperty === undefined) {
+            versionedProperty = {};
+        }
+        return versionedProperty;
+    };
 
+    diff(path:any) {
+        return this.FeedService.diffOperation(path);
+    };
+    diffCollection(path:any) {
+        return this.FeedService.diffCollectionOperation(path);
+    };
 }
 angular.module(moduleName).controller('FeedAdditionalPropertiesController',["$scope","$q","AccessControlService","EntityAccessControlService","FeedService","FeedTagService","FeedSecurityGroups","$filter",FeedAdditionalPropertiesController]);
 angular.module(moduleName).directive('thinkbigFeedAdditionalProperties', directive);

@@ -1,31 +1,27 @@
 define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$transition$,$http,RestUrlService){
+    var controller = function($scope,$transition$,$http,$filter,RestUrlService,DatasourcesService){
 
         var self = this;
         this.tableSchema =null;
 
         self.selectedTabIndex = 0;
         self.hql = '';
+        self.schema = $transition$.params().schema;
+        self.tableName = $transition$.params().tableName;
+        self.datasourceId = $transition$.params().datasource;
 
         var init = function(){
-            var schema = $transition$.params().schema;
-            self.schema = schema;
-            self.tableName = $transition$.params().tableName;
-            self.datasource = $transition$.params().datasource;
-
-            getTable(self.schema,self.tableName);
+            getTable(self.schema, self.tableName);
         };
-
 
         $scope.$watch(function(){
             return self.selectedTabIndex;
         },function(newVal){
         });
 
-
-
         function getTable(schema, table) {
+            self.loading = true;
             if (self.datasource.isHive) {
                 getHiveTable(schema, table);
             } else {
@@ -35,6 +31,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
 
         var successFn = function (response) {
             self.tableSchema = response.data;
+            self.cardTitle = self.datasource.name + "." + self.schema + " " + $filter('translate')('views.TableController.Tables');
             self.loading = false;
         };
         var errorFn = function (err) {
@@ -54,10 +51,23 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
             promise.then(successFn, errorFn);
             return promise;
         }
-        init();
+
+        function getDatasource(datasourceId) {
+            self.loading = true;
+            var successFn = function (response) {
+                self.datasource = response;
+                self.loading = false;
+            };
+            var errorFn = function (err) {
+                self.loading = false;
+            };
+            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
+        }
+
+        getDatasource(self.datasourceId).then(init);
     };
 
-    angular.module(moduleName).controller('TableController',["$scope","$transition$","$http","RestUrlService",controller]);
+    angular.module(moduleName).controller('TableController',["$scope","$transition$","$http","$filter","RestUrlService", "DatasourcesService",controller]);
 
 
 

@@ -41,7 +41,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
@@ -200,7 +200,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
             return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable, null);
         } catch (RepositoryException e) {
-            throw new FeedNotFoundExcepton(id);
+            throw new FeedNotFoundException(id);
         }
     }
 
@@ -444,7 +444,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
                 return new JcrPreconditionbuilder(slaBldr, feed);
             } else {
-                throw new FeedNotFoundExcepton(feed.getId());
+                throw new FeedNotFoundException(feed.getId());
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the precondition for feed " + feed.getId(), e);
@@ -456,13 +456,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed target = (JcrFeed) getFeed(targetId);
 
         if (target == null) {
-            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", targetId);
+            throw new FeedNotFoundException("The target feed to be assigned the dependent does not exists", targetId);
         }
 
         JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
-            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+            throw new FeedNotFoundException("The dependent feed does not exists", dependentId);
         }
 
         target.addDependentFeed(dependent);
@@ -474,13 +474,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed target = (JcrFeed) getFeed(feedId);
 
         if (target == null) {
-            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", feedId);
+            throw new FeedNotFoundException("The target feed to be assigned the dependent does not exists", feedId);
         }
 
         JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
-            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+            throw new FeedNotFoundException("The dependent feed does not exists", dependentId);
         }
 
         target.removeDependentFeed(dependent);
@@ -495,6 +495,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed getFeed(Feed.ID id) {
         return findById(id);
+    }
+
+    @Override
+    public List<Feed> getFeedsForDataHistoryReindexing() {
+        String query = "SELECT e.*\n"
+                       + "        FROM [tba:feed] as e\n"
+                       + "        JOIN [tba:feedSummary] AS fs ON ISCHILDNODE(fs, e)\n"
+                       + "        JOIN [tba:feedData] AS fd ON ISCHILDNODE(fd, e)\n"
+                       + "        JOIN [tba:historyReindexing] AS fh ON ISCHILDNODE(fh, fd)\n"
+                       + "        WHERE fh.[tba:reindexingStatus] = 'DIRTY'";
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
+            List<JcrFeed> jcrFeeds = JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+            List<Feed> feeds = new ArrayList<>();
+            if (jcrFeeds !=null) {
+                feeds.addAll(jcrFeeds);
+            }
+            return feeds;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get feeds for data history reindexing ", e);
+        }
     }
 
     @Override

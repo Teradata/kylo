@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,9 +22,10 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.rest.model.IconColor;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.security.EncryptionAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UIService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.feedmgr.security.EncryptionAccessControl;
+import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
@@ -38,9 +39,11 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -49,6 +52,7 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -92,11 +96,11 @@ public class UtilityRestController {
     )
     public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
-        if(valid){
+        if (valid) {
             try {
                 CronExpression e = new CronExpression(cronExpression);
                 valid = CronExpressionUtil.getNextFireTime(e) != null;
-            }catch (Exception e){
+            } catch (Exception e) {
                 valid = false;
             }
         }
@@ -261,4 +265,76 @@ public class UtilityRestController {
         return Response.ok(decrypted).build();
     }
 
+    /**
+     * Formats the specified date as a string using the specified pattern.
+     *
+     * @param pattern the date format pattern
+     * @param date    the unix timestamp in milliseconds
+     * @return the date string
+     */
+    @GET
+    @Path("/format-date")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Formats a date using the specified pattern")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the date string", response = Map.class),
+                      @ApiResponse(code = 400, message = "Pattern is not valid", response = RestResponseStatus.class)
+                  })
+    public Response formatDateTime(@QueryParam("pattern") final String pattern, @QueryParam("date") final long date) {
+        // Parse the pattern
+        final SimpleDateFormat format;
+        try {
+            format = new SimpleDateFormat(pattern);
+        } catch (final IllegalArgumentException e) {
+            throw new BadRequestException("Pattern is not valid.");
+        } catch (final NullPointerException e) {
+            throw new BadRequestException("Pattern is required.");
+        }
+
+        // Format the date
+        return Response.ok(Collections.singletonMap("text", format.format(date))).build();
+    }
+
+    /**
+     * Parses the specified date string into a unix timestamp using the specified pattern.
+     *
+     * @param pattern the date format pattern
+     * @param text    the date string
+     * @return the unix timestamp in milliseconds
+     */
+    @GET
+    @Path("/parse-date")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Parses a date using the specified pattern")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns time in milliseconds", response = Map.class),
+                      @ApiResponse(code = 400, message = "Pattern is not valid or pattern does not match text", response = RestResponseStatus.class)
+                  })
+    public Response parseDateTime(@QueryParam("pattern") final String pattern, @QueryParam("text") final String text) {
+        // Parse the pattern
+        final SimpleDateFormat format;
+        try {
+            format = new SimpleDateFormat(pattern);
+        } catch (final IllegalArgumentException e) {
+            throw new BadRequestException("Pattern is not valid.");
+        } catch (final NullPointerException e) {
+            throw new BadRequestException("Pattern is required.");
+        }
+
+        // Parse the date
+        final ParsePosition pos = new ParsePosition(0);
+        final Date date;
+        try {
+            date = format.parse(text, pos);
+        } catch (final NullPointerException e) {
+            throw new BadRequestException("Text is required.");
+        }
+
+        // Verify entire text was used
+        if (date != null && pos.getIndex() == text.length()) {
+            return Response.ok(Collections.singletonMap("date", date.getTime())).build();
+        } else {
+            throw new BadRequestException("Pattern does not match text.");
+        }
+    }
 }

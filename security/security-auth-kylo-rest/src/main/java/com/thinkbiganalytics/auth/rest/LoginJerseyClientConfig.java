@@ -33,6 +33,12 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
      * Base URL path
      */
     private String path;
+    
+    /**
+     * The user that is being authenticated; which may be different than user/password
+     * used to make the REST call.
+     */
+    private String authenticatingUser;
 
     /**
      * Default constructor, does nothing
@@ -67,5 +73,26 @@ public class LoginJerseyClientConfig extends JerseyClientConfig {
     public String getUrl() {
         final String url = super.getUrl();
         return path != null ? url + path : url;
+    }
+    
+    /**
+     * @return the user being authenticated (as opposed to the REST login credentials)
+     */
+    public String getAuthenticatingUser() {
+        return authenticatingUser;
+    }
+    
+    /**
+     * @param authenticatingUser the user being authenticated (as opposed to the REST login credentials)
+     */
+    public void setAuthenticatingUser(String authenticatingUser) {
+        this.authenticatingUser = authenticatingUser;
+    }
+    
+    /**
+     * @return true if the REST login credentials are different from the user being authenticated
+     */
+    public boolean isAlternateUser() {
+        return getUsername() != null && this.authenticatingUser != null && getUsername().equals(this.authenticatingUser);
     }
 }

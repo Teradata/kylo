@@ -23,7 +23,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.event.jms.MetadataTopics;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedWaterMarkCancelEvent;
@@ -74,7 +74,7 @@ public class FeedWaterMarkService {
                 Collections.sort(list);
                 return list;
             } else {
-                throw new FeedNotFoundExcepton(id);
+                throw new FeedNotFoundException(id);
             }
         });
     }
@@ -89,7 +89,7 @@ public class FeedWaterMarkService {
             if (feed != null) {
                 return feed.getWaterMarkValue(waterMarkName);
             } else {
-                throw new FeedNotFoundExcepton(id);
+                throw new FeedNotFoundException(id);
             }
         });
     }
@@ -105,7 +105,7 @@ public class FeedWaterMarkService {
                 feed.setWaterMarkValue(waterMarkName, value);
                 return id;
             } else {
-                throw new FeedNotFoundExcepton(id);
+                throw new FeedNotFoundException(id);
             }
         });
         
@@ -120,7 +120,7 @@ public class FeedWaterMarkService {
                 return feed.getWaterMarkValue(waterMarkName)
                     .orElseThrow(() -> new WaterMarkNotFoundExcepton(updId, waterMarkName));
             } else {
-                throw new FeedNotFoundExcepton(updId);
+                throw new FeedNotFoundException(updId);
             }
         });
 
@@ -136,7 +136,7 @@ public class FeedWaterMarkService {
             if (feed != null) {
                 return feed.getId();
             } else {
-                throw new FeedNotFoundExcepton(id);
+                throw new FeedNotFoundException(id);
             }
         });
 

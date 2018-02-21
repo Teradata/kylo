@@ -45,8 +45,7 @@ define([
                                           'pascalprecht.translate', 'tmh.dynamicLocale', 'ngCookies']);
     module.constant('LOCALES', {
            'locales': {
-               'en_US': 'English',
-               'ru_RU': 'Русский'
+               'en_US': 'English'
             },
             'preferredLocale': 'en_US'
         });
@@ -58,13 +57,18 @@ define([
 
         $qProvider.errorOnUnhandledRejections(false);
         $translateProvider.useStaticFilesLoader({
-                prefix: 'locales/locale-',// path to translations files
-                suffix: '.json'// suffix, currently- extension of the translations
+            prefix: 'locales/',  // path to translations files
+            suffix: '.json'      // suffix, currently- extension of the translations
         });
 
-        $translateProvider.preferredLanguage('en_US');// is applied on first load
-        $translateProvider.fallbackLanguage('en_US');
-        $translateProvider.useLocalStorage();// saves selected language to localStorage
+        $translateProvider
+            .registerAvailableLanguageKeys(["en"], {
+                "en_*": "en",
+                "*": "en"
+            })
+            .determinePreferredLanguage()
+            .fallbackLanguage('en')
+            .useLocalStorage();  // saves selected language to localStorage
 
         tmhDynamicLocaleProvider.localeLocationPattern('../bower_components/angular-i18n/angular-locale_{{locale}}.js');
 
@@ -95,7 +99,9 @@ define([
         // Register custom fonts
         ngMdIconServiceProvider
             .addShape('fa-database', '<path d="M896 768q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0 768q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0-384q237 0 443-43t325-127v170q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-170q119 84 325 127t443 43zm0-1152q208 0 385 34.5t280 93.5 103 128v128q0 69-103 128t-280 93.5-385 34.5-385-34.5-280-93.5-103-128v-128q0-69 103-128t280-93.5 385-34.5z"/>')
-            .addViewBox('fa-database', '0 0 1792 1792');
+            .addViewBox('fa-database', '0 0 1792 1792')
+            .addShape('fa-hashtag', '<path d="M991 1024l64-256h-254l-64 256h254zm768-504l-56 224q-7 24-31 24h-327l-64 256h311q15 0 25 12 10 14 6 28l-56 224q-5 24-31 24h-327l-81 328q-7 24-31 24h-224q-16 0-26-12-9-12-6-28l78-312h-254l-81 328q-7 24-31 24h-225q-15 0-25-12-9-12-6-28l78-312h-311q-15 0-25-12-9-12-6-28l56-224q7-24 31-24h327l64-256h-311q-15 0-25-12-10-14-6-28l56-224q5-24 31-24h327l81-328q7-24 32-24h224q15 0 25 12 9 12 6 28l-78 312h254l81-328q7-24 32-24h224q15 0 25 12 9 12 6 28l-78 312h311q15 0 25 12 9 12 6 28z"/>')
+            .addViewBox('fa-hashtag', '0 0 1792 1792');
     }]);
 
 

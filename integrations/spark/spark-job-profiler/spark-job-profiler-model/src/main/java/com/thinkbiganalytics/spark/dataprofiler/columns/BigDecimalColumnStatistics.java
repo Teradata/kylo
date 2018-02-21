@@ -36,8 +36,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of bigdecimal data type <br>
  * [Hive data type: DECIMAL]
  */
-@SuppressWarnings("serial")
 public class BigDecimalColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -4160529180454600403L;
 
     /* BigDecimal specific metrics */
     private BigDecimal max;

@@ -21,8 +21,7 @@ define([
 
     module.constant('LOCALES', {
         'locales': {
-            'en_US': 'English',
-            'ru_RU': 'Русский'
+            'en_US': 'English'
         },
         'preferredLocale': 'en_US'
     });
@@ -32,13 +31,18 @@ define([
         $locationProvider.html5Mode(true);
 
         $translateProvider.useStaticFilesLoader({
-            prefix: 'locales/locale-',// path to translations files
-            suffix: '.json'// suffix, currently- extension of the translations
+            prefix: 'locales/',  // path to translations files
+            suffix: '.json'      // suffix, currently- extension of the translations
         });
 
-        $translateProvider.preferredLanguage('en_US');// is applied on first load
-        $translateProvider.fallbackLanguage('en_US');
-        $translateProvider.useLocalStorage();// saves selected language to localStorage
+        $translateProvider
+            .registerAvailableLanguageKeys(["en"], {
+                "en_*": "en",
+                "*": "en"
+            })
+            .determinePreferredLanguage()
+            .fallbackLanguage('en')
+            .useLocalStorage();  // saves selected language to localStorage
 
         var primaryBlue = $mdThemingProvider.extendPalette('blue', {
             '500': '3483BA',

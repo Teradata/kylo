@@ -8,9 +8,13 @@ define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular:an
             restrict: "E",
             scope: {
                 type: "@",
-                stepperTemplateType:'@?'
+                stepperTemplateType:'@?',
+                versions: '=?'
             },
             link: function ($scope:any, $element:any) {
+                if (angular.isUndefined($scope.versions)) {
+                    $scope.versions = false;
+                }
 
                 if(angular.isUndefined($scope.stepperTemplateType)){
                     $scope.stepperTemplateType = 'stepper';

@@ -149,7 +149,7 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         }
 
         this.GET_SLA_BY_ID_URL = function (slaId) {
-            return self.SLA_BASE_URL + "/"+slaId;
+            return self.SLA_BASE_URL + "/" + slaId;
         }
 
         this.GET_SLA_AS_EDIT_FORM = function (slaId) {
@@ -164,6 +164,18 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
 
         this.GET_CONTROLLER_SERVICE_URL = function (serviceId) {
             return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
+        }
+        
+        this.FEED_VERSIONS_URL = function (feedId) {
+        		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
+        }
+        
+        this.FEED_VERSION_ID_URL = function (feedId, verId) {
+        	return self.FEED_VERSIONS_URL(feedId) + "/" + verId;
+        }
+        
+        this.FEED_VERSIONS_DIFF_URL = function (feedId, verId1, verId2) {
+        		return self.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
         }
 
         this.FEED_PROFILE_STATS_URL = function (feedId) {
@@ -253,6 +265,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
             return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
         };
 
+        // Feed history data reindexing endpoint
+        this.FEED_HISTORY_CONFIGURED = self.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
+
+
         /**
          * Generates a URL for listing the controller services under the specified process group.
          *
@@ -288,8 +304,15 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
 
-        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function(id){
-            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/"+id+"/references";
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.QUERY_DATASOURCE_URL = function (id) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
+
+        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id) {
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
         }
 
         /**
@@ -309,14 +332,14 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.CATEGORY_ROLES_URL = function (categoryId) {
             return self.CATEGORIES_URL + "/" + categoryId + "/roles"
         };
-        
+
         /**
          * Get/Post roles changes for a Category entity
          * @param categoryId the category id
          * @returns {string} the url to get/post category role changes
          */
         this.CATEGORY_FEED_ROLES_URL = function (categoryId) {
-        	return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
+            return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
         };
 
         /**
@@ -343,7 +366,6 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
 
-
         /**
          * The URL for retrieving the list of templates for custom rendering with nifi processors
          * @type {string}
@@ -356,5 +378,14 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          */
         this.OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
 
+        /**
+         * Formats a date as a string.
+         */
+        this.FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
+
+        /**
+         * Parses a string as a date.
+         */
+        this.PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
     });
 });

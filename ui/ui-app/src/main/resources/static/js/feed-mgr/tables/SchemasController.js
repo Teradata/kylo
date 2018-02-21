@@ -1,12 +1,11 @@
 define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) {
 
-    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,DatasourcesService){
+    var controller = function($scope,$http,$q,$transition$,$filter,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,DatasourcesService){
 
         var self = this;
         this.schemas = [];
         this.loading = true;
-        self.datasource = $transition$.params().datasource;
-        this.cardTitle = this.datasource.name + " schemas";
+        self.datasourceId = $transition$.params().datasource;
         this.pageName = 'Schemas';
         self.filterInternal = true;
 
@@ -69,6 +68,7 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         }
 
         function getSchemas() {
+            self.loading = true;
             var successFn = function (response) {
                 self.schemas = response.data;
                 self.loading = false;
@@ -95,14 +95,28 @@ define(['angular',"feed-mgr/tables/module-name"], function (angular,moduleName) 
         }
 
         self.onClickSchema = function(schema){
-            StateService.FeedManager().Table().navigateToTables(self.datasource, schema);
+            StateService.FeedManager().Table().navigateToTables(self.datasource.id, schema);
         };
 
-        getSchemas();
+        function getDatasource(datasourceId) {
+            self.loading = true;
+            var successFn = function (response) {
+                self.datasource = response;
+                self.cardTitle = self.datasource.name + " " + $filter('translate')('views.TableController.Schemas');
+                self.loading = false;
+            };
+            var errorFn = function (err) {
+                self.loading = false;
+            };
+            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
+        }
+
+
+        getDatasource(self.datasourceId).then(getSchemas);
 
     };
 
-    angular.module(moduleName).controller('SchemasController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","DatasourcesService",controller]);
+    angular.module(moduleName).controller('SchemasController',["$scope","$http","$q","$transition$","$filter","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","DatasourcesService",controller]);
 
 
 

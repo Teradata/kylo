@@ -27,18 +27,18 @@ package com.thinkbiganalytics.jobrepo.service;
 public interface JobService {
 
     /**
-     * @param executionId The job execution to start again
+     * @param replayJobExecution replay event
      * @return The new Job Execution Id
      */
-    Long restartJobExecution(final Long executionId) throws JobExecutionException;
+    Long restartJobExecution(final ReplayJobExecution replayJobExecution) throws JobExecutionException;
 
     /**
      * Take the given job execution and stop the job.
      *
-     * @param executionId The job execution to start again
+     * @param replayJobExecution The replay event
      * @return true/false
      */
-    boolean stopJobExecution(final Long executionId) throws JobExecutionException;
+    boolean stopJobExecution(final ReplayJobExecution replayJobExecution) throws JobExecutionException;
 
     /**
      * Take the given job execution and abandon the job.

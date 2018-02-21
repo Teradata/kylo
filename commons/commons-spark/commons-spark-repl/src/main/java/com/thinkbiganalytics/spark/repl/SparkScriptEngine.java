@@ -27,6 +27,8 @@ import com.thinkbiganalytics.spark.SparkInterpreterBuilder;
 import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
+import org.apache.spark.sql.SQLContext;
+import org.apache.spark.sql.hive.HiveContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +58,7 @@ import scala.tools.nsc.interpreter.Results;
  */
 @Component
 @ComponentScan("com.thinkbiganalytics.spark")
+@SuppressWarnings("squid:HiddenFieldCheck")
 public class SparkScriptEngine extends ScriptEngine {
 
     private static final Logger log = LoggerFactory.getLogger(SparkScriptEngine.class);
@@ -69,6 +72,12 @@ public class SparkScriptEngine extends ScriptEngine {
      * Matches continuation lines in Scala
      */
     private static final Pattern LINE_CONTINUATION = Pattern.compile("^\\s*\\.");
+
+    /**
+     * Interpreter class loader
+     */
+    @Nullable
+    private ClassLoader classLoader;
 
     /**
      * Spark configuration
@@ -94,31 +103,44 @@ public class SparkScriptEngine extends ScriptEngine {
     @Nonnull
     @Override
     public ClassLoader getClassLoader() {
-        // Get current context class loader
-        final Thread currentThread = Thread.currentThread();
-        final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+        if (classLoader == null) {
+            // Get current context class loader
+            final Thread currentThread = Thread.currentThread();
+            final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-        // Get interpreter class loader from context
-        getInterpreter().setContextClassLoader();
-        final ClassLoader interpreterClassLoader = currentThread.getContextClassLoader();
+            // Get interpreter class loader from context
+            getInterpreter().setContextClassLoader();
+            classLoader = currentThread.getContextClassLoader();
 
-        // Reset context
-        currentThread.setContextClassLoader(contextClassLoader);
-        return interpreterClassLoader;
+            // Reset context
+            currentThread.setContextClassLoader(contextClassLoader);
+        }
+        //noinspection ConstantConditions - interpreter will set context class loader
+        return classLoader;
     }
 
     @Nonnull
     @Override
     protected SparkContext createSparkContext() {
-        // Allow interpreter to modify Thread context for Spark
-        getInterpreter().setContextClassLoader();
-
         // The SparkContext ClassLoader is needed during initialization (only for YARN master)
         return executeWithSparkClassLoader(new Callable<SparkContext>() {
             @Override
-            public SparkContext call() throws Exception {
+            public SparkContext call() {
                 log.info("Creating spark context with spark conf {}", conf);
                 return new SparkContext(conf);
+            }
+        });
+    }
+
+    @Nonnull
+    @Override
+    protected SQLContext createSQLContext() {
+        // The SparkContext ClassLoader is needed during initialization
+        return executeWithSparkClassLoader(new Callable<SQLContext>() {
+            @Override
+            public SQLContext call() {
+                log.info("Creating spark context with spark conf {}", conf);
+                return new HiveContext(getSparkContext());
             }
         });
     }
@@ -148,12 +170,19 @@ public class SparkScriptEngine extends ScriptEngine {
         }
 
         // Execute script
+        final Thread thread = Thread.currentThread();
+        final ClassLoader contextClassLoader = thread.getContextClassLoader();
+
         try {
-            getInterpreter().interpret(safeScript);
+            final IMain interpreter = getInterpreter();
+            interpreter.setContextClassLoader();
+            interpreter.interpret(safeScript);
         } catch (final AssertionError e) {
             log.warn("Caught assertion error when executing script. Retrying...", e);
             reset();
             getInterpreter().interpret(safeScript);
+        } finally {
+            thread.setContextClassLoader(contextClassLoader);
         }
     }
 
@@ -184,7 +213,7 @@ public class SparkScriptEngine extends ScriptEngine {
         final Thread currentThread = Thread.currentThread();
         final ClassLoader contextClassLoader = currentThread.getContextClassLoader();
 
-        final ClassLoader sparkClassLoader = new ForwardingClassLoader(SparkContext.class.getClassLoader(), contextClassLoader);
+        final ClassLoader sparkClassLoader = new ForwardingClassLoader(SparkContext.class.getClassLoader(), getClassLoader());
         currentThread.setContextClassLoader(sparkClassLoader);
 
         // Execute callable
@@ -230,7 +259,9 @@ public class SparkScriptEngine extends ScriptEngine {
                     denyPatternLines = Collections.emptyList();
                 }
 
-                resourceStream.close();
+                if (resourceStream != null) {
+                    resourceStream.close();
+                }
 
                 // Compile patterns
                 denyPatterns = new ArrayList<>();

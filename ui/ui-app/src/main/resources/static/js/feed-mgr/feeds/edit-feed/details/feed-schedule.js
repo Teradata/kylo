@@ -7,10 +7,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-schedule.html',
             controller: "FeedScheduleController",
             link: function ($scope, element, attrs, controller) {
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
             }
         };
     };
@@ -28,16 +33,19 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.$filter = $filter;
             // define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate'], function (angular,moduleName) {
             // var self = this;
+            this.versions = this.$scope.versions;
             /**
              * Indicates if the feed schedule may be edited.
              * @type {boolean}
              */
-            this.allowEdit = false;
+            this.allowEdit = !this.versions;
             /**
              * The data model for the feed
              * @type {data.editFeedModel|{}|*}
              */
             this.model = this.FeedService.editFeedModel;
+            this.versionFeedModel = this.FeedService.versionFeedModel;
+            this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
             /**
              * The model with only the Schedule data that is populated via the {@code this#onEdit()} method
              * @type {{}}
@@ -79,7 +87,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             * All possible schedule strategies
             * @type {*[]}
             */
-            this.allScheduleStrategies = [{ label: this.$filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN" }, { label: this.$filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN" }, { label: this.$filter('translate')('views.feed-schedule.TE'), value: "TRIGGER_DRIVEN" },
+            this.allScheduleStrategies = [{ label: this.$filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN" }, { label: this.$filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN" }, { label: this.$filter('translate')('views.feed-schedule.T/E'), value: "TRIGGER_DRIVEN" },
                 { label: "On primary node", value: "PRIMARY_NODE_ONLY" }];
             /**
              * When the timer changes show warning if its < 3 seconds indicating to the user this is a "Rapid Fire" feed
@@ -146,7 +154,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.onEdit = function () {
                 //copy the model
                 this.editModel.category = { systemName: this.FeedService.editFeedModel.category.systemName };
-                this.editModel.systemFeedName = this.FeedService.editFeedModelsystemFeedName;
+                this.editModel.systemFeedName = this.FeedService.editFeedModel.systemFeedName;
                 this.editModel.schedule = angular.copy(this.FeedService.editFeedModel.schedule);
                 this.editModel.inputProcessorType = this.FeedService.editFeedModel.inputProcessorType;
                 if (this.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && (!this.isClustered || this.supportsExecutionNode)) {
@@ -178,11 +186,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     var copy = angular.copy(this.FeedService.editFeedModel);
                     copy.schedule = this.editModel.schedule;
                     copy.userProperties = null;
+                    //Server may have updated value. Don't send via UI.
+                    copy.historyReindexingStatus = undefined;
                     this.FeedService.saveFeedModel(copy).then(function (response) {
                         _this.FeedService.hideFeedSavingDialog();
                         _this.editableSection = false;
                         //save the changes back to the model
                         _this.model.schedule = _this.editModel.schedule;
+                        //Get the updated value from the server.
+                        _this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                     }, function (response) {
                         _this.FeedService.hideFeedSavingDialog();
                         _this.FeedService.buildErrorData(_this.model.feedName, response);
@@ -246,6 +258,18 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     _this.model = FeedService.editFeedModel;
                 }
             });
+            if (this.versions) {
+                $scope.$watch(function () {
+                    return _this.FeedService.versionFeedModel;
+                }, function (newVal) {
+                    _this.versionFeedModel = _this.FeedService.versionFeedModel;
+                });
+                $scope.$watch(function () {
+                    return _this.FeedService.versionFeedModelDiff;
+                }, function (newVal) {
+                    _this.versionFeedModelDiff = _this.FeedService.versionFeedModelDiff;
+                });
+            }
             /**
              * The model stores the timerAmount and timerUnits together as 1 string.
              * This will parse that string and set each component in the controller
@@ -309,7 +333,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
              */
             this.updateScheduleStrategies();
             $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, this.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                _this.allowEdit = access && !_this.model.view.schedule.disabled;
+                _this.allowEdit = !_this.versions && access && !_this.model.view.schedule.disabled;
             });
             // Detect if NiFi is clustered
             $http.get(RestUrlService.NIFI_STATUS).then(function (response) {
@@ -318,6 +342,13 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 _this.updateScheduleStrategies();
             });
         }
+        FeedScheduleController.prototype.diff = function (path) {
+            return this.FeedService.diffOperation(path);
+        };
+        ;
+        FeedScheduleController.prototype.diffCollection = function (path) {
+            return this.FeedService.diffCollectionOperation(path);
+        };
         return FeedScheduleController;
     }());
     exports.FeedScheduleController = FeedScheduleController;

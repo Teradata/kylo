@@ -1,6 +1,6 @@
 {
   "name": "@kylo/wrangler/api",
-  "version": "0.9.0-SNAPSHOT",
+  "version": "0.9.1-SNAPSHOT",
   "description": "Data wrangler API for Kylo UI",
   "module": "index.js",
   "typings": "index.d.ts",
@@ -16,6 +16,7 @@
   },
   "homepage": "https://kylo.io/",
   "peerDependencies": {
+    "@angular/core": "~5.1",
     "rxjs": "^5.5.5"
   }
 }

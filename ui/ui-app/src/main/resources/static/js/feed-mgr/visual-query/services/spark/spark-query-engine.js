@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, angular, Observable_1, Subject_1, _, VisualQueryService_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
+define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/index", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-column", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, http_1, angular, Observable_1, Subject_1, _, VisualQueryService_1, index_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_column_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -19,15 +19,17 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
         /**
          * Constructs a {@code SparkQueryEngine}.
          */
-        function SparkQueryEngine($http, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService) {
-            var _this = _super.call(this, $mdDialog, DatasourcesService, uiGridConstants) || this;
+        function SparkQueryEngine($http, $mdDialog, $timeout, DatasourcesService, HiveService, RestUrlService, uiGridConstants, VisualQueryService, $$angularInjector) {
+            var _this = _super.call(this, $mdDialog, DatasourcesService, uiGridConstants, $$angularInjector) || this;
             _this.$http = $http;
             _this.$timeout = $timeout;
             _this.HiveService = HiveService;
             _this.RestUrlService = RestUrlService;
             _this.VisualQueryService = VisualQueryService;
+            _this.$$angularInjector = $$angularInjector;
             // Initialize properties
             _this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
+            _this.dialog = $$angularInjector.get(index_1.DIALOG_SERVICE);
             // Ensure Kylo Spark Shell is running
             $http.post(RestUrlService.SPARK_SHELL_SERVICE_URL + "/start", null);
             return _this;
@@ -87,6 +89,12 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
             enumerable: true,
             configurable: true
         });
+        /**
+         * Creates a column delegate of the specified data type.
+         */
+        SparkQueryEngine.prototype.createColumnDelegate = function (dataType, controller, column) {
+            return new spark_column_1.SparkColumnDelegate(column, dataType, controller, this.$mdDialog, this.uiGridConstants, this.dialog, this.$$angularInjector.get(http_1.HttpClient), this.RestUrlService);
+        };
         /**
          * Gets the field name for the specified column.
          */
@@ -271,7 +279,7 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
             })
                 .map(function (response) {
                 var save = response.data;
-                if (save.location !== null && save.location.startsWith("./")) {
+                if (save.location != null && save.location.startsWith("./")) {
                     save.location = _this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
                 }
                 return save;
@@ -456,9 +464,10 @@ define(["require", "exports", "angular", "rxjs/Observable", "rxjs/Subject", "und
                 });
             }
         };
+        SparkQueryEngine.$inject = ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", "$$wranglerInjector"];
         return SparkQueryEngine;
     }(query_engine_1.QueryEngine));
     exports.SparkQueryEngine = SparkQueryEngine;
-    query_engine_factory_service_1.registerQueryEngine("spark", ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", SparkQueryEngine]);
+    query_engine_factory_service_1.registerQueryEngine("spark", SparkQueryEngine);
 });
 //# sourceMappingURL=spark-query-engine.js.map

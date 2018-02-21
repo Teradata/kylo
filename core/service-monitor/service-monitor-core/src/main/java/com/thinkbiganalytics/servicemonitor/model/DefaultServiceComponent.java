@@ -37,7 +37,7 @@ import java.util.Map;
  * This is used by the Kylo UI to display health about components in within a service
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DefaultServiceComponent implements ServiceComponent {
+public final class DefaultServiceComponent implements ServiceComponent {
 
     private String clusterName;
     private String serviceName;

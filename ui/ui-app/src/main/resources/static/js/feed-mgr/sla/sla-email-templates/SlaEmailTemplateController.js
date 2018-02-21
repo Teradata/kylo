@@ -67,7 +67,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 this.SlaEmailTemplateService.save(this.template).then(successFn, errorFn);
             };
             this.exampleTemplate = function () {
-                this.template.subject = 'SlA Violation for $sla.name';
+                this.template.subject = 'SLA Violation for $sla.name';
                 this.template.template = '<html>\n<body> \n' +
                     '\t<table>\n' +
                     '\t\t<tr>\n' +

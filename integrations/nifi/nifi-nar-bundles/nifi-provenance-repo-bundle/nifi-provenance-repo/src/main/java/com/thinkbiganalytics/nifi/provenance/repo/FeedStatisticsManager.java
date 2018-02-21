@@ -21,16 +21,19 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.thinkbiganalytics.nifi.provenance.jms.KyloFeedBatchStreamTypeJmsListener;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
+import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,9 @@ public class FeedStatisticsManager {
     private Lock lock = new ReentrantLock();
 
     private Map<String, FeedStatistics> feedStatisticsMap = new ConcurrentHashMap<>();
+
+
+    private KyloFeedBatchStreamTypeJmsListener kyloFeedBatchStreamTypeJmsListener;
 
     private static final FeedStatisticsManager instance = new FeedStatisticsManager();
 
@@ -89,7 +95,6 @@ public class FeedStatisticsManager {
     private ScheduledExecutorService jmsGatherEventsToSendService = Executors.newSingleThreadScheduledExecutor(gatherStatsThreadFactory);
 
 
-
     public void addEvent(ProvenanceEventRecord event, Long eventId) {
         lock.lock();
         try {
@@ -113,16 +118,31 @@ public class FeedStatisticsManager {
         }
     }
 
+    private void ensureStreamingFeedMetadata() {
+        KyloFeedBatchStreamTypeJmsListener kyloFeedBatchStreamTypeJmsListener = getKyloFeedBatchStreamTypeJmsListener();
+        if (kyloFeedBatchStreamTypeJmsListener != null && !kyloFeedBatchStreamTypeJmsListener.isInitialized()) {
+            kyloFeedBatchStreamTypeJmsListener.requestStreamingFeedMetadata();
+        }
+    }
+
+
     public void gatherStatistics() {
         lock.lock();
         List<ProvenanceEventRecordDTO> eventsToSend = null;
         Map<String, AggregatedFeedProcessorStatistics> statsToSend = null;
         try {
             //Gather Events and Stats to send Ops Manager
-            eventsToSend = feedStatisticsMap.values().stream().flatMap(stats -> stats.getEventsToSend().stream()).collect(Collectors.toList());
+            //filter out the streaming feeds
+            ensureStreamingFeedMetadata();
+            eventsToSend =
+                feedStatisticsMap.values().stream()
+                    .flatMap(stats -> stats.getEventsToSend().stream().filter(event -> !FeedEventStatistics.getInstance().streamingFeedProcessorIdsList.contains(event.getFirstEventProcessorId())))
+                    .sorted(Comparator.comparing(ProvenanceEventRecordDTO::getEventTime)
+                                .thenComparing(ProvenanceEventRecordDTO::getEventId))
+                    .collect(Collectors.toList());
 
             final String collectionId = UUID.randomUUID().toString();
-            Map<String,Long> runningFlowsCount = new HashMap<>();
+            Map<String, Long> runningFlowsCount = new HashMap<>();
 
             for (FeedStatistics feedStatistics : feedStatisticsMap.values()) {
                 if (feedStatistics.hasStats()) {
@@ -148,13 +168,12 @@ public class FeedStatisticsManager {
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(),FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsForFeed(statsToSend.keySet()));
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
-            }
-            else {
+            } else {
                 //if we are empty but the runningFlows have changed, then send off as well
-                if(FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged()){
-                    JmsSender jmsSender = new JmsSender(null, null,FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                if (FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged()) {
+                    JmsSender jmsSender = new JmsSender(null, null, FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
                     this.jmsService.submit(new JmsSenderConsumer(jmsSender));
                 }
 
@@ -182,7 +201,7 @@ public class FeedStatisticsManager {
         lock.lock();
         sendJmsTimeMillis = interval;
         try {
-            if(gatherStatsScheduledFuture != null){
+            if (gatherStatsScheduledFuture != null) {
                 gatherStatsScheduledFuture.cancel(true);
             }
             initGatherStatisticsTimerThread(interval);
@@ -206,7 +225,7 @@ public class FeedStatisticsManager {
         Long runInterval = ConfigurationProperties.getInstance().getFeedProcessingRunInterval();
         this.sendJmsTimeMillis = runInterval;
         initGatherStatisticsTimerThread(runInterval);
-        log.info("Initialized Timer Thread to gather statistics and send events to JMS running every {} ms ",sendJmsTimeMillis);
+        log.info("Initialized Timer Thread to gather statistics and send events to JMS running every {} ms ", sendJmsTimeMillis);
     }
 
     //jms thread
@@ -217,6 +236,18 @@ public class FeedStatisticsManager {
     private ScheduledFuture initGatherStatisticsTimerThread(Long time) {
         gatherStatsScheduledFuture = jmsGatherEventsToSendService.scheduleAtFixedRate(gatherStatisticsTask, time, time, TimeUnit.MILLISECONDS);
         return gatherStatsScheduledFuture;
+
+    }
+
+    public KyloFeedBatchStreamTypeJmsListener getKyloFeedBatchStreamTypeJmsListener() {
+        if (kyloFeedBatchStreamTypeJmsListener == null) {
+            KyloFeedBatchStreamTypeJmsListener kyloFeedBatchStreamTypeJmsListener = SpringApplicationContext.getInstance().getBean(KyloFeedBatchStreamTypeJmsListener.class);
+            this.kyloFeedBatchStreamTypeJmsListener = kyloFeedBatchStreamTypeJmsListener;
+            if (kyloFeedBatchStreamTypeJmsListener == null) {
+                log.error("!!!!!!!KyloFeedBatchStreamTypeJmsListener is NULL !!!!!!");
+            }
+        }
+        return this.kyloFeedBatchStreamTypeJmsListener;
 
     }
 

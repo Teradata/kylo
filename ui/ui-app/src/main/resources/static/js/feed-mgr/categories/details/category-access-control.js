@@ -85,6 +85,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 model.roleMemberships = self.editModel.roleMemberships;
                 model.feedRoleMemberships = self.editModel.feedRoleMemberships;
                 model.owner = self.editModel.owner;
+                model.allowIndexing = self.editModel.allowIndexing;
                 EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
                 EntityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
                 //TODO Open a Dialog showing Category is Saving progress

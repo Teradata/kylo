@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.nifi.controllerservice;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -100,6 +100,29 @@ public class DBCPConnectionPoolService {
         } else {
             log.error("Cannot execute query for controller service. Unable to obtain controller service: {}, {}", serviceId, serviceName);
             throw new IllegalArgumentException("Not a valid controller service: " + serviceId + ", " + serviceName);
+        }
+    }
+
+    /**
+     * Executes the specified SELECT query in the context of the specified data source.
+     *
+     * @param datasource the JDBC datasource
+     * @param query      the query to execute
+     * @return the query results
+     * @throws DataAccessException      if the query cannot be executed
+     * @throws IllegalArgumentException if the datasource is invalid
+     */
+    @Nonnull
+    public QueryResult executeQueryForDatasource(@Nonnull final JdbcDatasource datasource, @Nonnull final String query) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+            .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(controllerService.get());
+            final ExecuteQueryControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).query(query).useEnvironmentProperties(false).build();
+            return executeQueryForControllerService(serviceProperties);
+        } else {
+            log.error("Cannot execute query for datasource: {}", datasource);
+            throw new IllegalArgumentException("Missing controller service for datasource: " + datasource);
         }
     }
 
@@ -339,7 +362,7 @@ public class DBCPConnectionPoolService {
     private String parseValidationQueryFromConnectionString(String connectionString) {
         String validationQuery = null;
         try {
-            if(StringUtils.isNotBlank(connectionString)) {
+            if (StringUtils.isNotBlank(connectionString)) {
                 DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(connectionString);
                 validationQuery = databaseType.getValidationQuery();
             }
@@ -377,7 +400,7 @@ public class DBCPConnectionPoolService {
 
 
     private ControllerServiceDTO getControllerService(String serviceId, String serviceName) {
-        return nifiControllerServiceProperties.getControllerService(serviceId,serviceName);
+        return nifiControllerServiceProperties.getControllerService(serviceId, serviceName);
     }
 
 

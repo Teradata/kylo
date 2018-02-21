@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobDetailsDirectiveController = /** @class */ (function () {
-        function JobDetailsDirectiveController($scope, $http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
+        function JobDetailsDirectiveController($scope, $http, $state, $interval, $timeout, $q, $mdToast, OpsManagerRestUrlService, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -10,6 +10,8 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
             this.$interval = $interval;
             this.$timeout = $timeout;
             this.$q = $q;
+            this.$mdToast = $mdToast;
+            this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.OpsManagerJobService = OpsManagerJobService;
             this.IconService = IconService;
             this.AccessControlService = AccessControlService;
@@ -420,6 +422,34 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
                 _this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
             });
         }
+        JobDetailsDirectiveController.prototype.triggerSavepointRetry = function () {
+            var self = this;
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                console.log('TRIGGER SAVE replay for ', self.jobData.triggerRetryFlowfile);
+                self.jobData.renderTriggerRetry = false;
+                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function () {
+                    self.$mdToast.show(self.$mdToast.simple()
+                        .textContent('Triggered the retry')
+                        .hideDelay(3000));
+                    self.loadJobData(true);
+                });
+            }
+        };
+        JobDetailsDirectiveController.prototype.triggerSavepointReleaseFailure = function (callbackFn) {
+            var self = this;
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function (response) {
+                    console.log('TRIGGERD FAILURE ', response);
+                    self.$mdToast.show(self.$mdToast.simple()
+                        .textContent('Triggered the release and failure')
+                        .hideDelay(3000));
+                    if (angular.isDefined(callbackFn)) {
+                        callbackFn();
+                    }
+                    self.loadJobData(true);
+                });
+            }
+        };
         JobDetailsDirectiveController.prototype.enableTabAnimation = function () {
             if (this.enableTabAnimationTimeout) {
                 this.$timeout.cancel(this.enableTabAnimationTimeout);

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.core.category;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -56,6 +56,8 @@ public class BaseCategory implements Category {
     private String description;
 
     private Integer version;
+
+    private boolean allowIndexing;
 
     private DateTime createdTime;
 
@@ -250,6 +252,16 @@ public class BaseCategory implements Category {
 
     public void setOwner(Principal owner) {
         this.owner = owner;
+    }
+
+    @Override
+    public boolean isAllowIndexing() {
+        return allowIndexing;
+    }
+
+    @Override
+    public void setAllowIndexing(boolean allowIndexing) {
+        this.allowIndexing = allowIndexing;
     }
 
     private static class BaseId {

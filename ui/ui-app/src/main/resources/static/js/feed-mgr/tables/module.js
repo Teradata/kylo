@@ -28,7 +28,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.SCHEMAS.state,{
-            url:'/schemas',
+            url:'/catalog/{datasource}/schemas',
             params: {
                 datasource: null
             },
@@ -51,7 +51,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
-            url:'/schemas/{schema}',
+            url:'/catalog/{datasource}/schemas/{schema}',
             params: {
                 datasource: null,
                 schema: null
@@ -75,7 +75,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
-            url:'/schemas/{schema}/{tableName}',
+            url:'/catalog/{datasource}/schemas/{schema}/{tableName}',
             params: {
                 datasource: null,
                 schema: null,

@@ -7,10 +7,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-nifi-properties.html',
             controller: "FeedNifiPropertiesController",
             link: function ($scope, element, attrs, controller) {
+                if ($scope.versions == undefined) {
+                    $scope.versions = false;
+                }
             }
         };
     };
@@ -35,12 +40,14 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
               * @type {{}}
               */
             this.feedDetailsForm = {};
+            this.versions = this.$scope.versions;
             /**
              * Indicates if the feed NiFi properties may be edited.
              * @type {boolean}
              */
-            this.allowEdit = false;
+            this.allowEdit = !this.versions;
             this.model = this.FeedService.editFeedModel;
+            this.versionFeedModel = this.FeedService.versionFeedModel;
             this.editModel = {};
             this.editableSection = false;
             this.INCREMENTAL_DATE_PROPERTY_KEY = 'Date Field';
@@ -87,6 +94,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 copy.inputProcessor = this.editModel.inputProcessor;
                 copy.inputProcessorType = this.editModel.inputProcessorType;
                 copy.userProperties = null;
+                //Server may have updated value. Don't send via UI.
+                copy.historyReindexingStatus = undefined;
                 //table type is edited here so need to update that prop as well
                 copy.table.tableType = this.editModel.table.tableType;
                 if (copy.table.incrementalDateField) {
@@ -111,6 +120,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     _this.FeedPropertyService.updateDisplayValueForProcessors(_this.model.nonInputProcessors);
                     _this.updateControllerServiceProperties();
                     //update the displayValue
+                    //Get the updated value from the server.
+                    _this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                 }, function (response) {
                     _this.FeedService.hideFeedSavingDialog();
                     console.log('ERRORS were found ', response);
@@ -121,6 +132,13 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 });
             };
             var self = this;
+            if (self.versions) {
+                $scope.$watch(function () {
+                    return self.FeedService.versionFeedModel;
+                }, function (newVal) {
+                    self.versionFeedModel = self.FeedService.versionFeedModel;
+                });
+            }
             $scope.$watch(function () {
                 return FeedService.editFeedModel;
             }, function (newVal) {
@@ -227,9 +245,12 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             }
             //Apply the entity access permissions
             $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                self.allowEdit = access && !self.model.view.feedDetails.disabled;
+                self.allowEdit = !self.versions && access && !self.model.view.feedDetails.disabled;
             });
         }
+        FeedNIFIController.prototype.diff = function (path) {
+            return this.FeedService.diffOperation(path);
+        };
         return FeedNIFIController;
     }());
     exports.FeedNIFIController = FeedNIFIController;

@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of string data type <br>
  * [Hive data types: STRING, VARCHAR]
  */
-@SuppressWarnings("serial")
 public class StringColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -8841719082561417563L;
 
     /* String specific metrics */
     private int maxLength;

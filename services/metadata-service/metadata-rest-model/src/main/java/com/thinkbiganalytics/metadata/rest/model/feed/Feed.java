@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 
 import org.joda.time.DateTime;
@@ -46,6 +47,8 @@ import java.util.stream.Collectors;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Feed implements Serializable {
 
+    private static final long serialVersionUID = 3674704789170742920L;
+
     private String id;
     private String systemName;
     private String displayName;
@@ -60,6 +63,13 @@ public class Feed implements Serializable {
     private Properties properties = new Properties();
     private FeedCategory category;
     private InitializationStatus currentInitStatus;
+    private boolean allowIndexing;
+
+    /*
+     * Data history reindexing
+     */
+    private HistoryReindexingStatus currentHistoryReindexingStatus;
+
     /**
      * Feeds that this feed is dependent upon  (parents)
      */
@@ -210,6 +220,22 @@ public class Feed implements Serializable {
 
     public void setCurrentInitStatus(InitializationStatus currentInitStatus) {
         this.currentInitStatus = currentInitStatus;
+    }
+
+    public boolean isAllowIndexing() {
+        return allowIndexing;
+    }
+
+    public void setAllowIndexing(boolean allowIndexing) {
+        this.allowIndexing = allowIndexing;
+    }
+
+    public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {
+        return currentHistoryReindexingStatus;
+    }
+
+    public void setCurrentHistoryReindexingStatus(HistoryReindexingStatus currentHistoryReindexingStatus) {
+        this.currentHistoryReindexingStatus = currentHistoryReindexingStatus;
     }
 
     public Set<Feed> getDependentFeeds() {

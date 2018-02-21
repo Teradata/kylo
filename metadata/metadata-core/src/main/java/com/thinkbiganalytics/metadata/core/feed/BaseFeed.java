@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.api.security.RoleMembership;
 import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplate;
@@ -79,6 +80,7 @@ public class BaseFeed implements Feed {
     private FeedManagerTemplate template;
     private String nifiProcessGroupId;
     private Principal owner;
+    private boolean allowIndexing;
 
     /**
      * User-defined properties
@@ -312,6 +314,16 @@ public class BaseFeed implements Feed {
         return feedServiceLevelAgreements;
     }
 
+    @Override
+    public boolean isAllowIndexing() {
+        return allowIndexing;
+    }
+
+    @Override
+    public void setAllowIndexing(boolean allowIndexing) {
+        this.allowIndexing = allowIndexing;
+    }
+
     @Nonnull
     @Override
     public Map<String, String> getUserProperties() {
@@ -376,6 +388,22 @@ public class BaseFeed implements Feed {
     public void updateInitStatus(InitializationStatus status) {
         // TODO Auto-generated method stub
 
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getCurrentHistoryReindexingStatus()
+     */
+    @Override
+    public HistoryReindexingStatus getCurrentHistoryReindexingStatus() {
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#updateHistoryReindexingStatus(com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus)
+     */
+    @Override
+    public Feed updateHistoryReindexingStatus(HistoryReindexingStatus historyReindexingStatus) {
+        return null;
     }
 //
 //    protected static class SourceId extends BaseId implements FeedSource.ID {

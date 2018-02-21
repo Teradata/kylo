@@ -39,6 +39,8 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedDestination implements Serializable {
 
+    private static final long serialVersionUID = -7775379462425777387L;
+
     private String id;
     private FieldsPolicy fieldsPolicy;
     private String feedId;

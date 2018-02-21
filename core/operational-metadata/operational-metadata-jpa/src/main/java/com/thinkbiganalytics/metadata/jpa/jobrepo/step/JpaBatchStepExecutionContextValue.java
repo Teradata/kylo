@@ -52,6 +52,9 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     @JoinColumn(name = "STEP_EXECUTION_ID", referencedColumnName = "STEP_EXECUTION_ID")
     private BatchStepExecution stepExecution;
 
+    @Column(name = "STEP_EXECUTION_ID", insertable = false,updatable = false)
+    private Long stepExecutionId;
+
     @Column(name = "JOB_EXECUTION_ID")
     private Long jobExecutionId;
 
@@ -65,7 +68,7 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     }
 
     public JpaBatchStepExecutionContextValue(BatchStepExecution stepExecution, String keyName) {
-        setStepExecution(stepExecution);
+        this.stepExecution = stepExecution;
         this.keyName = keyName;
         this.jobExecutionId = stepExecution.getJobExecution().getJobExecutionId();
     }
@@ -73,10 +76,6 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     @Override
     public BatchStepExecution getStepExecution() {
         return stepExecution;
-    }
-
-    public void setStepExecution(BatchStepExecution stepExecution) {
-        this.stepExecution = stepExecution;
     }
 
 

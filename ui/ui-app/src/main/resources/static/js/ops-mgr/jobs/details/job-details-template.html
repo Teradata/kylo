@@ -184,6 +184,7 @@
 
                     <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16">
 
+
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">{{'views.job-details-template.ED' | translate}}</div>
                       <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
@@ -257,6 +258,11 @@
           <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin"
                      ng-click="vm.abandonJob($event)">{{'views.job-details-template.ABANDON' | translate}}
           </md-button>
+
+          <md-button class="border-btn action-btn" ng-if="!vm.jobData.stream && vm.jobData.status && vm.jobData.status =='FAILED' && vm.allowAdmin && vm.jobData.renderTriggerRetry" ng-click="vm.triggerSavepointReleaseFailure()">Force Fail</md-button>
+
+            <md-button  class="border-btn action-btn" ng-if="!vm.jobData.stream && !vm.jobData.running && vm.jobData.renderTriggerRetry && vm.allowAdmin " ng-click="vm.triggerSavepointRetry()">Retry</md-button>
+
           <md-button md-no-ink ng-class="vm.jobData.status =='FAILED' ? 'border-btn action-btn md-warn': 'border-btn action-btn' " ng-show="vm.logUiEnabled" ng-click="vm.navigateToLogs(vm.jobData.startTime, vm.jobData.endTime)" >
             Search Logs
           </md-button>

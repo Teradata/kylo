@@ -5,7 +5,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     var FeedUploadFileDialogController = function ($scope, $mdDialog, $http, RestUrlService, FileUpload, feedId) {
         var self = this;
         $scope.uploading = false;
-        $scope.uploadFile = null;
+        $scope.uploadFiles = null;
         /**
          * Upload file
          */
@@ -22,7 +22,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 $scope.uploading = false;
                 $scope.errorMessage = 'Failed to submit file.';
             };
-            FileUpload.uploadFileToUrl($scope.uploadFile, uploadUrl, successFn, errorFn, params);
+            FileUpload.uploadFileToUrl($scope.uploadFiles, uploadUrl, successFn, errorFn, params);
         };
         $scope.hide = function () {
             $mdDialog.hide();
@@ -105,7 +105,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.feedId = null;
             this.selectedTabIndex = 0;
             this.loadingFeedData = false;
-            this.model = FeedService.editFeedModel;
+            this.model = FeedService.editFeedModel = {};
             this.model.loaded = false;
             this.loadMessage = '';
             this.uploadFile = null;
@@ -122,6 +122,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             $scope.$watch(function () {
                 return self.selectedTabIndex;
             }, function (newVal) {
+                //reset display of feed versions
+                FeedService.resetVersionFeedModel();
                 //Make the Lineage tab fit without side nav
                 //open side nav if we are not navigating between lineage links
                 if (newVal == 2 || (requestedTabIndex != undefined && requestedTabIndex == 2)) {
@@ -455,12 +457,37 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var feedName = self.model.systemCategoryName + "." + self.model.systemFeedName;
                 StateService.OpsManager().Feed().navigateToFeedDetails(feedName);
             };
+            this.shouldIndexingOptionsBeDisabled = function () {
+                return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+            };
+            this.shouldIndexingOptionsBeEnabled = function () {
+                return !this.shouldIndexingOptionsBeDisabled();
+            };
+            this.findAndReplaceString = function (str, findStr, replacementStr) {
+                var i = 0;
+                var strLength = str.length;
+                for (i; i < strLength; i++) {
+                    str = str.replace(findStr, replacementStr);
+                }
+                return str;
+            };
             init();
         }
         ;
         return controller;
     }());
     exports.controller = controller;
+    angular.module(moduleName).filter('capitalizeFirstLetterOfEachWord', function () {
+        return function (str) {
+            return (!!str) ?
+                str.split(' ')
+                    .map(function (word) {
+                    return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+                })
+                    .join(' ')
+                : '';
+        };
+    });
     angular.module(moduleName).controller('FeedDetailsController', ["$scope", "$q", "$transition$", "$mdDialog", "$mdToast", "$http", "$state", "AccessControlService", "RestUrlService", "FeedService", "RegisterTemplateService", "StateService", "SideNavService", "FileUpload", "ConfigurationService", "EntityAccessControlDialogService", "EntityAccessControlService", "UiComponentsService", controller]);
     angular.module(moduleName).controller('FeedUploadFileDialogController', ["$scope", "$mdDialog", "$http", "RestUrlService", "FileUpload", "feedId", FeedUploadFileDialogController]);
 });

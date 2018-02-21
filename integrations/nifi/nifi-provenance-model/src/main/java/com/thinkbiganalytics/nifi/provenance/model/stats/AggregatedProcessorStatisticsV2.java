@@ -24,13 +24,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Group Statistics by Processor
  */
 public class AggregatedProcessorStatisticsV2 extends  AggregatedProcessorStatistics implements Serializable {
+
+    private static final long serialVersionUID = -3337985467751428086L;
 
     private static final Logger log = LoggerFactory.getLogger(AggregatedProcessorStatisticsV2.class);
 

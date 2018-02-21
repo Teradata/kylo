@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.csv;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -42,6 +43,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -77,10 +79,22 @@ public class CSVFileSchemaParser implements FileSchemaParser {
     @PolicyProperty(name = "Escape Char", hint = "Escape character", value = "\\")
     private String escapeChar = "\\";
 
+    /**
+     * Size of buffer for reading first 100 lines.
+     */
+    @Value("${schema.parser.csv.buffer.size:0}")
+    private int bufferSize = Integer.MIN_VALUE;
+
     private CSVFormat createCSVFormat(String sampleData) throws IOException {
         CSVFormat format;
         if (autoDetect) {
             CSVAutoDetect autoDetect = new CSVAutoDetect();
+            if (bufferSize == Integer.MIN_VALUE) {
+                SpringApplicationContext.autowire(this);  // init buffer size from Spring configuration
+            }
+            if (bufferSize > 0) {
+                autoDetect.setBufferSize(bufferSize);
+            }
             format = autoDetect.detectCSVFormat(sampleData, this.headerRow, this.separatorChar);
             this.separatorChar = Character.toString(format.getDelimiter());
             this.quoteChar = Character.toString(format.getQuoteCharacter());

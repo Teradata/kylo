@@ -20,18 +20,14 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.Serializable;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Group Stats by Feed and Processor
  */
 public class AggregatedFeedProcessorStatisticsV2 extends AggregatedFeedProcessorStatistics implements  Serializable {
+
+    private static final long serialVersionUID = -6628381699524840478L;
 
     public AggregatedFeedProcessorStatisticsV2(){
     super();

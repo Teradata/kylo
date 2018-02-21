@@ -43,7 +43,7 @@ public class ThrowableMapper extends BaseExceptionMapper implements javax.ws.rs.
         log.error("toResponse() caught throwable", exception);
         RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
         builder.url(req.getRequestURI());
-        builder.message("An unknown error has occurred. This is very likely due to invalid input");
+        builder.message("An unknown error has occurred. Contact your Kylo administrator for more info");
 
         if (debugMode) {
             builder.setDeveloperMessage(exception);

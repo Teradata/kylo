@@ -210,6 +210,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }, function (newVal) {
                 FeedService.getSystemName(newVal).then(function (response) {
                     _this.model.systemFeedName = response.data;
+                    _this.model.table.tableSchema.name = _this.model.systemFeedName;
                     _this.validateUniqueFeedName();
                     _this.validate();
                 });

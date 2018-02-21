@@ -7,10 +7,17 @@ var thinkbigFeedInfo = function () {
         bindToController: {
             selectedTabIndex: "="
         },
+            scope: {
+                versions: '=?'
+            },
         controllerAs: "vm",
-        scope: {},
         templateUrl: "js/feed-mgr/feeds/edit-feed/details/feed-info.html",
-        controller: "FeedInfoController"
+            controller: "FeedInfoController",
+            link: function ($scope:any, element:any, attrs:any, controller:any) {
+                if ($scope.versions == undefined) {
+                    $scope.versions = false;
+                }
+            }
     };
 };
 
@@ -18,6 +25,7 @@ var thinkbigFeedInfo = function () {
 
 export class FeedInfoController {
 
+        versions:any = this.$scope.versions;
         /**
          * Flag if we have fully initialized or not
          * @type {boolean}
@@ -39,7 +47,7 @@ export class FeedInfoController {
 
 // define(["angular", "feed-mgr/feeds/edit-feed/module-name"], function (angular, moduleName) {
 
-    constructor (private $injector:any,private $ocLazyLoad:any,private FeedService:any, private UiComponentsService:any) {
+    constructor (private $scope:any, private $injector:any,private $ocLazyLoad:any,private FeedService:any, private UiComponentsService:any) {
 
         var self = this;
         // Determine table option
@@ -87,5 +95,5 @@ export class FeedInfoController {
 
 }
 
-    angular.module(moduleName).controller("FeedInfoController", ["$injector","$ocLazyLoad","FeedService","UiComponentsService", FeedInfoController]);
+    angular.module(moduleName).controller("FeedInfoController", ["$scope", "$injector","$ocLazyLoad","FeedService","UiComponentsService", FeedInfoController]);
     angular.module(moduleName).directive("thinkbigFeedInfo", [thinkbigFeedInfo]);

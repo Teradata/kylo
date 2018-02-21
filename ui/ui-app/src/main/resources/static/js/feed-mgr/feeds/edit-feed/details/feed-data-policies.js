@@ -7,10 +7,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-data-policies.html',
             controller: "FeedDataPoliciesController",
             link: function ($scope, element, attrs, controller) {
+                if (angular.isUndefined($scope.versions)) {
+                    $scope.versions = false;
+                }
             }
         };
     };
@@ -28,13 +33,15 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.FeedService = FeedService;
             this.StateService = StateService;
             this.FeedFieldPolicyRuleService = FeedFieldPolicyRuleService;
+            this.versions = this.$scope.versions;
             /**
              * Indicates if the feed data policies may be edited.
              * @type {boolean}
              */
-            this.allowEdit = false;
+            this.allowEdit = !this.versions;
             this.model = this.FeedService.editFeedModel;
-            // model:any = FeedService.editFeedModel;
+            this.versionFeedModel = this.FeedService.versionFeedModel;
+            this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
             /**
              * The form for angular errors
              * @type {{}}
@@ -151,6 +158,18 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     applyDefaults();
                 }
             });
+            if (self.versions) {
+                $scope.$watch(function () {
+                    return self.FeedService.versionFeedModel;
+                }, function (newVal) {
+                    self.versionFeedModel = self.FeedService.versionFeedModel;
+                });
+                $scope.$watch(function () {
+                    return self.FeedService.versionFeedModelDiff;
+                }, function (newVal) {
+                    self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+                });
+            }
             /**
              * apply default values to the read only model
              */
@@ -193,11 +212,14 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
              * Returns the readable display name for the mergeStrategy on the edited feed model
              * @returns {*}
              */
-            var mergeStrategyDisplayName = function () {
-                var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
-                    return strategy.type == self.model.table.targetMergeStrategy;
-                });
-                return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy;
+            var mergeStrategyDisplayName = function (model) {
+                if (model !== undefined && model.table !== undefined) {
+                    var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
+                        return strategy.type === model.table.targetMergeStrategy;
+                    });
+                    return mergeStrategyObject !== undefined ? mergeStrategyObject.name : model.table.targetMergeStrategy;
+                }
+                return '';
             };
             /**
              * Enable/Disable the PK Merge Strategy
@@ -214,6 +236,12 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 valid = FeedService.enableDisableRollingSyncMergeStrategy(self.model, mergeStrategies);
                 self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidRollingSyncOption', valid);
             }
+            var shouldIndexingOptionsBeDisabled = function () {
+                return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+            };
+            var shouldIndexingOptionsBeEnabled = function () {
+                return !shouldIndexingOptionsBeDisabled();
+            };
             var onEdit = function () {
                 //copy the model
                 var fieldPolicies = angular.copy(FeedService.editFeedModel.table.fieldPolicies);
@@ -251,6 +279,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 }
                 indexCheckAll.setup();
                 profileCheckAll.setup();
+                self.editModel.historyReindexingStatus = FeedService.editFeedModel.historyReindexingStatus;
                 $timeout(validateMergeStrategies, 400);
             };
             var onCancel = function () {
@@ -258,10 +287,98 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             var getAllFieldPolicies = function (field) {
                 return FeedFieldPolicyRuleService.getAllPolicyRules(field);
             };
+            var getAllVersionedFieldPolicies = function (policyIndex) {
+                return getAllFieldPolicies(findVersionedPolicy(policyIndex));
+            };
+            var findVersionedPolicy = function (policyIndex) {
+                if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                    return self.versionFeedModel.table.fieldPolicies[policyIndex];
+                }
+                return '';
+            };
+            var findVersionedRuleName = function (policyIndex, ruleIndex) {
+                if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                    var field = self.versionFeedModel.table.fieldPolicies[policyIndex];
+                    var rules = FeedFieldPolicyRuleService.getAllPolicyRules(field);
+                    if (ruleIndex < rules.length) {
+                        return rules[ruleIndex].name;
+                    }
+                }
+                return '';
+            };
             var onSave = function (ev) {
+                //Identify if any indexing options were changed
+                var indexChanges = {};
+                for (var i = 0; i < FeedService.editFeedModel.table.fieldPolicies.length; i++) {
+                    var fieldName = FeedService.editFeedModel.table.fieldPolicies[i].fieldName;
+                    var indexOption = FeedService.editFeedModel.table.fieldPolicies[i].index;
+                    if (self.editModel.fieldPolicies[i].fieldName == fieldName) {
+                        if (self.editModel.fieldPolicies[i].index != indexOption) {
+                            indexChanges[self.editModel.fieldPolicies[i].fieldName] = self.editModel.fieldPolicies[i].index;
+                        }
+                    }
+                }
+                if (Object.keys(indexChanges).length > 0) {
+                    //Indexing options have changed
+                    FeedService.isKyloConfiguredForFeedHistoryDataReindexing()
+                        .then(function (response) {
+                        if (response.data === 'true') {
+                            var displayIndexChanges = "";
+                            var displayIndexChangedStatus = "";
+                            var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
+                            //using styles does not render correctly.
+                            displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below, and take effect going forward.<br>"
+                                + "Do you wish to apply these changes to historical data as well?</font></div><br>"
+                                + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
+                            for (var key in indexChanges) {
+                                displayIndexChanges += "<tr>";
+                                if (indexChanges[key] == true) {
+                                    displayIndexChangedStatus = "<font color='green'>enabled</font>";
+                                }
+                                else {
+                                    displayIndexChangedStatus = "<font color='red'>disabled</font>";
+                                }
+                                displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
+                                displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
+                                displayIndexChanges += "</tr>";
+                            }
+                            displayIndexChanges += "</table></div>";
+                            var confirm = $mdDialog.confirm()
+                                .title("Apply indexing changes to history data?")
+                                .htmlContent(displayIndexChanges)
+                                .ariaLabel("Apply indexing changes to history data?")
+                                .ok("Yes")
+                                .cancel("No");
+                            $mdDialog.show(confirm).then(function () {
+                                self.editModel.historyReindexingStatus = 'DIRTY';
+                                goAheadWithSave(ev, true); //indexing changed, kylo configured, user opt-in for history reindexing
+                            }, function () {
+                                goAheadWithSave(ev, false); //indexing changed, kylo configured, user opt-out for history reindexing
+                            });
+                        }
+                        else {
+                            goAheadWithSave(ev, false); //indexing changed, kylo not configured
+                        }
+                    }, function (response) {
+                        console.log("Unable to determine if Kylo is configured to support data history reindexing. Please check Kylo services. Moving ahead assuming it is not configured.");
+                        goAheadWithSave(ev, false);
+                    });
+                }
+                else {
+                    goAheadWithSave(ev, false); //indexing not changed
+                }
+            };
+            var goAheadWithSave = function (ev, applyHistoryReindexing) {
                 //save changes to the model
                 FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-data-policies.Saving'), self.model.feedName);
                 var copy = angular.copy(FeedService.editFeedModel);
+                if (applyHistoryReindexing === true) {
+                    copy.historyReindexingStatus = self.editModel.historyReindexingStatus;
+                }
+                else {
+                    //Server may have updated value. Don't send via UI.
+                    copy.historyReindexingStatus = undefined;
+                }
                 copy.table.targetFormat = self.editModel.table.targetFormat;
                 copy.table.fieldPolicies = self.editModel.fieldPolicies;
                 //add back in the changes to the pk, nullable, created, updated tracker columns
@@ -292,6 +409,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                     self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                     self.model.table.options = self.editModel.table.options;
+                    //Get the updated value from the server.
+                    self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                     populateFieldNameMap();
                 }, function (response) {
                     FeedService.hideFeedSavingDialog();
@@ -427,8 +546,17 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             };
             //Apply the entity access permissions
             $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                self.allowEdit = access && !self.model.view.dataPolicies.disabled;
+                self.allowEdit = !self.versions && access && !self.model.view.dataPolicies.disabled;
             });
+            var diff = function (path) {
+                return FeedService.diffOperation(path);
+            };
+            var diffCollection = function (path) {
+                return FeedService.diffCollectionOperation(path);
+            };
+            var diffPolicies = function (policyIdx) {
+                return FeedService.joinVersionOperations(FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/standardization'), FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/validation'));
+            };
         }
         //.....................................................
         Controller.prototype.markChecked = function () {

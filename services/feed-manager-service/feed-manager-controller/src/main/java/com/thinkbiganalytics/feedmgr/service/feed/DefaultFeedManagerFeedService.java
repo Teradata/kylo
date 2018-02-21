@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -42,6 +43,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
@@ -63,6 +66,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -142,19 +146,19 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
 
     @Inject
-    FeedManagerTemplateProvider templateProvider;
+    private FeedManagerTemplateProvider templateProvider;
     @Inject
-    FeedManagerTemplateService templateRestProvider;
+    private FeedManagerTemplateService templateRestProvider;
     @Inject
-    FeedManagerPreconditionService feedPreconditionModelTransform;
+    private FeedManagerPreconditionService feedPreconditionModelTransform;
     @Inject
-    FeedModelTransform feedModelTransform;
+    private FeedModelTransform feedModelTransform;
     @Inject
-    ServiceLevelAgreementProvider slaProvider;
+    private ServiceLevelAgreementProvider slaProvider;
     @Inject
-    ServiceLevelAgreementService serviceLevelAgreementService;
+    private ServiceLevelAgreementService serviceLevelAgreementService;
     @Inject
-    OpsManagerFeedProvider opsManagerFeedProvider;
+    private OpsManagerFeedProvider opsManagerFeedProvider;
     @Inject
     private DatasourceProvider datasourceProvider;
     /**
@@ -192,9 +196,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     private RegisteredTemplateService registeredTemplateService;
 
     @Inject
-    PropertyExpressionResolver propertyExpressionResolver;
+    private PropertyExpressionResolver propertyExpressionResolver;
     @Inject
-    NifiFlowCache nifiFlowCache;
+    private NifiFlowCache nifiFlowCache;
 
     @Inject
     private NiFiTemplateCache niFiTemplateCache;
@@ -217,6 +221,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private NiFiObjectCache niFiObjectCache;
+
+    @Inject
+    FeedHistoryDataReindexingService feedHistoryDataReindexingService;
+
+    @Inject
+    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
 
     /**
      * Adds listeners for transferring events.
@@ -321,6 +331,28 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
             return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
                 .map(version -> feedModelTransform.domainToFeedVersion(version));
+        });
+    }
+    
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+            
+            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            
+            return fromVer.map(from -> {
+                return toVer.map(to -> {
+                    return feedModelTransform.generateDifference(from, to);
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
         });
     }
 
@@ -429,6 +461,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
+        //Check and accept feed data history reindexing request if that is the case.
+        feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
+
         if (feedMetadata.getState() == null) {
             if (feedMetadata.isActive()) {
                 feedMetadata.setState(Feed.State.ENABLED.name());
@@ -461,6 +496,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             //update the access control
             feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(), roleMembershipChange));
         }
+
+        feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
         return feed;
 
     }
@@ -531,7 +568,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                     .build());
 
         //copy the registered template properties it a new list so it doest get updated
-        List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
+        List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
         //update the template properties with the feedMetadata properties
         List<NifiProperty> matchedProperties =
             NifiPropertyUtil
@@ -541,8 +578,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
 
+        //skip any properties that the user supplied which are not ${ values
+        List<NifiProperty> propertiesToSkip = originalFeedProperties.stream().filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream().filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        if(templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()){
+            propertiesToSkip.addAll(templatePropertiesToSkip);
+        }
         //resolve any ${metadata.} properties
-        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
+        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata,propertiesToSkip);
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
@@ -568,7 +611,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         CreateFeedBuilder
             feedBuilder =
             CreateFeedBuilder
-                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache, templateConnectionUtil)
+                .newFeed(nifiRestClient, nifiFlowCache, feedMetadata, registeredTemplate.getNifiTemplateId(), propertyExpressionResolver, propertyDescriptorTransform, niFiObjectCache,
+                         templateConnectionUtil)
                 .enabled(enabled)
                 .removeInactiveVersionedProcessGroup(removeInactiveNifiVersionedFeedFlows)
                 .autoAlign(nifiAutoFeedsAlignAfterSave)
@@ -610,6 +654,10 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             try {
                 stopwatch.start();
                 saveFeed(feedMetadata);
+                //tell NiFi if this is a streaming feed or not
+                if (feedMetadata.getRegisteredTemplate().isStream()) {
+                    streamingFeedJmsNotificationService.updateNiFiStatusJMSTopic(entity, feedMetadata);
+                }
                 feed.setEnableAfterSave(enableLater);
                 feed.setSuccess(true);
                 stopwatch.stop();
@@ -642,7 +690,6 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
 
     private void saveFeed(final FeedMetadata feed) {
-
 
         metadataAccess.commit(() -> {
             Stopwatch stopwatch = Stopwatch.createStarted();
@@ -890,10 +937,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
+
+            String feedCategorySystemName = feed.getCategory().getSystemName();
+            String feedSystemName = feed.getName();
+
             //unschedule any SLAs
-            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier,feed.getQualifiedName());
+            serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier, feed.getQualifiedName());
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
+            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
             return true;
         });
     }

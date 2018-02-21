@@ -6,13 +6,11 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.plugins</groupId>
     <artifactId>kylo-plugins</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
     <solr.version>6.5.1</solr.version>
-    <solrsearchindexprovider.version>5.2.0.Final</solrsearchindexprovider.version>
-    <modeshape.version>5.2.0.Final</modeshape.version>
   </properties>
   <artifactId>kylo-search-solr</artifactId>
 
@@ -21,24 +19,29 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-search-api</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-commons-util</artifactId>
       <version>${project.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-core</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
@@ -50,7 +53,6 @@
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-lucene-index-provider</artifactId>
-      <version>${solrsearchindexprovider.version}</version>
     </dependency>
 
     <dependency>

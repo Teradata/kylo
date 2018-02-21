@@ -20,20 +20,24 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.config.HistoryDataReindexingFeedsAvailableCache;
 import com.thinkbiganalytics.feedmgr.rest.FeedLineageBuilder;
 import com.thinkbiganalytics.feedmgr.rest.Model;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataModelTransform;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
@@ -45,7 +49,11 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedLineage;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedDataHistoryReindexParams;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.FeedsForDataHistoryReindex;
+import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingStatus;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
@@ -59,9 +67,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.security.Principal;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -125,6 +135,9 @@ public class FeedsController {
     private MetadataAccess metadata;
 
     @Inject
+    private MetadataService metadataService;
+
+    @Inject
     private MetadataModelTransform metadataTransform;
 
     @Inject
@@ -139,6 +152,15 @@ public class FeedsController {
     @Inject
     private DatasourceModelTransform datasourceTransform;
 
+    @Inject
+    private HistoryDataReindexingFeedsAvailableCache historyDataReindexingFeedsAvailableCache;
+
+    @Inject
+    private FeedHistoryDataReindexingService feedHistoryDataReindexingService;
+
+    private MetadataService getMetadataService() {
+        return metadataService;
+    }
 
     @GET
     @Path("{id}/actions/available")
@@ -268,6 +290,108 @@ public class FeedsController {
         });
     }
 
+    @GET
+    @Path("/data-history-reindex-configured")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Check if feed data history reindexing is configured in Kylo.")
+    @ApiResponses({
+                @ApiResponse(code = 200, message = "Info on whether data history reindexing is configured in Kylo", response = Boolean.class),
+                @ApiResponse(code = 500, message = "Unable to check if data history reindexing is configured in Kylo", response = RestResponseStatus.class)
+                })
+    public boolean getDataHistoryReindexConfigured() {
+        LOG.debug("Get info on whether feed data history reindexing is configured in Kylo");
+        if (historyDataReindexingFeedsAvailableCache == null) {
+            throw new WebApplicationException("Unable to check if feed data history reindexing is configured in Kylo", Status.NOT_FOUND);
+        }
+
+        if (!historyDataReindexingFeedsAvailableCache.areKyloHistoryDataReindexingFeedsAvailable()) {
+            LOG.info("Feed data history reindexing is not configured in Kylo. Reason: Supporting feeds not available.");
+            return false;
+        }
+        if (!feedHistoryDataReindexingService.isHistoryDataReindexingEnabled()) {
+            LOG.info("Feed data history reindexing is not configured in Kylo. Reason: Application configuration set to false.");
+            return false;
+        }
+        return true;
+    }
+
+    @GET
+    @Path("/feeds-for-data-history-reindex")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Get all feeds for which historical data needs to be reindexed.")
+    @ApiResponses({
+                        @ApiResponse(code = 200, message = "Returns all identified feeds", response=FeedsForDataHistoryReindex.class),
+                        @ApiResponse(code = 404, message = "The feeds could not be found.", response = RestResponseStatus.class)
+                  })
+    public FeedsForDataHistoryReindex getFeedsForDataHistoryReindexing() {
+        LOG.debug("Get feeds for data history reindexing");
+        return this.metadata.read(() -> {
+            List<com.thinkbiganalytics.metadata.api.feed.Feed> feedsForDataHistoryReindexAsList = feedProvider.getFeedsForDataHistoryReindexing();
+            if (feedsForDataHistoryReindexAsList!=null) {
+                Set<Feed> feedsForDataHistoryReindexAsSet = new HashSet<>();
+                for (com.thinkbiganalytics.metadata.api.feed.Feed domainFeed: feedsForDataHistoryReindexAsList) {
+                    feedsForDataHistoryReindexAsSet.add(metadataTransform.domainToFeed().apply(domainFeed));
+                }
+                return new FeedsForDataHistoryReindex(feedsForDataHistoryReindexAsSet);
+            } else {
+                throw new WebApplicationException("An error occurred trying to find feeds that need data history reindexing");
+            }
+        });
+    }
+
+    @POST
+    @Path ("{id}/update-data-history-reindex-status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @ApiOperation("Sets the data history reindexing status for the specified feed")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the feed's updated data history reindex status and columns to index", response = FeedDataHistoryReindexParams.class),
+        @ApiResponse(code = 500, message = "The data history reindex status could not be updated for the feed", response = RestResponseStatus.class)
+    })
+    public FeedDataHistoryReindexParams updateDataHistoryReindexStatus(@PathParam("id") String feedIdStr,
+                                                                       HistoryReindexingStatus status) {
+        LOG.debug("Update data history reindexing status for feed with id: {}", feedIdStr);
+        FeedDataHistoryReindexParams feedDataHistoryReindexParams = this.metadata.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+
+            com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = feedProvider.resolveFeed(feedIdStr);
+            com.thinkbiganalytics.metadata.api.feed.Feed feed = feedProvider.getFeed(feedId);
+
+            if (feed != null) {
+                FeedDataHistoryReindexParams reindexParams = new FeedDataHistoryReindexParams();
+
+                com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingState newHistoryReindexingState =
+                    com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingState.valueOf(status.getHistoryReindexingState().name());
+
+                com.thinkbiganalytics.metadata.api.feed.Feed updatedDomainFeed = feed.updateHistoryReindexingStatus(new com.thinkbiganalytics.metadata.api.feed.reindex.HistoryReindexingStatus(newHistoryReindexingState));
+                Feed updatedRestFeed = metadataTransform.domainToFeed().apply(updatedDomainFeed);
+
+                reindexParams.setHistoryReindexingStatus(updatedRestFeed.getCurrentHistoryReindexingStatus());  //updated reindexing status
+                reindexParams.setFeedId(updatedRestFeed.getId());
+                reindexParams.setFeedSystemName(updatedRestFeed.getSystemName());
+                reindexParams.setCategorySystemName(updatedRestFeed.getCategory().getSystemName());
+
+                if (updatedDomainFeed != null) {
+                    FeedMetadata feedMetadata = getMetadataService().getFeedById(updatedDomainFeed.getId().toString());
+                    if (feedMetadata != null && feedMetadata.getTable() != null) {
+                        List<String> commaSepColumns = new ArrayList<>();
+                        List<FieldPolicy> fieldPolicies = feedMetadata.getTable().getFieldPolicies();
+                        for (FieldPolicy fieldPolicy: fieldPolicies) {
+                            if (fieldPolicy.isIndex()) {
+                                commaSepColumns.add(fieldPolicy.getFieldName().toLowerCase().trim());
+                            }
+                        }
+                        reindexParams.setCommaSeparatedColumnsForIndexing(StringUtils.join(commaSepColumns.toArray(), ","));    //columns to index as comma separated string
+                    }
+                }
+                return reindexParams;
+            } else {
+                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+            }
+        });
+        return feedDataHistoryReindexParams;
+    }
+
     @PUT
     @Path("{id}/initstatus")
     @Produces(MediaType.APPLICATION_JSON)
@@ -311,7 +435,7 @@ public class FeedsController {
         
         try {
             return this.waterMerkService.getWaterMarks(feedIdStr);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -331,7 +455,7 @@ public class FeedsController {
         try {
             return this.waterMerkService.getWaterMark(feedIdStr, waterMarkName)
                   .orElseThrow(() -> new WebApplicationException("A feed high-water mark with the given name does not exist: " + waterMarkName, Status.NOT_FOUND));
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -353,7 +477,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.updateWaterMark(feedIdStr, waterMarkName, value, cancelActive);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -374,7 +498,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.cancelActiveWaterMark(feedIdStr, waterMarkName);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }

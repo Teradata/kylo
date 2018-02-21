@@ -21,4 +21,5 @@ com.thinkbiganalytics.nifi.v2.init.InitializeFeed
 com.thinkbiganalytics.nifi.v2.init.CompleteInitializeFeed
 com.thinkbiganalytics.nifi.v2.ingest.CreateElasticsearchBackedHiveTable
 com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement
-
+com.thinkbiganalytics.nifi.v2.reindex.GetFeedsHistoryReindex
+com.thinkbiganalytics.nifi.v2.reindex.UpdateFeedHistoryReindex

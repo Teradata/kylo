@@ -106,7 +106,7 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                 // Validate property
                 hasError |= (property.$error.duplicate = angular.isDefined(keys[property.systemName]));
                 hasError |= (property.$error.missingName = (property.systemName.length === 0 && property.value.length > 0));
-                hasError |= (property.$error.missingValue = (property.required && property.systemName.length > 0 && (property.value === null || property.value.length === 0)));
+                hasError |= (property.$error.missingValue = (property.required && property.systemName.length > 0 && (angular.isUndefined(property.value) || property.value === null || property.value.length === 0)));
 
                 // Add to user properties object
                 if (property.systemName.length > 0) {

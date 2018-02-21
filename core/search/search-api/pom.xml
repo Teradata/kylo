@@ -6,10 +6,9 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-search</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
-    <modeshape.search.version>5.2.0.Final</modeshape.search.version>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
   </properties>
   <artifactId>kylo-search-api</artifactId>
@@ -23,13 +22,13 @@
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-jcr-api</artifactId>
-      <version>${modeshape.search.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.modeshape</groupId>
       <artifactId>modeshape-jcr</artifactId>
-      <version>${modeshape.search.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>

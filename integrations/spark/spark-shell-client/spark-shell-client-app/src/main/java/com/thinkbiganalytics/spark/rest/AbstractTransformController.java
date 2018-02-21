@@ -82,7 +82,6 @@ public abstract class AbstractTransformController {
      */
     @GET
     @Path("{table}/save/{save}/zip")
-    @Produces(MediaType.APPLICATION_OCTET_STREAM)
     @ApiOperation("Downloads the saved results in a ZIP file")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "Returns the saved file."),
@@ -253,6 +252,6 @@ public abstract class AbstractTransformController {
         final TransformResponse entity = new TransformResponse();
         entity.setMessage(message);
         entity.setStatus(TransformResponse.Status.ERROR);
-        return Response.status(status).entity(entity).build();
+        return Response.status(status).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).entity(entity).build();
     }
 }

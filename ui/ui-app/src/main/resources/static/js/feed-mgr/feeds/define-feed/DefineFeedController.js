@@ -87,8 +87,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.model.stepperTemplateUrl = 'js/feed-mgr/feeds/define-feed/define-feed-stepper.html';
             this.requestedTemplate = $transition$.params().templateName || '';
             this.requestedTemplateId = $transition$.params().templateId || '';
-            var feedDescriptor = $transition$.params().feedDescriptor || '';
-            this.model.feedDescriptor = feedDescriptor;
             this.allTemplates = [];
             this.firstTemplates = [];
             this.displayMoreLink = false;
@@ -223,6 +221,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             var isCloning = this.$transition$.params().bcExclude_cloning;
             var cloneFeedName = this.$transition$.params().bcExclude_cloneFeedName;
             this.cloning = angular.isUndefined(isCloning) ? false : isCloning;
+            var feedDescriptor = this.$transition$.params().feedDescriptor || '';
+            this.model.feedDescriptor = feedDescriptor;
             this.getRegisteredTemplates().then(function (response) {
                 if (angular.isDefined(_this.requestedTemplate) && _this.requestedTemplate != '') {
                     var match = _.find(_this.allTemplates, function (template) {
@@ -230,6 +230,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     });
                     if (angular.isDefined(match)) {
                         _this.FeedService.resetFeed();
+                        if (angular.isDefined(feedDescriptor) && feedDescriptor != '') {
+                            _this.model.feedDescriptor = feedDescriptor;
+                        }
                         _this.selectTemplate(match);
                     }
                 }

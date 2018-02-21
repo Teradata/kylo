@@ -225,6 +225,8 @@ export class DefineFeedController implements ng.IComponentController {
             var isCloning = this.$transition$.params().bcExclude_cloning;
             var cloneFeedName = this.$transition$.params().bcExclude_cloneFeedName;
             this.cloning = angular.isUndefined(isCloning) ? false : isCloning;
+            var feedDescriptor = this.$transition$.params().feedDescriptor || '';
+            this.model.feedDescriptor = feedDescriptor;
 
             this.getRegisteredTemplates().then((response:any) =>{
                 if(angular.isDefined(this.requestedTemplate) && this.requestedTemplate != ''){
@@ -233,6 +235,9 @@ export class DefineFeedController implements ng.IComponentController {
                     });
                     if(angular.isDefined(match)) {
                         this.FeedService.resetFeed();
+                        if(angular.isDefined(feedDescriptor) && feedDescriptor != ''){
+                            this.model.feedDescriptor =feedDescriptor;
+                        }
                         this.selectTemplate(match);
                     }
                 }
@@ -304,8 +309,6 @@ export class DefineFeedController implements ng.IComponentController {
 
         this.requestedTemplate = $transition$.params().templateName || '';
         this.requestedTemplateId = $transition$.params().templateId || '';
-        var feedDescriptor = $transition$.params().feedDescriptor || '';
-        this.model.feedDescriptor = feedDescriptor;
         this.allTemplates = [];
 
         this.firstTemplates = [];

@@ -28,6 +28,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class JdbcDatasource extends UserDatasource implements com.thinkbiganalytics.metadata.datasource.JdbcDatasource {
 
+    private static final long serialVersionUID = -5222671258350265401L;
+
     /**
      * Id of the NiFi DBCPConnectionPool controller service
      */

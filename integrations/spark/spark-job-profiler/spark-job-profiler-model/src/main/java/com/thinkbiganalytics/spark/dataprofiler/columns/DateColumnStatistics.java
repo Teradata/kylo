@@ -37,8 +37,9 @@ import javax.annotation.Nonnull;
  * [Hive data type: DATE]
  */
 
-@SuppressWarnings("serial")
 public class DateColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -3916588294394484657L;
 
     /* Date specific metrics */
     private Date maxDate;

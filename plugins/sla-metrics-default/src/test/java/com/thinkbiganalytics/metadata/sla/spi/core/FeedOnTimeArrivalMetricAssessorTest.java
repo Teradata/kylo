@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,10 +21,6 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
-import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
@@ -48,7 +44,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 import org.quartz.CronExpression;
 import org.testng.Assert;
 
-import java.security.Principal;
 import java.text.ParseException;
 
 import static org.mockito.Matchers.any;
@@ -59,7 +54,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DateTime.class, CronExpressionUtil.class})
-public class    FeedOnTimeArrivalMetricAssessorTest {
+public class FeedOnTimeArrivalMetricAssessorTest {
 
     private DateTime lateTime;
     private FeedOnTimeArrivalMetric metric;
@@ -223,68 +218,12 @@ public class    FeedOnTimeArrivalMetricAssessorTest {
         verify(this.builder).result(AssessmentResult.WARNING);
     }
 
-    public class MockMetadataAccess implements MetadataAccess {
 
-        public MockMetadataAccess() {
-
-        }
-
-        @Override
-        public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public void commit(MetadataAction cmd, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
-
-        @Override
-        public void commit(MetadataAction cmd, MetadataRollbackAction rollbackAction, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
-
-        @Override
-        public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
-            try {
-                return cmd.execute();
-            } catch (Exception e) {
-
-            }
-            return null;
-        }
-
-        @Override
-        public void read(MetadataAction cmd, Principal... principals) {
-            try {
-                cmd.execute();
-            } catch (Exception e) {
-
-            }
-        }
+    private BatchJobExecution createFeedJobExecution(DateTime endTime) {
+        BatchJobExecution feed = mock(BatchJobExecution.class);
+        when(feed.getEndTime()).thenReturn(endTime);
+        return feed;
     }
+
 
 }

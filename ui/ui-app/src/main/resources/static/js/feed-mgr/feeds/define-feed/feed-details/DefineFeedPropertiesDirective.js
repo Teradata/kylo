@@ -91,6 +91,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             self.tagChips.selectedItem = null;
             self.tagChips.searchText = null;
             self.isValid = true;
+            if (angular.isUndefined(self.model.tags)) {
+                self.model.tags = [];
+            }
             // Update user fields when category changes
             $scope.$watch(function () { return self.model.category.id; }, function (categoryId) {
                 if (categoryId !== null) {

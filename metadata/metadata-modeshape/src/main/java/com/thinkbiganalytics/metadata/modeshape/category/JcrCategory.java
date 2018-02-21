@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.modeshape.category;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.mixin.AccessControlledMixin;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.role.SecurityRole;
 
@@ -68,23 +69,12 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public JcrCategory(Node node) {
         super(node);
     }
-    
+
     public JcrCategory(Node node, FeedOpsAccessControlProvider opsAccessProvider) {
         super(node);
-        setOpsAccessProvider(opsAccessProvider);
-    }
-
-
-    /**
-     * This should be set after an instance of this type is created to allow the change
-     * of a feed's operations access control.
-     *
-     * @param opsAccessProvider the opsAccessProvider to set
-     */
-    public void setOpsAccessProvider(FeedOpsAccessControlProvider opsAccessProvider) {
         this.opsAccessProvider = Optional.ofNullable(opsAccessProvider);
     }
-
+    
     public Optional<FeedOpsAccessControlProvider> getOpsAccessProvider() {
         return this.opsAccessProvider;
     }
@@ -92,28 +82,28 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void enableAccessControl(JcrAllowedActions prototype, Principal owner, List<SecurityRole> catRoles, List<SecurityRole> feedRoles) {
         // Setup default access control for this entity
         AccessControlledMixin.super.enableAccessControl(prototype, owner, catRoles);
-        
+
         // Setup the feed roles relationships.
         getDetails().ifPresent(d -> d.enableFeedRoles(feedRoles));
     }
-    
+
     // -=-=--=-=- Delegate Propertied methods to details -=-=-=-=-=-
-    
+
     @Override
     public Map<String, Object> getProperties() {
         return getDetails().map(d -> d.getProperties()).orElse(Collections.emptyMap());
     }
-    
+
     @Override
     public void setProperties(Map<String, Object> properties) {
         getDetails().ifPresent(d -> d.setProperties(properties));
     }
-    
+
     @Override
     public void setProperty(String name, Object value) {
         getDetails().ifPresent(d -> d.setProperty(name, value));
     }
-    
+
     @Override
     public void removeProperty(String key) {
         getDetails().ifPresent(d -> d.removeProperty(key));
@@ -123,15 +113,13 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public Map<String, Object> mergeProperties(Map<String, Object> props) {
         return getDetails().map(d -> d.mergeProperties(props)).orElse(Collections.emptyMap());
     }
-    
+
     @Override
     public Map<String, Object> replaceProperties(Map<String, Object> props) {
         return getDetails().map(d -> d.replaceProperties(props)).orElse(Collections.emptyMap());
     }
 
-    
-    
-    
+
     public Optional<CategoryDetails> getDetails() {
         if (this.details == null) {
             if (JcrUtil.hasNode(getNode(), DETAILS)) {
@@ -145,7 +133,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         }
     }
 
-    
+
     public List<? extends Feed> getFeeds() {
         return getDetails().map(d -> d.getFeeds()).orElse(Collections.emptyList());
     }
@@ -211,14 +199,25 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void setTitle(String title) {
         super.setProperty(TITLE, title);
     }
-    
+
     @Override
     public String getIconColor() {
         return super.getProperty(ICON_COLOR, String.class, true);
     }
-    
+
     public void setIconColor(String iconColor) {
         super.setProperty(ICON_COLOR, iconColor);
+    }
+
+    @Override
+    public boolean isAllowIndexing() {
+        String allowIndexing = JcrPropertyUtil.getProperty(getNode(),ALLOW_INDEXING, "Y"); //returns Y if property doesn't exist
+        return allowIndexing.equals("Y");
+    }
+
+    @Override
+    public void setAllowIndexing(boolean allowIndexing) {
+        super.setProperty(ALLOW_INDEXING, allowIndexing?"Y":"N");
     }
 
     @Override
@@ -234,12 +233,12 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public void setIcon(String icon) {
         super.setProperty(ICON, icon);
     }
-    
+
     @Override
     public Set<RoleMembership> getFeedRoleMemberships() {
         return getDetails().map(d -> d.getFeedRoleMemberships()).orElse(null);
     }
-    
+
     @Override
     public Optional<RoleMembership> getFeedRoleMembership(String roleName) {
         return getDetails().map(d -> d.getFeedRoleMembership(roleName)).orElse(null);
@@ -249,7 +248,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public Class<? extends JcrAllowedActions> getJcrAllowedActionsType() {
         return JcrCategoryAllowedActions.class;
     }
-    
+
     public String getFeedParentPath() {
         return JcrUtil.path(getNode(), DETAILS).toString();
     }

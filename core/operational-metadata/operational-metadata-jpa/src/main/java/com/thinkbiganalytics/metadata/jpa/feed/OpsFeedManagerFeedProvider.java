@@ -326,7 +326,7 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<OpsManagerFeed> findAllWithoutAcl() {
-        return findAll();
+        return opsManagerFeedCacheByName.findAllWithoutAcl();
     }
 
     @EntityAccessControlled
@@ -356,7 +356,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
     }
 
     public List<? extends LatestFeedJobExecution> findLatestCheckDataJobs() {
-        return latestFeedJobExectionRepository.findCheckDataJobs();
+        if (accessController.isEntityAccessControlled()) {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithAcl();
+        } else {
+            return latestFeedJobExectionRepository.findCheckDataJobsWithoutAcl();
+        }
     }
 
     public List<JobStatusCount> getJobStatusCountByDateFromNow(String feedName, ReadablePeriod period) {
@@ -511,8 +515,11 @@ public class OpsFeedManagerFeedProvider extends AbstractCacheBackedProvider<OpsM
         OpsManagerFeed feed = this.findByName(feedName);
         if (feed.isStream()) {
             NifiFeedStats feedStats = metadataAccess.read(() -> nifiFeedStatisticsProvider.findLatestStatsForFeed(feedName));
-            if (feedStats != null) {
+            if (feedStats != null && feedStats.getLastActivityTimestamp() != null) {
                 lastFeedTime = new DateTime(feedStats.getLastActivityTimestamp());
+            }
+            else {
+                log.warn("feedStats.getLastActivityTimestamp is null for streaming feed {} ",feedName);
             }
         } else {
             BatchJobExecution jobExecution = metadataAccess.read(() -> batchJobExecutionProvider.findLatestCompletedJobForFeed(feedName));

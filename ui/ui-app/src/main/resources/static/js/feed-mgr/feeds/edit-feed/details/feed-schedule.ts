@@ -8,11 +8,15 @@ var directive = function () {
         bindToController: {
         },
         controllerAs: 'vm',
-        scope: {},
+            scope: {
+                versions: '=?'
+            },
         templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-schedule.html',
         controller: "FeedScheduleController",
         link: function ($scope:any, element:any, attrs:any, controller:any) {
-
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
         }
 
     };
@@ -25,17 +29,20 @@ export class FeedScheduleController implements ng.IComponentController {
 
     // var self = this;
     
+    versions:any = this.$scope.versions;
     /**
      * Indicates if the feed schedule may be edited.
      * @type {boolean}
      */
-    allowEdit:boolean = false;
+    allowEdit:boolean = !this.versions;
 
     /**
      * The data model for the feed
      * @type {data.editFeedModel|{}|*}
      */
     model:any = this.FeedService.editFeedModel;
+        versionFeedModel:any = this.FeedService.versionFeedModel;
+        versionFeedModelDiff:any = this.FeedService.versionFeedModelDiff;
 
     /**
      * The model with only the Schedule data that is populated via the {@code this#onEdit()} method
@@ -84,7 +91,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * All possible schedule strategies
      * @type {*[]}
      */
-    allScheduleStrategies:any = [{label: this.$filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.TE'), value: "TRIGGER_DRIVEN"},
+    allScheduleStrategies:any = [{label: this.$filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.T/E'), value: "TRIGGER_DRIVEN"},
     {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
     
@@ -154,7 +161,7 @@ export class FeedScheduleController implements ng.IComponentController {
     onEdit = function(){
         //copy the model
         this.editModel.category = {systemName: this.FeedService.editFeedModel.category.systemName};
-        this.editModel.systemFeedName = this.FeedService.editFeedModelsystemFeedName;
+        this.editModel.systemFeedName = this.FeedService.editFeedModel.systemFeedName;
         this.editModel.schedule = angular.copy(this.FeedService.editFeedModel.schedule);
         this.editModel.inputProcessorType = this.FeedService.editFeedModel.inputProcessorType;
         if (this.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && (!this.isClustered || this.supportsExecutionNode)) {
@@ -187,11 +194,15 @@ export class FeedScheduleController implements ng.IComponentController {
             var copy = angular.copy(this.FeedService.editFeedModel);
             copy.schedule = this.editModel.schedule;
             copy.userProperties = null;
+                //Server may have updated value. Don't send via UI.
+                copy.historyReindexingStatus = undefined;
             this.FeedService.saveFeedModel(copy).then((response:any) => {
                 this.FeedService.hideFeedSavingDialog();
                 this.editableSection = false;
                 //save the changes back to the model
                 this.model.schedule = this.editModel.schedule;
+                    //Get the updated value from the server.
+                    this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, (response:any) => {
                 this.FeedService.hideFeedSavingDialog();
                 this.FeedService.buildErrorData(this.model.feedName, response);
@@ -266,7 +277,18 @@ export class FeedScheduleController implements ng.IComponentController {
                 }
             });
 
-           
+        if (this.versions) {
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModel;
+            },(newVal:any) => {
+                this.versionFeedModel = this.FeedService.versionFeedModel;
+            });
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModelDiff;
+            },(newVal:any) => {
+                this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
+            });
+        }
 
         /**
          * The model stores the timerAmount and timerUnits together as 1 string.
@@ -339,7 +361,7 @@ export class FeedScheduleController implements ng.IComponentController {
         this.updateScheduleStrategies();
         
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,this.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) =>{
-            this.allowEdit = access && !this.model.view.schedule.disabled;
+            this.allowEdit = !this.versions && access && !this.model.view.schedule.disabled;
         });
 
         // Detect if NiFi is clustered
@@ -351,6 +373,14 @@ export class FeedScheduleController implements ng.IComponentController {
 
             
     }
+
+        diff(path:any) {
+            return this.FeedService.diffOperation(path);
+        };
+
+        diffCollection(path:any) {
+            return this.FeedService.diffCollectionOperation(path);
+        }
 }
 
     angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService","$filter",FeedScheduleController]);

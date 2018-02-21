@@ -6,11 +6,16 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
         return {
             restrict: "EA",
             bindToController: {},
+            scope: {
+                versions: '=?'
+            },
             controllerAs: 'vm',
-            scope: {},
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-definition.html',
             controller: "FeedDefinitionController",
             link: function ($scope, element, attrs, controller) {
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
             }
         };
     };
@@ -23,12 +28,15 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
             this.EntityAccessControlService = EntityAccessControlService;
             this.FeedService = FeedService;
             this.$filter = $filter;
+            this.versions = this.$scope.versions;
             /**
-              * Indicates if the feed definitions may be edited.
+              * Indicates if the feed definitions may be edited. Editing is disabled if displaying Feed Versions
               * @type {boolean}
               */
-            this.allowEdit = false;
+            this.allowEdit = !this.versions;
             this.model = this.FeedService.editFeedModel;
+            this.versionFeedModel = this.FeedService.versionFeedModel;
+            this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
             this.editableSection = false;
             this.editModel = {};
             $scope.$watch(function () {
@@ -39,9 +47,21 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
                     _this.model = angular.copy(FeedService.editFeedModel);
                 }
             });
+            if (this.versions) {
+                $scope.$watch(function () {
+                    return _this.FeedService.versionFeedModel;
+                }, function (newVal) {
+                    _this.versionFeedModel = _this.FeedService.versionFeedModel;
+                });
+                $scope.$watch(function () {
+                    return _this.FeedService.versionFeedModelDiff;
+                }, function (newVal) {
+                    _this.versionFeedModelDiff = _this.FeedService.versionFeedModelDiff;
+                });
+            }
             //Apply the entity access permissions
             $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, this.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                _this.allowEdit = access && !_this.model.view.generalInfo.disabled;
+                _this.allowEdit = !_this.versions && access && !_this.model.view.generalInfo.disabled;
             });
         }
         ;
@@ -53,6 +73,7 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
             this.editModel.systemFeedName = copy.systemFeedName;
             this.editModel.description = copy.description;
             this.editModel.templateId = copy.templateId;
+            this.editModel.allowIndexing = copy.allowIndexing;
         };
         FeedDefinitionController.prototype.onCancel = function () {
         };
@@ -66,6 +87,9 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
             copy.description = this.editModel.description;
             copy.templateId = this.editModel.templateId;
             copy.userProperties = null;
+            copy.allowIndexing = this.editModel.allowIndexing;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
             this.FeedService.saveFeedModel(copy).then(function (response) {
                 _this.FeedService.hideFeedSavingDialog();
                 _this.editableSection = false;
@@ -74,6 +98,9 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
                 _this.model.systemFeedName = _this.editModel.systemFeedName;
                 _this.model.description = _this.editModel.description;
                 _this.model.templateId = _this.editModel.templateId;
+                _this.model.allowIndexing = _this.editModel.allowIndexing;
+                //Get the updated value from the server.
+                _this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, function (response) {
                 _this.FeedService.hideFeedSavingDialog();
                 _this.FeedService.buildErrorData(_this.model.feedName, response);
@@ -83,6 +110,9 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
             });
         };
         ;
+        FeedDefinitionController.prototype.diff = function (path) {
+            return this.FeedService.diffOperation(path);
+        };
         return FeedDefinitionController;
     }());
     exports.FeedDefinitionController = FeedDefinitionController;

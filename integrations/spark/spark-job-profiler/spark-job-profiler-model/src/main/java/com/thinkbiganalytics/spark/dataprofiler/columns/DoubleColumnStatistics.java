@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of double data type <br>
  * [Hive data type: DOUBLE]
  */
-@SuppressWarnings("serial")
 public class DoubleColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -839931257398277201L;
 
     /* Double specific metrics */
     private double max;

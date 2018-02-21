@@ -23,6 +23,7 @@ package com.thinkbiganalytics.spark;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
@@ -115,5 +116,10 @@ public class DataSet20 implements DataSet {
     @Override
     public DataFrameWriter write() {
         return dataset.write();
+    }
+
+    @Override
+    public DataSet select(Column... cols) {
+        return new DataSet20(dataset.select(cols));
     }
 }

@@ -5,12 +5,12 @@ define(['angular', 'feed-mgr/tables/module-name'], function (angular, moduleName
      */
     var CatalogController = function ($scope, $q, DatasourcesService, StateService, AccessControlService) {
         var self = this;
-        this.datasources = [{id: 'HIVE', name: "Hive", isHive: true, icon: DatasourcesService.defaultIconName(), iconColor: DatasourcesService.defaultIconColor() }];
+        this.datasources = [DatasourcesService.getHiveDatasource()];
 
         self.loading = true;
 
         self.navigateToSchemas = function (datasource) {
-            StateService.FeedManager().Table().navigateToSchemas(datasource);
+            StateService.FeedManager().Table().navigateToSchemas(datasource.id);
         };
 
         function getDataSources() {

@@ -388,6 +388,7 @@ export class CategoryDefinitionController {
             model.iconColor = self.editModel.iconColor;
             model.userProperties = (self.model.id === null) ? self.editModel.userProperties : null;
             model.securityGroups = self.editModel.securityGroups;
+            model.allowIndexing = self.editModel.allowIndexing;
 
             CategoriesService.save(model).then(function (response:any) {
                 self.systemNameEditable = false;

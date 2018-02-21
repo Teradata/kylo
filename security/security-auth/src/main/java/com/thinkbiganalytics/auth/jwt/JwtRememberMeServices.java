@@ -57,24 +57,30 @@ import org.springframework.security.web.authentication.rememberme.InvalidCookieE
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.security.AccessController;
 import java.security.Key;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.security.auth.Subject;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
 
 /**
  * Identifies previously remembered users by a JSON Web Token.
@@ -206,11 +212,60 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      */
     @Override
     protected void onLoginSuccess(@Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response, @Nonnull final Authentication authentication) {
-        final Stream<String> user = Stream.of(authentication.getPrincipal().toString());
-        final Stream<String> token = Stream.of(generatePrincipalsToken(authentication.getAuthorities()));
-        final String[] tokens = Stream.concat(user, token).toArray(String[]::new);
+        final String user = authentication.getPrincipal().toString();
+        final String principals = generatePrincipalsToken(authentication.getAuthorities());
+        final String[] tokens =  Arrays.asList(user, principals).stream().toArray(String[]::new);
 
         setCookie(tokens, getTokenValiditySeconds(), request, response);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices#extractRememberMeCookie(javax.servlet.http.HttpServletRequest)
+     */
+    @Override
+    protected String extractRememberMeCookie(HttpServletRequest request) {
+        // If a remember-me cookie is found also add it as a private credential of the current subject (if any.)
+        Cookie[] cookies = request.getCookies();
+        
+        if (cookies != null) {
+            Arrays.stream(request.getCookies())
+                .filter(cookie -> cookie.getName().equals(getCookieName()))
+                .findFirst()
+                .ifPresent(this::addSubjectCredential);
+        }
+        
+        return super.extractRememberMeCookie(request);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.security.web.authentication.rememberme.AbstractRememberMeServices#setCookie(java.lang.String[], int, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+     */
+    @Override
+    protected void setCookie(String[] tokens, int maxAge, HttpServletRequest request, HttpServletResponse response) {
+        // Record the new cookie as a private credential of the current subject (if any.)
+        // The easiest way to capture the cookie is to get it from the request as it is added.
+        final AtomicReference<Cookie> cookieRef = new AtomicReference<>();
+        HttpServletResponseWrapper wrapper = new HttpServletResponseWrapper(response) {
+            public void addCookie(Cookie cookie) {
+                super.addCookie(cookie);
+                cookieRef.set(cookie);
+            };
+        };
+        
+        super.setCookie(tokens, maxAge, request, wrapper);
+        addSubjectCredential(cookieRef.get());
+    }
+    
+    /**
+     * If a current subject exists then adds the given cookie to the private credentials of the subject.
+     * @param cookie to cookie to add as a private credential
+     */
+    private void addSubjectCredential(Cookie cookie) {
+        Subject subject = Subject.getSubject(AccessController.getContext());
+        
+        if (subject != null) {
+            subject.getPrivateCredentials().add(cookie);
+        }
     }
 
     /**
@@ -223,7 +278,8 @@ public class JwtRememberMeServices extends AbstractRememberMeServices {
      */
     @Override
     protected UserDetails processAutoLoginCookie(@Nonnull final String[] tokens, @Nonnull final HttpServletRequest request, @Nonnull final HttpServletResponse response) {
-        final Collection<? extends GrantedAuthority> authorities = generateAuthorities(tokens[1]);
+        // KYLO-1504: At least once the tokens array size was observed to be less than 2 (should always be 2) so accounting for that.
+        final Collection<? extends GrantedAuthority> authorities = tokens.length > 1 ? generateAuthorities(tokens[1]) : Collections.emptySet();
         return new User(tokens[0], "", authorities);
     }
 

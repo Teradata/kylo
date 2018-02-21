@@ -22,7 +22,6 @@ package com.thinkbiganalytics.rest.controller;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
-import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.rest.model.User;
 
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
@@ -32,6 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import java.security.acl.Group;
 import java.util.stream.Collectors;
 
 import javax.inject.Inject;
@@ -56,6 +56,19 @@ public class AboutKyloController {
 
     @Inject
     KyloVersionProvider kyloVersionProvider;
+
+    /**
+     * Get Kylo v1 REST API info.
+     */
+    @GET
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("The root of the v1 REST API.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns a message indicating the root of the v1 REST API.", response = String.class)
+    )
+    public Response getApiInfo() {
+        return Response.ok("Kylo REST API: version 1").build();
+    }
 
     /**
      * Gets information about the current user.
@@ -83,7 +96,7 @@ public class AboutKyloController {
             user.setGroups(auth.getAuthorities().stream()
                                .filter(JaasGrantedAuthority.class::isInstance)
                                .map(JaasGrantedAuthority.class::cast)
-                               .filter(authority -> authority.getPrincipal() instanceof GroupPrincipal)
+                               .filter(authority -> authority.getPrincipal() instanceof Group)
                                .map(JaasGrantedAuthority::getAuthority)
                                .collect(Collectors.toSet()));
             user.setSystemName(auth.getPrincipal().toString());

@@ -1,0 +1,44 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>{{title}}</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content class="mat-dialog-content">
+  <form class="layout-column" [formGroup]="form">
+    <p>{{message}}</p>
+
+    <mat-form-field *ngIf="allowType">
+      <mat-select formControlName="type" placeholder="Type" required>
+        <mat-option [value]="'STRING'">String</mat-option>
+        <mat-option [value]="'TIMESTAMP'">Timestamp</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="form.contains('pattern')">
+      <input matInput formControlName="pattern" placeholder="Pattern" required>
+      <mat-hint *ngIf="patternHint && !previewError">{{patternHint}}</mat-hint>
+      <mat-hint *ngIf="previewError" class="preview-error">{{previewError}}</mat-hint>
+      <mat-error *ngIf="pattern.hasError('required')">Required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="form.contains('unit')">
+      <mat-select formControlName="unit" placeholder="Unit" required>
+        <mat-option [value]="'SECONDS'">Seconds</mat-option>
+        <mat-option [value]="'MILLISECONDS'">Milliseconds</mat-option>
+      </mat-select>
+      <mat-hint *ngIf="previewError" class="preview-error">{{previewError}}</mat-hint>
+      <mat-error *ngIf="unit.hasError('required')">Required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field *ngIf="previewFn && type.value" class="preview-field" [ngClass]="{'preview-loading': previewLoading}">
+      <input matInput placeholder="Preview" readonly [value]="preview">
+      <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    </mat-form-field>
+  </form>
+</div>
+<div mat-dialog-actions class="mat-dialog-actions">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button [color]="['primary']" [disabled]="!form.valid" (click)="apply()">Apply</button>
+</div>

@@ -20,21 +20,15 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
  * #L%
  */
 
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  */
 public class AggregatedFeedProcessorStatisticsHolderV2 extends AggregatedFeedProcessorStatisticsHolder implements Serializable {
+
+    private static final long serialVersionUID = 1295656068564781226L;
 
 
     Map<String,Long> processorIdRunningFlows = new HashMap<>();

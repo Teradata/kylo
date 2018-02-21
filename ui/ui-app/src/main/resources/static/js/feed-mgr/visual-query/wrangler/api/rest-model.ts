@@ -1,4 +1,4 @@
-import {JdbcDatasource} from "./datasource";
+import {JdbcDatasource} from "./data-source";
 
 /**
  * Request to save data wrangler results.
@@ -19,6 +19,11 @@ export interface SaveRequest {
      * Behavior when data or table already exists.
      */
     mode?: string;
+
+    /**
+     * Output options for the data source.
+     */
+    options?: { [k: string]: string };
 
     /**
      * Target table name.

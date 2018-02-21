@@ -92,6 +92,12 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.GET_SLA_BY_ID_URL = function (slaId) {
                 return this.SLA_BASE_URL + "/" + slaId;
             };
+            this.TRIGGER_SAVEPOINT_RETRY = function (executionId, flowfileId) {
+                return this.JOBS_BASE + "/" + executionId + "/savepoint/trigger-retry/" + flowfileId;
+            };
+            this.TRIGGER_SAVEPOINT_RELEASE = function (executionId, flowfileId) {
+                return this.JOBS_BASE + "/" + executionId + "/savepoint/trigger-release/" + flowfileId;
+            };
         }
         return OpsManagerRestUrlService;
     }());

@@ -247,6 +247,7 @@ export class DefineFeedGeneralInfoController {
         },(newVal:any) => {
            FeedService.getSystemName(newVal).then((response:any) => {
             this.model.systemFeedName = response.data;
+               this.model.table.tableSchema.name = this.model.systemFeedName;
                this.validateUniqueFeedName();
                this.validate();
            });

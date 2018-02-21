@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.api.feed;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.cache.CacheBackedProviderListener;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.JobStatusCount;
 
@@ -180,4 +181,10 @@ public interface OpsManagerFeedProvider {
     List<? extends FeedSummary> findFeedSummary();
 
     DateTime getLastActiveTimeStamp(String feedName);
+
+    /**
+     * Subscribe to Cache events for the underlying provider
+     * @param listener
+     */
+    void subscribeListener(CacheBackedProviderListener listener);
 }

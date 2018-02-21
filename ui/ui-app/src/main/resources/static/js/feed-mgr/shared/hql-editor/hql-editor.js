@@ -4,13 +4,14 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         return {
             restrict: "EA",
             bindToController: {
-                mode: '@',
                 scrollResults: '=?',
                 allowExecuteQuery: '=?',
                 allowDatabaseBrowse: '=?',
                 allowFullscreen: '=?',
                 defaultSchemaName: '@',
-                defaultTableName: '@'
+                defaultTableName: '@',
+                datasourceId: '@',
+                tableId: '@'
             },
             controllerAs: 'vm',
             scope: {},
@@ -30,7 +31,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         };
     };
 
-    var controller = function($scope, $element, $mdDialog, $mdToast, $http, RestUrlService, StateService, HiveService, $filter) {
+    var controller = function($scope, $element, $mdDialog, $mdToast, $http, $filter,$q, RestUrlService, StateService, HiveService, DatasourcesService, CodeMirrorService, FattableService) {
 
         var self = this;
         var init = function() {
@@ -52,11 +53,15 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                 self.allowDatabaseBrowse = false;
             }
             if (self.defaultSchemaName != null && self.defaultTableName != null) {
-                self.sql = "SELECT * FROM `" + StringUtils.quoteSql(self.defaultSchemaName) + "`.`" + StringUtils.quoteSql(self.defaultTableName) + "` LIMIT 20";
+                if (!self.sql) {
+                    self.sql = "SELECT * FROM " + quote(self.defaultSchemaName) + "." + quote(self.defaultTableName) + " LIMIT 20";
+                }
                 if (self.allowExecuteQuery) {
                     self.query();
                 }
             }
+            self.editor.setValue(self.sql);
+            self.editor.focus();
         };
         this.loadingHiveSchemas = false;
         this.metadataMessage = "";
@@ -76,7 +81,7 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             hintOptions: {
                 tables: {}
             },
-            mode: 'text/x-hive'
+            mode: self.datasource && self.datasource.isHive ? 'text/x-hive' : 'text/x-sql'
         };
 
         this.databaseMetadata = {};
@@ -85,10 +90,19 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         this.databaseNames = [];
         this.browseResults = null;
 
-        function getTable(schema, table) {
+        function quote(expression) {
+            if (self.datasource.isHive) {
+                return "`" + expression + "`";
+            } else {
+                return expression;
+            }
+        }
+
+        function getTable() {
             self.loadingHiveSchemas = true;
-            self.metadataMessage = metadataLoadingMessage
-            var successFn = function(codeMirrorData) {
+            self.metadataMessage = metadataLoadingMessage;
+            var successFn = function(data) {
+                var codeMirrorData = CodeMirrorService.transformToCodeMirrorData(data);
                 if(codeMirrorData && codeMirrorData.hintOptions && codeMirrorData.hintOptions.tables) {
                     self.codemirrorOptions.hintOptions.tables = codeMirrorData.hintOptions.tables;
                 }
@@ -102,28 +116,43 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                 self.metadataMessage = metadataErrorMessage
 
             };
-            var promise = HiveService.getTablesAndColumns(true,30000);
+
+            var promise;
+
+                if (angular.isDefined(self.datasource) && self.datasource.isHive) {
+                    promise = HiveService.getTablesAndColumns();
+                } else if(angular.isDefined(self.datasourceId)){
+                    promise = DatasourcesService.getTablesAndColumns(self.datasourceId, self.defaultSchemaName);
+                }
+                else {
+                    promise = $q.defer().promise;
+                    return promise;
+                }
             promise.then(successFn, errorFn);
             return promise;
         }
 
         this.query = function() {
             this.executingQuery = true;
-            return HiveService.queryResult(this.sql).then(function(tableData) {
-                self.executingQuery = false;
+            var successFn = function(tableData) {
                 var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
-                self.gridOptions.columnDefs = result.columns;
-                self.gridOptions.data = result.rows;
-            });
-        };
-
-        //Setup initial grid options
-        this.gridOptions = {
-            columnDefs: [],
-            data: null,
-            enableColumnResizing: true,
-            enableGridMenu: true,
-            flatEntityAccess: true
+                FattableService.setupTable({
+                    tableContainerId: self.tableId,
+                    headers: result.columns,
+                    rows: result.rows
+                });
+                self.executingQuery = false;
+            };
+            var errorFn = function (err) {
+                self.executingQuery = false;
+            };
+            var promise;
+            if (self.datasource.isHive) {
+                promise = HiveService.queryResult(self.sql);
+            } else {
+                promise = DatasourcesService.query(self.datasourceId, self.sql);
+            }
+            return promise.then(successFn, errorFn);
         };
 
         this.fullscreen = function() {
@@ -140,7 +169,8 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
                     defaultTableName: self.defaultTableName,
                     allowExecuteQuery: self.allowExecuteQuery,
                     allowDatabaseBrowse: self.allowDatabaseBrowse,
-                    mode: self.mode
+                    datasourceId: self.datasourceId,
+                    tableId: self.tableId
                 }
             }).then(function(msg) {
 
@@ -169,15 +199,36 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
             });
         };
 
-        init();
+        function getDatasource(datasourceId) {
+            self.executingQuery = true;
+            var successFn = function (response) {
+                self.datasource = response;
+                self.executingQuery = false;
+            };
+            var errorFn = function (err) {
+                self.executingQuery = false;
+            };
+            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
+        }
+
+        this.codemirrorLoaded = function(_editor) {
+            self.editor = _editor;
+        };
+
+        if(angular.isDefined(self.datasourceId)) {
+            getDatasource(self.datasourceId).then(init);
+        }
+        else {
+          //.  init();
+        }
     };
 
-    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","RestUrlService","StateService","HiveService","$filter",controller]);
+    angular.module(moduleName).controller('HqlEditorController', ["$scope","$element","$mdDialog","$mdToast","$http","$filter","$q","RestUrlService","StateService","HiveService","DatasourcesService","CodeMirrorService","FattableService", controller]);
     angular.module(moduleName).directive('thinkbigHqlEditor', directive);
 
 
 
-    var HqlFullScreenEditorController = function ($scope, $mdDialog, hql, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, mode) {
+    var HqlFullScreenEditorController = function ($scope, $mdDialog, hql, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, datasourceId, tableId) {
 
         var self = this;
         this.hql = hql;
@@ -185,14 +236,15 @@ define(['angular',"feed-mgr/module-name", "pascalprecht.translate"], function (a
         this.defaultTableName = defaultTableName;
         this.allowExecuteQuery = allowExecuteQuery;
         this.allowDatabaseBrowse = allowDatabaseBrowse;
-        this.mode = mode;
+        this.datasourceId = datasourceId;
+        this.tableId = tableId;
 
         $scope.cancel = function($event) {
             $mdDialog.hide();
         };
 
     };
-    angular.module(moduleName).controller('HqlFullScreenEditorController', ["$scope","$mdDialog","hql","defaultSchemaName","defaultTableName","allowExecuteQuery","allowDatabaseBrowse","mode",HqlFullScreenEditorController]);
+    angular.module(moduleName).controller('HqlFullScreenEditorController', ["$scope","$mdDialog","hql","defaultSchemaName","defaultTableName","allowExecuteQuery","allowDatabaseBrowse","datasourceId", "tableId",HqlFullScreenEditorController]);
 
 
 });

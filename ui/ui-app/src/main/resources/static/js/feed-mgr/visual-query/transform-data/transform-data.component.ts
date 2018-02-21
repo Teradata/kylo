@@ -558,8 +558,8 @@ export class TransformDataComponent implements OnInit {
         let profile = this.engine.getProfile();
 
         angular.forEach(this.engine.getColumns(), function (col, index) {
-            const delegate = self.engine.createColumnDelegate(col.dataType, self);
-            const fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
+            const delegate = self.engine.createColumnDelegate(col.dataType, self, col);
+            const fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
             const longestValue = _.find(profile, function (row: any) {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });
@@ -571,7 +571,7 @@ export class TransformDataComponent implements OnInit {
                 domainTypeId: fieldPolicy ? fieldPolicy.domainTypeId : null,
                 filters: delegate.filters,
                 headerTooltip: col.hiveColumnLabel,
-                longestValue: ( angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
+                longestValue: (angular.isDefined(longestValue) && longestValue !== null) ? longestValue.metricValue : null,
                 name: self.engine.getColumnName(col)
             });
         });

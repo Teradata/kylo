@@ -8,11 +8,15 @@ var directive = function () {
         restrict: "EA",
         bindToController: {},
         controllerAs: 'vm',
-        scope: {},
+            scope: {
+                versions: '=?'
+            },
         templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-nifi-properties.html',
         controller: "FeedNifiPropertiesController",
         link: function ($scope:any, element:any, attrs:any, controller:any) {
-
+                if ($scope.versions == undefined) {
+                    $scope.versions = false;
+                }
         }
 
     };
@@ -30,14 +34,15 @@ export class FeedNIFIController implements ng.IComponentController{
             feedDetailsForm:any = {}
             
             
-    
+            versions:any = this.$scope.versions;
             /**
              * Indicates if the feed NiFi properties may be edited.
              * @type {boolean}
              */
-            allowEdit:boolean = false;
+            allowEdit:boolean = !this.versions;
     
             model:any = this.FeedService.editFeedModel;
+            versionFeedModel:any = this.FeedService.versionFeedModel;
             editModel:any = {};
             editableSection:boolean = false;
             INCREMENTAL_DATE_PROPERTY_KEY:string = 'Date Field';
@@ -95,6 +100,8 @@ export class FeedNIFIController implements ng.IComponentController{
                 copy.inputProcessor = this.editModel.inputProcessor;
                 copy.inputProcessorType = this.editModel.inputProcessorType;
                 copy.userProperties = null;
+            //Server may have updated value. Don't send via UI.
+            copy.historyReindexingStatus = undefined;
     
                 //table type is edited here so need to update that prop as well
                 copy.table.tableType = this.editModel.table.tableType
@@ -128,7 +135,8 @@ export class FeedNIFIController implements ng.IComponentController{
     
                     this.updateControllerServiceProperties();
                     //update the displayValue
-    
+                //Get the updated value from the server.
+                this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
                 }, (response:any) => {
                     this.FeedService.hideFeedSavingDialog();
                     console.log('ERRORS were found ', response)
@@ -147,6 +155,13 @@ export class FeedNIFIController implements ng.IComponentController{
 
             var self = this;
             
+        if (self.versions) {
+            $scope.$watch(function(){
+                return self.FeedService.versionFeedModel;
+            },function(newVal:any) {
+                self.versionFeedModel = self.FeedService.versionFeedModel;
+            });
+        }
     
             $scope.$watch(()=> {
                 return FeedService.editFeedModel;
@@ -270,13 +285,16 @@ export class FeedNIFIController implements ng.IComponentController{
     
             //Apply the entity access permissions
             $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
-                self.allowEdit = access && !self.model.view.feedDetails.disabled
+                self.allowEdit = !self.versions && access && !self.model.view.feedDetails.disabled
             });
     
 
     }
 
-    
+        diff(path:any) {
+            return this.FeedService.diffOperation(path);
+        }
+
 }
 angular.module(moduleName).controller('FeedNifiPropertiesController', ["$scope","$http","$q","RestUrlService","AccessControlService","EntityAccessControlService","FeedService","EditFeedNifiPropertiesService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","BroadcastService","FeedPropertyService", "$filter",FeedNIFIController]);
 

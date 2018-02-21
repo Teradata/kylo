@@ -280,6 +280,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 model.iconColor = self.editModel.iconColor;
                 model.userProperties = (self.model.id === null) ? self.editModel.userProperties : null;
                 model.securityGroups = self.editModel.securityGroups;
+                model.allowIndexing = self.editModel.allowIndexing;
                 CategoriesService.save(model).then(function (response) {
                     self.systemNameEditable = false;
                     CategoriesService.update(response.data);

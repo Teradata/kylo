@@ -28,11 +28,13 @@ import java.util.Map;
  */
 public class GroupedStatsV2 extends GroupedStats {
 
+    private static final long serialVersionUID = -4416979090267950335L;
+
     protected Map<String,Object> additionalProperties = new HashMap<>();
 
     protected String latestFlowFileId;
 
-    public String getLatestFlowFileId() {
+    public final String getLatestFlowFileId() {
         return latestFlowFileId;
     }
 

@@ -32,6 +32,8 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
         var ICON = "grid_on";
         var ICON_COLOR = "orange";
 
+        var HIVE_DATASOURCE = {id: 'HIVE', name: "Hive", isHive: true, icon: ICON, iconColor: ICON_COLOR};
+
         function ensureDefaultIcon(datasource) {
             if (datasource.icon === undefined) {
                 datasource.icon = ICON;
@@ -47,6 +49,10 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
         }
 
         angular.extend(DatasourcesService.prototype, {
+
+            getHiveDatasource: function() {
+                return HIVE_DATASOURCE;
+            },
 
             /**
              * Default icon name and color is used for data sources which  were created prior to
@@ -110,6 +116,10 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
              * @returns {Promise} with the data source
              */
             findById: function (id) {
+                if (HIVE_DATASOURCE.id === id) {
+                    return Promise.resolve(HIVE_DATASOURCE);
+                }
+
                 return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id)
                     .then(function (response) {
                         ensureDefaultIcon(response.data);
@@ -177,6 +187,21 @@ define(["angular", "feed-mgr/module-name"], function (angular, moduleName) {
                     }).catch(function(e){
                             throw e;
                        });
+            },
+
+
+            query: function(datasourceId, sql) {
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
+                    .then(function (response) {
+                        return response;
+                    }).catch(function(e){
+                        throw e;
+                    });
+            },
+
+            getTablesAndColumns: function(datasourceId, schema) {
+                var params = {schema: schema};
+                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
             },
 
             /**

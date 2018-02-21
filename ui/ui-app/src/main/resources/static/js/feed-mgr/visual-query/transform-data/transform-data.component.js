@@ -466,8 +466,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var fieldPolicies = this.engine.getFieldPolicies();
             var profile = this.engine.getProfile();
             angular.forEach(this.engine.getColumns(), function (col, index) {
-                var delegate = self.engine.createColumnDelegate(col.dataType, self);
-                var fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
+                var delegate = self.engine.createColumnDelegate(col.dataType, self, col);
+                var fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
                 var longestValue = _.find(profile, function (row) {
                     return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"));
                 });

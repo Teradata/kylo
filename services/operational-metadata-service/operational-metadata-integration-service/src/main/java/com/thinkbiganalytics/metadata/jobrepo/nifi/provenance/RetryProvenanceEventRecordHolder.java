@@ -27,6 +27,8 @@ import org.joda.time.DateTime;
  */
 public class RetryProvenanceEventRecordHolder extends ProvenanceEventRecordDTOHolder {
 
+    private static final long serialVersionUID = 3871182287920899106L;
+
     private RetryAttempt retryAttempt;
 
 

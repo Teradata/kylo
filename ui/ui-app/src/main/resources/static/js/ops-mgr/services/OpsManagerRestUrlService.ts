@@ -124,6 +124,15 @@ export default class OpsManagerRestUrlService{
      GET_SLA_BY_ID_URL = function (slaId: any) {
             return this.SLA_BASE_URL + "/"+slaId;
         }
+
+        TRIGGER_SAVEPOINT_RETRY = function(executionId:any, flowfileId:any){
+            return this.JOBS_BASE + "/" + executionId + "/savepoint/trigger-retry/"+flowfileId;
+        }
+
+        TRIGGER_SAVEPOINT_RELEASE= function(executionId:any, flowfileId:any){
+            return this.JOBS_BASE + "/" + executionId + "/savepoint/trigger-release/"+flowfileId;
+        }
+
 }
 
   angular.module(moduleName).service('OpsManagerRestUrlService',[OpsManagerRestUrlService]);

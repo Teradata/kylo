@@ -50,6 +50,8 @@ constructor(private $scope: any,
             private $interval: any,
             private $timeout: any,
             private $q: any,
+            private $mdToast: any,
+            private OpsManagerRestUrlService: any,
             private OpsManagerJobService: any,
             private IconService: any,
             private AccessControlService: any,
@@ -138,6 +140,41 @@ constructor(private $scope: any,
             this.relatedJob = this.jobExecutionId;
             this.loadJobData();
             //   loadRelatedJobs();
+        }
+        triggerSavepointRetry() {
+          var self = this;
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                console.log('TRIGGER SAVE replay for ',self.jobData.triggerRetryFlowfile);
+                self.jobData.renderTriggerRetry = false;
+                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(){
+
+                    self.$mdToast.show(
+                        self.$mdToast.simple()
+                            .textContent('Triggered the retry')
+                            .hideDelay(3000)
+                    );
+                    self.loadJobData(true);
+                });
+            }
+        }
+        triggerSavepointReleaseFailure(callbackFn:any) {
+          var self = this;
+            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
+                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(response:any){
+                    console.log('TRIGGERD FAILURE ',response)
+
+                    self.$mdToast.show(
+                        self.$mdToast.simple()
+                            .textContent('Triggered the release and failure')
+                            .hideDelay(3000)
+                    );
+                    if(angular.isDefined(callbackFn)){
+                        callbackFn();
+                    }
+                    self.loadJobData(true);
+
+                });
+            }
         }
         nextTab=()=> {
             this.tabMetadata.selectedIndex = Math.min(this.tabMetadata.selectedIndex + 1, 2);

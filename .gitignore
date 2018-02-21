@@ -15,7 +15,6 @@ bin
 .recommenders
 derby.log
 .springBeans
-**/logs/
 **/node_modules/
 target/
 test-output/
