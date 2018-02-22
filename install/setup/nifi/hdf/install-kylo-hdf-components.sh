@@ -17,12 +17,12 @@ chown $NIFI_USER:$NIFI_GROUP $HDF_NIFI_HOME_FOLDER/lib/app
 echo "Creating symbolic links"
 
 # Expected path something like /usr/hdf/current/nifi
-framework_name=$(find $NIFI_HOME/lib/ -name "nifi-framework-api*.jar")
-prefix="$NIFI_HOME/current/lib/nifi-framework-api-"
+framework_name=$(find $HDF_NIFI_HOME_FOLDER/lib/ -name "nifi-framework-api*.jar")
+prefix="$HDF_NIFI_HOME_FOLDER/lib/nifi-framework-api-"
 len=${#prefix}
 ver=${framework_name:$len}
 
-ln -f -s $NIFI_HOME/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-elasticsearch-nar.nar
+ln -f -s $NIFI_KYLO_FOLDER/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $HDF_NIFI_HOME_FOLDER/lib/kylo-nifi-elasticsearch-nar.nar
 
 if [[ $ver == 1.0* ]] || [[ $ver == 1.1* ]] ;
 then
