@@ -25,9 +25,10 @@ import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
-import com.thinkbiganalytics.feedmgr.service.template.exporting.model.ExportTemplate;
+import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
@@ -56,7 +57,7 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 12/13/17.
  */
-public class TemplateExporter {
+public class DefaultTemplateExporter implements TemplateExporter {
 
     @Inject
     private AccessController accessController;
@@ -88,6 +89,7 @@ public class TemplateExporter {
      * @param templateId the registered template id
      * @return the exported template
      */
+    @Override
     public ExportTemplate exportTemplate(String templateId) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_TEMPLATES);
         registeredTemplateService.checkTemplatePermission(templateId, TemplateAccessControl.EXPORT);
