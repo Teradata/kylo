@@ -47,6 +47,7 @@ public class InspectionStatus {
     }
 
     public void addError(String error) {
+        this.valid = false;
         this.errors.add(error);
     }
 
@@ -62,4 +63,9 @@ public class InspectionStatus {
         status.getDescriptions().addAll(other.descriptions);
         return status;
     }
+
+    public void setValid(boolean valid) {
+        this.valid = valid;
+    }
 }
+

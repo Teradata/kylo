@@ -129,7 +129,8 @@ public class KyloDatabaseConnectionInspection extends AbstractInspection {
         }
 
         try {
-            DriverManager.getConnection(url, username, password);
+            Connection connection = DriverManager.getConnection(url, username, password);
+            connection.close();
         } catch (SQLException e) {
             InspectionStatus status = new InspectionStatus(false);
             status.addError(String.format("Failed to establish connection to database '%s' with driver '%s' and username '%s': %s. "

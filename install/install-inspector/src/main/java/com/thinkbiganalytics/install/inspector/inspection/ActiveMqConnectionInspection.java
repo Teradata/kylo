@@ -21,16 +21,15 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
-
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
-
 import javax.jms.Connection;
 import javax.jms.JMSException;
+
+import static com.thinkbiganalytics.install.inspector.inspection.Configuration.SPRING_PROFILES_INCLUDE;
 
 @Component
 public class ActiveMqConnectionInspection extends AbstractInspection {
@@ -38,7 +37,6 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     private static final String JMS_ACTIVEMQ_BROKER_USERNAME = "jms.activemq.broker.username";
     private static final String JMS_ACTIVEMQ_BROKER_PASSWORD = "jms.activemq.broker.password";
     private static final String JMS_ACTIVEMQ_BROKER_URL = "jms.activemq.broker.url";
-    private static final String SPRING_PROFILES_INCLUDE = "spring.profiles.include";
     private static final String JMS_ACTIVEMQ = "jms-activemq";
     private final Logger LOG = LoggerFactory.getLogger(ActiveMqConnectionInspection.class);
 
@@ -67,9 +65,7 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     }
 
     private InspectionStatus inspectProfile(Configuration configuration) {
-        String profilesProperty = configuration.getServicesProperty(SPRING_PROFILES_INCLUDE);
-        String[] profiles = profilesProperty.split(",");
-        boolean profileSet = Arrays.stream(profiles).anyMatch(JMS_ACTIVEMQ::equals);
+        boolean profileSet = configuration.getServicesProfiles().stream().anyMatch(JMS_ACTIVEMQ::equals);
         InspectionStatus status = new InspectionStatus(profileSet);
         if (!profileSet) {
             status.addError(String.format("ActiveMQ profile is not enabled in kylo-services configuration file %s. "
@@ -88,10 +84,13 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
         try {
             connection = factory.createConnection(username, password);
             connection.setClientID("kylo-install-inspector"); //this will fail if connection is not set up correctly
-            return new InspectionStatus(true);
+            InspectionStatus status = new InspectionStatus(true);
+            status.addDescription(String.format("Successfully connected to ActiveMQ running at '%s'", brokerUrl));
+            return status;
         } catch (JMSException e) {
             InspectionStatus status = new InspectionStatus(false);
-            status.addError(String.format("Failed to connect to ActiveMQ at %s: %s", brokerUrl, e.getMessage()));
+            status.addError(String.format("Failed to connect to ActiveMQ at %s: %s. Check property values for properties starting with 'jms.activemq' in '%s'",
+                                          brokerUrl, e.getMessage(), configuration.getServicesConfigLocation()));
             return status;
         } finally {
             if (connection != null) {

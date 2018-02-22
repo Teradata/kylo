@@ -21,9 +21,14 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.core.env.PropertySources;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
 
@@ -34,6 +39,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 
@@ -46,6 +52,9 @@ public class Configuration {
     private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/";
     private static final String KYLO_SERVICES_CONF = "/kylo-services/conf/";
     private static final String KYLO_UI_CONF = "/kylo-ui/conf/";
+
+    public static final String SPRING_PROFILES_INCLUDE = "spring.profiles.include";
+
     private final ConfigurableListableBeanFactory servicesFactory;
     private final ConfigurableListableBeanFactory uiFactory;
     private final Path path;
@@ -158,11 +167,37 @@ public class Configuration {
         return servicesConfigLocation;
     }
 
+    @JsonIgnore
     public ClassLoader getServicesClassloader() {
         return servicesClassLoader;
     }
 
     public Object getServicesClasspath() {
         return servicesClasspath;
+    }
+
+    public List<String> getServicesProfiles() {
+        String profilesProperty = getServicesProperty(SPRING_PROFILES_INCLUDE);
+        String[] profiles = profilesProperty.split(",");
+        return Arrays.asList(profiles);
+    }
+
+    public <T> T getServicesBean(Class<?> contextConf, Class<T> bean) {
+        AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
+
+        PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
+        ppc.setLocation(new FileSystemResource(servicesConfigLocation));
+        ppc.setIgnoreUnresolvablePlaceholders(true);
+        ppc.setIgnoreResourceNotFound(false);
+        ppc.postProcessBeanFactory(ctx.getBeanFactory());
+        ppc.setEnvironment(ctx.getEnvironment());
+
+        PropertySources sources = ppc.getAppliedPropertySources();
+        sources.forEach(source -> ctx.getEnvironment().getPropertySources().addLast(source));
+
+        ctx.register(contextConf);
+        ctx.refresh();
+
+        return ctx.getBean(bean);
     }
 }
