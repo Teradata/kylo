@@ -1,4 +1,4 @@
 import * as angular from 'angular';
-import * as controller from "./ServiceLevelAssessmentsInitController";
+import "./ServiceLevelAssessmentsInitController";
 import "./service-level-assessments";
-import  "./service-level-assessment";
+import "./service-level-assessment";
