@@ -132,7 +132,7 @@ public class HiveMetastoreService {
         if (DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())) {
             query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" "
                     + " WHERE d.\"NAME\" LIKE ? "
-                    + " WHERE t.\"TBL_NAME\" LIKE ? "
+                    + " AND t.\"TBL_NAME\" LIKE ? "
                     + " ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
 
