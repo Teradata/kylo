@@ -9,7 +9,7 @@ import IconService from "./IconStatusService";
 
 export default class OpsManagerFeedService{
     data: any;
-    static $inject = ['OpsManagerRestUrlService'];
+    //static $inject = ['OpsManagerRestUrlService'];
      constructor(private $q: any,
                 private $http: any,
                 private $interval: any,

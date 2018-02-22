@@ -20,14 +20,14 @@ export default class OpsManagerRestUrlService{
     }
     */
 
-    SPECIFIC_FEED_HEALTH_URL = function (feedName: any) {
+    SPECIFIC_FEED_HEALTH_URL =  (feedName: any)=>{
         return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
     }
-    FEED_DAILY_STATUS_COUNT_URL = function (feedName: any) {
+    FEED_DAILY_STATUS_COUNT_URL =  (feedName: any)=> {
         return this.FEEDS_BASE + "/" + feedName + "/daily-status-count";
     }
 
-    FEED_NAME_FOR_ID = function(feedId: any){
+    FEED_NAME_FOR_ID = (feedId: any)=>{
             return this.FEEDS_BASE +"/query/"+feedId
         }
     //JOB urls
@@ -44,31 +44,31 @@ export default class OpsManagerRestUrlService{
 
        // this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
 
-     RESTART_JOB_URL = function (executionId: any) {
+     RESTART_JOB_URL =  (executionId: any)=>{
             return this.JOBS_BASE + "/" + executionId + "/restart";
         }
-     STOP_JOB_URL = function (executionId: any) {
+     STOP_JOB_URL =  (executionId: any)=> {
             return this.JOBS_BASE + "/" + executionId + "/stop";
         }
 
-     ABANDON_JOB_URL = function (executionId: any) {
+     ABANDON_JOB_URL =  (executionId: any) =>{
             return this.JOBS_BASE + "/" + executionId + "/abandon";
         }
 
 
-     ABANDON_ALL_JOBS_URL = function (feedId: any) {
+     ABANDON_ALL_JOBS_URL =  (feedId: any) =>{
            return this.JOBS_BASE + "/abandon-all/" + feedId;
         }
 
-     FAIL_JOB_URL = function (executionId: any) {
+     FAIL_JOB_URL =  (executionId: any)=> {
             return this.JOBS_BASE + "/" + executionId + "/fail";
         }
 
-     LOAD_JOB_URL = function (executionId: any) {
+     LOAD_JOB_URL =  (executionId: any) =>{
             return this.JOBS_BASE + "/" + executionId;
         }
 
-     RELATED_JOBS_URL = function (executionId: any) {
+     RELATED_JOBS_URL =  (executionId: any) =>{
             return this.JOBS_BASE + "/" + executionId + "/related";
         }
 
@@ -81,15 +81,15 @@ export default class OpsManagerRestUrlService{
 
      STATS_BASE_V2 = "/proxy/v2/provenance-stats";
 
-     PROCESSOR_DURATION_FOR_FEED = function (feedName: any, from: any, to: any) {
+     PROCESSOR_DURATION_FOR_FEED =  (feedName: any, from: any, to: any)=> {
             return this.STATS_BASE_V2 + "/" + feedName + "/processor-duration?from=" + from + "&to=" + to;
         };
 
-     FEED_STATISTICS_OVER_TIME = function (feedName: any, from: any, to: any, maxDataPoints: any) {
+     FEED_STATISTICS_OVER_TIME =  (feedName: any, from: any, to: any, maxDataPoints: any)=> {
             return this.STATS_BASE_V2 + "/" + feedName + "?from=" + from + "&to=" + to + "&dp=" + maxDataPoints;
         };
 
-     FEED_PROCESSOR_ERRORS = function (feedName: any, from: any, to: any) {
+     FEED_PROCESSOR_ERRORS =  (feedName: any, from: any, to: any)=> {
             return this.STATS_BASE_V2 + "/" + feedName + "/processor-errors?from=" + from + "&to=" + to;
         };
 
@@ -100,7 +100,7 @@ export default class OpsManagerRestUrlService{
          * @param {string} alertId the id of the alert
          * @returns {string} the URL of the endpoint
          */
-     ALERT_DETAILS_URL = function (alertId: any) {
+     ALERT_DETAILS_URL =  (alertId: any) =>{
             return "/proxy/v1/alerts/" + alertId;
         };
 
@@ -110,18 +110,18 @@ export default class OpsManagerRestUrlService{
 
      ALERT_TYPES = "/proxy/v1/alerts/alert-types";
 
-     FEED_ALERTS_URL = function(feedName: any) {
+     FEED_ALERTS_URL = (feedName: any)=> {
             return "/proxy/v1/dashboard/alerts/feed-name/"+feedName;
         }
 
      //assessments
      LIST_SLA_ASSESSMENTS_URL = "/proxy/v1/sla/assessments/"
 
-     GET_SLA_ASSESSMENT_URL = function(assessmentId: any){
+     GET_SLA_ASSESSMENT_URL = (assessmentId: any)=>{
             return "/proxy/v1/sla/assessments/"+assessmentId;
         };
 
-     GET_SLA_BY_ID_URL = function (slaId: any) {
+     GET_SLA_BY_ID_URL =  (slaId: any)=> {
             return this.SLA_BASE_URL + "/"+slaId;
         }
 }

@@ -198,7 +198,7 @@ export default class OpsManagerDashboardService{
     
 }
 
-angular.module(moduleName,[])
+angular.module(moduleName)
 .service("AlertsService", [AlertsService])
 .service("IconService",[IconService])
 .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])

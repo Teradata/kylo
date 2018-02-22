@@ -172,7 +172,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
         return OpsManagerDashboardService;
     }());
     exports.default = OpsManagerDashboardService;
-    angular.module(module_name_1.moduleName, [])
+    angular.module(module_name_1.moduleName)
         .service("AlertsService", [AlertsService_1.default])
         .service("IconService", [IconStatusService_1.default])
         .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])

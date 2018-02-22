@@ -3,6 +3,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsServiceV2 = /** @class */ (function () {
         function AlertsServiceV2($q, $http, $interval, OpsManagerRestUrlService) {
+            var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$interval = $interval;
@@ -11,6 +12,24 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 _.each(alertSummaries, function (summary) {
                     summary.since = moment(summary.lastAlertTimestamp).fromNow();
                 });
+                var data = {
+                    alertsSummary: {
+                        lastRefreshTime: '',
+                        data: _this.alertSummData
+                    },
+                    transformAlerts: _this.transformAlertSummaryResponse,
+                    fetchFeedAlerts: function (feedName, feedId) {
+                        var deferred = _this.$q.defer();
+                        _this.$http.get(_this.OpsManagerRestUrlService.FEED_ALERTS_URL(feedName), { params: { "feedId": feedId } }).then(function (response) {
+                            _this.transformAlertSummaryResponse(response.data);
+                            deferred.resolve(response.data);
+                        }, function (err) {
+                            deferred.reject(err);
+                        });
+                        return deferred.promise;
+                    },
+                };
+                return data;
             };
             /**
          * Flag to indicate the alerts have been loaded at least once
@@ -24,31 +43,10 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
              */
             var alertsSummaryIntervalObject = null;
         }
-        AlertsServiceV2.prototype.factoryFn = function () {
-            var _this = this;
-            var data = {
-                alertsSummary: {
-                    lastRefreshTime: '',
-                    data: this.alertSummData
-                },
-                transformAlerts: this.transformAlertSummaryResponse,
-                fetchFeedAlerts: function (feedName, feedId) {
-                    var deferred = _this.$q.defer();
-                    _this.$http.get(_this.OpsManagerRestUrlService.FEED_ALERTS_URL(feedName), { params: { "feedId": feedId } }).then(function (response) {
-                        _this.transformAlertSummaryResponse(response.data);
-                        deferred.resolve(response.data);
-                    }, function (err) {
-                        deferred.reject(err);
-                    });
-                    return deferred.promise;
-                },
-            };
-            return data;
-        };
         return AlertsServiceV2;
     }());
     exports.default = AlertsServiceV2;
-    angular.module(module_name_1.moduleName, [])
+    angular.module(module_name_1.moduleName)
         .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('AlertsService', ["$q", "$http", "$interval", "OpsManagerRestUrlService", AlertsServiceV2]);
 });

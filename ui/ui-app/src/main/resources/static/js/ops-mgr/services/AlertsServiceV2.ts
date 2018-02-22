@@ -23,10 +23,6 @@ export default class AlertsServiceV2{
          * @type {null}
          */
         let alertsSummaryIntervalObject = null;
-
-    
-
-     
       }
   
 alertSummData: any[];  
@@ -35,10 +31,8 @@ transformAlertSummaryResponse = (alertSummaries: any)=>{
         summary.since =  moment(summary.lastAlertTimestamp).fromNow();
 
     });
-}
-factoryFn()
-{
-       let data =
+
+      let data =
         {
             alertsSummary:{
                 lastRefreshTime:'',
@@ -59,11 +53,11 @@ factoryFn()
 
         };
         return data;
-}
+    }
       
 }
 
-angular.module(moduleName,[])
+angular.module(moduleName)
 .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
 .factory('AlertsService',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2]);
    

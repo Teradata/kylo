@@ -3,6 +3,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerRestUrlService = /** @class */ (function () {
         function OpsManagerRestUrlService() {
+            var _this = this;
             this.ROOT = "";
             this.SLA_BASE_URL = "/proxy/v1/feedmgr/sla";
             this.FEEDS_BASE = "/proxy/v1/feeds";
@@ -21,10 +22,10 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 return '/proxy/v1/dashboard/feeds/feed-name/' + feedName;
             };
             this.FEED_DAILY_STATUS_COUNT_URL = function (feedName) {
-                return this.FEEDS_BASE + "/" + feedName + "/daily-status-count";
+                return _this.FEEDS_BASE + "/" + feedName + "/daily-status-count";
             };
             this.FEED_NAME_FOR_ID = function (feedId) {
-                return this.FEEDS_BASE + "/query/" + feedId;
+                return _this.FEEDS_BASE + "/query/" + feedId;
             };
             //JOB urls
             this.JOBS_QUERY_URL = this.JOBS_BASE;
@@ -35,25 +36,25 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.RUNNING_JOB_COUNTS_URL = '/proxy/v1/dashboard/running-jobs';
             // this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
             this.RESTART_JOB_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId + "/restart";
+                return _this.JOBS_BASE + "/" + executionId + "/restart";
             };
             this.STOP_JOB_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId + "/stop";
+                return _this.JOBS_BASE + "/" + executionId + "/stop";
             };
             this.ABANDON_JOB_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId + "/abandon";
+                return _this.JOBS_BASE + "/" + executionId + "/abandon";
             };
             this.ABANDON_ALL_JOBS_URL = function (feedId) {
-                return this.JOBS_BASE + "/abandon-all/" + feedId;
+                return _this.JOBS_BASE + "/abandon-all/" + feedId;
             };
             this.FAIL_JOB_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId + "/fail";
+                return _this.JOBS_BASE + "/" + executionId + "/fail";
             };
             this.LOAD_JOB_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId;
+                return _this.JOBS_BASE + "/" + executionId;
             };
             this.RELATED_JOBS_URL = function (executionId) {
-                return this.JOBS_BASE + "/" + executionId + "/related";
+                return _this.JOBS_BASE + "/" + executionId + "/related";
             };
             //Service monitoring
             this.SERVICES_URL = "/proxy/v1/service-monitor/";
@@ -61,13 +62,13 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.STATS_BASE = "/proxy/v1/provenance-stats";
             this.STATS_BASE_V2 = "/proxy/v2/provenance-stats";
             this.PROCESSOR_DURATION_FOR_FEED = function (feedName, from, to) {
-                return this.STATS_BASE_V2 + "/" + feedName + "/processor-duration?from=" + from + "&to=" + to;
+                return _this.STATS_BASE_V2 + "/" + feedName + "/processor-duration?from=" + from + "&to=" + to;
             };
             this.FEED_STATISTICS_OVER_TIME = function (feedName, from, to, maxDataPoints) {
-                return this.STATS_BASE_V2 + "/" + feedName + "?from=" + from + "&to=" + to + "&dp=" + maxDataPoints;
+                return _this.STATS_BASE_V2 + "/" + feedName + "?from=" + from + "&to=" + to + "&dp=" + maxDataPoints;
             };
             this.FEED_PROCESSOR_ERRORS = function (feedName, from, to) {
-                return this.STATS_BASE_V2 + "/" + feedName + "/processor-errors?from=" + from + "&to=" + to;
+                return _this.STATS_BASE_V2 + "/" + feedName + "/processor-errors?from=" + from + "&to=" + to;
             };
             this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE_V2 + "/time-frame-options";
             /**
@@ -90,7 +91,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 return "/proxy/v1/sla/assessments/" + assessmentId;
             };
             this.GET_SLA_BY_ID_URL = function (slaId) {
-                return this.SLA_BASE_URL + "/" + slaId;
+                return _this.SLA_BASE_URL + "/" + slaId;
             };
         }
         return OpsManagerRestUrlService;

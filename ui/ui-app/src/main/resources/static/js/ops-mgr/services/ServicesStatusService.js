@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlService", "../services/AlertsService", "../services/IconStatusService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1) {
+define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlService", "./AlertsService", "./IconStatusService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ServicesStatusData = /** @class */ (function () {

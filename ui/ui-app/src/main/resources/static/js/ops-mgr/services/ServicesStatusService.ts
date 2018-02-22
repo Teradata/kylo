@@ -1,8 +1,8 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
-import AlertsService from "../services/AlertsService";
-import IconService from "../services/IconStatusService";
+import AlertsService from "./AlertsService";
+import IconService from "./IconStatusService";
 
 export default class ServicesStatusData{
     ServicesStatusData: any;
