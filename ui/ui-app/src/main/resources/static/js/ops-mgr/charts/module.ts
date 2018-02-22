@@ -5,7 +5,9 @@ import AccessConstants from "../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
-import "../module"; //ops-mgr/jobs/module
+import "jquery";
+import "jquery-ui";
+import "pivottable";
 
 class ModuleFactory  {
     module: ng.IModule;

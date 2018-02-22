@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr", "../module"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
+define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr", "jquery", "jquery-ui", "pivottable"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ModuleFactory = /** @class */ (function () {

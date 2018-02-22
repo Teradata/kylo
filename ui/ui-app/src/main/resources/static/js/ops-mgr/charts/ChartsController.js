@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", "../services/OpsManagerFeedService", "../services/OpsManagerJobService", "underscore", "moment"], function (require, exports, angular, module_name_1, PivotTableUtil_1, OpsManagerFeedService_1, OpsManagerJobService_1, _, moment) {
+define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", "../services/OpsManagerFeedService", "../services/OpsManagerJobService", "../services/IconStatusService", "../services/OpsManagerRestUrlService", "../services/AlertsService", "underscore", "moment"], function (require, exports, angular, module_name_1, PivotTableUtil_1, OpsManagerFeedService_1, OpsManagerJobService_1, IconStatusService_1, OpsManagerRestUrlService_1, AlertsService_1, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -133,9 +133,7 @@ define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", ".
                     derivedAttributes: {
                         "Start Date": $.pivotUtilities.derivers.dateFormat("Start Time", "%y-%m-%d"),
                         "End Date": $.pivotUtilities.derivers.dateFormat("End Time", "%y-%m-%d"),
-                        "Duration (sec)": function (mp) {
-                            return mp["Duration (min)"] * 60;
-                        }
+                        "Duration (sec)": function (mp) { return mp["Duration (min)"] * 60; }
                     },
                     rendererName: _this.pivotConfig.rendererName,
                     aggregatorName: _this.pivotConfig.aggregatorName,
@@ -194,11 +192,13 @@ define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", ".
             this.isWarning = false;
             this.filtered = false;
             this.loading = false;
-            this.pivotConfig = { rendererName: "Job Details", aggregatorName: "Average",
+            this.pivotConfig = {
+                aggregatorName: "Average",
                 vals: ["Duration (min)"],
-                // rendererName: "Stacked Bar Chart",
+                rendererName: "Stacked Bar Chart",
                 cols: ["Start Date"], rows: ["Feed Name"],
-                unusedAttrsVertical: false };
+                unusedAttrsVertical: false
+            };
             this.refreshPivotTable();
             this.onWindowResize();
             this.getFeedNames();
@@ -210,6 +210,9 @@ define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", ".
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
+        .service("AlertsService", [AlertsService_1.default])
+        .service("IconService", [IconStatusService_1.default])
+        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
         .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
         .controller('ChartsController', ["$scope", "$element", "$http", "HttpService", "OpsManagerJobService", "OpsManagerFeedService", controller]);
