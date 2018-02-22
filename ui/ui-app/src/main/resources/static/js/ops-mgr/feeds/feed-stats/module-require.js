@@ -1,13 +1,5 @@
-/**
- * Include all common services/directives are are used for the kylo.feedmgr module
- */
-define(['angular',
-        'ops-mgr/feeds/feed-stats/feed-stats',
-        'ops-mgr/feeds/feed-stats/feed-stats-charts',
-        'ops-mgr/feeds/feed-stats/FeedStatsService'
-        ],function() {
-
+define(["require", "exports", "./feed-stats", "./feed-stats-charts", "./FeedStatsService"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
-
-
-
+//# sourceMappingURL=module-require.js.map

@@ -1,3 +1,6 @@
-define([], function () {
-    return "kylo.opsmgr.feed-stats";
+define(["require", "exports"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.moduleName = "kylo.opsmgr.feed-stats";
 });
+//# sourceMappingURL=module-name.js.map
