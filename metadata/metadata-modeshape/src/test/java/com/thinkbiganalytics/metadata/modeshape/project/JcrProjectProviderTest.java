@@ -12,9 +12,9 @@ package com.thinkbiganalytics.metadata.modeshape.project;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,16 +24,20 @@ package com.thinkbiganalytics.metadata.modeshape.project;
  */
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.project.Project;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.api.project.Project;
 import com.thinkbiganalytics.metadata.modeshape.project.providers.ProjectProvider;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import javax.annotation.Resource;
@@ -46,6 +50,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 @SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
 public class JcrProjectProviderTest extends AbstractTestNGSpringContextTests {
+    private static final Logger logger = LoggerFactory.getLogger(JcrProjectProviderAccessControlTest.class);
 
     @Inject
     private JcrMetadataAccess metadata;
@@ -98,12 +103,24 @@ public class JcrProjectProviderTest extends AbstractTestNGSpringContextTests {
         }, MetadataAccess.SERVICE);
     }
 
-    @Test
+    @Test(dependsOnMethods = "testFindProjectByName")
     public void testCannotFindProjectByName() {
         metadata.read(() -> {
             Optional<Project> optional = projProvider.findProjectByName("bogus");
 
             assertThat(optional.isPresent()).isFalse();
+        }, MetadataAccess.SERVICE);
+    }
+
+
+    @AfterClass
+    public void afterClass() {
+        metadata.commit(() -> {
+            Collection<Project> projects = projProvider.getProjects();
+            for (Project project : projects) {
+                logger.info("Deleting remaing project '{}' after tests completed.", project);
+                projProvider.deleteProject(project);
+            }
         }, MetadataAccess.SERVICE);
     }
 

@@ -165,8 +165,7 @@ public class JcrProjectProviderAccessControlTest extends AbstractTestNGSpringCon
         );
     }
 
-    // TODO: this test fails on Jenkins but runs local
-    @Test(dependsOnMethods = "testCreateProject3", enabled = false)
+    @Test(dependsOnMethods = "testCreateProject3")
     public void getProjects2() {
         logger.info("Running Test 'getProjects2'" );
 
