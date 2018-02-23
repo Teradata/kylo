@@ -8,21 +8,22 @@ export default class AlertsService{
     feedFailureAlerts: any = {};
     serviceAlerts: any = {};
     alerts: any = [];
-    alertsById = {};
-    findFeedFailureAlert = function (feedName: any) {
-            return _.find(this.alerts, function (alert: any) {
+    alertsById: any = {};
+    IDGenerator: any;
+    findFeedFailureAlert =  (feedName: any)=> {
+            return _.find(this.alerts,  (alert: any)=>{
                 return alert.type == 'Feed' && alert.name == feedName;
             });
         }
-     findFeedFailureAlertIndex = function (feedName: any) {
-            return _.findIndex(this.alerts, function (alert: any) {
+     findFeedFailureAlertIndex =  (feedName: any) =>{
+            return _.findIndex(this.alerts,  (alert: any)=> {
                 return alert.type == 'Feed' && alert.name == feedName;
             });
         }
-     replaceFeedAlert = function (feedName: any, feedHealth: any) {
+     replaceFeedAlert =  (feedName: any, feedHealth: any) =>{
 
      }
-       addFeedHealthFailureAlert = function (feedHealth: any) {
+       addFeedHealthFailureAlert =  (feedHealth: any)=> {
             //first remove it and add a new entry
             if (this.feedFailureAlerts[feedHealth.feed] != undefined) {
                 this.removeFeedFailureAlertByName(feedHealth.feed);
@@ -44,7 +45,7 @@ export default class AlertsService{
             this.alerts.push(alert);
        }
 
-        addServiceAlert = function (service: any) {
+        addServiceAlert =  (service: any) =>{
             if (this.serviceAlerts[service.serviceName] == undefined) {
                 var alertId = this.IDGenerator.generateId('service');
 
@@ -70,7 +71,7 @@ export default class AlertsService{
         }
     
     
-    removeFeedFailureAlertByName = function (feed: any) {
+    removeFeedFailureAlertByName =  (feed: any)=> {
             var alert = this.feedFailureAlerts[feed];
             if (alert) {
                 delete this.feedFailureAlerts[feed];
@@ -82,7 +83,7 @@ export default class AlertsService{
             }
         }
 
-    removeServiceAlert = function (service: any) {
+    removeServiceAlert =  (service: any)=>{
             var alert = this.serviceAlerts[service.serviceName];
             if (alert) {
                 delete this.serviceAlerts[service.serviceName];

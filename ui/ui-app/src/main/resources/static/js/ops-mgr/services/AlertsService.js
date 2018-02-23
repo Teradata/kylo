@@ -3,17 +3,18 @@ define(["require", "exports", "angular", "../module-name", "moment", "underscore
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsService = /** @class */ (function () {
         function AlertsService() {
+            var _this = this;
             this.feedFailureAlerts = {};
             this.serviceAlerts = {};
             this.alerts = [];
             this.alertsById = {};
             this.findFeedFailureAlert = function (feedName) {
-                return _.find(this.alerts, function (alert) {
+                return _.find(_this.alerts, function (alert) {
                     return alert.type == 'Feed' && alert.name == feedName;
                 });
             };
             this.findFeedFailureAlertIndex = function (feedName) {
-                return _.findIndex(this.alerts, function (alert) {
+                return _.findIndex(_this.alerts, function (alert) {
                     return alert.type == 'Feed' && alert.name == feedName;
                 });
             };
@@ -21,10 +22,10 @@ define(["require", "exports", "angular", "../module-name", "moment", "underscore
             };
             this.addFeedHealthFailureAlert = function (feedHealth) {
                 //first remove it and add a new entry
-                if (this.feedFailureAlerts[feedHealth.feed] != undefined) {
-                    this.removeFeedFailureAlertByName(feedHealth.feed);
+                if (_this.feedFailureAlerts[feedHealth.feed] != undefined) {
+                    _this.removeFeedFailureAlertByName(feedHealth.feed);
                 }
-                var alertId = this.IDGenerator.generateId('alert');
+                var alertId = _this.IDGenerator.generateId('alert');
                 var alert = {
                     id: alertId,
                     type: 'Feed',
@@ -36,13 +37,13 @@ define(["require", "exports", "angular", "../module-name", "moment", "underscore
                     count: feedHealth.unhealthyCount,
                     since: feedHealth.sinceTimeString
                 };
-                this.feedFailureAlerts[feedHealth.feed] = alert;
-                this.alertsById[alertId] = alert;
-                this.alerts.push(alert);
+                _this.feedFailureAlerts[feedHealth.feed] = alert;
+                _this.alertsById[alertId] = alert;
+                _this.alerts.push(alert);
             };
             this.addServiceAlert = function (service) {
-                if (this.serviceAlerts[service.serviceName] == undefined) {
-                    var alertId = this.IDGenerator.generateId('service');
+                if (_this.serviceAlerts[service.serviceName] == undefined) {
+                    var alertId = _this.IDGenerator.generateId('service');
                     var alert = {
                         id: alertId,
                         type: 'Service',
@@ -54,33 +55,33 @@ define(["require", "exports", "angular", "../module-name", "moment", "underscore
                         sinceTime: service.latestAlertTimestamp,
                         since: moment(service.latestAlertTimestamp).fromNow()
                     };
-                    this.serviceAlerts[service.serviceName] = alert;
-                    this.alertsById[alertId] = alert;
-                    this.alerts.push(alert);
+                    _this.serviceAlerts[service.serviceName] = alert;
+                    _this.alertsById[alertId] = alert;
+                    _this.alerts.push(alert);
                 }
                 else {
-                    this.serviceAlerts[service.serviceName].sinceTime = service.latestAlertTimestamp;
-                    this.serviceAlerts[service.serviceName].since = moment(service.latestAlertTimestamp).fromNow();
+                    _this.serviceAlerts[service.serviceName].sinceTime = service.latestAlertTimestamp;
+                    _this.serviceAlerts[service.serviceName].since = moment(service.latestAlertTimestamp).fromNow();
                 }
             };
             this.removeFeedFailureAlertByName = function (feed) {
-                var alert = this.feedFailureAlerts[feed];
+                var alert = _this.feedFailureAlerts[feed];
                 if (alert) {
-                    delete this.feedFailureAlerts[feed];
-                    delete this.alertsById[alert.id];
-                    var matchingIndex = this.findFeedFailureAlertIndex(feed);
+                    delete _this.feedFailureAlerts[feed];
+                    delete _this.alertsById[alert.id];
+                    var matchingIndex = _this.findFeedFailureAlertIndex(feed);
                     if (matchingIndex != -1) {
-                        this.alerts.splice(matchingIndex, 1);
+                        _this.alerts.splice(matchingIndex, 1);
                     }
                 }
             };
             this.removeServiceAlert = function (service) {
-                var alert = this.serviceAlerts[service.serviceName];
+                var alert = _this.serviceAlerts[service.serviceName];
                 if (alert) {
-                    delete this.serviceAlerts[service.serviceName];
-                    delete this.alertsById[alert.id];
-                    var index = this.alerts.indexOf(alert);
-                    this.alerts.splice(index, 1);
+                    delete _this.serviceAlerts[service.serviceName];
+                    delete _this.alertsById[alert.id];
+                    var index = _this.alerts.indexOf(alert);
+                    _this.alerts.splice(index, 1);
                 }
             };
         }
