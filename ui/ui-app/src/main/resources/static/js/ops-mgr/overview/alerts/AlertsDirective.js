@@ -1,35 +1,32 @@
-define(["require", "exports", "angular", "../module-name", "../../services/ServicesStatusService", "../../services/AlertsService", "../../services/OpsManagerDashboardService"], function (require, exports, angular, module_name_1, ServicesStatusService_1, AlertsService_1, OpsManagerDashboardService_1) {
+define(["require", "exports", "angular", "../module-name", "../../services/AlertsServiceV2", "../../services/OpsManagerDashboardService"], function (require, exports, angular, module_name_1, AlertsServiceV2_1, OpsManagerDashboardService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $element, $interval, AlertsService, StateService, ServicesStatusData, OpsManagerDashboardService, BroadcastService) {
+        function controller($scope, $element, $interval, AlertsServiceV2, StateService, OpsManagerDashboardService, BroadcastService) {
             var _this = this;
             this.$scope = $scope;
             this.$element = $element;
             this.$interval = $interval;
-            this.AlertsService = AlertsService;
+            this.AlertsServiceV2 = AlertsServiceV2;
             this.StateService = StateService;
-            this.ServicesStatusData = ServicesStatusData;
             this.OpsManagerDashboardService = OpsManagerDashboardService;
             this.BroadcastService = BroadcastService;
             this.watchDashboard = function () {
-                var _this = this;
-                this.BroadcastService.subscribe(this.$scope, this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
+                _this.BroadcastService.subscribe(_this.$scope, _this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
                     var alerts = _this.OpsManagerDashboardService.dashboard.alerts;
-                    _this.AlertsService.transformAlerts(alerts);
+                    _this.AlertsServiceV2.transformAlerts(alerts);
                     _this.alerts = alerts;
                 });
             };
             this.fetchFeedAlerts = function () {
-                var _this = this;
-                this.AlertsService.fetchFeedAlerts(this.feedName).then(function (alerts) {
+                _this.AlertsServiceV2.fetchFeedAlerts(_this.feedName).then(function (alerts) {
                     _this.alerts = alerts;
                 });
             };
             this.stopFeedRefresh = function () {
-                if (this.feedRefresh != null) {
-                    this.$interval.cancel(this.feedRefresh);
-                    this.feedRefresh = null;
+                if (_this.feedRefresh != null) {
+                    _this.$interval.cancel(_this.feedRefresh);
+                    _this.feedRefresh = null;
                 }
             };
             this.navigateToAlerts = function (alertsSummary) {
@@ -41,9 +38,9 @@ define(["require", "exports", "angular", "../module-name", "../../services/Servi
                 else if (alertsSummary.subtype != null && alertsSummary.subtype != '') {
                     query += "," + alertsSummary.subtype;
                 }
-                this.StateService.OpsManager().Alert().navigateToAlerts(query);
+                _this.StateService.OpsManager().Alert().navigateToAlerts(query);
             };
-            this.alertsService = AlertsService;
+            //  this.alertsService = AlertsServiceV2;
             this.alerts = [];
             /**
             * Handle on the feed alerts refresh interval
@@ -68,10 +65,10 @@ define(["require", "exports", "angular", "../module-name", "../../services/Servi
     }());
     exports.default = controller;
     angular.module(module_name_1.moduleName)
-        .service("AlertsService", [AlertsService_1.default])
-        .service("ServicesStatusData", ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 'OpsManagerRestUrlService', ServicesStatusService_1.default])
+        .service('AlertsServiceV2', ["$q", "$http", "$interval", "OpsManagerRestUrlService", AlertsServiceV2_1.default])
         .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
-        .controller('AlertsOverviewController', ["$scope", "$element", "$interval", "AlertsService", "StateService", "OpsManagerDashboardService", "BroadcastService", controller]);
+        .controller('AlertsOverviewController', ["$scope", "$element", "$interval", "AlertsServiceV2", "StateService", "OpsManagerDashboardService",
+        "BroadcastService", controller]);
     angular.module(module_name_1.moduleName)
         .directive('tbaAlerts', [function () {
             return {
