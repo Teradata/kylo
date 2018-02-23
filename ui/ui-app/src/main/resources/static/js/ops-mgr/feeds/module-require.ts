@@ -1,3 +1,3 @@
-import * as angular from 'angular';
-import "FeedActivityDirective";
-import "FeedDetailsController";
+import 'angular';
+import "./FeedActivityDirective";
+import "./FeedDetailsController";

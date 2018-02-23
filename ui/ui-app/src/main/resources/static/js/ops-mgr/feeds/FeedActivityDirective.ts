@@ -4,7 +4,7 @@ import "pascalprecht.translate";
 import OpsManagerFeedService from "../services/OpsManagerFeedService";
 import AlertsService from "../services/AlertsService";
 import ChartJobStatusService from "../services/ChartJobStatusService";
-const d3 = require('../../bower_components/d3');
+declare const d3: any;
 
 export class controller implements ng.IComponentController{
     pageName: any;
@@ -153,7 +153,7 @@ export class controller implements ng.IComponentController{
                         this.loading = false;
                     }
                     if(!this.dataLoaded && response.data.length ==0){
-                        setTimeout(function(){
+                        setTimeout(()=>{
                             this.dataLoaded =true;
                         },500)
                     }

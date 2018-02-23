@@ -1,8 +1,6 @@
-define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr", "angular-nvd3"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
+define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr", "../alerts/module", "../overview/module", "angular-nvd3"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleAlerts = require('../alerts/module'); //import "../alerts/module";
-    var moduleOverview = require('../overview/module'); //import "../overview/module";
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.lazyLoadController = function (path) {

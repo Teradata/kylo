@@ -1,7 +1,6 @@
 define(["require", "exports", "angular", "./module-name", "../services/OpsManagerFeedService", "../services/AlertsService", "../services/ChartJobStatusService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, OpsManagerFeedService_1, AlertsService_1, ChartJobStatusService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var d3 = require('../../bower_components/d3');
     var controller = /** @class */ (function () {
         function controller($scope, $http, $interval, $timeout, $q, Utils, OpsManagerFeedService, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, BroadcastService, $filter) {
             var _this = this;
@@ -71,7 +70,7 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
                         }
                         if (!_this.dataLoaded && response.data.length == 0) {
                             setTimeout(function () {
-                                this.dataLoaded = true;
+                                _this.dataLoaded = true;
                             }, 500);
                         }
                         else {

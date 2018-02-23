@@ -1,13 +1,12 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
-
 import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
 import AccessConstants from "../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
-const moduleAlerts = require('../alerts/module'); //import "../alerts/module";
-const moduleOverview = require('../overview/module'); //import "../overview/module";
+import "../alerts/module";
+import "../overview/module";
 import 'angular-nvd3';
 
 class ModuleFactory  {
