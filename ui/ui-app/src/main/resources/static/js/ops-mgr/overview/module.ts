@@ -6,22 +6,17 @@ import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
 import "angular-nvd3";
-const moduleAlerts = require('../alerts/module');
+import  "../alerts/module";
 import "pascalprecht.translate";
 
 class ModuleFactory  {
     module: ng.IModule;
     constructor () {
         this.module = angular.module(moduleName,[]);
-        this.module.config(['$compileProvider',this.configFn_init.bind(this)]);
         this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
     }
     
-    configFn_init($compileProvider: any){
-         //pre-assign modules until directives are rewritten to use the $onInit method.
-        //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
-        $compileProvider.preAssignBindingsEnabled(true);
-    }
+  
     /**
      * LAZY loaded in from /app.js
      */
