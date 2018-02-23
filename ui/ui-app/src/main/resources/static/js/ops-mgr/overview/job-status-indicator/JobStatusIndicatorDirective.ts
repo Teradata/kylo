@@ -1,9 +1,10 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-const d3 = require('../../bower_components/d3');
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 import OpsManagerJobService from "../../services/OpsManagerJobService";
+import ChartJobStatusService from "../../services/ChartJobStatusService";
+declare const d3: any;
 
 export default class controller implements ng.IComponentController{
 refreshInterval: any;
@@ -47,8 +48,8 @@ constructor(private $scope: any,
                     bottom:10,
                     left: 20
                 },
-                x: function(d: any){return d[0];},
-                y: function(d: any){return d[1];},
+                x: (d: any)=>{return d[0];},
+                y: (d: any)=>{return d[1];},
                 useVoronoi: false,
                 clipEdge: false,
                 duration: 0,
@@ -74,7 +75,7 @@ constructor(private $scope: any,
                 showYAxis:true,
                 lines: {
                     dispatch: {
-                        'elementClick':function(e: any){
+                        'elementClick':(e: any)=>{
                             this.chartClick();
                         }
                     }
@@ -114,16 +115,12 @@ constructor(private $scope: any,
                         this.addChartData(dataItem);
                         this.dataLoaded = true;
                     }
-
                 }
 
                 var errorFn =  (data: any, status: any, headers: any, config: any) =>{
                     console.log("Error getting count by status: ", data, status);
                 }
-
-
-
-                this.$http.get(this.OpsManagerJobService.RUNNING_JOB_COUNTS_URL).then( successFn, errorFn);
+                this.$http.get(this.OpsManagerJobService.RUNNING_JOB_COUNTS_URL).then(successFn, errorFn);
 
         };
 
@@ -131,7 +128,7 @@ constructor(private $scope: any,
             this.getRunningFailedCounts();
         }
 
-        updateCounts=(responseData: any)=> {
+        updateCounts=(responseData: any)=>{
             //zero them out
             this.running =0;
             this.failed = 0;
@@ -154,7 +151,7 @@ constructor(private $scope: any,
          * if the Job Status changes, update the summary data and notify the Feed Health Card
          * @param jobStatus the list of Job Status counts by feed
          */
-        ensureFeedSummaryMatches=(jobStatus: any)=> {
+        ensureFeedSummaryMatches=(jobStatus: any)=>{
             var summaryData = this.OpsManagerDashboardService.feedSummaryData;
             var feedSummaryUpdated: any[] = [];
             var runningFeedNames: any[] = [];
@@ -204,7 +201,7 @@ constructor(private $scope: any,
                 initialChartData[0].key = 'Running';
                 this.chartData = initialChartData;
             }
-            var max = d3.max(this.runningCounts, function(d: any) {
+            var max = d3.max(this.runningCounts, (d: any) =>{
                 return d.count; } );
             if(max == undefined || max ==0) {
                 max = 1;
@@ -223,7 +220,7 @@ constructor(private $scope: any,
         }
         createChartData=(responseData: any)=>{
             this.chartData = this.ChartJobStatusService.toChartData(responseData);
-            var max = d3.max(this.runningCounts, function(d: any) {
+            var max = d3.max(this.runningCounts, (d: any)=>{
                 return d.count; } );
             if(max == undefined || max ==0) {
                 max = 1;
@@ -237,21 +234,21 @@ constructor(private $scope: any,
         }
 
 
-        clearRefreshInterval = ()=> {
+        clearRefreshInterval= ()=>{
             if(this.refreshInterval != null){
                 this.$interval.cancel(this.refreshInterval);
                 this.refreshInterval = null;
             }
         }
 
-        setRefreshInterval = ()=> {
+        setRefreshInterval=()=>{
             this.clearRefreshInterval();
             if(this.refreshIntervalTime) {
                 this.refreshInterval = this.$interval(this.refresh,this.refreshIntervalTime);
             }
         }
 
-        init = ()=> {
+        init=()=>{
           this.refresh();
           this.setRefreshInterval();
         }
@@ -260,6 +257,7 @@ constructor(private $scope: any,
  angular.module(moduleName)
 .service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
 .service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
+.service('ChartJobStatusService',["IconService", "Nvd3ChartService", ChartJobStatusService])
 .controller('JobStatusIndicatorController', 
                                         ["$scope","$element","$http","$q","$interval","StateService",
                                         "OpsManagerJobService","OpsManagerDashboardService",
@@ -279,9 +277,9 @@ constructor(private $scope: any,
             },
             templateUrl: 'js/ops-mgr/overview/job-status-indicator/job-status-indicator-template.html',
             controller: "JobStatusIndicatorController",
-            link: function ($scope, element, attrs) {
-                $scope.$on('$destroy', function() {
-                });
+            link: function($scope: any, element: any, attrs: any) {
+                        $scope.$on('$destroy', function() {
+                            });
             } //DOM manipulation\}
         }
         
