@@ -1,6 +1,7 @@
-define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "kylo-common", "kylo-services", "kylo-opsmgr"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
+define(["require", "exports", "angular", "./module-name", "../../kylo-utils/LazyLoadUtil", "kylo-common", "kylo-services", "kylo-opsmgr"], function (require, exports, angular, module_name_1, LazyLoadUtil_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var AccessConstants = require("../../constants/AccessConstants");
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.module = angular.module(module_name_1.moduleName, []);
@@ -10,7 +11,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
             //preassign modules until directives are rewritten to use the $onInit method.
             //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
             $compileProvider.preAssignBindingsEnabled(true);
-            $stateProvider.state(AccessConstants_1.default.UI_STATES.JOBS.state, {
+            $stateProvider.state(AccessConstants.UI_STATES.JOBS.state, {
                 url: '/jobs',
                 params: {
                     filter: null,
@@ -30,7 +31,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                     breadcrumbRoot: false,
                     displayName: 'Jobs',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.JOBS.permissions
+                    permissions: AccessConstants.UI_STATES.JOBS.permissions
                 }
             });
         };

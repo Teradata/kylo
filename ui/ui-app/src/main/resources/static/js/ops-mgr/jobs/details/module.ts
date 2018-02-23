@@ -1,11 +1,11 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import lazyLoadUtil from "../../../kylo-utils/LazyLoadUtil";
-import AccessConstants from "../../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
 import "../module"; //ops-mgr/jobs/module
+const AccessConstants = require("../../../constants/AccessConstants");
 
 class ModuleFactory  {
     module: ng.IModule;
