@@ -152,11 +152,11 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 //                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
 //                }
                 //If a user has Edit access for the feed, they need to be able to also Read the template
-                this.feed.getFeedDetails()
-                    .map(FeedDetails::getTemplate)
-                    .map(FeedManagerTemplate::getAllowedActions)
-                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
-                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
+//                this.feed.getFeedDetails()
+//                    .map(FeedDetails::getTemplate)
+//                    .map(FeedManagerTemplate::getAllowedActions)
+//                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
+//                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
                 
                 summaryPrivs.add(Privilege.JCR_ALL);                
                 detailPrivs.add(Privilege.JCR_ALL);
@@ -177,11 +177,11 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
 //                }
                 
                 //If a user has Read access for the feed, they need to be able to also Read the template
-                this.feed.getFeedDetails()
-                    .map(FeedDetails::getTemplate)
-                    .map(FeedManagerTemplate::getAllowedActions)
-                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
-                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
+//                this.feed.getFeedDetails()
+//                    .map(FeedDetails::getTemplate)
+//                    .map(FeedManagerTemplate::getAllowedActions)
+//                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
+//                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
                 
                 summaryPrivs.add(Privilege.JCR_READ);
                 detailPrivs.add(Privilege.JCR_READ);                
