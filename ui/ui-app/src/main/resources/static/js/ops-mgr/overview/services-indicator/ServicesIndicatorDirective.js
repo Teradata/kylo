@@ -15,6 +15,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
             this.OpsManagerDashboardService = OpsManagerDashboardService;
             this.BroadcastService = BroadcastService;
             this.$filter = $filter;
+            this.openAlerts = [];
             this.watchDashboard = function () {
                 _this.BroadcastService.subscribe(_this.$scope, _this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
                     _this.ServicesStatusData.transformServicesResponse(_this.OpsManagerDashboardService.dashboard.serviceStatus);
@@ -136,20 +137,20 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
                 percent: 0,
                 dateTime: null,
                 reset: function () {
-                    this.openAlerts = [];
-                    this.counts = { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 };
-                    this.percent = 0;
-                    this.dateTime = null;
-                    this.allServices = [];
-                    angular.forEach(this.grouped, function (groupData, status) {
+                    _this.openAlerts = [];
+                    _this.counts = { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 };
+                    _this.percent = 0;
+                    _this.dateTime = null;
+                    _this.allServices = [];
+                    angular.forEach(_this.indicator.grouped, function (groupData, status) {
                         groupData.data = [];
                         groupData.count = 0;
                     });
                 },
                 addService: function (service) {
                     var displayState = service.state == "UP" ? "HEALTHY" : (service.state == "DOWN" ? "UNHEALTHY" : service.state);
-                    this.grouped[displayState].data.push(service);
-                    this.grouped[displayState].count++;
+                    _this.indicator.grouped[displayState].data.push(service);
+                    _this.indicator.grouped[displayState].count++;
                     service.latestAlertTimeAgo = null;
                     //update timeAgo text
                     if (service.latestAlertTimestamp != null) {
@@ -171,10 +172,9 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
                     }
                 },
                 addServices: function (services) {
-                    var _this = this;
-                    if (this.openAlerts.length == 0) {
-                        this.reset();
-                        this.allServices = services;
+                    if (_this.openAlerts.length == 0) {
+                        _this.indicator.reset();
+                        _this.allServices = services;
                         angular.forEach(services, function (service, i) {
                             _this.indicator.addService(service);
                             service.componentCount = service.components.length;
@@ -182,35 +182,35 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
                             service.unhealthyComponentCount = service.unhealthyComponents.length;
                             _this.indicator.checkToShowClusterName(service);
                         });
-                        this.updateCounts();
-                        this.updatePercent();
-                        this.dateTime = new Date();
+                        _this.indicator.updateCounts();
+                        _this.indicator.updatePercent();
+                        _this.dateTime = new Date();
                     }
                 },
                 updateCounts: function () {
-                    this.counts.upCount = this.grouped["HEALTHY"].count;
-                    this.counts.allCount = this.allServices.length;
-                    this.counts.downCount = this.grouped["UNHEALTHY"].count;
-                    this.counts.warningCount = this.grouped["WARNING"].count;
-                    this.counts.errorCount = this.counts.downCount + this.counts.warningCount;
-                    angular.forEach(this.chartData, function (item, i) {
-                        item.value = this.indicator.grouped[item.key].count;
+                    _this.counts.upCount = _this.indicator.grouped["HEALTHY"].count;
+                    _this.counts.allCount = _this.allServices.length;
+                    _this.counts.downCount = _this.indicator.grouped["UNHEALTHY"].count;
+                    _this.counts.warningCount = _this.indicator.grouped["WARNING"].count;
+                    _this.counts.errorCount = _this.counts.downCount + _this.counts.warningCount;
+                    angular.forEach(_this.chartData, function (item, i) {
+                        item.value = _this.indicator.grouped[item.key].count;
                     });
-                    this.chartOptions.chart.title = this.counts.allCount + " " + $filter('translate')('Total');
+                    _this.chartOptions.chart.title = _this.counts.allCount + " " + $filter('translate')('Total');
                 },
                 updatePercent: function () {
-                    if (this.counts.upCount > 0) {
-                        this.percent = (this.counts.upCount / this.counts.allCount) * 100;
-                        this.percent = Math.round(this.percent);
+                    if (_this.counts.upCount > 0) {
+                        _this.percent = (_this.counts.upCount / _this.counts.allCount) * 100;
+                        _this.percent = Math.round(_this.percent);
                     }
-                    if (this.percent <= 50) {
-                        this.healthClass = "errors";
+                    if (_this.percent <= 50) {
+                        _this.healthClass = "errors";
                     }
-                    else if (this.percent < 100) {
-                        this.healthClass = "warnings";
+                    else if (_this.percent < 100) {
+                        _this.healthClass = "warnings";
                     }
                     else {
-                        this.healthClass = "success";
+                        _this.healthClass = "success";
                     }
                 }
             };

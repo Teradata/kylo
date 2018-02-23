@@ -12,7 +12,7 @@ chartApi: any;
 chartOptions: any;
 chartData: any[];
 indicator: any;
-openAlerts: any;
+openAlerts: any[] = [];
 counts: any;
 percent: any;
 dateTime: any;
@@ -71,7 +71,7 @@ validateTitleTimeout: any;
                         }
                     },
                     dispatch: {
-                        renderEnd: function () {
+                        renderEnd:  ()=> {
 
                         }
                     }
@@ -112,28 +112,28 @@ validateTitleTimeout: any;
             },
             percent: 0,
             dateTime: null,
-            reset:  function() {
+            reset:  ()=> {
                 this.openAlerts = [];
                 this.counts = {errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0};
                 this.percent = 0;
                 this.dateTime = null;
                 this.allServices = [];
-                angular.forEach(this.grouped, function (groupData, status) {
+                angular.forEach(this.indicator.grouped,  (groupData, status)=> {
                     groupData.data = [];
                     groupData.count = 0;
                 })
             },
-            addService:  function(service: any){
+            addService:  (service: any)=>{
                 var displayState = service.state == "UP" ? "HEALTHY" : (service.state == "DOWN" ? "UNHEALTHY" : service.state);
-                this.grouped[displayState].data.push(service);
-                this.grouped[displayState].count++;
+                this.indicator.grouped[displayState].data.push(service);
+                this.indicator.grouped[displayState].count++;
                 service.latestAlertTimeAgo = null;
                 //update timeAgo text
                 if (service.latestAlertTimestamp != null) {
                     service.latestAlertTimeAgo = moment(service.latestAlertTimestamp).from(moment());
                 }
             },
-            checkToShowClusterName:function(service: any){
+            checkToShowClusterName:(service: any)=>{
               if(service && service.components){
                   var componentNames = _.map(service.components,(component: any)=>{
                       return component.name;
@@ -147,9 +147,9 @@ validateTitleTimeout: any;
                   }
               }
             },
-            addServices: function (services: any) {
+            addServices: (services: any) =>{
                 if (this.openAlerts.length == 0) {
-                    this.reset();
+                    this.indicator.reset();
                     this.allServices = services;
                     angular.forEach(services,  (service: any, i: any)=> {
                         this.indicator.addService(service);
@@ -159,25 +159,25 @@ validateTitleTimeout: any;
                         this.indicator.checkToShowClusterName(service);
                     });
 
-                    this.updateCounts();
-                    this.updatePercent();
+                    this.indicator.updateCounts();
+                    this.indicator.updatePercent();
 
 
                     this.dateTime = new Date();
                 }
             },
-            updateCounts:function(){
-                this.counts.upCount = this.grouped["HEALTHY"].count;
+            updateCounts:()=>{
+                this.counts.upCount = this.indicator.grouped["HEALTHY"].count;
                 this.counts.allCount = this.allServices.length;
-                this.counts.downCount = this.grouped["UNHEALTHY"].count;
-                this.counts.warningCount = this.grouped["WARNING"].count;
+                this.counts.downCount = this.indicator.grouped["UNHEALTHY"].count;
+                this.counts.warningCount = this.indicator.grouped["WARNING"].count;
                 this.counts.errorCount = this.counts.downCount + this.counts.warningCount;
-                angular.forEach(this.chartData,function(item,i) {
+                angular.forEach(this.chartData,(item,i)=> {
                     item.value = this.indicator.grouped[item.key].count;
                 })
                 this.chartOptions.chart.title = this.counts.allCount+" "+ $filter('translate')('Total');
             },
-            updatePercent: function() {
+            updatePercent: ()=> {
                 if (this.counts.upCount > 0) {
                     this.percent = (this.counts.upCount / this.counts.allCount) * 100;
                     this.percent = Math.round(this.percent);
@@ -322,8 +322,8 @@ angular.module(moduleName)
             controllerAs: 'vm',
             templateUrl: 'js/ops-mgr/overview/services-indicator/services-indicator-template.html',
             controller: "ServicesIndicatorController",
-            link: function ($scope, element, attrs) {
-                $scope.$on('$destroy', function () {
+            link: function ($scope: any, element: any, attrs: any) {
+                $scope.$on('$destroy',  ()=> {
 
                 });
             } //DOM manipulation\}
