@@ -22,6 +22,20 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
 
         var urlMatcherToStateMap = {};
 
+       /**
+        * Map of the link -> Feed Link objects.
+        * These are registered via the 'module-definition.json' as plugins and get pushed into the Feed Details page on the right side.
+        * @type {{}}
+        */
+        var feedNavigationMap = {};
+
+       /**
+        * Map of the link -> Template Link objects.
+        * These are registered via the 'module-definition.json' as plugins and get pushed into the Template Details page on the right side.
+        * @type {{}}
+        */
+       var templateNavigationMap = {};
+
         function lazyStateName(state){
             return state.state+".**";
         }
@@ -66,6 +80,18 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
                       }
                   }
 
+               });
+           }
+
+           if(extensionModule.feedNavigation && extensionModule.feedNavigation.length >0) {
+               _.each(extensionModule.feedNavigation,function(feedNav) {
+                   feedNavigationMap[feedNav.linkText] = feedNav;
+               });
+           }
+
+           if(extensionModule.templateNavigation && extensionModule.templateNavigation.length >0) {
+               _.each(extensionModule.templateNavigation,function(templateNav) {
+                   templateNavigationMap[templateNav.linkText] = templateNav;
                });
            }
        }
@@ -117,6 +143,12 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
 
                });
                return urlMatcher != undefined;
+           },
+           getFeedNavigation(){
+             return Object.values(feedNavigationMap);
+           },
+           getTemplateNavigation(){
+               return Object.values(templateNavigationMap);
            },
            /**
             * return the state and associated parameters for a url

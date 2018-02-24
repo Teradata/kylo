@@ -1,0 +1,49 @@
+<div layout="row" layout-align="center start">
+
+    <card-layout body-css="md-padding" style="max-width:980px;width:980px;" flex="initial">
+
+      <header-section>
+        <div layout="row" layout-align="space-between-center" flex>
+        <div class="card-title" flex>Template Link for {{vm.templateName}}</div>
+          <div>
+            <ng-md-icon icon="{{vm.model.icon.title}}" size="20" style="fill:{{vm.model.icon.color}}"></ng-md-icon>
+          </div>
+      </div>
+      </header-section >
+
+      <body-section>
+        <div> Each Template Link gets:<br/><br/>
+           -  The template id ({{vm.templateId}})<br/><br/>
+           - template name: {{vm.templateName}}<br/><br/>
+           - as well as the entire template model allowing you to do various things with the template data</div>
+
+        <div layout="column" class="layout-padding-top-bottom">
+        <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state != 'ENABLED'}">
+                          <ng-md-icon icon="{{vm.model.stateIcon}}" size="20" ng-if="vm.model.state != 'NOT REGISTERED'"></ng-md-icon> {{vm.model.state}}</span>
+        <span class="hint">State</span>
+        </div>
+
+<div layout="column" class="layout-padding-top-bottom">
+  <span>{{vm.model.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+  <span class="hint">
+                                             Last Updated
+                                           </span>
+</div>
+<div layout="column" class="layout-padding-top-bottom">
+  <span>  {{vm.model.feedsCount}}</span>
+  <span class="hint">Feeds</span>
+</div>
+
+  <md-button href="{{vm.model.exportUrl}}">
+    <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
+    <span style="padding-left:10px;">Export</span>
+  </md-button>
+
+        <h2 class="md-headline">Entire JSON Model</h2>
+        <pre>{{vm.model | json}}</pre>
+      </body-section>
+    </card-layout>
+
+
+
+</div>
