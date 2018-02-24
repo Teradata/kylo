@@ -64,6 +64,12 @@
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
+      <!-- externalise static content in case end users want to customise look and feel of ui application -->
+      <outputDirectory>/kylo-ui/plugin/static</outputDirectory>
+      <directory>${project.parent.parent.basedir}/ui/ui-app/target/classes/static/assets/</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+    <fileSet>
       <outputDirectory>kylo-ui/lib</outputDirectory>
       <directory>${project.parent.parent.basedir}/ui/ui-app/target/kylo-ui-app-${project.version}-distribution/kylo-ui-app-${project.version}/lib</directory>
       <fileMode>755</fileMode>
