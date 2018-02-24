@@ -1,7 +1,7 @@
-package com.thinkbiganalytics.feedmgr.service.feed.exporting.model;
+package com.thinkbiganalytics.metadata.api.feed.export;
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * thinkbig-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,24 +19,9 @@ package com.thinkbiganalytics.feedmgr.service.feed.exporting.model;
  * #L%
  */
 
-/**
- * Model object to the feed we are exporting
- */
-public class ExportFeed {
+import java.io.IOException;
 
-    private String fileName;
-    private byte[] file;
+public interface FeedExporter {
 
-    public ExportFeed(String fileName, byte[] file) {
-        this.fileName = fileName;
-        this.file = file;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public byte[] getFile() {
-        return file;
-    }
+    ExportFeed exportFeed(String feedId) throws IOException;
 }

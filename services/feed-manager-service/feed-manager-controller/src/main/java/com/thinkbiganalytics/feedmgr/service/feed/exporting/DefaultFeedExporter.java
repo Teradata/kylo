@@ -24,16 +24,18 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
-import com.thinkbiganalytics.feedmgr.service.feed.exporting.model.ExportFeed;
+import com.thinkbiganalytics.feedmgr.service.template.exporting.DefaultTemplateExporter;
+import com.thinkbiganalytics.metadata.api.feed.export.ExportFeed;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
-import com.thinkbiganalytics.feedmgr.service.template.exporting.model.ExportTemplate;
-import com.thinkbiganalytics.feedmgr.service.template.exporting.TemplateExporter;
+import com.thinkbiganalytics.metadata.api.template.export.ExportTemplate;
 import com.thinkbiganalytics.feedmgr.support.ZipFileUtil;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.export.FeedExporter;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
+import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -48,7 +50,7 @@ import javax.ws.rs.NotFoundException;
 /**
  * Created by sr186054 on 12/13/17.
  */
-public class FeedExporter {
+public class DefaultFeedExporter implements FeedExporter {
 
     @Inject
     private MetadataService metadataService;
@@ -80,6 +82,7 @@ public class FeedExporter {
      * @param feedId the id {@link Feed#getId()} of the feed to export
      * @return object containing the zip file with data about the feed.
      */
+    @Override
     public ExportFeed exportFeed(String feedId) throws IOException {
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EXPORT_FEEDS);
         this.metadataService.checkFeedPermission(feedId, FeedAccessControl.EXPORT);

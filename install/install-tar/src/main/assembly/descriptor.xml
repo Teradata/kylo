@@ -322,6 +322,13 @@
     </fileSet>
 
     <fileSet>
+      <outputDirectory>setup/nifi/hdf</outputDirectory>
+      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
+      <directory>${project.parent.basedir}/setup/nifi/hdf</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+
+    <fileSet>
       <outputDirectory>setup/sql</outputDirectory>
       <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
       <directory>${project.parent.basedir}/setup/sql</directory>

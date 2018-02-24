@@ -25,8 +25,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
-                               UiComponentsService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,$state,RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
+                               UiComponentsService,AngularModuleExtensionService) {
 
         var self = this;
 
@@ -72,6 +72,9 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * @type {boolean}
          */
         self.fetchingTemplateList = false;
+
+
+        this.templateNavigationLinks = AngularModuleExtensionService.getTemplateNavigation();
 
         /**
          * The possible options to choose how this template should be displayed in the Feed Stepper
@@ -125,6 +128,16 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
         this.isLoading = function(){
             return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
+        }
+
+        /**
+         * Navigate the user to the state
+         * @param link
+         */
+        this.templateNavigationLink = function(link) {
+            var templateId =  self.registeredTemplateId;
+            var templateName = self.model.templateName;
+            $state.go(link.sref,{templateId:templateId,templateName:templateName,model:self.model});
         }
 
         /**
@@ -297,8 +310,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     };
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService",
-                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService",controller]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","$state","RestUrlService","RegisterTemplateService","StateService",
+                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService","AngularModuleExtensionService",controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);

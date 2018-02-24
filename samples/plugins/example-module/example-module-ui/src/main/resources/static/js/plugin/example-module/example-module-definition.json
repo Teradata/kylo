@@ -8,6 +8,24 @@
       "params": {
         "name": null
       }
+    },
+    {
+      "state": "exampleFeedModule",
+      "url": "/exampleFeedModule/:feedId",
+      "params": {
+        "feedId": null,
+        "feedName":null,
+        "model":null
+      }
+    },
+    {
+      "state": "exampleTemplateModule",
+      "url": "/exampleTemplateModule/:templateId",
+      "params": {
+        "templateId": null,
+        "templateName":null,
+        "model":null
+      }
     }
   ],
   "navigation": [
@@ -24,5 +42,13 @@
         }
       ]
     }
-  ]
+  ],
+  "feedNavigation": [{
+    "linkText":"Example Feed Link",
+    "sref":"exampleFeedModule"
+  }],
+  "templateNavigation": [{
+    "linkText":"Example Template Link",
+    "sref":"exampleTemplateModule"
+  }]
 }

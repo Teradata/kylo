@@ -1,7 +1,7 @@
-package com.thinkbiganalytics.feedmgr.service.template.exporting.model;
+package com.thinkbiganalytics.metadata.api.template.export;
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * thinkbig-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,24 +19,9 @@ package com.thinkbiganalytics.feedmgr.service.template.exporting.model;
  * #L%
  */
 
-/**
- * Model object for the export of the template
- */
-public class ExportTemplate {
+public interface TemplateExporter {
 
-    private String fileName;
-    private byte[] file;
+    ExportTemplate exportTemplate(String templateId);
 
-    public ExportTemplate(String fileName, byte[] file) {
-        this.fileName = fileName;
-        this.file = file;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public byte[] getFile() {
-        return file;
-    }
+    ExportTemplate exportTemplateForFeedExport(String templateId);
 }
