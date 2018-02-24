@@ -53,6 +53,7 @@ import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.CategoryDetails;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -60,6 +61,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
@@ -565,20 +567,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public List<? extends Feed> findByCategoryId(Category.ID categoryId) {
-
-//        String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-//                        + "INNER JOIN ['tba:feedSummary'] as summary on ISCHILDNODE(summary,e)"
-//                        + "WHERE summary." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
+        
         String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-                       + "INNER JOIN ['" + JcrCategory.NODE_TYPE + "'] as cat on ISCHILDNODE(e, cat)"
-                       + "WHERE cat.[mode:id] = $id";
-
+                        + "INNER JOIN [" + CategoryDetails.NODE_TYPE + "] as det on ISCHILDNODE(e, det)"
+                        + "INNER JOIN [" + JcrCategory.NODE_TYPE + "] as cat on ISCHILDNODE(det, cat)"
+                        + "WHERE cat.[mode:id] = $id";
+        
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());
 
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query, bindParams);
-            return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+            // For some reason the above query does not honor the ModeShape ACL for the feed nodes.  It appears to be
+            // only checking at the category level; which might be accessible to the current user even though some feeds are 
+            // not accessible.  For now filter the result based on the feed summary access.
+             return JcrQueryUtil.queryResultStream(result, JcrFeed.class)
+                            .filter(feed -> feed.getFeedSummary().isPresent())
+                            .collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
         }
