@@ -91,9 +91,10 @@ define([
                 var newPalettes = {};
                 _.each(definitions,function(palette) {
                     if(palette.name && palette.name != '' && !_.isEmpty(palette.details)) {
-                        if (palette.extending && palette.extending != "") {
-                            var p1 = $mdThemingProvider.extendPalette(palette.extending, palette.details);
-                            newPalettes[palette, name] = p1;
+                        if (palette.extend && palette.extend != "") {
+                            var p1 = $mdThemingProvider.extendPalette(palette.extend, palette.details);
+                            $mdThemingProvider.definePalette(palette.name, p1);
+                            newPalettes[palette.name] = p1;
                         }
                         else {
                             $mdThemingProvider.definePalette(palette.name, palette.details);
@@ -108,22 +109,26 @@ define([
             if(themes.primaryPalette && !_.isEmpty(themes.primaryPalette)){
                 var dark = themes.primaryPalette.dark || false;
                 var hues = themes.primaryPalette.details || null;
-                $mdThemingProvider.theme('kylo').primaryPalette(themes.primaryPalette.name,hues).dark(dark)
+                $mdThemingProvider.theme('kylo').primaryPalette(themes.primaryPalette.name,hues).dark(dark);
+                console.log('Applied primaryPalette',themes.primaryPalette.name)
             }
             if(themes.accentPalette && !_.isEmpty(themes.accentPalette)){
                 var dark = themes.accentPalette.dark || false;
                 var hues = themes.accentPalette.details || null;
                 $mdThemingProvider.theme('kylo').accentPalette(themes.accentPalette.name,hues).dark(dark)
+                console.log('Applied accentPalette',themes.accentPalette.name)
             }
             if(themes.warnPalette && !_.isEmpty(themes.warnPalette)){
                 var dark = themes.warnPalette.dark || false;
                 var hues = themes.warnPalette.details || null;
                 $mdThemingProvider.theme('kylo').warnPalette(themes.warnPalette.name,hues).dark(dark)
+                console.log('Applied warnPalette',themes.warnPalette.name)
             }
             if(themes.backgroundPalette && !_.isEmpty(themes.backgroundPalette)){
                 var dark = themes.backgroundPalette.dark || false;
                 var hues = themes.backgroundPalette.details || null;
                 $mdThemingProvider.theme('kylo').backgroundPalette(themes.backgroundPalette.name,hues).dark(dark)
+                console.log('Applied backgroundPalette',themes.backgroundPalette.name)
             }
         }
         else {

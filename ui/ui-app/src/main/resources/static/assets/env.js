@@ -2,8 +2,8 @@
     window.__env = window.__env || {};
     var themes = {
         "definePalette":[ {name:'primaryBlue',details:{ '500': '3483BA',
-                '900':'2B6C9A'},extending:"blue"},
-            {name:'accentOrange',details:{'A200': 'F08C38'},extending:"orange"},
+                '900':'2B6C9A'},extend:"blue"},
+            {name:'accentOrange',details:{'A200': 'F08C38'},extend:"orange"},
         ],
         "primaryPalette": {
             name:"primaryBlue",
