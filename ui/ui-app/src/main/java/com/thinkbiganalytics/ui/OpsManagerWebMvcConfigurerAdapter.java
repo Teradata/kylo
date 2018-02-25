@@ -49,6 +49,7 @@ public class OpsManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
             LOG.info("Setting up static resources to be at '{}'", staticPath);
             registry.addResourceHandler("/ops-mgr/assets/**").addResourceLocations("file:" + staticPath);
             registry.addResourceHandler("/kylo/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath);
         }
     }
 

@@ -26,8 +26,14 @@ define([
         'preferredLocale': 'en_US'
     });
 
+    var env = {};
+    // Import variables if present (from env.js)
+    if(window && window.__env){
+        Object.assign(env, window.__env);
+    }
+    module.constant('__env', env);
 
-    module.config(['$mdThemingProvider','$mdIconProvider','$locationProvider','$translateProvider',function($mdThemingProvider, $mdIconProvider, $locationProvider,$translateProvider){
+    module.config(['$mdThemingProvider','$mdIconProvider','$locationProvider','$translateProvider','__env',function($mdThemingProvider, $mdIconProvider, $locationProvider,$translateProvider,__env){
         $locationProvider.html5Mode(true);
 
         $translateProvider.useStaticFilesLoader({
@@ -44,24 +50,75 @@ define([
             .fallbackLanguage('en')
             .useLocalStorage();  // saves selected language to localStorage
 
-        var primaryBlue = $mdThemingProvider.extendPalette('blue', {
-            '500': '3483BA',
-            '900':'2B6C9A'
-        });
-
-        var accentOrange = $mdThemingProvider.extendPalette('orange', {
-            'A200': 'F08C38'
-        });
 
 
-        $mdThemingProvider.definePalette('primaryBlue', primaryBlue);
-        $mdThemingProvider.definePalette('accentOrange', accentOrange);
+        //read in any theme info from the __env
+        if(__env.themes) {
+            var themes = __env.themes;
+            var definitions = themes.definePalette;
+            if(definitions && definitions.length >0){
+                // define the new palettes
+                var newPalettes = {};
+                _.each(definitions,function(palette) {
+                    if(palette.name && palette.name != '' && !_.isEmpty(palette.details)) {
+                        if (palette.extend && palette.extend != "") {
+                            var p1 = $mdThemingProvider.extendPalette(palette.extend, palette.details);
+                            $mdThemingProvider.definePalette(palette.name, p1);
+                            newPalettes[palette.name] = p1;
+                        }
+                        else {
+                            $mdThemingProvider.definePalette(palette.name, palette.details);
+                        }
+                    }
+                    else {
+                        console.log("Unable to regsiter definition.  It needs to contain a valid 'name' and 'details'")
+                    }
+                });
+            }
+            //register the palette types
+            if(themes.primaryPalette && !_.isEmpty(themes.primaryPalette)){
+                var dark = themes.primaryPalette.dark || false;
+                var hues = themes.primaryPalette.details || null;
+                $mdThemingProvider.theme('kylo').primaryPalette(themes.primaryPalette.name,hues).dark(dark);
+                console.log('Applied primaryPalette',themes.primaryPalette.name)
+            }
+            if(themes.accentPalette && !_.isEmpty(themes.accentPalette)){
+                var dark = themes.accentPalette.dark || false;
+                var hues = themes.accentPalette.details || null;
+                $mdThemingProvider.theme('kylo').accentPalette(themes.accentPalette.name,hues).dark(dark)
+                console.log('Applied accentPalette',themes.accentPalette.name)
+            }
+            if(themes.warnPalette && !_.isEmpty(themes.warnPalette)){
+                var dark = themes.warnPalette.dark || false;
+                var hues = themes.warnPalette.details || null;
+                $mdThemingProvider.theme('kylo').warnPalette(themes.warnPalette.name,hues).dark(dark)
+                console.log('Applied warnPalette',themes.warnPalette.name)
+            }
+            if(themes.backgroundPalette && !_.isEmpty(themes.backgroundPalette)){
+                var dark = themes.backgroundPalette.dark || false;
+                var hues = themes.backgroundPalette.details || null;
+                $mdThemingProvider.theme('kylo').backgroundPalette(themes.backgroundPalette.name,hues).dark(dark)
+                console.log('Applied backgroundPalette',themes.backgroundPalette.name)
+            }
+        }
+        else {
+            //default blue/orange kylo theme
+            var primaryBlue = $mdThemingProvider.extendPalette('blue', {
+                '500': '3483BA',
+                '900':'2B6C9A'
+            });
 
-        $mdThemingProvider.theme('kylo')
-            .primaryPalette('primaryBlue', {
-                'hue-2':'900'
-            })
-            .accentPalette('accentOrange');
+            var accentOrange = $mdThemingProvider.extendPalette('orange', {
+                'A200': 'F08C38'
+            });
+            $mdThemingProvider.definePalette('primaryBlue', primaryBlue);
+            $mdThemingProvider.definePalette('accentOrange', accentOrange);
+            $mdThemingProvider.theme('kylo')
+                .primaryPalette('primaryBlue', {
+                    'hue-2':'900'
+                })
+                .accentPalette('accentOrange');
+        }
 
         $mdThemingProvider.setDefaultTheme('kylo');
 
