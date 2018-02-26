@@ -40,7 +40,7 @@
     <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
+      <version>${elasticsearch.version.two}</version>
     </dependency>
 
     <dependency>
