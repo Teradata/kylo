@@ -46,12 +46,12 @@
                         <thinkbig-service-level-agreement view="feed" feed="vm.model" ng-if="vm.selectedTabIndex == 3" new-sla="vm.newSla"></thinkbig-service-level-agreement>
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="true">
+                <md-tab ng-disabled="vm.loadingFeedData || vm.errorLoadingFeed">
                     <md-tab-label>
                         <div> {{"views.feed-details.Versions" | translate}} </div>
                     </md-tab-label>
                     <md-tab-body>
-                        {{"views.feed-details.VH" | translate}}
+                       <thinkbig-feed-versions-compare  ng-if="vm.selectedTabIndex == 4" />
                     </md-tab-body>
                 </md-tab>
             </md-tabs>
@@ -166,11 +166,27 @@
                     <span class="hint"> {{"views.feed-details.Category" | translate}} </span>
                 </div>
 
+                <div layout="column" class="layout-padding-top-bottom">
+                  <div>
+                    <span ng-if="vm.shouldIndexingOptionsBeDisabled()">{{"views.feed-data-policies.Rip.Yes" | translate}}</span>
+                    <span ng-if="vm.shouldIndexingOptionsBeEnabled()">{{"views.feed-data-policies.Rip.No" | translate}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rip" | translate}} </span>
+                </div>
+
+                <div layout="column" class="layout-padding-top-bottom" ng-if="vm.shouldIndexingOptionsBeEnabled()">
+                  <div>
+                    <span>{{vm.findAndReplaceString(vm.model.historyReindexingStatus, '_', ' ') | capitalizeFirstLetterOfEachWord}}</span>
+                  </div>
+                  <span class="hint"> {{"views.feed-data-policies.Rls" | translate}} </span>
+                </div>
+
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
                 <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div>
-                  <md-button class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
-                  <md-button ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                  <md-button style="text-align:left" class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                  <md-button style="text-align:left"  ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
+                 <md-button style="text-align:left"  ng-repeat="item in vm.feedNavigationLinks" ng-click="vm.feedNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
               </div>
 
               <md-divider ng-if="!vm.isNiFiRunning"></md-divider>

@@ -106,7 +106,7 @@ define(["require", "exports", "@angular/core", "angular", "underscore", "../wran
                 noCache: true,
                 querySearch: this.onAutocompleteQuerySearch.bind(this),
                 refreshCache: this.onAutocompleteRefreshCache.bind(this),
-                delay: 900
+                delay: 0
             };
             /**
              * List of native data sources to exclude from the model.

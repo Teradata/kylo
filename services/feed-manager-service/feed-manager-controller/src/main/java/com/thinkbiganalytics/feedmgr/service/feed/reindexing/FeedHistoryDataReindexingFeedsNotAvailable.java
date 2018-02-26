@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.feedmgr.service.feed.exporting.model;
+package com.thinkbiganalytics.feedmgr.service.feed.reindexing;
+
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * thinkbig-ui-feed-manager
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,23 +21,14 @@ package com.thinkbiganalytics.feedmgr.service.feed.exporting.model;
  */
 
 /**
- * Model object to the feed we are exporting
+ * Thrown when Kylo does not have the feeds required to support history data reindexing
  */
-public class ExportFeed {
+public class FeedHistoryDataReindexingFeedsNotAvailable extends RuntimeException {
 
-    private String fileName;
-    private byte[] file;
+    private static final long serialVersionUID = 1L;
 
-    public ExportFeed(String fileName, byte[] file) {
-        this.fileName = fileName;
-        this.file = file;
+    public FeedHistoryDataReindexingFeedsNotAvailable() {
+        super("Feeds required for supporting history data reindexing are not available");
     }
 
-    public String getFileName() {
-        return fileName;
-    }
-
-    public byte[] getFile() {
-        return file;
-    }
 }

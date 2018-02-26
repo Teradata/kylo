@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
  * #L%
  */
 
+import com.google.common.base.Stopwatch;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.ConstructorExpression;
 import com.querydsl.core.types.Expression;
@@ -100,6 +101,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -398,6 +400,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
         }
 
+        JpaBatchJobExecutionContextValue executionContext = new JpaBatchJobExecutionContextValue(jobExecution, JOB_FINISHED_STATUS_PROPERTY);
+        executionContext.setStringVal("Finished");
+        jobExecution.addJobExecutionContext(executionContext);
+
     }
 
     public JpaBatchJobExecution findJobExecution(ProvenanceEventRecordDTO event) {
@@ -430,11 +436,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     }
 
     @Override
-    public void updateFeedJobStartTime(BatchJobExecution jobExecution,OpsManagerFeed feed){
-        if(jobExecution != null){
+    public void updateFeedJobStartTime(BatchJobExecution jobExecution, OpsManagerFeed feed) {
+        if (jobExecution != null) {
             //add the starttime to the map
             Long startTime = jobExecution.getStartTime().getMillis();
-            if(startTime != null) {
+            if (startTime != null) {
                 if (!latestStartTimeByFeedName.containsKey(startTime)) {
                     latestStartTimeByFeedName.put(feed.getName(), startTime);
                 } else {
@@ -557,6 +563,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             }
             if (updatedJobType) {
                 //notify operations status
+                if(feed instanceof  JpaOpsManagerFeed){
+                    ((JpaOpsManagerFeed)feed).setFeedType(OpsManagerFeed.FeedType.CHECK);
+                }
                 jobExecutionChangedNotifier.notifyDataConfidenceJob(jobExecution, feed, "Data Confidence Job detected ");
             }
 
@@ -570,7 +579,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             log.info("Stopping Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STOPPED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.COMPLETED);
-            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            ((JpaBatchJobExecution) jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
             jobExecution.setEndTime(DateTimeUtil.getNowUTCTime());
             save(jobExecution);
             //update the cache
@@ -585,7 +594,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
             log.info("Starting Streaming feed job {} for Feed {} ", jobExecution.getJobExecutionId(), feed);
             jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
             jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-            ((JpaBatchJobExecution)jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
+            ((JpaBatchJobExecution) jobExecution).setLastUpdated(DateTimeUtil.getNowUTCTime());
             jobExecution.setStartTime(DateTimeUtil.getNowUTCTime());
             save(jobExecution);
             latestStreamingJobByFeedName.put(feed, jobExecution);
@@ -651,7 +660,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         if (jobExecution == null) {
             return null;
         }
+        Stopwatch stopwatch = Stopwatch.createStarted();
         batchStepExecutionProvider.createStepExecution(jobExecution, event);
+        log.debug("Time to create step {} ms ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         return jobExecution;
     }
 
@@ -662,7 +673,9 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      */
     @Override
     public BatchJobExecution save(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+        Stopwatch stopwatch = Stopwatch.createStarted();
         JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event, feed);
+        log.info("Time to get/create job {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
         if (jobExecution != null) {
             return save(jobExecution, event);
         }
@@ -676,8 +689,13 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
 
     @Override
-    public BatchJobExecution findByJobExecutionId(Long jobExecutionId) {
-        return jobExecutionRepository.findOne(jobExecutionId);
+    public BatchJobExecution findByJobExecutionId(Long jobExecutionId, boolean fetchSteps) {
+        if(fetchSteps) {
+            return jobExecutionRepository.findByJobExecutionIdWithSteps(jobExecutionId);
+        }
+        else {
+
+        }   return jobExecutionRepository.findOne(jobExecutionId);
     }
 
 
@@ -720,13 +738,12 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     public List<? extends BatchJobExecution> findLatestFinishedJobForFeedSince(String feedName, DateTime dateTime) {
         List<JpaBatchJobExecution> jobExecutions = null;
-        if(dateTime == null){
-            jobExecutions  = jobExecutionRepository.findLatestFinishedJobForFeed(feedName);
-        }
-        else {
+        if (dateTime == null) {
+            jobExecutions = jobExecutionRepository.findLatestFinishedJobForFeed(feedName);
+        } else {
             jobExecutions = jobExecutionRepository.findLatestFinishedJobsForFeedSince(feedName, dateTime.getMillis());
         }
-        if (jobExecutions != null ) {
+        if (jobExecutions != null) {
             return jobExecutions;
         } else {
             return Collections.emptyList();
@@ -737,10 +754,10 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
     public BatchJobExecution findLatestJobForFeed(String feedName) {
         List<JpaBatchJobExecution> jobExecutions = null;
         Long latestStartTime = latestStartTimeByFeedName.get(feedName);
-        if(latestStartTime != null) {
-            jobExecutions = jobExecutionRepository.findLatestJobForFeedWithStartTimeLimit(feedName,latestStartTime);
+        if (latestStartTime != null) {
+            jobExecutions = jobExecutionRepository.findLatestJobForFeedWithStartTimeLimit(feedName, latestStartTime);
         }
-        if(jobExecutions == null) {
+        if (jobExecutions == null) {
             jobExecutions = jobExecutionRepository.findLatestJobForFeed(feedName);
         }
         if (jobExecutions != null && !jobExecutions.isEmpty()) {
@@ -1006,7 +1023,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
 
     @Override
     public BatchJobExecution abandonJob(Long executionId) {
-        BatchJobExecution execution = findByJobExecutionId(executionId);
+        BatchJobExecution execution = findByJobExecutionId(executionId,false);
         if (execution != null && !execution.getStatus().equals(BatchJobExecution.JobStatus.ABANDONED)) {
             if (execution.getStartTime() == null) {
                 execution.setStartTime(DateTimeUtil.getNowUTCTime());

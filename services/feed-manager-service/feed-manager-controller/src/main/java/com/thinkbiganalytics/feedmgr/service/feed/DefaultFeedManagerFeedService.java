@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
@@ -65,6 +66,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -331,6 +333,28 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
                 .map(version -> feedModelTransform.domainToFeedVersion(version));
         });
     }
+    
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
+            
+            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+            
+            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                            .map(version -> feedModelTransform.domainToFeedVersion(version));
+            
+            return fromVer.map(from -> {
+                return toVer.map(to -> {
+                    return feedModelTransform.generateDifference(from, to);
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+        });
+    }
 
     @Override
     public Collection<FeedMetadata> getFeeds() {
@@ -472,6 +496,8 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             //update the access control
             feedMetadata.toRoleMembershipChangeList().stream().forEach(roleMembershipChange -> securityService.changeFeedRoleMemberships(feed.getFeedMetadata().getId(), roleMembershipChange));
         }
+
+        feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedMetadata);
         return feed;
 
     }
@@ -552,8 +578,14 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         feedMetadata.setProperties(registeredTemplate.getProperties());
         feedMetadata.setRegisteredTemplate(registeredTemplate);
 
+        //skip any properties that the user supplied which are not ${ values
+        List<NifiProperty> propertiesToSkip = originalFeedProperties.stream().filter(property -> !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        List<NifiProperty> templatePropertiesToSkip = registeredTemplate.getProperties().stream().filter(property -> property.isSelected() && !propertyExpressionResolver.containsVariablesPatterns(property.getValue())).collect(Collectors.toList());
+        if(templatePropertiesToSkip != null && !templatePropertiesToSkip.isEmpty()){
+            propertiesToSkip.addAll(templatePropertiesToSkip);
+        }
         //resolve any ${metadata.} properties
-        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
+        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata,propertiesToSkip);
 
         //decrypt the metadata
         feedModelTransform.decryptSensitivePropertyValues(feedMetadata);
@@ -905,10 +937,15 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
             Feed.ID feedIdentifier = feedProvider.resolveFeed(feedId);
             Feed feed = feedProvider.getFeed(feedIdentifier);
+
+            String feedCategorySystemName = feed.getCategory().getSystemName();
+            String feedSystemName = feed.getName();
+
             //unschedule any SLAs
             serviceLevelAgreementService.removeAndUnscheduleAgreementsForFeed(feedIdentifier, feed.getQualifiedName());
             feedProvider.deleteFeed(feed.getId());
             opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
+            feedHistoryDataReindexingService.updateHistoryDataReindexingFeedsAvailableCache(feedCategorySystemName, feedSystemName);
             return true;
         });
     }

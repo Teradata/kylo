@@ -165,6 +165,18 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
         this.GET_CONTROLLER_SERVICE_URL = function (serviceId) {
             return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
         }
+        
+        this.FEED_VERSIONS_URL = function (feedId) {
+        		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
+        }
+        
+        this.FEED_VERSION_ID_URL = function (feedId, verId) {
+        	return self.FEED_VERSIONS_URL(feedId) + "/" + verId;
+        }
+        
+        this.FEED_VERSIONS_DIFF_URL = function (feedId, verId1, verId2) {
+        		return self.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
+        }
 
         this.FEED_PROFILE_STATS_URL = function (feedId) {
             return self.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
@@ -253,6 +265,10 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
             return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
         };
 
+        // Feed history data reindexing endpoint
+        this.FEED_HISTORY_CONFIGURED = self.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
+
+
         /**
          * Generates a URL for listing the controller services under the specified process group.
          *
@@ -287,6 +303,13 @@ define(['angular', 'feed-mgr/module-name'], function (angular, moduleName) {
          * @type {string}
          */
         this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.QUERY_DATASOURCE_URL = function (id) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
 
         this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id) {
             return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";

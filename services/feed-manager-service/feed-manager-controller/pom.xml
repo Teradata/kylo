@@ -8,7 +8,7 @@
   <parent>
     <artifactId>kylo-feed-manager-service</artifactId>
     <groupId>com.thinkbiganalytics.kylo</groupId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
@@ -87,6 +87,14 @@
       <artifactId>kylo-commons-security</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-nifi-savepoint-message-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
@@ -321,6 +329,12 @@
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.flipkart.zjsonpatch</groupId>
+      <artifactId>zjsonpatch</artifactId>
+      <version>0.4.1</version>
     </dependency>
 
 

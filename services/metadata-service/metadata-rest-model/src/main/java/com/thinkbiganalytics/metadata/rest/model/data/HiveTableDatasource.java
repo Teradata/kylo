@@ -31,6 +31,8 @@ import java.util.List;
  */
 public class HiveTableDatasource extends Datasource {
 
+    private static final long serialVersionUID = -4852310850422331907L;
+
     private String database;
     private String tableName;
     private String modifiers;

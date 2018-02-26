@@ -30,6 +30,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 @JsonSubTypes(@JsonSubTypes.Type(JdbcDatasource.class))
 public class UserDatasource extends Datasource implements com.thinkbiganalytics.metadata.datasource.UserDatasource {
 
+    private static final long serialVersionUID = -3086540906837444530L;
+
     /**
      * Type name of this data source
      */

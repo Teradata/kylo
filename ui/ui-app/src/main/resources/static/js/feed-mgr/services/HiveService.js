@@ -1,87 +1,6 @@
 define(['angular','services/module-name'], function (angular,moduleName) {
     angular.module(moduleName).factory('HiveService', ["$q","$http","$mdDialog","$timeout","RestUrlService",function ($q, $http, $mdDialog,$timeout, RestUrlService) {
 
-        function createFilterForTable(query) {
-            var lowercaseQuery = angular.lowercase(query);
-            return function filterFn(tag) {
-                return (tag.fullNameLower.indexOf(lowercaseQuery) != -1 );
-            };
-        }
-
-        /*
-        The active http promise for tables-columns
-         */
-        var tablesAndColumnsQuery = null;
-        /**
-         * The response data from the query/promise
-         * @type {null}
-         */
-        var tablesAndColumnsResponse = null;
-
-        /**
-         * the response data converted to code mirror object
-         * @type {null}
-         */
-        var codeMirrorTablesAndColumns = null;
-
-        /**
-         * the numnber of active listeners for the current query/promise
-         * @type {number}
-         */
-        var activeTableAndColumnDeferreds = 0;
-
-        /**
-         * a timeout to clear and force a refresh query after 5 min of inactivity
-         * @type {null}
-         */
-        var refreshTablesAndColumnsTimeout = null;
-
-        var REFRESH_TABLE_COLUMNS_TIME_MILLIS = 30000;
-
-        function populateCodeMirrorTablesAndColumns(tableColumns){
-            var codeMirrorData = {};
-            //store metadata in 3 objects and figure out what to expose to the editor
-            var databaseNames = [];
-            var databaseGroup = {};  //Group data by {Database: { table: [fields]} }
-            var databaseTableGroup = {}  //Group data by {database.Table: [fields] }
-            var tablesObj = {};  //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
-            //TODO need to figure out how to expose the database names to the codemirror editor
-
-            angular.forEach(tableColumns, function(row) {
-                var db = row.databaseName;
-                var dbTable = row.databaseName + "." + row.tableName;
-                if (databaseGroup[db] == undefined) {
-                    databaseGroup[db] = {};
-                    databaseNames.push(db);
-                }
-                var tableObj = databaseGroup[db];
-                if (tableObj[row.tableName] == undefined) {
-                    tableObj[row.tableName] = [];
-                }
-
-                if (tablesObj[row.tableName] == undefined) {
-                    tablesObj[row.tableName] = [];
-                }
-                var tablesArr = tablesObj[row.tableName]
-
-                var tableFields = tableObj[row.tableName];
-                if (databaseTableGroup[dbTable] == undefined) {
-                    databaseTableGroup[dbTable] = [];
-                }
-                var databaseTableGroupObj = databaseTableGroup[dbTable];
-
-                //now populate the tableFields and databaseTableGroupObj with the field Name
-                tableFields.push(row.columnName);
-                databaseTableGroupObj.push(row.columnName);
-                tablesArr.push(row.columnName);
-
-            });
-            codeMirrorData.hintOptions = {tables: databaseTableGroup};
-            codeMirrorData.databaseMetadata = databaseGroup;
-            codeMirrorData.databaseNames = databaseNames;
-            codeMirrorTablesAndColumns = codeMirrorData;
-        }
-
         var data = {
             refreshTableCache: function () {
                 return $http.get(RestUrlService.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache");
@@ -122,67 +41,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 promise.then(successFn, errorFn);
                 return promise;
             },
-            getTablesAndColumns:function(isCodeMirror,timeout) {
-                if(angular.isUndefined(isCodeMirror)){
-                    isCodeMirror = false;
-                }
-                if(angular.isUndefined(timeout)){
-                    timeout = 30000;
-                }
-                var defer = $q.defer();
-
-                if(isCodeMirror && codeMirrorTablesAndColumns != null){
-                        defer.resolve(codeMirrorTablesAndColumns);
-                        return defer.promise;
-                }
-                else if(!isCodeMirror && tablesAndColumnsResponse != null) {
-                    defer.resolve(tablesAndColumnsResponse);
-                    return defer.promise;
-                }
-                else if (tablesAndColumnsQuery == null) {
-                    codeMirrorTablesAndColumns = null;
-                    tablesAndColumnsResponse = null;
-                    tablesAndColumnsQuery = $http.get(RestUrlService.HIVE_SERVICE_URL + "/table-columns", {timeout: timeout});
-                }
-                activeTableAndColumnDeferreds++;
-                    tablesAndColumnsQuery.then(function (response) {
-                        //clear the refresh timeout as we are active
-                        if(refreshTablesAndColumnsTimeout != null){
-                            $timeout.cancel(refreshTablesAndColumnsTimeout);
-                            refreshTablesAndColumnsTimeout = null;
-                        }
-
-                        if (tablesAndColumnsResponse == null) {
-                            tablesAndColumnsResponse = response;
-                        }
-                        if (codeMirrorTablesAndColumns == null) {
-                           populateCodeMirrorTablesAndColumns(response.data);
-                        }
-                        activeTableAndColumnDeferreds--;
-                        if(activeTableAndColumnDeferreds == 0){
-                            tablesAndColumnsQuery = null;
-                            refreshTablesAndColumnsTimeout = $timeout(function(){
-                                codeMirrorTablesAndColumns = null;
-                                tablesAndColumnsResponse = null;
-                            },REFRESH_TABLE_COLUMNS_TIME_MILLIS)
-                        }
-
-
-                        if(isCodeMirror) {
-                            defer.resolve(codeMirrorTablesAndColumns);
-                        }
-                        else {
-                            defer.resolve(tablesAndColumnsResponse);
-                        }
-                    }, function (err) {
-                        defer.reject(err);
-                        activeTableAndColumnDeferreds --;
-                        if(activeTableAndColumnDeferreds == 0){
-                            tablesAndColumnsQuery = null;
-                        }
-                    });
-
-                return defer.promise;
+            getTablesAndColumns: function () {
+                return $http.get(RestUrlService.HIVE_SERVICE_URL + "/table-columns", {timeout: 30000});
             },
             queryResult: function (query) {
                 var self = this;

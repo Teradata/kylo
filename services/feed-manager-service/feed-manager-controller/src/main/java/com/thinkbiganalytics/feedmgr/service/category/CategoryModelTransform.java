@@ -117,7 +117,7 @@ public class CategoryModelTransform  extends SimpleCategoryModelTransform{
             category.setName(domainCategory.getDisplayName());
             category.setSystemName(domainCategory.getSystemName() == null ? domainCategory.getDisplayName() : domainCategory.getSystemName()); //in pre-0.8.4 version of Kylo there was no system name stored for domain categories
             category.setDescription(domainCategory.getDescription());
-            category.setAllowIndexing(domainCategory.getAllowIndexing());
+            category.setAllowIndexing(domainCategory.isAllowIndexing());
             category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
 
@@ -220,7 +220,7 @@ public class CategoryModelTransform  extends SimpleCategoryModelTransform{
         category.setDescription(feedCategory.getDescription());
         category.setIcon(feedCategory.getIcon());
         category.setIconColor(feedCategory.getIconColor());
-        category.setAllowIndexing(feedCategory.getAllowIndexing());
+        category.setAllowIndexing(feedCategory.isAllowIndexing());
         category.setCreatedTime(new DateTime(feedCategory.getCreateDate()));
         category.setModifiedTime(new DateTime(feedCategory.getUpdateDate()));
 

@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.rest.model.nifi.NiFiFlowCacheConnectionDat
 import com.thinkbiganalytics.metadata.rest.model.nifi.NifiFlowCacheSnapshot;
 import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -107,6 +108,9 @@ public class ProvenanceEventFeedUtil {
                 log.info("Cache Refreshed, but still unable to find the feed.  This event {} will not be processed ",event);
             }
         }
+        //strip kylo versioning in the feed name in case it exists
+        feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
+
 
 
         String processGroupId = getFeedProcessGroupId(event.getFirstEventProcessorId());

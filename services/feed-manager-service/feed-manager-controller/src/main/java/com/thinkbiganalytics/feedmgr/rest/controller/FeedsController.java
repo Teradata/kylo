@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.config.HistoryDataReindexingFeedsAvailableCache;
 import com.thinkbiganalytics.feedmgr.rest.FeedLineageBuilder;
 import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -30,12 +31,13 @@ import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
+import com.thinkbiganalytics.feedmgr.service.feed.reindexing.FeedHistoryDataReindexingService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementModelTransform;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedDependencyDeltaResults;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
@@ -149,6 +151,12 @@ public class FeedsController {
 
     @Inject
     private DatasourceModelTransform datasourceTransform;
+
+    @Inject
+    private HistoryDataReindexingFeedsAvailableCache historyDataReindexingFeedsAvailableCache;
+
+    @Inject
+    private FeedHistoryDataReindexingService feedHistoryDataReindexingService;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -283,6 +291,31 @@ public class FeedsController {
     }
 
     @GET
+    @Path("/data-history-reindex-configured")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Check if feed data history reindexing is configured in Kylo.")
+    @ApiResponses({
+                @ApiResponse(code = 200, message = "Info on whether data history reindexing is configured in Kylo", response = Boolean.class),
+                @ApiResponse(code = 500, message = "Unable to check if data history reindexing is configured in Kylo", response = RestResponseStatus.class)
+                })
+    public boolean getDataHistoryReindexConfigured() {
+        LOG.debug("Get info on whether feed data history reindexing is configured in Kylo");
+        if (historyDataReindexingFeedsAvailableCache == null) {
+            throw new WebApplicationException("Unable to check if feed data history reindexing is configured in Kylo", Status.NOT_FOUND);
+        }
+
+        if (!historyDataReindexingFeedsAvailableCache.areKyloHistoryDataReindexingFeedsAvailable()) {
+            LOG.info("Feed data history reindexing is not configured in Kylo. Reason: Supporting feeds not available.");
+            return false;
+        }
+        if (!feedHistoryDataReindexingService.isHistoryDataReindexingEnabled()) {
+            LOG.info("Feed data history reindexing is not configured in Kylo. Reason: Application configuration set to false.");
+            return false;
+        }
+        return true;
+    }
+
+    @GET
     @Path("/feeds-for-data-history-reindex")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Get all feeds for which historical data needs to be reindexed.")
@@ -402,7 +435,7 @@ public class FeedsController {
         
         try {
             return this.waterMerkService.getWaterMarks(feedIdStr);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -422,7 +455,7 @@ public class FeedsController {
         try {
             return this.waterMerkService.getWaterMark(feedIdStr, waterMarkName)
                   .orElseThrow(() -> new WebApplicationException("A feed high-water mark with the given name does not exist: " + waterMarkName, Status.NOT_FOUND));
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -444,7 +477,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.updateWaterMark(feedIdStr, waterMarkName, value, cancelActive);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }
@@ -465,7 +498,7 @@ public class FeedsController {
         
         try {
             this.waterMerkService.cancelActiveWaterMark(feedIdStr, waterMarkName);
-        } catch (FeedNotFoundExcepton e) {
+        } catch (FeedNotFoundException e) {
             throw new WebApplicationException("A feed with the given ID does not exist: " + e.getId(), Status.NOT_FOUND);
         }
     }

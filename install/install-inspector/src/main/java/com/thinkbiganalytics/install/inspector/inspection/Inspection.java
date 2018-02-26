@@ -46,4 +46,10 @@ public interface Inspection {
      * @return inspection status
      */
     InspectionStatus inspect(Configuration configuration);
+
+    /**
+     * Url where inspection documentation can be found
+     * @return documentation url
+     */
+    String getDocsUrl();
 }

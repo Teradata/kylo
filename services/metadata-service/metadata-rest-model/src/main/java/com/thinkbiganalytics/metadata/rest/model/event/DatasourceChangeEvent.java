@@ -41,6 +41,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DatasourceChangeEvent implements Serializable {
 
+    private static final long serialVersionUID = -256063983205837364L;
+
     private Feed feed;
     private List<Dataset> datasets = new ArrayList<>();
 

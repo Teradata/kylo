@@ -63,6 +63,8 @@ import java.util.zip.GZIPOutputStream;
  */
 public class FeedEventStatistics implements Serializable {
 
+    private static final long serialVersionUID = 312709295696295868L;
+
     private static final Logger log = LoggerFactory.getLogger(FeedEventStatistics.class);
 
     protected Map<String, String> feedFlowFileIdToFeedProcessorId = new ConcurrentHashMap<>();

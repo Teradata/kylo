@@ -32,10 +32,13 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * A granter that, when presented with a Group principal, returns a set containing the name of that principal (the group's name)
- * and another name constructed by prefixing "ROLE_" to the upper case principal name (Spring's default role name format.)
+ * A granter that, when presented with a Group principal, returns a set containing the name of that principal (the group's name.)
  * If the group contains member principals then it will add authorities for those as well; including, recursively, any of the 
  * member's memberships if they are groups themselves.
+ * <p>
+ * Previously, this provider would also constructed an authority that prefixed "ROLE_" to the upper case principal name 
+ * (Spring's default role name format) for each group.  This was to support spring's role-based access control such as
+ * with annotations.  But since we do not use spring annotations for access control these are not needed.
  */
 public class GroupPrincipalAuthorityGranter implements AuthorityGranter {
 
@@ -59,8 +62,9 @@ public class GroupPrincipalAuthorityGranter implements AuthorityGranter {
         authorities.add(name);
         
         if (principal instanceof Group) {
-            String springRole = name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
-            authorities.add(springRole);
+            // If it is ever decided to use spring's role-based access control (unlikely) then we can re-enable the code below.
+//            String springRole = name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
+//            authorities.add(springRole);
             
             Enumeration<? extends Principal> members = ((Group) principal).members();
             while (members.hasMoreElements()) {

@@ -23,6 +23,7 @@ import java.io.Serializable;
  */
 public class SavepointReplayEvent implements Serializable{
 
+    private Long jobExecutionId;
     private String flowfileId;
     public enum Action {
         RETRY, RELEASE
@@ -32,6 +33,14 @@ public class SavepointReplayEvent implements Serializable{
 
     public SavepointReplayEvent(){
 
+    }
+
+    public Long getJobExecutionId() {
+        return jobExecutionId;
+    }
+
+    public void setJobExecutionId(Long jobExecutionId) {
+        this.jobExecutionId = jobExecutionId;
     }
 
     public String getFlowfileId() {

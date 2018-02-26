@@ -145,6 +145,10 @@ export abstract class ScriptBuilder<E extends ScriptExpression, T> {
                 def = this.functions.lessThanOrEqual;
                 break;
 
+            case "%":
+                def = this.functions.mod;
+                break;
+
             default:
         }
 

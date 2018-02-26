@@ -6,13 +6,16 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
             bindToController: {
             },
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-schedule.html',
             controller: "FeedScheduleController",
             link: function ($scope, element, attrs, controller) {
-
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
             }
-
         };
     }
 
@@ -20,17 +23,20 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
 
         var self = this;
 
+        self.versions = $scope.versions;
         /**
          * Indicates if the feed schedule may be edited.
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         /**
          * The data model for the feed
          * @type {data.editFeedModel|{}|*}
          */
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
+        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
 
         /**
          * The model with only the Schedule data that is populated via the {@code this#onEdit()} method
@@ -86,13 +92,26 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
             if(self.model == null) {
                 self.model = FeedService.editFeedModel;
             }
-        })
+        });
+
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return FeedService.versionFeedModelDiff;
+            },function(newVal) {
+                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            });
+        }
 
         /**
          * All possible schedule strategies
          * @type {*[]}
          */
-        var allScheduleStrategies = [{label: $filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.TE'), value: "TRIGGER_DRIVEN"},
+        var allScheduleStrategies = [{label: $filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: $filter('translate')('views.feed-schedule.T/E'), value: "TRIGGER_DRIVEN"},
             {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
         /**
@@ -244,7 +263,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
         this.onEdit = function(){
             //copy the model
             self.editModel.category = {systemName: FeedService.editFeedModel.category.systemName};
-            self.editModel.systemFeedName = FeedService.editFeedModelsystemFeedName;
+            self.editModel.systemFeedName = FeedService.editFeedModel.systemFeedName;
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
             self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
             if (self.editModel.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY" && (!self.isClustered || self.supportsExecutionNode)) {
@@ -330,7 +349,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
         };
 
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access && !self.model.view.schedule.disabled;
+            self.allowEdit = !self.versions && access && !self.model.view.schedule.disabled;
         });
 
         // Detect if NiFi is clustered
@@ -339,6 +358,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate
             self.supportsExecutionNode = (self.isClustered && angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
             updateScheduleStrategies();
         });
+
+        self.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+
+        self.diffCollection = function(path) {
+            return FeedService.diffCollectionOperation(path);
+        }
     };
 
 

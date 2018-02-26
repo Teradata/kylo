@@ -230,7 +230,7 @@
                           <md-input-container class="md-block condensed" flex-gt-sm>
                             <md-select ng-model="partition.columnDef" placeholder="Source Field" ng-change="vm.onPartitionSourceFieldChange(partition)" name="partition_sourceField{{partition._id}}"
                                        required>
-                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by $index" ng-value="field" aria-label="{{field.name}}">
+                              <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter:{deleted:false} track by field._id" ng-value="field" aria-label="{{field.name}}">
                                 {{field.name}}
                               </md-option>
                             </md-select>

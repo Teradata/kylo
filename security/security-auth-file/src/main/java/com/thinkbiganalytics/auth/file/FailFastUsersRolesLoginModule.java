@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.auth.file;
 
+import org.jboss.security.SecurityConstants;
+import org.jboss.security.SimpleGroup;
+
 /*-
  * #%L
  * kylo-security-auth-file
@@ -23,7 +26,10 @@ package com.thinkbiganalytics.auth.file;
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.security.acl.Group;
 import java.util.Map;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
@@ -34,6 +40,7 @@ import javax.security.auth.callback.CallbackHandler;
  */
 public class FailFastUsersRolesLoginModule extends UsersRolesLoginModule {
 
+    private static final Group DEFAULT_CALLER_PRINCIPAL_GROUP = new SimpleGroup(SecurityConstants.CALLER_PRINCIPAL_GROUP);
 
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
@@ -49,5 +56,15 @@ public class FailFastUsersRolesLoginModule extends UsersRolesLoginModule {
                          + "- please verify the config property security.auth.file.users=%s", usersResource);
             throw new IllegalStateException(msg);
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see org.jboss.security.auth.spi.AbstractServerLoginModule#getCallerPrincipalGroup(java.util.Set)
+     */
+    @Override
+    protected Group getCallerPrincipalGroup(Set<Principal> principals) {
+        // We don't want to use a caller principal group so return a bogus one so that the superclass
+        // won't create one for us.
+        return DEFAULT_CALLER_PRINCIPAL_GROUP;
     }
 }

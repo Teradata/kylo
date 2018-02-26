@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.config;
 
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.nifi.SavepointReplayJmsEventService;
 import com.thinkbiganalytics.feedmgr.nifi.SpringCloudContextEnvironmentChangedListener;
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -50,9 +49,10 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedWaterMarkService;
+import com.thinkbiganalytics.feedmgr.service.feed.SavepointReplayJmsEventService;
 import com.thinkbiganalytics.feedmgr.service.feed.StreamingFeedJmsNotificationService;
 import com.thinkbiganalytics.feedmgr.service.feed.datasource.DerivedDatasourceFactory;
-import com.thinkbiganalytics.feedmgr.service.feed.exporting.FeedExporter;
+import com.thinkbiganalytics.feedmgr.service.feed.exporting.DefaultFeedExporter;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporter;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.FeedImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.security.DefaultSecurityService;
@@ -64,7 +64,9 @@ import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
-import com.thinkbiganalytics.feedmgr.service.template.exporting.TemplateExporter;
+import com.thinkbiganalytics.feedmgr.service.template.exporting.DefaultTemplateExporter;
+import com.thinkbiganalytics.metadata.api.feed.export.FeedExporter;
+import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportFeedTemplateXml;
@@ -320,12 +322,12 @@ public class FeedManagerConfiguration {
 
     @Bean
     public FeedExporter feedExporter() {
-        return new FeedExporter();
+        return new DefaultFeedExporter();
     }
 
     @Bean
     public TemplateExporter templateExporter() {
-        return new TemplateExporter();
+        return new DefaultTemplateExporter();
     }
 
 
@@ -399,8 +401,9 @@ public class FeedManagerConfiguration {
     }
 
     @Bean
-    public SavepointReplayJmsEventService savepointReplayJmsEventService(){
+    public SavepointReplayJmsEventService savepointReplayJmsEventService() {
         return new SavepointReplayJmsEventService();
     }
+
 
 }

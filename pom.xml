@@ -5,7 +5,7 @@
 
   <groupId>com.thinkbiganalytics.kylo</groupId>
   <artifactId>kylo</artifactId>
-  <version>0.9.0-SNAPSHOT</version>
+  <version>0.9.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
   <description>Kylo</description>
@@ -54,7 +54,8 @@
     <commons.collections>3.2.2</commons.collections>
     <commons.csv>1.4</commons.csv>
     <commons.codec>1.10</commons.codec>
-    <elasticsearch.version>2.2.0</elasticsearch.version>
+    <elasticsearch.version.two>2.3.0</elasticsearch.version.two>
+    <lucene.version.elasticsearch.version.two>5.5.0</lucene.version.elasticsearch.version.two>
     <guava.version>19.0</guava.version>
     <hadoop.version>2.6.2</hadoop.version>
     <hamcrest.version>1.3</hamcrest.version>
@@ -66,7 +67,6 @@
     <jersey.version>2.22.2</jersey.version>
     <joda.time.version>2.9.2</joda.time.version>
     <junit.version>4.11</junit.version>
-    <lucene.version>4.10.4</lucene.version>
     <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
@@ -114,6 +114,8 @@
     <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
     <maven.site.plugin.version>3.6</maven.site.plugin.version>
     <spring-data-commons.version>1.12.0.RELEASE</spring-data-commons.version>
+    <modeshape.version>5.4.1.Final</modeshape.version>
+    <codehaus.jettison.version>1.3.8</codehaus.jettison.version>
   </properties>
   <modules>
     <module>commons</module>
@@ -185,6 +187,25 @@
 
   <dependencyManagement>
     <dependencies>
+      <!-- Import the ModeShape BOM for embedded usage. This adds to
+          the "dependenciesManagement" section defaults for all of the modules we might
+          need, but we still have to include in the "dependencies" section the modules
+          we DO need. The benefit is that we don't have to specify the versions of
+          any of those modules. -->
+      <dependency>
+        <groupId>org.modeshape.bom</groupId>
+        <artifactId>modeshape-bom-embedded</artifactId>
+        <version>${modeshape.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.jettison</groupId>
+        <artifactId>jettison</artifactId>
+        <version>${codehaus.jettison.version}</version>
+      </dependency>
+
       <dependency>
         <groupId>com.beust</groupId>
         <artifactId>jcommander</artifactId>

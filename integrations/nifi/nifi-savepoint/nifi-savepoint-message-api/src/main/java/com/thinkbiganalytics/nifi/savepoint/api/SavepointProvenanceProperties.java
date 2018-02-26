@@ -23,4 +23,25 @@ public class SavepointProvenanceProperties {
     public static final String CLONE_FLOWFILE_ID = "savepoint.clone.flowfile.id";
     public static final String PARENT_FLOWFILE_ID = "savepoint.parent.flowfile.id";
 
+    /**
+     * Status flag that is added to provenance to track history in kylo
+     */
+    public static final String SAVE_POINT_BEHAVIOR_STATUS = "savepoint.behavior.status";
+
+    /**
+     * The parent flow file that is to be used to trigger this last savepoint
+     */
+    public static final String SAVE_POINT_TRIGGER_FLOWFILE= "savepoint.trigger.flowfile";
+
+
+    public static final String RELEASE_STATUS_KEY = "savepoint.release";
+
+    public enum RELEASE_STATUS {
+        SUCCESS, FAILURE
+    }
+
+    public enum TRIGGER_SAVE_POINT_STATE {
+        RETRY,RELEASE,FAIL
+    }
+
 }

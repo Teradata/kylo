@@ -40,7 +40,7 @@ import com.thinkbiganalytics.metadata.modeshape.versioning.JcrEntityVersion;
 import com.thinkbiganalytics.metadata.modeshape.versioning.JcrLatestEntityVersion;
 
 /**
- *
+ * A mixin interface to be implemented by any JCR entity provider that supports versionable entities.
  */
 public interface VersionProviderMixin<T, PK extends Serializable> extends EntityVersionProvider<T, PK> {
     
@@ -52,7 +52,9 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
         return findVersionableNode(entityId)
                         .map(node -> {
                             List<EntityVersion<T>> result = new ArrayList<>();
-                            result.add(new JcrLatestEntityVersion<>(node, includeContent ? asEntity(entityId, node) : null));
+                            // The "current" version may not be needed as it should be equal to the latest version.
+                            // TODO verify upgrades from versions earlier than 0.8.4 have at least one version.
+//                            result.add(new JcrLatestEntityVersion<>(node, includeContent ? asEntity(entityId, node) : null));
                             
                             BiFunction<EntityVersion<T>,EntityVersion<T>,Integer> desc = (v1, v2) -> v2.getCreatedDate().compareTo(v1.getCreatedDate());
                             List<EntityVersion<T>> versions = JcrVersionUtil.getVersions(node).stream()
@@ -83,7 +85,7 @@ public interface VersionProviderMixin<T, PK extends Serializable> extends Entity
 
     /**
      * Implementers should return an optional containing the node considered to be the one
-     * that is the root of the versionable hierarch of the entity.
+     * that is the root of the versionable hierarchy of the entity.
      * @param id the entity ID
      * @return an optional containing the versionable node, or an empty optional if no entity exists with the given ID
      */

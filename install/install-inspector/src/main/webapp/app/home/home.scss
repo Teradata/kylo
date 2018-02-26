@@ -22,7 +22,7 @@ Main page styles
     margin-bottom: 10px;
 
     .fa {
-        color: gray;
+        color: dimgray;
         margin-right: 15px;
         margin-top: -5px;
     }
@@ -38,11 +38,19 @@ Main page styles
     .fa-larger {
         font-size: 3em;
     }
+}
 
+.inspection.disabled .fa {
+    color: lightgray;
 }
 
 .inspection-header {
     font-size: 18px;
+}
+
+.inspection-docs {
+    font-size: 16px;
+    margin-left: 15px;
 }
 
 .inspection-description {
@@ -67,11 +75,10 @@ Main page styles
 }
 
 .inspection-status-description {
-
+    margin-bottom: 10px;
 }
 
 .inspection-status-error {
-    padding: 10px;
     background: #ff634726;
     margin-right: 40px;
 }

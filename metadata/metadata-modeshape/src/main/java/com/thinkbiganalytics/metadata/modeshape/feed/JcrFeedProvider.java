@@ -41,7 +41,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
@@ -53,6 +53,7 @@ import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.CategoryDetails;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -60,6 +61,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
@@ -200,7 +202,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             Node feedNode = versionable.getSession().getNodeByIdentifier(id.toString());
             return JcrUtil.getJcrObject(feedNode, JcrFeed.class, versionable, null);
         } catch (RepositoryException e) {
-            throw new FeedNotFoundExcepton(id);
+            throw new FeedNotFoundException(id);
         }
     }
 
@@ -444,7 +446,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
                 return new JcrPreconditionbuilder(slaBldr, feed);
             } else {
-                throw new FeedNotFoundExcepton(feed.getId());
+                throw new FeedNotFoundException(feed.getId());
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the precondition for feed " + feed.getId(), e);
@@ -456,13 +458,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed target = (JcrFeed) getFeed(targetId);
 
         if (target == null) {
-            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", targetId);
+            throw new FeedNotFoundException("The target feed to be assigned the dependent does not exists", targetId);
         }
 
         JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
-            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+            throw new FeedNotFoundException("The dependent feed does not exists", dependentId);
         }
 
         target.addDependentFeed(dependent);
@@ -474,13 +476,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed target = (JcrFeed) getFeed(feedId);
 
         if (target == null) {
-            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", feedId);
+            throw new FeedNotFoundException("The target feed to be assigned the dependent does not exists", feedId);
         }
 
         JcrFeed dependent = (JcrFeed) getFeed(dependentId);
 
         if (dependent == null) {
-            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+            throw new FeedNotFoundException("The dependent feed does not exists", dependentId);
         }
 
         target.removeDependentFeed(dependent);
@@ -565,17 +567,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public List<? extends Feed> findByCategoryId(Category.ID categoryId) {
-
+        
         String query = "SELECT e.* from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "
-                       + "INNER JOIN ['tba:feedSummary'] as summary on ISCHILDNODE(summary,e)"
-                       + "WHERE summary." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + " = $id";
-
+                        + "INNER JOIN [" + CategoryDetails.NODE_TYPE + "] as det on ISCHILDNODE(e, det)"
+                        + "INNER JOIN [" + JcrCategory.NODE_TYPE + "] as cat on ISCHILDNODE(det, cat)"
+                        + "WHERE cat.[mode:id] = $id";
+        
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", categoryId.toString());
 
         try {
             QueryResult result = JcrQueryUtil.query(getSession(), query, bindParams);
-            return JcrQueryUtil.queryResultToList(result, JcrFeed.class);
+            // For some reason the above query does not honor the ModeShape ACL for the feed nodes.  It appears to be
+            // only checking at the category level; which might be accessible to the current user even though some feeds are 
+            // not accessible.  For now filter the result based on the feed summary access.
+             return JcrQueryUtil.queryResultStream(result, JcrFeed.class)
+                            .filter(feed -> feed.getFeedSummary().isPresent())
+                            .collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to getFeeds for Category ", e);
         }
@@ -933,15 +941,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 cond.append(EntityUtil.asQueryProperty(JcrFeed.SYSTEM_NAME) + " = $name");
                 params.put("name", this.name);
             }
-            if (this.category != null) {
-                //TODO FIX SQL
-                join.append(
-                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
-                    + EntityUtil
-                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
-                cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
-                params.put("category", this.category);
-            }
+//            if (this.category != null) {
+//                //TODO FIX SQL
+//                join.append(
+//                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(FeedSummary.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
+//                    + EntityUtil
+//                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
+//                cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
+//                params.put("category", this.category);
+//            }
 
             applyIdFilter(cond, join, this.sourceIds, "sources", params);
             applyIdFilter(cond, join, this.destIds, "destinations", params);

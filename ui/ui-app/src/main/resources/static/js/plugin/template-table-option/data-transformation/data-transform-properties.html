@@ -1,25 +1,37 @@
 <vertical-section-layout section-title="Data Transformation" allow-edit="vm.allowEdit" editable="vm.editableSection" is-valid="false">
   <readonly-section>
     <div layout="column">
-      <div layout="row" class="layout-padding-top-bottom">
+      <div layout="row" class="feed-property versions-{{vm.diff('/dataTransformation/sql')}}">
         <span flex="25" class="property-name">Query</span>
 
         <div flex>
           {{vm.model.dataTransformation.sql}}
         </div>
+        <div flex ng-if="vm.versions">
+          {{vm.versionModel.dataTransformation.sql}}
+        </div>
       </div>
 
-      <div layout="row" class="layout-padding-top-bottom">
+      <div flex layout="row" class="feed-property versions-{{vm.diffCollection('/dataTransformation/states')}}">
         <span flex="25" class="property-name">Data Transformations</span>
-      </div>
 
-      <md-list class="layout-padding-top-bottom">
-        <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
-          <md-icon>{{state.context.icon}}</md-icon>
-          <p title="{{state.context.name}}">{{state.context.name}}</p>
-        </md-list-item>
-        <md-divider ng-repeat-end></md-divider>
-      </md-list>
+        <div flex layout="row">
+          <md-list flex class="layout-padding-top-bottom">
+            <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
+              <ng-md-icon style="margin-right: 10px" icon="{{state.context.icon}}"></ng-md-icon>
+              <p style="margin-top: 17px; margin-right: 20px" title="{{state.context.name}}">{{state.context.name}}</p>
+            </md-list-item>
+            <md-divider ng-repeat-end></md-divider>
+          </md-list>
+          <md-list flex class="layout-padding-top-bottom" ng-if="vm.versions">
+            <md-list-item ng-repeat-start="state in vm.versionModel.dataTransformation.states">
+              <ng-md-icon style="margin-right: 10px" icon="{{state.context.icon}}"></ng-md-icon>
+              <p style="margin-top: 17px" title="{{state.context.name}}">{{state.context.name}}</p>
+            </md-list-item>
+            <md-divider ng-repeat-end></md-divider>
+          </md-list>
+        </div>
+      </div>
     </div>
   </readonly-section>
 

@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.flipkart.zjsonpatch.JsonDiff;
+import com.flipkart.zjsonpatch.JsonPatch;
+
 /*-
  * #%L
  * thinkbig-feed-manager-controller
@@ -24,6 +31,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -54,6 +62,7 @@ import com.thinkbiganalytics.security.core.encrypt.EncryptionService;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.User;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -200,7 +209,7 @@ public class FeedModelTransform {
             feedMetadata.setDescription("");
         }
         domain.setDescription(feedMetadata.getDescription());
-        domain.setAllowIndexing(feedMetadata.getAllowIndexing());
+        domain.setAllowIndexing(feedMetadata.isAllowIndexing());
 
         if (StringUtils.isNotBlank(feedMetadata.getHistoryReindexingStatus())) {
             domain.updateHistoryReindexingStatus(
@@ -369,7 +378,7 @@ public class FeedModelTransform {
         feed.setFeedName(domain.getDisplayName());
         feed.setSystemFeedName(domain.getName());
         feed.setDescription(domain.getDescription());
-        feed.setAllowIndexing(domain.getAllowIndexing());
+        feed.setAllowIndexing(domain.isAllowIndexing());
         feed.setHistoryReindexingStatus(domain.getCurrentHistoryReindexingStatus().getHistoryReindexingState().toString());
         feed.setOwner(domain.getOwner() != null ? new User(domain.getOwner().getName()) : null);
         
@@ -518,5 +527,31 @@ public class FeedModelTransform {
     private Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
         final Set<UserFieldDescriptor> userFields = feedProvider.getUserFields();
         return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId()).orElse(Collections.emptySet())) : userFields;
+    }
+
+    /**
+     * @param fromVer
+     * @param toVer
+     */
+    public EntityVersionDifference generateDifference(com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromVer, 
+                                                      com.thinkbiganalytics.feedmgr.rest.model.EntityVersion toVer) {
+        try {
+            ObjectMapper om = new ObjectMapper();
+            ObjectWriter ow = om.writer();
+            ObjectReader or = om.reader();
+            String fromEntStr = ow.writeValueAsString(fromVer.getEntity());
+            String toEntStr = ow.writeValueAsString(toVer.getEntity());
+            JsonNode fromNode = or.readTree(fromEntStr);
+            JsonNode toNode = or.readTree(toEntStr);
+            // Produce a patch showing the changes from the "to" node back into the "from" node.
+            // This is because we will be providing the "to" entity content so the patch should show the original "from" values.
+            JsonNode diff = JsonDiff.asJson(toNode, fromNode);
+            com.thinkbiganalytics.feedmgr.rest.model.EntityVersion fromNoContent 
+                = new com.thinkbiganalytics.feedmgr.rest.model.EntityVersion(fromVer.getId(), fromVer.getName(), fromVer.getCreatedDate());
+            
+            return new EntityVersionDifference(fromNoContent, toVer, diff);
+        } catch (IOException e) {
+            throw new ModelTransformException("Failed to generate entity difference between entity versions " + fromVer.getId() + " and " + toVer.getId());
+        }
     }
 }

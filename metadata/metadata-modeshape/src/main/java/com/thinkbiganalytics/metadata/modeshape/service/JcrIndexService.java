@@ -226,7 +226,7 @@ public class JcrIndexService implements EventListener {
         boolean commit = false;
 
         if (event.getType() == Event.NODE_REMOVED) {
-            commit = checkAndDeleteSchema(event.getPath(), event.getIdentifier());
+            commit = checkAndDeleteSchema(event.getIdentifier(), event.getPath());
         } else {
             commit = metadataAccess.read(() -> {
                 final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(event.getIdentifier()));

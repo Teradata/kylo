@@ -36,8 +36,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of integer data type <br>
  * [Hive data type: INTEGER]
  */
-@SuppressWarnings("serial")
 public class IntegerColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -859059599768191387L;
 
     /* Integer specific metrics */
     private int max;

@@ -29,6 +29,7 @@ public interface SavepointProvider {
 
     /**
      * Resolve the savepoint identifier given the UUID of the flowfile held by a SetSavepoint processor
+     *
      * @param uuid the flowfile UUID
      * @return the savepoint identifier or null if not found
      */
@@ -36,70 +37,75 @@ public interface SavepointProvider {
 
     /**
      * Confirms the retry operation has occurred for the savepoint
+     *
      * @param savepointId the savepoint id
      * @param processorId the processor id
-     * @param lock the lock
-     * @throws InvalidLockException
-     * @throws InvalidSetpointException
+     * @param lock        the lock
      */
     void commitRetry(String savepointId, String processorId, Lock lock) throws InvalidLockException, InvalidSetpointException;
 
     /**
      * Confirms a release operation has been performed on the savepoint
+     *
      * @param savepointId the savepoint id
      * @param processorId the processor id
-     * @param lock the lock
-     * @throws InvalidLockException
-     * @throws InvalidSetpointException
+     * @param lock        the lock
      */
     void commitRelease(String savepointId, String processorId, Lock lock) throws InvalidLockException, InvalidSetpointException;
 
     /**
      * Registers a flowfile for a savepoint
+     *
      * @param savepointId the savepoint id
      * @param processorId the processor id
-     * @param flowFileId the flowfile id
-     * @param lock the lock
-     * @throws InvalidLockException
+     * @param flowFileId  the flowfile id
+     * @param lock        the lock
      */
     void register(String savepointId, String processorId, String flowFileId, Lock lock) throws InvalidLockException;
 
     /**
      * Releases any flowfiles held by a savepoint
+     *
      * @param savepointId the savepoint id
-     * @param lock the lock
-     * @throws InvalidLockException
-     * @throws InvalidSetpointException
+     * @param lock        the lock
      */
-    void release(String savepointId, Lock lock) throws InvalidLockException, InvalidSetpointException;
+    void release(String savepointId, Lock lock, boolean success) throws InvalidLockException, InvalidSetpointException;
 
     /**
      * Instructs a savepoint to retry the flowfile
+     *
      * @param savepointId the savepoint id
-     * @param lock the lock
-     * @throws InvalidLockException
-     * @throws InvalidSetpointException
+     * @param lock        the lock
      */
     void retry(String savepointId, Lock lock) throws InvalidLockException, InvalidSetpointException;
 
     /**
      * Lookup state of a savepoint
+     *
      * @param savepointId the savepoint id
-*/
+     */
     SavepointEntry lookupEntry(String savepointId);
 
     /**
      * Acquires a lock for the savepoint. A lock is required in order to alter savepoint state.
+     *
      * @param savepointId the savepoint id
      * @return a lock object or null if no lock can be obtained
-     * @throws IOException
      */
     Lock lock(String savepointId) throws IOException;
 
     /**
      * Releases the lock
+     *
      * @param lock the lock object
-     * @throws IOException
      */
     void unlock(Lock lock) throws IOException;
+
+
+    /**
+     * Subscribe to changes in the Distributed Cache
+     *
+     * @param listener the listener that will get called when items are changed/removed
+     */
+    void subscribeDistributedSavepointChanges(DistributedCacheListener listener);
 }

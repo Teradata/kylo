@@ -420,6 +420,9 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
         var data = {
             getAllPolicyRules :function(field) {
+                if (field === undefined) {
+                    return [];
+                }
                 var arr = [];
 
                 var standardizers =field['standardization'];
@@ -442,7 +445,7 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
 
                 var hasSequence = _.find(tmpArr,function(item){
                         return item.sequence != null && item.sequence != undefined;
-                    }) != undefined;
+                    }) !== undefined;
 
                 //if we dont have a sequence, add it in
                 if(!hasSequence){

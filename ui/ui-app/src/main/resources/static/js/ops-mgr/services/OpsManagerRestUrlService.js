@@ -131,5 +131,13 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
             return self.SLA_BASE_URL + "/"+slaId;
         }
 
+        this.TRIGGER_SAVEPOINT_RETRY = function(executionId, flowfileId){
+            return self.JOBS_BASE + "/" + executionId + "/savepoint/trigger-retry/"+flowfileId;
+        }
+
+        this.TRIGGER_SAVEPOINT_RELEASE= function(executionId, flowfileId){
+            return self.JOBS_BASE + "/" + executionId + "/savepoint/trigger-release/"+flowfileId;
+        }
+
     });
 });

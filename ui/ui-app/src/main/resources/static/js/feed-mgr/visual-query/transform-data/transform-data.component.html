@@ -13,7 +13,7 @@
     </div>
     <md-list layout-padding browser-height browser-height-offset="{{$td.getBrowserHeightOffset(112)}}">
       <md-list-item ng-repeat-start="history in $td.functionHistory">
-        <md-icon>{{history.icon}}</md-icon>
+        <ng-md-icon icon="{{history.icon}}"></ng-md-icon>
         <p>{{history.name}}<md-tooltip>{{history.name}}</md-tooltip></p>
       </md-list-item>
       <md-divider ng-repeat-end></md-divider>

@@ -1,14 +1,13 @@
 define(['angular',"feed-mgr/tables/module-name", 'pascalprecht.translate'], function (angular,moduleName) {
 
-    var controller = function($scope,$http,$q,$transition$,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils, $filter){
+    var controller = function($scope,$http,$q,$transition$,$filter,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, FeedService,StateService,Utils,DatasourcesService){
 
         var self = this;
 
-        self.datasource = $transition$.params().datasource;
+        self.datasourceId = $transition$.params().datasource;
         self.schema = $transition$.params().schema;
         this.tables =[];
         this.loading = true;
-        this.cardTitle = self.datasource.name + " " + self.schema + " " + $filter('translate')('views.TableController.Tables');
         this.pageName = $filter('translate')('views.TableController.Tables');
         self.filterInternal = true;
 
@@ -49,7 +48,7 @@ define(['angular',"feed-mgr/tables/module-name", 'pascalprecht.translate'], func
         };
 
         this.onClickTable = function(table){
-            StateService.FeedManager().Table().navigateToTable(self.datasource, self.schema, table.tableName);
+            StateService.FeedManager().Table().navigateToTable(self.datasource.id, self.schema, table.tableName);
         };
 
         /**
@@ -149,11 +148,25 @@ define(['angular',"feed-mgr/tables/module-name", 'pascalprecht.translate'], func
             }
         }
 
-        init();
+        function getDatasource(datasourceId) {
+            self.loading = true;
+            var successFn = function (response) {
+                self.datasource = response;
+                self.cardTitle = self.datasource.name + " " + self.schema + " " + $filter('translate')('views.TableController.Tables');
+                self.loading = false;
+            };
+            var errorFn = function (err) {
+                self.loading = false;
+            };
+            return DatasourcesService.findById(datasourceId).then(successFn, errorFn);
+        }
+
+
+        getDatasource(self.datasourceId).then(init);
 
     };
 
-    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","$transition$","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils", "$filter", controller]);
+    angular.module(moduleName).controller('TablesController',["$scope","$http","$q","$transition$","$filter","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService","FeedService","StateService","Utils", "DatasourcesService", controller]);
 
 
 

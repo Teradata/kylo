@@ -264,7 +264,6 @@
 
 [tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable, tba:indexControlled
     - tba:systemName (STRING) mandatory
-    - tba:category (REFERENCE) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
 
 [tba:feedDetails] > nt:hierarchyNode, tba:propertied

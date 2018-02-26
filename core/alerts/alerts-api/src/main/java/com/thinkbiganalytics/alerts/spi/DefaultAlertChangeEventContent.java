@@ -30,6 +30,8 @@ import java.util.Map;
  */
 public class DefaultAlertChangeEventContent implements Serializable {
 
+    private static final long serialVersionUID = -164758136811173896L;
+
     Map<String,Object> content = new HashMap<>();
 
     public Map<String, Object> getContent() {

@@ -1,4 +1,4 @@
-<div layout="row" layout-fill>
+<div layout="row" layout-fill class="feed-property">
   <div flex="25" class="md-list-item-text">
     <div>{{policy.name | characters: 20}}</div>
     <div class="hint">{{vm.fieldNameMap[policy.name].derivedDataType | characters: 20}}</div>
@@ -6,52 +6,74 @@
       {{vm.fieldNameMap[policy.name].description}}
     </md-tooltip>
   </div>
-  <div flex="10" class="md-list-item-text">
+  <div flex="10" class="md-list-item-text" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/fieldPolicies/' + $index + '/domainTypeId')">
     <ng-md-icon ng-if="policy.domainTypeId != null" icon="{{vm.getDomainType(policy.domainTypeId).icon}}" size="32" title="{{vm.getDomainType(policy.domainTypeId).title}}"
-                ng-style="{'fill':vm.getDomainType(policy.domainTypeId).iconColor}">
+                ng-style="{'fill':vm.getDomainType(policy.domainTypeId).iconColor, 'width': 'auto', 'height': 'auto'}">
     </ng-md-icon>
   </div>
   <div flex="40" class="md-list-item-text" layout-align="space-between start" layout="row">
-    <div class="data-policy-item-check-box">
+    <div class="data-policy-item-check-box" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/tableSchema/fields/' + $index + '/primaryKey')">
       <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
     </div>
-    <div class="data-policy-item-check-box">
+    <div class="data-policy-item-check-box" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/tableSchema/fields/' + $index + '/createdTracker')">
       <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
     </div>
-    <div class="data-policy-item-check-box">
+    <div class="data-policy-item-check-box" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/tableSchema/fields/' + $index + '/updatedTracker')">
       <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
     </div>
-    <div class="data-policy-item-check-box">
+    <div class="data-policy-item-check-box" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/fieldPolicies/' + $index + '/index')">
       <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
     </div>
-    <div class="data-policy-item-check-box">
+    <div class="data-policy-item-check-box" layout="row" layout-align="center center" ng-class="'versions-' + vm.diff('/table/fieldPolicies/' + $index + '/profile')">
       <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.profile"></ng-md-icon>
       <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
     </div>
   </div>
-  <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10">
-    <ul class="list-item">
-      <li ng-if="vm.getAllFieldPolicies(policy).length <= 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:2">{{rule.name}}</li>
-      <li ng-if="vm.getAllFieldPolicies(policy).length > 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:1">{{rule.name}}</li>
-      <li ng-if="vm.getAllFieldPolicies(policy).length > 2">
-        + {{vm.getAllFieldPolicies(policy).length - 1}} More
-        <ng-md-icon
-          size="18"
-          style="height: 15px"
-          icon="more_horiz"></ng-md-icon>
-      </li>
-    </ul>
+  <div flex="25" class="md-list-item-text hint data-policy-item layout-margin-left-10 layout-padding-right-4 layout-padding-top-1">
+    <div layout="row" ng-class="'versions-' + vm.diffPolicies($index)">
+      <div flex class="">
+        <div ng-if="vm.getAllFieldPolicies(policy).length <= 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:2">{{rule.name}}</div>
+        <div ng-if="vm.getAllFieldPolicies(policy).length > 2" ng-repeat="rule in vm.getAllFieldPolicies(policy) | limitTo:1">{{rule.name}}</div>
+        <div ng-if="vm.getAllFieldPolicies(policy).length > 2">
+          + {{vm.getAllFieldPolicies(policy).length - 1}} More
+        </div>
+      </div>
+
+      <div flex class="" ng-if="vm.versions">
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length <= 2" ng-repeat="rule in vm.getAllVersionedFieldPolicies($index) | limitTo:2">{{rule.name}}</div>
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length > 2" ng-repeat="rule in vm.getAllVersionedFieldPolicies($index) | limitTo:1">{{rule.name}}</div>
+        <div ng-if="vm.getAllVersionedFieldPolicies($index).length > 2">
+          + {{vm.getAllVersionedFieldPolicies($index).length - 1}} More
+        </div>
+      </div>
+
+    </div>
     <md-tooltip
         class="tooltip-multi-line"
+        ng-class="{'versions-tooltip': vm.versions}"
         ng-if="vm.getAllFieldPolicies(policy).length > 2"
-        md-direction="right">
-      <ul id="data-policy-item-tooltip-list" >
-        <li ng-repeat="rule in vm.getAllFieldPolicies(policy)">{{rule.name}}</li>
-      </ul>
+        md-direction="top">
+      <div layout="row" class="versions-tooltip-header" layout-fill ng-if="vm.versions">
+        <div flex>
+          {{'views.feed-data-policies.Current' | translate }}
+        </div>
+        <div flex>
+          {{'views.feed-data-policies.Version' | translate }} {{vm.versionFeedModel.version.name}}
+        </div>
+      </div>
+      <md-divider id="versions-tooltip-divider" ng-if="vm.versions"></md-divider>
+      <div layout="row" layout-fill ng-repeat="(ruleIdx, rule) in vm.getAllFieldPolicies(policy)">
+        <div flex>
+          {{rule.name}}
+        </div>
+        <div flex ng-if="vm.versions">
+          {{vm.findVersionedRuleName($index, ruleIdx)}}
+        </div>
+      </div>
     </md-tooltip>
   </div>
 </div>

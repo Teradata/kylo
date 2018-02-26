@@ -1,4 +1,4 @@
-import {Component, OnDestroy} from "@angular/core";
+import {Component, Inject, OnDestroy} from "@angular/core";
 import {Subscription} from "rxjs/Subscription";
 
 import {KyloNotification, NotificationEvent, NotificationEventListener, NotificationService} from "../../services/notification.service";
@@ -70,7 +70,7 @@ export class NotificationMenuComponent implements NotificationEventListener, OnD
      */
     subscription: Subscription;
 
-    constructor(service: NotificationService) {
+    constructor(service: NotificationService, @Inject("$injector") private $injector: any) {
         this.subscription = service.subscribe(this);
 
         // Initialize notifications
@@ -102,7 +102,7 @@ export class NotificationMenuComponent implements NotificationEventListener, OnD
         // Update durations
         const now = new Date().getTime();
         this.durations = this.notifications.map(notification => {
-            return DateTimeUtils.formatMillisAsText(now - notification.createTime.getTime(), true, false);
+            return DateTimeUtils(this.$injector.get("$filter")("translate")).formatMillisAsText(now - notification.createTime.getTime(), true, false);
         });
     }
 

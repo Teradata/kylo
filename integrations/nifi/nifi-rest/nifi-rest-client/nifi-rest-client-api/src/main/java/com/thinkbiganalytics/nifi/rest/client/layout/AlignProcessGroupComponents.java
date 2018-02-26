@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.rest.client.layout;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,6 +20,7 @@ package com.thinkbiganalytics.nifi.rest.client.layout;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -29,8 +30,12 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -53,6 +58,10 @@ public class AlignProcessGroupComponents {
      * The ProcessGroup to inspect
      */
     private String parentProcessGroupId;
+
+
+    private String processGroupName;
+
     /**
      * Internal counter as to the number of {@code LayoutGroup}s created
      */
@@ -99,6 +108,17 @@ public class AlignProcessGroupComponents {
      */
     private LayoutGroup lastPositionedGroup;
 
+
+    Map<String, Set<PortDTO>> groupIdToOutputPorts = new HashMap<>();
+
+    Map<String, Set<PortDTO>> groupIdToInputPorts = new HashMap<>();
+
+
+    private List<ConnectedProcessGroup> connectedProcessGroupsLayouts = new ArrayList<>();
+
+
+    private List<LayoutOrder> connectedProcessGroups;
+
     public AlignProcessGroupComponents(NiFiRestClient niFiRestClient, String parentProcessGroupId, AlignComponentsConfig alignmentConfig) {
         this.niFiRestClient = niFiRestClient;
         this.parentProcessGroupId = parentProcessGroupId;
@@ -116,7 +136,59 @@ public class AlignProcessGroupComponents {
         try {
             groupItems();
             //organize each group of items on the screen
-            layoutGroups.entrySet().stream().sorted(Map.Entry.<String, LayoutGroup>comparingByKey()).forEachOrdered(entry -> arrangeProcessGroup(entry.getValue()));
+            if (TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME.equalsIgnoreCase(processGroupName)) {
+                autoLayoutReusableFlows();
+            } else {
+                layoutGroups.entrySet().stream().sorted(Map.Entry.<String, LayoutGroup>comparingByKey()).forEachOrdered(entry -> arrangeProcessGroup(entry.getValue()));
+            }
+            aligned = true;
+        } catch (Exception e) {
+            log.error("Error Aligning items in Process Group {}. {}", parentProcessGroupId, e.getMessage());
+        }
+        return parentProcessGroup;
+    }
+
+
+    public ProcessGroupDTO autoLayoutReusableFlows() {
+        try {
+            //render the items that dont have destinations linking to other process groups
+            List<ProcessGroupToProcessGroup>
+                processGroupToProcessGroupList =
+                layoutGroups.values().stream().filter(group -> (group instanceof ProcessGroupToProcessGroup)).map(g -> (ProcessGroupToProcessGroup) g).collect(Collectors.toList());
+
+            Set<String> sourceConnectedProcessGroupIds = processGroupToProcessGroupList.stream().flatMap(s -> s.getSources().stream()).map(s -> s.getId()).collect(Collectors.toSet());
+            Set<String> destConnectedProcessGroupIds = processGroupToProcessGroupList.stream().flatMap(s -> s.getDestinations().stream()).map(s -> s.getId()).collect(Collectors.toSet());
+            Set<String> connectedGroups = new HashSet<>();
+            connectedGroups.addAll(sourceConnectedProcessGroupIds);
+            connectedGroups.addAll(destConnectedProcessGroupIds);
+
+            List<InputPortToProcessGroup>
+                inputPortToProcessGroup = layoutGroups.values().stream().filter(group -> (group instanceof InputPortToProcessGroup)).map(g -> (InputPortToProcessGroup) g).collect(Collectors.toList());
+
+            Set<LayoutGroup>
+                isolatedGroups =
+                inputPortToProcessGroup.stream().filter(i -> i.getProcessGroupDTOs().stream().allMatch(g -> !connectedGroups.contains(g.getId()))).collect(Collectors.toSet());
+
+            isolatedGroups.forEach(g -> arrangeProcessGroup(g));
+
+            int counter = 0;
+            for (ConnectedProcessGroup layoutGroup : connectedProcessGroupsLayouts) {
+                Double start = lastPositionedGroup == null ? 0.0d : lastPositionedGroup.getBottomY();
+                if (counter > 0) {
+                    start += alignmentConfig.getGroupPadding();
+                }
+                layoutGroup.setTopAndBottom(start, new Double(layoutGroup.getHeight() + start));
+                layoutGroup.setGroupNumber(groupNumber++);
+                layoutGroup.render(start);
+                lastPositionedGroup = layoutGroup;
+                lastPositionedGroup.setTopAndBottom(start, layoutGroup.getyValue());
+            }
+
+            List<ProcessGroupWithoutConnections>
+                processGroupWithoutConnections =
+                layoutGroups.values().stream().filter(group -> (group instanceof ProcessGroupWithoutConnections)).map(g -> (ProcessGroupWithoutConnections) g).collect(Collectors.toList());
+            processGroupWithoutConnections.forEach(g -> arrangeProcessGroup(g));
+
             aligned = true;
         } catch (Exception e) {
             log.error("Error Aligning items in Process Group {}. {}", parentProcessGroupId, e.getMessage());
@@ -137,6 +209,7 @@ public class AlignProcessGroupComponents {
             parentProcessGroup = niFiRestClient.processGroups().findById(parentProcessGroupId, false, true).orElse(null);
         }
         final Set<ProcessGroupDTO> children = parentProcessGroup.getContents().getProcessGroups();
+        processGroupName = parentProcessGroup.getName();
         processGroupDTOMap = new HashMap<>();
         children.stream().forEach(group -> processGroupDTOMap.put(group.getId(), group));
         children.stream().forEach(group -> processGroupWithConnectionsMap.put(group.getId(), new ProcessGroupAndConnections(group)));
@@ -171,12 +244,15 @@ public class AlignProcessGroupComponents {
             arrangeProcessGroupLayout((ProcessGroupToProcessGroup) layoutGroup);
         } else if (layoutGroup instanceof ProcessGroupWithoutConnections) {
             arrangeProcessGroupWithoutConnectionsLayout((ProcessGroupWithoutConnections) layoutGroup);
+        } else if (layoutGroup instanceof ConnectedProcessGroup) {
+
+            ConnectedProcessGroup connectedProcessGroup = (ConnectedProcessGroup) layoutGroup;
+            connectedProcessGroup.render(start);
         }
 
         lastPositionedGroup = layoutGroup;
 
     }
-
 
     public Map<String, ProcessGroupAndConnections> getProcessGroupWithConnectionsMap() {
         return processGroupWithConnectionsMap;
@@ -250,7 +326,11 @@ public class AlignProcessGroupComponents {
     }
 
     private void alignInputPorts(InputPortToProcessGroup layoutGroup, AbstractRenderer renderer) {
-        layoutGroup.getPorts().values().stream().forEach(port -> {
+        alignPorts(layoutGroup.getPorts().values(), renderer);
+    }
+
+    private void alignPorts(Collection<PortDTO> ports, AbstractRenderer renderer) {
+        ports.stream().forEach(port -> {
             PortDTO positionPort = new PortDTO();
             positionPort.setId(port.getId());
             PositionDTO lastPosition = renderer.getLastPosition();
@@ -262,7 +342,7 @@ public class AlignProcessGroupComponents {
     }
 
 
-    private void alignProcessGroups(Set<ProcessGroupDTO> processGroups, AbstractRenderer renderer) {
+    private void alignProcessGroups(Collection<ProcessGroupDTO> processGroups, AbstractRenderer renderer) {
         processGroups.stream().forEach(processGroupDTO -> {
             ProcessGroupDTO positionProcessGroup = new ProcessGroupDTO();
             positionProcessGroup.setId(processGroupDTO.getId());
@@ -300,12 +380,14 @@ public class AlignProcessGroupComponents {
      */
     private void createLayoutGroups() {
         Map<String, Set<ProcessGroupDTO>> outputPortIdToGroup = new HashMap<String, Set<ProcessGroupDTO>>();
-        Map<String, Set<PortDTO>> groupIdToOutputPorts = new HashMap<>();
+        groupIdToOutputPorts = new HashMap<>();
 
         Map<String, Set<ProcessGroupDTO>> inputPortIdToGroup = new HashMap<String, Set<ProcessGroupDTO>>();
-        Map<String, Set<PortDTO>> groupIdToInputPorts = new HashMap<>();
+        groupIdToInputPorts = new HashMap<>();
 
         Map<String, Set<String>> groupIdToGroup = new HashMap<>();
+
+        List<ProcessGroupDTO> connectedGroups = new LinkedList<>();
 
         parentProcessGroup.getContents().getConnections().stream().filter(
             connectionDTO -> (isOutputPortToGroupConnection(connectionDTO) || isGroupToGroupConnection(connectionDTO) || isInputPortToGroupConnection(connectionDTO)))
@@ -381,6 +463,175 @@ public class AlignProcessGroupComponents {
                 layoutGroups.computeIfAbsent("NO_PORTS", (key) -> new ProcessGroupWithoutConnections()).add(group);
             });
 
+        // identify the sequence of processgroups if they are connected to each other
+
+        List<String> startingProcessorIds = groupIdToGroup.keySet().stream().filter(id -> !groupIdToGroup.values().stream().anyMatch(ids -> ids.contains(id))).collect(Collectors.toList());
+
+        connectedProcessGroups = new ArrayList<>();
+        //start with these and attempt to create flows
+        startingProcessorIds.forEach(id -> {
+            LayoutOrder layoutOrder = new LayoutOrder(0, 0, processGroupDTOMap.get(id), new LinkedList<>());
+            addPorts(layoutOrder, id);
+            connectedProcessGroups.add(layoutOrder);
+            buildLayoutOrder(layoutOrder, processGroupDTOMap.get(id), groupIdToGroup);
+            ConnectedProcessGroup connectedProcessGroup = new ConnectedProcessGroup(layoutOrder);
+            connectedProcessGroupsLayouts.add(connectedProcessGroup);
+        });
+
+
+    }
+
+    private void addPorts(LayoutOrder nextOrder, String processGroupId) {
+        Set<PortDTO> outputPorts = groupIdToOutputPorts.get(processGroupId);
+        Set<PortDTO> inputPorts = groupIdToInputPorts.get(processGroupId);
+        if (outputPorts != null) {
+            outputPorts.stream().forEach(p -> nextOrder.addPort(p));
+        }
+        if (inputPorts != null) {
+            inputPorts.stream().forEach(p -> nextOrder.addPort(p));
+        }
+    }
+
+    private Set<String> processedProcessGroups = new HashSet<>();
+
+    private void buildLayoutOrder(LayoutOrder layoutOrder, ProcessGroupDTO group, Map<String, Set<String>> groupIdToGroup) {
+        Set<String> next = groupIdToGroup.get(group.getId());
+        if (next != null) {
+            int nextLevel = layoutOrder.getLevel() + 1;
+            List<ProcessGroupDTO> levelGroups = new LinkedList<>();
+            next.forEach(dest -> {
+                if (!processedProcessGroups.contains(dest)) {
+                    processedProcessGroups.add(dest);
+                    int order = 0;
+                    ProcessGroupDTO groupDTO = processGroupDTOMap.get(dest);
+                    levelGroups.add(groupDTO);
+                    LayoutOrder nextOrder = new LayoutOrder(nextLevel, order, groupDTO, levelGroups);
+                    addPorts(nextOrder, dest);
+                    layoutOrder.addNext(nextOrder);
+                    order++;
+                    buildLayoutOrder(nextOrder, groupDTO, groupIdToGroup);
+                }
+            });
+        }
+    }
+
+
+    public class LayoutOrder {
+
+        private int level;
+        private int order;
+        private String processGroupId;
+        private ProcessGroupDTO processGroupDTO;
+        private List<ProcessGroupDTO> levelGroups;
+        private Set<PortDTO> ports;
+        private List<LayoutOrder> next;
+        private List<LayoutOrder> previous;
+
+        public LayoutOrder(int level, int order, ProcessGroupDTO processGroup, List<ProcessGroupDTO> levelGroups) {
+            this.level = level;
+            this.order = order;
+            this.processGroupDTO = processGroup;
+            this.processGroupId = processGroup.getId();
+            this.levelGroups = levelGroups;
+        }
+
+        public int getLevel() {
+            return level;
+        }
+
+        public void setLevel(int level) {
+            this.level = level;
+        }
+
+        public int getOrder() {
+            return order;
+        }
+
+        public void setOrder(int order) {
+            this.order = order;
+        }
+
+        public String getProcessGroupId() {
+            return processGroupId;
+        }
+
+        public List<LayoutOrder> getNext() {
+            if (next == null) {
+                next = new LinkedList<>();
+            }
+            return next;
+        }
+
+        public void addNext(LayoutOrder next) {
+            getNext().add(next);
+            next.addPrevious(this);
+        }
+
+        public void addPrevious(LayoutOrder next) {
+            getPrevious().add(next);
+        }
+
+        public void setNext(List<LayoutOrder> next) {
+            this.next = next;
+        }
+
+        public List<LayoutOrder> getPrevious() {
+            if (previous == null) {
+                previous = new LinkedList<>();
+            }
+            return previous;
+        }
+
+
+        public ProcessGroupDTO getProcessGroupDTO() {
+            return processGroupDTO;
+        }
+
+
+        public Set<PortDTO> getPorts() {
+            if (ports == null) {
+                ports = new HashSet<>();
+            }
+            return ports;
+        }
+
+        public void setPorts(Set<PortDTO> ports) {
+            this.ports = ports;
+        }
+
+        public void addPort(PortDTO portDTO) {
+            getPorts().add(portDTO);
+        }
+
+        public Integer getLevelSize() {
+            return layoutGroups != null && !levelGroups.isEmpty() ? levelGroups.size() : 1;
+        }
+
+        public Integer getMaxProcessGroupsAtLevel() {
+            int count = levelGroups.size();
+            if (getNext() != null) {
+                for (LayoutOrder l : getNext()) {
+                    count = l.getMaxProcessGroupsAtLevel() > count ? l.getMaxProcessGroupsAtLevel() : count;
+                }
+            }
+            return count;
+
+        }
+
+        public Integer getProcessGroupCount() {
+            int count = getMaxProcessGroupsAtLevel();
+            int currentLevel = getLevel();
+            if (getNext() != null) {
+                for (LayoutOrder l : getNext()) {
+                    if (currentLevel != l.getLevel()) {
+                        count += l.getProcessGroupCount();
+                    }
+                    currentLevel = l.getLevel();
+                }
+            }
+            return count;
+
+        }
     }
 
 
@@ -407,6 +658,97 @@ public class AlignProcessGroupComponents {
     /**
      * Layout Group where a ProcessGroup is connected directly to another ProcessGroup
      */
+    public class ConnectedProcessGroup extends LayoutGroup {
+
+        private LayoutOrder layoutOrder;
+        private Set<String> renderedProcessGroups = new HashSet<>();
+
+        public ConnectedProcessGroup(LayoutOrder layoutOrder) {
+            this.layoutOrder = layoutOrder;
+            this.level = 0;
+        }
+
+        private Double xValue;
+
+        private Double yValue;
+
+
+        public Set<ProcessGroupDTO> getSources() {
+            return super.getProcessGroupDTOs();
+        }
+
+        @Override
+        public Integer calculateHeight() {
+            return layoutOrder.getProcessGroupCount() * (alignmentConfig.getProcessGroupHeight() + alignmentConfig.getProcessGroupPaddingTopBottom());
+        }
+
+        public LayoutOrder getLayoutOrder() {
+            return layoutOrder;
+        }
+
+        private Integer level = -1;
+
+        public void renderLayout(LayoutOrder layoutOrder) {
+
+            if (level != layoutOrder.getLevel()) {
+
+            }
+            //always reset the x value back to the center
+            this.xValue = alignmentConfig.getCenterX() - (alignmentConfig.getProcessGroupWidth() / 2);
+
+            if (layoutOrder.getPorts() != null) {
+                //render the ports in a column on the same X location
+                ColumnRenderer columnRenderer = new ColumnRenderer(this, alignmentConfig, xValue, layoutOrder.getPorts().size());
+                columnRenderer.setAlignLastToBottom(false);
+                //store the height the same as the process group height
+                columnRenderer.setHeight(layoutOrder.getLevelSize() * (alignmentConfig.getProcessGroupHeight() + alignmentConfig.getProcessGroupPaddingTopBottom()));
+                //columnRenderer.setHeight(layoutOrder.getPorts().size()*alignmentConfig.getPortHeight());
+                columnRenderer.storePosition(xValue, yValue);
+
+                alignPorts(layoutOrder.getPorts(), columnRenderer);
+                //increment x over
+                xValue = columnRenderer.getLastPosition().getX() + alignmentConfig.getProcessGroupWidth();
+            }
+            ColumnRenderer processGroupRenderer = new ColumnRenderer(this, alignmentConfig, xValue, layoutOrder.getLevelSize());
+            processGroupRenderer.setAlignLastToBottom(false);
+            processGroupRenderer.setHeight(layoutOrder.getLevelSize() * (alignmentConfig.getProcessGroupHeight() + alignmentConfig.getProcessGroupPaddingTopBottom()));
+            processGroupRenderer.storePosition(xValue, yValue);
+
+            ProcessGroupDTO positionProcessGroup = new ProcessGroupDTO();
+            positionProcessGroup.setId(layoutOrder.getProcessGroupDTO().getId());
+            PositionDTO lastPosition = processGroupRenderer.getLastPosition();
+            PositionDTO newPosition = processGroupRenderer.getNextPosition(lastPosition);
+            positionProcessGroup.setPosition(newPosition);
+            yValue = newPosition.getY();
+
+            niFiRestClient.processGroups().update(positionProcessGroup);
+
+            log.debug("Aligned ProcessGroup {} at {},{}", layoutOrder.getProcessGroupDTO().getName(), positionProcessGroup.getPosition().getX(), positionProcessGroup.getPosition().getY());
+            level = layoutOrder.getLevel();
+            renderedProcessGroups.add(layoutOrder.getProcessGroupDTO().getId());
+
+            for (LayoutOrder layoutOrder1 : layoutOrder.getNext()) {
+                if (!renderedProcessGroups.contains(layoutOrder1.getProcessGroupDTO().getId())) {
+                    renderLayout(layoutOrder1);
+                }
+            }
+
+
+        }
+
+        public void render(Double start) {
+            this.yValue = start;
+            this.xValue = alignmentConfig.getCenterX() - (alignmentConfig.getProcessGroupWidth() / 2);
+            this.level = -1;
+            renderLayout(this.layoutOrder);
+        }
+
+        public Double getyValue() {
+            return yValue;
+        }
+    }
+
+
     public class ProcessGroupToProcessGroup extends LayoutGroup {
 
         private Set<ProcessGroupDTO> destinations = new HashSet<>();

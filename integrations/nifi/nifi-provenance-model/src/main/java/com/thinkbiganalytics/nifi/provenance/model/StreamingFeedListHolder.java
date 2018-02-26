@@ -30,7 +30,7 @@ import java.util.List;
  */
 public class StreamingFeedListHolder implements Serializable {
 
-    private List<StreamingFeedListData> streamingFeedListData;
+    private List<StreamingFeedListData> streamingFeedListData = new ArrayList<>();
 
     /**
      * create a new REQUEST for a list of the straming feeds.
@@ -67,9 +67,6 @@ public class StreamingFeedListHolder implements Serializable {
     }
 
     public List<StreamingFeedListData> getStreamingFeedListData() {
-        if (streamingFeedListData == null) {
-            streamingFeedListData = new ArrayList<>();
-        }
         return streamingFeedListData;
     }
 

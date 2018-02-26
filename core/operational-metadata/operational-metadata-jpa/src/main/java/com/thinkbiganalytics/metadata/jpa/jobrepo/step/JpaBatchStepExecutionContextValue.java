@@ -52,6 +52,9 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
     @JoinColumn(name = "STEP_EXECUTION_ID", referencedColumnName = "STEP_EXECUTION_ID")
     private BatchStepExecution stepExecution;
 
+    @Column(name = "STEP_EXECUTION_ID", insertable = false,updatable = false)
+    private Long stepExecutionId;
+
     @Column(name = "JOB_EXECUTION_ID")
     private Long jobExecutionId;
 

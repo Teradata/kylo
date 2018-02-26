@@ -38,6 +38,7 @@ export class HomeComponent implements OnInit {
     devMode = new FormControl(false, [Validators.required]);
     selectAll = new FormControl(false, [Validators.required]);
     configuration: any;
+    docBase: 'http://kylo.readthedocs.io/en/latest';
 
     constructor(private configService: ConfigService) {
     }
@@ -172,6 +173,18 @@ export class HomeComponent implements OnInit {
         if (this.checks) {
             this.checks.forEach((check) => check.status = {});
         }
+    }
+
+    hasErrors(check: any) {
+        return check.status.errors && check.status.errors.length > 0;
+    }
+
+    hasDescriptions(check: any) {
+        return check.status.descriptions && check.status.descriptions.length > 0;
+    }
+
+    docsLink(check: any): string {
+        return this.docBase + check.status.docsLink;
     }
 }
 

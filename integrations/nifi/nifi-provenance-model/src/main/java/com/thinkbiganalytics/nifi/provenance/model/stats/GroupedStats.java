@@ -21,19 +21,15 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
  */
 
 
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.Serializable;
 
 /**
  */
 public class GroupedStats extends BaseStatistics implements Serializable {
 
-    public static final String DEFAULT_SOURCE_CONNECTION_ID = "DEFAULT";
+    private static final long serialVersionUID = 1707825126802974527L;
 
-    private static final Logger log = LoggerFactory.getLogger(GroupedStats.class);
+    public static final String DEFAULT_SOURCE_CONNECTION_ID = "DEFAULT";
 
     /**
      * Unique Key for this grouping of events

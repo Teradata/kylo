@@ -211,6 +211,9 @@
     "views.feed-additional-properties.Tags": "Tags",
     "views.feed-additional-properties.AaT": "Add a Tag",
     "views.feed-additional-properties.Saving": "Saving...",
+    "views.feed-versions-compare.Current": "Current",
+    "views.feed-data-policies.Current": "Current",
+    "views.feed-data-policies.Version": "Version",
     "views.feed-schedule.Schedule": "Schedule",
     "views.feed-schedule.Strategy": "Strategy",
     "views.feed-schedule.Period": "Period",
@@ -304,7 +307,9 @@
     "views.feed-data-policies.TF": "Target Format",
     "views.feed-data-policies.Co": "Compression options",
     "views.feed-data-policies.Sh": "Skip header",
-    "views.feed-data-policies.Rip": "Reindexing In Progress",
+    "views.feed-data-policies.Rip": "Reindexing In Progress?",
+    "views.feed-data-policies.Rip.Yes": "Yes",
+    "views.feed-data-policies.Rip.No": "No",
     "views.feed-data-policies.Rls": "Reindexing Last Status",
     "views.feed-data-policies.SFRF2": "Source Feed Record Format",
     "views.feed-data-policies.DTN2": "Destination Table Name",
@@ -324,7 +329,7 @@
     "views.feed-data-policies.Index2": "Index",
     "view.feed-data-policies.Index2Star": "Index(*)",
     "views.feed-data-policies.DwsbstGS2": "Define what should be sent to «Global Search»",
-    "views.feed-data-policies.HripCd": "History data reindexing is in progress. Changes will be allowed after completion.",
+    "views.feed-data-policies.HripCd": "History data reindexing changes already pending. Further indexing changes will be allowed after those have completed.",
     "views.feed-data-policies.Profile2": "Profile",
     "views.feed-data-policies.Stfbp2": "Should this field be profiled?",
     "views.feed-data-policies.Standardize2": "Standardize",
@@ -576,6 +581,7 @@
     "views.alerts-template.ALERT2": "Alerts",
     "views.alerts-template.ALERT5": "Alerts",
     "views.alerts-template. Job Failure": "Job Failure",
+    "views.alerts-template. Service": "Service Failure",
 
     "views.vertical-section-layout-template.Delete": "Delete",
     "views.vertical-section-layout-template.Cancel": "Cancel",
@@ -599,6 +605,7 @@
     "views.kylo-options.AK": "About Kylo",
 
     "views.TableController.Tables": "Tables",
+    "views.TableController.Schemas": "Schemas",
 
     "view.login.KL": "Kylo Login",
     "view.login.Login": "Login",
@@ -607,7 +614,7 @@
     "view.login.Password": "Password",
     "view.login.Pir": "Password is required",
     "view.login.Login-btn": "Login",
-    "view.login-app.Invalid username or password.": "Invalid username or password.",
+    "view.login-app.login-error": "Invalid username or password.",
 
     "views.module.Categories": "Categories",
 
@@ -818,6 +825,7 @@
     "dirPagination.tpl.10": "10",
     "dirPagination.tpl.20": "20",
     "dirPagination.tpl.50": "50",
+    "dirPagination.tpl.100": "100",
     "dirPagination.tpl.All": "All"
 
 

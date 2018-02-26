@@ -559,7 +559,7 @@ export class TransformDataComponent implements OnInit {
 
         angular.forEach(this.engine.getColumns(), function (col, index) {
             const delegate = self.engine.createColumnDelegate(col.dataType, self, col);
-            const fieldPolicy = (col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
+            const fieldPolicy = (fieldPolicies != null && col.index < fieldPolicies.length) ? fieldPolicies[index] : null;
             const longestValue = _.find(profile, function (row: any) {
                 return (row.columnName === col.displayName && (row.metricType === "LONGEST_STRING" || row.metricType === "MAX"))
             });

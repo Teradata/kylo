@@ -80,7 +80,7 @@ public class BaseFeed implements Feed {
     private FeedManagerTemplate template;
     private String nifiProcessGroupId;
     private Principal owner;
-    private String allowIndexing;
+    private boolean allowIndexing;
 
     /**
      * User-defined properties
@@ -315,12 +315,12 @@ public class BaseFeed implements Feed {
     }
 
     @Override
-    public String getAllowIndexing() {
+    public boolean isAllowIndexing() {
         return allowIndexing;
     }
 
     @Override
-    public void setAllowIndexing(String allowIndexing) {
+    public void setAllowIndexing(boolean allowIndexing) {
         this.allowIndexing = allowIndexing;
     }
 

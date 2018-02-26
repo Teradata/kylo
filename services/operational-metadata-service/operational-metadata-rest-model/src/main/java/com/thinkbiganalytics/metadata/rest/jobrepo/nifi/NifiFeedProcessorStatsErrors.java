@@ -26,6 +26,8 @@ import java.io.Serializable;
 
 public class NifiFeedProcessorStatsErrors implements Serializable{
 
+    private static final long serialVersionUID = -5305352541166621954L;
+
     private String id;
     private String feedName;
     protected DateTime minEventTime;

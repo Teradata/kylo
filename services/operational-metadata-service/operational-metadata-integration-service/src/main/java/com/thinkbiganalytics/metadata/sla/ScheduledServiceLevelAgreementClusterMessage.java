@@ -31,6 +31,8 @@ import java.io.Serializable;
  */
 public class ScheduledServiceLevelAgreementClusterMessage implements Serializable {
 
+    private static final long serialVersionUID = 7134946996922534625L;
+
     private ServiceLevelAgreement.ID slaId;
 
     private JobIdentifier jobIdentifier;

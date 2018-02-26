@@ -102,7 +102,7 @@
   <md-button aria-label="Undo"
              class="md-icon-button layout-margin-left-right-0"
              ng-click="vm.undoColumn($index)"
-             ng-show="columnDef.history.length > 1">
+             ng-if="columnDef.history.length > 1">
     <ng-md-icon md-icon icon="undo"></ng-md-icon>
   </md-button>
   <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>

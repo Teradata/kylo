@@ -36,6 +36,11 @@ public abstract class AbstractInspection implements Inspection {
     }
 
     @Override
+    public String getDocsUrl() {
+        return null;
+    }
+
+    @Override
     public InspectionStatus inspect(Configuration configuration) {
         throw new IllegalStateException("Not implemented yet");
     }

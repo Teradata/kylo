@@ -20,14 +20,10 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
  * #L%
  */
 
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -35,6 +31,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * Group Statistics by Processor
  */
 public class AggregatedProcessorStatistics implements Serializable {
+
+    private static final long serialVersionUID = -6190760690818174916L;
 
     private static final Logger log = LoggerFactory.getLogger(AggregatedProcessorStatistics.class);
 

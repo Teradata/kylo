@@ -27,6 +27,8 @@ import java.io.Serializable;
  */
 public class ElasticSearchClientConfiguration implements Serializable {
 
+    private static final long serialVersionUID = 3674350871191815081L;
+
     private String host;
     private String clusterName;
     private Integer restPort;

@@ -31,6 +31,8 @@ import java.io.Serializable;
  */
 public class EntityIdentificationAlertContent<C extends Serializable> implements Serializable{
 
+    private static final long serialVersionUID = 2800230633833411478L;
+
     private String entityId;
     /**
      * Should be of type SecurityRole.ENTITIES

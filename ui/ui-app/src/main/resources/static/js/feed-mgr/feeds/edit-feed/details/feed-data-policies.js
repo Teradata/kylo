@@ -5,10 +5,15 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-data-policies.html',
             controller: "FeedDataPoliciesController",
             link: function ($scope, element, attrs, controller) {
+                if (angular.isUndefined($scope.versions)) {
+                    $scope.versions = false;
+                }
 
             }
 
@@ -20,13 +25,16 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
 
         var self = this;
 
+        self.versions = $scope.versions;
         /**
          * Indicates if the feed data policies may be edited.
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
+        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
         /**
          * The form for angular errors
          * @type {{}}
@@ -159,6 +167,18 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             }
         });
 
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return FeedService.versionFeedModelDiff;
+            },function(newVal) {
+                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            });
+        }
         /**
          * apply default values to the read only model
          */
@@ -213,11 +233,14 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
          * Returns the readable display name for the mergeStrategy on the edited feed model
          * @returns {*}
          */
-        this.mergeStrategyDisplayName = function () {
-            var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
-                return strategy.type == self.model.table.targetMergeStrategy;
-            });
-            return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy
+        this.mergeStrategyDisplayName = function (model) {
+            if (model !== undefined && model.table !== undefined) { //model will be undefined when not displaying feed version for comparison
+                var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
+                    return strategy.type === model.table.targetMergeStrategy;
+                });
+                return mergeStrategyObject !== undefined ? mergeStrategyObject.name : model.table.targetMergeStrategy
+            }
+            return '';
         };
 
         /**
@@ -247,14 +270,6 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             return !this.shouldIndexingOptionsBeDisabled();
         };
 
-        this.findAndReplaceString = function(str, findStr, replacementStr) {
-            var i = 0;
-            var strLength = str.length;
-            for (i; i < strLength; i++) {
-                str = str.replace(findStr, replacementStr);
-            }
-            return str;
-        };
 
             this.onEdit = function () {
             //copy the model
@@ -309,6 +324,28 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             return FeedFieldPolicyRuleService.getAllPolicyRules(field);
         };
 
+        this.getAllVersionedFieldPolicies = function(policyIndex) {
+            return this.getAllFieldPolicies(this.findVersionedPolicy(policyIndex));
+        };
+
+        this.findVersionedPolicy = function(policyIndex) {
+            if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                return self.versionFeedModel.table.fieldPolicies[policyIndex];
+            }
+            return '';
+        };
+
+        this.findVersionedRuleName = function(policyIndex, ruleIndex) {
+            if (self.versionFeedModel && self.versionFeedModel.table && self.versionFeedModel.table.fieldPolicies) {
+                var field = self.versionFeedModel.table.fieldPolicies[policyIndex];
+                var rules = FeedFieldPolicyRuleService.getAllPolicyRules(field);
+                if (ruleIndex < rules.length) {
+                    return rules[ruleIndex].name;
+                }
+            }
+            return '';
+        };
+
         this.onSave = function (ev) {
 
             //Identify if any indexing options were changed
@@ -326,44 +363,54 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
             }
 
             if (Object.keys(indexChanges).length > 0) {
-                var displayIndexChanges = "";
-                var displayIndexChangedStatus = "";
-                var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
+                //Indexing options have changed
+                FeedService.isKyloConfiguredForFeedHistoryDataReindexing()
+                    .then(function (response) {
+                        if (response.data === 'true')  {
+                            var displayIndexChanges = "";
+                            var displayIndexChangedStatus = "";
+                            var displayIndexChangedStatusIndicator = "&#128269"; //magnifying glass
 
-                //using styles does not render correctly.
-                displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below. This will take effect going forward.<br>"
-                                                + "Apply changes to historical feed data as well? "
-                                                + "(If you choose YES, further indexing changes will not be allowed for feed till historical processing is complete)</font></div><br>"
-                                                + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
+                            //using styles does not render correctly.
+                            displayIndexChanges += "<div><font color='grey'>Data indexing for fields will be updated as below, and take effect going forward.<br>"
+                                                   + "Do you wish to apply these changes to historical data as well?</font></div><br>"
+                                                   + "<div></div><table ><tr><td>&nbsp;&nbsp;&nbsp;</td></td><td><b>Field</b></td><td>&nbsp;&nbsp;&nbsp;</td><td><b>Data Indexing</b></td></font></tr>";
 
-                for (var key in indexChanges) {
-                    displayIndexChanges+="<tr>";
-                    if (indexChanges[key] == true) {
-                        displayIndexChangedStatus = "<font color='green'>enabled</font>";
-                    } else {
-                        displayIndexChangedStatus = "<font color='red'>disabled</font>";
-                    }
-                    displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
-                    displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
-                    displayIndexChanges+="</tr>";
-                }
-                displayIndexChanges += "</table></div>";
+                            for (var key in indexChanges) {
+                                displayIndexChanges += "<tr>";
+                                if (indexChanges[key] == true) {
+                                    displayIndexChangedStatus = "<font color='green'>enabled</font>";
+                                } else {
+                                    displayIndexChangedStatus = "<font color='red'>disabled</font>";
+                                }
+                                displayIndexChanges += "<td>" + displayIndexChangedStatusIndicator + "&nbsp;&nbsp;&nbsp;</td>";
+                                displayIndexChanges += "<td>" + key + "</td><td>&nbsp;&nbsp;&nbsp;</td><td><td'>" + displayIndexChangedStatus + "</td>";
+                                displayIndexChanges += "</tr>";
+                            }
+                            displayIndexChanges += "</table></div>";
 
-                var confirm = $mdDialog.confirm()
-                    .title("Apply data indexing changes to historical data?")
-                    .htmlContent(displayIndexChanges)
-                    .ariaLabel("Apply data indexing changes to historical data?")
-                    .ok("Yes")
-                    .cancel("No");
+                            var confirm = $mdDialog.confirm()
+                                .title("Apply indexing changes to history data?")
+                                .htmlContent(displayIndexChanges)
+                                .ariaLabel("Apply indexing changes to history data?")
+                                .ok("Yes")
+                                .cancel("No");
 
-                $mdDialog.show(confirm).then(function () {
-                    self.editModel.historyReindexingStatus = 'DIRTY';
-                    self.goAheadWithSave(ev, true);
-                }, function() {
-                    self.goAheadWithSave(ev, false);
-                });
+                            $mdDialog.show(confirm).then(function () {
+                                self.editModel.historyReindexingStatus = 'DIRTY';
+                                self.goAheadWithSave(ev, true); //indexing changed, kylo configured, user opt-in for history reindexing
+                            }, function () {
+                                self.goAheadWithSave(ev, false); //indexing changed, kylo configured, user opt-out for history reindexing
+                            });
+                        } else {
+                            self.goAheadWithSave(ev, false); //indexing changed, kylo not configured
+                        }
+                    }, function(response) {
+                        console.log("Unable to determine if Kylo is configured to support data history reindexing. Please check Kylo services. Moving ahead assuming it is not configured.");
+                        self.goAheadWithSave(ev, false);
+                    });
             } else {
-                self.goAheadWithSave(ev, false);
+                self.goAheadWithSave(ev, false); //indexing not changed
             }
         };
 
@@ -556,8 +603,21 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.transla
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-            self.allowEdit = access && !self.model.view.dataPolicies.disabled
+            self.allowEdit = !self.versions && access && !self.model.view.dataPolicies.disabled
         });
+
+        self.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+
+        self.diffCollection = function(path) {
+            return FeedService.diffCollectionOperation(path);
+        };
+
+        self.diffPolicies = function(policyIdx) {
+            return FeedService.joinVersionOperations(FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/standardization'), FeedService.diffCollectionOperation('/table/fieldPolicies/' + policyIdx + '/validation'));
+        }
+
     };
 
     /**

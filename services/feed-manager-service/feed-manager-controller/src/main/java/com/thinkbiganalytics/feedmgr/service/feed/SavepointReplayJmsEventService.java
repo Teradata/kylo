@@ -1,7 +1,7 @@
-package com.thinkbiganalytics.feedmgr.nifi;
+package com.thinkbiganalytics.feedmgr.service.feed;
 /*-
  * #%L
- * kylo-feed-manager-controller
+ * thinkbig-job-repository-controller
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -19,14 +19,20 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * #L%
  */
 
+import com.thinkbiganalytics.jms.JmsConstants;
 import com.thinkbiganalytics.jms.JmsService;
+import com.thinkbiganalytics.jobrepo.service.JobService;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.savepoint.api.SavepointQueues;
 import com.thinkbiganalytics.nifi.savepoint.api.SavepointTopics;
 import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayEvent;
+import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayResponseEvent;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsMessagingTemplate;
 
 import javax.annotation.PostConstruct;
@@ -48,6 +54,12 @@ public class SavepointReplayJmsEventService {
     @Inject
     private JmsService jmsService;
 
+    @Inject
+    private JobService jobService;
+
+    @Inject
+    private MetadataAccess metadataAccess;
+
     /**
      * The topic to send/receive messages about streaming feed metadata
      */
@@ -63,7 +75,25 @@ public class SavepointReplayJmsEventService {
      * @param event
      */
     public void triggerSavepoint(SavepointReplayEvent event) {
+        //mark it as running
+
         jmsMessagingTemplate.convertAndSend(savepointReplayTopic, event);
+    }
+
+
+    @JmsListener(destination = SavepointQueues.REPLAY_SAVEPOINT_RESPONE_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
+    public void receiveEvent(SavepointReplayResponseEvent event) {
+        log.info("{} Received feed savepoint replay response event  {} ", event);
+
+        if (event.getResponse() == SavepointReplayResponseEvent.RESPONSE.FAILURE) {
+            //fail it if we get an error on the trigger
+            metadataAccess.commit(() -> {
+                this.jobService.failJobExecution(event.getJobExecutionId());
+                return null;
+            }, MetadataAccess.SERVICE);
+        }
+
+
     }
 
 

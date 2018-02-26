@@ -17,7 +17,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
      * @param StateService
      */
     var controller = function ($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
-                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService) {
+                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService,AngularModuleExtensionService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -71,6 +71,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploading = false;
         this.uploadAllowed = false;
 
+        this.feedNavigationLinks = AngularModuleExtensionService.getFeedNavigation();
+
         /**
          * flag to indicate the feed could not be loaded
          * @type {boolean}
@@ -89,6 +91,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         $scope.$watch(function() {
             return self.selectedTabIndex;
         }, function(newVal) {
+            //reset display of feed versions
+            FeedService.resetVersionFeedModel();
+
             //Make the Lineage tab fit without side nav
             //open side nav if we are not navigating between lineage links
             if (newVal == 2 || (requestedTabIndex != undefined && requestedTabIndex == 2)) {
@@ -197,6 +202,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
             $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
         };
+
+        this.feedNavigationLink = function(link) {
+            var feedId =  self.feedId;
+            var feedName = self.model.systemCategoryName + "." + self.model.systemFeedName;
+            $state.go(link.sref,{feedId:feedId,feedName:feedName,model:self.model});
+        }
 
         this.showFeedUploadDialog = function() {
             $mdDialog.show({
@@ -493,13 +504,30 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             StateService.OpsManager().Feed().navigateToFeedDetails(feedName);
         };
 
+        this.shouldIndexingOptionsBeDisabled = function() {
+            return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
+        };
+
+        this.shouldIndexingOptionsBeEnabled = function() {
+            return !this.shouldIndexingOptionsBeDisabled();
+        };
+
+        this.findAndReplaceString = function(str, findStr, replacementStr) {
+            var i = 0;
+            var strLength = str.length;
+            for (i; i < strLength; i++) {
+                str = str.replace(findStr, replacementStr);
+            }
+           return str;
+        };
+
         init();
     };
 
     var FeedUploadFileDialogController = function ($scope, $mdDialog, $http, RestUrlService, FileUpload, feedId){
         var self = this;
         $scope.uploading = false;
-        $scope.uploadFile = null;
+        $scope.uploadFiles = null;
 
         /**
          * Upload file
@@ -519,7 +547,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 $scope.uploading = false;
                 $scope.errorMessage = 'Failed to submit file.';
             }
-            FileUpload.uploadFileToUrl($scope.uploadFile, uploadUrl, successFn, errorFn, params);
+            FileUpload.uploadFileToUrl($scope.uploadFiles, uploadUrl, successFn, errorFn, params);
         };
 
 
@@ -534,7 +562,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
 
     };
 
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService","UiComponentsService",controller]);
+    angular.module(moduleName).filter('capitalizeFirstLetterOfEachWord', function() {
+        return function(str) {
+            return (!!str) ?
+                   str.split(' ')
+                        .map(function(word) {
+                            return word.charAt(0).toUpperCase() + word.substr(1).toLowerCase();
+                        })
+                       .join(' ')
+                    : '';
+        }
+    });
+
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService","UiComponentsService","AngularModuleExtensionService",controller]);
 
     angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
 });

@@ -65,6 +65,8 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
      */
     String NIFI_JOB_EXIT_DESCRIPTION_PROPERTY = "kylo.jobExitDescription";
 
+    String JOB_FINISHED_STATUS_PROPERTY = "kylo.job.finished";
+
 
     /**
      * Create a new job instance record for a provenance event
@@ -89,10 +91,10 @@ public interface BatchJobExecutionProvider extends BatchJobExecutionFilters {
 
     /**
      * find a job exeuction by its unique key
-     *
+     *@param fetchSteps true to fetch any step excecutions with job.  false to just get the job
      * @return the job execution
      */
-    BatchJobExecution findByJobExecutionId(Long jobExecutionId);
+    BatchJobExecution findByJobExecutionId(Long jobExecutionId, boolean fetchSteps);
 
     /**
      * save/update a job execution

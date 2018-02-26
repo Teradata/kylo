@@ -146,36 +146,14 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 Collections.addAll(detailPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
                 Collections.addAll(dataPrivs, Privilege.JCR_READ_ACCESS_CONTROL, Privilege.JCR_MODIFY_ACCESS_CONTROL);
             } else if (action.implies(FeedAccessControl.EDIT_DETAILS)) {
-                //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
-                }
-                //If a user has Edit access for the feed, they need to be able to also Read the template
-                this.feed.getFeedDetails()
-                    .map(FeedDetails::getTemplate)
-                    .map(FeedManagerTemplate::getAllowedActions)
-                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
-                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
-                
                 summaryPrivs.add(Privilege.JCR_ALL);                
                 detailPrivs.add(Privilege.JCR_ALL);
                 dataPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
-                //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
-                }
-                
                 summaryPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
-                //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_DETAILS);
-                }
-                //If a user has Read access for the feed, they need to be able to also Read the template
+                // Currently, if a user has read access for the feed details, they need to be able to also Read the template.
+                // TODO: This should be removed for the same reason as the implicit category access was removed.
                 this.feed.getFeedDetails()
                     .map(FeedDetails::getTemplate)
                     .map(FeedManagerTemplate::getAllowedActions)
@@ -186,12 +164,6 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
                 detailPrivs.add(Privilege.JCR_READ);                
                 dataPrivs.add(Privilege.JCR_READ);                
             } else if (action.implies(FeedAccessControl.ACCESS_FEED)) {
-                //also add read to the category summary
-                final AllowedActions categoryAllowedActions = feed.getCategory().getAllowedActions();
-                if (categoryAllowedActions.hasPermission(CategoryAccessControl.CHANGE_PERMS)) {
-                    categoryAllowedActions.enable(principal, CategoryAccessControl.ACCESS_CATEGORY);
-                }
-                
                 summaryPrivs.add(Privilege.JCR_READ);
             }
         });

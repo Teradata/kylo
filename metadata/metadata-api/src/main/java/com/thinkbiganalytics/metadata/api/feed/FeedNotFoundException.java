@@ -1,16 +1,20 @@
-package com.thinkbiganalytics.feedmgr.service.template.exporting.model;
+/**
+ *
+ */
+package com.thinkbiganalytics.metadata.api.feed;
+
 /*-
  * #%L
- * thinkbig-feed-manager-controller
+ * thinkbig-metadata-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * 
  *     http://www.apache.org/licenses/LICENSE-2.0
- *
+ * 
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -19,24 +23,28 @@ package com.thinkbiganalytics.feedmgr.service.template.exporting.model;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataException;
+
 /**
- * Model object for the export of the template
+ *
  */
-public class ExportTemplate {
+public class FeedNotFoundException extends MetadataException {
 
-    private String fileName;
-    private byte[] file;
+    private static final long serialVersionUID = 3867336790441208367L;
 
-    public ExportTemplate(String fileName, byte[] file) {
-        this.fileName = fileName;
-        this.file = file;
+    private Feed.ID id;
+
+    public FeedNotFoundException(Feed.ID id) {
+        super();
+        this.id = id;
     }
 
-    public String getFileName() {
-        return fileName;
+    public FeedNotFoundException(String message, Feed.ID id) {
+        super(message);
+        this.id = id;
     }
 
-    public byte[] getFile() {
-        return file;
+    public Feed.ID getId() {
+        return id;
     }
 }

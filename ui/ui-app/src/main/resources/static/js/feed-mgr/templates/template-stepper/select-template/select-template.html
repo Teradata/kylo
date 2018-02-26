@@ -105,6 +105,7 @@
                 </div>
 
                 <div layout="column" class="item-column md-list-item-text" ng-if="vm.allowExport && vm.model.id != null">
+                    <md-button style="text-align:left" ng-if="vm.registeredTemplateId != null" ng-repeat="item in vm.templateNavigationLinks" ng-click="vm.templateNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
                     <md-button href="{{vm.model.exportUrl}}">
                         <ng-md-icon icon="launch" size="20" style="fill:#F08C38"></ng-md-icon>
                         <span style="padding-left:10px;">Export</span>

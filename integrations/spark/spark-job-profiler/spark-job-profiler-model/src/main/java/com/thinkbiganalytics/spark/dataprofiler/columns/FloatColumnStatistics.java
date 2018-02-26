@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of float data type <br>
  * [Hive data type: FLOAT]
  */
-@SuppressWarnings("serial")
 public class FloatColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -3160035173446000986L;
 
     /* Float specific metrics */
     private float max;

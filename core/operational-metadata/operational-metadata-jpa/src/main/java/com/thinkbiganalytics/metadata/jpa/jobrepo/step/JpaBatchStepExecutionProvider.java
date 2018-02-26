@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -21,8 +21,8 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
  */
 
 import com.thinkbiganalytics.DateTimeUtil;
-import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionContextValue;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
@@ -30,8 +30,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.FailedStepExecutionListen
 import com.thinkbiganalytics.metadata.jpa.jobrepo.job.JpaBatchJobExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiEventStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventStepExecutionRepository;
-import com.thinkbiganalytics.nifi.provenance.KyloProcessorFlowType;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.savepoint.api.SavepointProvenanceProperties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
@@ -44,7 +44,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Provider for accessing {@link JpaBatchStepExecution}
@@ -87,7 +89,6 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
      * @return {@code true} if the steps were evaluated, {@code false} if no work was needed to be done
      */
     public boolean ensureFailureSteps(BatchJobExecution jobExecution) {
-
         //find all the Steps for this Job that have records in the Failure table for this job flow file
         List<JpaBatchStepExecution> stepsNeedingToBeFailed = batchStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
         if (stepsNeedingToBeFailed != null) {
@@ -120,19 +121,21 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 listener.failedStep(jobExecution, stepExecution, flowFileId, componentId);
             }
         }
+        if (jobExecution.isFailed()) {
+            ((JpaBatchJobExecution) jobExecution).failJob();
+        }
     }
-
+//Drop on SetSavepoint indicates release on parent flowfile id
 
     public BatchStepExecution createStepExecution(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
-
         //only create the step if it doesnt exist yet for this event
         JpaBatchStepExecution stepExecution = batchStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
         if (stepExecution == null) {
-            if(!"KYLO".equalsIgnoreCase(event.getEventType())) {
+            if (!"KYLO".equalsIgnoreCase(event.getEventType())) {
                 stepExecution = new JpaBatchStepExecution();
                 stepExecution.setJobExecution(jobExecution);
                 stepExecution.setStartTime(event.getStartTime() != null ? DateTimeUtil.convertToUTC(event.getStartTime()) :
-                                            DateTimeUtil.convertToUTC(event.getEventTime()).minus(event.getEventDuration()));
+                                           DateTimeUtil.convertToUTC(event.getEventTime()).minus(event.getEventDuration()));
                 stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
                 stepExecution.setStepName(event.getComponentName());
                 if (StringUtils.isBlank(stepExecution.getStepName())) {
@@ -147,6 +150,7 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                     if (StringUtils.isBlank(stepExecution.getExitMessage())) {
                         stepExecution.setExitMessage(event.getDetails());
                     }
+
                 } else {
                     stepExecution.completeStep();
                 }
@@ -168,28 +172,96 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
             }
 
         } else {
+            log.info("Updating step {} ",event.getComponentName());
             //update it
             assignStepExecutionContextMap(event, stepExecution);
             //update the timing info
             Long originatingNiFiEventId = stepExecution.getNifiEventStepExecution().getEventId();
             //only update the end time if the eventid is > than the first one
-            if(event.getEventId()> originatingNiFiEventId) {
+            if (event.getEventId() > originatingNiFiEventId) {
                 DateTime newEndTime = DateTimeUtil.convertToUTC(event.getEventTime());
                 if (newEndTime.isAfter(stepExecution.getEndTime())) {
                     stepExecution.setEndTime(newEndTime);
                 }
-            }
-            else {
+            } else {
                 DateTime newStartTime = DateTimeUtil.convertToUTC(event.getStartTime());
                 if (newStartTime.isBefore(stepExecution.getStartTime())) {
                     stepExecution.setStartTime(newStartTime);
                 }
             }
+
+            boolean failure = event.isFailure();
+            if (failure) {
+                //notify failure listeners
+                log.info("Failing Step");
+                failStep(jobExecution, stepExecution, event.getFlowFileUuid(), event.getComponentId());
+                if (StringUtils.isBlank(stepExecution.getExitMessage())) {
+                    stepExecution.setExitMessage(event.getDetails());
+                }
+
+            }
             stepExecution = batchStepExecutionRepository.save(stepExecution);
-        }
+          }
 
         return stepExecution;
 
+    }
+
+    private void checkForSavepointTriggerFailure(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
+        if (event.getComponentType().equalsIgnoreCase("TriggerSavepoint") && SavepointProvenanceProperties.TRIGGER_SAVE_POINT_STATE.FAIL.name().equalsIgnoreCase(event.getUpdatedAttributes().get(SavepointProvenanceProperties.SAVE_POINT_BEHAVIOR_STATUS))) {
+            Map<String, String> stepExecutionMap = stepExecution.getStepExecutionContextAsMap();
+            if (stepExecutionMap != null && stepExecutionMap.containsKey(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE)) {
+                //notify the job that we have a possible trigger
+                //add it to the jobexecution
+                String triggerId = stepExecutionMap.get(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE);
+                ((JpaBatchJobExecution) stepExecution.getJobExecution()).updateJobExecutionContext(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE, triggerId);
+                ((JpaBatchJobExecution) stepExecution.getJobExecution()).failJob();
+            }
+        } else if (event.getComponentType().equalsIgnoreCase("SetSavepoint")) {
+            if (event.getEventType().equalsIgnoreCase("DROP")) {
+                //if we get a drop for setsavepoint clear the previous trigger
+                Map<String, BatchJobExecutionContextValue> executionContextValueMap = ((JpaBatchJobExecution) stepExecution.getJobExecution()).getJobExecutionContextKeyMap();
+                if (executionContextValueMap != null && executionContextValueMap.containsKey(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE)) {
+                    BatchJobExecutionContextValue triggeredFlowFile = executionContextValueMap.get(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE);
+                    String triggeredFlowFileString = triggeredFlowFile.getStringVal();
+                    String eventFlowfile = event.getFlowFileUuid();
+                    //if this DROP event is part of a successful release, then Clear the associated Trigger failure matching this event flowfile id
+                    if (SavepointProvenanceProperties.RELEASE_STATUS.SUCCESS.name().equalsIgnoreCase(event.getAttributeMap().get(SavepointProvenanceProperties.RELEASE_STATUS_KEY))) {
+
+                        //clear the trigger
+                        Optional<BatchStepExecution>
+                            triggerSavepointStep = stepExecution.getJobExecution().getStepExecutions().stream().filter(se -> {
+                            Map<String, String> stepExecutionMap = se.getStepExecutionContextAsMap();
+                            return stepExecutionMap != null && stepExecutionMap.containsKey(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE) && stepExecutionMap
+                                .get(SavepointProvenanceProperties.SAVE_POINT_TRIGGER_FLOWFILE).equalsIgnoreCase(eventFlowfile);
+                        }).findFirst();
+
+                        if (triggerSavepointStep.isPresent()) {
+                            log.info("Clearing failure for savepoint {} ", triggerSavepointStep.get().getStepName());
+                            ((JpaBatchStepExecution) triggerSavepointStep.get()).completeStep();
+                            //TODO
+                            //Add to step execution that succeeded
+                            ((JpaBatchStepExecution) triggerSavepointStep.get()).setExitMessage("Cleared Failure");
+
+                            //Remove this from the job execution context only if this drop event is matching that on the job
+                            if (triggeredFlowFileString.equalsIgnoreCase(eventFlowfile)) {
+                                stepExecution.getJobExecution().getJobExecutionContext().remove(triggeredFlowFile);
+                            }
+                            if (event.isFinalJobEvent()) {
+                                ((JpaBatchJobExecution) stepExecution.getJobExecution()).completeOrFailJob();
+                            }
+                        }
+
+                    }
+
+                }
+            } else {
+                if (SavepointProvenanceProperties.RELEASE_STATUS.FAILURE.name().equalsIgnoreCase(event.getAttributeMap().get(SavepointProvenanceProperties.RELEASE_STATUS_KEY))) {
+                    //fail the job
+                    ((JpaBatchJobExecution) stepExecution.getJobExecution()).failJob();
+                }
+            }
+        }
     }
 
     private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, JpaBatchStepExecution stepExecution) {
@@ -202,11 +274,11 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 stepExecution.addStepExecutionContext(stepExecutionContext);
             }
         }
+        checkForSavepointTriggerFailure(event, stepExecution);
         //add the event id for debugging
 
         JpaBatchStepExecutionContextValue eventIdContextValue = new JpaBatchStepExecutionContextValue(stepExecution, "NiFi Event Id");
         eventIdContextValue.setStringVal(event.getEventId().toString());
         stepExecution.addStepExecutionContext(eventIdContextValue);
-
     }
 }

@@ -21,11 +21,15 @@ package com.thinkbiganalytics.integration;
  */
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.mapping.Jackson2Mapper;
 import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import com.jayway.restassured.path.json.JsonPath;
@@ -38,19 +42,27 @@ import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.DefaultTag;
 import com.thinkbiganalytics.discovery.schema.Tag;
+import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
+import com.thinkbiganalytics.feedmgr.rest.controller.AdminControllerV2;
+import com.thinkbiganalytics.feedmgr.rest.controller.DatasourceController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.ServiceLevelAgreementRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.TemplatesRestController;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSchedule;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedVersions;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOptionBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.PartitionField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
@@ -59,14 +71,19 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementRule;
 import com.thinkbiganalytics.hive.rest.controller.HiveRestController;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
+import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedStep;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedStep;
 import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -103,13 +120,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.ws.rs.core.MediaType;
 
+import static com.jayway.restassured.http.ContentType.JSON;
 import static java.net.HttpURLConnection.HTTP_BAD_REQUEST;
 import static java.net.HttpURLConnection.HTTP_NO_CONTENT;
 import static java.net.HttpURLConnection.HTTP_OK;
@@ -252,12 +272,10 @@ public class IntegrationTestBase {
         cleanup();
     }
 
-    /**
-     * Do nothing implementation, but subclasses may override to add extra
-     * json serialisation/de-serialisation modules
-     */
-    protected void configureObjectMapper(ObjectMapper om) {
-
+    private void configureObjectMapper(ObjectMapper om) {
+        SimpleModule m = new SimpleModule();
+        m.addAbstractTypeMapping(ExecutedStep.class, DefaultExecutedStep.class);
+        om.registerModule(m);
     }
 
     protected RequestSpecification given() {
@@ -272,10 +290,10 @@ public class IntegrationTestBase {
         String username = UserContext.getUser().getUsername();
         LOG.info("Making request as " + username);
 
-        return RestAssured.given()
+        return RestAssured.given().accept(JSON)
             .log().method().log().path()
             .auth().preemptive().basic(username, UserContext.getUser().getPassword())
-            .contentType("application/json");
+            .contentType(JSON);
     }
 
     protected final void scp(final String localFile, final String remoteDir) {
@@ -338,14 +356,28 @@ public class IntegrationTestBase {
         return response.as(PortDTO[].class);
     }
 
+
+    protected NifiFlowProcessGroup getFlow(String processGroupId) {
+        Response response = given(NifiIntegrationRestController.BASE)
+            .when()
+            .get(NifiIntegrationRestController.FLOW+"/"+processGroupId);
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(NifiFlowProcessGroup.class);
+    }
+
     protected void cleanup() {
+/*
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
+        */
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
+
     }
 
     protected void deleteExistingSla() {
@@ -501,7 +533,7 @@ public class IntegrationTestBase {
         Response response = given(JobsRestController.BASE)
             .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get("?filter=" + filter + "&limit=50&sort=-createdTime&start=0");
+            .get("?filter=" + filter + "&limit=50&sort=-createTime&start=0");
 
         response.then().statusCode(HTTP_OK);
 
@@ -599,10 +631,9 @@ public class IntegrationTestBase {
 
     protected FeedCategory getorCreateCategoryByName(String name) {
         Response response = getCategoryByName(name);
-        if(response.statusCode() == HTTP_BAD_REQUEST){
+        if (response.statusCode() == HTTP_BAD_REQUEST) {
             return createCategory(name);
-        }
-        else {
+        } else {
             return response.as(FeedCategory.class);
         }
     }
@@ -677,6 +708,31 @@ public class IntegrationTestBase {
             .multiPart("createReusableFlow", false)
             .multiPart("importConnectingReusableFlow", ImportTemplateOptions.IMPORT_CONNECTING_FLOW.YES)
             .when().post(AdminController.IMPORT_TEMPLATE);
+
+        post.then().statusCode(HTTP_OK);
+
+        return post.as(ImportTemplate.class);
+    }
+
+    protected ImportTemplate importReusableFlowXmlTemplate(String templatePath, ReusableTemplateConnectionInfo connectionInfo) {
+        LOG.info("Importing template {}", templatePath);
+        List<ImportComponentOption> importComponentOptions = new ArrayList<>();
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.TEMPLATE_DATA).alwaysImport().build());
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.NIFI_TEMPLATE).alwaysImport().build());
+        importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.REUSABLE_TEMPLATE).alwaysImport().build());
+        if (connectionInfo != null) {
+            importComponentOptions.add(new ImportComponentOptionBuilder(ImportComponent.TEMPLATE_CONNECTION_INFORMATION).alwaysImport().connectionInfo(connectionInfo).build());
+        }
+
+        String importOptions = ObjectMapperSerializer.serialize(importComponentOptions);
+        String uploadKey = UUID.randomUUID().toString();
+
+        Response post = given(AdminControllerV2.BASE)
+            .contentType("multipart/form-data")
+            .multiPart(new File(templatePath))
+            .multiPart("uploadKey", uploadKey)
+            .multiPart("importComponents", importOptions)
+            .when().post(AdminControllerV2.IMPORT_TEMPLATE);
 
         post.then().statusCode(HTTP_OK);
 
@@ -1009,5 +1065,99 @@ public class IntegrationTestBase {
         return response.as(AlertRange.class);
 
     }
+
+    protected JdbcDatasource createDatasource(JdbcDatasource ds) {
+        LOG.info("Creating datasource '{}'", ds.getName());
+
+        Response response = given(DatasourceController.BASE)
+            .body(ds)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(JdbcDatasource.class);
+    }
+
+    protected JdbcDatasource[] getDatasources() {
+        LOG.info("Getting datasources");
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .get("?type=UserDatasource");
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(JdbcDatasource[].class);
+    }
+
+
+    protected JdbcDatasource getDatasource(String datasourceId) {
+        LOG.info("Getting datasource {}", datasourceId);
+        return getDatasourceExpectingStatus(datasourceId, HTTP_OK).as(JdbcDatasource.class);
+    }
+
+    protected Response getDatasourceExpectingStatus(String datasourceId, int status) {
+        LOG.info("Getting datasource {}, expecting status {}", datasourceId, status);
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .get("/" + datasourceId);
+
+        response.then().statusCode(status);
+        return response;
+    }
+
+    protected void deleteDatasource(String controllerServiceId) {
+        LOG.info("Getting datasources");
+
+        Response response = given(DatasourceController.BASE)
+            .when()
+            .delete("/" + controllerServiceId);
+
+        response.then().statusCode(HTTP_NO_CONTENT);
+    }
+
+    protected FeedVersions getVersions(String feedId) {
+        LOG.info("Getting versions for feed {}", feedId);
+
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/versions", feedId));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(FeedVersions.class);
+    }
+
+    protected EntityVersionDifference getVersionDiff(String feedId, String fromVersion, String toVersion) {
+        LOG.info("Getting difference from version {} to version {} for feed {}", fromVersion, toVersion, feedId);
+
+        Response response = given(FeedRestController.BASE)
+            .when()
+            .get(String.format("/%s/versions/%s/diff/%s", feedId, fromVersion, toVersion));
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(EntityVersionDifference.class);
+    }
+
+    protected boolean versionPatchContains(ArrayNode diffs, Diff diff) {
+        Iterator<JsonNode> elements = diffs.elements();
+        while (elements.hasNext()) {
+            JsonNode node = elements.next();
+            if (diff.path.equals(node.findValue("path").textValue())) {
+                boolean match = diff.op.equals(node.findValue("op").textValue());
+                if (diff.value != null) {
+                    JsonNode value = node.findValue("value");
+                    return value != null && match && diff.value.equals(value.asText());
+                } else {
+                    return match;
+                }
+            }
+        }
+        return false;
+    }
+
 
 }

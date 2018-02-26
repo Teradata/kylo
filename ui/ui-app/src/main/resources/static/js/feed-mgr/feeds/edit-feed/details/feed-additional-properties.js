@@ -5,27 +5,32 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             restrict: "EA",
             bindToController: {},
             controllerAs: 'vm',
-            scope: {},
+            scope: {
+                versions: '=?'
+            },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-additional-properties.html',
             controller: "FeedAdditionalPropertiesController",
             link: function($scope, element, attrs, controller) {
-
+                if ($scope.versions === undefined) {
+                    $scope.versions = false;
+                }
             }
-
         };
     };
 
     var FeedAdditionalPropertiesController = function($scope,$q, AccessControlService, EntityAccessControlService,FeedService, FeedTagService, FeedSecurityGroups, $filter) {
 
         var self = this;
-
+        self.versions = $scope.versions;
         /**
          * Indicates if the feed properties may be edited.
          * @type {boolean}
          */
-        self.allowEdit = false;
+        self.allowEdit = !self.versions;
 
         this.model = FeedService.editFeedModel;
+        this.versionFeedModel = FeedService.versionFeedModel;
+        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
         this.editModel = {};
         this.editableSection = false;
 
@@ -65,6 +70,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
                 self.model = FeedService.editFeedModel;
             }
         });
+
+        if (self.versions) {
+            $scope.$watch(function(){
+                return FeedService.versionFeedModel;
+            },function(newVal) {
+                self.versionFeedModel = FeedService.versionFeedModel;
+            });
+            $scope.$watch(function(){
+                return FeedService.versionFeedModelDiff;
+            },function(newVal) {
+                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            });
+        }
 
         this.onEdit = function() {
             // Determine tags value
@@ -123,9 +141,25 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
 
         //Apply the entity access permissions
         $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = access && !self.model.view.properties.disabled;
+            self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
         });
 
+        this.findVersionedUserProperty = function(property) {
+            var versionedProperty = _.find(self.versionFeedModel.userProperties, function(p) {
+                return p.systemName === property.systemName;
+            });
+            if (versionedProperty === undefined) {
+                versionedProperty = {};
+            }
+            return versionedProperty;
+        };
+
+        this.diff = function(path) {
+            return FeedService.diffOperation(path);
+        };
+        this.diffCollection = function(path) {
+            return FeedService.diffCollectionOperation(path);
+        };
     };
 
     angular.module(moduleName).controller('FeedAdditionalPropertiesController',["$scope","$q","AccessControlService","EntityAccessControlService","FeedService","FeedTagService","FeedSecurityGroups","$filter",FeedAdditionalPropertiesController]);

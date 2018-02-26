@@ -27,12 +27,12 @@ import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.event.category.CategoryChange;
-import com.thinkbiganalytics.metadata.api.event.category.CategoryChangeEvent;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.category.CategoryChange;
+import com.thinkbiganalytics.metadata.api.event.category.CategoryChangeEvent;
 
 import java.util.List;
 import java.util.Map;
@@ -83,22 +83,19 @@ public class SimpleCategoryCache implements ClusterServiceMessageReceiver {
     }
 
 
-
-
-
     private LoadingCache<String, FeedCategory> categoryIdCache = CacheBuilder.newBuilder().build(new CacheLoader<String, FeedCategory>() {
         @Override
         public FeedCategory load(String id) throws Exception {
             FeedCategory feedCategory = metadataAccess.read(() -> {
-                                                       Category category = categoryProvider.findById(categoryProvider.resolveId(id));
-                                                        if (category != null) {
-                                                            FeedCategory c = categoryModelTransform.domainToFeedCategorySimple(category, false, false);
-                                                            categoryNameCache.put(c.getSystemName(),c);
-                                                            return c;
-                                                        } else {
-                                                            return null;
-                                                        }
-                                                    },MetadataAccess.SERVICE);
+                Category category = categoryProvider.findById(categoryProvider.resolveId(id));
+                if (category != null) {
+                    FeedCategory c = categoryModelTransform.domainToFeedCategorySimple(category, false, false);
+                    categoryNameCache.put(c.getSystemName(), c);
+                    return c;
+                } else {
+                    return null;
+                }
+            }, MetadataAccess.SERVICE);
             return feedCategory;
 
         }
@@ -114,77 +111,80 @@ public class SimpleCategoryCache implements ClusterServiceMessageReceiver {
                 } else {
                     return null;
                 }
-            },MetadataAccess.SERVICE);
+            }, MetadataAccess.SERVICE);
             return feedCategory;
 
         }
     });
 
 
-    private synchronized void populate(){
+    private synchronized void populate() {
         List<FeedCategory> allCategories = metadataAccess.read(() -> {
-          List<FeedCategory> list = categoryProvider.findAll().stream().map(c -> categoryModelTransform.domainToFeedCategorySimple(c, false, false)).collect(Collectors.toList());
+            List<FeedCategory> list = categoryProvider.findAll().stream().map(c -> categoryModelTransform.domainToFeedCategorySimple(c, false, false)).collect(Collectors.toList());
             return list;
-      });
-        Map<String,FeedCategory> idMap =   allCategories.stream().collect(Collectors.toMap(c -> c.getId(), c->c));
-        Map<String,FeedCategory> nameMap =   allCategories.stream().collect(Collectors.toMap(c -> c.getSystemName(), c->c));
-      categoryIdCache.putAll(idMap);
-      categoryNameCache.putAll(nameMap);
-      populated.set(true);
+        });
+        Map<String, FeedCategory> idMap = allCategories.stream().collect(Collectors.toMap(c -> c.getId(), c -> c));
+        Map<String, FeedCategory> nameMap = allCategories.stream().collect(Collectors.toMap(c -> c.getSystemName(), c -> c));
+        categoryIdCache.putAll(idMap);
+        categoryNameCache.putAll(nameMap);
+        populated.set(true);
     }
 
-    public FeedCategory getFeedCategoryById(String id){
-        if(!populated.get()) {
+    public FeedCategory getFeedCategoryById(String id) {
+        if (!populated.get()) {
             populate();
         }
         return categoryIdCache.getUnchecked(id);
     }
 
-    public FeedCategory getFeedCategoryByName(String name){
-        if(!populated.get()) {
+    public FeedCategory getFeedCategoryByName(String name) {
+        if (!populated.get()) {
             populate();
         }
         return categoryNameCache.getUnchecked(name);
     }
 
-    public Map<String,FeedCategory> getCategoriesByName(){
-        if(!populated.get()) {
+    public Map<String, FeedCategory> getCategoriesByName() {
+        if (!populated.get()) {
             populate();
         }
         return categoryNameCache.asMap();
     }
 
-    public Map<String,FeedCategory> getCategoriesById(){
-        if(!populated.get()) {
+    public Map<String, FeedCategory> getCategoriesById() {
+        if (!populated.get()) {
             populate();
         }
         return categoryIdCache.asMap();
+    }
+
+    private void onCategoryChange(CategoryChange change) {
+        if (change != null) {
+            if (change.getChange() == MetadataChange.ChangeType.DELETE) {
+                categoryIdCache.invalidate(change.getCategoryId().toString());
+                if (change.getCategoryName().isPresent()) {
+                    categoryNameCache.invalidate(change.getCategoryName().get());
+                }
+            } else {
+                categoryIdCache.refresh(change.getCategoryId().toString());
+            }
+        }
     }
 
     private class CategoryChangeListener implements MetadataEventListener<CategoryChangeEvent> {
 
         public void notify(@Nonnull final CategoryChangeEvent metadataEvent) {
             CategoryChange change = metadataEvent.getData();
-            categoryIdCache.refresh(change.getCategoryId().toString());
+            onCategoryChange(change);
         }
     }
 
 
     @Override
     public void onMessageReceived(String from, ClusterMessage message) {
-        if(CategoryChange.CLUSTER_EVENT_TYPE.equals(message.getType())){
-            CategoryChange change = (CategoryChange)message.getMessage();
-            if(change != null){
-                if(change.getChange() == MetadataChange.ChangeType.DELETE){
-                    categoryIdCache.invalidate(change.getCategoryId().toString());
-                    if(change.getCategoryName().isPresent()){
-                        categoryNameCache.invalidate(change.getCategoryName().get());
-                    }
-                }
-                else {
-                    categoryIdCache.refresh(change.getCategoryId().toString());
-                }
-            }
+        if (CategoryChange.CLUSTER_EVENT_TYPE.equals(message.getType())) {
+            CategoryChange change = (CategoryChange) message.getMessage();
+            onCategoryChange(change);
         }
     }
 }

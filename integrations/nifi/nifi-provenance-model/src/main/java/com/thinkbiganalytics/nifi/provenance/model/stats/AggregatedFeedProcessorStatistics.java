@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AggregatedFeedProcessorStatistics implements Serializable {
 
+    private static final long serialVersionUID = -6344769389124838681L;
+
     String startingProcessorId;
     String processGroup;
     Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();

@@ -180,7 +180,7 @@ public class KyloEsClient extends EsClient {
                         method.setEntity(requestEntity);
                         CloseableHttpResponse resp = client.execute(method);
                         int statusCode = resp.getStatusLine().getStatusCode();
-                        log.info("KyloEsClient - Indexing result for category id {} (Expected 200/201): {}", id, statusCode);
+                        log.info("Indexing result for category id {} (Expected 200/201): {}", id, statusCode);
                         return statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_OK;
                     } finally {
                         method.releaseConnection();
@@ -297,7 +297,7 @@ public class KyloEsClient extends EsClient {
                         method.setEntity(requestEntity);
                         CloseableHttpResponse resp = client.execute(method);
                         int statusCode = resp.getStatusLine().getStatusCode();
-                        log.info("KyloEsClient - Indexing result for feed id {} (Expected 200/201): {}", id, statusCode);
+                        log.info("Indexing result for feed id {} (Expected 200/201): {}", id, statusCode);
                         return statusCode == HttpStatus.SC_CREATED || statusCode == HttpStatus.SC_OK;
                     } finally {
                         method.releaseConnection();

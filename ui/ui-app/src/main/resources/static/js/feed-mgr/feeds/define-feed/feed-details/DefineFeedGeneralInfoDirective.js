@@ -211,6 +211,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
         },function(newVal) {
            FeedService.getSystemName(newVal).then(function (response) {
                self.model.systemFeedName = response.data;
+               self.model.table.tableSchema.name = self.model.systemFeedName;
                validateUniqueFeedName();
                validate();
            });

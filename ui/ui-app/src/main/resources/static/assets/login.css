@@ -1,0 +1,17 @@
+#top,
+#bottom {
+  position: fixed;
+  left: 0;
+  right: 0;
+  height: 50%;
+}
+
+#top {
+  top: 0;
+  background-color: rgb(52,131,186);
+}
+
+#bottom {
+  bottom: 0;
+  background-color: #ffffff;
+}

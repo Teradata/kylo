@@ -32,6 +32,8 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -110,7 +112,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     private static final Deserializer<Lock> lockValueDeserializer = (value) -> {
         String sValue = new String(value, StandardCharsets.UTF_8);
         logger.debug("Deserializing lock {}", sValue);
-         return (StringUtils.isEmpty(sValue) ? null : objectMapper.readValue(sValue, Lock.class));
+        return (StringUtils.isEmpty(sValue) ? null : objectMapper.readValue(sValue, Lock.class));
     };
 
     private static final Deserializer<String> stringDeserializer = input -> input == null ? null : new String(input, StandardCharsets.UTF_8);
@@ -119,8 +121,17 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     public DistributedSavepointProviderImpl(DistributedMapCacheClient cacheClient) {
 
         this.savePoints = new CacheWrapper<>(cacheKeySerializer, objectValueSerializer, entryValueDeserializer, cacheClient);
-        this.locks = new CacheWrapper<>(lockKeySerializer, objectValueSerializer,  lockValueDeserializer, cacheClient);
-        this.reverseCache = new CacheWrapper<>(reverseKeySerializer, stringSerializer,  stringDeserializer, cacheClient);
+        this.locks = new CacheWrapper<>(lockKeySerializer, objectValueSerializer, lockValueDeserializer, cacheClient);
+        this.reverseCache = new CacheWrapper<>(reverseKeySerializer, stringSerializer, stringDeserializer, cacheClient);
+    }
+
+    /**
+     * Listen for changes on the Distributed Cache
+     *
+     * @param listener the listener for the cache changes
+     */
+    public void subscribeDistributedSavepointChanges(DistributedCacheListener listener) {
+        this.savePoints.addListener(listener);
     }
 
     @Override
@@ -185,14 +196,15 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
     /**
      * Releases any flowfiles held by a savepoint
      */
-    public void release(String savepointId, Lock lock) throws InvalidLockException, InvalidSetpointException {
+    public void release(String savepointId, Lock lock, boolean success) throws InvalidLockException, InvalidSetpointException {
         if (!isValidLock(lock)) {
             throw new InvalidLockException();
         }
         logger.debug("Release savepointId {}", savepointId);
         SavepointEntry entry = lookupEntryWithGuarantee(savepointId);
-        entry.releaseAll();
+        entry.releaseAll(success);
         savePoints.put(savepointId, entry);
+
     }
 
     @Override
@@ -208,6 +220,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
         SavepointEntry entry = lookupEntryWithGuarantee(savepointId);
         entry.retry();
         savePoints.put(savepointId, entry);
+
     }
 
     private SavepointEntry lookupEntryWithGuarantee(String savepointId) throws InvalidSetpointException {
@@ -282,8 +295,6 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
     /**
      * Wrapper for distributed cache
-     * @param <K>
-     * @param <V>
      */
     static class CacheWrapper<K, V> {
 
@@ -295,6 +306,8 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         private Deserializer<V> valueDeserializer;
 
+        private List<DistributedCacheListener<K, V>> distributedCacheListeners = new ArrayList<>();
+
         public CacheWrapper(Serializer<String> keySerializer, Serializer<Object> valueSerializer, Deserializer<V> valueDeserializer, DistributedMapCacheClient
             cacheClient) {
             this.keySerializer = keySerializer;
@@ -303,9 +316,15 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
             this.cacheClient = cacheClient;
         }
 
+        public void addListener(DistributedCacheListener listener) {
+            this.distributedCacheListeners.add(listener);
+        }
+
         public boolean remove(K key) {
             try {
-                return cacheClient.remove(key, (Serializer<K>) keySerializer);
+                boolean removed = cacheClient.remove(key, (Serializer<K>) keySerializer);
+                distributedCacheListeners.stream().forEach(l -> l.removed(key));
+                return removed;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -313,7 +332,8 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public void put(K key, V value) {
             try {
-                cacheClient.put(key, value, (Serializer<K>) keySerializer,valueSerializer);
+                cacheClient.put(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                distributedCacheListeners.stream().forEach(l -> l.put(key, value));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -321,7 +341,11 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public boolean putIfAbsent(K key, V value) {
             try {
-                return cacheClient.putIfAbsent(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                boolean put = cacheClient.putIfAbsent(key, value, (Serializer<K>) keySerializer, valueSerializer);
+                if (put) {
+                    distributedCacheListeners.stream().forEach(l -> l.put(key, value));
+                }
+                return put;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -331,6 +355,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
             try {
                 // TODO: emulate atomic replace
                 cacheClient.put(key, newValue, (Serializer<K>) keySerializer, valueSerializer);
+                distributedCacheListeners.stream().forEach(l -> l.put(key, newValue));
                 return true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -339,7 +364,7 @@ public class DistributedSavepointProviderImpl implements SavepointProvider {
 
         public V get(K key) {
             try {
-                return cacheClient.get(key, (Serializer<K>) keySerializer,  valueDeserializer);
+                return cacheClient.get(key, (Serializer<K>) keySerializer, valueDeserializer);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

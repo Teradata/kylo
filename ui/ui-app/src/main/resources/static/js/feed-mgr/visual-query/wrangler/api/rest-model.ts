@@ -21,6 +21,11 @@ export interface SaveRequest {
     mode?: string;
 
     /**
+     * Output options for the data source.
+     */
+    options?: { [k: string]: string };
+
+    /**
      * Target table name.
      */
     tableName?: string;

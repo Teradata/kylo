@@ -1,20 +1,16 @@
-/**
- *
- */
-package com.thinkbiganalytics.metadata.api.feed;
-
+package com.thinkbiganalytics.nifi.savepoint.api;
 /*-
  * #%L
- * thinkbig-metadata-api
+ * kylo-nifi-savepoint-message-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,29 +18,8 @@ package com.thinkbiganalytics.metadata.api.feed;
  * limitations under the License.
  * #L%
  */
+public interface SavepointQueues {
 
-import com.thinkbiganalytics.metadata.api.MetadataException;
+    String REPLAY_SAVEPOINT_RESPONE_QUEUE = "kylo.savepoint.replay.response";
 
-/**
- *
- */
-public class FeedNotFoundExcepton extends MetadataException {
-
-    private static final long serialVersionUID = 3867336790441208367L;
-
-    private Feed.ID id;
-
-    public FeedNotFoundExcepton(Feed.ID id) {
-        super();
-        this.id = id;
-    }
-
-    public FeedNotFoundExcepton(String message, Feed.ID id) {
-        super(message);
-        this.id = id;
-    }
-
-    public Feed.ID getId() {
-        return id;
-    }
 }

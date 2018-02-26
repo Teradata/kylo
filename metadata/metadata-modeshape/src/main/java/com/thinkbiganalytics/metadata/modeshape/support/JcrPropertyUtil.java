@@ -317,6 +317,11 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
     }
+    
+    public static <T> T getProperty(Node node, String name, T defaultValue) {
+        T value = getProperty(node, name, true);
+        return value == null ? defaultValue : value;
+    }
 
     public static Map<String, Object> getProperties(Node node) {
         try {

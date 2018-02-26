@@ -38,6 +38,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HiveTablePartitions extends ChangeSet {
 
+    private static final long serialVersionUID = 301189054569959895L;
+
     List<HiveTablePartition> partitions = new ArrayList<>();
 
     public List<HiveTablePartition> getPartitions() {

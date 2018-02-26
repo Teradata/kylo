@@ -47,9 +47,7 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
 
         var requestedTemplate = $transition$.params().templateName || '';
         var requestedTemplateId = $transition$.params().templateId || '';
-        var feedDescriptor = $transition$.params().feedDescriptor || '';
-        self.model.feedDescriptor = feedDescriptor;
-
+     
         /**
          * All the templates available
          * @type {Array}
@@ -230,6 +228,8 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
             var isCloning = $transition$.params().bcExclude_cloning;
             var cloneFeedName = $transition$.params().bcExclude_cloneFeedName;
             self.cloning = angular.isUndefined(isCloning) ? false : isCloning;
+            var feedDescriptor = $transition$.params().feedDescriptor || '';
+            self.model.feedDescriptor = feedDescriptor;
 
             getRegisteredTemplates().then(function(response) {
                 if(angular.isDefined(requestedTemplate) && requestedTemplate != ''){
@@ -238,6 +238,9 @@ define(['angular', 'feed-mgr/feeds/define-feed/module-name'], function (angular,
                     });
                     if(angular.isDefined(match)) {
                         FeedService.resetFeed();
+                        if(angular.isDefined(feedDescriptor) && feedDescriptor != ''){
+                            self.model.feedDescriptor =feedDescriptor;
+                        }
                         self.selectTemplate(match);
                     }
                 }

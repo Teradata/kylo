@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -285,6 +286,14 @@ public interface MetadataService {
      * @throws VersionNotFoundException if no version exists with the given ID
      */
     Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent);
+
+    /**
+     * @param feedId1
+     * @param versionId1
+     * @param versionId2
+     * @return
+     */
+    EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2);
 
     /**
      * Gets the user-defined fields for all categories and feeds.

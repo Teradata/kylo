@@ -56,8 +56,9 @@ import static com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndVali
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
  */
-@SuppressWarnings("serial")
 public class StandardDataValidator implements DataValidator, Serializable {
+
+    private static final long serialVersionUID = -3320427655280582069L;
 
     private static final Logger log = LoggerFactory.getLogger(StandardDataValidator.class);
 

@@ -30,21 +30,23 @@ import org.springframework.context.annotation.Configuration;
  */
 @Configuration
 public class SavepointReplayEventJmsConfiguration {
+
     private static final Logger LOG = LoggerFactory.getLogger(SavepointReplayEventJmsConfiguration.class);
 
-    public SavepointReplayEventJmsConfiguration(){
+    public SavepointReplayEventJmsConfiguration() {
         LOG.info("CREATING NEW SavepointReplayEventJmsConfiguration ");
     }
-
-    //   @Bean
-    //   public ConfigurationClassPostProcessor configurationClassPostProcessor() {
-    //      return new ConfigurationClassPostProcessor();
-    //  }
 
     @Bean
     public com.thinkbiganalytics.nifi.v2.core.savepoint.JmsSavepointReplayEventConsumer savepointReplayEventConsumer() {
         LOG.info("Creating new Spring Bean for JmsSavepointReplayEventConsumer");
         return new com.thinkbiganalytics.nifi.v2.core.savepoint.JmsSavepointReplayEventConsumer();
+    }
+
+    @Bean
+    public com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointReplayResponseJmsProducer savepointReplayResponseJmsProducer() {
+        LOG.info("Creating new Spring Bean for SavepointReplayResponseJmsProducer");
+        return new com.thinkbiganalytics.nifi.v2.core.savepoint.SavepointReplayResponseJmsProducer();
     }
 
 }

@@ -39,6 +39,8 @@ import javax.persistence.Table;
 @Table(name = "ITEM_LAST_MODIFIED")
 public class JpaItemLastModified implements Serializable, ItemLastModified {
 
+    private static final long serialVersionUID = 3792281204005781733L;
+
 
     @Id
     @Column(name = "ITEM_KEY")

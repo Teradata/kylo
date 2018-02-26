@@ -43,6 +43,14 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         editFeedModel: {},
         /**
+         * Feed model for comparison with editFeedModel in Versions tab
+         */
+        versionFeedModel: {},
+        /**
+         * Difference between editFeedModel and versionFeedModel
+         */
+        versionFeedModelDiff: [],
+        /**
          * The initial CRON expression used when a user selects Cron for the Schedule option
          */
         DEFAULT_CRON: "0 0 12 1/1 * ? *",
@@ -159,7 +167,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 tableOption: {},
                 cloned: false,
                 usedByFeeds: [],
-                allowIndexing: 'Y',
+                allowIndexing: true,
                 historyReindexingStatus: 'NEVER_RUN',
                 view: {
                     generalInfo: {disabled: false},
@@ -192,8 +200,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             data.createFeedModel.feedName += "_copy";
             data.createFeedModel.systemFeedName += "_copy";
             data.createFeedModel.owner = undefined;
+            _.each(data.createFeedModel.table.tableSchema.fields, function(field: any) {
+                field._id = _.uniqueId();
+            });
             return data.createFeedModel;
-
         },
         /**
          * Called when starting a new feed.
@@ -494,6 +504,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             //prepare access control changes if any
             EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
+            if(model.cloned){
+                model.state = null;
+            }
+
             if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                 // Set feed
 
@@ -656,6 +670,14 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
 
         },
         /**
+         * Call out to the server to get info on whether feed history data reindexing is configured in Kylo
+         * @returns {HttpPromise}
+         */
+        isKyloConfiguredForFeedHistoryDataReindexing: function() {
+            return $http.get(RestUrlService.FEED_HISTORY_CONFIGURED);
+        }
+        ,
+        /**
          * When creating a Feed find the First Column/Field that matches the given name
          * @param name
          * @returns {*|{}}
@@ -800,6 +822,39 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     return response.data;
                 });
         },
+        
+        
+        getFeedVersions: function (feedId: string) {
+            var successFn = function (response: any) {
+                return response.data;
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+        },
+        
+        getFeedVersion: function (feedId: string, versionId: string) {
+            var successFn = function (response: any) {
+                return response.data;
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+        },
+        
+        diffFeedVersions: function (feedId: string, versionId1: string, versionId2: string) {
+            var successFn = function (response: any) {
+                return response.data;
+
+            }
+            var errorFn = function (err: any) {
+                console.log('ERROR ', err)
+            }
+            return $http.get(RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+        },
+
         /**
          * check if the user has access on an entity
          * @param permissionsToCheck an Array or a single string of a permission/action to check against this entity and current user
@@ -840,11 +895,52 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
                 policy.validation = angular.copy(domainType.fieldPolicy.validation);
             }
-        }
-    } as any;
-    data.init();
-    return data;
+        },
+        /**
+         * Returns operation of the difference at given path for versioned feed
+         * @param path current diff model
+         * @returns {string} operation type, e.g. add, remove, update, no-change
+         */
+        diffOperation: function (path: any) {
+            return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
+        },
 
+        diffCollectionOperation: function (path: any) {
+            const self = this;
+            if (this.versionFeedModelDiff) {
+                if (this.versionFeedModelDiff[path]) {
+                    return this.versionFeedModelDiff[path].op;
+                } else {
+                    const patch = {op: 'no-change'};
+                    _.each(_.values(this.versionFeedModelDiff), function(p) {
+                        if (p.path.startsWith(path + "/")) {
+                            patch.op = self.joinVersionOperations(patch.op, p.op);
+                        }
+                    });
+                    return patch.op;
+                }
+            }
+            return 'no-change';
+        },
+
+        joinVersionOperations: function(op1: any, op2: any) {
+            const opLevels = {'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2};
+            if (opLevels[op1] === opLevels[op2] && op1 !== 'no-change') {
+                return 'replace';
+            }
+            return opLevels[op1] > opLevels[op2] ? op1 : op2;
+        },
+
+        resetVersionFeedModel: function() {
+            this.versionFeedModel = {};
+            this.versionFeedModelDiff = {};
+        }
+
+    } as any;
+    
+    data.init();
+    
+    return data;
 }
 
 /**

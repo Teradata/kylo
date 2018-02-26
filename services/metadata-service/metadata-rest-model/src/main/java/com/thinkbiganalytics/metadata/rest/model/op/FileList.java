@@ -38,6 +38,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FileList extends ChangeSet {
 
+    private static final long serialVersionUID = -7536107353771571623L;
+
     private List<String> paths = new ArrayList<>();
 
     public FileList() {

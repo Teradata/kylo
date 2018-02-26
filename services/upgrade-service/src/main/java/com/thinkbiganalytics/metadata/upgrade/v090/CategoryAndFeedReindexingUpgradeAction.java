@@ -25,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeException;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
@@ -83,7 +84,12 @@ public class CategoryAndFeedReindexingUpgradeAction implements UpgradeState {
                 try {
                     summaryNode.addMixin("tba:indexControlled");
                     summaryNode.setProperty("tba:allowIndexing", "Y");
-                    feedDataNode.addNode("tba:historyReindexing", "tba:historyReindexing");
+                    if(!JcrUtil.hasNode(feedDataNode, "tba:historyReindexing")) {
+                        log.info("Feed with id [{}] in category [{}] having name [{}] requires history reindexing support. Adding it.", jcrFeed.getId(), jcrFeed.getCategory().getDisplayName(),jcrFeed.getName());
+                        feedDataNode.addNode("tba:historyReindexing", "tba:historyReindexing");
+                    } else {
+                        log.info("Feed with id [{}] in category [{}] having name [{}] already has history reindexing support. Skipping step to add again.",jcrFeed.getId(), jcrFeed.getCategory().getDisplayName(),jcrFeed.getName());
+                    }
                     log.info("Upgraded feed with id [{}] in category [{}] having name [{}]", jcrFeed.getId(), jcrFeed.getCategory().getDisplayName(),jcrFeed.getName());
                 } catch (Exception e) {
                     log.error("Failed to configure feed {} to (1) support allowing/stopping metadata indexing, AND/OR (2) support reindexing of history data: {}", ((JcrFeed) feed).getName(), e);

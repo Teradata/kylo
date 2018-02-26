@@ -49,6 +49,8 @@ import javax.annotation.Nullable;
  */
 public class TableMergeSyncSupport implements Serializable {
 
+    private static final long serialVersionUID = 372113810587361467L;
+    
     private static final Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
 
     protected Connection conn;

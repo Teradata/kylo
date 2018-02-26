@@ -40,7 +40,6 @@ import java.io.Serializable;
 /**
  *
  */
-@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
@@ -50,6 +49,8 @@ import java.io.Serializable;
               }
 )
 public class ChangeSet implements Serializable {
+
+    private static final long serialVersionUID = 6706486541627004918L;
 
     @JsonSerialize(using = DateTimeSerializer.class)
     private DateTime intrinsicTime;
