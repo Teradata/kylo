@@ -152,6 +152,14 @@ public class JcrFeedAllowedActions extends JcrAllowedActions {
             } else if (action.implies(FeedAccessControl.EDIT_SUMMARY)) {
                 summaryPrivs.add(Privilege.JCR_ALL);                
             } else if (action.implies(FeedAccessControl.ACCESS_DETAILS)) {
+                // Currently, if a user has read access for the feed details, they need to be able to also Read the template.
+                // TODO: This should be removed for the same reason as the implicit category access was removed.
+                this.feed.getFeedDetails()
+                    .map(FeedDetails::getTemplate)
+                    .map(FeedManagerTemplate::getAllowedActions)
+                    .filter(allowedActions -> allowedActions.hasPermission(TemplateAccessControl.CHANGE_PERMS))
+                    .ifPresent(allowedActions -> allowedActions.enable(principal, TemplateAccessControl.ACCESS_TEMPLATE));
+                
                 summaryPrivs.add(Privilege.JCR_READ);
                 detailPrivs.add(Privilege.JCR_READ);                
                 dataPrivs.add(Privilege.JCR_READ);                
