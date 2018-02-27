@@ -59,13 +59,13 @@ import javax.inject.Inject;
 public class DefaultFeedManagerCategoryService implements FeedManagerCategoryService {
 
     @Inject
-    CategoryProvider categoryProvider;
+    private CategoryProvider categoryProvider;
 
     @Inject
-    CategoryModelTransform categoryModelTransform;
+    private CategoryModelTransform categoryModelTransform;
 
     @Inject
-    MetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
     private SecurityService securityService;

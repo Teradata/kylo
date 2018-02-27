@@ -23,10 +23,9 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.category.security.CategoryAccessControl;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
@@ -34,7 +33,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -46,11 +45,13 @@ import com.thinkbiganalytics.security.role.SecurityRole;
 import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
+import java.security.AccessControlException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -61,13 +62,7 @@ import javax.jcr.RepositoryException;
  * A JCR provider for {@link Category} objects.
  */
 public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
-
-    /**
-     * JCR node type manager
-     */
-    @Inject
-    ExtensibleTypeProvider extensibleTypeProvider;
-
+    
     @Inject
     private SecurityRoleProvider roleProvider;
 
@@ -161,74 +156,52 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public void deleteById(final Category.ID id) {
-        // Get category
-        final Category category = findById(id);
-
-        if (category != null) {
-
-            // Delete user type
-            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getSystemName()));
-            if (type != null) {
-                extensibleTypeProvider.deleteType(type.getId());
-            }
-
-            // Delete category
-            super.delete(category);
-        }
-    }
-
     @Nonnull
     @Override
     public Set<UserFieldDescriptor> getUserFields() {
-        return JcrPropertyUtil.getUserFields(ExtensionsConstants.USER_CATEGORY, extensibleTypeProvider);
+        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalCategoryUserFields()),
+                                                                UserFieldDescriptors.class);
+        return descriptors.getFields();
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        metadataAccess.commit(() -> {
-            JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_CATEGORY, userFields, extensibleTypeProvider);
-            return userFields;
-        }, MetadataAccess.SERVICE);
+        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalCategoryUserFields()),
+                                                                UserFieldDescriptors.class);
+        descriptors.setFields(userFields);
     }
 
     @Nonnull
     @Override
     public Optional<Set<UserFieldDescriptor>> getFeedUserFields(@Nonnull final Category.ID categoryId) {
-        return Optional.ofNullable(findById(categoryId))
-            .map(category -> JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getSystemName()), extensibleTypeProvider));
+        JcrCategory category = (JcrCategory) findById(categoryId);
+        
+        if (category != null) {
+            return category.getDetails().map(details ->  getFeedUserFields(details));
+        } else {
+            return Optional.empty();
+        }
     }
 
     @Override
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        metadataAccess.commit(() -> {
-            final Category category = findById(categoryId);
-            setFeedUserFields(category.getSystemName(), userFields);
-        }, MetadataAccess.SERVICE);
+        final JcrCategory category = (JcrCategory) findById(categoryId);
+        
+        if (category != null) {
+            setUserFieldDesriptors(category, userFields);
+        } else {
+            throw new CategoryNotFoundException(categoryId);
+        }
     }
     
     @Override
     public void renameSystemName(@Nonnull final Category.ID categoryId, @Nonnull final String newSystemName) {
         // Move the node to the new path
         JcrCategory category = (JcrCategory) findById(categoryId);
-        String currentName = category.getSystemName();
         final Node node = category.getNode();
 
         // Update properties
         category.setSystemName(newSystemName);
-        
-        // Move user fields
-        final Optional<Set<UserFieldDescriptor>> feedUserFields = getFeedUserFields(category.getId());
-
-        if (feedUserFields.isPresent()) {
-            final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(currentName));
-            if (type != null) {
-                extensibleTypeProvider.deleteType(type.getId());
-            }
-
-            setFeedUserFields(newSystemName, feedUserFields.get());
-        }
 
         try {
             final String newPath = JcrUtil.path(node.getParent().getPath(), newSystemName).toString();
@@ -238,7 +211,18 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         }
     }
 
-    private void setFeedUserFields(@Nonnull final String categorySystemName, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(categorySystemName), userFields, extensibleTypeProvider);
+    private Set<UserFieldDescriptor> getFeedUserFields(CategoryDetails details) {
+        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(details.getNode(), CategoryDetails.FEED_USER_FIELDS, UserFieldDescriptors.class);
+        return descriptors.getFields();
+    }
+    
+    private void setUserFieldDesriptors(JcrCategory category, Set<UserFieldDescriptor> fieldDescrs) {
+        if (category.getDetails().isPresent()) {
+            UserFieldDescriptors descriptors = JcrUtil.getJcrObject(category.getDetails().get().getNode(), 
+                                                                    CategoryDetails.FEED_USER_FIELDS, UserFieldDescriptors.class);
+            descriptors.setFields(fieldDescrs);
+        } else {
+            throw new AccessControlException("Permission denied adding feed fields to category: " + category.getTitle());
+        }
     }
 }

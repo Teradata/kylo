@@ -43,6 +43,14 @@ public class EntityUtil {
     public static String pathForCategory() {
         return JcrUtil.path("/metadata", "feeds").toString();
     }
+    
+    public static String pathForGlobalCategoryUserFields() {
+        return JcrUtil.path("/metadata", "feeds", "tba:categoryUserFields").toString();
+    }
+    
+    public static String pathForGlobalFeedUserFields() {
+        return JcrUtil.path("/metadata", "feeds", "tba:feedUserFields").toString();
+    }
 
     public static String pathForCategory(String categorySystemName) {
         return JcrUtil.path("/metadata", "feeds", categorySystemName).toString();
