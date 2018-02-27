@@ -47,6 +47,7 @@ public class FeedManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter 
             //static path will not be defined when running from source
             LOG.info("Setting up static resources to be at '{}'", staticPath);
             registry.addResourceHandler("/feed-mgr/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath);
         }
     }
 }
