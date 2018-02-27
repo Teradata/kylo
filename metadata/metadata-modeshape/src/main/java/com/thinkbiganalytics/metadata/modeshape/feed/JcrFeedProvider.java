@@ -22,7 +22,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -35,7 +34,6 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedChange;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.PropertyChange;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
@@ -58,18 +56,15 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
 import com.thinkbiganalytics.metadata.modeshape.common.mixin.VersionProviderMixin;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedEntityActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -142,18 +137,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     private DatasourceProvider datasourceProvider;
-
-    /**
-     * JCR node type manager
-     */
-    @Inject
-    private ExtensibleTypeProvider extensibleTypeProvider;
-
-    /**
-     * Transaction support
-     */
-    @Inject
-    private MetadataAccess metadataAccess;
 
     @Inject
     private SecurityRoleProvider roleProvider;
@@ -347,8 +330,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         String feedParentPath = category.getFeedParentPath();
         boolean newFeed = !hasEntityNode(feedParentPath, feedSystemName);
         Node feedNode = findOrCreateEntityNode(feedParentPath, feedSystemName, getJcrEntityClass());
-        boolean versionable = JcrVersionUtil.isVersionable(feedNode);
-
         JcrFeed feed = new JcrFeed(feedNode, category, this.opsAccessProvider);
 
         feed.setSystemName(feedSystemName);
@@ -435,19 +416,19 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public PreconditionBuilder buildPrecondition(ID feedId) {
         JcrFeed feed = (JcrFeed) findById(feedId);
 
-        return buildPrecondition(feed);
+        if (feed != null) {
+            return buildPrecondition(feed);
+        } else {
+            throw new FeedNotFoundException(feedId);
+        }
     }
 
     private PreconditionBuilder buildPrecondition(JcrFeed feed) {
         try {
-            if (feed != null) {
-                Node slaNode = feed.createNewPrecondition();
-                ServiceLevelAgreementBuilder slaBldr = ((JcrServiceLevelAgreementProvider) this.slaProvider).builder(slaNode);
+            Node slaNode = feed.createNewPrecondition();
+            ServiceLevelAgreementBuilder slaBldr = ((JcrServiceLevelAgreementProvider) this.slaProvider).builder(slaNode);
 
-                return new JcrPreconditionbuilder(slaBldr, feed);
-            } else {
-                throw new FeedNotFoundException(feed.getId());
-            }
+            return new JcrPreconditionbuilder(slaBldr, feed);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the precondition for feed " + feed.getId(), e);
         }
@@ -779,16 +760,16 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Nonnull
     @Override
     public Set<UserFieldDescriptor> getUserFields() {
-        return JcrPropertyUtil.getUserFields(ExtensionsConstants.USER_FEED, extensibleTypeProvider);
+        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalFeedUserFields()),
+                                                                UserFieldDescriptors.class);
+        return descriptors.getFields();
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        // TODO service?
-        metadataAccess.commit(() -> {
-            JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_FEED, userFields, extensibleTypeProvider);
-            return userFields;
-        }, MetadataAccess.SERVICE);
+        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalFeedUserFields()),
+                                                                UserFieldDescriptors.class);
+        descriptors.setFields(userFields);
     }
 
     public void populateInverseFeedDependencies() {

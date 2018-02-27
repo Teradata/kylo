@@ -40,7 +40,7 @@ import org.springframework.stereotype.Component;
  * Removes category node reference property from all feeds.  A feed's category is now only accessed through
  * the feed node's parentage.
  */
-@Component("categoryReferenceRemovealUpgradeAction090")
+@Component("categoryReferenceRemovealUpgradeAction091")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class CategoryReferenceRemovealUpgradeAction implements UpgradeState {
 
@@ -56,7 +56,7 @@ public class CategoryReferenceRemovealUpgradeAction implements UpgradeState {
 
     @Override
     public void upgradeTo(final KyloVersion targetVersion) {
-        log.info("Recording principal types for ACLs for version: {}", targetVersion);
+        log.info("Removing redundent category reference from feeds: {}", targetVersion);
         
         this.feedProvider.getFeeds().stream()
             .map(JcrFeed.class::cast)
