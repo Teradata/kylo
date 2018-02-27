@@ -2,6 +2,7 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerFeedService = /** @class */ (function () {
+        //static $inject = ['OpsManagerRestUrlService'];
         function OpsManagerFeedService($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService) {
             var _this = this;
             this.$q = $q;
@@ -148,7 +149,6 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
             };
             return this.data;
         }
-        OpsManagerFeedService.$inject = ['OpsManagerRestUrlService'];
         return OpsManagerFeedService;
     }());
     exports.default = OpsManagerFeedService;

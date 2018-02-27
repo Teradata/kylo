@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "../services/OpsManagerDashboardService"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1) {
+define(["require", "exports", "angular", "./module-name", "../services/OpsManagerDashboardService", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1, OpsManagerRestUrlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OverviewController = /** @class */ (function () {
@@ -46,8 +46,7 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
                 }
             };
             this.setDashboardRefreshInterval = function () {
-                var _this = this;
-                this.interval = this.$interval(function () {
+                _this.interval = _this.$interval(function () {
                     var start = new Date().getTime();
                     if (!_this.OpsManagerDashboardService.isFetchingDashboard()) {
                         //only fetch if we are not fetching
@@ -56,11 +55,11 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
                             //checkAndAlignDataWithRefreshInterval();
                         });
                     }
-                }, this.refreshInterval);
+                }, _this.refreshInterval);
             };
             this.init = function () {
-                this.OpsManagerDashboardService.fetchDashboard();
-                this.setDashboardRefreshInterval();
+                _this.OpsManagerDashboardService.fetchDashboard();
+                _this.setDashboardRefreshInterval();
             };
             /**
              * Indicates that the user is allowed to access the Operations Manager.
@@ -136,6 +135,7 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
     }());
     exports.default = OverviewController;
     angular.module(module_name_1.moduleName)
+        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
         .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
         .controller("OverviewController", ["$scope", "$mdDialog", "$interval", "$timeout",
         "AccessControlService", "HttpService", "OpsManagerDashboardService", OverviewController]);

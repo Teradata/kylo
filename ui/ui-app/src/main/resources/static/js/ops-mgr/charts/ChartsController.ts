@@ -3,6 +3,10 @@ import {moduleName} from "./module-name";
 import PivotTableUtil from "./PivotTableUtil";
 import OpsManagerFeedService from "../services/OpsManagerFeedService";
 import OpsManagerJobService from "../services/OpsManagerJobService";
+import IconService from "../services/IconStatusService";
+
+import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import AlertsService from "../services/AlertsService";
 import * as _ from "underscore";
 import * as moment from "moment";
 
@@ -37,9 +41,10 @@ constructor(private $scope: any,
         this.filtered = false;
         this.loading = false;
 
-        this.pivotConfig = {rendererName:"Job Details", aggregatorName: "Average",
+        this.pivotConfig = {//rendererName:"Job Details", 
+            aggregatorName: "Average",
             vals: ["Duration (min)"],
-           // rendererName: "Stacked Bar Chart",
+            rendererName: "Stacked Bar Chart",
             cols: ["Start Date"], rows: ["Feed Name"],
             unusedAttrsVertical: false};
 
@@ -197,9 +202,7 @@ constructor(private $scope: any,
                 derivedAttributes: {
                     "Start Date": ($ as any).pivotUtilities.derivers.dateFormat("Start Time", "%y-%m-%d"),
                     "End Date": ($ as any).pivotUtilities.derivers.dateFormat("End Time", "%y-%m-%d"),
-                    "Duration (sec)": (mp: any)=> {
-                        return mp["Duration (min)"] * 60;
-                    }
+                    "Duration (sec)": (mp: any)=>{ return mp["Duration (min)"] * 60;}
                 },
                 rendererName: this.pivotConfig.rendererName,
                 aggregatorName: this.pivotConfig.aggregatorName,
@@ -259,6 +262,9 @@ constructor(private $scope: any,
 }
 
 angular.module(moduleName)
+        .service("AlertsService", [AlertsService])
+        .service("IconService",[IconService])
+        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
  .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
  .service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
  .controller('ChartsController',

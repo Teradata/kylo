@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
-import "pascalprecht.translate";
+import 'pascalprecht.translate';
 import * as _ from 'underscore';
 import OpsManagerJobService from "../../services/OpsManagerJobService";
 import IconService from "../../services/IconStatusService";

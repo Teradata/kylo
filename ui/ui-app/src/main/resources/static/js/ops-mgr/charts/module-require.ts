@@ -1,2 +1,2 @@
 import * as angular from 'angular';
-import 'ChartsController';
+import "./ChartsController";

@@ -539,7 +539,7 @@ export class JobsCardController implements ng.IComponentController{
             })
         };
 
-        bandonJob = (event: any, job: any)=> {
+        abandonJob = (event: any, job: any)=> {
             event.stopPropagation();
             event.preventDefault();
             var instanceId = job.instanceId;

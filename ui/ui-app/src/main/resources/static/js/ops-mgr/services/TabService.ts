@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 export default class TabService{
     tabs: any = {};
     tabMetadata: any = {};
-    tabPageData: any;
+    //tabPageData: any;
     constructor(private PaginationDataService: any){}
     registerTabs(pageName: any, tabNamesArray: any, currentTabName: any): any {
        let PaginationDataService = this.PaginationDataService;
@@ -47,7 +47,7 @@ export default class TabService{
 
             return this.tabs[pageName];
         }
-        getTab = function (pageName: any, tabName: any) {
+        getTab = (pageName: any, tabName: any) =>{
             var tabs = this.tabs[pageName];
             var tab = null;
             if (tabs) {
@@ -57,30 +57,30 @@ export default class TabService{
             }
             return tab;
         }
-        getTabs = function (pageName: any) {
+        getTabs = (pageName: any)=> {
             return this.tabs[pageName];
         }
 
-        getActiveTab = function (pageName: any) {
+        getActiveTab =  (pageName: any) =>{
             var tabs = this.tabs[pageName];
             var tab = null;
             if (tabs) {
-                tab = _.find(tabs, function (tab: any) {
+                tab = _.find(tabs,  (tab: any) =>{
                     return tab.active == true;
                 });
             }
             return tab;
         }
 
-        metadata = function (pageName: any) {
+        metadata = (pageName: any) =>{
             return this.tabMetadata[pageName];
         }
 
-        tabNameMap = function (pageName: any) {
+        tabNameMap =  (pageName: any)=> {
             var tabs = this.tabs[pageName];
             var tabMap = {};
             if (tabs) {
-                tabMap = tabs.reduce(function (obj: any, tab: any) {
+                tabMap = tabs.reduce( (obj: any, tab: any) =>{
                     obj[tab.title] = tab;
                     return obj;
                 }, {});
@@ -88,45 +88,46 @@ export default class TabService{
             return tabMap;
         }
 
-        addContent = function (pageName: any, tabName: any, content: any) {
+        addContent =  (pageName: any, tabName: any, content: any)=> {
             var tab = this.getTab(pageName, tabName);
             if (tab) {
                 tab.addContent(content);
             }
         }
 
-        setTotal = function (pageName: any, tabName: any, total: any) {
+        setTotal =  (pageName: any, tabName: any, total: any) =>{
             var tab = this.getTab(pageName, tabName);
             if (tab) {
                 tab.setTotal(total)
             }
         }
 
-        clearTabs = function (pageName: any) {
+        clearTabs =  (pageName: any)=> {
             var tabs = this.tabs[pageName];
             if (tabs) {
-                angular.forEach(tabs, function (tab: any, i: any) {
+                angular.forEach(tabs, (tab: any, i: any) =>{
                     tab.clearContent();
                 })
             }
         }
 
      
-
+        total: any;
+        content: any;
         tabContent: any[];
-        tabPageDat = function(pageName: any){// tabPageData
+        tabPageData = (pageName: any)=>{// tabPageData
             if(angular.isUndefined(this.tabPageData[pageName])){
                 var data = {
                     total: 0,
                     content: this.tabContent,
-                    setTotal: function (total: any) {
+                    setTotal:  (total: any)=> {
                         this.total = total;
                     },
-                    clearContent: function () {
+                    clearContent:  ()=> {
                         this.content = [];
                         this.total = 0;
                     },
-                    addContent: function (content: any) {
+                    addContent: (content: any) =>{
                         this.content.push(content);
                     }
                 };
@@ -135,13 +136,13 @@ export default class TabService{
             return this.tabPageData[pageName];
         }
 
-        selectedTab = function (pageName: any, tab: any) {
-            angular.forEach(this.tabs[pageName], function (aTab: any, i: any) {
+        selectedTab =  (pageName: any, tab: any) =>{
+            angular.forEach(this.tabs[pageName], (aTab: any, i: any) =>{
                 aTab.active = false;
             });
             tab.active = true;
-            this.PaginationDataService.activateTab(this.pageName, tab.title);
-            var currentPage = this.PaginationDataService.currentPage(this.pageName, tab.title);
+            this.PaginationDataService.activateTab(pageName, tab.title);
+            var currentPage = this.PaginationDataService.currentPage(pageName, tab.title);
             tab.currentPage = currentPage;
         }
 }

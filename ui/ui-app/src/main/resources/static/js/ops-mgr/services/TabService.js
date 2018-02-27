@@ -2,12 +2,14 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var TabService = /** @class */ (function () {
+        //tabPageData: any;
         function TabService(PaginationDataService) {
+            var _this = this;
             this.PaginationDataService = PaginationDataService;
             this.tabs = {};
             this.tabMetadata = {};
             this.getTab = function (pageName, tabName) {
-                var tabs = this.tabs[pageName];
+                var tabs = _this.tabs[pageName];
                 var tab = null;
                 if (tabs) {
                     tab = _.find(tabs, function (tab) {
@@ -17,10 +19,10 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 return tab;
             };
             this.getTabs = function (pageName) {
-                return this.tabs[pageName];
+                return _this.tabs[pageName];
             };
             this.getActiveTab = function (pageName) {
-                var tabs = this.tabs[pageName];
+                var tabs = _this.tabs[pageName];
                 var tab = null;
                 if (tabs) {
                     tab = _.find(tabs, function (tab) {
@@ -30,10 +32,10 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 return tab;
             };
             this.metadata = function (pageName) {
-                return this.tabMetadata[pageName];
+                return _this.tabMetadata[pageName];
             };
             this.tabNameMap = function (pageName) {
-                var tabs = this.tabs[pageName];
+                var tabs = _this.tabs[pageName];
                 var tabMap = {};
                 if (tabs) {
                     tabMap = tabs.reduce(function (obj, tab) {
@@ -44,52 +46,52 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 return tabMap;
             };
             this.addContent = function (pageName, tabName, content) {
-                var tab = this.getTab(pageName, tabName);
+                var tab = _this.getTab(pageName, tabName);
                 if (tab) {
                     tab.addContent(content);
                 }
             };
             this.setTotal = function (pageName, tabName, total) {
-                var tab = this.getTab(pageName, tabName);
+                var tab = _this.getTab(pageName, tabName);
                 if (tab) {
                     tab.setTotal(total);
                 }
             };
             this.clearTabs = function (pageName) {
-                var tabs = this.tabs[pageName];
+                var tabs = _this.tabs[pageName];
                 if (tabs) {
                     angular.forEach(tabs, function (tab, i) {
                         tab.clearContent();
                     });
                 }
             };
-            this.tabPageDat = function (pageName) {
-                if (angular.isUndefined(this.tabPageData[pageName])) {
+            this.tabPageData = function (pageName) {
+                if (angular.isUndefined(_this.tabPageData[pageName])) {
                     var data = {
                         total: 0,
-                        content: this.tabContent,
+                        content: _this.tabContent,
                         setTotal: function (total) {
-                            this.total = total;
+                            _this.total = total;
                         },
                         clearContent: function () {
-                            this.content = [];
-                            this.total = 0;
+                            _this.content = [];
+                            _this.total = 0;
                         },
                         addContent: function (content) {
-                            this.content.push(content);
+                            _this.content.push(content);
                         }
                     };
-                    this.tabPageData[pageName] = data;
+                    _this.tabPageData[pageName] = data;
                 }
-                return this.tabPageData[pageName];
+                return _this.tabPageData[pageName];
             };
             this.selectedTab = function (pageName, tab) {
-                angular.forEach(this.tabs[pageName], function (aTab, i) {
+                angular.forEach(_this.tabs[pageName], function (aTab, i) {
                     aTab.active = false;
                 });
                 tab.active = true;
-                this.PaginationDataService.activateTab(this.pageName, tab.title);
-                var currentPage = this.PaginationDataService.currentPage(this.pageName, tab.title);
+                _this.PaginationDataService.activateTab(pageName, tab.title);
+                var currentPage = _this.PaginationDataService.currentPage(pageName, tab.title);
                 tab.currentPage = currentPage;
             };
         }

@@ -97,7 +97,7 @@ define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlS
         return OpsManagerJobService;
     }());
     exports.default = OpsManagerJobService;
-    angular.module(module_name_1.moduleName, [])
+    angular.module(module_name_1.moduleName)
         .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService]);
 });

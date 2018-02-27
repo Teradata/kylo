@@ -56,7 +56,7 @@ export default class ProvenanceEventStatsService{
     }
 }
 
-   angular.module(moduleName,[])
+   angular.module(moduleName)
    .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
    .factory('ProvenanceEventStatsService',['$http','$q','OpsManagerRestUrlService',ProvenanceEventStatsService]);
  

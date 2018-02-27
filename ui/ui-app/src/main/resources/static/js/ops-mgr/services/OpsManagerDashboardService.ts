@@ -3,7 +3,7 @@ import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
-import AlertsService from "./AlertsService";
+import AlertsServiceV2 from "./AlertsServiceV2";
 import IconService from "./IconStatusService";
 import OpsManagerFeedService from "./OpsManagerFeedService";
 
@@ -198,8 +198,8 @@ export default class OpsManagerDashboardService{
     
 }
 
-angular.module(moduleName,[])
-.service("AlertsService", [AlertsService])
+angular.module(moduleName)
+.service('AlertsService',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2])
 .service("IconService",[IconService])
 .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
 .service("OpsManagerFeedService",['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService','OpsManagerRestUrlService',OpsManagerFeedService])

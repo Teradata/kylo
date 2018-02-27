@@ -50,7 +50,7 @@ define(["angular", "feed-mgr/datasources/module-name", "kylo-utils/LazyLoadUtil"
         });
 
         function lazyLoadController(path) {
-            return lazyLoadUtil.lazyLoadController(path, ['feed-mgr/datasources/module-require']);
+            return lazyLoadUtil.default.lazyLoadController(path, ['feed-mgr/datasources/module-require']);
         }
     }]);
 });

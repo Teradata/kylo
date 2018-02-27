@@ -101,7 +101,7 @@ define(['angular', 'feed-mgr/tables/module-name','kylo-utils/LazyLoadUtil','cons
 
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path,'feed-mgr/tables/module-require');
+            return lazyLoadUtil.default.lazyLoadController(path,'feed-mgr/tables/module-require');
         }
 
     }]);

@@ -111,7 +111,7 @@ data: any = {};
 
 }
 
-angular.module(moduleName,[])
+angular.module(moduleName)
         .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
         .factory('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService]);
     

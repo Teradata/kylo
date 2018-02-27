@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import ServicesStatusData from "../../services/ServicesStatusService";
-import AlertsService from "../../services/AlertsService";
+import AlertsServiceV2 from "../../services/AlertsServiceV2";
 import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 
 export default class controller implements ng.IComponentController{
@@ -13,12 +13,11 @@ feedName: any;
 constructor(private $scope: any,
             private $element: any,
             private $interval: any,
-            private AlertsService: any,
+            private AlertsServiceV2: AlertsServiceV2,
             private StateService: any,
-            private ServicesStatusData: any,
             private OpsManagerDashboardService: any,
             private BroadcastService: any){
-                this.alertsService = AlertsService;
+              //  this.alertsService = AlertsServiceV2;
                 this.alerts = [];
                  /**
                  * Handle on the feed alerts refresh interval
@@ -41,28 +40,28 @@ constructor(private $scope: any,
                 });
          }
 
-        watchDashboard=function() {
+        watchDashboard=()=> {
             this.BroadcastService.subscribe(this.$scope,this.OpsManagerDashboardService.DASHBOARD_UPDATED,(dashboard: any)=>{
                 var alerts = this.OpsManagerDashboardService.dashboard.alerts;
-                this.AlertsService.transformAlerts(alerts);
+                this.AlertsServiceV2.transformAlerts(alerts);
                 this.alerts = alerts;
             });
         }
 
-        fetchFeedAlerts=function(){
-            this.AlertsService.fetchFeedAlerts(this.feedName).then((alerts: any)=> {
+        fetchFeedAlerts=()=>{
+            this.AlertsServiceV2.fetchFeedAlerts(this.feedName).then((alerts: any)=> {
                 this.alerts =alerts;
             });
         }
 
-        stopFeedRefresh=function(){
+        stopFeedRefresh=()=>{
             if(this.feedRefresh != null){
                 this.$interval.cancel(this.feedRefresh);
                 this.feedRefresh = null;
             }
         }
 
-        navigateToAlerts = function(alertsSummary: any) {
+        navigateToAlerts = (alertsSummary: any)=>{
             //generate Query
             var query = "UNHANDLED,"+ alertsSummary.type;
             if(alertsSummary.groupDisplayName != null && alertsSummary.groupDisplayName != null) {
@@ -72,15 +71,15 @@ constructor(private $scope: any,
                 query += ","+alertsSummary.subtype;
             }
             this.StateService.OpsManager().Alert().navigateToAlerts(query);
-
         }
 }
 
  angular.module(moduleName)
-  .service("AlertsService", [AlertsService])
-  .service("ServicesStatusData", ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 'OpsManagerRestUrlService',ServicesStatusData])
-  .service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
- .controller('AlertsOverviewController', ["$scope","$element","$interval","AlertsService","StateService","OpsManagerDashboardService","BroadcastService",controller]);
+.service('AlertsServiceV2',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2])
+.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
+.controller('AlertsOverviewController', 
+                ["$scope","$element","$interval","AlertsServiceV2","StateService","OpsManagerDashboardService",
+                "BroadcastService",controller]);
  angular.module(moduleName)
         .directive('tbaAlerts', [()=> {
                             return {

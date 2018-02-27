@@ -333,7 +333,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
                     //  getRunningJobExecutionData(instanceId,data.executionId);
                 });
             };
-            this.bandonJob = function (event, job) {
+            this.abandonJob = function (event, job) {
                 event.stopPropagation();
                 event.preventDefault();
                 var instanceId = job.instanceId;

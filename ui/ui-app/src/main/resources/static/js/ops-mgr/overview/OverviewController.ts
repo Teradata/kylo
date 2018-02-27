@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
 import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
+import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 
 export default class OverviewController implements ng.IComponentController{
 allowed: boolean;
@@ -147,7 +148,7 @@ constructor(private $scope: any,
     }
 
 
-    setDashboardRefreshInterval=function() {
+    setDashboardRefreshInterval=()=> {
         this.interval = this.$interval( ()=> {
             var start = new Date().getTime();
             if (!this.OpsManagerDashboardService.isFetchingDashboard()) {
@@ -160,7 +161,7 @@ constructor(private $scope: any,
         }, this.refreshInterval);
     }
 
-     init=function(){
+     init=()=>{
         this.OpsManagerDashboardService.fetchDashboard();
         this.setDashboardRefreshInterval();
 
@@ -171,6 +172,7 @@ constructor(private $scope: any,
 }
 
 angular.module(moduleName)
+.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
 .service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
 .controller("OverviewController", 
             ["$scope","$mdDialog","$interval","$timeout",

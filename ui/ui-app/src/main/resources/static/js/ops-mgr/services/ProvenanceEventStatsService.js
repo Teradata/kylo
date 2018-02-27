@@ -50,7 +50,7 @@ define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlS
         return ProvenanceEventStatsService;
     }());
     exports.default = ProvenanceEventStatsService;
-    angular.module(module_name_1.moduleName, [])
+    angular.module(module_name_1.moduleName)
         .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('ProvenanceEventStatsService', ['$http', '$q', 'OpsManagerRestUrlService', ProvenanceEventStatsService]);
 });

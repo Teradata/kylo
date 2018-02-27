@@ -1,12 +1,12 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
-const AccessConstants =  require("../../constants/AccessConstants");
+import AccessConstants from "../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
 import "angular-nvd3";
-import "../alerts/module";
+import  "../alerts/module";
 import "pascalprecht.translate";
 
 class ModuleFactory  {
@@ -15,6 +15,11 @@ class ModuleFactory  {
         this.module = angular.module(moduleName,[]);
         this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
     }
+    
+  
+    /**
+     * LAZY loaded in from /app.js
+     */
     configFn($stateProvider:any, $compileProvider: any) {
        //preassign modules until directives are rewritten to use the $onInit method.
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
