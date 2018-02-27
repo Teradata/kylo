@@ -126,6 +126,11 @@
             <groupId>org.apache.activemq</groupId>
             <artifactId>activemq-client</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.kylo</groupId>
+            <artifactId>kylo-thrift-proxy-core</artifactId>
+            <version>0.9.1-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
     <build>
