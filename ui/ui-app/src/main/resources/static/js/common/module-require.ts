@@ -1,5 +1,5 @@
-import "angular";
-import "./module-name";
+import * as angular from "angular";
+import {moduleName} from "./module-name";
 import "./ng-if-permission/ng-if-permission";
 import "./card-layout/card-layout";
 import "./card-filter-header/card-filter-header";
@@ -37,3 +37,5 @@ import "./multiple-email-validator/multiple-email-validator.js";
 import "./lazy-load-retain-order/lazy-load-retain-order";
 import "./notifications/angular1";
 import "jquery";
+
+export const app = angular.module(moduleName);

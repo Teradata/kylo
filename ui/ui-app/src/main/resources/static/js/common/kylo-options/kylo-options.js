@@ -18,7 +18,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                     }
                     // Get user name
                     $scope.username = "User";
-                    this.$http.get("/proxy/v1/about/me").then(function (response) {
+                    $http.get("/proxy/v1/about/me").then(function (response) {
                         $scope.username = response.data.systemName;
                     });
                     $scope.openMenu = function ($mdOpenMenu, ev) {
@@ -29,7 +29,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         $mdOpenMenu(ev);
                     };
                     $scope.aboutKylo = function () {
-                        this.AboutKyloService.showAboutDialog();
+                        AboutKyloService.showAboutDialog();
                         if ($scope.selectedOption) {
                             $scope.selectedOption()('aboutKylo');
                         }
@@ -38,7 +38,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                      * Redirects the user to the logout page.
                      */
                     $scope.logout = function () {
-                        this.$window.location.href = "/logout";
+                        $window.location.href = "/logout";
                     };
                 }
             };

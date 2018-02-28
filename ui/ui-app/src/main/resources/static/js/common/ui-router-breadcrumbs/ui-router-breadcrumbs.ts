@@ -9,7 +9,7 @@ var templateUrl = 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html';
 
 //module = angular.module(moduleName);
 angular.module(moduleName).directive("uiRouterBreadcrumbs",
-  ['$interpolate', '$state','$transitions','$state', () => {
+  ['$interpolate', '$state','$transitions','$state', ($interpolate, $state, $transitions) => {
         return {
             restrict: 'E',
             templateUrl: (elem: any, attrs: any)=> {
@@ -27,14 +27,14 @@ angular.module(moduleName).directive("uiRouterBreadcrumbs",
                 }
                 */
 
-                this.$transitions.onSuccess({},(transition: any)=>{
+                $transitions.onSuccess({},(transition: any)=>{
                    var toState = transition.to();
                    var toParams = transition.params();
                    if(toState.data !== undefined ) {
                        if (toState.data.noBreadcrumb && toState.data.noBreadcrumb == true) {
                            //console.log('Skipping breadcrumb for ',toState)
                        } else {
-                           this.updateBreadcrumbs(toState, toParams);
+                           updateBreadcrumbs(toState, toParams);
                        }
                    }
                 });
@@ -77,7 +77,7 @@ angular.module(moduleName).directive("uiRouterBreadcrumbs",
                     updateLastBreadcrumbs();
                 }
                 $scope.navigate = (crumb: any)=> {
-                    this.$state.go(crumb.route,crumb.params);
+                    $state.go(crumb.route,crumb.params);
                 }
 
                 function getBreadcrumbIndex(state: any){
@@ -129,7 +129,7 @@ angular.module(moduleName).directive("uiRouterBreadcrumbs",
                     } else {
                         // use the $interpolate service to handle any bindings in the propertyReference string.
                         interpolationContext =  (typeof currentState.locals !== 'undefined') ? currentState.locals.globals : currentState;
-                        displayName = this.$interpolate(propertyReference)(interpolationContext);
+                        displayName = $interpolate(propertyReference)(interpolationContext);
                         return displayName;
                     }
                 }

@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 'PaginationDataService', 
-    () =>{
+    ($mdDialog, $timeout, PaginationDataService) =>{
         return {
             restrict: "E",
             scope: {
@@ -25,15 +25,15 @@ angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 
                 }
 
                 $scope.getPaginationId = function (tab: any) {
-                    return this.PaginationDataService.paginationId($scope.menuKey, tab.title);
+                    return PaginationDataService.paginationId($scope.menuKey, tab.title);
                 };
 
                 $scope.getCurrentPage = function (tab: any) {
-                    return this.PaginationDataService.currentPage($scope.menuKey, tab.title);
+                    return PaginationDataService.currentPage($scope.menuKey, tab.title);
                 };
 
                 function setViewTypeOption(toggle: any) {
-                    $scope.viewType.value = this.PaginationDataService.viewType($scope.menuKey);
+                    $scope.viewType.value = PaginationDataService.viewType($scope.menuKey);
 
                     if (toggle === true) {
                         $scope.viewType.value = $scope.viewType.value === 'list' ? 'table' : 'list';
@@ -54,7 +54,7 @@ angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 
                 }
 
                 $scope.rowsPerPage = 5;
-                $scope.paginationData = this.PaginationDataService.paginationData($scope.menuKey);
+                $scope.paginationData = PaginationDataService.paginationData($scope.menuKey);
                 var originatorEv;
                 $scope.openMenu = function ($mdOpenMenu: any, ev: any) {
 
@@ -66,7 +66,7 @@ angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 
                         }
                     }
                     if ($scope.showPagination) {
-                        var tabData = this.PaginationDataService.getActiveTabData($scope.menuKey);
+                        var tabData = PaginationDataService.getActiveTabData($scope.menuKey);
                         $scope.currentPage = tabData.currentPage;
                         $scope.paginationId = tabData.paginationId;
                     }
@@ -93,7 +93,7 @@ angular.module(moduleName).directive('tbaOptionsMenu', ['$mdDialog','$timeout', 
                     var itemCopy = {};
                     angular.extend(itemCopy, item);
                     if (item.type === 'viewType') {
-                        this.PaginationDataService.toggleViewType($scope.menuKey);
+                        PaginationDataService.toggleViewType($scope.menuKey);
                         setViewTypeOption(true);
                     }
 

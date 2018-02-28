@@ -68,7 +68,7 @@ import * as _ from "underscore";
                 }
 
                 function adjustOverflow(){
-                    var windowHeight = angular.element(this.$window).height() - 150;
+                    var windowHeight = angular.element($window).height() - 150;
                     if(element.height() > windowHeight){
                         $overflowElement.css('overflow-y','scroll');
                         $overflowElement.css('height', (windowHeight -50));
@@ -86,7 +86,7 @@ import * as _ from "underscore";
 
 
 
-                angular.element(this.$window).bind("resize.fixedtopright",  ()=> {
+                angular.element($window).bind("resize.fixedtopright",  ()=> {
                    // if(element.is(':visible')) {
                         adjustLeft();
                     adjustOverflow();
@@ -102,7 +102,7 @@ import * as _ from "underscore";
 
 
                 $scope.$on('$destroy',()=> {
-                    angular.element(this.$window).unbind("resize.fixedtopright");
+                    angular.element($window).unbind("resize.fixedtopright");
                   //  $content.unbind("scroll");
                     element.unbind('adjustoverflow');
                 });

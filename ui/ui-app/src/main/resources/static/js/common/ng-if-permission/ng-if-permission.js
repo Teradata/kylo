@@ -49,30 +49,30 @@ define(["require", "exports", "angular", "../module-name", "kylo-common-module",
                      */
                     function check(permissions, entity, entityType) {
                         if (angular.isDefined(entity) && angular.isDefined(entityType)) {
-                            validate(this.AccessControlService.hasEntityAccess(permissions, entity, entityType));
+                            validate(AccessControlService.hasEntityAccess(permissions, entity, entityType));
                         }
                         else {
-                            this.AccessControlService.getUserAllowedActions(this.AccessControlService.ACCESS_MODULES.SERVICES, true)
+                            AccessControlService.getUserAllowedActions(AccessControlService.ACCESS_MODULES.SERVICES, true)
                                 .then(function (actionSet) {
-                                var valid = this.AccessControlService.hasAnyAction(permissions, actionSet.actions);
+                                var valid = AccessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
                             }, true);
                         }
                     }
                     function validate(valid) {
-                        this.$q.when(valid).then(function (isValid) {
+                        $q.when(valid).then(function (isValid) {
                             if (isValid) {
                                 if (!childScope) {
                                     $transclude(function (clone, newScope) {
                                         childScope = newScope;
-                                        clone[clone.length++] = this.$compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
+                                        clone[clone.length++] = $compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
                                         // Note: We only need the first/last node of the cloned nodes.
                                         // However, we need to keep the reference to the jqlite wrapper as it might be changed later
                                         // by a directive with templateUrl when its template arrives.
                                         block = {
                                             clone: clone
                                         };
-                                        this.$animate.enter(clone, $element.parent(), $element);
+                                        $animate.enter(clone, $element.parent(), $element);
                                     });
                                 }
                             }
@@ -87,7 +87,7 @@ define(["require", "exports", "angular", "../module-name", "kylo-common-module",
                                 }
                                 if (block) {
                                     previousElements = getBlockNodes(block.clone);
-                                    this.$animate.leave(previousElements).done(function (response) {
+                                    $animate.leave(previousElements).done(function (response) {
                                         if (response !== false)
                                             previousElements = null;
                                     });

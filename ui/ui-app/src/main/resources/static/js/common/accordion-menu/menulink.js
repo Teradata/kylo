@@ -1,10 +1,9 @@
 define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
     'use strict';
     angular.module(module_name_1.moduleName).run(['$templateCache', function ($templateCache) {
-            _this.$templateCache.put('menu-link.tmpl.html', '<md-button flex ui-sref="{{section.sref}}" ng-click="selectMenuItem()" class="nav-btn" \n ' +
+            $templateCache.put('menu-link.tmpl.html', '<md-button flex ui-sref="{{section.sref}}" ng-click="selectMenuItem()" class="nav-btn" \n ' +
                 'ng-class="{\'selected\' : section.selected,\'md-icon-button\': controller.collapsed}"  > \n' +
                 '<div class="layout-padding-left-8 menu-link"><ng-md-icon md-icon icon="{{section.icon}}" class="nav-btn" ng-class="{\'selected\' : section.selected }" ></ng-md-icon> \n ' +
                 '<md-tooltip md-direction="right" ng-if="controller.collapsed" >{{section.text}}</md-tooltip>' +

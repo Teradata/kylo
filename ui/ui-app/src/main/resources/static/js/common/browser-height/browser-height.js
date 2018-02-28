@@ -17,7 +17,6 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
         .directive('browserHeight', ["$window", function ($window) {
             return {
                 link: function ($scope, element, attrs) {
-                    var _this = this;
                     element.addClass('browser-height');
                     /**
                      *
@@ -76,7 +75,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         offsetHeight = 0;
                     }
                     function calcHeight() {
-                        var windowHeight = angular.element(this.$window).height();
+                        var windowHeight = angular.element($window).height();
                         var newHeight = windowHeight - offsetHeight;
                         ele.css('height', newHeight + 'px');
                         if (scrollY) {
@@ -95,7 +94,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         }, 1300);
                     }
                     if (bindResize) {
-                        angular.element(this.$window).bind("resize.browserheight", function () {
+                        angular.element($window).bind("resize.browserheight", function () {
                             // if(element.is(':visible')) {
                             calcHeight();
                             //  }
@@ -103,7 +102,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                     }
                     $scope.$on('$destroy', function () {
                         //tabsWrapper.css('top', '0px')
-                        angular.element(_this.$window).unbind("resize.browserheight");
+                        angular.element($window).unbind("resize.browserheight");
                         //angular.element('#content').unbind("scroll");
                     });
                     setTimeout(function () {

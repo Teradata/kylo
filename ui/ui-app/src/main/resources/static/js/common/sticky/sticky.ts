@@ -2,8 +2,8 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 angular.module(moduleName).directive("sticky",
-  ["$document", "$window", () => {
-           var $win = angular.element(this.$window); // wrap window object as jQuery object
+  ["$document", "$window", ($document, $window) => {
+           var $win = angular.element($window); // wrap window object as jQuery object
         return {
             restrict: 'A',
             link: function (scope: any, elem: any, attrs: any) {

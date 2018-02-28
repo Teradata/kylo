@@ -1,9 +1,8 @@
 define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
-    angular.module(module_name_1.moduleName).directive("sticky", ["$document", "$window", function () {
-            var $win = angular.element(_this.$window); // wrap window object as jQuery object
+    angular.module(module_name_1.moduleName).directive("sticky", ["$document", "$window", function ($document, $window) {
+            var $win = angular.element($window); // wrap window object as jQuery object
             return {
                 restrict: 'A',
                 link: function (scope, elem, attrs) {

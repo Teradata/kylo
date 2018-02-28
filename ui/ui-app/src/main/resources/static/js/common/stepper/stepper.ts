@@ -241,7 +241,7 @@ export default class controller implements ng.IComponentController{
 angular.module(moduleName).controller('StepperController', ["$scope","$attrs","$element","StepperService","Utils","BroadcastService","WindowUnloadService",controller]);
 
 angular.module(moduleName).directive("thinkbigStepper",
-  ['$compile', '$templateRequest',() => {
+  ['$compile', '$templateRequest',($compile, $templateRequest) => {
           return {
            restrict: "EA",
             bindToController: {
@@ -265,13 +265,13 @@ angular.module(moduleName).directive("thinkbigStepper",
                     pre: function preLink($scope: any, $element: any, iAttrs: any, controller: any) {
                     },
                     post: function postLink($scope: any, $element: any, iAttrs: any, controller: any) {
-                        this.$templateRequest(iAttrs.templateUrl).then(function (html: any) {
+                        $templateRequest(iAttrs.templateUrl).then(function (html: any) {
                             // Convert the html to an actual DOM node
                             var template = angular.element(html);
                             // Append it to the directive element
                             $element.append(template);
                             // And let Angular $compile it
-                            this.$compile(template)($scope);
+                            $compile(template)($scope);
                             $element.find('md-tabs-wrapper:first').append('  <div class="step-progressbar"  style="display:block;"></div>')
                             var progressBar = this.$compile('<md-progress-linear md-mode="indeterminate" ng-if="vm.showProgress"></md-progress-linear>')($scope);
                             $element.find('.step-progressbar').append(progressBar)

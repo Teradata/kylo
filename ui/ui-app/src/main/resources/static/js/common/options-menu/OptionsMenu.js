@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     angular.module(module_name_1.moduleName).directive('tbaOptionsMenu', ['$mdDialog', '$timeout', 'PaginationDataService',
-        function () {
+        function ($mdDialog, $timeout, PaginationDataService) {
             return {
                 restrict: "E",
                 scope: {
@@ -24,13 +24,13 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         $scope.viewType = { label: 'List View', icon: 'list', value: 'list', type: 'viewType' };
                     }
                     $scope.getPaginationId = function (tab) {
-                        return this.PaginationDataService.paginationId($scope.menuKey, tab.title);
+                        return PaginationDataService.paginationId($scope.menuKey, tab.title);
                     };
                     $scope.getCurrentPage = function (tab) {
-                        return this.PaginationDataService.currentPage($scope.menuKey, tab.title);
+                        return PaginationDataService.currentPage($scope.menuKey, tab.title);
                     };
                     function setViewTypeOption(toggle) {
-                        $scope.viewType.value = this.PaginationDataService.viewType($scope.menuKey);
+                        $scope.viewType.value = PaginationDataService.viewType($scope.menuKey);
                         if (toggle === true) {
                             $scope.viewType.value = $scope.viewType.value === 'list' ? 'table' : 'list';
                         }
@@ -48,7 +48,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         setViewTypeOption(true);
                     }
                     $scope.rowsPerPage = 5;
-                    $scope.paginationData = this.PaginationDataService.paginationData($scope.menuKey);
+                    $scope.paginationData = PaginationDataService.paginationData($scope.menuKey);
                     var originatorEv;
                     $scope.openMenu = function ($mdOpenMenu, ev) {
                         originatorEv = ev;
@@ -59,7 +59,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                             }
                         }
                         if ($scope.showPagination) {
-                            var tabData = this.PaginationDataService.getActiveTabData($scope.menuKey);
+                            var tabData = PaginationDataService.getActiveTabData($scope.menuKey);
                             $scope.currentPage = tabData.currentPage;
                             $scope.paginationId = tabData.paginationId;
                         }
@@ -83,7 +83,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         var itemCopy = {};
                         angular.extend(itemCopy, item);
                         if (item.type === 'viewType') {
-                            this.PaginationDataService.toggleViewType($scope.menuKey);
+                            PaginationDataService.toggleViewType($scope.menuKey);
                             setViewTypeOption(true);
                         }
                         if ($scope.selectedOption) {

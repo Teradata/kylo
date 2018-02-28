@@ -1,13 +1,12 @@
 define(["require", "exports", "angular", "../module-name", "underscore", "@uirouter/angularjs"], function (require, exports, angular, module_name_1, _) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Config
      */
     var templateUrl = 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html';
     //module = angular.module(moduleName);
-    angular.module(module_name_1.moduleName).directive("uiRouterBreadcrumbs", ['$interpolate', '$state', '$transitions', '$state', function () {
+    angular.module(module_name_1.moduleName).directive("uiRouterBreadcrumbs", ['$interpolate', '$state', '$transitions', '$state', function ($interpolate, $state, $transitions) {
             return {
                 restrict: 'E',
                 templateUrl: function (elem, attrs) {
@@ -24,7 +23,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "@uirou
                          updateBreadcrumbsArray();
                      }
                      */
-                    _this.$transitions.onSuccess({}, function (transition) {
+                    $transitions.onSuccess({}, function (transition) {
                         var toState = transition.to();
                         var toParams = transition.params();
                         if (toState.data !== undefined) {
@@ -32,7 +31,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "@uirou
                                 //console.log('Skipping breadcrumb for ',toState)
                             }
                             else {
-                                _this.updateBreadcrumbs(toState, toParams);
+                                updateBreadcrumbs(toState, toParams);
                             }
                         }
                     });
@@ -67,7 +66,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "@uirou
                         updateLastBreadcrumbs();
                     }
                     $scope.navigate = function (crumb) {
-                        _this.$state.go(crumb.route, crumb.params);
+                        $state.go(crumb.route, crumb.params);
                     };
                     function getBreadcrumbIndex(state) {
                         var breadcrumbKey = getBreadcrumbKey(state);
@@ -118,7 +117,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "@uirou
                         else {
                             // use the $interpolate service to handle any bindings in the propertyReference string.
                             interpolationContext = (typeof currentState.locals !== 'undefined') ? currentState.locals.globals : currentState;
-                            displayName = this.$interpolate(propertyReference)(interpolationContext);
+                            displayName = $interpolate(propertyReference)(interpolationContext);
                             return displayName;
                         }
                     }

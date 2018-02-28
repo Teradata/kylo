@@ -65,12 +65,12 @@ angular.module(moduleName).directive("ngIfPermission",
                 function check(permissions: any, entity: any, entityType: any) {
 
                     if (angular.isDefined(entity) && angular.isDefined(entityType)) {
-                        validate(this.AccessControlService.hasEntityAccess(permissions, entity,entityType));
+                        validate(AccessControlService.hasEntityAccess(permissions, entity,entityType));
                     }
                     else {
-                        this.AccessControlService.getUserAllowedActions(this.AccessControlService.ACCESS_MODULES.SERVICES, true)
+                        AccessControlService.getUserAllowedActions(AccessControlService.ACCESS_MODULES.SERVICES, true)
                             .then(function (actionSet: any) {
-                                var valid = this.AccessControlService.hasAnyAction(permissions, actionSet.actions);
+                                var valid = AccessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
                             }, true);
                     }
@@ -78,19 +78,19 @@ angular.module(moduleName).directive("ngIfPermission",
                 }
 
                 function validate(valid: any) {
-                    this.$q.when(valid).then(function (isValid: any) {
+                    $q.when(valid).then(function (isValid: any) {
                         if (isValid) {
                             if (!childScope) {
                                 $transclude(function (clone: any, newScope: any) {
                                     childScope = newScope;
-                                    clone[clone.length++] = this.$compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
+                                    clone[clone.length++] = $compile.$$createComment('end ngIfPermission', $attr.ngIfPermission);
                                     // Note: We only need the first/last node of the cloned nodes.
                                     // However, we need to keep the reference to the jqlite wrapper as it might be changed later
                                     // by a directive with templateUrl when its template arrives.
                                     block = {
                                         clone: clone
                                     };
-                                    this.$animate.enter(clone, $element.parent(), $element);
+                                    $animate.enter(clone, $element.parent(), $element);
                                 });
                             }
                         }
@@ -105,7 +105,7 @@ angular.module(moduleName).directive("ngIfPermission",
                             }
                             if (block) {
                                 previousElements = getBlockNodes(block.clone);
-                                this.$animate.leave(previousElements).done(function (response: any) {
+                                $animate.leave(previousElements).done(function (response: any) {
                                     if (response !== false) previousElements = null;
                                 });
                                 block = null;

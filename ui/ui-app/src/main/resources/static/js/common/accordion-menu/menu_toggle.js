@@ -1,10 +1,9 @@
 define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
     angular.module(module_name_1.moduleName)
         .run(['$templateCache', function ($templateCache) {
-            _this.$templateCache.put('menu-toggle.tmpl.html', '<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">'
+            $templateCache.put('menu-toggle.tmpl.html', '<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">'
                 + '<div class="title" ng-class="{disabled: section.disabled}" ng-click="toggle()" flex layout-align="start start" layout="row">'
                 + '   <span flex>{{section.text}}</span>'
                 + '   <ng-md-icon md-icon icon="{{section.expandIcon}}" ng-if="!isCollapsed()"></ng-md-icon>'
@@ -26,7 +25,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 require: '^accordionMenu',
                 templateUrl: 'menu-toggle.tmpl.html',
                 link: function (scope, element, attrs, controller) {
-                    var _this = this;
                     scope.section.hidden = true;
                     scope.isOpened = scope.section.expanded;
                     if (scope.isOpened) {
@@ -47,7 +45,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                         }
                     });
                     var checkPermissions = function () {
-                        _this.AccessControlService.doesUserHavePermission(getTogglePermissions()).then(function (allowed) {
+                        AccessControlService.doesUserHavePermission(getTogglePermissions()).then(function (allowed) {
                             //if not allowed, remove the links;
                             if (!allowed) {
                                 scope.section.links = [];

@@ -1,8 +1,7 @@
 define(["require", "exports", "angular", "../module-name", "pascalprecht.translate"], function (require, exports, angular, module_name_1) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
-    angular.module(module_name_1.moduleName).directive("kyloTimer", ['$interval', '$filter', function () {
+    angular.module(module_name_1.moduleName).directive("kyloTimer", ['$interval', '$filter', function ($interval, $filter) {
             return {
                 restrict: "EA",
                 scope: {
@@ -18,9 +17,9 @@ define(["require", "exports", "angular", "../module-name", "pascalprecht.transla
                     $scope.previousDisplayStr = '';
                     $scope.$watch('startTime', function (newVal, oldVal) {
                         $scope.time = $scope.startTime;
-                        _this.format();
+                        format();
                     });
-                    _this.format();
+                    format();
                     var seconds = 0;
                     var minutes = 0;
                     var hours = 0;
@@ -33,11 +32,11 @@ define(["require", "exports", "angular", "../module-name", "pascalprecht.transla
                     function update() {
                         $scope.time += $scope.refreshTime;
                         //format it
-                        this.format();
+                        format();
                     }
                     function format() {
                         var ms = $scope.time;
-                        var displayStr = this.DateTimeUtils(this.$filter('translate')).formatMillisAsText(ms, $scope.truncatedFormat, false);
+                        var displayStr = DateTimeUtils($filter('translate')).formatMillisAsText(ms, $scope.truncatedFormat, false);
                         if ($scope.addAgoSuffix) {
                             displayStr += " ago";
                         }
@@ -47,9 +46,9 @@ define(["require", "exports", "angular", "../module-name", "pascalprecht.transla
                         }
                         $scope.previousDisplayStr = displayStr;
                     }
-                    var interval = _this.$interval(update, $scope.refreshTime);
+                    var interval = $interval(update, $scope.refreshTime);
                     var clearInterval = function () {
-                        _this.$interval.cancel(interval);
+                        $interval.cancel(interval);
                         interval = null;
                     };
                     $scope.$on('$destroy', function () {

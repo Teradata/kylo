@@ -7,7 +7,6 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             return {
                 require: '^thinkbigStepper',
                 link: function ($scope, element, attrs, stepperController) {
-                    var _this = this;
                     var offset = element.offset(), topPadding = parseInt(attrs.top) || 0, $content = angular.element('#content');
                     if (attrs.overflowselector) {
                         $overflowElement = element.find(attrs.overflowselector);
@@ -56,7 +55,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         }
                     }
                     function adjustOverflow() {
-                        var windowHeight = angular.element(this.$window).height() - 150;
+                        var windowHeight = angular.element($window).height() - 150;
                         if (element.height() > windowHeight) {
                             $overflowElement.css('overflow-y', 'scroll');
                             $overflowElement.css('height', (windowHeight - 50));
@@ -70,7 +69,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         adjustLeft();
                         adjustOverflow();
                     });
-                    angular.element(this.$window).bind("resize.fixedtopright", function () {
+                    angular.element($window).bind("resize.fixedtopright", function () {
                         // if(element.is(':visible')) {
                         adjustLeft();
                         adjustOverflow();
@@ -83,7 +82,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         adjustOverflow();
                     });
                     $scope.$on('$destroy', function () {
-                        angular.element(_this.$window).unbind("resize.fixedtopright");
+                        angular.element($window).unbind("resize.fixedtopright");
                         //  $content.unbind("scroll");
                         element.unbind('adjustoverflow');
                     });

@@ -1,10 +1,9 @@
 define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
-    var _this = this;
     Object.defineProperty(exports, "__esModule", { value: true });
     'use strict';
     angular.module(module_name_1.moduleName).run(['$templateCache', function ($templateCache) {
-            _this.$templateCache.put('accordion-menu.tmpl.html', ' <md-list class="side-menu " > \n' +
+            $templateCache.put('accordion-menu.tmpl.html', ' <md-list class="side-menu " > \n' +
                 ' <md-list-item ng-repeat="section in vm.menu" flex layout-fill ng-if="!section.hidden"> \n' +
                 ' <menu-link section="section" ng-if="section.type === \'link\'" style="width:100%"></menu-link>\n' +
                 ' <menu-toggle section="section" ng-if="section.type === \'toggle\' " style="width:100%"></menu-toggle>\n' +

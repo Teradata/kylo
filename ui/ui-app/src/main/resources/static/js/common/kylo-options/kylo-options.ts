@@ -23,7 +23,7 @@ import {moduleName} from "../module-name";
 
                     // Get user name
                     $scope.username = "User";
-                    this.$http.get("/proxy/v1/about/me").then(function (response: any) {
+                    $http.get("/proxy/v1/about/me").then(function (response: any) {
                         $scope.username = response.data.systemName;
                     });
 
@@ -36,7 +36,7 @@ import {moduleName} from "../module-name";
                     };
 
                     $scope.aboutKylo = function () {
-                        this.AboutKyloService.showAboutDialog();
+                        AboutKyloService.showAboutDialog();
                         if ($scope.selectedOption) {
                             $scope.selectedOption()('aboutKylo');
                         }
@@ -46,7 +46,7 @@ import {moduleName} from "../module-name";
                      * Redirects the user to the logout page.
                      */
                     $scope.logout = function () {
-                        this.$window.location.href = "/logout";
+                        $window.location.href = "/logout";
                     }
                 }
             }

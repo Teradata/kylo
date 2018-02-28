@@ -2,8 +2,10 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import "pascalprecht.translate";
 
+declare const DateTimeUtils: any;
+
 angular.module(moduleName).directive("kyloTimer",
-  ['$interval','$filter', () => {
+  ['$interval','$filter', ($interval, $filter) => {
      return {
             restrict: "EA",
             scope: {
@@ -21,9 +23,9 @@ angular.module(moduleName).directive("kyloTimer",
                 $scope.previousDisplayStr = '';
                 $scope.$watch('startTime', (newVal: any, oldVal: any)=> {
                     $scope.time = $scope.startTime;
-                    this.format();
+                    format();
                 })
-                this.format();
+                format();
                 var seconds = 0;
                 var minutes = 0;
                 var hours = 0;
@@ -36,12 +38,12 @@ angular.module(moduleName).directive("kyloTimer",
                 function update() {
                     $scope.time += $scope.refreshTime;
                     //format it
-                    this.format();
+                    format();
                 }
 
                 function format() {
                     var ms = $scope.time;
-                    var displayStr = this.DateTimeUtils(this.$filter('translate')).formatMillisAsText(ms,$scope.truncatedFormat,false);
+                    var displayStr = DateTimeUtils($filter('translate')).formatMillisAsText(ms,$scope.truncatedFormat,false);
                     if($scope.addAgoSuffix) {
                         displayStr += " ago";
                     }
@@ -54,10 +56,10 @@ angular.module(moduleName).directive("kyloTimer",
 
                 }
 
-                var interval = this.$interval(update, $scope.refreshTime);
+                var interval = $interval(update, $scope.refreshTime);
 
                 var clearInterval = ()=> {
-                    this.$interval.cancel(interval);
+                    $interval.cancel(interval);
                     interval = null;
                 }
                 $scope.$on('$destroy', ()=> {

@@ -11,14 +11,14 @@ angular.module(moduleName)
             link: function ($scope: any, element: any, attrs: any) {
                 $scope.currentState = '';
                 $scope.onClickAddButton= function(event: any){
-                    this.AddButtonService.onClick($scope.currentState);
+                    AddButtonService.onClick($scope.currentState);
                 }
 
                 function isShowAddButton(){
-                     return this.AddButtonService.isShowAddButton($scope.currentState);
+                     return AddButtonService.isShowAddButton($scope.currentState);
                 }
 
-                this.$transitions.onSuccess({},function(transition: any){
+                $transitions.onSuccess({},function(transition: any){
                   var toState = transition.to();
                   if(toState != undefined) {
                       var state = toState.name;
@@ -47,9 +47,9 @@ angular.module(moduleName)
                     }
                 }
 
-                this.BroadcastService.subscribe($scope,this.AddButtonService.NEW_ADD_BUTTON_EVENT,updateShowState)
-                this.BroadcastService.subscribe($scope, this.AddButtonService.HIDE_ADD_BUTTON_EVENT, hideButton)
-                this.BroadcastService.subscribe($scope, this.AddButtonService.SHOW_ADD_BUTTON_EVENT, showButton)
+                BroadcastService.subscribe($scope,AddButtonService.NEW_ADD_BUTTON_EVENT,updateShowState)
+                BroadcastService.subscribe($scope, AddButtonService.HIDE_ADD_BUTTON_EVENT, hideButton)
+                BroadcastService.subscribe($scope, AddButtonService.SHOW_ADD_BUTTON_EVENT, showButton)
             }
         };
     }

@@ -4,7 +4,7 @@ import * as _ from "underscore";
 
  angular.module(moduleName)
         .run(['$templateCache', ($templateCache: any)=> {
-            this.$templateCache.put('menu-toggle.tmpl.html',
+            $templateCache.put('menu-toggle.tmpl.html',
             '<div class="collapsible-item" ng-class="{open: section.expanded}" ng-if="section.hidden == false" id="{{section.elementId}}">'
             + '<div class="title" ng-class="{disabled: section.disabled}" ng-click="toggle()" flex layout-align="start start" layout="row">'
             + '   <span flex>{{section.text}}</span>'
@@ -54,7 +54,7 @@ import * as _ from "underscore";
                     })
 
                     var checkPermissions = ()=>{
-                        this.AccessControlService.doesUserHavePermission(getTogglePermissions()).then((allowed: any)=>{
+                        AccessControlService.doesUserHavePermission(getTogglePermissions()).then((allowed: any)=>{
                             //if not allowed, remove the links;
                             if(!allowed){
                                 scope.section.links = [];

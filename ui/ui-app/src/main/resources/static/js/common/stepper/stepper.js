@@ -173,7 +173,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
     }());
     exports.default = controller;
     angular.module(module_name_1.moduleName).controller('StepperController', ["$scope", "$attrs", "$element", "StepperService", "Utils", "BroadcastService", "WindowUnloadService", controller]);
-    angular.module(module_name_1.moduleName).directive("thinkbigStepper", ['$compile', '$templateRequest', function () {
+    angular.module(module_name_1.moduleName).directive("thinkbigStepper", ['$compile', '$templateRequest', function ($compile, $templateRequest) {
             return {
                 restrict: "EA",
                 bindToController: {
@@ -195,13 +195,13 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                         pre: function preLink($scope, $element, iAttrs, controller) {
                         },
                         post: function postLink($scope, $element, iAttrs, controller) {
-                            this.$templateRequest(iAttrs.templateUrl).then(function (html) {
+                            $templateRequest(iAttrs.templateUrl).then(function (html) {
                                 // Convert the html to an actual DOM node
                                 var template = angular.element(html);
                                 // Append it to the directive element
                                 $element.append(template);
                                 // And let Angular $compile it
-                                this.$compile(template)($scope);
+                                $compile(template)($scope);
                                 $element.find('md-tabs-wrapper:first').append('  <div class="step-progressbar"  style="display:block;"></div>');
                                 var progressBar = this.$compile('<md-progress-linear md-mode="indeterminate" ng-if="vm.showProgress"></md-progress-linear>')($scope);
                                 $element.find('.step-progressbar').append(progressBar);

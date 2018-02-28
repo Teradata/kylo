@@ -87,7 +87,7 @@ angular.module(moduleName)
                     offsetHeight = 0;
                 }
                 function calcHeight() {
-                    var windowHeight = angular.element(this.$window).height();
+                    var windowHeight = angular.element($window).height();
                     var newHeight = windowHeight - offsetHeight;
 
                     ele.css('height',newHeight+'px');
@@ -109,7 +109,7 @@ angular.module(moduleName)
                 }
 
                 if(bindResize) {
-                    angular.element(this.$window).bind("resize.browserheight",()=> {
+                    angular.element($window).bind("resize.browserheight",()=> {
                         // if(element.is(':visible')) {
                         calcHeight();
                         //  }
@@ -117,7 +117,7 @@ angular.module(moduleName)
                 }
                 $scope.$on('$destroy',  ()=> {
                     //tabsWrapper.css('top', '0px')
-                    angular.element(this.$window).unbind("resize.browserheight");
+                    angular.element($window).unbind("resize.browserheight");
                     //angular.element('#content').unbind("scroll");
                 });
                 setTimeout(()=>{
@@ -131,4 +131,3 @@ angular.module(moduleName)
 ]);
 
 
-    
