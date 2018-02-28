@@ -762,13 +762,15 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public Set<UserFieldDescriptor> getUserFields() {
         UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalFeedUserFields()),
                                                                 UserFieldDescriptors.class);
-        return descriptors.getFields();
+        return descriptors != null ? descriptors.getFields() : Collections.emptySet();
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalFeedUserFields()),
-                                                                UserFieldDescriptors.class);
+        UserFieldDescriptors descriptors = JcrUtil.getOrCreateNode(JcrUtil.getNode(getSession(), EntityUtil.pathForCategory()),
+                                                                   EntityUtil.FEED_USER_FIELDS,
+                                                                   UserFieldDescriptors.NODE_TYPE,
+                                                                   UserFieldDescriptors.class);
         descriptors.setFields(userFields);
     }
 

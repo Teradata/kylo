@@ -31,6 +31,9 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class EntityUtil {
 
+    public static final String FEED_USER_FIELDS = "tba:feedUserFields";
+    public static final String CATEGORY_USER_FIELDS = "tba:categoryUserFields";
+
     /**
      * Instances of {@code EntityUtil} should not be constructed.
      *
@@ -45,11 +48,11 @@ public class EntityUtil {
     }
     
     public static String pathForGlobalCategoryUserFields() {
-        return JcrUtil.path("/metadata", "feeds", "tba:categoryUserFields").toString();
+        return JcrUtil.path("/metadata", "feeds", CATEGORY_USER_FIELDS).toString();
     }
     
     public static String pathForGlobalFeedUserFields() {
-        return JcrUtil.path("/metadata", "feeds", "tba:feedUserFields").toString();
+        return JcrUtil.path("/metadata", "feeds", FEED_USER_FIELDS).toString();
     }
 
     public static String pathForCategory(String categorySystemName) {

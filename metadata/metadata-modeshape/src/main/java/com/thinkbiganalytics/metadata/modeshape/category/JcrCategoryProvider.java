@@ -46,6 +46,7 @@ import com.thinkbiganalytics.security.role.SecurityRoleProvider;
 
 import java.io.Serializable;
 import java.security.AccessControlException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,23 +152,20 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         return new JcrCategory.CategoryId(fid);
     }
 
-    @Override
-    public void delete(final Category category) {
-        throw new UnsupportedOperationException();
-    }
-
     @Nonnull
     @Override
     public Set<UserFieldDescriptor> getUserFields() {
         UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalCategoryUserFields()),
                                                                 UserFieldDescriptors.class);
-        return descriptors.getFields();
+        return descriptors != null ? descriptors.getFields() : Collections.emptySet();
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        UserFieldDescriptors descriptors = JcrUtil.getJcrObject(JcrUtil.getNode(getSession(), EntityUtil.pathForGlobalCategoryUserFields()),
-                                                                UserFieldDescriptors.class);
+        UserFieldDescriptors descriptors = JcrUtil.getOrCreateNode(JcrUtil.getNode(getSession(), EntityUtil.pathForCategory()),
+                                                                   EntityUtil.CATEGORY_USER_FIELDS,
+                                                                   UserFieldDescriptors.NODE_TYPE, 
+                                                                   UserFieldDescriptors.class);
         descriptors.setFields(userFields);
     }
 
@@ -213,13 +211,15 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     private Set<UserFieldDescriptor> getFeedUserFields(CategoryDetails details) {
         UserFieldDescriptors descriptors = JcrUtil.getJcrObject(details.getNode(), CategoryDetails.FEED_USER_FIELDS, UserFieldDescriptors.class);
-        return descriptors.getFields();
+        return descriptors != null ? descriptors.getFields() : Collections.emptySet();
     }
     
     private void setUserFieldDesriptors(JcrCategory category, Set<UserFieldDescriptor> fieldDescrs) {
         if (category.getDetails().isPresent()) {
-            UserFieldDescriptors descriptors = JcrUtil.getJcrObject(category.getDetails().get().getNode(), 
-                                                                    CategoryDetails.FEED_USER_FIELDS, UserFieldDescriptors.class);
+            UserFieldDescriptors descriptors = JcrUtil.getOrCreateNode(category.getDetails().get().getNode(), 
+                                                                       CategoryDetails.FEED_USER_FIELDS, 
+                                                                       UserFieldDescriptors.NODE_TYPE, 
+                                                                       UserFieldDescriptors.class);
             descriptors.setFields(fieldDescrs);
         } else {
             throw new AccessControlException("Permission denied adding feed fields to category: " + category.getTitle());
