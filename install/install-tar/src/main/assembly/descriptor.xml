@@ -472,6 +472,11 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
+      <outputDirectory>lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.basedir}/bin/encryptSqoopPassword.sh</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>

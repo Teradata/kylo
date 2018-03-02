@@ -110,6 +110,8 @@
   <@automatonLicense/>
 <#elseif project.groupId == "dom4j">
   <@dom4jLicense/>
+<#elseif project.groupId == "jakarta-regexp">
+  <@apache2License/>
 <#elseif project.groupId == "javax.servlet" || project.groupId == "javax.servlet.jsp">
   <@generalLicense "Common Development and Distribution License Version 1.1"/>
 <#elseif project.groupId == "javax.transaction">
