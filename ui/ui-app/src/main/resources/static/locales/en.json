@@ -273,6 +273,8 @@
     "views.feeds.feed-details.FM": "Feed Manager",
     "views.feeds.feed-details.FeedD": "Feed Details",
     "views.feeds.feed-details.LF": "Loading Feed ...",
+    "views.feeds.feed-details.db.describe-table-dialog.Title":"Analyzing the table ",
+    "views.feeds.feed-details.db.describe-table-dialog.Message":"Analyzing the table and determining the schema and data types.  Please be patient",
 
     "views.all-page.Rows_per_page": "Rows per page",
 

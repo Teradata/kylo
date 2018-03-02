@@ -47,7 +47,7 @@ define(['angular'], function (angular) {
         };
     }
 
-    var controller =  function($scope, $q,$http,$mdToast,RestUrlService, FeedService,EditFeedNifiPropertiesService,DBCPTableSchemaService) {
+    var controller =  function($scope, $q,$http,$mdToast,$mdDialog,RestUrlService, FeedService,EditFeedNifiPropertiesService,DBCPTableSchemaService) {
 
         var self = this;
         /**
@@ -140,6 +140,8 @@ define(['angular'], function (angular) {
          * @type {Array}
          */
         this.originalTableFields = [];
+
+        this.describingTableSchema = false;
 
         /**
          * Array of the Nifi property keys that are marked as custom.  any keys here will not be loaded by the default nifi-property rendering  mechanism and be required to be implemented by this
@@ -379,6 +381,25 @@ define(['angular'], function (angular) {
         }
 
 
+        function showDescribeTableSchemaDialog(tableDefinition){
+            $mdDialog.show({
+                controller: 'DescribeTableDialogController',
+                templateUrl: 'js/plugin/processor-templates/GetTableData-ImportSqoop-shared/describe-table-schema-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {table:tableDefinition}
+            }).then(function (msg) {
+                //respond to action in dialog if necessary... currently dont need to do anything
+            }, function () {
+
+            });
+        }
+
+        function hideDescribeTableSchemaDialog(){
+            $mdDialog.hide();
+        }
+
 
 
         /**
@@ -423,6 +444,8 @@ define(['angular'], function (angular) {
             //get the property that stores the DBCPController Service
             var dbcpProperty = self.dbConnectionProperty;
             if(dbcpProperty != null && dbcpProperty.value != null && self.selectedTable != null) {
+                showDescribeTableSchemaDialog(self.selectedTable);
+                self.describingTableSchema = true;
                 var successFn = function (response) {
                     self.databaseConnectionError = false;
 
@@ -443,6 +466,9 @@ define(['angular'], function (angular) {
                         self.model.table.existingTableName = self.tableSchema.name;
                     }
                     self.model.table.sourceTableSchema.name=self.model.table.existingTableName;
+                    self.describingTableSchema = false;
+                    validate();
+                    hideDescribeTableSchemaDialog();
                 }
 
                 var serviceId = dbcpProperty.value;
@@ -453,6 +479,9 @@ define(['angular'], function (angular) {
                 var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema, serviceName:serviceName}})
                 promise.then(successFn, function (err) {
                     self.databaseConnectionError = true;
+                    self.describingTableSchema = false;
+                    validate();
+                    hideDescribeTableSchemaDialog();
                 });
                 return promise;
 
@@ -519,7 +548,12 @@ define(['angular'], function (angular) {
                     self.theForm.tableAutocompleteInput.$setValidity("required", false);
                 }
                 else {
-                    self.theForm.tableAutocompleteInput.$setValidity("required", true);
+                    if(self.describingTableSchema){
+                        self.theForm.tableAutocompleteInput.$setValidity("required", true);
+                    }
+                    else {
+                        self.theForm.tableAutocompleteInput.$setValidity("required", true);
+                    }
                 }
             }
         }
@@ -659,9 +693,34 @@ define(['angular'], function (angular) {
 
     };
 
+    var describeTableDialogController = function ($scope, $mdDialog, table) {
+        var self = this;
+
+        if (angular.isDefined(table) && angular.isDefined(table.schema) && angular.isDefined(table.tableName)) {
+          $scope.tableName = table.schema + "." + table.tableName;
+        }
+        else {
+            $scope.tableName = " table";
+        }
+
+
+        $scope.hide = function () {
+            $mdDialog.hide();
+        };
+
+        $scope.cancel = function () {
+            $mdDialog.cancel();
+        };
+
+    };
+
     var moduleName = "kylo.plugin.processor-template.tabledata";
+
+
     angular.module(moduleName, [])
-    angular.module(moduleName).controller('GetTableDataPropertiesController',["$scope","$q","$http","$mdToast","RestUrlService","FeedService","EditFeedNifiPropertiesService","DBCPTableSchemaService", controller]);
+    angular.module(moduleName).controller('DescribeTableDialogController',["$scope","$mdDialog","table",describeTableDialogController]);
+
+    angular.module(moduleName).controller('GetTableDataPropertiesController',["$scope","$q","$http","$mdToast","$mdDialog","RestUrlService","FeedService","EditFeedNifiPropertiesService","DBCPTableSchemaService", controller]);
 
     angular.module(moduleName)
         .directive('thinkbigGetTableDataProperties', directive);

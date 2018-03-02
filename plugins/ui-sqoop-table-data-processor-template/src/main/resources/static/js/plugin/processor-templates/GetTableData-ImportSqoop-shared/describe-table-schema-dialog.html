@@ -1,0 +1,23 @@
+<md-dialog aria-label="Describe Table"  ng-cloak>
+  <form>
+    <md-toolbar class="md-primary">
+      <div  class="md-toolbar-tools">
+        <h4 >
+          <span>{{"views.feeds.feed-details.db.describe-table-dialog.Title" | translate}} {{tableName | characters:50}}</span>
+        </h4>
+        <span flex></span>
+        <md-button class="md-icon-button" ng-click="cancel()">
+          <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+        </md-button>
+      </div>
+    </md-toolbar>
+    <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+      <div>
+        {{"views.feeds.feed-details.db.describe-table-dialog.Message" | translate}}
+      </div>
+      <div layout="row" layout-sm="column" layout-align="space-around" class="layout-padding-top-bottom">
+        <md-progress-circular md-mode="indeterminate"></md-progress-circular>
+      </div>
+     </md-dialog-content>
+  </form>
+</md-dialog>
