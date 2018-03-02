@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-metadata</artifactId>
-    <version>0.9.0.1</version>
+    <version>0.9.0.2-SNAPSHOT</version>
   </parent>
   <artifactId>kylo-metadata-modeshape</artifactId>
 
