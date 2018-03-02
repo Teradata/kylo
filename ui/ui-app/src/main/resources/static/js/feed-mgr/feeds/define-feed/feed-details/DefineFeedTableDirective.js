@@ -548,6 +548,9 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
             _.each(_.keys(columnsByName), function(columnName) {
                 var group = columnsByName[columnName];
                 _.each(group, function(column) {
+                    if (column.validationErrors === undefined) {
+                        initValidationErrors(column);
+                    }
                     if (columnName !== "") {
                         column.validationErrors.name.notUnique = group.length > 1;
                     } else {
