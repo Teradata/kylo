@@ -66,8 +66,8 @@ public class HistoryDataReindexingFeedsAvailableCache implements PostMetadataCon
     private boolean kyloHistoryDataReindexingFeedsAvailable = false;
     private boolean initialized = false;
 
-    private static final String REINDEX_SUPPORT_PROPERTY_NAME_FOR_CHECK = "kylo-history-reindex-support";
-    private static final String REINDEX_SUPPORT_PROPERTY_VALUE_FOR_CHECK = "true";
+    public static final String REINDEX_SUPPORT_PROPERTY_NAME_FOR_CHECK = "kylo-history-reindex-support";
+    public static final String REINDEX_SUPPORT_PROPERTY_VALUE_FOR_CHECK = "true";
 
     public void setKyloHistoryDataReindexingFeedsAvailable(boolean kyloHistoryDataReindexingFeedsAvailable) {
         this.kyloHistoryDataReindexingFeedsAvailable = kyloHistoryDataReindexingFeedsAvailable;
