@@ -153,6 +153,11 @@ public class NifiConnectionInspection extends AbstractInspection {
     }
 
     @Override
+    public String getDocsUrl() {
+        return "/installation/KyloApplicationProperties.html#nifi-rest";
+    }
+
+    @Override
     public String getName() {
         return "Nifi Connection Check";
     }

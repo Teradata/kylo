@@ -26,7 +26,12 @@ import org.springframework.stereotype.Component;
 @Component
 public class JwtTokenSyncInspection extends AbstractInspection {
 
-    public static final String SECURITY_JWT_KEY = "security.jwt.key";
+    private static final String SECURITY_JWT_KEY = "security.jwt.key";
+
+    @Override
+    public String getDocsUrl() {
+        return "/installation/KyloApplicationProperties.html#security";
+    }
 
     @Override
     public String getName() {

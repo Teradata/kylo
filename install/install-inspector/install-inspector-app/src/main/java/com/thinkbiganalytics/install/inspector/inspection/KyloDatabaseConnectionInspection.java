@@ -82,6 +82,10 @@ public class KyloDatabaseConnectionInspection extends AbstractInspection {
         }
     }
 
+    @Override
+    public String getDocsUrl() {
+        return "/installation/KyloApplicationProperties.html#kylo";
+    }
 
     @Override
     public String getName() {

@@ -32,6 +32,11 @@ public class UiAndServicesPortSyncInspection extends AbstractInspection {
     private static final String ZUUL_ROUTES_API_URL = "zuul.routes.api.url";
 
     @Override
+    public String getDocsUrl() {
+        return "/installation/KyloApplicationProperties.html#common-configuration-properties";
+    }
+
+    @Override
     public String getName() {
         return "Kylo UI and Services Port Sync";
     }

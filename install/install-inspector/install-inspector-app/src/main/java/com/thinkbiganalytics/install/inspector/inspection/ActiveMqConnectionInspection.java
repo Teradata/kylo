@@ -52,7 +52,7 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
 
     @Override
     public String getDocsUrl() {
-        return "/how-to-guides/JmsProviders.html";
+        return "/installation/KyloApplicationProperties.html#jms";
     }
 
     @Override

@@ -36,6 +36,11 @@ public class HiveConnectionInspection extends AbstractInspection {
     private static final Logger LOG = LoggerFactory.getLogger(HiveConnectionInspection.class);
 
     @Override
+    public String getDocsUrl() {
+        return "/installation/KyloApplicationProperties.html#hive";
+    }
+
+    @Override
     public String getName() {
         return "Hive Connection Check";
     }
