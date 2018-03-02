@@ -461,7 +461,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
-        //Check and accept feed data history reindexing request if that is the case.
+        feedHistoryDataReindexingService.checkAndConfigureNiFi(feedMetadata);
         feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
 
         if (feedMetadata.getState() == null) {
