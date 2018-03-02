@@ -1091,7 +1091,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
         boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
         if (hasPermission) {
-            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            metadataAccess.commit(() -> {
+                feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            }, MetadataAccess.SERVICE);
         }
     }
 

@@ -97,6 +97,8 @@
     + * (tba:project) sns
 
 [tba:feedsFolder] > nt:folder 
+    + tba:categoryUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
+    + tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
     + * (tba:category) sns
 
 [tba:feedFolder] > nt:folder 
@@ -252,7 +254,11 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
 	+ tba:feedRoleMemberships (tba:CategoryFeedRoleMemberships) = tba:CategoryFeedRoleMemberships autocreated 
+	+ tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
 	+ * (tba:feed) sns
+
+[tba:userFieldDescriptors] > nt:hierarchyNode
+    + * (tba:fieldDescriptor)
 
 [tba:CategoryFeedRoleMemberships] > nt:hierarchyNode
     + tba:roleMemberships (tba:roleMembership) sns

@@ -233,8 +233,12 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
                 final NodeType nodeType = (NodeType) typeItr.next();
 
                 if (nodeType.isNodeType(extensibleType.getName()) && !nodeType.equals(extensibleType)) {
-                    final Node typeNode = session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + nodeType.getName());
-                    list.add(new JcrExtensibleType(typeNode, nodeType));
+                    String nodeTypePath = ExtensionsConstants.TYPES + "/" + nodeType.getName();
+                    
+                    if (session.getRootNode().hasNode(nodeTypePath)) {
+                        final Node typeNode = session.getRootNode().getNode(nodeTypePath);
+                        list.add(new JcrExtensibleType(typeNode, nodeType));
+                    }
                 }
             }
 
