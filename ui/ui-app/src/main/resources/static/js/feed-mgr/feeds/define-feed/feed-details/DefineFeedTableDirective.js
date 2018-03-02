@@ -150,6 +150,7 @@ define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,m
                 columnDef.origName = columnDef.name;
                 columnDef.origDataType = columnDef.derivedDataType;
                 columnDef.deleted = false;
+                columnDef._id = _.uniqueId();
                 columnDef.history = [];
                 self.addHistoryItem(columnDef);
             }
