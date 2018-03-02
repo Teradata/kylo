@@ -17,7 +17,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
      * @param StateService
      */
     var controller = function ($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService,
-                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService) {
+                               FileUpload, ConfigurationService,EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService,AngularModuleExtensionService,DatasourcesService) {
 
         var SLA_INDEX = 3;
         var self = this;
@@ -70,6 +70,8 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         this.uploadFile = null;
         this.uploading = false;
         this.uploadAllowed = false;
+
+        this.feedNavigationLinks = AngularModuleExtensionService.getFeedNavigation();
 
         /**
          * flag to indicate the feed could not be loaded
@@ -201,6 +203,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
             $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
         };
 
+        this.feedNavigationLink = function(link) {
+            var feedId =  self.feedId;
+            var feedName = self.model.systemCategoryName + "." + self.model.systemFeedName;
+            $state.go(link.sref,{feedId:feedId,feedName:feedName,model:self.model});
+        }
+
         this.showFeedUploadDialog = function() {
             $mdDialog.show({
                 controller: 'FeedUploadFileDialogController',
@@ -330,7 +338,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         };
 
         this.onTableClick = function() {
-            StateService.FeedManager().Table().navigateToTable(self.model.category.systemName, self.model.table.tableSchema.name);
+            StateService.FeedManager().Table().navigateToTable(DatasourcesService.getHiveDatasource().id,self.model.category.systemName, self.model.table.tableSchema.name);
         }
 
         this.addSla = function() {
@@ -566,7 +574,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
         }
     });
 
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService","UiComponentsService",controller]);
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope","$q","$transition$","$mdDialog","$mdToast","$http","$state","AccessControlService","RestUrlService","FeedService","RegisterTemplateService","StateService","SideNavService","FileUpload","ConfigurationService","EntityAccessControlDialogService","EntityAccessControlService","UiComponentsService","AngularModuleExtensionService","DatasourcesService",controller]);
 
     angular.module(moduleName).controller('FeedUploadFileDialogController',["$scope","$mdDialog","$http","RestUrlService","FileUpload","feedId",FeedUploadFileDialogController]);
 });

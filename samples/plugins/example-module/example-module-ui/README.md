@@ -34,7 +34,15 @@ Kylo allows you to code your own custom angular modules to create custom pages
         }
       ]
     }
-  ]
+  ],
+    "feedNavigation": [{
+      "linkText":"String - Name of the Link to appear on the Feed Details Screen",
+      "sref":"String the name of the 'state' for the link"
+    }],
+    "templateNavigation": [{
+      "linkText":"String - Name of the Link to appear on the Template Details Screen",
+      "sref":"String the name of the 'state' for the link"
+    }]
 }
 ```
 
@@ -52,7 +60,25 @@ An example JSON file is here:
       "params": {
         "name": null
       }
-    }
+    },
+     {
+          "state": "exampleFeedModule",
+          "url": "/exampleFeedModule/:feedId",
+          "params": {
+            "feedId": null,
+            "feedName":null,
+            "model":null
+          }
+        },
+        {
+          "state": "exampleTemplateModule",
+          "url": "/exampleTemplateModule/:templateId",
+          "params": {
+            "templateId": null,
+            "templateName":null,
+            "model":null
+          }
+        }
   ],
   "navigation": [
     {
@@ -68,7 +94,15 @@ An example JSON file is here:
         }
       ]
     }
-  ]
+  ],
+    "feedNavigation": [{
+      "linkText":"Example Feed Link",
+      "sref":"exampleFeedModule"
+    }],
+    "templateNavigation": [{
+      "linkText":"Example Template Link",
+      "sref":"exampleTemplateModule"
+    }]
 }
 ```
 

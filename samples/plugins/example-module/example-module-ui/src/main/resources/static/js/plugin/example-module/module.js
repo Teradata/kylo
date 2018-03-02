@@ -30,6 +30,56 @@ define(['angular', 'plugin/example-module/module-name', 'kylo-utils/LazyLoadUtil
             }
         });
 
+        $stateProvider.state('exampleFeedModule',{
+            url:'/exampleFeedModule/:feedId',
+            params: {
+                feedId: null,
+                feedName:null,
+                model:null
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/plugin/example-module/example-feed-module.html',
+                    controller:"ExampleFeedLinkModuleController",
+                    controllerAs:"vm"
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['plugin/example-module/ExampleFeedLinkModuleController'])
+            },
+            data:{
+                breadcrumbRoot:false,
+                displayName:'Example Feed Page',
+                module:moduleName,
+                permissions:[]
+            }
+        });
+
+
+        $stateProvider.state('exampleTemplateModule',{
+            url:'/exampleTemplateModule/:templateId',
+            params: {
+                templateId: null,
+                templateName:null,
+                model:null
+            },
+            views: {
+                'content': {
+                    templateUrl: 'js/plugin/example-module/example-template-module.html',
+                    controller:"ExampleTemplateLinkModuleController",
+                    controllerAs:"vm"
+                }
+            },
+            resolve: {
+                loadMyCtrl: lazyLoadController(['plugin/example-module/ExampleTemplateLinkModuleController'])
+            },
+            data:{
+                breadcrumbRoot:false,
+                displayName:'Example Template Page',
+                module:moduleName,
+                permissions:[]
+            }
+        });
 
         function lazyLoadController(path){
             return lazyLoadUtil.lazyLoadController(path,['plugin/example-module/module-require']);
