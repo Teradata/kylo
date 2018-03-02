@@ -9,7 +9,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo</groupId>
     <artifactId>kylo-security</artifactId>
-    <version>0.9.0.1-SNAPSHOT</version>
+    <version>0.9.0.1</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
