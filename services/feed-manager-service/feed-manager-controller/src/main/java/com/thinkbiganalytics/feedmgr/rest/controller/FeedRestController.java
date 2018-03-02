@@ -323,6 +323,19 @@ public class FeedRestController {
         }
         return Response.ok(feed).build();
     }
+    
+    @POST
+    @Path("/start/{feedId}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Starts a feed.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The feed was started.", response = FeedSummary.class),
+        @ApiResponse(code = 500, message = "The feed could not be started.", response = RestResponseStatus.class)
+    })
+    public Response startFeed(@PathParam("feedId") String feedId) {
+        FeedSummary feed = getMetadataService().startFeed(feedId);
+        return Response.ok("Feed " + feed.getSystemFeedName() + " (" + feed.getId() + ") started successfully").build();
+    }
 
     @POST
     @Path("/enable/{feedId}")

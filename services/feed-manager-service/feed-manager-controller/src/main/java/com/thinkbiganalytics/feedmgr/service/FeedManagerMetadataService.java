@@ -46,13 +46,17 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil.PROCESS_STATE;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -67,9 +71,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -103,6 +109,12 @@ public class FeedManagerMetadataService implements MetadataService {
     @Inject
     LegacyNifiRestClient nifiRestClient;
 
+    /**
+     * NiFi REST client
+     */
+    @Inject
+    private NiFiRestClient nifiClient;
+
     @Inject
     MetadataAccess metadataAccess;
 
@@ -120,12 +132,6 @@ public class FeedManagerMetadataService implements MetadataService {
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
-
-    /**
-     * NiFi REST client
-     */
-    @Inject
-    private NiFiRestClient nifiClient;
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
@@ -300,6 +306,26 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         return true;
+    }
+    
+    @Override
+    @SuppressWarnings("deprecation")
+    public FeedSummary startFeed(String feedId) {
+//            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+        FeedMetadata feedMetadata = this.feedProvider.getFeedById(feedId);
+        
+        nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
+            .flatMap(categoryGroup -> nifiClient.processGroups().findByName(categoryGroup.getId(), feedMetadata.getSystemFeedName(), false, true))
+            .ifPresent(feedGroup -> {
+                this.nifiRestClient.getInputProcessors(feedGroup.getId()).stream()
+                    .filter(proc -> feedMetadata.getInputProcessorName().equals(proc.getName()))
+//                    .filter(proc -> PROCESS_STATE.valueOf(proc.getState().toUpperCase()) != PROCESS_STATE.DISABLED)
+                    .forEach(processor -> {
+                        this.nifiClient.processors().wakeUp(processor);
+                    });
+            });
+        
+        return new FeedSummary(feedMetadata);
     }
 
     public FeedSummary enableFeed(String feedId) {
