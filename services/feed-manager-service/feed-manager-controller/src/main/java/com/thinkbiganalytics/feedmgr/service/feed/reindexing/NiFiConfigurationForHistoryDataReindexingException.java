@@ -2,9 +2,9 @@ package com.thinkbiganalytics.feedmgr.service.feed.reindexing;
 
 /*-
  * #%L
- * thinkbig-ui-feed-manager
+ * kylo-upgrade-service
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,14 +21,14 @@ package com.thinkbiganalytics.feedmgr.service.feed.reindexing;
  */
 
 /**
- * Thrown when Kylo does not have the feeds required to support history data reindexing
+ * Thrown when Kylo cannot detect environment when doing history data reindexing related operation
  */
-public class FeedHistoryDataReindexingFeedsNotAvailable extends RuntimeException {
+public class NiFiConfigurationForHistoryDataReindexingException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 
-    public FeedHistoryDataReindexingFeedsNotAvailable() {
-        super("Feeds required for supporting history data reindexing are not available");
+    public NiFiConfigurationForHistoryDataReindexingException(String message) {
+        super(message);
     }
 
 }
