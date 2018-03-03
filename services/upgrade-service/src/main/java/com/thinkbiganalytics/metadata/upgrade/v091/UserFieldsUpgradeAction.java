@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.upgrade.v091;
  */
 
 import javax.inject.Inject;
+import javax.jcr.Session;
 
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -28,7 +29,11 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.UserFieldDescriptors;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
@@ -66,6 +71,8 @@ public class UserFieldsUpgradeAction implements UpgradeState {
     public void upgradeTo(final KyloVersion targetVersion) {
         log.info("Refactoring user field management: {}", targetVersion);
         
+        initializeGlobalFields();
+        
         this.extensibleTypeProvider.getTypes().forEach(type -> {
             String typeName = type.getName();
             
@@ -77,6 +84,12 @@ public class UserFieldsUpgradeAction implements UpgradeState {
                 upgradeCategoryFeedFields(type);
             }
         });
+    }
+
+    private void initializeGlobalFields() {
+        Session session = JcrMetadataAccess.getActiveSession();
+        JcrUtil.getOrCreateNode(JcrUtil.getNode(session, EntityUtil.pathForCategory()), EntityUtil.CATEGORY_USER_FIELDS, UserFieldDescriptors.NODE_TYPE);
+        JcrUtil.getOrCreateNode(JcrUtil.getNode(session, EntityUtil.pathForCategory()), EntityUtil.FEED_USER_FIELDS, UserFieldDescriptors.NODE_TYPE);
     }
 
     private void upgradeGlobalCategoryFields(ExtensibleType type) {
