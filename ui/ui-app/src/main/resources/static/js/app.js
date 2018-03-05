@@ -48,12 +48,6 @@ define([
                                           'ui.grid.moveColumns',
                                           'ui.grid.pagination', 'ui.grid.selection', 'ngMessages',
                                           'pascalprecht.translate', 'tmh.dynamicLocale', 'ngCookies']);
-    module.constant('LOCALES', {
-           'locales': {
-               'en_US': 'English'
-            },
-            'preferredLocale': 'en_US'
-        });
 
     module.constant('__env', env);
 
@@ -68,15 +62,8 @@ define([
             prefix: 'locales/',  // path to translations files
             suffix: '.json'      // suffix, currently- extension of the translations
         });
-
-        $translateProvider
-            .registerAvailableLanguageKeys(["en"], {
-                "en_*": "en",
-                "*": "en"
-            })
-            .determinePreferredLanguage()
-            .fallbackLanguage('en')
-            .useLocalStorage();  // saves selected language to localStorage
+        $translateProvider.determinePreferredLanguage();
+        $translateProvider.fallbackLanguage('en');
 
         tmhDynamicLocaleProvider.localeLocationPattern('../bower_components/angular-i18n/angular-locale_{{locale}}.js');
 

@@ -19,13 +19,6 @@ define([
         'pascalprecht.translate',
         'ngCookies']);
 
-    module.constant('LOCALES', {
-        'locales': {
-            'en_US': 'English'
-        },
-        'preferredLocale': 'en_US'
-    });
-
     var env = {};
     // Import variables if present (from env.js)
     if(window && window.__env){
@@ -41,16 +34,8 @@ define([
             suffix: '.json'      // suffix, currently- extension of the translations
         });
 
-        $translateProvider
-            .registerAvailableLanguageKeys(["en"], {
-                "en_*": "en",
-                "*": "en"
-            })
-            .determinePreferredLanguage()
-            .fallbackLanguage('en')
-            .useLocalStorage();  // saves selected language to localStorage
-
-
+        $translateProvider.determinePreferredLanguage();
+        $translateProvider.fallbackLanguage('en');
 
         //read in any theme info from the __env
         if(__env.themes) {
@@ -124,7 +109,7 @@ define([
 
     }]);
 
-    var controller = function($location, LoginService, $translate, $scope){
+    var controller = function($location, LoginService, $scope){
         this.username;
         this.password;
         this.error = '';
@@ -141,10 +126,6 @@ define([
         }
         LoginService.setTargetUrl(self.targetUrl);
 
-        $scope.changeLanguage = function (langKey) {
-            $translate.use(langKey);
-        };
-
         this.init = function() {
             // reset login status
             this.error = '';
@@ -160,7 +141,7 @@ define([
 
     };
 
-    module.controller('LoginController',['$location','LoginService','$translate', '$scope',controller]);
+    module.controller('LoginController',['$location','LoginService','$scope',controller]);
 
 
     var loginService = function($cookies){
