@@ -147,7 +147,7 @@
                     <div id="define-feed-dest-schema-container"
                          style="overflow-x:hidden ">
                       <md-virtual-repeat-container
-                          ng-if="vm.model.table.tableSchema.fields.length >= 30"
+                          ng-if="vm.model.table.tableSchema.fields.length >= 30 && (vm.model.dataTransformation == null || vm.model.dataTransformation.dataTransformScript == null)"
                           style="min-height: 700px">
                         <div
                             md-virtual-repeat="columnDef in vm.model.table.tableSchema.fields"
@@ -157,7 +157,7 @@
                               src="'js/feed-mgr/feeds/define-feed/feed-details/define-feed-table-row.html'"></ng-include>
                         </div>
                       </md-virtual-repeat-container>
-                      <div ng-if="vm.model.table.tableSchema.fields.length > 0 && vm.model.table.tableSchema.fields.length < 30">
+                      <div ng-if="vm.model.table.tableSchema.fields.length > 0 && (vm.model.table.tableSchema.fields.length < 30 || (vm.model.dataTransformation != null && vm.model.dataTransformation.dataTransformScript != null))">
                         <ng-include
                             layout="row" class="no-outline"
                             ng-repeat="columnDef in vm.model.table.tableSchema.fields"
