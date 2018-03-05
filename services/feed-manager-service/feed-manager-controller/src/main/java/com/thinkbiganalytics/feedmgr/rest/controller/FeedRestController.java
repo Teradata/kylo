@@ -63,6 +63,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.search.rest.model.Pair;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
@@ -363,6 +364,24 @@ public class FeedRestController {
     public Response getFeedNames() {
         Collection<FeedSummary> feeds = getMetadataService().getFeedSummaryData();
         return Response.ok(feeds).build();
+    }
+
+    @POST
+    @Path("/feed-system-name-to-display-name")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Maps feed ids to feed display names")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns a list of feed ids mapped to feed display names", response = Pair.class, responseContainer = "List")
+    )
+    public Response convertFeedIdToDisplayName(@Nonnull final List<String> feedSystemNames) {
+        List<Pair> names = feedSystemNames.stream().map(systemName -> {
+            int dotIdx = systemName.indexOf(".");
+            String categorySystemName = systemName.substring(0, dotIdx);
+            String feedSystemName = systemName.substring(dotIdx + 1);
+            FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
+            return new Pair(systemName, feed.getFeedName());
+        }).collect(Collectors.toList());
+        return Response.ok(names).build();
     }
 
     @GET

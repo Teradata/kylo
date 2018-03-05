@@ -8,6 +8,7 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
          var data = {};
          data.FEED_HEALTH_URL = OpsManagerRestUrlService.FEED_HEALTH_URL;
          data.FEED_NAMES_URL = OpsManagerRestUrlService.FEED_NAMES_URL;
+         data.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL;
          data.FEED_HEALTH_COUNT_URL = OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
          data.FETCH_FEED_HEALTH_INTERVAL = 5000;
          data.fetchFeedHealthInterval = null;
