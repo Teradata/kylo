@@ -248,7 +248,7 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
                 clearAllTimeouts();
                 var activeTab = TabService.getActiveTab(self.pageName);
 
-                self.refreshing = true;
+                self.showProgress = true;
                 var sortOptions = '';
                 var tabTitle = activeTab.title;
                 var filters = {tabTitle: tabTitle};
@@ -258,19 +258,21 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
                 var sort = PaginationDataService.sort(self.pageName);
                 var canceler = $q.defer();
-                var successFn = function(response) {
-                    if (response.data) {
-                        //transform the data for UI
-                        transformJobData(tabTitle, response.data.data);
-                        TabService.setTotal(self.pageName, tabTitle, response.data.recordsFiltered)
+                var transformJobs = function(response) {
+                    //transform the data for UI
+                    transformJobData(tabTitle, response.data.data);
+                    TabService.setTotal(self.pageName, tabTitle, response.data.recordsFiltered)
 
-                        if (self.loading) {
-                            self.loading = false;
-                        }
+                    if (self.loading) {
+                        self.loading = false;
                     }
 
                     finishedRequest(canceler);
-                    return response.data;
+                };
+                var successFn = function(response) {
+                    if (response.data) {
+                        fetchFeedNames(response).then(transformJobs);
+                    }
                 };
                 var errorFn = function(err) {
                     finishedRequest(canceler);
@@ -298,7 +300,7 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
 
-                $http.get(OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn).then(fetchFeedNames);
+                $http.get(OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             self.showProgress = true;
 
@@ -306,26 +308,35 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
         }
 
-        var fetchFeedNames = function(jobs) {
-            if (jobs.data.length > 0) {
-                var feedNames = _.map(jobs.data, function(job) {
+        var fetchFeedNames = function(response) {
+            var deferred = $q.defer();
+
+            self.showProgress = true;
+            var jobs = response.data.data;
+            if (jobs.length > 0) {
+                //_.uniq method to remove duplicates, there may be multiple jobs for the same feed
+                var feedNames = _.uniq(_.map(jobs, function(job) {
                     return job.feedName;
-                });
+                }));
                 var namesPromise = $http.post(OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
                 namesPromise.then(function(result) {
-                    _.each(jobs.data, function(job) {
+                    _.each(jobs, function(job) {
                         job.displayName = _.find(result.data, function(systemNameToDisplayName) {
                             return systemNameToDisplayName.key === job.feedName;
                         })
                     });
-                    return jobs;
+                    self.showProgress = false;
+                    deferred.resolve(response);
                 }, function(err) {
                     console.error('Failed to receive feed names', err);
-                    return jobs;
+                    self.showProgress = false;
+                    deferred.resolve(response);
                 });
             } else {
-                return jobs;
+                deferred.resolve(response);
             }
+
+            return deferred.promise;
         };
 
 
