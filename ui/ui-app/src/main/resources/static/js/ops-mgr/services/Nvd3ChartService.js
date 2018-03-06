@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "pascalprecht.translate", "d3"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "../module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var Nvd3ChartService = /** @class */ (function () {
@@ -90,7 +90,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                 if (_.isEmpty(dataMap)) {
                     var tmpVal = minValue;
                     while (tmpVal <= maxValue) {
-                        this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0);
+                        _this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0);
                         tmpVal += incrementIntervalVal;
                     }
                 }
@@ -100,17 +100,17 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                         var labelCounts = dataMap[label] || {};
                         minDataPoint = minValue;
                         maxDataPoint = maxValue;
-                        this.keys = Object.keys(labelCounts).map(Number);
+                        _this.keys = Object.keys(labelCounts).map(Number);
                         //Find the min/Max values if they exist
                         if (!_.isEmpty(labelCounts)) {
-                            minDataPoint = _.min(this.keys);
-                            maxDataPoint = _.max(this.keys);
+                            minDataPoint = _.min(_this.keys);
+                            maxDataPoint = _.max(_this.keys);
                         }
                         //Start processing with the minValue on the graph
                         var tmpVal = minValue;
                         //iterate and add data points before the minDataPoint value
                         while (tmpVal < minDataPoint) {
-                            this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
+                            _this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
                             tmpVal += incrementIntervalVal;
                         }
                         //Reassign the tmpVal to be the starting dataPoint value
@@ -125,7 +125,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                                 tmpVal = startingTmpVal;
                                 //sort by key
                                 var orderedMap = {};
-                                this.keys.sort().forEach(function (key) {
+                                _this.keys.sort().forEach(function (key) {
                                     orderedMap[key] = labelCounts[key];
                                 });
                                 _.each(orderedMap, function (val, key) {
@@ -136,7 +136,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                                         var len = Math.floor(diff / incrementIntervalVal);
                                         for (var i = 0; i < len; i++) {
                                             tmpVal += incrementIntervalVal;
-                                            this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
+                                            _this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
                                         }
                                     }
                                 });
@@ -147,7 +147,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                         }
                         // add in ending datapoints
                         while (tmpVal < maxValue) {
-                            this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
+                            _this.addToDataMap(newDataMap, labelValueMapArr, tmpVal, 0, label);
                             tmpVal += incrementIntervalVal;
                         }
                     });
@@ -218,7 +218,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                     });
                     if (angular.isDefined(minValue) && angular.isDefined(maxValue)) {
                         //Fill in gaps, before, after, and optionally in the middle of the data
-                        this.fillAllStrategy(minValue, maxValue, dataMap, labelValueMapArr, 5000, false);
+                        _this.fillAllStrategy(minValue, maxValue, dataMap, labelValueMapArr, 5000, false);
                     }
                     angular.forEach(dataMap, function (labelCounts, label) {
                         var valuesArray = [];
@@ -230,7 +230,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                         var color = colorForSeriesFn != undefined ? colorForSeriesFn(label) : labelColorMap[label];
                         var disabled = labelDisabledMap[label] != undefined ? labelDisabledMap[label] : false;
                         var area = (configMap[label] != undefined && configMap[label]['area'] != undefined) ? configMap[label]['area'] : true;
-                        var displayLabel = this.$filter('translate')(label);
+                        var displayLabel = _this.$filter('translate')(label);
                         data.push({ key: displayLabel, values: valuesArray, area: area, color: color, disabled: disabled });
                     });
                 }
@@ -240,12 +240,12 @@ define(["require", "exports", "angular", "../module-name", "underscore", "pascal
                 var max = 0;
                 var max2 = 0;
                 if (nvd3Dataset && nvd3Dataset[0]) {
-                    max = this.d3.max(nvd3Dataset[0].values, function (d) {
+                    max = d3.max(nvd3Dataset[0].values, function (d) {
                         return d[1];
                     });
                 }
                 if (nvd3Dataset && nvd3Dataset[1]) {
-                    max2 = this.d3.max(nvd3Dataset[1].values, function (d) {
+                    max2 = d3.max(nvd3Dataset[1].values, function (d) {
                         return d[1];
                     });
                 }

@@ -2,7 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
 import "pascalprecht.translate";
-import "d3";
+declare const d3: any;
 
 export default class Nvd3ChartService{
      constructor(private $timeout: any,
@@ -11,8 +11,9 @@ export default class Nvd3ChartService{
                 }
     renderEndUpdated: any = {};
     timeoutMap: any = {};
+    keys: any;
     
-     addToDataMap = (dataMap: any, labelValueMapArr: any,x: any,value: any,label: any)=> {
+     addToDataMap = (dataMap: any, labelValueMapArr: any,x: any,value: any,label?: any)=> {
         if(angular.isUndefined(label)) {
             _.each(labelValueMapArr,  (lv: any)=> {
                 if (dataMap[lv.label] == undefined) {
@@ -60,12 +61,12 @@ export default class Nvd3ChartService{
      * @param value number
      * @return {{type: *, value: *}}
      */
-    fillStrategy = function(type: any,value: any){
+    fillStrategy = (type: any,value: any)=>{
         return {type:type,value:value};
     }
 
-    fillAllStrategy = function(minValue: any, maxValue: any, dataMap: any,labelValueMapArr: any,
-                                    incrementInterval: any, fillMiddle: any) {
+    fillAllStrategy = (minValue: any, maxValue: any, dataMap: any,labelValueMapArr: any,
+                                    incrementInterval: any, fillMiddle: any)=> {
 
         var incrementIntervalVal = incrementInterval;
 
@@ -114,7 +115,7 @@ export default class Nvd3ChartService{
         }
         else {
 
-        angular.forEach(labelValueMapArr,function(lv) {
+        angular.forEach(labelValueMapArr,(lv: any)=> {
 
             var label = lv.label;
             var labelCounts = dataMap[label]  || {};
@@ -153,11 +154,11 @@ export default class Nvd3ChartService{
                     tmpVal = startingTmpVal;
                     //sort by key
                     var orderedMap = {};
-                    this.keys.sort().forEach(function (key: any) {
+                    this.keys.sort().forEach((key: any)=> {
                         orderedMap[key] = labelCounts[key];
                     });
 
-                    _.each(orderedMap, function (val: any, key: any) {
+                    _.each(orderedMap, (val: any, key: any)=> {
 
                         var numericKey = parseInt(key);
 
@@ -187,7 +188,7 @@ export default class Nvd3ChartService{
         }
 
         //merge into the dataMap
-        angular.forEach(newDataMap, function (labelCounts, label) {
+        angular.forEach(newDataMap, (labelCounts: any, label: any) =>{
             if(dataMap[label] == undefined){
                 dataMap[label] = labelCounts;
             }
@@ -213,8 +214,8 @@ export default class Nvd3ChartService{
      * @param maxDataPoints - max data points requested for the graph
      * @returns {Array}
      */
-    toLineChartData = function (response: any, labelValueMapArr: any, xAxisKey: any,
-                                     colorForSeriesFn: any, minValue: any, maxValue: any) {
+    toLineChartData = (response: any, labelValueMapArr: any, xAxisKey: any,
+                                     colorForSeriesFn: any, minValue: any, maxValue: any)=>{
      //  var this = this;
         var dataMap = {}
 
@@ -225,8 +226,8 @@ export default class Nvd3ChartService{
         var labelDisabledMap = {};
         var configMap = {};
         if (responseData) {
-            angular.forEach(responseData, function (item, i) {
-                _.each(labelValueMapArr, function (labelValue: any) {
+            angular.forEach(responseData,  (item, i) =>{
+                _.each(labelValueMapArr, (labelValue: any) =>{
                     var label = item[labelValue.label];
                     if (label == undefined) {
                         label = labelValue.label; //label = Completed,Started
@@ -263,10 +264,10 @@ export default class Nvd3ChartService{
                 this.fillAllStrategy(minValue, maxValue, dataMap, labelValueMapArr, 5000, false)
             }
 
-            angular.forEach(dataMap, function (labelCounts: any, label: any) {
+            angular.forEach(dataMap, (labelCounts: any, label: any)=>{
                 var valuesArray: any[] = [];
                 var orderedMap: any = {};
-                Object.keys(labelCounts).sort().forEach(function (key) {
+                Object.keys(labelCounts).sort().forEach((key: any)=> {
                     orderedMap[key] = labelCounts[key];
                     valuesArray.push([parseInt(key),labelCounts[key]]);
                 });
@@ -282,17 +283,17 @@ export default class Nvd3ChartService{
         return data;
     }
 
-    determineMaxY = function(nvd3Dataset: any) {
+    determineMaxY = (nvd3Dataset: any)=> {
 
         var max = 0;
         var max2 = 0;
         if (nvd3Dataset && nvd3Dataset[0]) {
-            max = this.d3.max(nvd3Dataset[0].values, function (d: any) {
+            max = d3.max(nvd3Dataset[0].values, (d: any)=> {
                 return d[1];
             });
         }
         if (nvd3Dataset && nvd3Dataset[1]) {
-            max2 = this.d3.max(nvd3Dataset[1].values, function (d: any) {
+            max2 = d3.max(nvd3Dataset[1].values, (d: any)=>{
                 return d[1];
             });
         }

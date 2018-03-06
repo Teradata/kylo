@@ -3,8 +3,9 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     Object.defineProperty(exports, "__esModule", { value: true });
     var IconService = /** @class */ (function () {
         function IconService() {
+            var _this = this;
             this.iconForFeedHealth = function (health) {
-                return this.iconForHealth(health);
+                return _this.iconForHealth(health);
             };
             this.iconForHealth = function (health) {
                 var data = { icon: "help", style: 'unknown', color: '#eee', text: 'UNKNOWN' };
@@ -127,15 +128,15 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 return data;
             };
             this.iconForJobStatus = function (status) {
-                var iconData = this.iconDataForJobStatus(status);
+                var iconData = _this.iconDataForJobStatus(status);
                 return iconData.icon;
             };
             this.iconStyleForJobStatus = function (status) {
-                var iconData = this.iconDataForJobStatus(status);
+                var iconData = _this.iconDataForJobStatus(status);
                 return iconData.style;
             };
             this.colorForJobStatus = function (status) {
-                var iconData = this.iconDataForJobStatus(status);
+                var iconData = _this.iconDataForJobStatus(status);
                 return iconData.color;
             };
         }

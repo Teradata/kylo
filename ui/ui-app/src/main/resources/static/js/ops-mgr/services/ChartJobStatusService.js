@@ -3,15 +3,16 @@ define(["require", "exports", "angular", "../module-name", "./IconStatusService"
     Object.defineProperty(exports, "__esModule", { value: true });
     var ChartJobStatusService = /** @class */ (function () {
         function ChartJobStatusService(IconService, Nvd3ChartService) {
+            var _this = this;
             this.IconService = IconService;
             this.Nvd3ChartService = Nvd3ChartService;
             this.renderEndUpdated = {};
             this.toChartData = function (jobStatusCountResponse) {
-                return this.Nvd3ChartService.toLineChartData(jobStatusCountResponse, [{ label: 'status', value: 'count' }], 'date', this.IconService.colorForJobStatus);
+                return _this.Nvd3ChartService.toLineChartData(jobStatusCountResponse, [{ label: 'status', value: 'count' }], 'date', _this.IconService.colorForJobStatus);
             };
             this.shouldManualUpdate = function (chart) {
-                if (this.renderEndUpdated[chart] == undefined) {
-                    this.renderEndUpdated[chart] = chart;
+                if (_this.renderEndUpdated[chart] == undefined) {
+                    _this.renderEndUpdated[chart] = chart;
                     return true;
                 }
                 else {

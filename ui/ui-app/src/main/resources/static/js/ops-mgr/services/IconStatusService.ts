@@ -2,10 +2,10 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 export default class IconService{
-    iconForFeedHealth = function (health: any) {
+    iconForFeedHealth = (health: any)=> {
             return this.iconForHealth(health);
         }
-    iconForHealth = function (health: any) {
+    iconForHealth = (health: any)=> {
             var data = {icon: "help", style: 'unknown', color: '#eee', text: 'UNKNOWN'};
             switch (health) {
                 case "HEALTHY":
@@ -40,7 +40,7 @@ export default class IconService{
             return data;
         }
    
-   iconForServiceComponentAlert = function (health: any) {
+   iconForServiceComponentAlert = (health: any)=> {
             var data = {icon: "help", style: 'unknown', color: '#969696', text: 'UNKNOWN'};
             switch (health) {
                 case "OK":
@@ -71,7 +71,7 @@ export default class IconService{
             return data;
         }
 
-        iconDataForJobStatus = function (status: any) {
+        iconDataForJobStatus = (status: any)=> {
             var data = {icon: "help", style: 'unknown', color: '#969696'};
             switch (status) {
                 case "FAILED":
@@ -128,17 +128,17 @@ export default class IconService{
             return data;
         }
 
-        iconForJobStatus = function (status: any) {
+        iconForJobStatus = (status: any)=> {
             var iconData = this.iconDataForJobStatus(status);
             return iconData.icon;
         }
 
-        iconStyleForJobStatus = function (status: any) {
+        iconStyleForJobStatus = (status: any)=> {
             var iconData = this.iconDataForJobStatus(status);
             return iconData.style;
         }
 
-        colorForJobStatus = function (status: any) {
+        colorForJobStatus=(status: any)=> {
             var iconData = this.iconDataForJobStatus(status);
             return iconData.color;
         }
