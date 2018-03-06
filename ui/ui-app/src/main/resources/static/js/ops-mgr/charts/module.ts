@@ -7,7 +7,8 @@ import "kylo-opsmgr";
 import "jquery";
 import "jquery-ui";
 import "pivottable";
-const AccessConstants = require("../../constants/AccessConstants");
+import AccessConstants from "../../constants/AccessConstants";
+//const AccessConstants = require("../../constants/AccessConstants");
 
 class ModuleFactory  {
     module: ng.IModule;
