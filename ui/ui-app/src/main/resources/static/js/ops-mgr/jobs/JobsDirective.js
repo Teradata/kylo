@@ -26,7 +26,7 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
     function JobsCardController($scope, $http,$mdDialog,$timeout,$mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService,
                                 TabService,
-                                AccessControlService, BroadcastService, $filter) {
+                                AccessControlService, BroadcastService, OpsManagerRestUrlService) {
         var self = this;
 
         /**
@@ -270,14 +270,11 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
                     }
 
                     finishedRequest(canceler);
-
-                }
+                    return response.data;
+                };
                 var errorFn = function(err) {
                     finishedRequest(canceler);
-                }
-                var finallyFn = function() {
-
-                }
+                };
                 self.activeJobRequests.push(canceler);
                 self.deferred = canceler;
                 self.promise = self.deferred.promise;
@@ -301,13 +298,36 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
                 var query = tabTitle != 'All' ? tabTitle.toLowerCase() : '';
 
-                $http.get(OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
+                $http.get(OpsManagerJobService.JOBS_QUERY_URL + "/" + query, {timeout: canceler.promise, params: params}).then(successFn, errorFn).then(fetchFeedNames);
             }
             self.showProgress = true;
 
             return self.deferred;
 
         }
+
+        var fetchFeedNames = function(jobs) {
+            if (jobs.data.length > 0) {
+                var feedNames = _.map(jobs.data, function(job) {
+                    return job.feedName;
+                });
+                var namesPromise = $http.post(OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
+                namesPromise.then(function(result) {
+                    _.each(jobs.data, function(job) {
+                        job.displayName = _.find(result.data, function(systemNameToDisplayName) {
+                            return systemNameToDisplayName.key === job.feedName;
+                        })
+                    });
+                    return jobs;
+                }, function(err) {
+                    console.error('Failed to receive feed names', err);
+                    return jobs;
+                });
+            } else {
+                return jobs;
+            }
+        };
+
 
         function containsFilterOperator(filterStr) {
             var contains = false;
@@ -638,7 +658,7 @@ define(['angular','ops-mgr/jobs/module-name', 'pascalprecht.translate'], functio
 
     angular.module(moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef",JobFilterHelpPanelMenuCtrl]);
 
-    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService","$filter",JobsCardController]);
+    angular.module(moduleName).controller("JobsCardController", ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast","$mdPanel","OpsManagerJobService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService","OpsManagerRestUrlService",JobsCardController]);
     angular.module(moduleName).directive('tbaJobs', directive);
 });
 
