@@ -149,9 +149,10 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                      return dashboard;
                  });
              } else {
+                 BroadcastService.notify(data.DASHBOARD_UPDATED, dashboard);
                  return dashboard;
              }
-         }
+         };
 
 
          data.fetchDashboard = function() {
