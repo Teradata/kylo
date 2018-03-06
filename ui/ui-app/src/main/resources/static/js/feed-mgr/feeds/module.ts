@@ -1,5 +1,4 @@
 import * as angular from 'angular';
-//const AccessConstants = require('../../constants/AccessConstants');
 
 import AccessConstants from "../../constants/AccessConstants";
 import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";

@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "./module-name";
-const AccessConstants = require('../constants/AccessConstants');
+import {AccessConstants} from '../constants/AccessConstants';
 import "./module";
 import "../services/services.module";
 import "pascalprecht.translate";

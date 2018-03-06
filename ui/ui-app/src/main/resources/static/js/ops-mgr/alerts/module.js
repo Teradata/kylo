@@ -7,7 +7,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
             this.module.config(['$stateProvider', '$compileProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
-            $stateProvider.state(AccessConstants_1.default.UI_STATES.ALERTS.state, {
+            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.ALERTS.state, {
                 url: '/alerts',
                 views: {
                     'content': {
@@ -25,9 +25,9 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 data: {
                     displayName: 'Alerts',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.ALERTS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.ALERTS.permissions
                 }
-            }).state(AccessConstants_1.default.UI_STATES.ALERT_DETAILS.state, {
+            }).state(AccessConstants_1.AccessConstants.UI_STATES.ALERT_DETAILS.state, {
                 url: "/alert-details/{alertId}",
                 views: {
                     'content': {
@@ -45,7 +45,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 data: {
                     displayName: 'Alert Details',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.ALERT_DETAILS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.ALERT_DETAILS.permissions
                 }
             });
         };

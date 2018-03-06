@@ -4,7 +4,7 @@ import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
 import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
-const AccessConstants = require("../../constants/AccessConstants");
+import {AccessConstants} from "../../constants/AccessConstants";
 
 class ModuleFactory  {
     module: ng.IModule;

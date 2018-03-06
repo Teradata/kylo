@@ -1,8 +1,6 @@
-define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module-name"], function (require, exports, angular, LazyLoadUtil_1, module_name_1) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "../kylo-utils/LazyLoadUtil", "./module-name"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //import AccessConstants from "../constants/AccessConstants";
-    var AccessConstants = require("../constants/AccessConstants");
     //const moduleName = require('auth/module-name');
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
@@ -10,7 +8,7 @@ define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module
             this.module.config(['$stateProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider) {
-            $stateProvider.state(AccessConstants.UI_STATES.USERS.state, {
+            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.USERS.state, {
                 url: '/users',
                 params: {},
                 views: {
@@ -27,10 +25,10 @@ define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module
                     breadcrumbRoot: true,
                     displayName: 'Users',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.USERS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.USERS.permissions
                 }
             });
-            $stateProvider.state(AccessConstants.UI_STATES.USERS_DETAILS.state, {
+            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.USERS_DETAILS.state, {
                 url: "/user-details/{userId}",
                 params: {
                     userId: null
@@ -49,10 +47,10 @@ define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module
                     breadcrumbRoot: false,
                     displayName: "User Details",
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.USERS_DETAILS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.USERS_DETAILS.permissions
                 }
             });
-            $stateProvider.state(AccessConstants.UI_STATES.GROUPS.state, {
+            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.GROUPS.state, {
                 url: "/groups",
                 params: {},
                 views: {
@@ -69,10 +67,10 @@ define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module
                     breadcrumbRoot: true,
                     displayName: "Groups",
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.GROUPS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.GROUPS.permissions
                 }
             });
-            $stateProvider.state(AccessConstants.UI_STATES.GROUP_DETAILS.state, {
+            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.GROUP_DETAILS.state, {
                 url: "/group-details/{groupId}",
                 params: {
                     groupId: null
@@ -91,7 +89,7 @@ define(["require", "exports", "angular", "../kylo-utils/LazyLoadUtil", "./module
                     breadcrumbRoot: false,
                     displayName: "Group Details",
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.GROUP_DETAILS.permissions
+                    permissions: AccessConstants_1.AccessConstants.UI_STATES.GROUP_DETAILS.permissions
                 }
             });
         };

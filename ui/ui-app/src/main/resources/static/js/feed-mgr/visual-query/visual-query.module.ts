@@ -4,7 +4,7 @@ import {UIRouterModule} from "@uirouter/angular";
 
 import {VisualQueryComponent, VisualQueryDirective} from "./angular2";
 
-const AccessConstants: any = require("../../constants/AccessConstants");
+import {AccessConstants} from "../../constants/AccessConstants";
 const moduleName: string = require("./module-name");
 
 @NgModule({
