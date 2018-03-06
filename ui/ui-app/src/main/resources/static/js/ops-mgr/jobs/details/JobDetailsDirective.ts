@@ -4,6 +4,7 @@ import 'pascalprecht.translate';
 import * as _ from 'underscore';
 import OpsManagerJobService from "../../services/OpsManagerJobService";
 import IconService from "../../services/IconStatusService";
+import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
 
 export class JobDetailsDirectiveController implements ng.IComponentController{
         allowAdmin: boolean;
@@ -142,36 +143,36 @@ constructor(private $scope: any,
             //   loadRelatedJobs();
         }
         triggerSavepointRetry() {
-          var self = this;
-            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
-                console.log('TRIGGER SAVE replay for ',self.jobData.triggerRetryFlowfile);
-                self.jobData.renderTriggerRetry = false;
-                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(){
+          //var self = this;
+            if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+                console.log('TRIGGER SAVE replay for ',this.jobData.triggerRetryFlowfile);
+                this.jobData.renderTriggerRetry = false;
+                this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile)).then(()=>{
 
-                    self.$mdToast.show(
-                        self.$mdToast.simple()
+                    this.$mdToast.show(
+                        this.$mdToast.simple()
                             .textContent('Triggered the retry')
                             .hideDelay(3000)
                     );
-                    self.loadJobData(true);
+                    this.loadJobData(true);
                 });
             }
         }
         triggerSavepointReleaseFailure(callbackFn:any) {
-          var self = this;
-            if (angular.isDefined(self.jobData.triggerRetryFlowfile)) {
-                self.$http.post(self.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(self.jobExecutionId, self.jobData.triggerRetryFlowfile)).then(function(response:any){
+         // var self = this;
+            if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+                this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile)).then((response:any)=>{
                     console.log('TRIGGERD FAILURE ',response)
 
-                    self.$mdToast.show(
-                        self.$mdToast.simple()
+                    this.$mdToast.show(
+                        this.$mdToast.simple()
                             .textContent('Triggered the release and failure')
                             .hideDelay(3000)
                     );
                     if(angular.isDefined(callbackFn)){
                         callbackFn();
                     }
-                    self.loadJobData(true);
+                    this.loadJobData(true);
 
                 });
             }
@@ -587,9 +588,11 @@ constructor(private $scope: any,
 }
 //$scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter
 angular.module(moduleName)
+.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
 .service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
 .service('IconService',[IconService])
 .controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q",
+            "$mdToast","OpsManagerRestUrlService",
             "OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",
             "$filter",JobDetailsDirectiveController]);
 angular.module(moduleName).directive("tbaJobDetails", [
