@@ -69,7 +69,6 @@ define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
                              delete  data.feedSummaryData[key];
                          })
                      }
-                     console.log("data.feedsArray", arr);
                      data.feedsArray = arr;
                  }
                  return processedFeeds;
