@@ -14,8 +14,8 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class UiComponentsService {
-    constructor (private $http:any, private $q:any, private $templateRequest:any, private RestUrlService:any) {
+// export class UiComponentsService {
+    function ServiceController ($http:any, $q:any, $templateRequest:any, RestUrlService:any) {
 
         /**
          * Manages the pluggable UI components.
@@ -163,7 +163,7 @@ export class UiComponentsService {
             }
         };
 
-        // return UiComponentsService;
+        return UiComponentsService;
     }
-}
-angular.module(moduleName).service("UiComponentsService", ["$http", "$q", "$templateRequest","RestUrlService",UiComponentsService]);
+// }
+angular.module(moduleName).service("UiComponentsService", ["$http", "$q", "$templateRequest","RestUrlService",ServiceController]);

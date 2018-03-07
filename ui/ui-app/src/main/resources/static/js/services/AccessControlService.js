@@ -98,7 +98,7 @@ define(['angular', 'services/module-name', 'constants/AccessConstants', 'kylo-se
         function AccessControlService() {
         }
 
-        var svc = angular.extend(AccessControlService.prototype, AccessConstants);
+        var svc = angular.extend(AccessControlService.prototype, AccessConstants.default);
 
         return angular.extend(svc, {
 

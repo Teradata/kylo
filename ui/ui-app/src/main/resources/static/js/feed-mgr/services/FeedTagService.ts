@@ -2,9 +2,9 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class FeedTagService {
+// export class FeedTagService {
 
-    constructor () {
+    function FeedTagService() {
 
         /**
          * Create filter function for a query string
@@ -35,6 +35,6 @@ export class FeedTagService {
         return data;
 
     }
-}
+// }
 
 angular.module(moduleName).factory('FeedTagService', FeedTagService);

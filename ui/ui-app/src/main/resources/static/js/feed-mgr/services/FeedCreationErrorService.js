@@ -18,7 +18,7 @@
  * #L%
  */
 define(["require", "exports", "angular"], function (require, exports, angular) {
-    angular.module(moduleName).factory('FeedCreationErrorService',["$mdDialog", "$filter", function ($mdDialog, $filter) {
+    "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/module-name');
     var FeedCreationErrorService = /** @class */ (function () {
@@ -172,6 +172,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         };
     };
     angular.module(moduleName).controller('FeedErrorDialogController', ["$scope", "$mdDialog", "FeedCreationErrorService", "$filter", controller]);
-    angular.module(moduleName).factory('FeedCreationErrorService', ["$mdDialog", FeedCreationErrorService]);
+    angular.module(moduleName).factory('FeedCreationErrorService', ["$mdDialog", "$filter", FeedCreationErrorService]);
 });
 //# sourceMappingURL=FeedCreationErrorService.js.map

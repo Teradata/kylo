@@ -1,8 +1,6 @@
-define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoadUtil", "../services/services.module"], function (require, exports, angular, module_name_1, LazyLoadUtil_1) {
+define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoadUtil", "../constants/AccessConstants", "../services/services.module"], function (require, exports, angular, module_name_1, LazyLoadUtil_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //const AccessConstants = require('../constants/AccessConstants');
-    var AccessConstants = require("../constants/AccessConstants");
     var KyloFeedManager = require('../feed-mgr/module').KyloFeedManager;
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
@@ -10,7 +8,7 @@ define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoa
             this.module.config(['$stateProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider) {
-            $stateProvider.state(AccessConstants.UI_STATES.SEARCH.state, {
+            $stateProvider.state(AccessConstants_1.default.UI_STATES.SEARCH.state, {
                 url: '/search',
                 params: {
                     bcExclude_globalSearchResetPaging: null
@@ -29,7 +27,7 @@ define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoa
                     breadcrumbRoot: false,
                     displayName: 'Search',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants.UI_STATES.SEARCH.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.SEARCH.permissions
                 }
             });
         };

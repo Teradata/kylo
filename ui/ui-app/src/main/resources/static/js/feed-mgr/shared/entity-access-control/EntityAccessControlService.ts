@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {AccessConstants} from '../../../constants/AccessConstants';
+import AccessConstants from '../../../constants/AccessConstants';
 const moduleName = require('feed-mgr/module-name');
 
 

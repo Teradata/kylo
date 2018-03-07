@@ -24,8 +24,8 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class FeedDetailsProcessorRenderingHelper {
-    constructor () {
+// export class FeedDetailsProcessorRenderingHelper {
+    function FeedDetailsProcessorRenderingHelper () {
 
         var data = {
             GET_TABLE_DATA_PROCESSOR_TYPE: "com.thinkbiganalytics.nifi.GetTableData",
@@ -90,5 +90,5 @@ export class FeedDetailsProcessorRenderingHelper {
         return data;
 
     }
-}
+// }
 angular.module(moduleName).factory('FeedDetailsProcessorRenderingHelper', FeedDetailsProcessorRenderingHelper);

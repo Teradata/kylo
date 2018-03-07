@@ -23,376 +23,374 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class RestUrlService {
+// define(['angular', 'feed-mgr/module-name'], function (angular:any, moduleName:any) {
+    angular.module(moduleName).service('RestUrlService', function () {
 
+        var self = this;
 
-    ROOT:any = "";
-    ADMIN_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/admin";
-    ADMIN_V2_BASE_URL = this.ROOT + "/proxy/v2/feedmgr/admin";
-    SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
-    TEMPLATES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/templates";
-    FEEDS_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/feeds";
-    SLA_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/sla";
-    CONTROLLER_SERVICES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services";
-    SCHEMA_DISCOVERY_BASE_URL = this.ROOT + "/proxy/v1/schema-discovery";
-    GET_TEMPLATES_URL = this.TEMPLATES_BASE_URL;
-    GET_UNREGISTERED_TEMPLATES_URL = this.TEMPLATES_BASE_URL + "/unregistered";
-    HADOOP_AUTHORIZATATION_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
-    UI_BASE_URL = this.ROOT + "/api/v1/ui";
-    DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
+        this.ROOT = "";
+        this.ADMIN_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/admin";
+        this.ADMIN_V2_BASE_URL = this.ROOT + "/proxy/v2/feedmgr/admin";
+        this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
+        this.TEMPLATES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/templates";
+        this.FEEDS_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/feeds";
+        this.SLA_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/sla";
+        this.CONTROLLER_SERVICES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services";
+        this.SCHEMA_DISCOVERY_BASE_URL = this.ROOT + "/proxy/v1/schema-discovery";
+        this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
+        this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/unregistered";
+        this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
+        this.UI_BASE_URL = this.ROOT + "/api/v1/ui";
+        this.DOMAIN_TYPES_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/domain-types";
 
-    UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
-    LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
+        this.UPLOAD_SAMPLE_TABLE_FILE = this.SCHEMA_DISCOVERY_BASE_URL + "/hive/sample-file";
+        this.LIST_FILE_PARSERS = this.SCHEMA_DISCOVERY_BASE_URL + "/file-parsers";
 
-    VALIDATE_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
+        this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/validate";
 
-    PREVIEW_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/preview";
+        this.PREVIEW_CRON_EXPRESSION_URL = this.ROOT + "/proxy/v1/feedmgr/util/cron-expression/preview";
 
-    GET_SYSTEM_NAME = this.ROOT + "/proxy/v1/feedmgr/util/system-name";
+        this.GET_SYSTEM_NAME = this.ROOT + "/proxy/v1/feedmgr/util/system-name";
 
-    ICONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icons";
-    ICON_COLORS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icon-colors";
+        this.ICONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icons";
+        this.ICON_COLORS_URL = this.ROOT + "/proxy/v1/feedmgr/util/icon-colors";
 
-    CODE_MIRROR_TYPES_URL = this.ROOT + "/proxy/v1/feedmgr/util/codemirror-types";
+        this.CODE_MIRROR_TYPES_URL = this.ROOT + "/proxy/v1/feedmgr/util/codemirror-types";
 
-    CATEGORIES_URL = this.ROOT + "/proxy/v1/feedmgr/categories";
+        this.CATEGORIES_URL = this.ROOT + "/proxy/v1/feedmgr/categories";
 
-    SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
+        this.SEARCH_URL = this.ROOT + "/proxy/v1/feedmgr/search";
 
-    HIVE_SERVICE_URL = this.ROOT + "/proxy/v1/hive";
+        this.HIVE_SERVICE_URL = this.ROOT + "/proxy/v1/hive";
 
-    SPARK_SHELL_SERVICE_URL = this.ROOT + "/proxy/v1/spark/shell";
+        this.SPARK_SHELL_SERVICE_URL = this.ROOT + "/proxy/v1/spark/shell";
 
+        ///TEMPLATE REGISTRATION
 
-    ///TEMPLATE REGISTRATION
+        this.REGISTER_TEMPLATE_URL = function () {
+            return self.TEMPLATES_BASE_URL + "/register";
+        }
 
-    REGISTER_TEMPLATE_URL = function () {
-        return this.TEMPLATES_BASE_URL + "/register";
-    }
+        this.SAVE_TEMPLATE_ORDER_URL = self.TEMPLATES_BASE_URL + "/order";
 
-    SAVE_TEMPLATE_ORDER_URL = this.TEMPLATES_BASE_URL + "/order";
+        this.GET_REGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL + "/registered";
 
-    GET_REGISTERED_TEMPLATES_URL = this.TEMPLATES_BASE_URL + "/registered";
+        this.GET_REGISTERED_TEMPLATE_PROPERTIES_URL = function (templateId:any) {
+            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/properties";
+        }
 
-    GET_REGISTERED_TEMPLATE_PROPERTIES_URL = function (templateId:any) {
-        return this.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/properties";
-    }
+        this.GET_REGISTERED_TEMPLATE_URL = function (templateId:any) {
+            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId;
+        }
 
-    GET_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-        return this.GET_REGISTERED_TEMPLATES_URL + "/" + templateId;
-    }
+        this.REGISTERED_TEMPLATE_NIFI_INPUT_PORTS = function (nifiTemplateId:any) {
+            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/input-ports";
+        }
 
-    REGISTERED_TEMPLATE_NIFI_INPUT_PORTS = function (nifiTemplateId:any) {
-        return this.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/input-ports";
-    }
+        this.REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS = function (nifiTemplateId:any) {
+            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/output-ports";
+        }
 
-    REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS = function (nifiTemplateId:any) {
-        return this.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/output-ports";
-    }
+        this.REGISTERED_TEMPLATE_NIFI_ALL_PORTS = function (nifiTemplateId:any) {
+            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/ports";
+        }
 
-    REGISTERED_TEMPLATE_NIFI_ALL_PORTS = function (nifiTemplateId:any) {
-        return this.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/ports";
-    }
+        this.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS = function (nifiTemplateId:any) {
+            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/datasource-definitions";
+        }
 
-    TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS = function (nifiTemplateId:any) {
-        return this.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/datasource-definitions";
-    }
+        this.TEMPLATE_FLOW_INFORMATION = function (nifiTemplateId:any) {
+            return self.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/flow-info";
+        }
 
-    TEMPLATE_FLOW_INFORMATION = function (nifiTemplateId:any) {
-        return this.TEMPLATES_BASE_URL + "/nifi/" + nifiTemplateId + "/flow-info";
-    }
+        this.DISABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
+            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable";
+        }
+        this.ENABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
+            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/enable";
+        }
+        this.DELETE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
+            return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
+        }
 
-    DISABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-        return this.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/disable";
-    }
-    ENABLE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-        return this.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/enable";
-    }
-    DELETE_REGISTERED_TEMPLATE_URL = function (templateId:any) {
-        return this.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
-    }
+        this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
-    ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
+        this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
+        this.METADATA_PROPERTY_NAMES_URL = this.ROOT + "/proxy/v1/feedmgr/metadata-properties";
 
-    CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
-    METADATA_PROPERTY_NAMES_URL = this.ROOT + "/proxy/v1/feedmgr/metadata-properties";
+        this.GET_DATASOURCE_TYPES = this.ROOT + "/proxy/v1/metadata/datasource/types";
 
-    GET_DATASOURCE_TYPES = this.ROOT + "/proxy/v1/metadata/datasource/types";
+        //FEED URLS
 
-    //FEED URLS
+        this.CREATE_FEED_FROM_TEMPLATE_URL = self.FEEDS_BASE_URL;
 
-    CREATE_FEED_FROM_TEMPLATE_URL = this.FEEDS_BASE_URL;
+        this.MERGE_FEED_WITH_TEMPLATE = function (feedId:any) {
+            return self.GET_FEEDS_URL + "/" + feedId + "/merge-template";
+        }
 
-    MERGE_FEED_WITH_TEMPLATE = function (feedId:any) {
-        return this.GET_FEEDS_URL + "/" + feedId + "/merge-template";
-    }
-
-    GET_FEEDS_URL = this.FEEDS_BASE_URL;
-
-    GET_FEED_NAMES_URL = this.FEEDS_BASE_URL + "/names";
-
-    GET_POSSIBLE_FEED_PRECONDITIONS_URL = this.FEEDS_BASE_URL + "/possible-preconditions";
-
-    GET_POSSIBLE_SLA_METRIC_OPTIONS_URL = this.SLA_BASE_URL + "/available-metrics";
-
-    GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = this.SLA_BASE_URL + "/available-responders";
-
-    VALIDATE_SLA_ACTION_URL = this.SLA_BASE_URL + "/action/validate";
-
-    SAVE_FEED_SLA_URL = function (feedId:any) {
-        return this.SLA_BASE_URL + "/feed/" + feedId;
-    }
-    SAVE_SLA_URL = this.SLA_BASE_URL;
-
-    DELETE_SLA_URL = function (slaId:any) {
-        return this.SLA_BASE_URL + "/" + slaId;
-    }
+        this.GET_FEEDS_URL = self.FEEDS_BASE_URL;
 
-    GET_FEED_SLA_URL = function (feedId:any) {
-        return this.FEEDS_BASE_URL + "/" + feedId + "/sla";
-    }
+        this.GET_FEED_NAMES_URL = self.FEEDS_BASE_URL + "/names";
 
-    GET_SLA_BY_ID_URL = function (slaId:any) {
-        return this.SLA_BASE_URL + "/" + slaId;
-    }
+        this.GET_POSSIBLE_FEED_PRECONDITIONS_URL = self.FEEDS_BASE_URL + "/possible-preconditions";
 
-    GET_SLA_AS_EDIT_FORM = function (slaId:any) {
-        return this.SLA_BASE_URL + "/" + slaId + "/form-object";
-    }
+        this.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL = self.SLA_BASE_URL + "/available-metrics";
 
-    GET_SLAS_URL = this.SLA_BASE_URL;
+        this.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = self.SLA_BASE_URL + "/available-responders";
 
-    GET_CONTROLLER_SERVICES_TYPES_URL = this.CONTROLLER_SERVICES_BASE_URL + "/types";
+        this.VALIDATE_SLA_ACTION_URL = self.SLA_BASE_URL + "/action/validate";
 
-    GET_CONTROLLER_SERVICES_URL = this.CONTROLLER_SERVICES_BASE_URL;
+        this.SAVE_FEED_SLA_URL = function (feedId:any) {
+            return self.SLA_BASE_URL + "/feed/" + feedId;
+        }
+        this.SAVE_SLA_URL = self.SLA_BASE_URL;
 
-    GET_CONTROLLER_SERVICE_URL = function (serviceId:any) {
-        return this.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
-    }
-    FEED_VERSIONS_URL = function (feedId:any) {		
-        return this.GET_FEEDS_URL + "/" + feedId + "/versions";
-   }
-           
-    FEED_VERSION_ID_URL = function (feedId:any, verId:any) {
-        return this.FEED_VERSIONS_URL(feedId) + "/" + verId;
-    }
-    
-    FEED_VERSIONS_DIFF_URL = function (feedId:any, verId1:any, verId2:any) {
-            return this.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
-    }
+        this.DELETE_SLA_URL = function (slaId:any) {
+            return self.SLA_BASE_URL + "/" + slaId;
+        }
 
-    FEED_PROFILE_STATS_URL = function (feedId:any) {
-        return this.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
-    }
+        this.GET_FEED_SLA_URL = function (feedId:any) {
+            return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
+        }
 
-    FEED_PROFILE_SUMMARY_URL = function (feedId:any) {
-        return this.GET_FEEDS_URL + "/" + feedId + "/profile-summary";
-    }
+        this.GET_SLA_BY_ID_URL = function (slaId:any) {
+            return self.SLA_BASE_URL + "/" + slaId;
+        }
 
-    FEED_PROFILE_VALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
-        return this.GET_FEEDS_URL + "/" + feedId + "/profile-valid-results";
-    }
+        this.GET_SLA_AS_EDIT_FORM = function (slaId:any) {
+            return self.SLA_BASE_URL + "/" + slaId + "/form-object";
+        }
 
-    FEED_PROFILE_INVALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
-        return this.GET_FEEDS_URL + "/" + feedId + "/profile-invalid-results";
-    }
+        this.GET_SLAS_URL = self.SLA_BASE_URL;
 
-    ENABLE_FEED_URL = function (feedId:any) {
-        return this.FEEDS_BASE_URL + "/enable/" + feedId;
-    }
-    DISABLE_FEED_URL = function (feedId:any) {
-        return this.FEEDS_BASE_URL + "/disable/" + feedId;
-    }
-    UPLOAD_FILE_FEED_URL = function (feedId:any) {
-        return this.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
-    }
-
-    FEED_DETAILS_BY_NAME_URL = function (feedName:any) {
-        return this.FEEDS_BASE_URL + "/by-name/" + feedName;
-    };
-
-    CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = function (categoryName:any) {
-        return this.CATEGORIES_URL + "/by-name/" + categoryName;
-    };
-
-    CATEGORY_DETAILS_BY_ID_URL = function (categoryId:any) {
-        return this.CATEGORIES_URL + "/by-id/" + categoryId;
-    };
-
-    /**
-     * Gets the URL for retrieving the user fields for a new feed.
-     *
-     * @param {string} categoryId the category id
-     * @returns {string} the URL
-     */
-    GET_FEED_USER_FIELDS_URL = function (categoryId:any) {
-        return this.CATEGORIES_URL + "/" + categoryId + "/user-fields";
-    };
-
-    /**
-     * URL for retrieving the user fields for a new category.
-     * @type {string}
-     */
-    GET_CATEGORY_USER_FIELD_URL = this.CATEGORIES_URL + "/user-fields";
-
-    // Endpoint for administration of user fields
-    ADMIN_USER_FIELDS = this.ADMIN_BASE_URL + "/user-fields";
-
-    //Field Policy Urls
-
-    AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/standardization";
-    AVAILABLE_VALIDATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/validation";
-
-    ADMIN_IMPORT_TEMPLATE_URL = this.ADMIN_V2_BASE_URL + "/import-template";
-
-    ADMIN_EXPORT_TEMPLATE_URL = this.ADMIN_BASE_URL + "/export-template";
-
-    ADMIN_EXPORT_FEED_URL = this.ADMIN_BASE_URL + "/export-feed";
-
-    ADMIN_IMPORT_FEED_URL = this.ADMIN_V2_BASE_URL + "/import-feed";
-
-    ADMIN_UPLOAD_STATUS_CHECK = function (key:any) {
-        return this.ADMIN_BASE_URL + "/upload-status/" + key;
-    };
-
-    // Hadoop Security Authorization
-    HADOOP_SECURITY_GROUPS = this.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
-
-    // Security service URLs
-
-    SECURITY_GROUPS_URL = this.SECURITY_BASE_URL + "/groups";
-
-    SECURITY_USERS_URL = this.SECURITY_BASE_URL + "/users";
-
-    FEED_LINEAGE_URL = function (feedId:any) {
-        return this.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
-    };
-
-
-    // Feed history data reindexing endpoint
-    FEED_HISTORY_CONFIGURED = this.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
-
-    /**
-     * Generates a URL for listing the controller services under the specified process group.
-     *
-     * @param {string} processGroupId the process group id
-     * @returns {string} the URL for listing controller services
-     */
-    LIST_SERVICES_URL = function (processGroupId:any) {
-        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
-    };
-
-    /**
-     * The endpoint for retrieving the list of available Hive partition functions.
-     *
-     * @type {string}
-     */
-    PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
-
-    /**
-     * The endpoint for retrieving the NiFi status.
-     * @type {string}
-     */
-    NIFI_STATUS = this.ROOT + "/proxy/v1/feedmgr/nifi/status";
-
-    /**
-     * the endpoint for determining if NiFi is up or not
-     * @type {string}
-     */
-    IS_NIFI_RUNNING_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/running";
-
-    /**
-     * The endpoint for retrieving data sources.
-     * @type {string}
-     */
-    GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
-
-    GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function(id:any){
-        return this.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/"+id+"/references";
-    }
-
-    /**
-     * Get/Post roles changes for a Feed entity
-     * @param feedId the feed id
-     * @returns {string} the url to get/post feed role changes
-     */
-    FEED_ROLES_URL = function (feedId:any) {
-        return this.FEEDS_BASE_URL + "/" + feedId + "/roles"
-    };
-
-    /**
-     * Get/Post roles changes for a Category entity
-     * @param categoryId the category id
-     * @returns {string} the url to get/post category role changes
-     */
-    CATEGORY_ROLES_URL = function (categoryId:any) {
-        return this.CATEGORIES_URL + "/" + categoryId + "/roles"
-    };
-    
-    /**
-     * Get/Post roles changes for a Category entity
-     * @param categoryId the category id
-     * @returns {string} the url to get/post category role changes
-     */
-    CATEGORY_FEED_ROLES_URL = function (categoryId:any) {
-        return this.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
-    };
-
-    /**
-     * Get/Post roles changes for a Template entity
-     * @param templateId the Template id
-     * @returns {string} the url to get/post Template role changes
-     */
-    TEMPLATE_ROLES_URL = function (templateId:any) {
-        return this.TEMPLATES_BASE_URL + "/registered/" + templateId + "/roles"
-    };
-
-    /**
-     * Endpoint for roles changes to a Datasource entity.
-     * @param {string} datasourceId the datasource id
-     * @returns {string} the url for datasource role changes
-     */
-    DATASOURCE_ROLES_URL = function (datasourceId:any) {
-        return this.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
-    };
-
-    /**
-     * The URL for retrieving the list of template table option plugins.
-     * @type {string}
-     */
-    UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
-
-
-    /**
-     * The URL for retrieving the list of templates for custom rendering with nifi processors
-     * @type {string}
-     */
-    UI_PROCESSOR_TEMPLATES = this.UI_BASE_URL + "/processor-templates";
-
-    /**
-     * return a list of the categorySystemName.feedSystemName
-     * @type {string}
-     */
-    OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
-    
-    /**
-    * Formats a date as a string.
-    */
-    FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
-
-    /**
-     * Parses a string as a date.
-     */
-    PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
-
-
-    constructor() {
+        this.GET_CONTROLLER_SERVICES_TYPES_URL = self.CONTROLLER_SERVICES_BASE_URL + "/types";
 
+        this.GET_CONTROLLER_SERVICES_URL = self.CONTROLLER_SERVICES_BASE_URL;
 
-
+        this.GET_CONTROLLER_SERVICE_URL = function (serviceId:any) {
+            return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
+        }
         
+        this.FEED_VERSIONS_URL = function (feedId:any) {
+        		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
+        }
+        
+        this.FEED_VERSION_ID_URL = function (feedId:any, verId:any) {
+        	return self.FEED_VERSIONS_URL(feedId) + "/" + verId;
+        }
+        
+        this.FEED_VERSIONS_DIFF_URL = function (feedId:any, verId1:any, verId2:any) {
+        		return self.FEED_VERSION_ID_URL(feedId, verId1) + "/diff/" + verId2;
+        }
+
+        this.FEED_PROFILE_STATS_URL = function (feedId:any) {
+            return self.GET_FEEDS_URL + "/" + feedId + "/profile-stats";
+        }
+
+        this.FEED_PROFILE_SUMMARY_URL = function (feedId:any) {
+            return self.GET_FEEDS_URL + "/" + feedId + "/profile-summary";
+        }
+
+        this.FEED_PROFILE_VALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
+            return self.GET_FEEDS_URL + "/" + feedId + "/profile-valid-results";
+        }
+
+        this.FEED_PROFILE_INVALID_RESULTS_URL = function (feedId:any, processingDttm:any) {
+            return self.GET_FEEDS_URL + "/" + feedId + "/profile-invalid-results";
+        }
+
+        this.ENABLE_FEED_URL = function (feedId:any) {
+            return self.FEEDS_BASE_URL + "/enable/" + feedId;
+        }
+        this.DISABLE_FEED_URL = function (feedId:any) {
+            return self.FEEDS_BASE_URL + "/disable/" + feedId;
+        }
+        this.UPLOAD_FILE_FEED_URL = function (feedId:any) {
+            return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
+        }
+
+        this.FEED_DETAILS_BY_NAME_URL = function (feedName:any) {
+            return self.FEEDS_BASE_URL + "/by-name/" + feedName;
+        };
+
+        this.CATEGORY_DETAILS_BY_SYSTEM_NAME_URL = function (categoryName:any) {
+            return self.CATEGORIES_URL + "/by-name/" + categoryName;
+        };
+
+        this.CATEGORY_DETAILS_BY_ID_URL = function (categoryId:any) {
+            return self.CATEGORIES_URL + "/by-id/" + categoryId;
+        };
+
+        /**
+         * Gets the URL for retrieving the user fields for a new feed.
+         *
+         * @param {string} categoryId the category id
+         * @returns {string} the URL
+         */
+        this.GET_FEED_USER_FIELDS_URL = function (categoryId:any) {
+            return self.CATEGORIES_URL + "/" + categoryId + "/user-fields";
+        };
+
+        /**
+         * URL for retrieving the user fields for a new category.
+         * @type {string}
+         */
+        this.GET_CATEGORY_USER_FIELD_URL = self.CATEGORIES_URL + "/user-fields";
+
+        // Endpoint for administration of user fields
+        this.ADMIN_USER_FIELDS = self.ADMIN_BASE_URL + "/user-fields";
+
+        //Field Policy Urls
+
+        this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/standardization";
+        this.AVAILABLE_VALIDATION_POLICIES = this.ROOT + "/proxy/v1/field-policies/validation";
+
+        this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_V2_BASE_URL + "/import-template";
+
+        this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL + "/export-template";
+
+        this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL + "/export-feed";
+
+        this.ADMIN_IMPORT_FEED_URL = self.ADMIN_V2_BASE_URL + "/import-feed";
+
+        this.ADMIN_UPLOAD_STATUS_CHECK = function (key:any) {
+            return self.ADMIN_BASE_URL + "/upload-status/" + key;
+        };
+
+        // Hadoop Security Authorization
+        this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
+
+        // Security service URLs
+
+        this.SECURITY_GROUPS_URL = self.SECURITY_BASE_URL + "/groups";
+
+        this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
+
+        this.FEED_LINEAGE_URL = function (feedId:any) {
+            return self.ROOT + "/proxy/v1/metadata/feed/" + feedId + "/lineage";
+        };
+
+        // Feed history data reindexing endpoint
+        this.FEED_HISTORY_CONFIGURED = self.ROOT + "/proxy/v1/metadata/feed/data-history-reindex-configured";
 
 
-    }
-}
-angular.module(moduleName).service('RestUrlService', RestUrlService);
+        /**
+         * Generates a URL for listing the controller services under the specified process group.
+         *
+         * @param {string} processGroupId the process group id
+         * @returns {string} the URL for listing controller services
+         */
+        this.LIST_SERVICES_URL = function (processGroupId:any) {
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/process-group/" + processGroupId;
+        };
+
+        /**
+         * The endpoint for retrieving the list of available Hive partition functions.
+         *
+         * @type {string}
+         */
+        this.PARTITION_FUNCTIONS_URL = this.ROOT + "/proxy/v1/feedmgr/util/partition-functions";
+
+        /**
+         * The endpoint for retrieving the NiFi status.
+         * @type {string}
+         */
+        this.NIFI_STATUS = this.ROOT + "/proxy/v1/feedmgr/nifi/status";
+
+        /**
+         * the endpoint for determining if NiFi is up or not
+         * @type {string}
+         */
+        this.IS_NIFI_RUNNING_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/running";
+
+        /**
+         * The endpoint for retrieving data sources.
+         * @type {string}
+         */
+        this.GET_DATASOURCES_URL = this.ROOT + "/proxy/v1/metadata/datasource";
+
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.QUERY_DATASOURCE_URL = function (id:any) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
+
+        this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id:any) {
+            return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";
+        }
+
+        /**
+         * Get/Post roles changes for a Feed entity
+         * @param feedId the feed id
+         * @returns {string} the url to get/post feed role changes
+         */
+        this.FEED_ROLES_URL = function (feedId:any) {
+            return self.FEEDS_BASE_URL + "/" + feedId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_ROLES_URL = function (categoryId:any) {
+            return self.CATEGORIES_URL + "/" + categoryId + "/roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Category entity
+         * @param categoryId the category id
+         * @returns {string} the url to get/post category role changes
+         */
+        this.CATEGORY_FEED_ROLES_URL = function (categoryId:any) {
+            return self.CATEGORIES_URL + "/" + categoryId + "/feed-roles"
+        };
+
+        /**
+         * Get/Post roles changes for a Template entity
+         * @param templateId the Template id
+         * @returns {string} the url to get/post Template role changes
+         */
+        this.TEMPLATE_ROLES_URL = function (templateId:any) {
+            return self.TEMPLATES_BASE_URL + "/registered/" + templateId + "/roles"
+        };
+
+        /**
+         * Endpoint for roles changes to a Datasource entity.
+         * @param {string} datasourceId the datasource id
+         * @returns {string} the url for datasource role changes
+         */
+        this.DATASOURCE_ROLES_URL = function (datasourceId:any) {
+            return self.GET_DATASOURCES_URL + "/" + datasourceId + "/roles";
+        };
+
+        /**
+         * The URL for retrieving the list of template table option plugins.
+         * @type {string}
+         */
+        this.UI_TEMPLATE_TABLE_OPTIONS = this.UI_BASE_URL + "/template-table-options";
+
+        /**
+         * The URL for retrieving the list of templates for custom rendering with nifi processors
+         * @type {string}
+         */
+        this.UI_PROCESSOR_TEMPLATES = this.UI_BASE_URL + "/processor-templates";
+
+        /**
+         * return a list of the categorySystemName.feedSystemName
+         * @type {string}
+         */
+        this.OPS_MANAGER_FEED_NAMES = "/proxy/v1/feeds/names";
+
+        /**
+         * Formats a date as a string.
+         */
+        this.FORMAT_DATE = "/proxy/v1/feedmgr/util/format-date";
+
+        /**
+         * Parses a string as a date.
+         */
+        this.PARSE_DATE = "/proxy/v1/feedmgr/util/parse-date";
+    });
+// });

@@ -25,7 +25,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                     breadcrumbRoot: false,
                     displayName: 'JCR Admin',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.AccessConstants.UI_STATES.JCR_ADMIN.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.JCR_ADMIN.permissions
                 }
             });
             $stateProvider.state('cluster', {

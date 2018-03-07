@@ -3,9 +3,9 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class CategoriesService {
-     constructor (private $q:any, private $http:any, private RestUrlService:any
-        ,private AccessControlService:any,private EntityAccessControlService:any) {
+// export class CategoriesService {
+     function CategoriesService ($q:any, $http:any, RestUrlService:any
+        ,AccessControlService:any, EntityAccessControlService:any) {
 
         /**
          * internal cache of categories
@@ -343,9 +343,9 @@ export class CategoriesService {
 
             //EntityAccessControlService.ENTITY_ACCESS.CHANGE_CATEGORY_PERMISSIONS
             data.init();
-            // return data;
+            return data;
 
     }
-}
+// }
 
 angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","AccessControlService","EntityAccessControlService",CategoriesService]);

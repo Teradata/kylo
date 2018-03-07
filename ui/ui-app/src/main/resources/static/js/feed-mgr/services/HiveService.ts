@@ -3,8 +3,8 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class HiveService {
-    constructor (private $q:any, private $http:any, private $mdDialog:any,private $timeout:any, private RestUrlService:any) {
+// export class HiveService {
+    function HiveService ($q:any, $http:any, $mdDialog:any,$timeout:any, RestUrlService:any) {
 
 
         var data = {
@@ -365,8 +365,8 @@ export class HiveService {
 
         };
 
-        // return data;
+        return data;
 
     }
-}
+// }
 angular.module(moduleName).factory('HiveService', ["$q","$http","$mdDialog","$timeout","RestUrlService",HiveService]);

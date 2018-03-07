@@ -24,8 +24,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class FeedInputProcessorOptionsFactory {
-    constructor ( private UiComponentsService:any) {
+    function FeedInputProcessorOptionsFactory ( UiComponentsService:any) {
 
         var data = {
 
@@ -59,9 +58,9 @@ export class FeedInputProcessorOptionsFactory {
             }
 
         };
-        // return data;
+        return data;
 
     }
-}
+
 
 angular.module(moduleName).factory('FeedInputProcessorOptionsFactory',['UiComponentsService', FeedInputProcessorOptionsFactory]);

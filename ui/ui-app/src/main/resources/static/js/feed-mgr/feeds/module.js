@@ -11,7 +11,7 @@ define(["require", "exports", "angular", "../../constants/AccessConstants", "../
         }
         ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
             $compileProvider.preAssignBindingsEnabled(true);
-            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.FEEDS.state, {
+            $stateProvider.state(AccessConstants_1.default.UI_STATES.FEEDS.state, {
                 url: '/feeds',
                 params: {
                     tab: null
@@ -30,7 +30,7 @@ define(["require", "exports", "angular", "../../constants/AccessConstants", "../
                     breadcrumbRoot: true,
                     displayName: 'Feeds',
                     module: moduleName,
-                    permissions: AccessConstants_1.AccessConstants.UI_STATES.FEEDS.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.FEEDS.permissions
                 }
             });
         };

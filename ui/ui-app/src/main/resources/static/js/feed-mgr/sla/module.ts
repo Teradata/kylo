@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
-import {AccessConstants} from "../../constants/AccessConstants";
+import AccessConstants from "../../constants/AccessConstants";
 import "kylo-common";
 import "kylo-services";
 import "kylo-feedmgr";

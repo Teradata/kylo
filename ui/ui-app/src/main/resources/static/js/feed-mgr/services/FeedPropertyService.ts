@@ -3,17 +3,10 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class FeedPropertyService {
+// export class FeedPropertyService {
 
     
-    initSensitivePropertyForEditing:any;
-    isMasked:any;
-    initSensitivePropertyForSaving:any;
-    initSensitivePropertiesForEditing:any;
-    updateDisplayValue:any;
-    updateDisplayValueForProcessors:any;
-
-    constructor() {
+    function FeedPropertyService() {
 
         /**
          * If the property is sensitive we should store off the long encrypted value and show just asterisks
@@ -93,5 +86,5 @@ export class FeedPropertyService {
         }
 
     }
-}
+// }
 angular.module(moduleName).service('FeedPropertyService', FeedPropertyService); 

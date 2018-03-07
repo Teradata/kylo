@@ -10,7 +10,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
             this.module.config(['$stateProvider', this.configFn.bind(this)]);
         }
         ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
-            $stateProvider.state(AccessConstants_1.AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state, {
+            $stateProvider.state(AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_AGREEMENTS.state, {
                 url: '/service-level-agreements/:slaId',
                 params: {
                     slaId: null
@@ -29,7 +29,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                     breadcrumbRoot: false,
                     displayName: 'Service Level Agreements',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions
                 }
             });
             $stateProvider.state('sla-email-templates', {
@@ -48,7 +48,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                     breadcrumbRoot: false,
                     displayName: 'SLA Email Templates',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
                 }
             });
             $stateProvider.state('sla-email-template', {
@@ -70,7 +70,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                     breadcrumbRoot: false,
                     displayName: 'SLA Email Template',
                     module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
+                    permissions: AccessConstants_1.default.UI_STATES.SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATES.permissions
                 }
             });
         };

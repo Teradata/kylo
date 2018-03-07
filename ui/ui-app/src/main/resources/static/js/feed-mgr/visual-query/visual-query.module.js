@@ -55,7 +55,7 @@ define(["require", "exports", "@angular/common", "@angular/core", "@uirouter/ang
                                     breadcrumbRoot: true,
                                     displayName: "Visual Query",
                                     module: moduleName,
-                                    permissions: AccessConstants_1.AccessConstants.UI_STATES.VISUAL_QUERY.permissions
+                                    permissions: AccessConstants_1.default.UI_STATES.VISUAL_QUERY.permissions
                                 }
                             }]
                     })

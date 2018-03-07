@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import {AccessConstants} from "../constants/AccessConstants";
+import AccessConstants from "../constants/AccessConstants";
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 //const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import UserDetailsController from "./users/user-details/UserDetailsController";

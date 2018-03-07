@@ -3,8 +3,8 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class FeedSecurityGroups {
-    constructor ($http:any, $q:any, RestUrlService:any) {
+// export class FeedSecurityGroups {
+    function FeedSecurityGroups ($http:any, $q:any, RestUrlService:any) {
 
         /**
          * Create filter function for a query string
@@ -53,5 +53,5 @@ export class FeedSecurityGroups {
         return data;
 
     }
-}
+// }
 angular.module(moduleName).factory('FeedSecurityGroups', ["$http","$q","RestUrlService", FeedSecurityGroups]);

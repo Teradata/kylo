@@ -3,8 +3,8 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class SlaService {
-    constructor (private $http:any, private $q:any, private $mdToast:any, private $mdDialog:any, private RestUrlService:any) {
+// export class SlaService {
+    function SlaService ($http:any, $q:any, mdToast:any, $mdDialog:any, RestUrlService:any) {
 
         var data = {
 
@@ -186,9 +186,9 @@ export class SlaService {
 
         };
         data.init();
-        // return data;
+        return data;
 
     }
-}
+// }
 
 angular.module(moduleName).factory('SlaService', ["$http","$q","$mdToast","$mdDialog","RestUrlService",SlaService]);

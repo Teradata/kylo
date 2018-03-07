@@ -33,12 +33,13 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
-export class FattableService {
+// export class FattableService {
 
-    setupTable:any;
-    constructor (private $window:any){
+    
+    function FattableService ($window:any){
 
         var self = this;
+        var setupTable:any;
 
         var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
 
@@ -186,6 +187,6 @@ export class FattableService {
         }
 
     }
-}
+// }
 
 angular.module(moduleName).service('FattableService', ["$window", "FattableService",FattableService]);

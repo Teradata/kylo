@@ -5,7 +5,7 @@ import "kylo-common";
 import "kylo-services";
 import "kylo-opsmgr";
 import "../module"; //ops-mgr/jobs/module
-import {AccessConstants} from "../../../constants/AccessConstants";
+import AccessConstants from "../../../constants/AccessConstants";
 
 class ModuleFactory  {
     module: ng.IModule;

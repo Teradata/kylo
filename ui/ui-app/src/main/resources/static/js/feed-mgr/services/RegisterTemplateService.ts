@@ -23,11 +23,10 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 import 'pascalprecht.translate';
 
-export class RegisterTemplateService {
-    constructor (private $http:any, private $q:any, private $mdDialog:any, private RestUrlService:any
-        , private FeedInputProcessorOptionsFactory:any, private FeedDetailsProcessorRenderingHelper:any
-        , private FeedPropertyService:any,private AccessControlService:any
-        , private EntityAccessControlService:any, private $filter:any) {
+    function RegisterTemplateService ($http:any, $q:any, $mdDialog:any, RestUrlService:any
+        , FeedInputProcessorOptionsFactory:any, FeedDetailsProcessorRenderingHelper:any
+        , FeedPropertyService:any, AccessControlService:any
+        , EntityAccessControlService:any, $filter:any) {
 
         function escapeRegExp(str:any) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -916,7 +915,7 @@ export class RegisterTemplateService {
         return data;
 
     }
-}
+
 angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService"
     ,"FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper"
     ,"FeedPropertyService","AccessControlService","EntityAccessControlService",RegisterTemplateService]);

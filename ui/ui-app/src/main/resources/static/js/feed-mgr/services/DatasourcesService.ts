@@ -21,8 +21,13 @@ const moduleName = require('feed-mgr/module-name');
  * Interacts with the Data Sources REST API.
  * @constructor
  */
+
 export class DatasourcesService {
-    constructor (private $http:any, private $q:any, private RestUrlService:any, private EntityAccessControlService:any) {
+    
+}
+
+// export class DatasourcesService {
+    function DatasourcesServiceClass ($http:any, $q:any, RestUrlService:any, EntityAccessControlService:any) {
 
         /**
          * Type name for JDBC data sources.
@@ -244,9 +249,10 @@ export class DatasourcesService {
             }
         });
 
+        
 
-        // return new DatasourcesService();
+        return new DatasourcesService();
     }
-}
+// }
 
-angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService","EntityAccessControlService", DatasourcesService]);
+angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService","EntityAccessControlService", DatasourcesServiceClass]);

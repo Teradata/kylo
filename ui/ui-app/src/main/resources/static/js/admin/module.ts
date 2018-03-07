@@ -1,5 +1,5 @@
 import * as angular from 'angular';
-import {AccessConstants} from '../constants/AccessConstants';
+import AccessConstants from '../constants/AccessConstants';
 //const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 //const codeMirrorRequire = require('../codemirror-require/module');

@@ -731,12 +731,12 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
             $rootScope.typeOf = function (value) {
                 return typeof value;
             };
-            function onStartOfTransition(trans) {
+            var onStartOfTransition = function (trans) {
                 if (!AccessControlService.isFutureState(trans.to().name)) {
                     //if we havent initialized the user yet, init and defer the transition
                     if (!AccessControlService.initialized) {
-                        var defer = this.$q.defer();
-                        this.$q.when(AccessControlService.init(), function () {
+                        var defer = $q.defer();
+                        $q.when(AccessControlService.init(), function () {
                             //if not allowed, go to access-denied
                             if (!AccessControlService.hasAccess(trans)) {
                                 if (trans.to().name != 'access-denied') {
@@ -757,7 +757,7 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                         }
                     }
                 }
-            }
+            };
             /**
              * Add a listener to the start of every transition to do Access control on the page
              * and redirect if not authorized

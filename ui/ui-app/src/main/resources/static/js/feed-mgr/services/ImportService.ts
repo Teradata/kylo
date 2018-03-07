@@ -3,9 +3,9 @@ import * as _ from "underscore";
 const moduleName = require('feed-mgr/module-name');
 
 
-export class ImportService {
+// export class ImportService {
 
-    constructor() {
+    function ImportService() {
 
         var importComponentTypes = {NIFI_TEMPLATE:"NIFI_TEMPLATE",
             TEMPLATE_DATA:"TEMPLATE_DATA",
@@ -120,7 +120,7 @@ export class ImportService {
     }
         return data;
     }
-}
+// }
 angular.module(moduleName).factory('ImportService', [ImportService]);
 
 

@@ -785,12 +785,13 @@ runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: 
                  return typeof value;
              };
 
-             function onStartOfTransition(trans: any) {
+             var onStartOfTransition =  (trans: any) => {
+                 
                  if (!AccessControlService.isFutureState(trans.to().name)) {
                      //if we havent initialized the user yet, init and defer the transition
                      if (!AccessControlService.initialized) {
-                         var defer = this.$q.defer();
-                         this.$q.when(AccessControlService.init(), ()=> {
+                         var defer = $q.defer();
+                         $q.when(AccessControlService.init(), ()=> {
                              //if not allowed, go to access-denied
                              if (!AccessControlService.hasAccess(trans)) {
                                  if (trans.to().name != 'access-denied') {
