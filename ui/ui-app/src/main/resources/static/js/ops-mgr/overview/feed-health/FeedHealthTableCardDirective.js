@@ -93,6 +93,7 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
 
 
         this.onTabSelected = function(tab) {
+            tab.clearContent();
             TabService.selectedTab(self.pageName, tab);
             if(loaded || (!loaded && !OpsManagerDashboardService.isFetchingDashboard())) {
                 return loadFeeds(true, true);
@@ -269,7 +270,6 @@ define(['angular','ops-mgr/overview/module-name'], function (angular,moduleName)
               var filter = queryParams.filter;
               OpsManagerDashboardService.updateFeedHealthQueryParams(tab,filter,start , limit, sort);
               self.fetchFeedHealthPromise =  OpsManagerDashboardService.fetchFeeds(tab,filter,start , limit, sort).then(function (response) {
-                    populateFeedData(tab);
               },
               function(err){
                   loaded = true;
