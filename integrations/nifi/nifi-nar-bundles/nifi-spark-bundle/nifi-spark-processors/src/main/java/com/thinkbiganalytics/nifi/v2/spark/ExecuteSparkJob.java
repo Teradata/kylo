@@ -134,8 +134,8 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .name("SparkHome")
         .description("Path to the Spark Client directory")
         .required(true)
-        .defaultValue("/usr/hdp/current/spark-client/")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .defaultValue(Optional.ofNullable(System.getenv("SPARK_HOME")).orElse("/usr/hdp/current/spark-client/"))
+        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
     public static final PropertyDescriptor SPARK_MASTER = new PropertyDescriptor.Builder()
