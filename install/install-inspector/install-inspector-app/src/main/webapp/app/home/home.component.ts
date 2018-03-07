@@ -111,6 +111,7 @@ export class HomeComponent implements OnInit {
     }
 
     downloadReport() {
+        console.log('download report');
         const result = {
             configuration: this.configuration,
             inspections: this.checks.map((inspection) => {
@@ -119,7 +120,7 @@ export class HomeComponent implements OnInit {
                     description: inspection.description,
                     enabled: inspection.enabled.value,
                     valid: inspection.status.valid,
-                    error: inspection.status.error
+                    errors: inspection.status.errors
                 }
             })
         };
