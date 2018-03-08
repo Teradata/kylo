@@ -81,7 +81,7 @@ public class JcrSecurityRoleProviderTest {
                 .action(FeedAccessControl.EDIT_DETAILS)
                 .action(FeedAccessControl.ENABLE_DISABLE)
                 .action(FeedAccessControl.EXPORT)
-                .action(FeedAccessControl.ENABLE_DISABLE)
+                .action(FeedAccessControl.START)
                 .add();
             JcrAllowedActions actions = JcrUtil.createJcrObject(temp, JcrAllowedActions.class);
             return new ImmutableAllowedActions(actions);

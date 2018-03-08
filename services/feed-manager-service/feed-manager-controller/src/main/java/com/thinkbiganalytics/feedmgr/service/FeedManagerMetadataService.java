@@ -47,6 +47,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -105,6 +106,9 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedManagerFeedService feedProvider;
+    
+    @Inject
+    private FeedProvider domainFeedProvider;
 
     @Inject
     LegacyNifiRestClient nifiRestClient;
@@ -311,15 +315,25 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     @SuppressWarnings("deprecation")
     public FeedSummary startFeed(String feedId) {
-//            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-        FeedMetadata feedMetadata = this.feedProvider.getFeedById(feedId);
+        FeedMetadata feedMetadata = this.metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+            
+            Feed.ID domainId = domainFeedProvider.resolveId(feedId);
+            Feed domainFeed = domainFeedProvider.findById(domainId);
+            
+            if (domainFeed != null) {
+                domainFeed.getAllowedActions().checkPermission(FeedAccessControl.START);
+                return feedModelTransform.domainToFeedMetadata(domainFeed);
+            } else {
+                throw new FeedNotFoundException(domainId);
+            }
+        });
         
         nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
             .flatMap(categoryGroup -> nifiClient.processGroups().findByName(categoryGroup.getId(), feedMetadata.getSystemFeedName(), false, true))
             .ifPresent(feedGroup -> {
                 this.nifiRestClient.getInputProcessors(feedGroup.getId()).stream()
                     .filter(proc -> feedMetadata.getInputProcessorName().equals(proc.getName()))
-//                    .filter(proc -> PROCESS_STATE.valueOf(proc.getState().toUpperCase()) != PROCESS_STATE.DISABLED)
                     .forEach(processor -> {
                         this.nifiClient.processors().wakeUp(processor);
                     });
