@@ -108,7 +108,7 @@ export class directive implements ng.IDirective {
                 links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                 links.push({sref: "users",type:'link', icon: "account_box", text: this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});
                 links.push({sref: "groups",type:'link', icon: "group", text: this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
-               // links.push({sref: "sla-email-templates",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
+                links.push({sref: "sla-email-templates",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
                 addExtensionLinks(MENU_KEY.ADMIN, links);
                     let menu = ({type:'toggle', 
                             text: this.$filter('translate')('views.main.admin'),

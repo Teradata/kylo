@@ -80,7 +80,7 @@ define(["require", "exports", "angular", "underscore", "./module-name", "../cons
                     links.push({ sref: "registered-templates", type: 'link', icon: "layers", text: _this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants_1.default.TEMPLATES_ACCESS });
                     links.push({ sref: "users", type: 'link', icon: "account_box", text: _this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants_1.default.USERS_ACCESS });
                     links.push({ sref: "groups", type: 'link', icon: "group", text: _this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants_1.default.GROUP_ACCESS });
-                    // links.push({sref: "sla-email-templates",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.SLA_EMAIL_TEMPLATES_ACCESS});
+                    links.push({ sref: "sla-email-templates", type: 'link', icon: "email", text: _this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants_1.default.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE });
                     addExtensionLinks(MENU_KEY.ADMIN, links);
                     var menu = ({ type: 'toggle',
                         text: _this.$filter('translate')('views.main.admin'),
