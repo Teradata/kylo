@@ -56,6 +56,7 @@ import org.apache.spark.launcher.SparkLauncher;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -130,14 +131,20 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-    public static final PropertyDescriptor SPARK_HOME = new PropertyDescriptor.Builder()
+
+    private static final String SPARK_HOME_DEFAULT =  Arrays.asList(System.getenv("SPARK_HOME"), "/usr/hdp/current/spark-client", "/usr/lib/spark")
+        .stream().filter(p -> p != null && Paths.get(p).toFile().exists())
+        .findFirst().orElse(null);
+
+    private static final PropertyDescriptor.Builder SPARK_HOME_BUILDER = new PropertyDescriptor.Builder()
         .name("SparkHome")
         .description("Path to the Spark Client directory")
         .required(true)
-        .defaultValue(Optional.ofNullable(System.getenv("SPARK_HOME")).orElse("/usr/hdp/current/spark-client/"))
         .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
+        .expressionLanguageSupported(true);
+
+    public static final PropertyDescriptor SPARK_HOME = (SPARK_HOME_DEFAULT != null) ? SPARK_HOME_BUILDER.defaultValue(SPARK_HOME_DEFAULT).build() : SPARK_HOME_BUILDER.build();
+
     public static final PropertyDescriptor SPARK_MASTER = new PropertyDescriptor.Builder()
         .name("SparkMaster")
         .description("The Spark master")
