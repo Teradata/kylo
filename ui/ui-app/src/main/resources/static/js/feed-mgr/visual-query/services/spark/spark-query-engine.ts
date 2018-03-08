@@ -56,7 +56,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
                 DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any,
-                private $$angularInjector: Injector) {
+                private $$angularInjector?: Injector) {
         super($mdDialog, DatasourcesService, uiGridConstants, $$angularInjector);
 
         // Initialize properties
