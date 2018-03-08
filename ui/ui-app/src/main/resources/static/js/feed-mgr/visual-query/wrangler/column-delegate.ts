@@ -79,7 +79,7 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Constructs a column delegate.
      */
-    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog: DialogService) {
+    constructor(public dataType: string, public controller: ColumnController, protected $mdDialog: angular.material.IDialogService, protected uiGridConstants: any, protected dialog?: DialogService) {
         this.dataCategory = this.fromDataType(dataType);
         this.filters = this.getFilters(this.dataCategory);
         this.transforms = this.getTransforms(this.dataCategory);
