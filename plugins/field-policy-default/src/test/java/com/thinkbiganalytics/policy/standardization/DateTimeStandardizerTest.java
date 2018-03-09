@@ -9,9 +9,9 @@ package com.thinkbiganalytics.policy.standardization;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,8 +20,14 @@ package com.thinkbiganalytics.policy.standardization;
  * #L%
  */
 
+import com.thinkbiganalytics.policy.utils.JodaUtils;
+
+import org.joda.time.DateTimeZone;
+import org.joda.time.IllegalInstantException;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 import static com.thinkbiganalytics.policy.standardization.DateTimeStandardizer.OutputFormats;
 import static org.junit.Assert.assertEquals;
@@ -76,6 +82,41 @@ public class DateTimeStandardizerTest {
         standardizer = new DateTimeStandardizer("MM-dd-YYYY", OutputFormats.DATE_ONLY);
         assertEquals("1974-01-14", standardizer.convertValue("1-14-1974"));
         assertEquals("2014-12-01", standardizer.convertValue("12-01-2014"));
+    }
+
+    @Test
+    public void testSimpleDateConversionForNST() {
+        DateTimeZone defaultTZ = DateTimeZone.getDefault();
+        DateTimeZone.setDefault(DateTimeZone.forID("Asia/Novosibirsk"));
+
+        try {
+            DateTimeStandardizer standardizer = new DateTimeStandardizer("MM/dd/YYYY", OutputFormats.DATE_ONLY);
+            assertEquals("1983-04-02", standardizer.convertValue("4/2/1983"));
+            assertEquals("1983-04-01", standardizer.convertValue("4/1/1983"));
+
+            standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATE_ONLY);
+            assertEquals("1983-04-01", standardizer.convertValue("04/01/1983 01:32:54"));
+
+            try {
+                assertEquals("1983-04-01", standardizer.convertValue("04/01/1983 00:32:54"));
+                assertTrue( "standardizer should have thrown IllegalInstantException exception, when parsing instant in timezone transition", false);
+            } catch( IllegalInstantException iie ) {
+                assertTrue(true);
+            }
+
+            for (OutputFormats oformat : Arrays.asList(OutputFormats.DATETIME, OutputFormats.DATETIME_NOMILLIS)) {
+                try {
+                    standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", oformat);
+                    standardizer.convertValue("04/01/1983 00:32:54");
+                    assertTrue(String.format("standardizer should have thrown IllegalInstantException exception for format '%s'", oformat),
+                                false);
+                } catch (IllegalInstantException iie) {
+                    assertTrue(true);
+                }
+            }
+        } finally {
+            DateTimeZone.setDefault(defaultTZ);
+        }
     }
 
     @Test
@@ -149,6 +190,33 @@ public class DateTimeStandardizerTest {
         assertEquals(standardizer.convertValue(rawValueStr), standardizer.convertRawValue(rawValueObj).toString());
         assertEquals(standardizer.convertValue(rawValueStr), expectedValueStr);
         assertEquals(standardizer.convertRawValue(rawValueObj), expectedValueObj);
+    }
+
+    @Test
+    public void testFormatContainsTime() {
+        String containsTime1 = "MM/dd/YYYY HH:mm:ss";
+        String containsTime2 = "MM/dd/YYYY '' HH:mm:ss";
+        String containsTime3 = "MM/dd/YYYY 'none' HH:mm:ss";
+        String containsTime4 = "MM/dd/YYYY '''none' HH:mm:ss";
+        assertTrue(JodaUtils.formatContainsTime(containsTime1));
+        assertTrue(JodaUtils.formatContainsTime(containsTime2));
+        assertTrue(JodaUtils.formatContainsTime(containsTime3));
+        assertTrue(JodaUtils.formatContainsTime(containsTime4));
+
+        String noContainsTime1 = "MM/dd/YYYY ";
+        String noContainsTime2 = "MM/dd/YYYY '' ";
+        String noContainsTime3 = "MM/dd/YYYY 'none' ";
+        String noContainsTime4 = "MM/dd/YYYY '''none' ";
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime1));
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime2));
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime3));
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime4));
+
+        String noContainsTime5 = "MM/dd/YYYY 'contains quoted format specs HH:mm:ss' ";
+        String noContainsTime6 = "MM/dd/YYYY '''contains quoted format specs HH:mm:ss' ";
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime5));
+        assertFalse(JodaUtils.formatContainsTime(noContainsTime6));
+
     }
 
 }
