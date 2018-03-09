@@ -257,7 +257,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * @return the JobExeuction related to this Event
      * @throws InterruptedException
      */
-    private BatchJobExecution findOrCreateJobExecution(ProvenanceEventRecordDTO event) throws InterruptedException{
+    private BatchJobExecution findOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) throws InterruptedException{
         BatchJobExecution jobExecution = null;
         Lock lock = ProvenanceEventJobExecutionLockManager.getLock(event.getJobFlowFileId());
         String key = event.getJobFlowFileId() + "-" + event.getFlowFileUuid() + "-" + event.getEventId();
@@ -265,7 +265,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         try {
             if (lock.tryLock(2L, TimeUnit.SECONDS)) {
                 try {
-                     jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, feed),
+                     jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event,feed),
                                                                            MetadataAccess.SERVICE);
                 } finally {
                     findJobExecutionAttempts.remove(key);
@@ -303,7 +303,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             log.debug("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
             //ensure the job is there
 
-            BatchJobExecution jobExecution = findOrCreateJobExecution(event,feed);
+            BatchJobExecution jobExecution = findOrCreateJobExecution(event, feed);
             if (jobExecution != null) {
                 batchJobExecutionProvider.updateFeedJobStartTime(jobExecution, feed);
             }
