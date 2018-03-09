@@ -19,6 +19,7 @@
     <module>spark</module>
     <module>input-format</module>
     <module>modeshape</module>
+    <module>provenance</module>
   </modules>
 
   <build>
