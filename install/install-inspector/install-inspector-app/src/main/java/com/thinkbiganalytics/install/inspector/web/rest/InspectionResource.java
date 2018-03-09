@@ -23,12 +23,10 @@ package com.thinkbiganalytics.install.inspector.web.rest;
 
 import com.thinkbiganalytics.install.inspector.inspection.Configuration;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
-import com.thinkbiganalytics.install.inspector.inspection.DefaultConfiguration;
-import com.thinkbiganalytics.install.inspector.service.InspectionService;
+import com.thinkbiganalytics.install.inspector.service.InspectorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,8 +34,14 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import javax.inject.Inject;
 import javax.validation.Valid;
 
 @RestController
@@ -46,24 +50,9 @@ public class InspectionResource {
 
     private final Logger log = LoggerFactory.getLogger(InspectionResource.class);
 
-    private final InspectionService inspectionService;
+    @Inject
+    private InspectorService inspectorService;
 
-    @Autowired
-    public InspectionResource(InspectionService inspectionService) {
-        this.inspectionService = inspectionService;
-    }
-
-//    /**
-//     * GET /inspection : get all configuration inspections
-//     *
-//     * @return the ResponseEntity with status 200 (OK) and with body having all configuration inspections
-//     */
-//    @GetMapping("/inspection")
-//    public ResponseEntity<List<Inspection>> getAllConfigChecks() {
-//        final List<Inspection> page = inspectionService.getAllInspections();
-//        return new ResponseEntity<>(page, HttpStatus.OK);
-//    }
-//
     /**
      * PUT  /config  : Creates or updates Kylo Configuration at given path
      * <p>
@@ -71,25 +60,10 @@ public class InspectionResource {
      * @param installPath installation path
      */
     @PostMapping("/configuration")
-    public ResponseEntity<Configuration> createConfiguration(@Valid @RequestBody Path installPath) throws URISyntaxException {
+    public ResponseEntity<Configuration> createConfiguration(@Valid @RequestBody Path installPath) throws InterruptedException, ExecutionException, TimeoutException, IOException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
-        Configuration config = new DefaultConfiguration(installPath.getUri(), installPath.isDevMode().toString());
-        config.inspect();
+        Future<Configuration> futureConfig = inspectorService.inspect(installPath);
+        Configuration config = futureConfig.get(1, TimeUnit.MINUTES);
         return new ResponseEntity<>(config, HttpStatus.OK);
     }
-
-//    /**
-//     * POST  /config  : Run configuration check
-//     * <p>
-//     *
-//     * @param configId configuration id
-//     * @param inspectionId configuration inspection id
-//     */
-//    @GetMapping("/configuration/{configId}/{inspectionId}")
-//    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathVariable("configId") Integer configId, @Valid @PathVariable("inspectionId") Integer inspectionId) throws URISyntaxException {
-//        log.debug("REST request to execute configuration inspection : {}", inspectionId);
-//        InspectionStatus status = inspectionService.execute(configId, inspectionId);
-//        return new ResponseEntity<>(status, HttpStatus.OK);
-//    }
-//
 }

@@ -22,48 +22,25 @@ package com.thinkbiganalytics.install.inspector.inspection;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
-import org.springframework.core.env.PropertySources;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.util.ReflectionUtils;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class DefaultConfiguration implements Configuration {
-
-    private static final Logger LOG = LoggerFactory.getLogger(DefaultConfiguration.class);
 
     private static final String KYLO_SERVICES_LIB = "/kylo-services/lib";
     private static final String VERSION_TXT = "version.txt";
@@ -82,18 +59,13 @@ public class DefaultConfiguration implements Configuration {
     private final String servicesConfigLocation;
     private final ClassLoader servicesClassLoader;
     private final String servicesClasspath;
-    private final String isDevMode;
     private final String path;
+    private final String isDevMode;
     private List<Inspection> inspections;
-    private Object result;
-    private ExecutorService es;
 
     public DefaultConfiguration(String path, String isDevMode) {
         this.isDevMode = isDevMode;
         this.path = path;
-
-        BlockingQueue<Runnable> workQueue = new ArrayBlockingQueue<Runnable>(1);
-        es = new ThreadPoolExecutor(1, 1, 1, TimeUnit.HOURS, workQueue);
 
         String servicesLocation = path;
         String uiLocation = path;
@@ -191,7 +163,7 @@ public class DefaultConfiguration implements Configuration {
     }
 
     @Override
-    public Object getServicesConfigLocation() {
+    public String getServicesConfigLocation() {
         return servicesConfigLocation;
     }
 
@@ -213,87 +185,18 @@ public class DefaultConfiguration implements Configuration {
         return Arrays.asList(profiles);
     }
 
-    class ApplicationLoader implements Runnable {
-
-        private ClassLoader classLoader;
-
-        public ApplicationLoader(ClassLoader classLoader) {
-            this.classLoader = classLoader;
-        }
-
-        @Override
-        public void run() {
-            setInspections(Collections.emptyList());
-
-            ClassLoader previousClassloader = Thread.currentThread().getContextClassLoader();
-            Thread.currentThread().setContextClassLoader(classLoader);
-
-            try {
-                AnnotationConfigApplicationContext ctx = new AnnotationConfigApplicationContext();
-                ctx.setClassLoader(getServicesClassloader());
-
-                PropertySourcesPlaceholderConfigurer ppc = new PropertySourcesPlaceholderConfigurer();
-                ppc.setLocation(new FileSystemResource(servicesConfigLocation));
-                ppc.setIgnoreUnresolvablePlaceholders(true);
-                ppc.setIgnoreResourceNotFound(false);
-                ppc.postProcessBeanFactory(ctx.getBeanFactory());
-                ppc.setEnvironment(ctx.getEnvironment());
-
-                PropertySources sources = ppc.getAppliedPropertySources();
-                sources.forEach(source -> ctx.getEnvironment().getPropertySources().addLast(source));
-
-                ctx.scan("com.thinkbiganalytics.install.inspector.inspection"
-                    , "com.thinkbiganalytics.hive.config"
-    //                 , "com.thinkbiganalytics.server" - this will load the whole kylo-services app
-//                     , "com.thinkbiganalytics.kerberos" - this too will scan 'com.thinkbiganalytics'
-    //               , "com.thinkbiganalytics.nifi.rest.config"
-                );
-                ctx.refresh();
-
-                Object service = ctx.getBean("defaultInspectionService");
-                Method getInspections = ReflectionUtils.findMethod(service.getClass(), "inspect", String.class, String.class);
-                Object resultJson = ReflectionUtils.invokeMethod(getInspections, service, path, isDevMode);
-                ObjectMapper mapper = new ObjectMapper();
-                List<Inspection> inspections = mapper.readValue(resultJson.toString(), new TypeReference<List<InspectionBase>>() {});
-                setInspections(inspections);
-            } catch (BeansException | IllegalStateException e) {
-                e.printStackTrace();
-            } catch (JsonParseException e) {
-                e.printStackTrace();
-            } catch (JsonMappingException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                Thread.currentThread().setContextClassLoader(previousClassloader);
-            }
-        }
-    }
-
     @Override
-    public void inspect() {
-        ApplicationLoader al = new ApplicationLoader(getServicesClassloader());
-        Future<?> futureResult = es.submit(al);
-        try {
-            futureResult.get(1, TimeUnit.MINUTES);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void setInspections(List<Inspection> inspections) {
+    public void setInspections(List<Inspection> inspections) {
         this.inspections = inspections;
     }
 
+    @Override
     public List<Inspection> getInspections() {
         return inspections;
     }
 
-    public void setResult(Object result) {
-        this.result = result;
-    }
-
-    public Object getResult() {
-        return result;
+    @Override
+    public String isDevMode() {
+        return isDevMode;
     }
 }

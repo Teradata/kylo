@@ -34,7 +34,7 @@ public interface Configuration {
 
     String getBuildDate();
 
-    Object getServicesConfigLocation();
+    String getServicesConfigLocation();
 
     @JsonIgnore
     ClassLoader getServicesClassloader();
@@ -47,5 +47,9 @@ public interface Configuration {
 
     String getUiProperty(String propertyName);
 
-    void inspect();
+    void setInspections(List<Inspection> inspections);
+
+    public List<Inspection> getInspections();
+
+    public String isDevMode();
 }

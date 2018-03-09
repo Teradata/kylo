@@ -37,7 +37,6 @@ export class NotificationInterceptor extends JhiHttpInterceptor {
     }
 
     responseIntercept(observable: Observable<Response>): Observable<Response> {
-        console.log('notification interceptor, reposneIntercept');
         return observable.map((response: Response) => {
             const headers = [];
             response.headers.forEach((value, name) => {
