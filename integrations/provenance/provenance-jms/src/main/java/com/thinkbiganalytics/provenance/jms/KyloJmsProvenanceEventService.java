@@ -30,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -79,7 +80,13 @@ public class KyloJmsProvenanceEventService implements ProvenanceEventService {
 
     private void sendEvents(String jmsUrl, List<ProvenanceEventRecordDTO> events) throws Exception {
         ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
-        eventRecordDTOHolder.setEvents(events);
+        List<ProvenanceEventRecordDTO> batchEvents = new ArrayList<>();
+        for(ProvenanceEventRecordDTO event : events){
+            if(!event.isStream()){
+                batchEvents.add(event);
+            }
+        }
+        eventRecordDTOHolder.setEvents(batchEvents);
         AggregatedFeedProcessorStatisticsHolder stats = GroupedStatsUtil.gatherStats(events);
         log.info("Sending {} events to JMS ", eventRecordDTOHolder);
         sendKyloBatchEventMessage(jmsUrl, eventRecordDTOHolder);

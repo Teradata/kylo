@@ -91,17 +91,21 @@ public class KyloKafkaProvenanceEventService implements ProvenanceEventService {
         try {
             List<Future<RecordMetadata>> resultFutures = new ArrayList<>();
             ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
-            eventRecordDTOHolder.setEvents(events);
+            List<ProvenanceEventRecordDTO> batchEvents = new ArrayList<>();
+            for(ProvenanceEventRecordDTO event : events){
+                if(!event.isStream()){
+                    batchEvents.add(event);
+                }
+            }
+            eventRecordDTOHolder.setEvents(batchEvents);
             byte[] data = SerializationUtils.serialize(eventRecordDTOHolder);
             ProducerRecord<byte[], byte[]> eventsMessage = new ProducerRecord<>(KYLO_BATCH_EVENT_TOPIC, data);
             log.info("Sending {} events to Kafka ", eventRecordDTOHolder);
-            System.out.println("SENDING EVENTS TO Kafka!!!!!!! "+eventRecordDTOHolder);
             resultFutures.add(kafkaProducer.send(eventsMessage));
 
             AggregatedFeedProcessorStatisticsHolder stats = GroupedStatsUtil.gatherStats(events);
             data = SerializationUtils.serialize(stats);
             ProducerRecord<byte[], byte[]> statsMessage = new ProducerRecord<>(KYLO_EVENT_STATS_TOPIC, data);
-            System.out.println("Sending " + eventRecordDTOHolder + " to Kafka");
             resultFutures.add(kafkaProducer.send(statsMessage));
             processAcks(resultFutures);
 
