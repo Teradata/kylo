@@ -18,6 +18,7 @@ package com.thinkbiganalytics.nifi.provenance.model.util;
  * limitations under the License.
  * #L%
  */
+
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
@@ -40,6 +41,7 @@ public class GroupedStatsUtil {
 
     /**
      * Add stats2 to stats1 and modify stats1
+     *
      * @param stats1 stats to modify
      * @param stats2 stats to add
      */
@@ -57,15 +59,17 @@ public class GroupedStatsUtil {
         stats1.setMaxTime(stats1.getMaxTime() == null || stats1.getMaxTime() < stats2.getMaxTime() ? stats2.getMaxTime() : stats1.getMaxTime());
         stats1.setMinTime(stats1.getMinTime() == null || stats1.getMinTime() > stats2.getMinTime() ? stats2.getMinTime() : stats1.getMinTime());
         stats1.setTime(stats1.getMinTime());
-        if(stats1 instanceof GroupedStatsV2 && stats2 instanceof GroupedStatsV2)
-            if(((GroupedStatsV2) stats1).getLatestFlowFileId() == null && ((GroupedStatsV2) stats2).getLatestFlowFileId() != null){
+        if (stats1 instanceof GroupedStatsV2 && stats2 instanceof GroupedStatsV2) {
+            if (((GroupedStatsV2) stats1).getLatestFlowFileId() == null && ((GroupedStatsV2) stats2).getLatestFlowFileId() != null) {
                 ((GroupedStatsV2) stats1).setLatestFlowFileId(((GroupedStatsV2) stats2).getLatestFlowFileId());
             }
+        }
     }
 
 
     /**
      * Add 2 stats together and return a new stats object
+     *
      * @param stats1 stats object
      * @param stats2 stats object
      * @return a new stats object
@@ -79,6 +83,7 @@ public class GroupedStatsUtil {
 
     /**
      * Add a list of stats together and return a new object
+     *
      * @param groupedStats stats
      * @return new stats
      */
@@ -92,6 +97,7 @@ public class GroupedStatsUtil {
 
     /**
      * Add a list of stats together and return a new object
+     *
      * @param groupedStats stats to add
      * @return a new stats object
      */
@@ -100,16 +106,14 @@ public class GroupedStatsUtil {
     }
 
 
-
-
     public static GroupedStats add(GroupedStats stats, ProvenanceEventRecordDTO event) {
         Long eventId = event.getEventId();
-        if(stats instanceof GroupedStatsV2) {
-            ((GroupedStatsV2)stats).setLatestFlowFileId(event.getFlowFileUuid());
+        if (stats instanceof GroupedStatsV2) {
+            ((GroupedStatsV2) stats).setLatestFlowFileId(event.getFlowFileUuid());
         }
         stats.addTotalCount(1L);
         stats.addBytesIn(event.getInputContentClaimFileSizeBytes() != null ? event.getInputContentClaimFileSizeBytes() : 0L);
-        stats.addBytesOut(event.getOutputContentClaimFileSizeBytes()  != null ? event.getOutputContentClaimFileSizeBytes() : 0L);
+        stats.addBytesOut(event.getOutputContentClaimFileSizeBytes() != null ? event.getOutputContentClaimFileSizeBytes() : 0L);
         stats.addDuration(event.getEventDuration());
         stats.setSourceConnectionIdentifier(event.getSourceConnectionIdentifier());
 
@@ -161,10 +165,11 @@ public class GroupedStatsUtil {
 
     /**
      * Group stats together by processor for a given feed
-     * @param feedName feed name
+     *
+     * @param feedName     feed name
      * @param groupedStats Map of processorIdentity to list of stats for that processor
      */
-    public static AggregatedFeedProcessorStatistics groupStatsByProcessor(String feedName,Map<GroupedStatsIdentity,List<GroupedStats>> groupedStats){
+    public static AggregatedFeedProcessorStatistics groupStatsByProcessor(String feedName, Map<GroupedStatsIdentity, List<GroupedStats>> groupedStats) {
         Long sendJmsTimeMillis = 3000L;
         String collectionId = UUID.randomUUID().toString();
 
@@ -174,20 +179,20 @@ public class GroupedStatsUtil {
         AggregatedFeedProcessorStatisticsV2
             feedProcessorStatistics = new AggregatedFeedProcessorStatisticsV2(startingProcessorId, collectionId, sendJmsTimeMillis);
 
-        for (Map.Entry<GroupedStatsIdentity,List<GroupedStats>> stats: groupedStats.entrySet()) {
-            String processorName =stats.getKey().getProcessorName();
+        for (Map.Entry<GroupedStatsIdentity, List<GroupedStats>> stats : groupedStats.entrySet()) {
+            String processorName = stats.getKey().getProcessorName();
             String processorId = stats.getKey().getProcessorId();
 
-            Map<String,AggregatedProcessorStatistics> processorStatsMap = feedProcessorStatistics.getProcessorStats();
-           if(!processorStatsMap.containsKey(processorName)){
-               processorStatsMap.put(processorName,new AggregatedProcessorStatisticsV2(processorId,processorName,collectionId));
-           }
+            Map<String, AggregatedProcessorStatistics> processorStatsMap = feedProcessorStatistics.getProcessorStats();
+            if (!processorStatsMap.containsKey(processorName)) {
+                processorStatsMap.put(processorName, new AggregatedProcessorStatisticsV2(processorId, processorName, collectionId));
+            }
             AggregatedProcessorStatistics
                 processorStatistics = processorStatsMap.get(processorName);
 
-           for(GroupedStats s : stats.getValue()){
-               GroupedStatsUtil.add(processorStatistics.getStats(GroupedStats.DEFAULT_SOURCE_CONNECTION_ID),s);
-           }
+            for (GroupedStats s : stats.getValue()) {
+                GroupedStatsUtil.add(processorStatistics.getStats(GroupedStats.DEFAULT_SOURCE_CONNECTION_ID), s);
+            }
            /*
             AggregatedProcessorStatistics
                 processorStatistics =
@@ -206,30 +211,30 @@ public class GroupedStatsUtil {
 
     /**
      * Gather feed stats for a list of events
-     * @param events
-     * @return
      */
-    public static AggregatedFeedProcessorStatisticsHolder gatherStats(final List<ProvenanceEventRecordDTO> events){
-        Map<String,Map<GroupedStatsIdentity,List<GroupedStats>>> feedStatsByProcessor = new ConcurrentHashMap<>();
-
+    public static AggregatedFeedProcessorStatisticsHolder gatherStats(final List<ProvenanceEventRecordDTO> events) {
+        Map<String, Map<GroupedStatsIdentity, List<GroupedStats>>> feedStatsByProcessor = new ConcurrentHashMap<>();
 
         //events.stream().forEach(e -> {
-            for(ProvenanceEventRecordDTO e : events) {
+        for (ProvenanceEventRecordDTO e : events) {
 
-            feedStatsByProcessor.putIfAbsent(e.getFeedName(), new ConcurrentHashMap<GroupedStatsIdentity,List<GroupedStats>>());
+            if (!feedStatsByProcessor.containsKey(e.getFeedName())) {
+                feedStatsByProcessor.put(e.getFeedName(), new ConcurrentHashMap<GroupedStatsIdentity, List<GroupedStats>>());
+            }
+            // feedStatsByProcessor.putIfAbsent(e.getFeedName(), );
 
-            Map<GroupedStatsIdentity,List<GroupedStats>> feedStats = feedStatsByProcessor.get(e.getFeedName());
+            Map<GroupedStatsIdentity, List<GroupedStats>> feedStats = feedStatsByProcessor.get(e.getFeedName());
 
-            GroupedStatsIdentity identity = new GroupedStatsIdentity(e.getComponentId(),e.getComponentName());
-            if(!feedStats.containsKey(identity)){
-                feedStats.put(identity,new ArrayList<GroupedStats>());
+            GroupedStatsIdentity identity = new GroupedStatsIdentity(e.getComponentId(), e.getComponentName());
+            if (!feedStats.containsKey(identity)) {
+                feedStats.put(identity, new ArrayList<GroupedStats>());
             }
             //feedStats.putIfAbsent(identity, new ArrayList<>());
 
             List<GroupedStats> feedProcessorStats = feedStats.get(identity);
 
             //Add the new stats
-            GroupedStats statsV2 = GroupedStatsUtil.add(new GroupedStatsV2(),e);
+            GroupedStats statsV2 = GroupedStatsUtil.add(new GroupedStatsV2(), e);
             feedProcessorStats.add(statsV2);
 
 
@@ -238,7 +243,7 @@ public class GroupedStatsUtil {
 
         List<AggregatedFeedProcessorStatistics> statsList = new ArrayList<>();
 
-        for(Map.Entry<String,Map<GroupedStatsIdentity,List<GroupedStats>>> feedStats : feedStatsByProcessor.entrySet()){
+        for (Map.Entry<String, Map<GroupedStatsIdentity, List<GroupedStats>>> feedStats : feedStatsByProcessor.entrySet()) {
             AggregatedFeedProcessorStatistics feedProcessorStatistics = GroupedStatsUtil.groupStatsByProcessor(feedStats.getKey(), feedStats.getValue());
             statsList.add(feedProcessorStatistics);
         }
