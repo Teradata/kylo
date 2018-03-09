@@ -247,6 +247,9 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
 
     public Long getEventDuration() {
+        if(eventDuration == null && startTime != null && eventTime != null){
+            eventDuration = eventTime - startTime;
+        }
         return eventDuration;
     }
 

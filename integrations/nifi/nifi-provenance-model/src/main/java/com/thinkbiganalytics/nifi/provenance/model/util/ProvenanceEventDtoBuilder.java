@@ -50,6 +50,7 @@ public class ProvenanceEventDtoBuilder {
     private EventType eventType;
     private Long startTime;
     private Long eventTime;
+    private boolean stream;
 
 
     /**
@@ -103,6 +104,11 @@ public class ProvenanceEventDtoBuilder {
      */
     public ProvenanceEventDtoBuilder firstEventProcessorId(String firstEventProcessorId) {
         this.firstEventProcessorId = firstEventProcessorId;
+        return this;
+    }
+
+    public ProvenanceEventDtoBuilder stream(boolean stream) {
+        this.stream = stream;
         return this;
     }
 
@@ -180,6 +186,7 @@ public class ProvenanceEventDtoBuilder {
         event.setComponentName(componentName);
         event.setStartTime(startTime);
         event.setEventTime(eventTime);
+        event.setStream(stream);
 
         event.setEventId(LongIdGenerator.nextId());
         event.setIsStartOfJob(startingEvent);

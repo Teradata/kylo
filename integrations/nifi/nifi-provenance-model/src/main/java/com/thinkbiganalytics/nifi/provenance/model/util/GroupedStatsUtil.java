@@ -114,6 +114,7 @@ public class GroupedStatsUtil {
         stats.addTotalCount(1L);
         stats.addBytesIn(event.getInputContentClaimFileSizeBytes() != null ? event.getInputContentClaimFileSizeBytes() : 0L);
         stats.addBytesOut(event.getOutputContentClaimFileSizeBytes() != null ? event.getOutputContentClaimFileSizeBytes() : 0L);
+        //reset the duration
         stats.addDuration(event.getEventDuration());
         stats.setSourceConnectionIdentifier(event.getSourceConnectionIdentifier());
 
@@ -124,7 +125,7 @@ public class GroupedStatsUtil {
         if (event.isStartOfJob()) {
             stats.addJobsStarted(1L);
         }
-/*
+     /*
         if (event.isFinalJobEvent()) {
             stats.addJobsFinished(1L);
             Long jobTime = FeedEventStatistics.getInstance().getFeedFlowFileDuration(event);
@@ -178,10 +179,12 @@ public class GroupedStatsUtil {
         String startingProcessorId = UUID.randomUUID().toString();
         AggregatedFeedProcessorStatisticsV2
             feedProcessorStatistics = new AggregatedFeedProcessorStatisticsV2(startingProcessorId, collectionId, sendJmsTimeMillis);
+       feedProcessorStatistics.setFeedName(feedName);
 
         for (Map.Entry<GroupedStatsIdentity, List<GroupedStats>> stats : groupedStats.entrySet()) {
             String processorName = stats.getKey().getProcessorName();
             String processorId = stats.getKey().getProcessorId();
+
 
             Map<String, AggregatedProcessorStatistics> processorStatsMap = feedProcessorStatistics.getProcessorStats();
             if (!processorStatsMap.containsKey(processorName)) {
@@ -191,7 +194,7 @@ public class GroupedStatsUtil {
                 processorStatistics = processorStatsMap.get(processorName);
 
             for (GroupedStats s : stats.getValue()) {
-                GroupedStatsUtil.add(processorStatistics.getStats(GroupedStats.DEFAULT_SOURCE_CONNECTION_ID), s);
+                GroupedStatsUtil.addStats1(processorStatistics.getStats(GroupedStats.DEFAULT_SOURCE_CONNECTION_ID), s);
             }
            /*
             AggregatedProcessorStatistics
