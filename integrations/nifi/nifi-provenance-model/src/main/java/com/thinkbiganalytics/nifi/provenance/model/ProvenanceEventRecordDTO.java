@@ -204,7 +204,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.attributeMap = attributeMap;
     }
 
-    @JsonAnySetter
     public void setUpdatedAttribute(String key, String value){
         getUpdatedAttributes().put(key,value);
     }
@@ -439,27 +438,32 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.jobFlowFileId = jobFlowFileId;
     }
 
-
+    @JsonProperty("startOfJob")
     public boolean isStartOfJob() {
         return isStartOfJob;
     }
 
+    @JsonProperty("startOfJob")
     public void setIsStartOfJob(boolean isStartOfJob) {
         this.isStartOfJob = isStartOfJob;
     }
 
+    @JsonProperty("failure")
     public void setIsFailure(boolean isFailure) {
         this.isFailure = isFailure;
     }
 
+    @JsonProperty("failure")
     public boolean isFailure() {
         return isFailure;
     }
 
+    @JsonProperty("finalJobEvent")
     public boolean isFinalJobEvent() {
         return isFinalJobEvent;
     }
 
+    @JsonProperty("finalJobEvent")
     public void setIsFinalJobEvent(boolean isFinalJobEvent) {
         this.isFinalJobEvent = isFinalJobEvent;
     }

@@ -20,6 +20,10 @@ package com.thinkbiganalytics.nifi.provenance.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.io.Serializable;
 import java.util.List;
 import java.util.UUID;
@@ -27,6 +31,8 @@ import java.util.UUID;
 /**
  * Group all the Batch ProvenanceEvent objects together and send this parent object over to JMS
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ProvenanceEventRecordDTOHolder implements Serializable {
 
     private static final long serialVersionUID = -1618204003961560699L;

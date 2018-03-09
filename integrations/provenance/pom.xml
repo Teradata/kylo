@@ -18,6 +18,7 @@
     <module>provenance-api</module>
     <module>provenance-jms</module>
     <module>provenance-kafka</module>
+    <module>provenance-rest</module>
   </modules>
 
 </project>

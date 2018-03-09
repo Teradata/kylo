@@ -166,9 +166,10 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
                 if (steps == null) {
                     ((JpaBatchJobExecution) jobExecution).setStepExecutions(new HashSet<>());
                 }
-                jobExecution.getStepExecutions().add(stepExecution);
                 //saving the StepExecution will cascade and save the nifiEventStep
                 stepExecution = batchStepExecutionRepository.save(stepExecution);
+                jobExecution.getStepExecutions().add(stepExecution);
+
             }
 
         } else {

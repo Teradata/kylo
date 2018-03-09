@@ -26,6 +26,7 @@ import org.joda.time.DateTime;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * Builder that helps applications create custom Provenance Events that can be sent to Kylo Operations Manager to create Jobs and Steps
@@ -51,7 +52,9 @@ public class ProvenanceEventDtoBuilder {
     private Long startTime;
     private Long eventTime;
     private boolean stream;
+    private boolean endingEvent;
 
+    private String componentId;
 
     /**
      * The Event.
@@ -73,6 +76,11 @@ public class ProvenanceEventDtoBuilder {
      */
     public ProvenanceEventDtoBuilder eventType(EventType eventType) {
         this.eventType = eventType;
+        return this;
+    }
+
+    public ProvenanceEventDtoBuilder componentId(String componentId) {
+        this.componentId = componentId;
         return this;
     }
 
@@ -136,6 +144,10 @@ public class ProvenanceEventDtoBuilder {
         return this;
     }
 
+    public ProvenanceEventDtoBuilder endingEvent(boolean endingEvent) {
+        this.endingEvent = endingEvent;
+        return this;
+    }
     public ProvenanceEventDtoBuilder startingEvent(boolean startingEvent) {
         this.startingEvent = startingEvent;
         return this;
@@ -177,6 +189,9 @@ public class ProvenanceEventDtoBuilder {
         if (eventTime == null) {
             eventTime = now;
         }
+        if(jobFlowFileId == null) {
+            jobFlowFileId = flowFileId;
+        }
 
         ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
         event.setFeedName(feedName);
@@ -187,6 +202,9 @@ public class ProvenanceEventDtoBuilder {
         event.setStartTime(startTime);
         event.setEventTime(eventTime);
         event.setStream(stream);
+        event.setIsFinalJobEvent(endingEvent);
+        event.setComponentId(UUID.randomUUID().toString());
+
 
         event.setEventId(eventId);
         event.setIsStartOfJob(startingEvent);

@@ -262,7 +262,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         jobExecution.setJobInstance(jobInstance);
         //add in the parameters from the attributes
         jobExecution.setCreateTime(DateTimeUtil.getNowUTCTime());
-        jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+        if(event.getStartTime() != null) {
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getStartTime()));
+        } else {
+            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+        }
         jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
         jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
         jobExecution.setLastUpdated(DateTimeUtil.getNowUTCTime());
@@ -543,7 +547,11 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
         //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
         if (event.isStartOfJob() && !isNew) {
             jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
-            jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            if(event.getStartTime() != null) {
+                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getStartTime()));
+            } else {
+                jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            }
             //create the job params
             Map<String, Object> jobParameters = new HashMap<>();
             if (event.isStartOfJob() && event.getAttributeMap() != null) {
