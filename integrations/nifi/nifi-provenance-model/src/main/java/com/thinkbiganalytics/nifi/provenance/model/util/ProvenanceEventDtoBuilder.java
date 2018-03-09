@@ -188,7 +188,7 @@ public class ProvenanceEventDtoBuilder {
         event.setEventTime(eventTime);
         event.setStream(stream);
 
-        event.setEventId(LongIdGenerator.nextId());
+        event.setEventId(eventId);
         event.setIsStartOfJob(startingEvent);
         event.setEventType(eventType.name());
         if (startingEvent) {
