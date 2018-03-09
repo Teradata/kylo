@@ -8,6 +8,7 @@ import com.thinkbiganalytics.install.inspector.inspection.Inspection;
 import com.thinkbiganalytics.install.inspector.inspection.InspectionBase;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.PropertySources;
@@ -26,6 +27,9 @@ import java.util.concurrent.Future;
 @Service
 public class InspectorService {
 
+    @Value("${info.project.version}")
+    private String projectVersion;
+
     /**
      * This method runs inspections in separate from main application thread.
      * Running inspections in a separate thread is a workaround for a problem where Spring's DataSourceBuilder doesn't
@@ -35,7 +39,7 @@ public class InspectorService {
      */
     @Async
     public Future<Configuration> inspect(Path installPath) throws IOException {
-        Configuration config = new DefaultConfiguration(installPath.getUri(), installPath.isDevMode().toString());
+        Configuration config = new DefaultConfiguration(installPath.getUri(), installPath.isDevMode().toString(), projectVersion);
 
         config.setInspections(Collections.emptyList());
 
@@ -65,8 +69,8 @@ public class InspectorService {
             ctx.refresh();
 
             Object service = ctx.getBean("defaultInspectionService");
-            Method getInspections = ReflectionUtils.findMethod(service.getClass(), "inspect", String.class, String.class);
-            Object resultJson = ReflectionUtils.invokeMethod(getInspections, service, config.getPath(), config.isDevMode());
+            Method getInspections = ReflectionUtils.findMethod(service.getClass(), "inspect", String.class, String.class, String.class);
+            Object resultJson = ReflectionUtils.invokeMethod(getInspections, service, config.getPath(), config.isDevMode(), projectVersion);
             ObjectMapper mapper = new ObjectMapper();
             List<Inspection> inspections = mapper.readValue(resultJson.toString(), new TypeReference<List<InspectionBase>>() {});
             config.setInspections(inspections);

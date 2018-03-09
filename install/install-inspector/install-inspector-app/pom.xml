@@ -122,6 +122,24 @@
 
     <build>
         <defaultGoal>spring-boot:run</defaultGoal>
+        <!-- Turn on filtering by default for application properties -->
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>**/application*.yml</include>
+                    <include>**/application*.properties</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <excludes>
+                    <exclude>**/application*.yml</exclude>
+                    <exclude>**/application*.properties</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -157,39 +175,13 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-resources-plugin</artifactId>
-                <version>${maven-resources-plugin.version}</version>
-                <executions>
-                    <execution>
-                        <id>default-resources</id>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>copy-resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>target/classes</outputDirectory>
-                            <useDefaultDelimiters>false</useDefaultDelimiters>
-                            <delimiters>
-                                <delimiter>#</delimiter>
-                            </delimiters>
-                            <resources>
-                                <resource>
-                                    <directory>src/main/resources/</directory>
-                                    <filtering>true</filtering>
-                                    <includes>
-                                        <include>config/*.yml</include>
-                                    </includes>
-                                </resource>
-                                <resource>
-                                    <directory>src/main/resources/</directory>
-                                    <filtering>false</filtering>
-                                    <excludes>
-                                        <exclude>config/*.yml</exclude>
-                                    </excludes>
-                                </resource>
-                            </resources>
-                        </configuration>
-                    </execution>
-                </executions>
+                <version>2.6</version>
+                <configuration>
+                    <delimiters>
+                        <delimiter>#</delimiter>
+                    </delimiters>
+                    <useDefaultDelimiters>false</useDefaultDelimiters>
+                </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

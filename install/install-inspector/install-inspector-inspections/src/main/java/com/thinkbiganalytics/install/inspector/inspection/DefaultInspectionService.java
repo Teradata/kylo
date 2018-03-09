@@ -48,8 +48,8 @@ public class DefaultInspectionService implements InspectionService {
     }
 
     @Override
-    public Object inspect(String path, String isDevMode) {
-        Configuration configuration = new DefaultConfiguration(path, isDevMode);
+    public Object inspect(String path, String isDevMode, String projectVersion) {
+        Configuration configuration = new DefaultConfiguration(path, isDevMode, projectVersion);
 
         List<Inspection> inspections = getInspections();
         for (Inspection inspection : inspections) {
@@ -66,8 +66,7 @@ public class DefaultInspectionService implements InspectionService {
             inspection.setStatus(status);
         }
 
-        String result = ObjectMapperSerializer.serialize(inspections);
-        return result;
+        return ObjectMapperSerializer.serialize(inspections);
     }
 
 

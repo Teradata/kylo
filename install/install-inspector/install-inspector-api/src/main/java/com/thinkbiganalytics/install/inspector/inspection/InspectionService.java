@@ -26,5 +26,5 @@ public interface InspectionService {
 
     List<Inspection> getInspections();
 
-    Object inspect(String path, String isDevMode);
+    Object inspect(String path, String isDevMode, String projectVersion);
 }

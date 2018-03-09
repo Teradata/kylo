@@ -46,7 +46,6 @@ public class DefaultConfiguration implements Configuration {
     private static final String VERSION_TXT = "version.txt";
     private static final String APPLICATION_PROPERTIES = "application.properties";
     private static final String SERVICES_SERVICE_APP = "/services/service-app";
-    private static final String SERVICES_TARGET_LIB = SERVICES_SERVICE_APP + "/target/kylo-service-app-0.9.1-SNAPSHOT-distribution/kylo-service-app-0.9.1-SNAPSHOT/lib";
     private static final String SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES = SERVICES_SERVICE_APP + "/src/main/resources/";
     private static final String UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES = "/ui/ui-app/src/main/resources/";
     private static final String KYLO_SERVICES_CONF = "/kylo-services/conf/";
@@ -63,7 +62,7 @@ public class DefaultConfiguration implements Configuration {
     private final String isDevMode;
     private List<Inspection> inspections;
 
-    public DefaultConfiguration(String path, String isDevMode) {
+    public DefaultConfiguration(String path, String isDevMode, String projectVersion) {
         this.isDevMode = isDevMode;
         this.path = path;
 
@@ -71,7 +70,7 @@ public class DefaultConfiguration implements Configuration {
         String uiLocation = path;
 
         if (Boolean.valueOf(isDevMode)) {
-            servicesClasspath = servicesLocation + SERVICES_TARGET_LIB;
+            servicesClasspath = servicesLocation + SERVICES_SERVICE_APP + String.format("/target/kylo-service-app-%s-distribution/kylo-service-app-%s/lib", projectVersion, projectVersion);
             servicesLocation += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES;
             uiLocation += UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
         } else {
