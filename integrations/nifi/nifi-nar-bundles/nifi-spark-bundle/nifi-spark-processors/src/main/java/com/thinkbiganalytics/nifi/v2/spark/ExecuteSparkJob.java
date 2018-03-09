@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.v2.spark;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -382,7 +382,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             PROVENANCE_JOB_STATUS_KEY = context.getName() + " Job Status";
             PROVENANCE_SPARK_EXIT_CODE_KEY = context.getName() + " Spark Exit Code";
 
-              /* Configuration parameters for spark launcher */
+            /* Configuration parameters for spark launcher */
             String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
             String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
             String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
@@ -449,7 +449,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 return;
             }
 
-             /* Launch the spark job as a child process */
+            /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher(env)
                 .setAppResource(appJar)
                 .setMainClass(mainClass)
@@ -461,6 +461,11 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
+            if ("yarn-cluster".equalsIgnoreCase(sparkMaster) || ("yarn".equalsIgnoreCase(sparkMaster) && "cluster".equalsIgnoreCase(sparkYarnDeployMode))) {
+                for (final Map.Entry<String, String> entry : env.entrySet()) {
+                    launcher.setConf("spark.yarn.appMasterEnv." + entry.getKey(), entry.getValue().replaceAll("([$`\"'])", "\\\\$1"));
+                }
+            }
 
             OptionalSparkConfigurator optionalSparkConf = new OptionalSparkConfigurator(launcher)
                 .setDeployMode(sparkMaster, sparkYarnDeployMode)
@@ -478,14 +483,14 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             Thread inputThread = new Thread(inputStreamReaderRunnable, "stream input");
             inputThread.start();
 
-             /* Read/clear the process error stream */
+            /* Read/clear the process error stream */
             InputStreamReaderRunnable errorStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getErrorStream());
             Thread errorThread = new Thread(errorStreamReaderRunnable, "stream error");
             errorThread.start();
 
             logger.info("Waiting for Spark job to complete");
 
-             /* Wait for job completion */
+            /* Wait for job completion */
             boolean completed = spark.waitFor(sparkProcessTimeout, TimeUnit.SECONDS);
             if (!completed) {
                 spark.destroyForcibly();
