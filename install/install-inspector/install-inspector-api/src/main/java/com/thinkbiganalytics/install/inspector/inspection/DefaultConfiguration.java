@@ -79,15 +79,19 @@ public class DefaultConfiguration implements Configuration {
             uiLocation += KYLO_UI_CONF;
         }
 
-        uiFactory = createConfiguration(uiLocation + APPLICATION_PROPERTIES);
-        servicesConfigLocation = servicesLocation + APPLICATION_PROPERTIES;
-        servicesFactory = createConfiguration(servicesConfigLocation);
+        try {
+            uiFactory = createConfiguration(uiLocation + APPLICATION_PROPERTIES);
+            servicesConfigLocation = servicesLocation + APPLICATION_PROPERTIES;
+            servicesFactory = createConfiguration(servicesConfigLocation);
 
-        Properties properties = loadBuildProperties(servicesLocation);
-        version = properties.getProperty("version");
-        buildDate = properties.getProperty("build.date");
+            Properties properties = loadBuildProperties(servicesLocation);
+            version = properties.getProperty("version");
+            buildDate = properties.getProperty("build.date");
 
-        servicesClassLoader = createClassLoader(servicesClasspath);
+            servicesClassLoader = createClassLoader(servicesClasspath);
+        } catch (Exception e) {
+            throw new IllegalStateException(String.format("Failed to initialise Kylo installation at path '%s': %s Is '%s' a valid kylo installation root?", getPath(), e.getMessage(), getPath()));
+        }
     }
 
     private URLClassLoader createClassLoader(String classpath) {

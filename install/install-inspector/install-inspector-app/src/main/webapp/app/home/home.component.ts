@@ -23,6 +23,7 @@ import {ConfigService} from '../shared';
 import {AbstractControl, FormControl, ValidatorFn, Validators} from '@angular/forms';
 import {saveAs} from 'file-saver/FileSaver';
 import {ProfileService} from '../shared/profile/profile.service';
+import {MatSnackBar} from '@angular/material';
 
 @Component({
     selector: 'jhi-home',
@@ -40,7 +41,7 @@ export class HomeComponent implements OnInit {
     configuration: any;
     loading = false;
 
-    constructor(private configService: ConfigService, private profileService: ProfileService) {
+    constructor(private configService: ConfigService, private profileService: ProfileService, public snackBar: MatSnackBar) {
     }
 
     ngOnInit() {
@@ -71,6 +72,10 @@ export class HomeComponent implements OnInit {
                 this.loading = false;
             }
             return configuration;
+        }).catch((err) => {
+            console.log('An error occurred', err);
+            this.loading = false;
+            this.snackBar.open('An error occurred, see logs for details: ' + err.statusText + '. ' + err._body, 'Dismiss');
         });
     }
 

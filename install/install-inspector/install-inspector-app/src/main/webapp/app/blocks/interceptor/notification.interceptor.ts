@@ -21,6 +21,7 @@ import { JhiAlertService, JhiHttpInterceptor } from 'ng-jhipster';
 import { RequestOptionsArgs, Response } from '@angular/http';
 import { Injector } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
+import 'rxjs/add/observable/throw';
 
 export class NotificationInterceptor extends JhiHttpInterceptor {
 
@@ -55,8 +56,6 @@ export class NotificationInterceptor extends JhiHttpInterceptor {
                 }
             }
             return response;
-        }).catch((error) => {
-            return Observable.throw(error); // here, response is an error
         });
     }
 }
