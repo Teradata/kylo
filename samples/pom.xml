@@ -16,6 +16,7 @@
 
   <modules>
     <module>plugins</module>
+    <module>provenance-samples</module>
   </modules>
 
   <build>
