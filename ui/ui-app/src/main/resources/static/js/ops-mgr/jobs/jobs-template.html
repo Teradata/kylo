@@ -52,7 +52,7 @@
                                        {{job.displayStatus | translate}}</span>
                                 </div>
                                 <div flex="25" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
+                                    <span class="item-title" ng-if="job.startTime">{{'jobs-template.time-locale' | translate:{date:job.startTime} }}</span>
                                     <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
                                     <span class="column-title column-title-bottom">{{"views.jobs-template.ST" | translate}}</span>
                                 </div>
@@ -121,7 +121,7 @@
 
                                     </td>
                                     <td md-cell ng-if="vm.hideFeedColumn == false">{{job.feedName}}</td>
-                                    <td md-cell hide show-gt-sm>{{job.startTime | date:'MMM d, yyyy HH:mm:ss'}}</td>
+                                    <td md-cell hide show-gt-sm>{{'jobs-template.time-locale' | translate:{date:job.startTime} }}</td>
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
                                     <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>

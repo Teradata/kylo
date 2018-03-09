@@ -56,7 +56,7 @@
                                     <span class="column-title column-title-bottom">Alerts</span>
                                 </div>
                                 <div flex="30" layout="column" hide show-gt-md class="item-column md-list-item-text">
-                                    <span class="item-title">{{service.checkDate |  date : "MM/dd/yyyy 'at' h:mm"}}</span>
+                                    <span class="item-title">{{'service-health-template.time-locale' | translate:{date:service.checkDate} }}</span>
                                     <span class="column-title column-title-bottom">Last Checked</span>
                                 </div>
                                 </div>
@@ -109,7 +109,7 @@
                                     <td md-cell>
                                         {{service.alertsCount}}
                                     </td>
-                                    <td md-cell >{{service.checkDate |  date : "MM/dd/yyyy 'at' h:mm"}}</td>
+                                    <td md-cell >{{'service-health-template.time-locale' | translate:{date:service.checkDate} }}</td>
                                 </tr>
                                 </tbody>
                             </table>

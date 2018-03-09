@@ -42,7 +42,7 @@
             </div>
 
             <div flex="30" layout="column">
-                                               <span class="item-title">{{vm.assessment.time | date:'MMM d, yyyy HH:mm:ss'}}
+                                               <span class="item-title">{{"assessment.time_locale" | translate:{date:vm.assessment.time } }}
                                                </span>
               <span class="column-title column-title-bottom">Created</span>
             </div>
