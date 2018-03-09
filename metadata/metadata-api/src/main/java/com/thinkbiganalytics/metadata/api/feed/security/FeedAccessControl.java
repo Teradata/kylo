@@ -47,7 +47,7 @@ public interface FeedAccessControl {
                                                      "Allows enabling and disabling the feed");
     Action START = ACCESS_DETAILS.subAction("startFeed",
                                             "Start Feed",
-                                            "Allows manually triggering the start of a feed");
+                                            "Allows manually triggering the start of a feed"); 
     Action EXPORT = ACCESS_DETAILS.subAction("exportFeed",
                                              "Export",
                                              "Allows exporting the feed");

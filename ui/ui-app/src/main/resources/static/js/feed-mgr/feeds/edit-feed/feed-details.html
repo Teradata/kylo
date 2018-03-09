@@ -82,6 +82,13 @@
                     {{"views.feed-details.Enable" | translate}}
                   </md-button>
                 </md-menu-item>
+                <md-menu-item  ng-if="vm.allowStart && vm.model.state == 'ENABLED'" ng-click="vm.startFeed()" >
+                  <md-button ng-disabled="(vm.startingFeed || self.allowStart)" >
+                    <ng-md-icon icon="play_circle_outline" class="orange" md-menu-align-target="""></ng-md-icon>
+                    <!--  <span> {{"views.feed-details.Start" | translate}} </span> -->
+                    <span> Start Now </span>
+                  </md-button>
+                </md-menu-item>
                 <md-menu-item ng-click="vm.cloneFeed()" >
                   <md-button ng-disabled="!vm.allowEdit">
                     <ng-md-icon icon="content_copy" class="orange" md-menu-align-target=""></ng-md-icon>

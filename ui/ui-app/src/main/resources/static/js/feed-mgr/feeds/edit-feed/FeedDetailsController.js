@@ -53,6 +53,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
          * @type {boolean}
          */
         self.allowExport = false;
+        
+        /**
+         * Indicates if starting a feed is allowed.
+         * @type {boolean}
+         */
+        self.allowStart = false;
 
         /**
          * Alow user to access the sla tab
@@ -292,7 +298,28 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                 });
             }
         };
-
+        
+        /**
+         * Starts this feed.
+         */
+        this.startFeed = function() {
+            if (!self.startingFeed && self.allowStart) {
+                self.startingFeed = true;
+                $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response) {
+                self.startingFeed = false;
+                }, function () {
+                    $mdDialog.show(
+                        $mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title("NiFi Error")
+                        .textContent("The feed could not be started.")
+                        .ariaLabel("Cannot start feed.")
+                        .ok("OK")
+                     );
+                    self.startingFeed = false;
+                    });
+            }
+        };
 
         function mergeTemplateProperties(feed) {
             var successFn = function(response) {
@@ -421,13 +448,10 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                 var entityAccessControlled = AccessControlService.isEntityAccessControlled();
                                 //Apply the entity access permissions
                                 var requests = {
-                                    entityEditAccess: entityAccessControlled === true
-                                        ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model)
-                                        : true,
+                                    entityEditAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model),
                                     entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
-                                    entityPermissionAccess: entityAccessControlled === true
-                                        ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model)
-                                        : true,
+                                    entityStartAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START, self.model),
+                                    entityPermissionAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
                                     functionalAccess: AccessControlService.getUserAllowedActions()
                                 };
                                 $q.all(requests).then(function (response) {
@@ -435,12 +459,14 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,mod
                                     var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
                                     var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
                                     var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+                                    var allowStart = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
 
                                     self.allowEdit = response.entityEditAccess && allowEditAccess;
                                     self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
                                     self.allowAdmin = allowAdminAccess;
                                     self.allowSlaAccess = slaAccess;
                                     self.allowExport = response.entityExportAccess && allowExport;
+                                    self.allowStart = response.entityStartAccess && allowStart;
                                 });
                             }
 

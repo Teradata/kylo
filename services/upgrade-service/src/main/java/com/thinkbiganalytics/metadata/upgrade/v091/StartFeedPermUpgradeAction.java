@@ -45,7 +45,6 @@ import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
-
 /**
  * Adds the start permission to the feed editor and admin roles.
  */
