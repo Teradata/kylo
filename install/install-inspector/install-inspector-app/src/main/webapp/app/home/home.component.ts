@@ -35,19 +35,15 @@ export class HomeComponent implements OnInit {
     isProd = true;
     checks: Array<any> = [];
     isLoading: boolean;
-    selectedCheckId = -1;
     path = new FormControl('', [Validators.required, configurationValidator(this)]);
     devMode = new FormControl(false, [Validators.required]);
-    selectAll = new FormControl(false, [Validators.required]);
     configuration: any;
-    docBase: 'http://kylo.readthedocs.io/en/latest';
+    loading = false;
 
     constructor(private configService: ConfigService, private profileService: ProfileService) {
     }
 
     ngOnInit() {
-        const self = this;
-
         this.profileService.getProfileInfo().toPromise().then((profiles) => {
             console.log('loaded application profiles: ' + profiles);
             this.isProd = profiles.indexOf('prod') !== -1;
@@ -55,37 +51,11 @@ export class HomeComponent implements OnInit {
             this.isProd = true;
             console.log('failed to load active profiles from server');
         });
-
-        // this.loadChecks().toPromise().then((checks) => {
-        //     if (checks) {
-        //         console.log('loaded checks', checks);
-        //         checks.forEach(function(check) {
-        //             console.log('for each check', check);
-        //             console.log('this', this);
-        //             console.log('self', self);
-        //             check.enabled = new FormControl(false);
-        //             check.status = {};
-        //         });
-        //         self.checks = checks;
-        //         if (self.checks.length > 0) {
-        //             self.selectedCheckId = self.checks[0].id;
-        //         }
-        //         self.isLoading = false;
-        //     } else {
-        //         console.log('there are no checks configured on server');
-        //         self.checks = null;
-        //         self.isLoading = false;
-        //     }
-        //     return self.checks;
-        // }).catch((err) => {
-        //     console.log('error getting configured checks from server');
-        //     self.checks = null;
-        //     self.isLoading = false;
-        //     return null;
-        // });
     }
 
     checkConfig() {
+        this.checks = [];
+        this.loading = true;
         console.log('checkConfig for ' + this.path);
         this.reset();
         this.configService.setPath(this.path.value, this.devMode.value).toPromise().then((configuration) => {
@@ -93,23 +63,15 @@ export class HomeComponent implements OnInit {
                 console.log('created new configuration', configuration);
                 this.configuration = configuration;
                 this.checks = configuration.inspections;
-                this.isLoading = false;
+                this.loading = false;
             } else {
                 console.log('failed to create configuration on path ' + this.path);
                 this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
                 this.path.updateValueAndValidity();
-                this.isLoading = false;
+                this.loading = false;
             }
             return configuration;
         });
-        // .then(this.executeChecks)
-        //     .catch((err) => {
-        //         console.log('error creating configuration on path ' + this.path);
-        //         this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
-        //         this.path.updateValueAndValidity();
-        //         this.isLoading = false;
-        //         return null;
-        //     });
     }
 
     downloadReport() {
@@ -130,37 +92,6 @@ export class HomeComponent implements OnInit {
         saveAs(blob, 'kylo-configuration-inspection.json');
     }
 
-    loadChecks() {
-        console.log('loading checks');
-        return this.configService.loadChecks();
-    }
-
-    executeChecks = (configuration: any) => {
-        console.log('execute checks for configuration ' + configuration.path.uri);
-        const checks = this.checks
-            .filter((check) => check.enabled.value)
-            .map((check) => {
-                check.isLoading = true;
-                return this.configService.executeCheck(configuration.id, check.id).toPromise().then((status) => {
-                    console.log('check ' + check.id + ' executed with status ' + status, status);
-                    check.isLoading = false;
-                    check.status = status;
-                    return check.status;
-                }).catch((err) => {
-                    console.log('error executing check ' + check.id, err);
-                    check.isLoading = false;
-                    check.status = {valid: false, description: 'Unknown error occurred', error: err};
-                    return check.status;
-                });
-            });
-        return Promise.all(checks)
-            .then((res) => {
-                res.forEach((status) => {
-                    console.log('received stats ', status);
-                });
-            });
-    };
-
     getErrorMessage() {
         if (this.path.hasError('required')) {
             return 'You must enter a value';
@@ -169,12 +100,6 @@ export class HomeComponent implements OnInit {
             return 'Failed to read configuration on path "' + this.configuration.errorPath + '"';
         }
         return '';
-    }
-
-    onSelectAllChange() {
-        if (this.checks) {
-            this.checks.forEach((check) => check.enabled.setValue(this.selectAll.value));
-        }
     }
 
     onDevModeChange() {
@@ -194,10 +119,6 @@ export class HomeComponent implements OnInit {
 
     hasDescriptions(check: any) {
         return check.status.descriptions && check.status.descriptions.length > 0;
-    }
-
-    docsLink(check: any): string {
-        return this.docBase + check.status.docsLink;
     }
 }
 
