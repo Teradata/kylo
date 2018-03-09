@@ -71,13 +71,13 @@ public class RegisteredTemplateService {
     private static final Logger log = LoggerFactory.getLogger(RegisteredTemplateService.class);
 
     @Inject
-    FeedManagerTemplateProvider templateProvider;
+    private FeedManagerTemplateProvider templateProvider;
 
     @Inject
-    MetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
-    TemplateModelTransform templateModelTransform;
+    private TemplateModelTransform templateModelTransform;
 
     @Inject
     private AccessController accessController;
