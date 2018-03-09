@@ -415,7 +415,7 @@ public class JpaBatchJobExecutionProvider extends QueryDslPagingSupport<JpaBatch
      * Get or Create the JobExecution for a given ProvenanceEvent
      */
     @Override
-    public synchronized JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
+    public  JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) {
         JpaBatchJobExecution jobExecution = null;
         if (event.isStream()) {
             //Streams only care about start/stop events to track.. otherwise we can disregard the events)

@@ -92,12 +92,15 @@ public class ProvenanceEventFeedUtil {
 
 
     public ProvenanceEventRecordDTO enrichEventWithFeedInformation(ProvenanceEventRecordDTO event) {
-        String feedName = getFeedName(event.getFirstEventProcessorId());
+        String feedName = null;
+        if(StringUtils.isNotBlank(event.getFirstEventProcessorId())) {
+            feedName = getFeedName(event.getFirstEventProcessorId());
+        }
         if (StringUtils.isBlank(feedName) && StringUtils.isNotBlank(event.getFeedName())) {
             feedName = event.getFeedName();
         }
         //if we cant get the feed name check to see if the NiFi flow cache is updated... and wait for it to be updated before processing
-        if(StringUtils.isBlank(feedName) && needsUpdateFromCluster()){
+        if(StringUtils.isBlank(feedName) && needsUpdateFromCluster() && StringUtils.isNotBlank(event.getFirstEventProcessorId())){
             log.info("Unable to find the feed for processorId: {}.  Changes were detected from the cluster.  Refreshing the cache ...",event.getFirstEventProcessorId());
             nifiFlowCache.applyClusterUpdates();
             feedName = getFeedName(event.getFirstEventProcessorId());

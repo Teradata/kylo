@@ -39,6 +39,7 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvide
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
@@ -53,6 +54,7 @@ import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
@@ -138,6 +140,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
 
     private static final String JMS_LISTENER_ID = "nifiStatesJmsListener";
 
+    private static final String JMS_LISTENER_ID2 = "nifiStatesJmsListener2";
     @PostConstruct
     private void init() {
         retryProvenanceEventWithDelay.setStatsJmsReceiver(this);
@@ -238,6 +241,18 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     private boolean ensureValidRetryAttempt(AggregatedFeedProcessorStatisticsHolder stats) {
         return !(stats instanceof RetryAggregatedFeedProcessorStatisticsHolder) || (stats instanceof RetryAggregatedFeedProcessorStatisticsHolder
                                                                                     && ((RetryAggregatedFeedProcessorStatisticsHolder) stats).shouldRetry());
+    }
+    @JmsListener(id = JMS_LISTENER_ID2, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE2, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
+    public void receiveTopic(byte[] stats) {
+        Object o = null;
+        try {
+            o = SerializationUtils.deserialize(stats);
+        } catch (Exception e) {
+            log.error("Unable to deserialize object ", e);
+        }
+        if (o != null && o instanceof AggregatedFeedProcessorStatisticsHolder) {
+            receiveTopic((AggregatedFeedProcessorStatisticsHolder) o);
+        }
     }
 
     @JmsListener(id = JMS_LISTENER_ID, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
@@ -437,6 +452,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats -> {
             Long collectionIntervalMillis = feedProcessorStats.getCollectionIntervalMillis();
             String feedProcessorId = feedProcessorStats.getStartingProcessorId();
+
             String feedName = getFeedName(feedProcessorStats);
             if (StringUtils.isNotBlank(feedName)) {
                 String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
