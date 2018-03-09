@@ -25,6 +25,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -80,17 +81,32 @@ public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
     public void setFeedStatistics(List<AggregatedFeedProcessorStatistics> stats){
         if(stats != null){
-            this.feedStatistics =    stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
+            this.feedStatistics =  new HashMap<>();
+            for(AggregatedFeedProcessorStatistics stat : stats){
+                feedStatistics.put(stat.getStartingProcessorId(),stat);
+            }
+            //stats.stream().collect(Collectors.toMap(AggregatedFeedProcessorStatistics::getStartingProcessorId, Function.identity()));
         }
     }
 
     public void clear() {
         this.collectionId = UUID.randomUUID().toString();
-        feedStatistics.entrySet().forEach(e -> e.getValue().clear(collectionId));
+        for(Map.Entry<String,AggregatedFeedProcessorStatistics> e : feedStatistics.entrySet()){
+            e.getValue().clear(collectionId);
+        }
+        //feedStatistics.entrySet().forEach(e -> e.getValue().clear(collectionId));
     }
 
     public boolean hasStats(){
-        return feedStatistics.values().stream().anyMatch(s -> s.hasStats());
+        boolean hasStats = false;
+        for(AggregatedFeedProcessorStatistics feedProcessorStatistics : feedStatistics.values()){
+            if(feedProcessorStatistics.hasStats()){
+                hasStats = true;
+                break;
+            }
+        }
+        return hasStats;
+        //return feedStatistics.values().stream().anyMatch(s -> s.hasStats());
     }
 
     public void setCollectionId(String collectionId) {

@@ -25,20 +25,11 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class LongIdGenerator {
 
-    final static AtomicLong kyloEventIdGenerator = new AtomicLong(-1);
+    final static AtomicLong kyloEventIdGenerator = new AtomicLong(0);
 
 
     public static Long nextId(){
-        Long next = kyloEventIdGenerator.decrementAndGet();
-        if(next <= Long.MIN_VALUE){
-            next = reset();
-        }
-        return next;
-
-    }
-
-    private static Long reset(){
-        kyloEventIdGenerator.set(-1);
-        return kyloEventIdGenerator.get();
+       kyloEventIdGenerator.compareAndSet(Long.MIN_VALUE,0);
+       return kyloEventIdGenerator.decrementAndGet();
     }
 }

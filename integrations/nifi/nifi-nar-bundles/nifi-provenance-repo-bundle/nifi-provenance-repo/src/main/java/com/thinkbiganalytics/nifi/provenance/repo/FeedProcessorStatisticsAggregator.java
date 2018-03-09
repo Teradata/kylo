@@ -21,8 +21,10 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  * #L%
  */
 
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
+import com.thinkbiganalytics.nifi.provenance.model.util.GroupedStatsUtil;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -45,6 +47,7 @@ public class FeedProcessorStatisticsAggregator {
     public static FeedProcessorStatisticsAggregator getInstance() {
         return instance;
     }
+
 
 
     public void add(GroupedStats stats, ProvenanceEventRecord event, Long eventId) {
@@ -103,42 +106,19 @@ public class FeedProcessorStatisticsAggregator {
     }
 
     public void addStats1(GroupedStats stats1, GroupedStats stats2) {
-        stats1.addTotalCount(stats2.getTotalCount());
-        stats1.addBytesIn(stats2.getBytesIn());
-        stats1.addBytesOut(stats2.getBytesOut());
-        stats1.addDuration(stats2.getDuration());
-        stats1.addProcessorsFailed(stats2.getProcessorsFailed());
-        stats1.addJobsStarted(stats2.getJobsStarted());
-        stats1.addJobsFinished(stats2.getJobsFinished());
-        stats1.addJobDuration(stats2.getJobDuration());
-        stats1.addJobsFailed(stats2.getJobsFailed());
-        stats1.addSuccessfulJobDuration(stats2.getSuccessfulJobDuration());
-        stats1.setMaxTime(stats1.getMaxTime() == null || stats1.getMaxTime() < stats2.getMaxTime() ? stats2.getMaxTime() : stats1.getMaxTime());
-        stats1.setMinTime(stats1.getMinTime() == null || stats1.getMinTime() > stats2.getMinTime() ? stats2.getMinTime() : stats1.getMinTime());
-        stats1.setTime(stats1.getMinTime());
-        if(stats1 instanceof GroupedStatsV2 && stats2 instanceof GroupedStatsV2)
-        if(((GroupedStatsV2) stats1).getLatestFlowFileId() == null && ((GroupedStatsV2) stats2).getLatestFlowFileId() != null){
-            ((GroupedStatsV2) stats1).setLatestFlowFileId(((GroupedStatsV2) stats2).getLatestFlowFileId());
-        }
+        GroupedStatsUtil.addStats1(stats1,stats2);
     }
 
 
     public GroupedStats add(GroupedStats stats1, GroupedStats stats2) {
-        GroupedStats stats = new GroupedStats();
-        addStats1(stats, stats1);
-        addStats1(stats, stats2);
-        return stats;
+      return GroupedStatsUtil.add(stats1,stats2);
     }
 
-    public GroupedStats add(GroupedStats... groupedStatss) {
-        GroupedStats allStats = new GroupedStats();
-        for (GroupedStats stats : groupedStatss) {
-            addStats1(allStats, stats);
-        }
-        return allStats;
+    public GroupedStats add(GroupedStats... groupedStats) {
+      return GroupedStatsUtil.add(groupedStats);
     }
 
     public GroupedStats add(List<GroupedStats> groupedStats) {
-        return add(groupedStats.toArray(new GroupedStats[groupedStats.size()]));
+        return GroupedStatsUtil.add(groupedStats);
     }
 }

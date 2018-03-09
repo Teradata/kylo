@@ -53,7 +53,14 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
      */
     public Long getMaxEventId() {
         if (events != null) {
-            return events.stream().mapToLong(e -> e.getEventId()).max().getAsLong();
+            Long maxId = -1L;
+            for(ProvenanceEventRecordDTO e: events){
+                if(e.getEventId() > maxId){
+                    maxId = e.getEventId();
+                }
+            }
+            return maxId;
+            //return events.stream().mapToLong(e -> e.getEventId()).max().getAsLong();
         }
         return -1L;
     }
@@ -65,7 +72,14 @@ public class ProvenanceEventRecordDTOHolder implements Serializable {
      */
     public Long getMinEventId() {
         if (events != null) {
-            return events.stream().mapToLong(e -> e.getEventId()).min().getAsLong();
+            long minId = -1L;
+            for(ProvenanceEventRecordDTO e: events){
+                if(e.getEventId() < minId){
+                    minId = e.getEventId();
+                }
+            }
+            return minId;
+          //  return events.stream().mapToLong(e -> e.getEventId()).min().getAsLong();
         }
         return -1L;
     }

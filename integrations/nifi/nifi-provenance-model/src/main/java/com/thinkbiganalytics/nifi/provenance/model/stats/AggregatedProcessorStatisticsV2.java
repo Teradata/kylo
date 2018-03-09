@@ -39,7 +39,11 @@ public class AggregatedProcessorStatisticsV2 extends  AggregatedProcessorStatist
      super(processorId,processorName,collectionId);
     }
     public GroupedStats getStats(String sourceConnectionIdentifier){
-      return  this.getStats().computeIfAbsent(sourceConnectionIdentifier, id -> new GroupedStatsV2(sourceConnectionIdentifier));
+        if(!this.getStats().containsKey(sourceConnectionIdentifier)){
+            this.getStats().put(sourceConnectionIdentifier,new GroupedStatsV2(sourceConnectionIdentifier));
+        }
+        return this.getStats().get(sourceConnectionIdentifier);
+        //return  this.getStats().computeIfAbsent(sourceConnectionIdentifier, id -> new GroupedStatsV2(sourceConnectionIdentifier));
     }
 
 }
