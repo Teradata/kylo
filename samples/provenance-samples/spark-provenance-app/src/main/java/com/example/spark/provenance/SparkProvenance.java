@@ -84,7 +84,7 @@ public class SparkProvenance {
             //Do some work... i.e. look up the Databases in Hive
             ProvenanceEventRecordDTO event = newEvent("Databases",params);
             Dataset df = hiveContext.sql("show databases");
-            event.getAttributeMap().put("databases", df.schema().json());
+            event.getAttributeMap().put("databases", df.toJSON().collectAsList().toString());
             event.setEventTime(System.currentTimeMillis());
             events.add(event);
 
