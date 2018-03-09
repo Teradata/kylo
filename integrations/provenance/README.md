@@ -2,7 +2,7 @@ Provenance API
 ==============
 
 This is the API and 2 implementations for making custom Provenance data, outside of NiFi, available for Kylo Operations Manager
-This is will use the [nifi-provenance-model](,,/nifi/nifi-provenance-model) to help create the events to publish
+This is will use the [nifi-provenance-model](../nifi/nifi-provenance-model) to help create the events to publish
 
 
 
