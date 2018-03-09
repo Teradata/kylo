@@ -34,7 +34,7 @@ import java.sql.SQLFeatureNotSupportedException;
 import java.util.Properties;
 
 @Component
-public class KyloDatabaseConnectionInspection extends AbstractInspection {
+public class KyloDatabaseConnectionInspection extends InspectionBase {
 
     private static final String SPRING_DATASOURCE_URL = "spring.datasource.url";
     private static final String SPRING_DATASOURCE_USERNAME = "spring.datasource.username";
@@ -82,19 +82,10 @@ public class KyloDatabaseConnectionInspection extends AbstractInspection {
         }
     }
 
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#kylo";
-    }
-
-    @Override
-    public String getName() {
-        return "Kylo Database Connection Check";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Checks whether Kylo can connect to its own database";
+    public KyloDatabaseConnectionInspection() {
+        setDocsUrl("/installation/KyloApplicationProperties.html#kylo");
+        setName("Kylo Database Connection Check");
+        setDescription("Checks whether Kylo can connect to its own database");
     }
 
     @Override

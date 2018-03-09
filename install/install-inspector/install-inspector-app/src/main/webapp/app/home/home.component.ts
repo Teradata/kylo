@@ -56,33 +56,33 @@ export class HomeComponent implements OnInit {
             console.log('failed to load active profiles from server');
         });
 
-        this.loadChecks().toPromise().then((checks) => {
-            if (checks) {
-                console.log('loaded checks', checks);
-                checks.forEach(function(check) {
-                    console.log('for each check', check);
-                    console.log('this', this);
-                    console.log('self', self);
-                    check.enabled = new FormControl(false);
-                    check.status = {};
-                });
-                self.checks = checks;
-                if (self.checks.length > 0) {
-                    self.selectedCheckId = self.checks[0].id;
-                }
-                self.isLoading = false;
-            } else {
-                console.log('there are no checks configured on server');
-                self.checks = null;
-                self.isLoading = false;
-            }
-            return self.checks;
-        }).catch((err) => {
-            console.log('error getting configured checks from server');
-            self.checks = null;
-            self.isLoading = false;
-            return null;
-        });
+        // this.loadChecks().toPromise().then((checks) => {
+        //     if (checks) {
+        //         console.log('loaded checks', checks);
+        //         checks.forEach(function(check) {
+        //             console.log('for each check', check);
+        //             console.log('this', this);
+        //             console.log('self', self);
+        //             check.enabled = new FormControl(false);
+        //             check.status = {};
+        //         });
+        //         self.checks = checks;
+        //         if (self.checks.length > 0) {
+        //             self.selectedCheckId = self.checks[0].id;
+        //         }
+        //         self.isLoading = false;
+        //     } else {
+        //         console.log('there are no checks configured on server');
+        //         self.checks = null;
+        //         self.isLoading = false;
+        //     }
+        //     return self.checks;
+        // }).catch((err) => {
+        //     console.log('error getting configured checks from server');
+        //     self.checks = null;
+        //     self.isLoading = false;
+        //     return null;
+        // });
     }
 
     checkConfig() {
@@ -92,6 +92,7 @@ export class HomeComponent implements OnInit {
             if (configuration) {
                 console.log('created new configuration', configuration);
                 this.configuration = configuration;
+                this.checks = configuration.inspections;
                 this.isLoading = false;
             } else {
                 console.log('failed to create configuration on path ' + this.path);
@@ -100,14 +101,15 @@ export class HomeComponent implements OnInit {
                 this.isLoading = false;
             }
             return configuration;
-        }).then(this.executeChecks)
-            .catch((err) => {
-                console.log('error creating configuration on path ' + this.path);
-                this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
-                this.path.updateValueAndValidity();
-                this.isLoading = false;
-                return null;
-            });
+        });
+        // .then(this.executeChecks)
+        //     .catch((err) => {
+        //         console.log('error creating configuration on path ' + this.path);
+        //         this.configuration = {error: true, errorPath: this.path.value, devmode: this.devMode.value};
+        //         this.path.updateValueAndValidity();
+        //         this.isLoading = false;
+        //         return null;
+        //     });
     }
 
     downloadReport() {

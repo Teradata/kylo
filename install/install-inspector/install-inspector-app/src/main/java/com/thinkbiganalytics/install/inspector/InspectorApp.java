@@ -23,7 +23,6 @@ package com.thinkbiganalytics.install.inspector;
 
 import com.thinkbiganalytics.install.inspector.config.ApplicationProperties;
 import com.thinkbiganalytics.install.inspector.config.DefaultProfileUtil;
-import com.thinkbiganalytics.install.inspector.inspection.IgnoredByInspectorApp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +45,7 @@ import javax.annotation.PostConstruct;
 
 import io.github.jhipster.config.JHipsterConstants;
 
-@ComponentScan(excludeFilters = @ComponentScan.Filter(IgnoredByInspectorApp.class))
+@ComponentScan
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class, HibernateJpaAutoConfiguration.class,
                                     DataSourceAutoConfiguration.class, DevToolsDataSourceAutoConfiguration.class})
 @EnableConfigurationProperties({ApplicationProperties.class})

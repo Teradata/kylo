@@ -13,6 +13,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>install-inspector-api</module>
+    <module>install-inspector-inspections</module>
     <module>install-inspector-app</module>
   </modules>
 

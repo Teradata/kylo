@@ -52,4 +52,6 @@ public interface Inspection {
      * @return documentation url
      */
     String getDocsUrl();
+
+    void setStatus(InspectionStatus status);
 }

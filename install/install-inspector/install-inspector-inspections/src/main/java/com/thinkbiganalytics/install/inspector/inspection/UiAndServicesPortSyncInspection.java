@@ -20,30 +20,20 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * #L%
  */
 
-
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
 
 @Component
-public class UiAndServicesPortSyncInspection extends AbstractInspection {
+public class UiAndServicesPortSyncInspection extends InspectionBase {
 
     private static final String SERVER_PORT = "server.port";
     private static final String ZUUL_ROUTES_API_URL = "zuul.routes.api.url";
 
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#common-configuration-properties";
-    }
-
-    @Override
-    public String getName() {
-        return "Kylo UI and Services Port Sync";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Checks whether Kylo UI can connect to to Kylo Services";
+    public UiAndServicesPortSyncInspection() {
+        setDocsUrl("/installation/KyloApplicationProperties.html#common-configuration-properties");
+        setName("Kylo UI and Services Port Sync");
+        setDescription("Checks whether Kylo UI can connect to to Kylo Services");
     }
 
     @Override

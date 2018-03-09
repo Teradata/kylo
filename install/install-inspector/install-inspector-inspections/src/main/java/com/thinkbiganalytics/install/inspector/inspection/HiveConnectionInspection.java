@@ -21,49 +21,34 @@ package com.thinkbiganalytics.install.inspector.inspection;
  */
 
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.sql.SQLException;
 
+import javax.annotation.Resource;
 import javax.sql.DataSource;
 
 @Component
-public class HiveConnectionInspection extends AbstractInspection {
+public class HiveConnectionInspection extends InspectionBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(HiveConnectionInspection.class);
 
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#hive";
+
+    public HiveConnectionInspection() {
+        setDocsUrl("/installation/KyloApplicationProperties.html#hive");
+        setName("Hive Connection Check");
+        setDescription("Checks whether Hive connection is setup");
     }
 
-    @Override
-    public String getName() {
-        return "Hive Connection Check";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Checks whether Hive connection is setup";
-    }
-
+    @Resource(name = "hiveDataSource")
+    private DataSource ds;
 
     @Override
     public InspectionStatus inspect(Configuration configuration) {
         InspectionStatus status = new InspectionStatus(false);
 
-        DataSource ds;
-        try {
-            ds = configuration.getServicesBean(HiveConnectionInspectionConfiguration.class, DataSource.class);
-        } catch (Exception e) {
-            String msg = String.format("Failed to check Hive connection: %s", ExceptionUtils.getRootCause(e).getMessage());
-            LOG.error(msg, e);
-            status.addError(msg);
-            return status;
-        }
         try {
             ((com.thinkbiganalytics.hive.service.RefreshableDataSource) ds).testConnection();
         } catch (SQLException e) {

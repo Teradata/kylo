@@ -28,9 +28,7 @@ public interface Configuration {
 
     String SPRING_PROFILES_INCLUDE = "spring.profiles.include";
 
-    Path getPath();
-
-    Integer getId();
+    String getPath();
 
     String getVersion();
 
@@ -49,5 +47,5 @@ public interface Configuration {
 
     String getUiProperty(String propertyName);
 
-    <T> T getServicesBean(Class<?> contextConf, Class<T> bean);
+    void inspect();
 }

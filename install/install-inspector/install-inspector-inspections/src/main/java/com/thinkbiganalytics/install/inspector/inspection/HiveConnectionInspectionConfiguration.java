@@ -20,7 +20,6 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * #L%
  */
 
-import com.thinkbiganalytics.hive.service.RefreshableDataSource;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 
 import org.apache.commons.lang3.StringUtils;
@@ -30,11 +29,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 
-import javax.sql.DataSource;
-
 @SuppressWarnings("SpringFacetCodeInspection") //Spring context is created dynamically
 @Configuration
-@IgnoredByInspectorApp
 @EnableConfigurationProperties
 public class HiveConnectionInspectionConfiguration {
 
@@ -44,11 +40,6 @@ public class HiveConnectionInspectionConfiguration {
 
     @Autowired
     private Environment env;
-
-    @Bean(name = "hiveDataSource")
-    public DataSource dataSource() {
-        return new RefreshableDataSource("hive.datasource");
-    }
 
     @Bean(name = "kerberosHiveConfiguration")
     public KerberosTicketConfiguration kerberosTicketHiveConfiguration() {

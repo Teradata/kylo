@@ -20,7 +20,6 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * #L%
  */
 
-
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
@@ -33,10 +32,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
+
 import static com.thinkbiganalytics.install.inspector.inspection.Configuration.SPRING_PROFILES_INCLUDE;
 
 @Component
-public class NifiConnectionInspection extends AbstractInspection {
+public class NifiConnectionInspection extends InspectionBase {
 
     private static final String NIFI_API_FLOW_ABOUT = "/nifi-api/flow/about";
     private static final String NIFI_V = "nifi-v";
@@ -143,6 +144,9 @@ public class NifiConnectionInspection extends AbstractInspection {
 
     private Map<String, List<String>> nifiVersionsToProfiles = new HashMap<>();
 
+    @Inject
+    private JerseyClientConfig jerseyClientConfig;
+
     public NifiConnectionInspection() {
         nifiVersionsToProfiles.put("1.0.x", Collections.singletonList("1"));
         nifiVersionsToProfiles.put("1.1.x", Collections.singletonList("1.1"));
@@ -150,31 +154,19 @@ public class NifiConnectionInspection extends AbstractInspection {
         nifiVersionsToProfiles.put("1.3.x", Arrays.asList("1.2", "1.3"));
         nifiVersionsToProfiles.put("1.4.x", Arrays.asList("1.2", "1.3", "1.4"));
         nifiVersionsToProfiles.put("1.5.x", Arrays.asList("1.2", "1.3", "1.4", "1.5"));
-    }
 
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#nifi-rest";
-    }
-
-    @Override
-    public String getName() {
-        return "Nifi Connection Check";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Checks whether Kylo Services can connect to Nifi";
+        setDocsUrl("/installation/KyloApplicationProperties.html#nifi-rest");
+        setName("Nifi Connection Check");
+        setDescription("Checks whether Kylo Services can connect to Nifi");
     }
 
     @Override
     public InspectionStatus inspect(Configuration configuration) {
         InspectionStatus status = new InspectionStatus(false);
 
-        JerseyClientConfig restConfig = configuration.getServicesBean(NifiConnectionInspectionConfiguration.class, JerseyClientConfig.class);
         JerseyRestClient restClient;
         try {
-            restClient = new JerseyRestClient(restConfig);
+            restClient = new JerseyRestClient(jerseyClientConfig);
         } catch (Exception e) {
             status.addError(String.format("Failed to parse Nifi properties: %s. Check values of configuration properties starting with 'nifi.rest' in '%s'",
                                           e.getMessage(), configuration.getServicesConfigLocation()));
@@ -186,13 +178,13 @@ public class NifiConnectionInspection extends AbstractInspection {
             response = restClient.get(NIFI_API_FLOW_ABOUT, About.class);
         } catch (Exception e) {
             status.addError(String.format("Failed to connect to Nifi at '%s': %s. Check values of configuration properties starting with 'nifi.rest' in '%s'",
-                                          restConfig.getUrl(), e.getMessage(), configuration.getServicesConfigLocation()));
+                                          jerseyClientConfig.getUrl(), e.getMessage(), configuration.getServicesConfigLocation()));
             return status;
         }
 
         String nifiVersion = response.about.version;
 
-        status.addDescription(String.format("Successfully connected to Nifi version '%s' running at '%s'", nifiVersion, restConfig.getUrl()));
+        status.addDescription(String.format("Successfully connected to Nifi version '%s' running at '%s'", nifiVersion, jerseyClientConfig.getUrl()));
 
         String nifiProfileKey = nifiVersion.substring(0, nifiVersion.lastIndexOf(".")) + ".x";
         List<String> nifiProfiles = nifiVersionsToProfiles.get(nifiProfileKey);
@@ -217,7 +209,7 @@ public class NifiConnectionInspection extends AbstractInspection {
         if (!isValidProfileSelected) {
             status.addError(String.format("Selected Nifi profile '%s' in '%s' doesn't match Nifi version '%s' running at '%s'. "
                                           + "Replace '%s' with '%s', eg. '%s=<all-other-profiles>,%s'",
-                                          selectedNifiProfile, configuration.getServicesConfigLocation(), nifiVersion, restConfig.getUrl(),
+                                          selectedNifiProfile, configuration.getServicesConfigLocation(), nifiVersion, jerseyClientConfig.getUrl(),
                                           selectedNifiProfile, expectedNifiProfile, SPRING_PROFILES_INCLUDE, expectedNifiProfile));
             return status;
         }

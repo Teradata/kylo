@@ -32,7 +32,7 @@ import javax.jms.JMSException;
 import static com.thinkbiganalytics.install.inspector.inspection.Configuration.SPRING_PROFILES_INCLUDE;
 
 @Component
-public class ActiveMqConnectionInspection extends AbstractInspection {
+public class ActiveMqConnectionInspection extends InspectionBase {
 
     private static final String JMS_ACTIVEMQ_BROKER_USERNAME = "jms.activemq.broker.username";
     private static final String JMS_ACTIVEMQ_BROKER_PASSWORD = "jms.activemq.broker.password";
@@ -40,19 +40,11 @@ public class ActiveMqConnectionInspection extends AbstractInspection {
     private static final String JMS_ACTIVEMQ = "jms-activemq";
     private final Logger LOG = LoggerFactory.getLogger(ActiveMqConnectionInspection.class);
 
-    @Override
-    public String getName() {
-        return "ActiveMQ Connection Check";
-    }
 
-    @Override
-    public String getDescription() {
-        return "Checks whether Kylo Services can connect to ActiveMQ";
-    }
-
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#jms";
+    public ActiveMqConnectionInspection() {
+        setName("ActiveMQ Connection Check");
+        setDescription("Checks whether Kylo Services can connect to ActiveMQ");
+        setDocsUrl("/installation/KyloApplicationProperties.html#jms");
     }
 
     @Override

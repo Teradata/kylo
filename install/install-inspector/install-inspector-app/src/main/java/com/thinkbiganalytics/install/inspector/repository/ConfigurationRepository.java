@@ -22,6 +22,7 @@ package com.thinkbiganalytics.install.inspector.repository;
 
 
 import com.thinkbiganalytics.install.inspector.inspection.Configuration;
+import com.thinkbiganalytics.install.inspector.inspection.DefaultConfiguration;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
 
 import org.springframework.stereotype.Repository;
@@ -36,7 +37,7 @@ public class ConfigurationRepository {
     }
 
     public Configuration create(Path path) {
-        configuration = new DefaultConfiguration(0, path);
+        configuration = new DefaultConfiguration(path.getUri(), path.isDevMode().toString());
         return configuration;
     }
 }

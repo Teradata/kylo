@@ -21,48 +21,34 @@ package com.thinkbiganalytics.install.inspector.service;
  */
 
 
-import com.thinkbiganalytics.install.inspector.inspection.Configuration;
-import com.thinkbiganalytics.install.inspector.inspection.Inspection;
-import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
-import com.thinkbiganalytics.install.inspector.inspection.Path;
 import com.thinkbiganalytics.install.inspector.repository.ConfigurationRepository;
-import com.thinkbiganalytics.install.inspector.repository.InspectionRepository;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class InspectionService {
-
-    private final InspectionRepository inspectionRepo;
 
     private final ConfigurationRepository configRepo;
 
     @Autowired
-    public InspectionService(InspectionRepository inspectionRepo, ConfigurationRepository configRepo) {
-        this.inspectionRepo = inspectionRepo;
+    public InspectionService(ConfigurationRepository configRepo) {
         this.configRepo = configRepo;
     }
 
-    public List<Inspection> getAllInspections() {
-        return inspectionRepo.getAll();
-    }
-
-    public InspectionStatus execute(int configId, int inspectionId) {
-        Inspection inspection = inspectionRepo.get(inspectionId);
-        try {
-            return inspection.inspect(configRepo.get(configId));
-        } catch (Exception e) {
-            String msg = String.format("An error occurred while running configuration inspection '%s'", inspection.getName());
-            InspectionStatus status = new InspectionStatus(false);
-            status.addError(msg + ": " + e.getMessage());
-            return status;
-        }
-    }
-
-    public Configuration createConfiguration(Path path) {
-        return configRepo.create(path);
-    }
+//    public InspectionStatus execute(int configId, int inspectionId) {
+//        Inspection inspection = inspectionRepo.get(inspectionId);
+//        try {
+//            return inspection.inspect(configRepo.get(configId));
+//        } catch (Exception e) {
+//            String msg = String.format("An error occurred while running configuration inspection '%s'", inspection.getName());
+//            InspectionStatus status = new InspectionStatus(false);
+//            status.addError(msg + ": " + e.getMessage());
+//            return status;
+//        }
+//    }
+//
+//    public Configuration createConfiguration(Path path) {
+//        return configRepo.create(path);
+//    }
 }

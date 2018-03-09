@@ -24,23 +24,14 @@ package com.thinkbiganalytics.install.inspector.inspection;
 import org.springframework.stereotype.Component;
 
 @Component
-public class JwtTokenSyncInspection extends AbstractInspection {
+public class JwtTokenSyncInspection extends InspectionBase {
 
     private static final String SECURITY_JWT_KEY = "security.jwt.key";
 
-    @Override
-    public String getDocsUrl() {
-        return "/installation/KyloApplicationProperties.html#security";
-    }
-
-    @Override
-    public String getName() {
-        return "Jwt Token Synchronisation Check";
-    }
-
-    @Override
-    public String getDescription() {
-        return "Checks whether Kylo UI and Kylo Services have the same JWT tokens";
+    public JwtTokenSyncInspection() {
+        setDocsUrl("/installation/KyloApplicationProperties.html#security");
+        setName("Jwt Token Synchronisation Check");
+        setDescription("Checks whether Kylo UI and Kylo Services have the same JWT tokens");
     }
 
     @Override

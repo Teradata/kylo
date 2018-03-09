@@ -22,9 +22,8 @@ package com.thinkbiganalytics.install.inspector.web.rest;
 
 
 import com.thinkbiganalytics.install.inspector.inspection.Configuration;
-import com.thinkbiganalytics.install.inspector.inspection.Inspection;
-import com.thinkbiganalytics.install.inspector.inspection.InspectionStatus;
 import com.thinkbiganalytics.install.inspector.inspection.Path;
+import com.thinkbiganalytics.install.inspector.inspection.DefaultConfiguration;
 import com.thinkbiganalytics.install.inspector.service.InspectionService;
 
 import org.slf4j.Logger;
@@ -32,15 +31,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URISyntaxException;
-import java.util.List;
 
 import javax.validation.Valid;
 
@@ -57,17 +53,17 @@ public class InspectionResource {
         this.inspectionService = inspectionService;
     }
 
-    /**
-     * GET /inspection : get all configuration inspections
-     *
-     * @return the ResponseEntity with status 200 (OK) and with body having all configuration inspections
-     */
-    @GetMapping("/inspection")
-    public ResponseEntity<List<Inspection>> getAllConfigChecks() {
-        final List<Inspection> page = inspectionService.getAllInspections();
-        return new ResponseEntity<>(page, HttpStatus.OK);
-    }
-
+//    /**
+//     * GET /inspection : get all configuration inspections
+//     *
+//     * @return the ResponseEntity with status 200 (OK) and with body having all configuration inspections
+//     */
+//    @GetMapping("/inspection")
+//    public ResponseEntity<List<Inspection>> getAllConfigChecks() {
+//        final List<Inspection> page = inspectionService.getAllInspections();
+//        return new ResponseEntity<>(page, HttpStatus.OK);
+//    }
+//
     /**
      * PUT  /config  : Creates or updates Kylo Configuration at given path
      * <p>
@@ -77,22 +73,23 @@ public class InspectionResource {
     @PostMapping("/configuration")
     public ResponseEntity<Configuration> createConfiguration(@Valid @RequestBody Path installPath) throws URISyntaxException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
-        Configuration config = inspectionService.createConfiguration(installPath);
+        Configuration config = new DefaultConfiguration(installPath.getUri(), installPath.isDevMode().toString());
+        config.inspect();
         return new ResponseEntity<>(config, HttpStatus.OK);
     }
 
-    /**
-     * POST  /config  : Run configuration check
-     * <p>
-     *
-     * @param configId configuration id
-     * @param inspectionId configuration inspection id
-     */
-    @GetMapping("/configuration/{configId}/{inspectionId}")
-    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathVariable("configId") Integer configId, @Valid @PathVariable("inspectionId") Integer inspectionId) throws URISyntaxException {
-        log.debug("REST request to execute configuration inspection : {}", inspectionId);
-        InspectionStatus status = inspectionService.execute(configId, inspectionId);
-        return new ResponseEntity<>(status, HttpStatus.OK);
-    }
-
+//    /**
+//     * POST  /config  : Run configuration check
+//     * <p>
+//     *
+//     * @param configId configuration id
+//     * @param inspectionId configuration inspection id
+//     */
+//    @GetMapping("/configuration/{configId}/{inspectionId}")
+//    public ResponseEntity<InspectionStatus> runConfigCheck(@Valid @PathVariable("configId") Integer configId, @Valid @PathVariable("inspectionId") Integer inspectionId) throws URISyntaxException {
+//        log.debug("REST request to execute configuration inspection : {}", inspectionId);
+//        InspectionStatus status = inspectionService.execute(configId, inspectionId);
+//        return new ResponseEntity<>(status, HttpStatus.OK);
+//    }
+//
 }

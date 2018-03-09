@@ -33,7 +33,7 @@
                     <small class="release-notes-link"><a *ngIf="configuration.version" target="_blank" href="http://kylo.readthedocs.io/en/latest/release-notes/ReleaseNotes.html">Release Notes</a></small>
                 </mat-chip-list>
             </div>
-            <mat-checkbox [formControl]="selectAll" (change)="onSelectAllChange()">Enable All</mat-checkbox>
+            <!--<mat-checkbox [formControl]="selectAll" (change)="onSelectAllChange()">Enable All</mat-checkbox>-->
             <mat-checkbox *ngIf="!isProd" [formControl]="devMode"  (change)="onDevModeChange()">
                 <div class="checkbox-label">
                     <div>Running from source</div>
@@ -54,14 +54,13 @@
         </div>
 
         <mat-card class="inspection" *ngFor="let check of checks; let i = index"
-                  [class.disabled]="check.enabled.value === false"
-                  [class.active]="check.id === selectedCheckId">
+        >
             <mat-card-content>
                 <div fxLayout="row" fxLayoutAlign="center center">
-                    <div class="inspection-enabled-check" fxLayout="column" fxLayoutAlign="start center">
-                        <mat-checkbox class="inspection-enabled-check-checkbox muted" name="check_{{ i }}" [formControl]="check.enabled"></mat-checkbox>
-                        <div class="control-hint muted">Enabled</div>
-                    </div>
+                    <!--<div class="inspection-enabled-check" fxLayout="column" fxLayoutAlign="start center">-->
+                        <!--<mat-checkbox class="inspection-enabled-check-checkbox muted" name="check_{{ i }}" [formControl]="check.enabled"></mat-checkbox>-->
+                        <!--<div class="control-hint muted">Enabled</div>-->
+                    <!--</div>-->
                     <div fxFlex fxLayout="column">
                         <div>
                             <span class="inspection-header">{{check.name}}</span>
