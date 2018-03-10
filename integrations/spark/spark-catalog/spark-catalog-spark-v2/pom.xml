@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <artifactId>kylo-spark-catalog</artifactId>
+    <version>0.9.1-SNAPSHOT</version>
+  </parent>
+
+  <artifactId>kylo-spark-catalog-spark-v2</artifactId>
+
+  <name>Kylo Catalog for Spark 2</name>
+
+  <properties>
+    <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
+    <scala.version>2.11.0</scala.version>
+    <scala.binary.version>2.11</scala.binary.version>
+    <spark.version>2.0.0</spark.version>
+    <spark.binary.version>2.0</spark.binary.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <artifactId>kylo-spark-catalog-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql_${scala.binary.version}</artifactId>
+      <version>${spark.version}</version>
+      <scope>provided</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <!-- Verify API compatibility with kylo-spark-catalog-spark-v1 -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>clirr-maven-plugin</artifactId>
+        <configuration>
+          <comparisonArtifacts>
+            <comparisonArtifact>
+              <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+              <artifactId>kylo-spark-catalog-spark-v1</artifactId>
+              <version>${project.version}</version>
+            </comparisonArtifact>
+          </comparisonArtifacts>
+          <excludes>
+            <exclude>com/thinkbiganalytics/kylo/catalog/spark/**</exclude>
+          </excludes>
+          <ignored>
+            <difference>
+              <differenceType>7005</differenceType>  <!-- method argument type changed -->
+              <className>com/thinkbiganalytics/kylo/catalog/KyloCatalog</className>
+              <method>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.DataFrame)</method>
+              <to>com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter write(org.apache.spark.sql.Dataset)</to>
+              <justification>Spark 2 renamed DataFrame to Dataset</justification>
+            </difference>
+          </ignored>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
