@@ -21,9 +21,11 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
  */
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.util.Set;
@@ -36,29 +38,23 @@ import javax.jcr.Node;
 public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntity implements FeedServiceLevelAgreementRelationship {
 
 
-    public static final String TYPE_NAME = "feedSla";
-    public static final String NODE_TYPE = "tba:" + TYPE_NAME;
-    public static final String FEEDS = "feeds"; /// list of feed references on the SLA
-    public static final String SLA = "sla"; // a ref to the SLA
+    public static final String NODE_TYPE = "tba:slaFeedsRelationship";
+    public static final String FEEDS = "tba:feeds"; /// list of feed references on the SLA
 
 
     public JcrFeedServiceLevelAgreementRelationship(Node node) {
         super(node);
     }
 
-    public JcrFeedServiceLevelAgreementRelationship(JcrExtensibleEntity extensibleEntity) {
-        super(extensibleEntity.getNode());
-    }
-
     @Override
-    public ServiceLevelAgreement getAgreement() {
-        Node node = (Node) this.getProperty(SLA);
-        return new JcrServiceLevelAgreement(node);
+    public FeedServiceLevelAgreement getAgreement() {
+        Node node = (Node) JcrUtil.getParent(getNode());
+        return new JcrFeedServiceLevelAgreement(node, getJcrFeeds());
     }
 
     @Override
     public Set<? extends Feed> getFeeds() {
-        return getPropertyAsSet(FEEDS, JcrFeed.class);
+        return getJcrFeeds();
     }
 
     @Override
@@ -76,5 +72,7 @@ public class JcrFeedServiceLevelAgreementRelationship extends JcrExtensibleEntit
 
     }
 
-
+    private Set<JcrFeed> getJcrFeeds() {
+        return getPropertyAsSet(FEEDS, JcrFeed.class);
+    }
 }

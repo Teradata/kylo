@@ -343,6 +343,10 @@
     - tba:enabled (BOOLEAN) = 'true'
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
+    + tba:relatedFeeds (tba:slaFeedsRelationship)
+
+[tba:slaFeedsRelationship] > nt:hierarchyNode
+    - tba:feeds (WEAKREFERENCE) multiple
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
