@@ -148,11 +148,14 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
         try {
             String path = EntityUtil.pathForExtensibleEntity(typeName);
-            Node typeNameNode = session.getNode(path);
-            NodeIterator entityItr = typeNameNode.getNodes();
-            while (entityItr.hasNext()) {
-                Node entNode = (Node) entityItr.next();
-                list.add(new JcrExtensibleEntity(entNode));
+            
+            if (session.nodeExists(path)) {
+                Node typeNameNode = session.getNode(path);
+                NodeIterator entityItr = typeNameNode.getNodes();
+                while (entityItr.hasNext()) {
+                    Node entNode = (Node) entityItr.next();
+                    list.add(new JcrExtensibleEntity(entNode));
+                }
             }
 
             return list;
@@ -166,7 +169,6 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
      * restricting to a specific jcr extension type
      */
     public List<? extends ExtensibleEntity> findEntitiesMatchingProperty(String typeName, String propName, Object value) {
-        String path = EntityUtil.pathForExtensibleEntity(typeName);
         HashMap<String, String> params = new HashMap<>();
         String query = "SELECT * FROM [" + typeName + "] as t WHERE t.[" + propName + "] = $v";
         params.put("v", value.toString());
@@ -200,6 +202,27 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
         }
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider#deleteEntity(com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID)
+     */
+    @Override
+    public boolean deleteEntity(ID id) {
+        JcrExtensibleEntity.EntityId idImpl = (JcrExtensibleEntity.EntityId) id;
+
+        try {
+            Node node = getSession().getNodeByIdentifier(idImpl.getIdValue());
+
+            if (node != null) {
+                node.remove();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to delete entity with ID: " + id, e);
+        }
+    }
+    
     private Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }

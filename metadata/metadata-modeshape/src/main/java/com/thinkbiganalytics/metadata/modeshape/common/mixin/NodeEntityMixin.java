@@ -115,7 +115,7 @@ public interface NodeEntityMixin {
         return JcrPropertyUtil.getProperties(getNode());
     }
 
-    default Object getProperty(String name) {
+    default <T> T getProperty(String name) {
         return JcrPropertyUtil.getProperty(getNode(), name);
     }
 

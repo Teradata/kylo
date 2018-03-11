@@ -36,6 +36,8 @@ public interface ExtensibleEntityProvider {
     ExtensibleEntity createEntity(ExtensibleType type, Map<String, Object> props);
 
     ExtensibleEntity updateEntity(ExtensibleEntity extensibleEntity, Map<String, Object> props);
+    
+    boolean deleteEntity(ExtensibleEntity.ID id);
 
     List<ExtensibleEntity> getEntities();
 

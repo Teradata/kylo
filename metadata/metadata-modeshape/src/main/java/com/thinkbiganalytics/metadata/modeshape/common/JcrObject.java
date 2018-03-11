@@ -151,7 +151,7 @@ public class JcrObject {
         return JcrPropertyUtil.getProperties(this.node);
     }
 
-    public Object getProperty(String name) {
+    public <T> T  getProperty(String name) {
         try {
             return JcrPropertyUtil.getProperty(this.node, name);
         } catch (AccessControlException e) {
