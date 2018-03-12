@@ -241,7 +241,9 @@ public abstract class AbstractMergeTable extends AbstractNiFiProcessor {
      * This should be called when processing is done for the flow file.
      */
     private void release(String blockingValue) {
-        blockingCache.remove(blockingValue);
+        if(StringUtils.isNotBlank(blockingValue)) {
+            blockingCache.remove(blockingValue);
+        }
     }
 
 
