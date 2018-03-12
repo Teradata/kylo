@@ -20,7 +20,8 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * #L%
  */
 
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,15 +42,12 @@ public class DefaultInspectionService implements InspectionService {
         this.inspections = inspections;
     }
 
-
-    @Override
-    public List<Inspection> getInspections() {
+    private List<Inspection> getInspections() {
         return inspections;
     }
 
     @Override
-    public Object inspect(String path, String isDevMode, String projectVersion) {
-        Configuration configuration = new DefaultConfiguration(path, isDevMode, projectVersion);
+    public Object inspect(Configuration configuration) {
 
         List<Inspection> inspections = getInspections();
         for (Inspection inspection : inspections) {
@@ -66,7 +64,11 @@ public class DefaultInspectionService implements InspectionService {
             inspection.setStatus(status);
         }
 
-        return ObjectMapperSerializer.serialize(inspections);
+        try {
+            return new ObjectMapper().writeValueAsString(inspections);
+        } catch (JsonProcessingException e) {
+            throw new IllegalStateException("An error occurred while serialising inspections", e);
+        }
     }
 
 

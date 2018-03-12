@@ -60,9 +60,10 @@ public class DefaultConfiguration implements Configuration {
     private final String servicesClasspath;
     private final String path;
     private final String isDevMode;
-    private List<Inspection> inspections;
+    private final String inspectionsPath;
+    private List<Inspection> inspections = new ArrayList<>();
 
-    public DefaultConfiguration(String path, String isDevMode, String projectVersion) {
+    public DefaultConfiguration(String path, String inspectionsPath, String isDevMode, String projectVersion) {
         this.isDevMode = isDevMode;
         this.path = path;
 
@@ -70,11 +71,13 @@ public class DefaultConfiguration implements Configuration {
         String uiLocation = path;
 
         if (Boolean.valueOf(isDevMode)) {
+            this.inspectionsPath = servicesLocation + "/install/install-inspector/install-inspector-inspections/target";
             servicesClasspath = servicesLocation + SERVICES_SERVICE_APP + String.format("/target/kylo-service-app-%s-distribution/kylo-service-app-%s/lib", projectVersion, projectVersion);
             servicesLocation += SERVICES_SERVICE_APP_SRC_MAIN_RESOURCES;
             uiLocation += UI_UI_APP_SRC_MAIN_RESOURCES_APPLICATION_PROPERTIES;
         } else {
             servicesClasspath = servicesLocation + KYLO_SERVICES_LIB;
+            this.inspectionsPath = inspectionsPath;
             servicesLocation += KYLO_SERVICES_CONF;
             uiLocation += KYLO_UI_CONF;
         }
@@ -88,29 +91,37 @@ public class DefaultConfiguration implements Configuration {
             version = properties.getProperty("version");
             buildDate = properties.getProperty("build.date");
 
-            servicesClassLoader = createClassLoader(servicesClasspath);
+            servicesClassLoader = createServicesClassLoader();
         } catch (Exception e) {
             throw new IllegalStateException(String.format("Failed to initialise Kylo installation at path '%s': %s Is '%s' a valid kylo installation root?", getPath(), e.getMessage(), getPath()));
         }
     }
 
-    private URLClassLoader createClassLoader(String classpath) {
-        File folder = new File(classpath);
-        File[] files = folder.listFiles();
-        List<URL> jars;
-        if (files != null) {
-            jars = new ArrayList<>(files.length);
-        } else {
-            throw new IllegalStateException(String.format("Failed to read classpath '%s'. Is '%s' a valid kylo installation root?", classpath, getPath()));
+    private URLClassLoader createServicesClassLoader() {
+        File folder = new File(servicesClasspath);
+        File[] servicesJars = folder.listFiles();
+        if (servicesJars == null) {
+            throw new IllegalStateException(String.format("Failed to read classpath '%s'. Is '%s' a valid kylo installation root?", servicesClasspath, path));
         }
 
+        folder = new File(inspectionsPath);
+        File[] inspectionJars = folder.listFiles();
+        if (inspectionJars == null) {
+            throw new IllegalStateException(String.format("Failed to read inspections classpath '%s'", inspectionsPath));
+        }
+
+        List<File> jarPaths = new ArrayList<>(servicesJars.length + inspectionJars.length);
+        jarPaths.addAll(Arrays.asList(servicesJars));
+        jarPaths.addAll(Arrays.asList(inspectionJars));
+
+        List<URL> jars = new ArrayList<>(jarPaths.size());
         try {
-            for (File file : files) {
-                jars.add(new URL("jar:file://" + file.getAbsolutePath() + "!/"));
+            for (File jar : jarPaths) {
+                jars.add(new URL("jar:file://" + jar.getAbsolutePath() + "!/"));
             }
             return new URLClassLoader(jars.toArray(new URL[]{}));
         } catch (MalformedURLException e) {
-            throw new IllegalStateException(String.format("Failed to read classpath '%s': %s. Is '%s' a valid kylo installation root?", classpath, e.getMessage(), getPath()));
+            throw new IllegalStateException(String.format("Failed to read classpath '%s': %s. Is '%s' a valid kylo installation root?", servicesClasspath, e.getMessage(), path));
         }
     }
 

@@ -20,11 +20,7 @@ package com.thinkbiganalytics.install.inspector.inspection;
  * #L%
  */
 
-import java.util.List;
-
 public interface InspectionService {
 
-    List<Inspection> getInspections();
-
-    Object inspect(String path, String isDevMode, String projectVersion);
+    Object inspect(Configuration config);
 }

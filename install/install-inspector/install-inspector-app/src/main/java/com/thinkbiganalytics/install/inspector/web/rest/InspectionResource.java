@@ -29,16 +29,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.inject.Inject;
@@ -59,11 +56,10 @@ public class InspectionResource {
      *
      * @param installPath installation path
      */
-    @PostMapping("/configuration")
+    @RequestMapping(method = RequestMethod.POST, path="/configuration")
     public ResponseEntity<Configuration> createConfiguration(@Valid @RequestBody Path installPath) throws InterruptedException, ExecutionException, TimeoutException, IOException {
         log.debug("REST request to set new Kylo installation path : {}", installPath);
-        Future<Configuration> futureConfig = inspectorService.inspect(installPath);
-        Configuration config = futureConfig.get(1, TimeUnit.MINUTES);
+        Configuration config = inspectorService.inspect(installPath);
         return new ResponseEntity<>(config, HttpStatus.OK);
     }
 }
