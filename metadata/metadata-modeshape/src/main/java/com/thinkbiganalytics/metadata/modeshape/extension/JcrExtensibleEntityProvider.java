@@ -27,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
@@ -54,8 +53,27 @@ import javax.jcr.query.QueryResult;
 public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
     @Inject
-    ExtensibleTypeProvider typeProvider;
+    private JcrExtensibleTypeProvider typeProvider;
+    
+    protected static boolean cleanupDeletedType(Session session, String typeName) {
+        try {
+            String path = EntityUtil.pathForExtensibleEntity();
+            Node entitiesNode = session.getNode(path);
 
+            if (entitiesNode.hasNode(typeName)) {
+                Node typesNode = entitiesNode.getNode(typeName);
+                
+                typesNode.remove();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to cleanup for deleted entity type: " + typeName, e);
+        }
+    }
+
+    
     @Override
     public ExtensibleEntity createEntity(ExtensibleType type, Map<String, Object> props) {
         JcrExtensibleType typeImpl = (JcrExtensibleType) type;
@@ -143,11 +161,12 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
 
     public List<ExtensibleEntity> getEntities(String typeName) {
+        String qualifiedName = this.typeProvider.ensureTypeName(typeName);
         List<ExtensibleEntity> list = new ArrayList<>();
         Session session = getSession();
 
         try {
-            String path = EntityUtil.pathForExtensibleEntity(typeName);
+            String path = EntityUtil.pathForExtensibleEntity(qualifiedName);
             
             if (session.nodeExists(path)) {
                 Node typeNameNode = session.getNode(path);
@@ -163,14 +182,15 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
             throw new MetadataRepositoryException("Failed to retrieve list of extensible entities", e);
         }
     }
-
+    
     /**
      * Return a list of the ExtensibleEntity objects that match a given ExtensibleEntity property and value
      * restricting to a specific jcr extension type
      */
     public List<? extends ExtensibleEntity> findEntitiesMatchingProperty(String typeName, String propName, Object value) {
+        String qualifiedName = this.typeProvider.ensureTypeName(typeName);
         HashMap<String, String> params = new HashMap<>();
-        String query = "SELECT * FROM [" + typeName + "] as t WHERE t.[" + propName + "] = $v";
+        String query = "SELECT * FROM [" + qualifiedName + "] as t WHERE t.[" + propName + "] = $v";
         params.put("v", value.toString());
 
         QueryResult result = null;
