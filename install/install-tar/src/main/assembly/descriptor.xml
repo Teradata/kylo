@@ -473,7 +473,17 @@
     </file>
     <file>
       <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
-      <outputDirectory>lib</outputDirectory>
+      <outputDirectory>lib/install-inspector</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-api/target/kylo-install-inspector-api-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-inspections/target/kylo-install-inspector-inspections-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
