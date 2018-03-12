@@ -187,6 +187,7 @@
     "views.feed-details.FS": "Feed Summary",
     "views.feed-details.Disable": "Disable",
     "views.feed-details.Enable": "Enable",
+    "views.feed-details.StartFeed": "Start now",
     "views.feed-details.Delete": "Delete...",
     "views.feed-details.Upload": "Upload...",
     "views.feed-details.Export": "Export",
