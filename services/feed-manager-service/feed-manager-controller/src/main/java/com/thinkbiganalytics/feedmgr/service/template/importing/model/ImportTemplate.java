@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.template.importing.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.util.UniqueIdentifier;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -63,7 +64,13 @@ public class ImportTemplate {
     private boolean verificationToReplaceConnectingResuableTemplateNeeded;
     private ImportTemplateOptions importOptions;
     private boolean reusableFlowOutputPortConnectionsNeeded;
+    private boolean remoteProcessGroupInputPortsNeeded;
     private List<ReusableTemplateConnectionInfo> reusableTemplateConnections;
+
+    /**
+     *
+     */
+    private List<RemoteProcessGroupInputPort> remoteProcessGroupInputPortNames;
 
     @JsonIgnore
     private RegisteredTemplate templateToImport;
@@ -255,5 +262,22 @@ public class ImportTemplate {
 
     public String getVersionIdentifier() {
         return versionIdentifier;
+    }
+
+
+    public List<RemoteProcessGroupInputPort> getRemoteProcessGroupInputPortNames() {
+        return remoteProcessGroupInputPortNames;
+    }
+
+    public void setRemoteProcessGroupInputPortNames(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPortNames) {
+        this.remoteProcessGroupInputPortNames = remoteProcessGroupInputPortNames;
+    }
+
+    public boolean isRemoteProcessGroupInputPortsNeeded() {
+        return remoteProcessGroupInputPortsNeeded;
+    }
+
+    public void setRemoteProcessGroupInputPortsNeeded(boolean remoteProcessGroupInputPortsNeeded) {
+        this.remoteProcessGroupInputPortsNeeded = remoteProcessGroupInputPortsNeeded;
     }
 }

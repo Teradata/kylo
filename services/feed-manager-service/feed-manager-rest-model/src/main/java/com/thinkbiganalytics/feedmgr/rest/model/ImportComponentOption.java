@@ -76,7 +76,7 @@ public class ImportComponentOption {
      */
     private List<ReusableTemplateConnectionInfo> connectionInfo;
 
-    private List<String> remoteProcessGroupInputPorts;
+    private List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts;
 
 
     /**
@@ -203,11 +203,14 @@ public class ImportComponentOption {
         this.connectionInfo = connectionInfo;
     }
 
-    public List<String> getRemoteProcessGroupInputPorts() {
+    public List<RemoteProcessGroupInputPort> getRemoteProcessGroupInputPorts() {
+        if(remoteProcessGroupInputPorts == null){
+            remoteProcessGroupInputPorts = new ArrayList<>();
+        }
         return remoteProcessGroupInputPorts;
     }
 
-    public void setRemoteProcessGroupInputPorts(List<String> remoteProcessGroupInputPorts) {
+    public void setRemoteProcessGroupInputPorts(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts) {
         this.remoteProcessGroupInputPorts = remoteProcessGroupInputPorts;
     }
 }

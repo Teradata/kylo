@@ -72,6 +72,10 @@ public class TemplateConnectionUtil {
         return niFiObjectCache.getReusableTemplateCategoryProcessGroup();
     }
 
+    public ProcessGroupDTO getRootProcessGroup() {
+        return niFiObjectCache.getRootProcessGroup();
+    }
+
     @Nullable
     public String getReusableTemplateProcessGroupId() {
         return niFiObjectCache.getReusableTemplateProcessGroupId();

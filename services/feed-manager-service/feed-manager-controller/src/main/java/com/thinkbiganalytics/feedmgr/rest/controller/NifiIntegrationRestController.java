@@ -505,10 +505,6 @@ public class NifiIntegrationRestController {
     }
 
 
-    public Response remoteNiFiConnectionInputPorts() {
-
-
-    }
 
 
 }
