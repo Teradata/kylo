@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "../abstract-section.component"], function (require, exports, angular, abstract_section_component_1) {
+define(["require", "exports", "angular", "../../module-name", "../abstract-section.component"], function (require, exports, angular, module_name_1, abstract_section_component_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -49,7 +49,7 @@ define(["require", "exports", "angular", "../abstract-section.component"], funct
         return DomainTypeMatchersDetailsComponent;
     }(abstract_section_component_1.AbstractSectionComponent));
     exports.DomainTypeMatchersDetailsComponent = DomainTypeMatchersDetailsComponent;
-    angular.module(require("feed-mgr/domain-types/module-name"))
+    angular.module(module_name_1.moduleName)
         .component("domainTypeMatchersDetails", {
         bindings: {
             allowEdit: "<",
