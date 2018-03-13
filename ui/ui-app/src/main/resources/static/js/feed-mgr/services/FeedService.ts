@@ -203,6 +203,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             _.each(data.createFeedModel.table.tableSchema.fields, function(field: any) {
                 field._id = _.uniqueId();
             });
+            _.each(data.createFeedModel.table.partitions, function(partition: any) {
+                partition._id = _.uniqueId();
+            });
             return data.createFeedModel;
         },
         /**
