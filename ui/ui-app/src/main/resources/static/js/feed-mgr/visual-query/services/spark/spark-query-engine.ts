@@ -49,7 +49,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     private dialog: DialogService;
 
-    private VALID_NAME_PATTERN = /[^a-zA-Z0-9\s]|\s/g;
+    private VALID_NAME_PATTERN = /[^a-zA-Z0-9\s_]|\s/g;
 
     static readonly $inject: string[] = ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", "$$wranglerInjector"];
 

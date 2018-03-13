@@ -27,7 +27,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             _this.RestUrlService = RestUrlService;
             _this.VisualQueryService = VisualQueryService;
             _this.$$angularInjector = $$angularInjector;
-            _this.VALID_NAME_PATTERN = /[^a-zA-Z0-9\s]|\s/g;
+            _this.VALID_NAME_PATTERN = /[^a-zA-Z0-9\s_]|\s/g;
             // Initialize properties
             _this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
             _this.dialog = $$angularInjector.get(index_1.DIALOG_SERVICE);
