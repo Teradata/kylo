@@ -189,4 +189,4 @@ const moduleName = require('feed-mgr/module-name');
     }
 // }
 
-angular.module(moduleName).service('FattableService', ["$window", "FattableService",FattableService]);
+angular.module(moduleName).service('FattableService', ["$window",FattableService]);

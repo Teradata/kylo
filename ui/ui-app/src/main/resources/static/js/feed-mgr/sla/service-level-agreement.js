@@ -639,9 +639,9 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
                 .then(function (actionSet) {
                 if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton("service-level-agreements", function () {
-                        this.onNewSla();
+                        _this.onNewSla();
                     });
-                    this.allowCreate = true;
+                    _this.allowCreate = true;
                 }
             });
             $scope.$watch(function () {
@@ -677,6 +677,7 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
                  */
                 this.loadSlas();
             }
+            this.applyAccessPermissions();
         }
         return ServiceLevelAgreementController;
     }());

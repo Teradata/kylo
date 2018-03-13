@@ -1,9 +1,10 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import "pascalprecht.translate";
-const CodeMirror = require('angular-ui-codemirror');
+// const CodeMirror = require('angular-ui-codemirror');
 const moduleName = require('feed-mgr/module-name');
 
+declare const CodeMirror:any;
 
 var directive = function() {
     return {

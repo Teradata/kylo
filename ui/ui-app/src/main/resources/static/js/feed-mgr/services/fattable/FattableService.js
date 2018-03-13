@@ -164,6 +164,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
     }
     // }
-    angular.module(moduleName).service('FattableService', ["$window", "FattableService", FattableService]);
+    angular.module(moduleName).service('FattableService', ["$window", FattableService]);
 });
 //# sourceMappingURL=FattableService.js.map

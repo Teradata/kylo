@@ -55,9 +55,9 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
 
         // Register Add button
         AccessControlService.getUserAllowedActions()
-            .then(function(actionSet: any) {
+            .then((actionSet: any) => {
                 if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
-                    AddButtonService.registerAddButton("service-level-agreements", function() {
+                    AddButtonService.registerAddButton("service-level-agreements", () => {
                         this.onNewSla();
                     });
                     this.allowCreate = true;
@@ -102,6 +102,8 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
              */
             this.loadSlas();
         }
+
+        this.applyAccessPermissions();
         }
 
         /**

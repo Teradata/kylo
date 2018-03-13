@@ -1,7 +1,7 @@
 define(["require", "exports", "angular", "pascalprecht.translate"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var CodeMirror = require('angular-ui-codemirror');
+    // const CodeMirror = require('angular-ui-codemirror');
     var moduleName = require('feed-mgr/module-name');
     var directive = function () {
         return {
