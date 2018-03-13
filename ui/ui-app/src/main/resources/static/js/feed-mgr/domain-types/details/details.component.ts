@@ -2,6 +2,7 @@ import {Input, OnDestroy, OnInit} from "@angular/core";
 import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
+import {moduleName} from "../module-name";
 import {DomainType} from "../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../services/details.service";
 
@@ -135,7 +136,7 @@ export class DomainTypeDetailsComponent implements OnDestroy, OnInit {
     };
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .component("domainTypeDetailsComponent", {
         bindings: {
             model: "<"
