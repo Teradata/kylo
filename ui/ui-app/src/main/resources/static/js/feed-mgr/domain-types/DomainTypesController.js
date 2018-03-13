@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "./module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/domain-types/module-name');
     /**
      * Identifier for this page.
      * @type {string}
@@ -73,6 +72,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     }());
     exports.DomainTypesController = DomainTypesController;
     // Register the controller
-    angular.module(moduleName).controller("DomainTypesController", ["AddButtonService", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService", "$mdToast", DomainTypesController]);
+    angular.module(module_name_1.moduleName).controller("DomainTypesController", ["AddButtonService", "DomainTypesService", "FeedFieldPolicyRuleService", "StateService", "$mdToast", DomainTypesController]);
 });
 //# sourceMappingURL=DomainTypesController.js.map

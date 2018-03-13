@@ -1,8 +1,5 @@
-define(["angular", "@uirouter/angularjs",
-        "feed-mgr/domain-types/codemirror-regex",
-        "feed-mgr/domain-types/details/matchers/matchers.component",
-        "feed-mgr/domain-types/details/matchers/regexp-editor.component",
-        "feed-mgr/domain-types/details/metadata/metadata.component",
-        "feed-mgr/domain-types/details/rules/rules.component",
-        "feed-mgr/domain-types/services/details.service"], function (angular) {
+define(["require", "exports", "@uirouter/angularjs", "./codemirror-regex", "./details/matchers/matchers.component", "./details/matchers/regexp-editor.component", "./details/metadata/metadata.component", "./details/rules/rules.component", "./services/details.service"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
+//# sourceMappingURL=module-require.js.map

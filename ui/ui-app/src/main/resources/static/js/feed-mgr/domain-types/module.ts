@@ -1,14 +1,21 @@
-define(["require", "exports", "angular", "../../kylo-utils/LazyLoadUtil", "../../constants/AccessConstants", "./module-name", "../../codemirror-require/module", "kylo-feedmgr", "kylo-common", "kylo-services"], function (require, exports, angular, LazyLoadUtil_1, AccessConstants_1, module_name_1) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var ModuleFactory = /** @class */ (function () {
-        function ModuleFactory() {
-            // Window.CodeMirror = CodeMirror;
-            this.module = angular.module(module_name_1.moduleName, []);
-            this.module.config(["$stateProvider", "$compileProvider", this.configFn.bind(this)]);
-            this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
-        }
-        ModuleFactory.prototype.runFn = function ($ocLazyLoad) {
+import * as angular from 'angular';
+import lazyLoadUtil from "../../kylo-utils/LazyLoadUtil";
+import AccessConstants from "../../constants/AccessConstants";
+import {moduleName} from "./module-name";
+import "../../codemirror-require/module";
+import "kylo-feedmgr";
+import "kylo-common";
+import "kylo-services";
+
+class ModuleFactory  {
+    module: ng.IModule;
+    constructor () {
+       // Window.CodeMirror = CodeMirror;
+        this.module = angular.module(moduleName,[]); 
+        this.module.config(["$stateProvider", "$compileProvider", this.configFn.bind(this)]); 
+        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
+    }
+    runFn($ocLazyLoad:any){
             $ocLazyLoad.load({
                 name: 'kylo',
                 files: [
@@ -16,12 +23,14 @@ define(["require", "exports", "angular", "../../kylo-utils/LazyLoadUtil", "../..
                     "js/feed-mgr/domain-types/details/matchers/regexp-editor.component.css"
                 ]
             });
-        };
-        ModuleFactory.prototype.configFn = function ($stateProvider, $compileProvider) {
-            //preassign modules until directives are rewritten to use the $onInit method.
+     }
+
+    configFn($stateProvider: any, $compileProvider: any){
+           //preassign modules until directives are rewritten to use the $onInit method.
             //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
             $compileProvider.preAssignBindingsEnabled(true);
-            $stateProvider.state(AccessConstants_1.default.UI_STATES.DOMAIN_TYPES.state, {
+
+            $stateProvider.state(AccessConstants.UI_STATES.DOMAIN_TYPES.state, {
                 url: "/domain-types",
                 params: {},
                 views: {
@@ -37,10 +46,10 @@ define(["require", "exports", "angular", "../../kylo-utils/LazyLoadUtil", "../..
                 data: {
                     breadcrumbRoot: true,
                     displayName: "Domain Types",
-                    module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.DOMAIN_TYPES.permissions
+                    module: moduleName,
+                    permissions: AccessConstants.UI_STATES.DOMAIN_TYPES.permissions
                 }
-            }).state(AccessConstants_1.default.UI_STATES.DOMAIN_TYPE_DETAILS.state, {
+            }).state(AccessConstants.UI_STATES.DOMAIN_TYPE_DETAILS.state, {
                 url: "/domain-type-details/{domainTypeId}",
                 params: {
                     domainTypeId: null
@@ -51,11 +60,10 @@ define(["require", "exports", "angular", "../../kylo-utils/LazyLoadUtil", "../..
                     }
                 },
                 resolve: {
-                    model: function ($transition$, DomainTypesService) {
+                    model:  ($transition$: any, DomainTypesService: any)=> {
                         if (angular.isString($transition$.params().domainTypeId)) {
                             return DomainTypesService.findById($transition$.params().domainTypeId);
-                        }
-                        else {
+                        } else {
                             return DomainTypesService.newDomainType();
                         }
                     },
@@ -64,17 +72,16 @@ define(["require", "exports", "angular", "../../kylo-utils/LazyLoadUtil", "../..
                 data: {
                     breadcrumbRoot: false,
                     displayName: "Domain Type Details",
-                    module: module_name_1.moduleName,
-                    permissions: AccessConstants_1.default.UI_STATES.DOMAIN_TYPE_DETAILS.permissions
+                    module: moduleName,
+                    permissions: AccessConstants.UI_STATES.DOMAIN_TYPE_DETAILS.permissions
                 }
             });
-        };
-        ModuleFactory.prototype.lazyLoadController = function (path) {
-            return LazyLoadUtil_1.default.lazyLoadController(path, "feed-mgr/domain-types/module-require");
-        };
-        return ModuleFactory;
-    }());
-    var module = new ModuleFactory();
-    exports.default = module;
-});
-//# sourceMappingURL=module.js.map
+    }
+
+    lazyLoadController(path: any) {
+            return lazyLoadUtil.lazyLoadController(path, "feed-mgr/domain-types/module-require");
+        }
+} 
+const module = new ModuleFactory();
+export default module;
+

@@ -1,9 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/domain-types/module-name');
-
-
+import {moduleName} from "./module-name";
 
 /**
  * Identifier for this page.
