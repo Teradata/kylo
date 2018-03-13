@@ -27,6 +27,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             _this.RestUrlService = RestUrlService;
             _this.VisualQueryService = VisualQueryService;
             _this.$$angularInjector = $$angularInjector;
+            _this.VALID_NAME_PATTERN = /[^a-zA-Z0-9\s]|\s/g;
             // Initialize properties
             _this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
             _this.dialog = $$angularInjector.get(index_1.DIALOG_SERVICE);
@@ -102,11 +103,20 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             return column.displayName;
         };
         /**
+         * Returns valid alpha numeric name
+         * @param {string} label
+         * @return {string}
+         */
+        SparkQueryEngine.prototype.getValidHiveColumnName = function (label) {
+            return label.replace(this.VALID_NAME_PATTERN, '');
+        };
+        /**
          * Gets the schema fields for the the current transformation.
          *
          * @returns the schema fields or {@code null} if the transformation has not been applied
          */
         SparkQueryEngine.prototype.getFields = function () {
+            var self = this;
             // Get list of columns
             var columns = this.getColumns();
             if (columns === null) {
@@ -125,7 +135,8 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 else {
                     dataType = col.dataType;
                 }
-                var colDef = { name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
+                var name = angular.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
+                var colDef = { name: name, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
                 if (dataType === 'decimal') {
                     //parse out the precisionScale
                     var precisionScale = '20,2';
@@ -440,20 +451,22 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
          * @param {ScriptState<string>} state
          */
         SparkQueryEngine.prototype.updateFieldPolicies = function (state) {
+            var self = this;
             if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
                 var policyMap_1 = {};
                 state.fieldPolicies.forEach(function (policy) {
                     policyMap_1[policy.name] = policy;
                 });
                 state.fieldPolicies = state.columns.map(function (column) {
-                    if (policyMap_1[column.hiveColumnLabel]) {
-                        return policyMap_1[column.hiveColumnLabel];
+                    var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                    if (policyMap_1[name]) {
+                        return policyMap_1[name];
                     }
                     else {
                         return {
-                            name: column.hiveColumnLabel,
-                            fieldName: column.hiveColumnLabel,
-                            feedFieldName: column.hiveColumnLabel,
+                            name: name,
+                            fieldName: name,
+                            feedFieldName: name,
                             domainTypeId: null,
                             partition: null,
                             profile: true,
