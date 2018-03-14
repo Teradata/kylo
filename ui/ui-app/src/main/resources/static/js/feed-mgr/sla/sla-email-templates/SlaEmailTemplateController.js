@@ -1,8 +1,9 @@
-define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "../module-name", "underscore", "./SlaEmailTemplateService"], function (require, exports, angular, module_name_1, _, SlaEmailTemplateService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
         function controller($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService, AccessControlService) {
+            var _this = this;
             this.$transition$ = $transition$;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
@@ -17,7 +18,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
              */
             this.template = this.SlaEmailTemplateService.template;
             this.emailAddress = '';
-            this.queriedTemplate = null;
             this.isDefault = false;
             /**
              * the list of available sla actions the template(s) can be assigned to
@@ -151,15 +151,15 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
                 this.queriedTemplate = null;
                 this.SlaEmailTemplateService.getExistingTemplates().then(function () {
-                    this.template = SlaEmailTemplateService.getTemplate(this.templateId);
-                    if (angular.isUndefined(this.template)) {
+                    _this.template = SlaEmailTemplateService.getTemplate(_this.templateId);
+                    if (angular.isUndefined(_this.template)) {
                         ///WARN UNABLE TO FNID TEMPLATE
-                        this.showDialog("Unable to find template", "Unable to find the template for " + this.templateId);
+                        _this.showDialog("Unable to find template", "Unable to find the template for " + _this.templateId);
                     }
                     else {
-                        this.queriedTemplate = angular.copy(this.template);
-                        this.isDefault = this.queriedTemplate.default;
-                        this.getRelatedSlas();
+                        _this.queriedTemplate = angular.copy(_this.template);
+                        _this.isDefault = _this.queriedTemplate.default;
+                        _this.getRelatedSlas();
                     }
                 });
             }
@@ -206,8 +206,11 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
         return testDialogController;
     }());
     exports.testDialogController = testDialogController;
-    angular.module(module_name_1.moduleName).controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
-    angular.module(module_name_1.moduleName).controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http',
+    angular.module(module_name_1.moduleName)
+        .controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
+    angular.module(module_name_1.moduleName)
+        .service('SlaEmailTemplateService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", SlaEmailTemplateService_1.default])
+        .controller('SlaEmailTemplateController', ['$transition$', '$mdDialog', '$mdToast', '$http',
         'SlaEmailTemplateService', 'StateService', 'AccessControlService',
         controller]);
 });

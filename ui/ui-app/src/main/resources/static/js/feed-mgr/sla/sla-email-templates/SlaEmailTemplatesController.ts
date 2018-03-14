@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from '../module-name';
 import * as _ from 'underscore';
+import SlaEmailTemplateService from "./SlaEmailTemplateService";
 
 export class controller implements ng.IComponentController{
         /**
@@ -27,9 +28,9 @@ export class controller implements ng.IComponentController{
            
                     // Register Add button
                         AccessControlService.getUserAllowedActions()
-                            .then(function(actionSet: any) {
+                            .then((actionSet: any)=>{
                                 if (AccessControlService.hasAction(AccessControlService.SLA_EMAIL_TEMPLATES_ACCESS, actionSet.actions)) {
-                                    AddButtonService.registerAddButton("sla-email-templates", function() {
+                                    AddButtonService.registerAddButton("sla-email-templates", ()=>{
                                         SlaEmailTemplateService.newTemplate();
                                         StateService.FeedManager().Sla().navigateToNewEmailTemplate();
                                     });
@@ -53,7 +54,7 @@ export class controller implements ng.IComponentController{
 
                         // Fetch the allowed actions
                         AccessControlService.getUserAllowedActions()
-                            .then(function(actionSet: any) {
+                            .then((actionSet: any)=>{
                                 this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
                             });
                 }
@@ -81,16 +82,16 @@ export class controller implements ng.IComponentController{
 
         
 
-        onViewTypeChange = function(viewType: any) {
+        onViewTypeChange = (viewType: any)=>{
            this.PaginationDataService.viewType(this.pageName, this.viewType);
         }
 
-        onOrderChange = function(order: any) {
+        onOrderChange = (order: any)=> {
             this.PaginationDataService.sort(this.pageName, order);
             this.TableOptionsService.setSortOption(this.pageName, order);
         };
 
-        onPaginationChange = function(page: any, limit: any) {
+        onPaginationChange = (page: any, limit: any)=> {
             this.PaginationDataService.currentPage(this.pageName, null, page);
             this.currentPage = page;
         };
@@ -99,7 +100,7 @@ export class controller implements ng.IComponentController{
          * Called when a user Clicks on a table Option
          * @param option
          */
-        selectedTableOption = function(option: any) {
+        selectedTableOption = (option: any) =>{
             var sortString = this.TableOptionsService.toSortString(option);
             this.PaginationDataService.sort(this.pageName, sortString);
             var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
@@ -114,7 +115,7 @@ export class controller implements ng.IComponentController{
          * @param event
          * @param template
          */
-        editTemplate = function(event: any, template: any) {
+        editTemplate = (event: any, template: any)=> {
             if (this.allowEdit && template != undefined) {
                 this.SlaEmailTemplateService.template = template;
                 this.StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
@@ -124,13 +125,13 @@ export class controller implements ng.IComponentController{
             }
         };
 
-        getExistingTemplates= function() {
+        getExistingTemplates= ()=> {
 
-            var successFn = function(response: any) {
+            var successFn = (response: any) =>{
                 this.loading = false;
                 this.templates = response.data;
             }
-            var errorFn = function(err: any) {
+            var errorFn = (err: any) =>{
                 this.loading = false;
             }
             var promise = this.SlaEmailTemplateService.getExistingTemplates()
@@ -139,7 +140,9 @@ export class controller implements ng.IComponentController{
         }
 }
 
- angular.module(moduleName).controller('SlaEmailTemplatesController', 
+ angular.module(moduleName)
+ .service('SlaEmailTemplateService',["$http","$q","$mdToast","$mdDialog","RestUrlService",SlaEmailTemplateService])
+ .controller('SlaEmailTemplatesController', 
                                         ["$scope","$http","$mdDialog","$q","$transition$",
                                         "AccessControlService","PaginationDataService",
                                         "TableOptionsService","AddButtonService","StateService",

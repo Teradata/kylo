@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "./SlaEmailTemplateService"], function (require, exports, angular, module_name_1, SlaEmailTemplateService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -42,25 +42,25 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.sortOptions = this.loadSortOptions();
             this.filter = this.PaginationDataService.filter(this.pageName);
             this.onViewTypeChange = function (viewType) {
-                this.PaginationDataService.viewType(this.pageName, this.viewType);
+                _this.PaginationDataService.viewType(_this.pageName, _this.viewType);
             };
             this.onOrderChange = function (order) {
-                this.PaginationDataService.sort(this.pageName, order);
-                this.TableOptionsService.setSortOption(this.pageName, order);
+                _this.PaginationDataService.sort(_this.pageName, order);
+                _this.TableOptionsService.setSortOption(_this.pageName, order);
             };
             this.onPaginationChange = function (page, limit) {
-                this.PaginationDataService.currentPage(this.pageName, null, page);
-                this.currentPage = page;
+                _this.PaginationDataService.currentPage(_this.pageName, null, page);
+                _this.currentPage = page;
             };
             /**
              * Called when a user Clicks on a table Option
              * @param option
              */
             this.selectedTableOption = function (option) {
-                var sortString = this.TableOptionsService.toSortString(option);
-                this.PaginationDataService.sort(this.pageName, sortString);
-                var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
-                this.TableOptionsService.setSortOption(this.pageName, sortString);
+                var sortString = _this.TableOptionsService.toSortString(option);
+                _this.PaginationDataService.sort(_this.pageName, sortString);
+                var updatedOption = _this.TableOptionsService.toggleSort(_this.pageName, option);
+                _this.TableOptionsService.setSortOption(_this.pageName, sortString);
             };
             /**
              * Displays the details of the specified template.
@@ -69,23 +69,23 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
              * @param template
              */
             this.editTemplate = function (event, template) {
-                if (this.allowEdit && template != undefined) {
-                    this.SlaEmailTemplateService.template = template;
-                    this.StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
+                if (_this.allowEdit && template != undefined) {
+                    _this.SlaEmailTemplateService.template = template;
+                    _this.StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
                 }
                 else {
-                    this.SlaEmailTemplateService.accessDeniedDialog();
+                    _this.SlaEmailTemplateService.accessDeniedDialog();
                 }
             };
             this.getExistingTemplates = function () {
                 var successFn = function (response) {
-                    this.loading = false;
-                    this.templates = response.data;
+                    _this.loading = false;
+                    _this.templates = response.data;
                 };
                 var errorFn = function (err) {
-                    this.loading = false;
+                    _this.loading = false;
                 };
-                var promise = this.SlaEmailTemplateService.getExistingTemplates();
+                var promise = _this.SlaEmailTemplateService.getExistingTemplates();
                 promise.then(successFn, errorFn);
                 return promise;
             };
@@ -114,13 +114,15 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             // Fetch the allowed actions
             AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+                _this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
         }
         return controller;
     }());
     exports.controller = controller;
-    angular.module(module_name_1.moduleName).controller('SlaEmailTemplatesController', ["$scope", "$http", "$mdDialog", "$q", "$transition$",
+    angular.module(module_name_1.moduleName)
+        .service('SlaEmailTemplateService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", SlaEmailTemplateService_1.default])
+        .controller('SlaEmailTemplatesController', ["$scope", "$http", "$mdDialog", "$q", "$transition$",
         "AccessControlService", "PaginationDataService",
         "TableOptionsService", "AddButtonService", "StateService",
         "SlaEmailTemplateService", controller]);

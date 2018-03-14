@@ -1,9 +1,28 @@
 import * as angular from 'angular';
 import {moduleName} from '../module-name';
 import * as _ from 'underscore';
+import SlaEmailTemplateService from "./SlaEmailTemplateService";
 
 export class controller implements ng.IComponentController{
    templateId: any;
+   allowEdit: boolean = false;
+    /**
+     * The current template we are editing
+     * @type {null}
+     */
+    template: any = this.SlaEmailTemplateService.template;
+    emailAddress: string = '';
+    queriedTemplate: any;
+    isDefault: any = false;
+    /**
+     * the list of available sla actions the template(s) can be assigned to
+     * @type {Array}
+     */
+    availableSlaActions: any[] = [];
+
+    templateVariables: any= this.SlaEmailTemplateService.getTemplateVariables();
+
+    relatedSlas: any[] = [];
    constructor(private $transition$: any,
                private $mdDialog: any,
                 private $mdToast: any,
@@ -14,7 +33,7 @@ export class controller implements ng.IComponentController{
         this.templateId = this.$transition$.params().emailTemplateId;
         if(angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))){
             this.queriedTemplate = null;
-            this.SlaEmailTemplateService.getExistingTemplates().then(function() {
+            this.SlaEmailTemplateService.getExistingTemplates().then(()=> {
                 this.template = SlaEmailTemplateService.getTemplate(this.templateId);
                 if(angular.isUndefined(this.template)) {
                     ///WARN UNABLE TO FNID TEMPLATE
@@ -22,14 +41,14 @@ export class controller implements ng.IComponentController{
                 }
                 else {
                     this.queriedTemplate = angular.copy(this.template);
-                    this.isDefault = this.queriedTemplate.default
+                    this.isDefault = this.queriedTemplate.default;
                     this.getRelatedSlas();
                 }
             })
         }
         else if((this.template != null || angular.isDefined(this.template))){
             this.queriedTemplate = angular.copy(this.template);
-            this.isDefault = this.queriedTemplate.default
+            this.isDefault = this.queriedTemplate.default;
         }
         else {
         //redirect back to email template list page
@@ -45,29 +64,7 @@ export class controller implements ng.IComponentController{
             });
     }
 
-         allowEdit: boolean = false;
-
-        /**
-         * The current template we are editing
-         * @type {null}
-         */
-        template: any = this.SlaEmailTemplateService.template;
-        emailAddress: string = '';
-
-        queriedTemplate: any = null;
-        isDefault: any = false;
-
-        
-
-        /**
-         * the list of available sla actions the template(s) can be assigned to
-         * @type {Array}
-         */
-        availableSlaActions: any[] = [];
-
-        templateVariables: any= this.SlaEmailTemplateService.getTemplateVariables();
-
-        relatedSlas: any[] = [];
+      
 
 
         validate = function () {
@@ -248,9 +245,11 @@ export class testDialogController implements ng.IComponentController{
 
        
 }
-angular.module(moduleName).controller('VelocityTemplateTestController', 
-["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
-angular.module(moduleName).controller('SlaEmailTemplateController', 
+angular.module(moduleName)
+.controller('VelocityTemplateTestController',["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
+angular.module(moduleName)
+.service('SlaEmailTemplateService',["$http","$q","$mdToast","$mdDialog","RestUrlService",SlaEmailTemplateService])
+.controller('SlaEmailTemplateController', 
                                     ['$transition$', '$mdDialog', '$mdToast', '$http',
                                     'SlaEmailTemplateService','StateService','AccessControlService', 
                                     controller]);

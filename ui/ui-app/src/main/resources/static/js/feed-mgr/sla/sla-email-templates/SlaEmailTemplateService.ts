@@ -4,27 +4,17 @@ import * as _ from 'underscore';
 
 
 export default class SlaEmailTemplateService{
-    module: ng.IModule;
+    data: any = {};
+    template: any = null;
+    templates:any[];
+    templateMap: any;
+    availableActions: any[];
     constructor(private $http: any,
                 private $q: any,
                 private $mdToast: any,
                 private $mdDialog: any,
                 private RestUrlService: any,
     ){
-    this.module = angular.module(moduleName,[]);
-    this.module.factory('SlaEmailTemplateService',["$http","$q","$mdToast","$mdDialog","RestUrlService",this.factoryFn.bind(this)]);
-}
-    getExistingTemplates= function() {
-    }
-    newTemplateModel= function() {
-        return  {name: '', subject: '', template: ''};
-    }
-    template: any = null;
-    templates:any[];
-    templateMap: any;
-    availableActions: any[];
-
-factoryFn() {
         this.getExistingTemplates();
 
 
@@ -32,61 +22,61 @@ factoryFn() {
             {"item":"$sla.description","desc":"The SLA Description."},
             {"item":"$assessmentDescription","desc":"The SLA Assessment and result."}];
 
-        var data = {
+        this.data = {
             template:this.template,
             templates:this.templates,
             templateMap:{},
-            availableActions:this.availableActions,
-            newTemplate:function(){
-                data.template = this.newTemplateModel();
+            availableActions:[],
+            newTemplate:()=>{
+                this.data.template = this.newTemplateModel();
             },
-            getTemplateVariables: function() {
+            getTemplateVariables:()=> {
                 return injectables;
             },
-            getExistingTemplates: function () {
-                var promise = this.$http.get("/proxy/v1/feedmgr/sla/email-template");
-                promise.then(function (response :any) {
+            getExistingTemplates:  ()=> {
+                var promise = $http.get("/proxy/v1/feedmgr/sla/email-template");
+                promise.then( (response :any)=>{
                     if (response.data) {
-                        data.templates = response.data;
-                        data.templateMap = {};
-                        _.each(data.templates,function(template :any){
-                            data.templateMap[template.id] = template;
+                        this.data.templates = response.data;
+                        this.data.templateMap = {};
+                        _.each(this.data.templates,(template :any)=>{
+                            this.data.templateMap[template.id] = template;
                         })
                     }
                 });
                 return promise;
             },
 
-            getRelatedSlas: function(id: any) {
-               return this.$http.get("/proxy/v1/feedmgr/sla/email-template-sla-references",{params:{"templateId":id}});
+            getRelatedSlas: (id: any)=>{
+               return $http.get("/proxy/v1/feedmgr/sla/email-template-sla-references",{params:{"templateId":id}});
             },
-            getTemplate:function(id: any){
-                return data.templateMap[id];
+            getTemplate:(id: any)=>{
+                return this.data.templateMap[id];
             },
-            getAvailableActionItems: function() {
-                var def = this.$q.defer();
-                if(data.availableActions.length == 0) {
-                    this.$http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then(function (response: any) {
+            getAvailableActionItems:()=> {
+                var def = $q.defer();
+                if(this.data.availableActions.length == 0) {
+                    $http.get("/proxy/v1/feedmgr/sla/available-sla-template-actions").then((response: any)=>{
                         if (response.data) {
-                            data.availableActions = response.data;
-                            def.resolve(data.availableActions);
+                            this.data.availableActions = response.data;
+                            def.resolve(this.data.availableActions);
                         }
                     });
                 }
                 else {
-                    def.resolve(data.availableActions);
+                    def.resolve(this.data.availableActions);
                 }
                 return def.promise;
             },
-            validateTemplate:function(subject: any,templateString: any) {
+            validateTemplate:(subject: any,templateString: any)=>{
                 if(angular.isUndefined(subject)){
-                    subject = data.template.subject;
+                    subject = this.data.template.subject;
                 }
                 if(angular.isUndefined(templateString)){
-                    templateString = data.template.template;
+                    templateString = this.data.template.template;
                 }
                 var testTemplate =  {subject:subject,body:templateString};
-                return this.$http({
+                return $http({
                         url: "/proxy/v1/feedmgr/sla/test-email-template",
                         method: "POST",
                         data:angular.toJson(testTemplate),
@@ -95,15 +85,15 @@ factoryFn() {
                     }
                     });
             },
-            sendTestEmail: function(address: any, subject: any, templateString: any) {
+            sendTestEmail:(address: any, subject: any, templateString: any)=>{
                 if(angular.isUndefined(subject)){
-                    subject = data.template.subject;
+                    subject = this.data.template.subject;
                 }
                 if(angular.isUndefined(templateString)){
-                    templateString = data.template.template;
+                    templateString = this.data.template.template;
                 }
                 var testTemplate =  {emailAddress:address,subject:subject,body:templateString};
-                return this.$http({
+                return $http({
                     url: "/proxy/v1/feedmgr/sla/send-test-email-template",
                     method: "POST",
                     data:angular.toJson(testTemplate),
@@ -112,12 +102,12 @@ factoryFn() {
                     }
                 });
             },
-            save:function(template: any){
+            save:(template: any)=>{
                 if(angular.isUndefined(template)){
-                    template = data.template;
+                    template = this.data.template;
                 }
                 if(template != null) {
-                    return this.$http({
+                    return $http({
                         url: "/proxy/v1/feedmgr/sla/email-template",
                         method: "POST",
                         data: angular.toJson(template),
@@ -127,9 +117,9 @@ factoryFn() {
                     });
                 }
             },
-            accessDeniedDialog:function() {
-                this.$mdDialog.show(
-                    this.$mdDialog.alert()
+            accessDeniedDialog:()=> {
+                $mdDialog.show(
+                    $mdDialog.alert()
                         .clickOutsideToClose(true)
                         .title("Access Denied")
                         .textContent("You do not have access to edit templates.")
@@ -137,10 +127,17 @@ factoryFn() {
                         .ok("OK")
                 );
             }
-
-
         }
-        return data;
+        return this.data;
+   }
+    getExistingTemplates=function() {
+    }
+    newTemplateModel=function() {
+        return  {name: '', subject: '', template: ''};
+    }
+    
 
 }
-}
+
+angular.module(moduleName)
+.factory('SlaEmailTemplateService',["$http","$q","$mdToast","$mdDialog","RestUrlService",SlaEmailTemplateService]);
