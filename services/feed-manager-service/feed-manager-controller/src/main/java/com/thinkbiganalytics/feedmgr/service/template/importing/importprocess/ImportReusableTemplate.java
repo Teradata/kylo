@@ -58,6 +58,7 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
 import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
+import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -397,14 +398,20 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                 remoteInputPortsMessage =
                 uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Creating remote input port connections for " + remoteProcessGroupOption.getRemoteProcessGroupInputPorts().stream().filter(inputPort -> inputPort.isSelected()).map(inputPort -> inputPort.getInputPortName()).collect(Collectors.joining(",")));
 
-            createRemoteInputPorts(remoteInputPortsMessage);
+          valid &=  createRemoteInputPorts(remoteInputPortsMessage);
+        }
+
+
+        if(remoteProcessGroupOption.isShouldImport() && remoteProcessGroupOption.isUserAcknowledged()) {
+            // identify if the user wished to remove any input ports.
+            valid = removeConnectionsAndInputs();
         }
 
 
         return valid && newTemplateInstance.isSuccess();
     }
 
-    private void removeConnectionsAndInputs(){
+    private boolean removeConnectionsAndInputs(){
         String previousGroupId = getReusableTemplateCategoryProcessGroup().getContents().getProcessGroups().stream().filter(g -> g.getName().equalsIgnoreCase(importTemplate.getTemplateName())).map(g-> g.getId()).findFirst().orElse(null);
         if(previousGroupId != null){
             String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
@@ -431,17 +438,46 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                 Collectors.toSet());
             log.info("Removing input ports {}",inputPortNamesToRemove);
 
+            Set<ConnectionDTO> connectionsWithQueue = new HashSet<>();
+            //first validate the queues are empty ... if not warn user the following ports cant be deleted and rollback
+            connectionsToRemove.stream().forEach(connection -> {
+                Optional<ConnectionStatusEntity> connectionStatus = nifiRestClient.getNiFiRestClient().connections().getConnectionStatus(connection.getId());
+                if (connectionStatus.isPresent() && connectionStatus.get().getConnectionStatus().getAggregateSnapshot().getFlowFilesQueued() > 0) {
+                    connectionsWithQueue.add(connection);
+                }
+              });
+
+            if(!connectionsWithQueue.isEmpty()) {
+                UploadProgressMessage
+                    importStatusMessage =
+                    uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Unable to remove inputPort and connection for :"+connectionsWithQueue.stream().map(c ->c.getSource().getName()).collect(Collectors.joining(","))+". The Queues are not empty. Failed to import template: " + importTemplate.getTemplateName(),true,false);
+                    importTemplate.setValid(false);
+                    importTemplate.setSuccess(false);
+                    return false;
+            }
+            else {
+                connectionsToRemove.stream().forEach(connection -> {
+                    nifiRestClient.deleteConnection(connection, false);
+                    nifiRestClient.getNiFiRestClient().ports().deleteInputPort(connection.getSource().getId());
+                });
+                UploadProgressMessage
+                    importStatusMessage =
+                    uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Removed inputPort and connection for :"+connectionsToRemove.stream().map(c ->c.getSource().getName()).collect(Collectors.joining(","))+" for template: " + importTemplate.getTemplateName(),true,true);
+
+            }
+            return true;
 
         }
+        return true;
     }
 
-    private void createRemoteInputPorts( UploadProgressMessage
+    private boolean createRemoteInputPorts( UploadProgressMessage
                                              remoteInputPortsMessage){
         ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP);
         String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
         String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
 
-        removeConnectionsAndInputs();
+
         Map<String,PortDTO> reusableTemplateCategoryPorts = getReusableTemplateCategoryProcessGroup().getContents().getInputPorts().stream().collect(Collectors.toMap(p->p.getName(),p->p));
 
         StringBuffer connectedStr = new StringBuffer("");
@@ -479,7 +515,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
         });
         remoteInputPortsMessage.update(connectedStr.toString(),true);
-
+        return true;
     }
 
 

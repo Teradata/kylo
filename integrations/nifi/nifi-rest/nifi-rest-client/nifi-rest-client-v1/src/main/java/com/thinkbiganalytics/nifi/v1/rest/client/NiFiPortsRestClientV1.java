@@ -142,4 +142,13 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
             return Collections.emptyList();
         }
     }
+
+    @Override
+    public PortDTO deleteInputPort(@Nonnull String portId) {
+        PortEntity inputPortsEntity = client.delete("/input-ports/"+portId, null,PortEntity.class);
+        if(inputPortsEntity != null) {
+            return inputPortsEntity.getComponent();
+        }
+        return null;
+    }
 }

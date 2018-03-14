@@ -55,11 +55,6 @@
     </dependency>
 
     <dependency>
-      <groupId>commons-propertyutils</groupId>
-      <artifactId>commons-propertyutils</artifactId>
-    </dependency>
-
-    <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-client-dto</artifactId>
     </dependency>
