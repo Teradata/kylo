@@ -1,138 +1,144 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/business-metadata/module-name');
+import {moduleName} from "./module-name";
 
-
-define(['angular','feed-mgr/business-metadata/module-name'], function (angular:any,moduleName:any) {
-    /**
-     * Controller for the business metadata page.
-     *
-     * @constructor
-     * @param $scope the application model
-     * @param $http the HTTP service
-     * @param {AccessControlService} AccessControlService the access control service
-     * @param RestUrlService the Rest URL service
-     */
-    function BusinessMetadataController($scope:any, $http:any, AccessControlService:any
-        , RestUrlService:any) {
-        var self = this;
-
-        /**
+export class BusinessMetadataController implements ng.IComponentController{
+    allowCategoryEdit: boolean;
+    allowFeedEdit: boolean;
+    editModel: any;
+    isCategoryEditable: boolean;
+    isCategoryValid: boolean;
+    isFeedEditable: boolean;
+    isFeedValid: boolean;
+    loading: boolean;
+    model: any;
+/**
+ * Controller for the business metadata page.
+ *
+ * @constructor
+ * @param $scope the application model
+ * @param $http the HTTP service
+ * @param {AccessControlService} AccessControlService the access control service
+ * @param RestUrlService the Rest URL service
+ */
+   constructor(private $scope: any,
+                private $http:any, 
+                private AccessControlService:any, 
+                private RestUrlService:any) {
+       /**
          * Indicates if the category fields may be edited.
          * @type {boolean}
          */
-        self.allowCategoryEdit = false;
+        this.allowCategoryEdit = false;
 
         /**
          * Indicates if the feed fields may be edited.
          * @type {boolean}
          */
-        self.allowFeedEdit = false;
+        this.allowFeedEdit = false;
 
         /**
          * Model for editable sections.
          * @type {{categoryFields: Array, feedFields: Array}}
          */
-        self.editModel = {categoryFields: [], feedFields: []};
+        this.editModel = {categoryFields: [], feedFields: []};
 
         /**
          * Indicates that the editable section for categories is displayed.
          * @type {boolean}
          */
-        self.isCategoryEditable = false;
+        this.isCategoryEditable = false;
 
         /**
          * Indicates that the editable section for categories is valid.
          * @type {boolean}
          */
-        self.isCategoryValid = true;
+        this.isCategoryValid = true;
 
         /**
          * Indicates that the editable section for categories is displayed.
          * @type {boolean}
          */
-        self.isFeedEditable = false;
+        this.isFeedEditable = false;
 
         /**
          * Indicates that the editable section for categories is valid.
          * @type {boolean}
          */
-        self.isFeedValid = true;
+        this.isFeedValid = true;
 
         /**
          * Indicates that the loading progress bar is displayed.
          * @type {boolean}
          */
-        self.loading = true;
+        this.loading = true;
 
         /**
          * Model for read-only sections.
          * @type {{categoryFields: Array, feedFields: Array}}
          */
-        self.model = {categoryFields: [], feedFields: []};
+        this.model = {categoryFields: [], feedFields: []};
 
-        /**
+        // Load the field models
+        $http.get(RestUrlService.ADMIN_USER_FIELDS).then((response:any)=> {
+            this.model = response.data;
+            this.loading = false;
+        });
+
+        // Load the permissions
+        AccessControlService.getUserAllowedActions()
+                .then((actionSet:any)=> {
+                    this.allowCategoryEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
+                    this.allowFeedEdit = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                });
+    }
+     /**
          * Creates a copy of the category model for editing.
          */
-        self.onCategoryEdit = function() {
-            self.editModel.categoryFields = angular.copy(self.model.categoryFields);
+        onCategoryEdit = ()=> {
+            this.editModel.categoryFields = angular.copy(this.model.categoryFields);
         };
-
         /**
          * Saves the category model.
          */
-        self.onCategorySave = function() {
-            var model = angular.copy(self.model);
-            model.categoryFields = self.editModel.categoryFields;
+        onCategorySave = ()=> {
+            var model = angular.copy(this.model);
+            model.categoryFields = this.editModel.categoryFields;
 
-            $http({
+            this.$http({
                 data: angular.toJson(model),
                 headers: {'Content-Type': 'application/json; charset=UTF-8'},
                 method: "POST",
-                url: RestUrlService.ADMIN_USER_FIELDS
-            }).then(function() {
-                self.model = model;
+                url: this.RestUrlService.ADMIN_USER_FIELDS
+            }).then(()=> {
+                this.model = model;
             });
         };
 
         /**
          * Creates a copy of the feed model for editing.
          */
-        self.onFeedEdit = function() {
-            self.editModel.feedFields = angular.copy(self.model.feedFields);
+        onFeedEdit = ()=> {
+            this.editModel.feedFields = angular.copy(this.model.feedFields);
         };
 
         /**
          * Saves the feed model.
          */
-        self.onFeedSave = function() {
-            var model = angular.copy(self.model);
-            model.feedFields = self.editModel.feedFields;
+        onFeedSave = ()=> {
+            var model = angular.copy(this.model);
+            model.feedFields = this.editModel.feedFields;
 
-            $http({
+            this.$http({
                 data: angular.toJson(model),
                 headers: {'Content-Type': 'application/json; charset=UTF-8'},
                 method: "POST",
-                url: RestUrlService.ADMIN_USER_FIELDS
-            }).then(function() {
-                self.model = model;
+                url: this.RestUrlService.ADMIN_USER_FIELDS
+            }).then(()=> {
+                this.model = model;
             });
         };
 
-        // Load the field models
-        $http.get(RestUrlService.ADMIN_USER_FIELDS).then(function(response:any) {
-            self.model = response.data;
-            self.loading = false;
-        });
-
-        // Load the permissions
-        AccessControlService.getUserAllowedActions()
-                .then(function(actionSet:any) {
-                    self.allowCategoryEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
-                    self.allowFeedEdit = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
-                });
-    }
-
-    // Register the controller
-    angular.module(moduleName).controller('BusinessMetadataController', ["$scope","$http","AccessControlService","RestUrlService",BusinessMetadataController]);
-});
+}
+// Register the controller
+angular.module(moduleName).controller('BusinessMetadataController', ["$scope","$http","AccessControlService","RestUrlService",BusinessMetadataController]);
