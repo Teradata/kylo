@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -172,8 +171,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return RegisterProcessorPropertiesController;
     }());
     exports.RegisterProcessorPropertiesController = RegisterProcessorPropertiesController;
-    angular.module(moduleName).controller('RegisterProcessorPropertiesController', ["$scope", "$element", "$http", "$q", "$mdToast", "$location", "$window", "RestUrlService", "RegisterTemplateService", "FeedService", "UiComponentsService", RegisterProcessorPropertiesController]);
-    angular.module(moduleName)
+    angular.module(module_name_1.moduleName).controller('RegisterProcessorPropertiesController', ["$scope", "$element", "$http", "$q", "$mdToast", "$location", "$window", "RestUrlService", "RegisterTemplateService", "FeedService", "UiComponentsService", RegisterProcessorPropertiesController]);
+    angular.module(module_name_1.moduleName)
         .directive('thinkbigRegisterProcessorProperties', directive);
 });
 //# sourceMappingURL=processor-properties.js.map

@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function (RegisterTemplateService) {
         return {
             restrict: "A",
@@ -21,7 +20,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             }
         };
     };
-    angular.module(moduleName)
+    angular.module(module_name_1.moduleName)
         .directive('thinkbigDerivedExpression', ['RegisterTemplateService', directive]);
 });
 //# sourceMappingURL=derived-expression.js.map
