@@ -211,7 +211,7 @@
         </div>
 
         <div layout="row" class="layout-padding-top">
-          <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null && !vm.reusableTemplateInputPortsNeeded"
+          <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null && !vm.reusableTemplateInputPortsNeeded && !vm.remoteProcessGroupInputPortsNeeded"
                      ng-disabled="vm.uploadInProgress">
             Import Template
           </md-button>
@@ -310,13 +310,19 @@
             </md-list>
 
           <div layout="column">
+
             <ng-form name="vm.importTemplateForm" layout="column">
               <md-subheader class="md-subhead left-aligned">Remote Process Group Input Ports</md-subheader>
+              <div ng-if="vm.importResult.remoteProcessGroupInputPortNames.length ==0">
+                Please select at least one input port to be available to remote process groups.
+                <br/>
+                If you dont wish to expose your template to remote process groups uncheck <i>Make Available for Remote Process Groups</i> option above
+              </div>
 
                 <md-input-container>
                   <label>Remote Input Ports</label>
-                  <md-select multiple ng-model="vm.importResult.selectedRemoteProcessGroupInputPortNames" >
-                    <md-option ng-repeat="port in vm.remoteProcessGroupInputPortNames" value="{{port.inputPortName}}">
+                  <md-select multiple ng-model="vm.importResult.remoteProcessGroupInputPortNames" ng-model-options="{trackBy: '$value.inputPortName'}">
+                    <md-option ng-repeat="port in vm.remoteProcessGroupInputPortNames" ng-value="port" >
                       {{port.inputPortName}}
                     </md-option>
                   </md-select>
@@ -328,11 +334,7 @@
                 <md-button class="md-primary" ng-click="vm.setRemoteProcessInputPorts()" ng-if="!vm.importResult.remoteProcessGroupInputPortNames.length ==0">Import</md-button>
               </div>
 
-              <div ng-if="vm.importResult.remoteProcessGroupInputPortNames.length ==0">
-                Please select at least one input port to be available to remote process groups.
-                <br/>
-                If you dont wish to expose your template to remote process groups uncheck <i>Make Available for Remote Process Groups</i> option above
-              </div>
+
             </ng-form>
           </div>
         </div>
