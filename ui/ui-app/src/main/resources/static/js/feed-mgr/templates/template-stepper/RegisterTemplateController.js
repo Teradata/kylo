@@ -75,6 +75,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                         self.allowAdmin = response.allowAdmin;
                         self.allowEdit = response.allowEdit;
                          updateAccessControl();
+                         BroadcastService.notify("REGISTERED_TEMPLATE_LOADED","LOADED");
 
                     });
                 },function(err){
@@ -90,7 +91,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
 
     }
 
-    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService",controller]);
+    angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService","BroadcastService",controller]);
 
 
 

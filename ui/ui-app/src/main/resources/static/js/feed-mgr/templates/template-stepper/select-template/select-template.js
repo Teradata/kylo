@@ -1,4 +1,4 @@
-define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
+define(['angular', "feed-mgr/templates/module-name"], function (angular, moduleName) {
 
     var directive = function () {
         return {
@@ -6,8 +6,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             require: ['thinkbigRegisterSelectTemplate', '^thinkbigStepper'],
             bindToController: {
                 stepIndex: '@',
-                nifiTemplateId:'=?',
-                registeredTemplateId:"=?"
+                nifiTemplateId: '=?',
+                registeredTemplateId: "=?"
             },
             scope: {},
             controllerAs: 'vm',
@@ -17,7 +17,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 var thisController = controllers[0];
                 var stepperController = controllers[1];
                 thisController.stepperController = stepperController;
-                if(thisController && thisController.isLoading()){
+                if (thisController && thisController.isLoading()) {
                     stepperController.showProgress = true;
                 }
             }
@@ -25,8 +25,8 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
         };
     }
 
-    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q,$state,RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
-                               UiComponentsService,AngularModuleExtensionService) {
+    var controller = function ($scope, $http, $mdDialog, $mdToast, $timeout, $q, $state, RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService,
+                               UiComponentsService, AngularModuleExtensionService, BroadcastService) {
 
         var self = this;
 
@@ -73,7 +73,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          */
         self.fetchingTemplateList = false;
 
-
         this.templateNavigationLinks = AngularModuleExtensionService.getTemplateNavigation();
 
         /**
@@ -108,7 +107,6 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         }
 
-
         function hideProgress() {
             if (self.stepperController && !self.isLoading()) {
                 self.stepperController.showProgress = false;
@@ -126,7 +124,7 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         }
 
-        this.isLoading = function(){
+        this.isLoading = function () {
             return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
         }
 
@@ -134,10 +132,10 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
          * Navigate the user to the state
          * @param link
          */
-        this.templateNavigationLink = function(link) {
-            var templateId =  self.registeredTemplateId;
+        this.templateNavigationLink = function (link) {
+            var templateId = self.registeredTemplateId;
             var templateName = self.model.templateName;
-            $state.go(link.sref,{templateId:templateId,templateName:templateName,model:self.model});
+            $state.go(link.sref, {templateId: templateId, templateName: templateName, model: self.model});
         }
 
         /**
@@ -150,9 +148,41 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             RegisterTemplateService.getTemplates().then(function (response) {
                 self.templates = response.data;
                 self.fetchingTemplateList = false;
+                matchNiFiTemplateIdWithModel();
                 hideProgress();
             });
         };
+
+        /**
+         * Ensure that the value for the select list matches the model(if a model is selected)
+         */
+        function matchNiFiTemplateIdWithModel() {
+            if (!self.isLoading() && self.model.nifiTemplateId != self.nifiTemplateId) {
+                var matchingTemplate = self.templates.find(function (template) {
+                    var found = angular.isDefined(template.templateDto) ? template.templateDto.id == self.model.nifiTemplateId : template.id == self.model.nifiTemplateId;
+                    if (!found) {
+                        //check on template name
+                        found = self.model.templateName == template.name;
+                    }
+                    return found;
+                });
+                if (angular.isDefined(matchingTemplate)) {
+                    self.nifiTemplateId = matchingTemplate.templateDto.id;
+                }
+            }
+        }
+
+        /**
+         * Called either after the the template has been selected from the previous screen, or after the template select list is loaded
+         */
+        function onRegisteredTemplateLoaded() {
+            matchNiFiTemplateIdWithModel();
+        }
+
+        /**
+         * Get notified when a already registered template is selected and loaded from the previous screen
+         */
+        BroadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", onRegisteredTemplateLoaded);
 
         this.changeTemplate = function () {
             self.errorMessage = null;
@@ -166,20 +196,18 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
             RegisterTemplateService.loadTemplateWithProperties(null, self.nifiTemplateId, templateName).then(function (response) {
 
-
-
                 RegisterTemplateService.warnInvalidProcessorNames();
-                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(accessResponse) {
+                $q.when(RegisterTemplateService.checkTemplateAccess()).then(function (accessResponse) {
                     self.isValid = accessResponse.isValid;
                     self.allowAdmin = accessResponse.allowAdmin;
                     self.allowEdit = accessResponse.allowEdit;
                     self.allowAccessControl = accessResponse.allowAccessControl;
-                    if(!accessResponse.isValid) {
+                    if (!accessResponse.isValid) {
                         //PREVENT access
-                        self.errorMessage ="Access Denied.  You are unable to edit the template. ";
+                        self.errorMessage = "Access Denied.  You are unable to edit the template. ";
                     }
                     else {
-                        if (  !self.allowAccessControl) {
+                        if (!self.allowAccessControl) {
                             //deactivate the access control step
                             self.stepperController.deactivateStep(3);
                         }
@@ -187,14 +215,15 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                             self.stepperController.activateStep(3);
                         }
                     }
-                        self.loadingTemplate = false;
-                        hideProgress();
+                    self.loadingTemplate = false;
+                    hideProgress();
                 });
 
-
-            },function(err) {
+            }, function (err) {
                 RegisterTemplateService.resetModel();
-                self.errorMessage = (angular.isDefined(err.data) && angular.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
+                self.errorMessage =
+                    (angular.isDefined(err.data) && angular.isDefined(err.data.message)) ? err.data.message
+                        : "An Error was found loading this template.  Please ensure you have access to edit this template."
                 self.loadingTemplate = false;
                 hideProgress();
             });
@@ -287,15 +316,14 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         };
 
-        $scope.$watch(function(){
+        $scope.$watch(function () {
             return self.model.loading;
-        },function(newVal){
-            if(newVal === false) {
+        }, function (newVal) {
+            if (newVal === false) {
                 initTemplateTableOptions();
                 hideProgress();
             }
         });
-
 
         this.getTemplates();
 
@@ -306,18 +334,13 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
                 self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
-
-
     };
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","$state","RestUrlService","RegisterTemplateService","StateService",
-                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService","AngularModuleExtensionService",controller]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController',
+        ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "$state", "RestUrlService", "RegisterTemplateService", "StateService",
+         "AccessControlService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "BroadcastService", controller]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);
-
-
-
-
 
 });
