@@ -45,6 +45,84 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                     _this.selectedStepIndex = 0;
                 }
             };
+            this.getCountOfActiveSteps = function () {
+                return _.filter(_this.StepperService.getSteps(_this.stepperName), function (step) { return step.active; }).length;
+            };
+            this.goToFirstStep = function () {
+                _this.selectedStepIndex = 0;
+            };
+            this.onStepSelect = function (index) {
+            };
+            this.resetAndGoToFirstStep = function () {
+                angular.forEach(_this.steps, function (step) {
+                    step.reset();
+                });
+                _this.selectedStepIndex = 0;
+            };
+            this.deactivateStep = function (index) {
+                _this.StepperService.deactivateStep(_this.stepperName, index);
+            };
+            this.activateStep = function (index) {
+                _this.StepperService.activateStep(_this.stepperName, index);
+            };
+            this.resetStep = function (index) {
+                var step = _this.StepperService.getStep(_this.stepperName, index);
+                if (angular.isDefined(step)) {
+                    step.reset();
+                    _this.BroadcastService.notify(_this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+                }
+            };
+            this.stepDisabled = function (index) {
+                _this.StepperService.stepDisabled(_this.stepperName, index);
+                _this.BroadcastService.notify(_this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+            };
+            this.stepEnabled = function (index) {
+                _this.StepperService.stepEnabled(_this.stepperName, index);
+                _this.BroadcastService.notify(_this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+            };
+            this.getStep = function (index) {
+                if (typeof index == 'string') {
+                    index = parseInt(index);
+                }
+                return _this.StepperService.getStep(_this.stepperName, index);
+            };
+            this.nextActiveStep = function (index) {
+                return _this.StepperService.nextActiveStep(_this.stepperName, index);
+            };
+            this.previousActiveStep = function (index) {
+                return _this.StepperService.previousActiveStep(_this.stepperName, index);
+            };
+            this.arePreviousStepsDisabled = function (index) {
+                return _this.StepperService.arePreviousStepsDisabled(_this.stepperName, index);
+            };
+            this.arePreviousStepsComplete = function (index) {
+                return _this.StepperService.arePreviousStepsComplete(_this.stepperName, index);
+            };
+            this.cancelStepper = function () {
+                if (_this.onCancelStepper) {
+                    _this.onCancelStepper();
+                }
+            };
+            this.showCancel = function () {
+                return (_this.showCancelButton != undefined ? _this.showCancelButton : true);
+            };
+            this.assignStepName = function (step, name) {
+                step.stepName = name;
+                _this.StepperService.assignedStepName(_this.stepperName, step);
+            };
+            this.getStepByName = function (stepName) {
+                return _this.StepperService.getStepByName(_this.stepperName, stepName);
+            };
+            this.completeStep = function (index) {
+                var step = _this.getStep(index);
+                step.complete = true;
+                step.updateStepType();
+            };
+            this.incompleteStep = function (index) {
+                var step = _this.getStep(index);
+                step.complete = false;
+                step.updateStepType();
+            };
             this.showProgress = false;
             this.height = 80;
             /**
@@ -85,84 +163,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             if (this.onInitialized && angular.isFunction(this.onInitialized())) {
                 this.onInitialized()(this);
             }
-            this.getCountOfActiveSteps = function () {
-                return _.filter(StepperService.getSteps(this.stepperName), function (step) { return step.active; }).length;
-            };
-            this.goToFirstStep = function () {
-                this.selectedStepIndex = 0;
-            };
-            this.onStepSelect = function (index) {
-            };
-            this.resetAndGoToFirstStep = function () {
-                angular.forEach(this.steps, function (step) {
-                    step.reset();
-                });
-                this.selectedStepIndex = 0;
-            };
-            this.deactivateStep = function (index) {
-                StepperService.deactivateStep(this.stepperName, index);
-            };
-            this.activateStep = function (index) {
-                StepperService.activateStep(this.stepperName, index);
-            };
-            this.resetStep = function (index) {
-                var step = StepperService.getStep(this.stepperName, index);
-                if (angular.isDefined(step)) {
-                    step.reset();
-                    BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-                }
-            };
-            this.stepDisabled = function (index) {
-                StepperService.stepDisabled(this.stepperName, index);
-                BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-            };
-            this.stepEnabled = function (index) {
-                StepperService.stepEnabled(this.stepperName, index);
-                BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-            };
-            this.getStep = function (index) {
-                if (typeof index == 'string') {
-                    index = parseInt(index);
-                }
-                return StepperService.getStep(this.stepperName, index);
-            };
-            this.nextActiveStep = function (index) {
-                return StepperService.nextActiveStep(this.stepperName, index);
-            };
-            this.previousActiveStep = function (index) {
-                return StepperService.previousActiveStep(this.stepperName, index);
-            };
-            this.arePreviousStepsDisabled = function (index) {
-                return StepperService.arePreviousStepsDisabled(this.stepperName, index);
-            };
-            this.arePreviousStepsComplete = function (index) {
-                return StepperService.arePreviousStepsComplete(this.stepperName, index);
-            };
-            this.cancelStepper = function () {
-                if (this.onCancelStepper) {
-                    this.onCancelStepper();
-                }
-            };
-            this.showCancel = function () {
-                return (this.showCancelButton != undefined ? this.showCancelButton : true);
-            };
-            this.assignStepName = function (step, name) {
-                step.stepName = name;
-                StepperService.assignedStepName(this.stepperName, step);
-            };
-            this.getStepByName = function (stepName) {
-                return StepperService.getStepByName(this.stepperName, stepName);
-            };
-            this.completeStep = function (index) {
-                var step = this.getStep(index);
-                step.complete = true;
-                step.updateStepType();
-            };
-            this.incompleteStep = function (index) {
-                var step = this.getStep(index);
-                step.complete = false;
-                step.updateStepType();
-            };
             this.initialize();
             $scope.$on('$destroy', function () {
                 StepperService.deRegisterStepper(_this.stepperName);

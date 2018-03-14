@@ -10,30 +10,12 @@ export default class controller implements ng.IComponentController{
     stepperName: any;
     totalSteps: any;
     getStartingIndex: any;
-    getCountOfActiveSteps: any;
-    goToFirstStep: any;
-    onStepSelect: any;
-    resetAndGoToFirstStep: any;
-    deactivateStep: any;
-    activateStep: any;
-    resetStep: any;
-    stepDisabled: any;
-    stepEnabled: any;
-    getStep: any;
-    nextActiveStep: any;
-    previousActiveStep: any;
-    arePreviousStepsDisabled: any;
-    arePreviousStepsComplete: any;
-    cancelStepper: any;
-    showCancel: any;
-    assignStepName: any;
-    getStepByName: any;
-    completeStep: any;
-    incompleteStep: any;
     selectedStepIndex: any;
     coreDataModel: any;    
     previousStepIndex: any;
     onInitialized: any;
+    onCancelStepper: any;
+    showCancelButton: any;
 
     constructor(private $scope: any,
                 private $attrs: any,
@@ -88,105 +70,6 @@ export default class controller implements ng.IComponentController{
             if(this.onInitialized && angular.isFunction(this.onInitialized())) {
                 this.onInitialized()(this);
             }
-        
-        this.getCountOfActiveSteps = function(){
-            return _.filter(StepperService.getSteps(this.stepperName),function(step: any) { return step.active;}).length;
-        }
-
-
-        this.goToFirstStep = function () {
-            this.selectedStepIndex = 0;
-        }
-        
-        this.onStepSelect = function (index: any) {
-        }
-
-        this.resetAndGoToFirstStep = function () {
-            angular.forEach(this.steps, function (step) {
-                step.reset();
-            })
-            this.selectedStepIndex = 0;
-        }
-
-        this.deactivateStep = function (index: any) {
-            StepperService.deactivateStep(this.stepperName, index);
-        }
-
-        this.activateStep = function (index: any) {
-            StepperService.activateStep(this.stepperName, index);
-        }
-
-        this.resetStep = function(index: any){
-           var step = StepperService.getStep(this.stepperName, index);
-           if(angular.isDefined(step)) {
-               step.reset();
-               BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-           }
-        }
- 
-        this.stepDisabled = function (index: any) {
-            StepperService.stepDisabled(this.stepperName, index);
-            BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-        }
-        this.stepEnabled = function (index: any) {
-            StepperService.stepEnabled(this.stepperName, index);
-            BroadcastService.notify(StepperService.STEP_STATE_CHANGED_EVENT, index);
-        }
-
-        this.getStep = function (index: any) {
-            if (typeof index == 'string') {
-                index = parseInt(index);
-            }
-            return StepperService.getStep(this.stepperName, index);
-        }
-        this.nextActiveStep = function (index: any) {
-            return StepperService.nextActiveStep(this.stepperName, index)
-
-        }
-
-        this.previousActiveStep = function (index: any) {
-            return StepperService.previousActiveStep(this.stepperName, index)
-
-        }
-
-        this.arePreviousStepsDisabled = function (index: any) {
-            return StepperService.arePreviousStepsDisabled(this.stepperName, index);
-        }
-
-        this.arePreviousStepsComplete = function (index: any) {
-            return StepperService.arePreviousStepsComplete(this.stepperName, index);
-        }
-
-        this.cancelStepper = function () {
-            if (this.onCancelStepper) {
-                this.onCancelStepper();
-            }
-        }
-
-        this.showCancel = function () {
-            return (this.showCancelButton != undefined ? this.showCancelButton : true);
-        }
-
-        this.assignStepName = function(step: any,name: any){
-            step.stepName = name;
-            StepperService.assignedStepName(this.stepperName,step)
-        }
-
-        this.getStepByName = function(stepName: any){
-            return StepperService.getStepByName(this.stepperName,stepName);
-        }
-
-        this.completeStep = function (index: any) {
-            var step = this.getStep(index);
-            step.complete = true;
-            step.updateStepType();
-        }
-
-        this.incompleteStep = function (index: any) {
-            var step = this.getStep(index);
-            step.complete = false;
-            step.updateStepType();
-        }
 
         this.initialize();
 
@@ -234,7 +117,106 @@ export default class controller implements ng.IComponentController{
             } else {
                 this.selectedStepIndex = 0;
             }
-        }        
+        }
+
+        getCountOfActiveSteps = ()=>{
+            return _.filter(this.StepperService.getSteps(this.stepperName),function(step: any) { return step.active;}).length;
+        }
+
+
+        goToFirstStep =()=> {
+            this.selectedStepIndex = 0;
+        }
+        
+        onStepSelect =(index: any)=>{
+        }
+
+        resetAndGoToFirstStep =()=> {
+            angular.forEach(this.steps, function (step) {
+                step.reset();
+            })
+            this.selectedStepIndex = 0;
+        }
+
+        deactivateStep = (index: any)=>{
+            this.StepperService.deactivateStep(this.stepperName, index);
+        }
+
+        activateStep = (index: any)=> {
+            this.StepperService.activateStep(this.stepperName, index);
+        }
+
+        resetStep = (index: any)=>{
+           var step = this.StepperService.getStep(this.stepperName, index);
+           if(angular.isDefined(step)) {
+               step.reset();
+               this.BroadcastService.notify(this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+           }
+        }
+ 
+        stepDisabled =(index: any)=> {
+            this.StepperService.stepDisabled(this.stepperName, index);
+            this.BroadcastService.notify(this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+        }
+        stepEnabled =(index: any)=>{
+            this.StepperService.stepEnabled(this.stepperName, index);
+            this.BroadcastService.notify(this.StepperService.STEP_STATE_CHANGED_EVENT, index);
+        }
+
+        getStep = (index: any)=>{
+            if (typeof index == 'string') {
+                index = parseInt(index);
+            }
+            return this.StepperService.getStep(this.stepperName, index);
+        }
+        nextActiveStep = (index: any)=>{
+            return this.StepperService.nextActiveStep(this.stepperName, index)
+
+        }
+
+        previousActiveStep = (index: any) =>{
+            return this.StepperService.previousActiveStep(this.stepperName, index)
+
+        }
+
+        arePreviousStepsDisabled = (index: any)=> {
+            return this.StepperService.arePreviousStepsDisabled(this.stepperName, index);
+        }
+
+        arePreviousStepsComplete = (index: any)=>{
+            return this.StepperService.arePreviousStepsComplete(this.stepperName, index);
+        }
+
+        cancelStepper = ()=>{
+            if (this.onCancelStepper) {
+                this.onCancelStepper();
+            }
+        }
+
+        showCancel = ()=> {
+            return (this.showCancelButton != undefined ? this.showCancelButton : true);
+        }
+
+        assignStepName = (step: any,name: any)=>{
+            step.stepName = name;
+            this.StepperService.assignedStepName(this.stepperName,step)
+        }
+
+        getStepByName =(stepName: any)=>{
+            return this.StepperService.getStepByName(this.stepperName,stepName);
+        }
+
+        completeStep = (index: any)=>{
+            var step = this.getStep(index);
+            step.complete = true;
+            step.updateStepType();
+        }
+
+        incompleteStep = (index: any)=>{
+            var step = this.getStep(index);
+            step.complete = false;
+            step.updateStepType();
+        }
 }
 
 
