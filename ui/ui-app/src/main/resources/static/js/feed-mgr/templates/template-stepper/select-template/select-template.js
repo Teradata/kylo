@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -271,9 +270,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return RegisterSelectTemplateController;
     }());
     exports.RegisterSelectTemplateController = RegisterSelectTemplateController;
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "RestUrlService", "RegisterTemplateService", "StateService",
+    angular.module(module_name_1.moduleName).controller('RegisterSelectTemplateController', ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "RestUrlService", "RegisterTemplateService", "StateService",
         "AccessControlService", "EntityAccessControlService", "UiComponentsService", RegisterSelectTemplateController]);
-    angular.module(moduleName)
+    angular.module(module_name_1.moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);
 });
 //# sourceMappingURL=select-template.js.map
