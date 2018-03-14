@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -80,7 +79,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return TemplateOrderController;
     }());
     exports.TemplateOrderController = TemplateOrderController;
-    angular.module(moduleName).controller("TemplateOrderController", ["$http", "$mdToast", "RestUrlService", "RegisterTemplateService", TemplateOrderController]);
-    angular.module(moduleName).directive("thinkbigTemplateOrder", directive);
+    angular.module(module_name_1.moduleName).controller("TemplateOrderController", ["$http", "$mdToast", "RestUrlService", "RegisterTemplateService", TemplateOrderController]);
+    angular.module(module_name_1.moduleName).directive("thinkbigTemplateOrder", directive);
 });
 //# sourceMappingURL=template-order.js.map
