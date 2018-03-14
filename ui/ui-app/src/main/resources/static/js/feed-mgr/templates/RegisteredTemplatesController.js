@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var RegisteredTemplatesController = /** @class */ (function () {
         function RegisteredTemplatesController($scope, $http, $mdDialog, $q, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
             this.$scope = $scope;
@@ -145,6 +144,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return RegisteredTemplatesController;
     }());
     exports.RegisteredTemplatesController = RegisteredTemplatesController;
-    angular.module(moduleName).controller('RegisteredTemplatesController', ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService", RegisteredTemplatesController]);
+    angular.module(module_name_1.moduleName).controller('RegisteredTemplatesController', ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService", RegisteredTemplatesController]);
 });
 //# sourceMappingURL=RegisteredTemplatesController.js.map

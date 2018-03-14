@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var RegisterNewTemplateController = /** @class */ (function () {
         /**
          * Displays the page for registering a new Feed Manager template.
@@ -61,6 +60,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return RegisterNewTemplateController;
     }());
     exports.RegisterNewTemplateController = RegisterNewTemplateController;
-    angular.module(moduleName).controller("RegisterNewTemplateController", ["$scope", "AccessControlService", "StateService", "RegisterTemplateService", RegisterNewTemplateController]);
+    angular.module(module_name_1.moduleName).controller("RegisterNewTemplateController", ["$scope", "AccessControlService", "StateService", "RegisterTemplateService", RegisterNewTemplateController]);
 });
 //# sourceMappingURL=RegisterNewTemplateController.js.map
