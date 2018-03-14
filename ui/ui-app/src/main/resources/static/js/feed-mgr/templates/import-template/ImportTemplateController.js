@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var ImportTemplateController = /** @class */ (function () {
         function ImportTemplateController($scope, $http, $interval, $timeout, $mdDialog, FileUpload, RestUrlService, ImportService, RegisterTemplateService) {
             this.$scope = $scope;
@@ -405,6 +404,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return ImportTemplateController;
     }());
     exports.ImportTemplateController = ImportTemplateController;
-    angular.module(moduleName).controller('ImportTemplateController', ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", ImportTemplateController]);
+    angular.module(module_name_1.moduleName).controller('ImportTemplateController', ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", ImportTemplateController]);
 });
 //# sourceMappingURL=ImportTemplateController.js.map
