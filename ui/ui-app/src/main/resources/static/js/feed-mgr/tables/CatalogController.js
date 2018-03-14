@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "./module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/tables/module-name');
     var CatalogController = /** @class */ (function () {
         /**
          * Displays a list of datasources.
@@ -47,6 +46,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return CatalogController;
     }());
     exports.CatalogController = CatalogController;
-    angular.module(moduleName).controller('CatalogController', ["$scope", "$q", "DatasourcesService", "StateService", "AccessControlService", CatalogController]);
+    angular.module(module_name_1.moduleName).controller('CatalogController', ["$scope", "$q", "DatasourcesService", "StateService", "AccessControlService", CatalogController]);
 });
 //# sourceMappingURL=CatalogController.js.map

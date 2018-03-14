@@ -1,7 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/tables/module-name');
-
+import {moduleName} from "./module-name";
 
 export class TablesController {
 

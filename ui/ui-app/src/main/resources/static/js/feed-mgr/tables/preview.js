@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/tables/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -85,8 +84,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return PreviewController;
     }());
     exports.PreviewController = PreviewController;
-    angular.module(moduleName).controller('PreviewController', ["$scope", "$http", "FeedService", "RestUrlService", "HiveService", "FattableService", "DatasourcesService", PreviewController]);
-    angular.module(moduleName)
+    angular.module(module_name_1.moduleName).controller('PreviewController', ["$scope", "$http", "FeedService", "RestUrlService", "HiveService", "FattableService", "DatasourcesService", PreviewController]);
+    angular.module(module_name_1.moduleName)
         .directive('thinkbigPreview', directive);
 });
 //# sourceMappingURL=preview.js.map

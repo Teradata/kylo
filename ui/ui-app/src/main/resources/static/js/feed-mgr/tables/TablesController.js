@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "./module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/tables/module-name');
     var TablesController = /** @class */ (function () {
         function TablesController($scope, $http, $q, $transition$, $filter, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService, Utils, DatasourcesService) {
             this.$scope = $scope;
@@ -161,6 +160,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return TablesController;
     }());
     exports.TablesController = TablesController;
-    angular.module(moduleName).controller('TablesController', ["$scope", "$http", "$q", "$transition$", "$filter", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "FeedService", "StateService", "Utils", "DatasourcesService", TablesController]);
+    angular.module(module_name_1.moduleName).controller('TablesController', ["$scope", "$http", "$q", "$transition$", "$filter", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "FeedService", "StateService", "Utils", "DatasourcesService", TablesController]);
 });
 //# sourceMappingURL=TablesController.js.map
