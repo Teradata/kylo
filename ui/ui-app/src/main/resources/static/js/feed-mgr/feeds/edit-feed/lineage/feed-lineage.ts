@@ -101,11 +101,11 @@ export class FeedLineageController implements ng.IComponentController {
     options:any = null;
 
 
-    isDetailedGraph = function(){
+    isDetailedGraph=()=>{
         return this.graphMode == this.graphModes.DETAILED;
     }
 
-    redraw = function () {
+    redraw=()=>{
         if (this.isDetailedGraph()) {
             this.onDetailedView();
         }
@@ -143,7 +143,7 @@ export class FeedLineageController implements ng.IComponentController {
 
 
 
-    onSelect = function (item:any) {
+    onSelect = (item:any)=>{
         if (item && item.nodes && item.nodes[0]) {
             this.changed = true;
             var firstItem = item.nodes[0];

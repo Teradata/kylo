@@ -92,14 +92,14 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.selectedNode = this.SELECT_A_NODE;
             this.options = null;
             this.isDetailedGraph = function () {
-                return this.graphMode == this.graphModes.DETAILED;
+                return _this.graphMode == _this.graphModes.DETAILED;
             };
             this.redraw = function () {
-                if (this.isDetailedGraph()) {
-                    this.onDetailedView();
+                if (_this.isDetailedGraph()) {
+                    _this.onDetailedView();
                 }
                 else {
-                    this.onSimpleView();
+                    _this.onSimpleView();
                 }
             };
             /**
@@ -129,28 +129,28 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             };
             this.onSelect = function (item) {
                 if (item && item.nodes && item.nodes[0]) {
-                    this.changed = true;
+                    _this.changed = true;
                     var firstItem = item.nodes[0];
-                    var feed = this.feedLineage.feedMap[firstItem];
+                    var feed = _this.feedLineage.feedMap[firstItem];
                     if (feed) {
-                        this.selectedNode.name = feed.displayName;
-                        this.selectedNode.type = 'FEED';
-                        this.selectedNode.content = feed;
+                        _this.selectedNode.name = feed.displayName;
+                        _this.selectedNode.type = 'FEED';
+                        _this.selectedNode.content = feed;
                     }
                     else {
-                        var ds = this.feedLineage.datasourceMap[firstItem];
-                        this.selectedNode.name = ds.name;
-                        this.selectedNode.type = 'DATASOURCE';
-                        this.selectedNode.content = ds;
+                        var ds = _this.feedLineage.datasourceMap[firstItem];
+                        _this.selectedNode.name = ds.name;
+                        _this.selectedNode.type = 'DATASOURCE';
+                        _this.selectedNode.content = ds;
                     }
                 }
                 else {
-                    this.selectedNode = this.SELECT_A_NODE;
+                    _this.selectedNode = _this.SELECT_A_NODE;
                 }
-                this.$scope.$apply();
+                _this.$scope.$apply();
                 //console.log(;self.selectedNode);
                 //force angular to refresh selection
-                angular.element('#hiddenSelectedNode').html(this.selectedNode.name);
+                angular.element('#hiddenSelectedNode').html(_this.selectedNode.name);
             };
             this.events = {
                 onload: this.onLoad,
