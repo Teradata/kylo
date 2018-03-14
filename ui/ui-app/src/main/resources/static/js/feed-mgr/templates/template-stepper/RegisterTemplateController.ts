@@ -1,6 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-const moduleName = require('feed-mgr/templates/module-name');
+import {moduleName} from "../module-name";
 
 
 export class RegisterTemplateController {
@@ -12,16 +12,11 @@ export class RegisterTemplateController {
     allowAdmin:any;
     allowEdit:any;
     stepperController:any;
-    cancelStepper:any;
-    onStepperInitialized:any;
     loading:any;
     stepperUrl:any;
 
     constructor(private $scope:any,private $transition$:any, private $http:any,private $mdToast:any,private $q:any
         ,private RegisterTemplateService:any, private StateService:any, private AccessControlService:any) {
-
-        var self = this;
-
         /**
          * Reference to the RegisteredTemplate Kylo id passed when editing a template
          * @type {null|*}
@@ -49,64 +44,59 @@ export class RegisterTemplateController {
          * The Stepper Controller set after initialized
          * @type {null}
          */
-        this.stepperController = null;
+        this.stepperController = null;        
+        this.init();
+    }
 
-
-        self.cancelStepper = function() {
-            //or just reset the url
-            RegisterTemplateService.resetModel();
-            self.stepperUrl = null;
-            StateService.FeedManager().Template().navigateToRegisteredTemplates();
-        }
-
-        self.onStepperInitialized = function(stepper:any){
-            self.stepperController = stepper;
-            if(!AccessControlService.isEntityAccessControlled()){
-                //disable Access Control
-                stepper.deactivateStep(3);
-            }
-            updateAccessControl();
-        }
-
-        function updateAccessControl(){
-            if (!self.allowAccessControl && self.stepperController) {
-                //deactivate the access control step
-                self.stepperController.deactivateStep(3);
-            }
-            else if (self.stepperController){
-                self.stepperController.activateStep(3);
-            }
-        }
-
-
-        function init(){
-            self.loading = true;
+    init=()=>{
+            this.loading = true;
                 //Wait for the properties to come back before allowing the user to go to the next step
-                RegisterTemplateService.loadTemplateWithProperties(self.registeredTemplateId, self.nifiTemplateId).then(function(response:any) {
-                    self.loading = false;
-                    RegisterTemplateService.warnInvalidProcessorNames();
-                    $q.when(RegisterTemplateService.checkTemplateAccess()).then(function(response:any) {
+                this.RegisterTemplateService.loadTemplateWithProperties(this.registeredTemplateId, this.nifiTemplateId).then((response:any)=>{
+                    this.loading = false;
+                    this.RegisterTemplateService.warnInvalidProcessorNames();
+                    this.$q.when(this.RegisterTemplateService.checkTemplateAccess()).then((response:any)=> {
                       if(!response.isValid) {
                           //PREVENT access
                       }
-                        self.allowAccessControl = response.allowAccessControl;
-                        self.allowAdmin = response.allowAdmin;
-                        self.allowEdit = response.allowEdit;
-                         updateAccessControl();
+                        this.allowAccessControl = response.allowAccessControl;
+                        this.allowAdmin = response.allowAdmin;
+                        this.allowEdit = response.allowEdit;
+                         this.updateAccessControl();
 
                     });
-                },function(err:any){
-                    self.loading = false;
-                    RegisterTemplateService.resetModel();
-                    self.allowAccessControl = false;
-                    self.allowAdmin = false;
-                    self.allowEdit = false;
-                    updateAccessControl();
+                },(err:any)=>{
+                    this.loading = false;
+                    this.RegisterTemplateService.resetModel();
+                    this.allowAccessControl = false;
+                    this.allowAdmin = false;
+                    this.allowEdit = false;
+                    this.updateAccessControl();
                 });
         }
-        init();
+        updateAccessControl=()=>{
+            if (!this.allowAccessControl && this.stepperController) {
+                //deactivate the access control step
+                this.stepperController.deactivateStep(3);
+            }
+            else if (this.stepperController){
+                this.stepperController.activateStep(3);
+            }
+        }
+        cancelStepper= ()=> {
+            //or just reset the url
+            this.RegisterTemplateService.resetModel();
+            this.stepperUrl = null;
+            this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+        }
 
-    }
+        onStepperInitialized = (stepper:any)=>{
+            this.stepperController = stepper;
+            if(!this.AccessControlService.isEntityAccessControlled()){
+                //disable Access Control
+                stepper.deactivateStep(3);
+            }
+            this.updateAccessControl();
+        }
 
 }
 angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService",RegisterTemplateController]);
