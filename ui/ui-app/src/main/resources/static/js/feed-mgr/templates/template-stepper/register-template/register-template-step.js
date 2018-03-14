@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -312,9 +311,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return RegisterCompleteRegistrationController;
     }());
     exports.RegisterCompleteRegistrationController = RegisterCompleteRegistrationController;
-    angular.module(moduleName).controller("RegisterCompleteRegistrationController", ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
-    angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService", RegisterTemplateCompleteController]);
-    angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);
+    angular.module(module_name_1.moduleName).controller("RegisterCompleteRegistrationController", ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService", RegisterCompleteRegistrationController]);
+    angular.module(module_name_1.moduleName).controller("RegisterTemplateCompleteController", ["StateService", RegisterTemplateCompleteController]);
+    angular.module(module_name_1.moduleName).directive("thinkbigRegisterCompleteRegistration", directive);
     function RegistrationErrorDialogController($scope, $mdDialog, nifiTemplateId, templateName, message) {
         $scope.nifiTemplateId = nifiTemplateId;
         $scope.templateName = templateName;
