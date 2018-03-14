@@ -1,7 +1,6 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/templates/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -41,7 +40,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return TemplateAccessControlController;
     }());
     exports.TemplateAccessControlController = TemplateAccessControlController;
-    angular.module(moduleName).controller("TemplateAccessControlController", ["$scope", "RegisterTemplateService", "AccessControlService", "EntityAccessControlService", TemplateAccessControlController]);
-    angular.module(moduleName).directive("thinkbigTemplateAccessControl", directive);
+    angular.module(module_name_1.moduleName).controller("TemplateAccessControlController", ["$scope", "RegisterTemplateService", "AccessControlService", "EntityAccessControlService", TemplateAccessControlController]);
+    angular.module(module_name_1.moduleName).directive("thinkbigTemplateAccessControl", directive);
 });
 //# sourceMappingURL=template-access-control.js.map
