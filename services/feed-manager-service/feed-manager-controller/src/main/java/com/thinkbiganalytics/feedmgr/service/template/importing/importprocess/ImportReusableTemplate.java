@@ -38,6 +38,7 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.model.NiFiTempla
 import com.thinkbiganalytics.nifi.feedmgr.ReusableTemplateCreationCallback;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -65,6 +66,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -117,6 +119,11 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     private ProcessGroupDTO reusableTemplateCategoryProcessGroup;
 
+    private ItemsCreated itemsCreated;
+
+
+    private Optional<ExistingRemoteProcessInputPortInformation> existingRemoteProcessInputPortInformation;
+
 
     public ImportReusableTemplate(ImportTemplate importTemplate, ImportTemplateOptions importOptions) {
         super(importTemplate, importOptions);
@@ -131,32 +138,36 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                                                   remoteProcessGroupInputPortMap,  Map<String,PortDTO> thisTemplatePorts , boolean isNew) {
 
         String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
-
-
+        //This will get or create the reusable_template process group
+        String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateCategoryProcessGroup().getId();
 
         //Select the userSupplied ports from the whole list
         Map<String, RemoteProcessGroupInputPort>
-             userSuppliedRemoteInputPorts =
-             remoteProcessGroupOption.getRemoteProcessGroupInputPorts().stream().collect(Collectors.toMap(inputPort -> inputPort.getInputPortName(), inputPort -> inputPort));
+            userSuppliedRemoteInputPorts =
+            remoteProcessGroupOption.getRemoteProcessGroupInputPorts().stream().collect(Collectors.toMap(inputPort -> inputPort.getInputPortName(), inputPort -> inputPort));
+
+       Optional<ExistingRemoteProcessInputPortInformation> existingRemoteProcessInputPortInformation = getExistingRemoteProcessInputPortInformation();
+
+       if(existingRemoteProcessInputPortInformation.isPresent()) {
+           //mark the items in the this.remoteProcessGroupInputPortMap as 'existing' if they are already in NiFi, and 'selected' if the user has selected them
+           existingRemoteProcessInputPortInformation.get().getExistingRemoteConnectionsToTemplate().stream().filter(conn -> conn.getDestination().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                                                                            && conn.getDestination().getGroupId()
+                                                                                                                                .equalsIgnoreCase(reusableTemplateProcessGroupId)
+                                                                                                                            && conn.getSource().getGroupId().equalsIgnoreCase(rootProcessGroupId)
+                                                                                                                            && conn.getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                                                                            && thisTemplatePorts.containsKey(conn.getDestination().getName()))
+               .map(conn -> thisTemplatePorts.get(conn.getDestination().getName()))
+               .filter(p -> remoteProcessGroupInputPortMap.containsKey(p.getName()))
+               .map(port -> remoteProcessGroupInputPortMap.get(port.getName()))
+               .forEach(remoteProcessGroupInputPort -> {
+                   remoteProcessGroupInputPort.setSelected(isNew || (userSuppliedRemoteInputPorts.containsKey(remoteProcessGroupInputPort.getInputPortName()) && userSuppliedRemoteInputPorts
+                       .get(remoteProcessGroupInputPort.getInputPortName()).isSelected()));
+                   remoteProcessGroupInputPort.setExisting(true);
+               });
+
+       }
 
         remoteProcessGroupInputPortMap.values().stream().filter(inputPort -> userSuppliedRemoteInputPorts.containsKey(inputPort.getInputPortName())).forEach(inputPort -> inputPort.setSelected(true));
-
-
-        //This will get or create the reusable_template process group
-        String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateCategoryProcessGroup().getId();
-        ProcessGroupDTO reusableTemplateProcessGroup = getReusableTemplateCategoryProcessGroup();
-        getRootProcessGroupConnections().stream().filter(conn -> conn.getDestination().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
-                                                                                                          && conn.getDestination().getGroupId().equalsIgnoreCase(reusableTemplateProcessGroupId)
-                                                                                                          && conn.getSource().getGroupId().equalsIgnoreCase(rootProcessGroupId)
-                                                                                                          && conn.getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
-                                                                                                          && thisTemplatePorts.containsKey(conn.getDestination().getName()))
-                    .map(conn -> thisTemplatePorts.get(conn.getDestination().getName()))
-                    .filter(p -> remoteProcessGroupInputPortMap.containsKey(p.getName()))
-                    .map(port -> remoteProcessGroupInputPortMap.get(port.getName()))
-                    .forEach(remoteProcessGroupInputPort -> {
-                        remoteProcessGroupInputPort.setSelected(isNew || (userSuppliedRemoteInputPorts.containsKey(remoteProcessGroupInputPort.getInputPortName()) && userSuppliedRemoteInputPorts.get(remoteProcessGroupInputPort.getInputPortName()).isSelected()));
-                        remoteProcessGroupInputPort.setExisting(true);
-                    });
 
 
         //warn if not existing, but has the same name as an already existing input port in the root process group
@@ -188,6 +199,11 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         return reusableTemplateCategoryProcessGroup;
     }
 
+    /**
+     * Validates the user has supplied some input ports to be created as remote ports
+     * @param remoteProcessGroupOption the user supplied option and details for remote process group input port processing
+     * @return true if valid, false if not
+     */
     private boolean validateRemoteInputPorts(  ImportComponentOption remoteProcessGroupOption){
         //find list of input ports that have been created already (connected to this same reusable template)
         //1) find input ports on parent nifi canvas that connect to the reusable template with this same name
@@ -195,24 +211,16 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         //3) if some of those dont appear in the new list add as warning (these will be removed)
         boolean valid = true;
 
-
-        //find the list of possible input ports to present to the user for selection
-        NifiProcessGroup processGroup = this.newTemplateInstance;
-
-
-
         //This templates input ports as a map by name
        this.templateInputPorts =
             importTemplate.getTemplateResults().getProcessGroupEntity().getContents().getInputPorts().stream().collect(Collectors.toMap(p -> p.getName(), v -> v));
 
-
-
-
-
+       //set the map of input ports in this template as potential Remote Input port candidates.
        this.remoteProcessGroupInputPortMap =
             this.templateInputPorts.values().stream().map(p -> new RemoteProcessGroupInputPort(importTemplate.getTemplateName(), p.getName()))
                 .collect(Collectors.toMap(p -> p.getInputPortName(), p -> p));
 
+       //If the incoming list is empty send it back to the user to validate what input ports they would like (if any) to be created as remote input ports
         if (remoteProcessGroupOption.getRemoteProcessGroupInputPorts().isEmpty()) {
             //present back to the user the list of input ports to select
             importTemplate.setRemoteProcessGroupInputPortsNeeded(true);
@@ -254,6 +262,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
 
     public boolean importTemplate() {
+        this.itemsCreated = new ItemsCreated();
         boolean validReusableTemplate = importIntoNiFiAndCreateInstance();
 
         //Check and set the Remote PRocess group settings.
@@ -411,30 +420,57 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         return valid && newTemplateInstance.isSuccess();
     }
 
+
+
+    private Optional<ExistingRemoteProcessInputPortInformation> getExistingRemoteProcessInputPortInformation(){
+        if(existingRemoteProcessInputPortInformation == null) {
+            String
+                previousGroupId =
+                getReusableTemplateCategoryProcessGroup().getContents().getProcessGroups().stream().filter(g -> g.getName().equalsIgnoreCase(importTemplate.getTemplateName())).map(g -> g.getId())
+                    .findFirst().orElse(null);
+            if (previousGroupId != null) {
+                String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+                String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
+
+                //if the group was there before then see if they user wants to delete any input ports from the parent canvas
+                List<String>
+                    existingReusableTemplateInputPortIds =
+                    getReusableTemplateCategoryProcessGroup().getContents().getConnections().stream().filter(conn -> conn.getDestination().getGroupId().equalsIgnoreCase(previousGroupId))
+                        .map(connectionDTO -> connectionDTO.getSource().getId()).collect(Collectors.toList());
+                List<ConnectionDTO>
+                    existingRemoteConnectionsToTemplate =
+                    getRootProcessGroupConnections().stream().filter(conn -> conn.getDestination().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                             && conn.getDestination().getGroupId().equalsIgnoreCase(reusableTemplateProcessGroupId)
+                                                                             && conn.getSource().getGroupId().equalsIgnoreCase(rootProcessGroupId)
+                                                                             && conn.getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                             && existingReusableTemplateInputPortIds.contains(conn.getDestination().getId()))
+                        .collect(Collectors.toList());
+
+                //if the existingRemoteConnectionsToTemplate.getSource().getName() doesnt exist in the incoming map of 'selected' ports they will be removed
+
+                Set<String> existingRemoteInputPorts = existingRemoteConnectionsToTemplate.stream().map(conn -> conn.getSource().getName()).collect(Collectors.toSet());
+
+                existingRemoteProcessInputPortInformation = Optional.of(new ExistingRemoteProcessInputPortInformation(existingRemoteConnectionsToTemplate, existingRemoteInputPorts));
+            }
+            else {
+                existingRemoteProcessInputPortInformation = Optional.empty();
+            }
+        }
+        return existingRemoteProcessInputPortInformation;
+    }
+
     private boolean removeConnectionsAndInputs(){
-        String previousGroupId = getReusableTemplateCategoryProcessGroup().getContents().getProcessGroups().stream().filter(g -> g.getName().equalsIgnoreCase(importTemplate.getTemplateName())).map(g-> g.getId()).findFirst().orElse(null);
-        if(previousGroupId != null){
-            String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
-            String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
+        Optional<ExistingRemoteProcessInputPortInformation> existingRemoteProcessInputPortInformation = getExistingRemoteProcessInputPortInformation();
+        if(existingRemoteProcessInputPortInformation.isPresent()) {
 
-            //if the group was there before then see if they user wants to delete any input ports from the parent canvas
-            List<String> existingReusableTemplateInputPortIds = getReusableTemplateCategoryProcessGroup().getContents().getConnections().stream().filter(conn -> conn.getDestination().getGroupId().equalsIgnoreCase(previousGroupId)).map(connectionDTO -> connectionDTO.getSource().getId()).collect(Collectors.toList());
-            List<ConnectionDTO> existingRemoteConnectionsToTemplate = getRootProcessGroupConnections().stream().filter(conn -> conn.getDestination().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
-                                                                                                              && conn.getDestination().getGroupId().equalsIgnoreCase(reusableTemplateProcessGroupId)
-                                                                                                              && conn.getSource().getGroupId().equalsIgnoreCase(rootProcessGroupId)
-                                                                                                              && conn.getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
-                                                                                                              && existingReusableTemplateInputPortIds.contains(conn.getDestination().getId()))
-                .collect(Collectors.toList());
-
-            //if the existingRemoteConnectionsToTemplate.getSource().getName() doesnt exist in the incoming map of 'selected' ports they will be removed
-
-            Set<String> existingRemoteInputPorts = existingRemoteConnectionsToTemplate.stream().map(conn -> conn.getSource().getName()).collect(Collectors.toSet());
+            //find the input ports that are 'existing' but not 'selected' .  These should be deleted
             Set<String> inputPortNamesToRemove = remoteProcessGroupInputPortMap.values().stream()
                 .filter((remoteInputPort -> !remoteInputPort.isSelected()
-                                            && existingRemoteInputPorts.contains(remoteInputPort.getInputPortName())))
+                                            && existingRemoteProcessInputPortInformation.get().getExistingRemoteInputPortNames().contains(remoteInputPort.getInputPortName())))
                 .map(remoteInputPort -> remoteInputPort.getInputPortName())
                 .collect(Collectors.toSet());
-            Set<ConnectionDTO> connectionsToRemove = existingRemoteConnectionsToTemplate.stream().filter(connectionDTO -> inputPortNamesToRemove.contains(connectionDTO.getSource().getName())).collect(
+            //Find the connections that match the input ports that are to be removed
+            Set<ConnectionDTO> connectionsToRemove = existingRemoteProcessInputPortInformation.get().getExistingRemoteConnectionsToTemplate().stream().filter(connectionDTO ->inputPortNamesToRemove.contains(connectionDTO.getSource().getName())).collect(
                 Collectors.toSet());
             log.info("Removing input ports {}",inputPortNamesToRemove);
 
@@ -445,20 +481,29 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                 if (connectionStatus.isPresent() && connectionStatus.get().getConnectionStatus().getAggregateSnapshot().getFlowFilesQueued() > 0) {
                     connectionsWithQueue.add(connection);
                 }
-              });
+            });
 
             if(!connectionsWithQueue.isEmpty()) {
                 UploadProgressMessage
                     importStatusMessage =
                     uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Unable to remove inputPort and connection for :"+connectionsWithQueue.stream().map(c ->c.getSource().getName()).collect(Collectors.joining(","))+". The Queues are not empty. Failed to import template: " + importTemplate.getTemplateName(),true,false);
-                    importTemplate.setValid(false);
-                    importTemplate.setSuccess(false);
-                    return false;
+                importTemplate.setValid(false);
+                importTemplate.setSuccess(false);
+                return false;
             }
             else {
                 connectionsToRemove.stream().forEach(connection -> {
                     nifiRestClient.deleteConnection(connection, false);
-                    nifiRestClient.getNiFiRestClient().ports().deleteInputPort(connection.getSource().getId());
+                    itemsCreated.addDeletedRemoteInputPortConnection(connection);
+                    try {
+                       PortDTO deletedPort = nifiRestClient.getNiFiRestClient().ports().deleteInputPort(connection.getSource().getId());
+                       if(deletedPort != null) {
+                           itemsCreated.addDeletedRemoteInputPort(deletedPort);
+                       }
+                    }
+                    catch(NifiComponentNotFoundException e){
+                        //this is ok to catch as its deleted already
+                    }
                 });
                 UploadProgressMessage
                     importStatusMessage =
@@ -466,8 +511,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
             }
             return true;
-
         }
+
         return true;
     }
 
@@ -490,6 +535,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
             portDTO.setType(NifiConstants.INPUT_PORT);
             portDTO.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
            PortDTO newInputPort = nifiRestClient.getNiFiRestClient().processGroups().createInputPort(rootProcessGroupId,portDTO);
+            itemsCreated.addCreatedRemoteInputPort(newInputPort);
            PortDTO reusableTemplatePort = reusableTemplateCategoryPorts.get(r.getInputPortName());
 
             //connect this to the Reusable Template input port with the same name
@@ -503,7 +549,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                 dest.setName(r.getInputPortName());
                 dest.setId(reusableTemplatePort.getId());
                 dest.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
-            nifiRestClient.getNiFiRestClient().processGroups().createConnection(rootProcessGroupId, source, dest);
+            ConnectionDTO connectionDTO =nifiRestClient.getNiFiRestClient().processGroups().createConnection(rootProcessGroupId, source, dest);
+            itemsCreated.addCreatedRemoteInputPortConnection(connectionDTO);
             if(connectedStr.length() != 0) {
                 connectedStr.append(",");
             }else {
@@ -514,6 +561,9 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
             remoteInputPortsMessage.update(connectedStr.toString());
 
         });
+        if(connectedStr.length() != 0) {
+            connectedStr.append(" as remote input ports");
+        }
         remoteInputPortsMessage.update(connectedStr.toString(),true);
         return true;
     }
@@ -522,7 +572,53 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     public boolean rollback() {
         rollbackTemplateImportInNifi();
+        rollbackCreatedItems();
         return true;
+    }
+
+    /**
+     * Rollback and delete any created items
+     * restore any items that were deleted
+     */
+    private void rollbackCreatedItems(){
+        itemsCreated.getCreatedRemoteInputPortConnections().stream().forEach(connection ->    nifiRestClient.deleteConnection(connection, false));
+        itemsCreated.getCreatedRemoteInputPorts().stream().forEach(portDTO ->nifiRestClient.getNiFiRestClient().ports().deleteInputPort(portDTO.getId()));
+
+        Map<String,String>oldToNewPortIdMap = new HashMap<>();
+        itemsCreated.getDeletedRemoteInputPorts().stream().forEach(portDTO ->{
+            PortDTO createdPort =nifiRestClient.getNiFiRestClient().processGroups().createInputPort(portDTO.getParentGroupId(),portDTO);
+            oldToNewPortIdMap.put(portDTO.getId(),createdPort.getId());
+        } );
+        //find matching connection
+
+        Map<String,String>newReusableTemplatePortNameToId = new HashMap<>();
+
+        String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
+        if(reusableTemplateProcessGroupId != null) {
+            ProcessGroupFlowDTO reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+            String templateProcessGroupId = reusableTemplateFlow.getFlow().getProcessGroups().stream().filter(e-> e.getComponent().getName().equalsIgnoreCase(this.importTemplate.getTemplateName()))
+                .map(e->e.getComponent().getId()).findFirst().orElse(null);
+            if(templateProcessGroupId != null) {
+                reusableTemplateFlow.getFlow().getConnections().stream().filter(connectionEntity ->
+                    connectionEntity.getComponent().getDestination().getGroupId().equalsIgnoreCase(templateProcessGroupId)
+                                                                                && connectionEntity.getComponent().getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                ).forEach(connectionEntity -> {
+                    newReusableTemplatePortNameToId.put(connectionEntity.getComponent().getSource().getName(),connectionEntity.getComponent().getSource().getId());
+                });
+            }
+        }
+
+
+        String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
+        itemsCreated.getDeletedRemoteInputPortConnections().stream().forEach(connectionDTO -> {
+            String newId = oldToNewPortIdMap.get(connectionDTO.getSource().getId());
+            connectionDTO.getSource().setId(newId);
+            String newDestId = newReusableTemplatePortNameToId.get(connectionDTO.getSource().getName());
+            connectionDTO.getDestination().setId(newDestId);
+           ConnectionDTO restoredConnection = nifiRestClient.getNiFiRestClient().processGroups().createConnection(rootProcessGroupId, connectionDTO.getSource(), connectionDTO.getDestination());
+
+        });
+
     }
 
 
@@ -586,6 +682,10 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
     }
 
 
+    /**
+     * Get and cache the Reusable template process group
+     * @return
+     */
     private Optional<ProcessGroupFlowDTO> getReusableTemplatesProcessGroup() {
         if (reusableTemplateFlow == null) {
             String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
@@ -922,6 +1022,87 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     }
 
+
+    /**
+     * Class to track additional items created outside of the template import
+     */
+    private class ItemsCreated {
+
+        private List<PortDTO> createdRemoteInputPorts;
+        private List<ConnectionDTO> createdRemoteInputPortConnections;
+
+        private List<PortDTO> deletedRemoteInputPorts;
+        private List<ConnectionDTO> deletedRemoteInputPortConnections;
+
+        public List<PortDTO> getCreatedRemoteInputPorts() {
+            if(createdRemoteInputPorts == null){
+                createdRemoteInputPorts = new ArrayList<>();
+            }
+            return createdRemoteInputPorts;
+        }
+
+        public List<ConnectionDTO> getCreatedRemoteInputPortConnections() {
+            if(createdRemoteInputPortConnections == null){
+                createdRemoteInputPortConnections = new ArrayList<>();
+            }
+            return createdRemoteInputPortConnections;
+        }
+
+        public List<PortDTO> getDeletedRemoteInputPorts() {
+            if(deletedRemoteInputPorts == null){
+                deletedRemoteInputPorts = new ArrayList<>();
+            }
+            return deletedRemoteInputPorts;
+        }
+
+        public List<ConnectionDTO> getDeletedRemoteInputPortConnections() {
+            if(deletedRemoteInputPortConnections == null){
+                deletedRemoteInputPortConnections = new ArrayList<>();
+            }
+            return deletedRemoteInputPortConnections;
+        }
+
+        public void addCreatedRemoteInputPort(PortDTO portDTO){
+            getCreatedRemoteInputPorts().add(portDTO);
+        }
+
+        public void addCreatedRemoteInputPortConnection(ConnectionDTO connectionDTO){
+            getCreatedRemoteInputPortConnections().add(connectionDTO);
+        }
+
+        public void addDeletedRemoteInputPort(PortDTO portDTO){
+            getDeletedRemoteInputPorts().add(portDTO);
+        }
+
+        public void addDeletedRemoteInputPortConnection(ConnectionDTO connectionDTO){
+            getDeletedRemoteInputPortConnections().add(connectionDTO);
+        }
+
+
+    }
+
+    /**
+     * Class to track existing remote process input information
+     */
+    private class ExistingRemoteProcessInputPortInformation {
+
+        List<ConnectionDTO> existingRemoteConnectionsToTemplate;
+        Set<String> existingRemoteInputPortNames;
+
+        public ExistingRemoteProcessInputPortInformation(List<ConnectionDTO> existingRemoteConnectionsToTemplate,
+                                                         Set<String> existingRemoteInputPortNames) {
+            this.existingRemoteConnectionsToTemplate = existingRemoteConnectionsToTemplate;
+            this.existingRemoteInputPortNames = existingRemoteInputPortNames;
+        }
+
+        public List<ConnectionDTO> getExistingRemoteConnectionsToTemplate() {
+            return existingRemoteConnectionsToTemplate;
+        }
+
+        public Set<String> getExistingRemoteInputPortNames() {
+            return existingRemoteInputPortNames;
+        }
+    }
 
 }
 

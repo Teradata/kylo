@@ -31,7 +31,9 @@ import org.apache.nifi.web.api.entity.PortEntity;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
@@ -145,10 +147,21 @@ public class NiFiPortsRestClientV1 implements NiFiPortsRestClient {
 
     @Override
     public PortDTO deleteInputPort(@Nonnull String portId) {
-        PortEntity inputPortsEntity = client.delete("/input-ports/"+portId, null,PortEntity.class);
-        if(inputPortsEntity != null) {
-            return inputPortsEntity.getComponent();
+        try {
+            PortEntity current = client.get("/input-ports/" + portId, null, PortEntity.class);
+            if (current != null) {
+                Map<String, Object> params = new HashMap<>();
+                params.put("version", current.getRevision().getVersion());
+                params.put("clientId", current.getRevision().getClientId());
+                PortEntity inputPortsEntity = client.delete("/input-ports/" + portId, params, PortEntity.class);
+                if (inputPortsEntity != null) {
+                    return inputPortsEntity.getComponent();
+                }
+            }
         }
+        catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(portId, NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
+            }
         return null;
     }
 }
