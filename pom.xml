@@ -8,14 +8,89 @@
   <version>0.9.1-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>kylo</name>
-  <description>Kylo</description>
+  <description>Kylo is an enterprise-ready, open source, data lake management software platform for Hadoop and Spark integrating
+    best practices around metadata management, governance, and security learned from over Think Big's 150+ successful
+    big data projects.</description>
   <inceptionYear>2017</inceptionYear>
   <url>https://kylo.io</url>
   <organization>
-    <name>ThinkBig Analytics</name>
+    <name>ThinkBig Analytics, a Teradata Company</name>
     <url>https://www.thinkbiganalytics.com</url>
   </organization>
-
+  <developers>
+    <developer>
+      <name>Matt Hutton</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Director</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Scott Reisdorf</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Team Lead</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Sean Felten</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Tim Harsch</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Greg Hart</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Jeremy Merrifield</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Jagrut Sharma</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>America/Los_Angeles</timezone>
+    </developer>
+    <developer>
+      <name>Ruslans Uralovs</name>
+      <organization>ThinkBig Analytics, a Teradata Company</organization>
+      <organizationUrl>https://www.thinkbiganalytics.com</organizationUrl>
+      <roles>
+        <role>Developer</role>
+      </roles>
+      <timezone>Europe/Dublin</timezone>
+    </developer>
+  </developers>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <java.version>1.8</java.version>
@@ -176,14 +251,6 @@
     <tag>HEAD</tag>
     <url>https://github.com/Teradata/kylo</url>
   </scm>
-
-  <developers>
-    <developer>
-      <id>thinkbiganalytics</id>
-      <name>Think Big Analytics, A Teradata Company</name>
-      <url></url>
-    </developer>
-  </developers>
 
   <dependencyManagement>
     <dependencies>
