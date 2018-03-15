@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.example.kylo.spark</groupId>
+  <artifactId>kylo-provenance-samples</artifactId>
+  <version>0.9.1-SNAPSHOT</version>
+  <packaging>pom</packaging>
+
+
+  <parent>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <artifactId>kylo-samples</artifactId>
+    <version>0.9.1-SNAPSHOT</version>
+  </parent>
+
+  <properties>
+    <mainClass.name>com.example.spark.provenance.SparkProvenance</mainClass.name>
+    <plugin.license.parentRelative>../../</plugin.license.parentRelative>
+  </properties>
+
+  <modules>
+    <module>spark-provenance-app</module>
+  </modules>
+
+  <repositories>
+    <repository>
+      <id>spark-packages</id>
+      <url>https://dl.bintray.com/spark-packages/maven/</url>
+    </repository>
+  </repositories>
+  <dependencyManagement>
+    <dependencies>
+
+      <dependency>
+        <groupId>joda-time</groupId>
+        <artifactId>joda-time</artifactId>
+        <scope>provided</scope>
+      </dependency>
+
+      <!-- Apache Spark Dependencies -->
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-core_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-hive_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-mllib_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.spark</groupId>
+        <artifactId>spark-sql_${scala.binary.version}</artifactId>
+        <version>${spark.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        <version>2.4.6</version>
+        <scope>provided</scope>
+      </dependency>
+
+    </dependencies>
+  </dependencyManagement>
+</project>

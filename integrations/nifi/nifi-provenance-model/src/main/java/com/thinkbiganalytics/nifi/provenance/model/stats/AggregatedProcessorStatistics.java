@@ -68,11 +68,24 @@ public class AggregatedProcessorStatistics implements Serializable {
     }
 
     public boolean hasStats(){
-        return getStats().values().stream().anyMatch(s -> s.getTotalCount() >0);
+
+        boolean hasStats = false;
+        for(GroupedStats groupedStats : getStats().values()){
+            if(groupedStats.getTotalCount() >0){
+                hasStats = true;
+                break;
+            }
+        }
+        return hasStats;
+        //return getStats().values().stream().anyMatch(s -> s.getTotalCount() >0);
     }
 
     public GroupedStats getStats(String sourceConnectionIdentifier){
-      return  this.stats.computeIfAbsent(sourceConnectionIdentifier, id -> new GroupedStats(sourceConnectionIdentifier));
+        if(!this.stats.containsKey(sourceConnectionIdentifier)){
+            this.stats.put(sourceConnectionIdentifier,new GroupedStats(sourceConnectionIdentifier));
+        }
+        return this.stats.get(sourceConnectionIdentifier);
+      //return  this.stats.computeIfAbsent(sourceConnectionIdentifier, id -> new GroupedStats(sourceConnectionIdentifier));
     }
 
     public String getProcessorName() {

@@ -54,7 +54,7 @@ export class JobsCardController implements ng.IComponentController{
                 private TabService: any,
                 private AccessControlService: any,
                 private BroadcastService: any,
-                private $filter:any){
+                private OpsManagerRestUrlService:any){
          /**
          * Indicates that admin operations are allowed.
          * @type {boolean}
@@ -312,7 +312,7 @@ export class JobsCardController implements ng.IComponentController{
                 this.clearAllTimeouts();
                 var activeTab = this.TabService.getActiveTab(this.pageName);
 
-                this.refreshing = true;
+                this.showProgress = true;
                 var sortOptions = '';
                 var tabTitle = activeTab.title;
                 var filters = {tabTitle: tabTitle};
@@ -322,26 +322,26 @@ export class JobsCardController implements ng.IComponentController{
 
                 var sort = this.PaginationDataService.sort(this.pageName);
                 var canceler = this.$q.defer();
-                var successFn = (response: any)=> {
-                    if (response.data) {
-                        //transform the data for UI
-                        this.transformJobData(tabTitle, response.data.data);
-                        this.TabService.setTotal(this.pageName, tabTitle, response.data.recordsFiltered)
+                var transformJobs = (response: any)=> {
+                    //transform the data for UI
+                    this.transformJobData(tabTitle, response.data.data);
+                    this.TabService.setTotal(this.pageName, tabTitle, response.data.recordsFiltered)
 
-                        if (this.loading) {
-                            this.loading = false;
-                        }
+                    if (this.loading) {
+                        this.loading = false;
                     }
 
                     this.finishedRequest(canceler);
 
-                }
+                };
+                var successFn = (response: any)=> {
+                    if (response.data) {
+                        this.fetchFeedNames(response).then(transformJobs);
+                    }
+                };
                 var errorFn = (err: any)=> {
                     this.finishedRequest(canceler);
-                }
-                var finallyFn = ()=> {
-
-                }
+                };
                 this.activeJobRequests.push(canceler);
                 this.deferred = canceler;
                 this.promise = this.deferred.promise;
@@ -372,6 +372,37 @@ export class JobsCardController implements ng.IComponentController{
             return this.deferred;
 
         }
+
+        fetchFeedNames = (response:any) => {
+            var deferred = this.$q.defer();
+
+            this.showProgress = true;
+            var jobs = response.data.data;
+            if (jobs.length > 0) {
+                //_.uniq method to remove duplicates, there may be multiple jobs for the same feed
+                var feedNames = _.uniq(_.map(jobs, (job:any) => {
+                    return job.feedName;
+                }));
+                var namesPromise = this.$http.post(this.OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
+                namesPromise.then((result:any) => {
+                    _.each(jobs, (job:any) => {
+                        job.displayName = _.find(result.data, (systemNameToDisplayName) => {
+                            return systemNameToDisplayName.key === job.feedName;
+                        })
+                    });
+                    this.showProgress = false;
+                    deferred.resolve(response);
+                }, (err:any) => {
+                    console.error('Failed to receive feed names', err);
+                    this.showProgress = false;
+                    deferred.resolve(response);
+                });
+            } else {
+                deferred.resolve(response);
+            }
+
+            return deferred.promise;
+        };
 
         containsFilterOperator=(filterStr: any)=> {
             var contains = false;
@@ -668,7 +699,7 @@ angular.module(moduleName)
             ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast",
              "$mdPanel","OpsManagerJobService","TableOptionsService",
              "PaginationDataService","StateService","IconService","TabService",
-             "AccessControlService","BroadcastService","$filter",JobsCardController]);
+             "AccessControlService","BroadcastService","OpsManagerRestUrlService",JobsCardController]);
 angular.module(moduleName).directive('tbaJobs', [
     ()=>
     {

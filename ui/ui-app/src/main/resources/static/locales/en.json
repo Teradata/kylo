@@ -187,6 +187,7 @@
     "views.feed-details.FS": "Feed Summary",
     "views.feed-details.Disable": "Disable",
     "views.feed-details.Enable": "Enable",
+    "views.feed-details.StartFeed": "Start now",
     "views.feed-details.Delete": "Delete...",
     "views.feed-details.Upload": "Upload...",
     "views.feed-details.Export": "Export",
@@ -273,6 +274,8 @@
     "views.feeds.feed-details.FM": "Feed Manager",
     "views.feeds.feed-details.FeedD": "Feed Details",
     "views.feeds.feed-details.LF": "Loading Feed ...",
+    "views.feeds.feed-details.db.describe-table-dialog.Title":"Analyzing the table ",
+    "views.feeds.feed-details.db.describe-table-dialog.Message":"Analyzing the table and determining the schema and data types.  Please be patient",
 
     "views.all-page.Rows_per_page": "Rows per page",
 

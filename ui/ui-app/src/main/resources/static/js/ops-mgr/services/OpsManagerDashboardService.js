@@ -99,15 +99,19 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 var canceler = _this.$q.defer();
                 data.activeFeedRequest = canceler;
                 var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
-                var successFn = function (response) {
-                    data.feedsSearchResult = response.data;
-                    if (response.data && response.data.data) {
-                        data.setupFeedHealth(response.data.data);
+                var initDashboard = function (responseData) {
+                    data.feedsSearchResult = responseData;
+                    if (responseData && responseData.data) {
+                        data.setupFeedHealth(responseData.data);
                         //reset data.dashboard.feeds.data ?
-                        data.totalFeeds = response.data.recordsFiltered;
+                        data.totalFeeds = responseData.recordsFiltered;
                     }
                     data.activeFeedRequest = null;
                     data.skipDashboardFeedHealth = false;
+                    BroadcastService.notify(data.DASHBOARD_UPDATED, data.dashboard);
+                };
+                var successFn = function (response) {
+                    return response.data;
                 };
                 var errorFn = function (err) {
                     canceler.reject();
@@ -116,8 +120,36 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     data.skipDashboardFeedHealth = false;
                 };
                 var promise = _this.$http.get(_this.OpsManagerRestUrlService.DASHBOARD_PAGEABLE_FEEDS_URL, { timeout: canceler.promise, params: params });
-                promise.then(successFn, errorFn);
+                promise.then(successFn, errorFn).then(fetchPageableFeedNames).then(initDashboard);
                 return promise;
+            };
+            var fetchPageableFeedNames = function (resolveObj) {
+                var feeds = resolveObj.data;
+                return fetchFeedNames(resolveObj, feeds);
+            };
+            var fetchFeedNames = function (resolveObj, feeds) {
+                var deferred = $q.defer();
+                if (feeds.length > 0) {
+                    var feedNames = _.map(feeds, function (feed) {
+                        return feed.feed;
+                    });
+                    var namesPromise = $http.post(OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
+                    namesPromise.then(function (result) {
+                        _.each(feeds, function (feed) {
+                            feed.displayName = _.find(result.data, function (systemNameToDisplayName) {
+                                return systemNameToDisplayName.key === feed.feed;
+                            });
+                        });
+                        deferred.resolve(resolveObj);
+                    }, function (err) {
+                        console.error('Failed to receive feed names', err);
+                        deferred.resolve(resolveObj);
+                    });
+                }
+                else {
+                    deferred.resolve(resolveObj);
+                }
+                return deferred.promise;
             };
             data.updateFeedHealthQueryParams = function (tab, filter, start, limit, sort) {
                 var params = { start: start, limit: limit, sort: sort, filter: filter, fixedFilter: tab };
@@ -129,12 +161,12 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                 }
                 var canceler = $q.defer();
                 data.activeDashboardRequest = canceler;
-                var successFn = function (response) {
-                    data.dashboard = response.data;
+                var initDashboard = function (dashboard) {
+                    data.dashboard = dashboard;
                     //if the pagable feeds query came after this one it will flip the skip flag.
                     // that should supercede this request
                     if (!data.skipDashboardFeedHealth) {
-                        data.feedsSearchResult = response.data.feeds;
+                        data.feedsSearchResult = dashboard.feeds;
                         if (data.dashboard && data.dashboard.feeds && data.dashboard.feeds.data) {
                             var processedFeeds = data.setupFeedHealth(data.dashboard.feeds.data);
                             data.dashboard.feeds.data = processedFeeds;
@@ -153,7 +185,10 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     data.feedUnhealthyCount = data.dashboard.healthCounts['UNHEALTHY'] || 0;
                     data.feedHealthyCount = data.dashboard.healthCounts['HEALTHY'] || 0;
                     data.activeDashboardRequest = null;
-                    _this.BroadcastService.notify(data.DASHBOARD_UPDATED, data.dashboard);
+                    BroadcastService.notify(data.DASHBOARD_UPDATED, dashboard);
+                };
+                var successFn = function (response) {
+                    fetchFeedNames(response.data, response.data.feeds.data).then(initDashboard);
                 };
                 var errorFn = function (err) {
                     canceler.reject();

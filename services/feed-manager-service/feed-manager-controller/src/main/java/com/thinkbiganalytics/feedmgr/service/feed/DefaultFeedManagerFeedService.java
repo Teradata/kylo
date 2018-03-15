@@ -461,7 +461,7 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
         //functional access to be able to create a feed
         this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_FEEDS);
 
-        //Check and accept feed data history reindexing request if that is the case.
+        feedHistoryDataReindexingService.checkAndConfigureNiFi(feedMetadata);
         feedHistoryDataReindexingService.checkAndEnsureFeedHistoryDataReindexingRequestIsAcceptable(feedMetadata);
 
         if (feedMetadata.getState() == null) {
@@ -1091,7 +1091,9 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
         boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
         if (hasPermission) {
-            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            metadataAccess.commit(() -> {
+                feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            }, MetadataAccess.SERVICE);
         }
     }
 

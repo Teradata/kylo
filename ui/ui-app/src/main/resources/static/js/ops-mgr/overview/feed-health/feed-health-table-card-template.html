@@ -43,7 +43,7 @@
                   <div class="item-column md-list-item-text item-column-title"
                        layout-fill flex>
                            <span class="item-title" title="{{feed.feed}}">
-                              {{feed.feed}}
+                              {{feed.displayName === undefined ? feed.feed : feed.displayName.value}}
                             </span>
                   </div>
                   <div layout="row" layout-fill class="overview-row">

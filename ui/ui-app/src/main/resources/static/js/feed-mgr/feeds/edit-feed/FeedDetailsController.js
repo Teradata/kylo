@@ -49,7 +49,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param RegisterTemplateService
          * @param StateService
          */
-        function controller($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload, ConfigurationService, EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService) {
+        function controller($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload, ConfigurationService, EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, DatasourcesService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$transition$ = $transition$;
@@ -68,6 +68,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.EntityAccessControlDialogService = EntityAccessControlDialogService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.UiComponentsService = UiComponentsService;
+            this.AngularModuleExtensionService = AngularModuleExtensionService;
+            this.DatasourcesService = DatasourcesService;
             var SLA_INDEX = 3;
             var self = this;
             /**
@@ -98,6 +100,11 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             self.allowExport = false;
             /**
+             * Indicates if starting a feed is allowed.
+             * @type {boolean}
+             */
+            self.allowStart = false;
+            /**
              * Alow user to access the sla tab
              * @type {boolean}
              */
@@ -111,6 +118,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.uploadFile = null;
             this.uploading = false;
             this.uploadAllowed = false;
+            this.feedNavigationLinks = AngularModuleExtensionService.getFeedNavigation();
             /**
              * flag to indicate the feed could not be loaded
              * @type {boolean}
@@ -214,6 +222,11 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
                 $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
             };
+            this.feedNavigationLink = function (link) {
+                var feedId = self.feedId;
+                var feedName = self.model.systemCategoryName + "." + self.model.systemFeedName;
+                $state.go(link.sref, { feedId: feedId, feedName: feedName, model: self.model });
+            };
             this.showFeedUploadDialog = function () {
                 $mdDialog.show({
                     controller: 'FeedUploadFileDialogController',
@@ -280,6 +293,25 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     });
                 }
             };
+            /**
+             * Starts this feed.
+             */
+            this.startFeed = function () {
+                if (!self.startingFeed && self.allowStart) {
+                    self.startingFeed = true;
+                    $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response) {
+                        self.startingFeed = false;
+                    }, function () {
+                        $mdDialog.show($mdDialog.alert()
+                            .clickOutsideToClose(true)
+                            .title("NiFi Error")
+                            .textContent("The feed could not be started.")
+                            .ariaLabel("Cannot start feed.")
+                            .ok("OK"));
+                        self.startingFeed = false;
+                    });
+                }
+            };
             function mergeTemplateProperties(feed) {
                 var successFn = function (response) {
                     return response;
@@ -318,7 +350,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 });
             };
             this.onTableClick = function () {
-                StateService.FeedManager().Table().navigateToTable(self.model.category.systemName, self.model.table.tableSchema.name);
+                StateService.FeedManager().Table().navigateToTable(DatasourcesService.getHiveDatasource().id, self.model.category.systemName, self.model.table.tableSchema.name);
             };
             this.addSla = function () {
                 self.selectedTabIndex = SLA_INDEX;
@@ -389,13 +421,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                                 var entityAccessControlled = AccessControlService.isEntityAccessControlled();
                                 //Apply the entity access permissions
                                 var requests = {
-                                    entityEditAccess: entityAccessControlled === true
-                                        ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model)
-                                        : true,
+                                    entityEditAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model),
                                     entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
-                                    entityPermissionAccess: entityAccessControlled === true
-                                        ? FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model)
-                                        : true,
+                                    entityStartAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START, self.model),
+                                    entityPermissionAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
                                     functionalAccess: AccessControlService.getUserAllowedActions()
                                 };
                                 $q.all(requests).then(function (response) {
@@ -403,11 +432,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                                     var allowAdminAccess = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
                                     var slaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
                                     var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+                                    var allowStart = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
                                     self.allowEdit = response.entityEditAccess && allowEditAccess;
                                     self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
                                     self.allowAdmin = allowAdminAccess;
                                     self.allowSlaAccess = slaAccess;
                                     self.allowExport = response.entityExportAccess && allowExport;
+                                    self.allowStart = response.entityStartAccess && allowStart;
                                 });
                             }
                         }, function (err) {
@@ -488,7 +519,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 : '';
         };
     });
-    angular.module(moduleName).controller('FeedDetailsController', ["$scope", "$q", "$transition$", "$mdDialog", "$mdToast", "$http", "$state", "AccessControlService", "RestUrlService", "FeedService", "RegisterTemplateService", "StateService", "SideNavService", "FileUpload", "ConfigurationService", "EntityAccessControlDialogService", "EntityAccessControlService", "UiComponentsService", controller]);
+    angular.module(moduleName).controller('FeedDetailsController', ["$scope", "$q", "$transition$", "$mdDialog", "$mdToast", "$http", "$state", "AccessControlService", "RestUrlService", "FeedService", "RegisterTemplateService", "StateService", "SideNavService", "FileUpload", "ConfigurationService", "EntityAccessControlDialogService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "DatasourcesService", controller]);
     angular.module(moduleName).controller('FeedUploadFileDialogController', ["$scope", "$mdDialog", "$http", "RestUrlService", "FileUpload", "feedId", FeedUploadFileDialogController]);
 });
 //# sourceMappingURL=FeedDetailsController.js.map

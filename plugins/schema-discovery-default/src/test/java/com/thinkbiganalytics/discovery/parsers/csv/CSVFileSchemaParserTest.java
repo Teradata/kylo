@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.csv;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,8 @@ import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
+
+import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -46,40 +48,41 @@ public class CSVFileSchemaParserTest {
         return new ByteArrayInputStream(text.getBytes());
     }
 
-    @org.junit.Test
+    @Test
     public void testEmbeddedCommas() throws Exception {
         validateSchema1("col1,col2,col3\n\"Edoceo, Inc.\",Seattle,WA\nfoo,bar,fee");
     }
 
-    @org.junit.Test
+    @Test
     public void testEmbeddedCommasNoAutodetect() throws Exception {
         parser.setAutoDetect(false);
         validateSchema1("col1,col2,col3\n\"Edoceo, Inc.\",Seattle,WA\nfoo,bar,fee");
     }
 
-    @org.junit.Test
+    @Test
     public void testDefaultCSVParse() throws Exception {
         validateSchema1("col1,col2,col3\nr1v1,r1v2,r1v3\nr2v1,r2v2,r2v3\n");
     }
 
-    @org.junit.Test
+    @Test
     public void testSemiColonCSVWithEscapeParse() throws Exception {
         parser.setSeparatorChar(";");
         validateSchema1("col1;col2;col3\nr1v1;r1v2;r1v3\nr2v1;r2v2;r2v3\n");
     }
-    @org.junit.Test
+
+    @Test
     public void testTildeCSVWithEscapeParse() throws Exception {
         parser.setSeparatorChar("~");
         validateSchema1("col1~col2~col3\nr1v1~r1v2~r1v3\nr2v1~r2v2~r2v3\n");
     }
 
-    @org.junit.Test
+    @Test
     public void testSemiColonTSVWithEscapeParse() throws Exception {
         parser.setSeparatorChar("\t");
         validateSchema1("col1\tcol2\tcol3\nr1v1\tr1v2\tr1v3\nr2v1\tr2v2\tr2v3\n");
     }
 
-    @org.junit.Test
+    @Test
     public void testNoHeader() throws Exception {
         parser.setHeaderRow(false);
         try (InputStream is = toInputStream("r1v1,r1v2,r1v3\nr2v1,r2v2,r2v3\n")) {
@@ -95,13 +98,13 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testNoHeaderFirstRowDuplicateValues() throws Exception {
         parser.setHeaderRow(false);
         firstRowDuplicateValues();
     }
 
-    @org.junit.Test (expected=IllegalArgumentException.class)
+    @Test(expected = IllegalArgumentException.class)
     public void testHeaderFirstRowDuplicateValues() throws Exception {
         parser.setHeaderRow(true);
         firstRowDuplicateValues();
@@ -121,7 +124,7 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testNoHeaderFirstRowNoDuplicateValues() throws Exception {
         parser.setHeaderRow(false);
         try (InputStream is = toInputStream("HEAD_1,HEAD_2,HEAD_3\nr2v1,r2v2,r2v3\n")) {
@@ -136,7 +139,7 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testHeaderFirstRowNoDuplicateValues() throws Exception {
         parser.setHeaderRow(true);
         try (InputStream is = toInputStream("HEAD_1,HEAD_2,HEAD_3\nr2v1,r2v2,r2v3\n")) {
@@ -151,7 +154,7 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testSparse() throws Exception {
         // Test extra columns
         parser.setSeparatorChar("\t");
@@ -163,33 +166,46 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testCSVUnixFile() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.csv_unix.txt");
         assertTrue("Expecting csv delim", ",".equals(parser.getSeparatorChar()));
     }
 
-    @org.junit.Test
+    @Test
     public void testCSVWinFile() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.csv_win.txt");
     }
 
-    @org.junit.Test
+    @Test
     public void testTABUnixFile() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.tab_unix.txt");
         assertTrue("Expecting tab delim", "\t".equals(parser.getSeparatorChar()));
     }
 
-    @org.junit.Test
+    @Test
+    public void testChoosesCommaSeparator() throws Exception {
+        // see: KYLO-1267
+        parser.setAutoDetect(true);
+
+        validateSchema3("MOCK_DATA.commasep.txt");
+        assertTrue("Expecting comma delimiter", ",".equals(parser.getSeparatorChar()));
+
+        validateSchema3("MOCK_DATA.spacesep.txt");
+        assertTrue("Expecting space delimiter", " ".equals(parser.getSeparatorChar()));
+    }
+
+
+    @Test
     public void testExcel() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.csv_excel.txt");
     }
 
-    @org.junit.Test
+    @Test
     public void testCustom() throws Exception {
         parser.setAutoDetect(false);
         parser.setSeparatorChar("*");
@@ -197,14 +213,14 @@ public class CSVFileSchemaParserTest {
 
     }
 
-    @org.junit.Test
+    @Test
     public void testPipeDelim() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.pipe.txt");
         assertTrue("Expecting pipe delim", "|".equals(parser.getSeparatorChar()));
     }
 
-    @org.junit.Test
+    @Test
     public void testSingleQuotedDelim() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA_csv_singlequote.txt");
@@ -212,7 +228,7 @@ public class CSVFileSchemaParserTest {
         assertTrue("Expecting single quote char", "'".equals(parser.getQuoteChar()));
     }
 
-    @org.junit.Test
+    @Test
     public void testSingleQuoted() throws Exception {
         // Test single quoted string with embedded quote "
         parser.setAutoDetect(true);
@@ -221,7 +237,7 @@ public class CSVFileSchemaParserTest {
         assertTrue("Expecting single quote char", "'".equals(parser.getQuoteChar()));
     }
 
-    @org.junit.Test
+    @Test
     public void testEmptyStream() throws Exception {
         parser.setAutoDetect(true);
         try {
@@ -232,7 +248,7 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testNoDelimFound() throws Exception {
         // Should return defaults and not error
         parser.setAutoDetect(true);
@@ -246,7 +262,7 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
+    @Test
     public void testUTF16() throws Exception {
         try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream("MOCK_DATA_utf16_encoded.txt")) {
             parser.setAutoDetect(false);
@@ -338,5 +354,15 @@ public class CSVFileSchemaParserTest {
         }
     }
 
+    private HiveTableSchema validateSchema3(String filename) throws IOException {
+        try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream(filename)) {
+            HiveTableSchema schema = toHiveTableSchema(is);
+            List<? extends Field> fields = schema.getFields();
+            assertTrue("Expecting 6 fields", fields.size() == 6);
 
+            assertEquals("Expecting 1 samples value", 1, fields.get(0).getSampleValues().size());
+            return schema;
+        }
+
+    }
 }

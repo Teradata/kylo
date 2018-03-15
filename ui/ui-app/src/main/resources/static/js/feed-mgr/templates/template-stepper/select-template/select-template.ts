@@ -58,11 +58,13 @@ export class RegisterSelectTemplateController {
     confirmDeleteTemplate:any;
     onTableOptionChange:any;
     allowExport:any;
+    templateNavigationLinks:any;
+    templateNavigationLink:any;
 
     constructor(private $scope:any, private $http:any, private $mdDialog:any, private $mdToast:any, private $timeout:any
-        , private $q:any,private RestUrlService:any, private RegisterTemplateService:any, private StateService:any
-        , private AccessControlService:any, private EntityAccessControlService:any,
-        private UiComponentsService:any) {
+        , private $q:any, private $state:any, private RestUrlService:any, private RegisterTemplateService:any, private StateService:any
+        , private AccessControlService:any, private EntityAccessControlService:any, private UiComponentsService:any
+        , private AngularModuleExtensionService:any, private BroadcastService:any) {
 
         var self = this;
 
@@ -108,6 +110,8 @@ export class RegisterSelectTemplateController {
          * @type {boolean}
          */
         self.fetchingTemplateList = false;
+
+        this.templateNavigationLinks = AngularModuleExtensionService.getTemplateNavigation();
 
         /**
          * The possible options to choose how this template should be displayed in the Feed Stepper
@@ -164,6 +168,16 @@ export class RegisterSelectTemplateController {
         }
 
         /**
+         * Navigate the user to the state
+         * @param link
+         */
+        this.templateNavigationLink = function (link:any) {
+            var templateId = self.registeredTemplateId;
+            var templateName = self.model.templateName;
+            $state.go(link.sref, {templateId: templateId, templateName: templateName, model: self.model});
+        }
+
+        /**
          * Gets the templates for the select dropdown
          * @returns {HttpPromise}
          */
@@ -173,9 +187,41 @@ export class RegisterSelectTemplateController {
             RegisterTemplateService.getTemplates().then(function (response:any) {
                 self.templates = response.data;
                 self.fetchingTemplateList = false;
+                matchNiFiTemplateIdWithModel();
                 hideProgress();
             });
         };
+
+        /**
+         * Ensure that the value for the select list matches the model(if a model is selected)
+         */
+        function matchNiFiTemplateIdWithModel() {
+            if (!self.isLoading() && self.model.nifiTemplateId != self.nifiTemplateId) {
+                var matchingTemplate = self.templates.find(function (template:any) {
+                    var found = angular.isDefined(template.templateDto) ? template.templateDto.id == self.model.nifiTemplateId : template.id == self.model.nifiTemplateId;
+                    if (!found) {
+                        //check on template name
+                        found = self.model.templateName == template.name;
+                    }
+                    return found;
+                });
+                if (angular.isDefined(matchingTemplate)) {
+                    self.nifiTemplateId = matchingTemplate.templateDto.id;
+                }
+            }
+        }
+
+        /**
+         * Called either after the the template has been selected from the previous screen, or after the template select list is loaded
+         */
+        function onRegisteredTemplateLoaded() {
+            matchNiFiTemplateIdWithModel();
+        }
+
+        /**
+         * Get notified when a already registered template is selected and loaded from the previous screen
+         */
+        BroadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", onRegisteredTemplateLoaded);
 
         this.changeTemplate = function () {
             self.errorMessage = null;
@@ -335,8 +381,8 @@ export class RegisterSelectTemplateController {
     
 }
 
-    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","RestUrlService","RegisterTemplateService","StateService",
-                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService",RegisterSelectTemplateController]);
+    angular.module(moduleName).controller('RegisterSelectTemplateController', ["$scope","$http","$mdDialog","$mdToast","$timeout","$q","$state","RestUrlService","RegisterTemplateService","StateService",
+                                                                               "AccessControlService","EntityAccessControlService","UiComponentsService", "AngularModuleExtensionService", "BroadcastService", RegisterSelectTemplateController]);
 
     angular.module(moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);

@@ -138,6 +138,7 @@ constructor(private $scope: any,
 
 
         onTabSelected = (tab: any) =>{
+            tab.clearContent();
             this.TabService.selectedTab(this.pageName, tab);
             if(this.loaded || (!this.loaded && !this.OpsManagerDashboardService.isFetchingDashboard())) {
                 return this.loadFeeds(true, true);
@@ -287,7 +288,6 @@ constructor(private $scope: any,
               var filter = queryParams.filter;
               this.OpsManagerDashboardService.updateFeedHealthQueryParams(tab,filter,start , limit, sort);
               this.fetchFeedHealthPromise =  this.OpsManagerDashboardService.fetchFeeds(tab,filter,start , limit, sort).then( (response: any)=> {
-                    this.populateFeedData(tab);
               },
               (err: any)=>{
                   this.loaded = true;

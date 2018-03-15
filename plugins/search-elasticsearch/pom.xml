@@ -10,7 +10,6 @@
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
-    <elasticsearch.version>2.3.0</elasticsearch.version>
   </properties>
   <artifactId>kylo-search-elasticsearch</artifactId>
 
@@ -41,7 +40,7 @@
     <dependency>
       <groupId>org.elasticsearch</groupId>
       <artifactId>elasticsearch</artifactId>
-      <version>${elasticsearch.version}</version>
+      <version>${elasticsearch.version.two}</version>
     </dependency>
 
     <dependency>
@@ -72,6 +71,36 @@
       <artifactId>modeshape-jcr-api</artifactId>
       <version>${modeshape.version}</version>
       <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-analyzers-common</artifactId>
+      <version>${lucene.version.elasticsearch.version.two}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-core</artifactId>
+      <version>${lucene.version.elasticsearch.version.two}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-queryparser</artifactId>
+      <version>${lucene.version.elasticsearch.version.two}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.lucene</groupId>
+      <artifactId>lucene-sandbox</artifactId>
+      <version>${lucene.version.elasticsearch.version.two}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+      <version>1.3.7</version>
     </dependency>
 
     <dependency>

@@ -5,7 +5,9 @@ import "../module";
 export default class OpsManagerRestUrlService{
     constructor(){}
     ROOT: string = "";
-    SLA_BASE_URL = "/proxy/v1/feedmgr/sla";
+    FEED_MGR_BASE = "/proxy/v1/feedmgr";
+    FEED_MGR_FEED_BASE_URL = this.FEED_MGR_BASE + "/feeds";
+    SLA_BASE_URL = this.FEED_MGR_BASE + "/sla";
     FEEDS_BASE = "/proxy/v1/feeds";
     JOBS_BASE = "/proxy/v1/jobs";
     SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
@@ -14,6 +16,7 @@ export default class OpsManagerRestUrlService{
 
     FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
     FEED_NAMES_URL = this.FEEDS_BASE + "/names";
+    FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = this.FEED_MGR_FEED_BASE_URL + "/feed-system-name-to-display-name";
     FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";
 
     /*this.SPECIFIC_FEED_HEALTH_COUNT_URL = function (feedName) {

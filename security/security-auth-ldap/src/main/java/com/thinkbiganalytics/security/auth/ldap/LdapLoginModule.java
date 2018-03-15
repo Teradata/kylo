@@ -89,7 +89,7 @@ public class LdapLoginModule extends AbstractLoginModule {
         }
 
         Principal userPrincipal = new UsernamePrincipal(nameCallback.getName());
-        char[] password = passwordCallback.getPassword();
+        String password = new String(passwordCallback.getPassword());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, password);
 
         try {

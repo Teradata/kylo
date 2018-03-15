@@ -100,16 +100,16 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
 
     public JcrFeed(Node node, JcrCategory category) {
         this(node, (FeedOpsAccessControlProvider) null);
-        if (category != null) {
-            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-        }
+//        if (category != null) {
+//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
+//        }
     }
 
     public JcrFeed(Node node, JcrCategory category, FeedOpsAccessControlProvider opsAccessProvider) {
         this(node, opsAccessProvider);
-        if (category != null) {
-            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
-        }
+//        if (category != null) {
+//            getFeedSummary().ifPresent(s -> s.setProperty(FeedSummary.CATEGORY, category));
+//        }
     }
 
 
@@ -255,9 +255,19 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
         getFeedSummary().ifPresent(s -> s.setTitle(title));
     }
 
+//    
+//    public Category getCategory() {
+//        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
+//    }
 
     public Category getCategory() {
-        return getFeedSummary().map(s -> s.getCategory(JcrCategory.class)).orElse(null);
+        Node catNode = JcrUtil.getParent(getNode());
+        
+        if (catNode != null) {
+            return JcrCategory.createCategory(catNode, getOpsAccessProvider());
+        } else {
+            return null;
+        }
     }
 
     public FeedManagerTemplate getTemplate() {

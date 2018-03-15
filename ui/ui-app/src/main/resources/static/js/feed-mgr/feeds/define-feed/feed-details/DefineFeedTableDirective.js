@@ -150,6 +150,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     columnDef.origName = columnDef.name;
                     columnDef.origDataType = columnDef.derivedDataType;
                     columnDef.deleted = false;
+                    columnDef._id = _.uniqueId();
                     columnDef.history = [];
                     self.addHistoryItem(columnDef);
                 }
@@ -503,6 +504,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 _.each(_.keys(columnsByName), function (columnName) {
                     var group = columnsByName[columnName];
                     _.each(group, function (column) {
+                        if (column.validationErrors === undefined) {
+                            initValidationErrors(column);
+                        }
                         if (columnName !== "") {
                             column.validationErrors.name.notUnique = group.length > 1;
                         }

@@ -150,6 +150,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         this.DISABLE_FEED_URL = function (feedId) {
             return self.FEEDS_BASE_URL + "/disable/" + feedId;
         };
+        this.START_FEED_URL = function (feedId) {
+            return self.FEEDS_BASE_URL + "/start/" + feedId;
+        };
         this.UPLOAD_FILE_FEED_URL = function (feedId) {
             return self.FEEDS_BASE_URL + "/" + feedId + "/upload-file";
         };

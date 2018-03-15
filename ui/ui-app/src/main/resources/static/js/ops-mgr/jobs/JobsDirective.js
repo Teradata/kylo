@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobsCardController = /** @class */ (function () {
-        function JobsCardController($scope, $http, $mdDialog, $timeout, $mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, AccessControlService, BroadcastService, $filter) {
+        function JobsCardController($scope, $http, $mdDialog, $timeout, $mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, AccessControlService, BroadcastService, OpsManagerRestUrlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -20,7 +20,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
             this.TabService = TabService;
             this.AccessControlService = AccessControlService;
             this.BroadcastService = BroadcastService;
-            this.$filter = $filter;
+            this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.updateJobs = function () {
                 _this.loadJobs(true);
             };
@@ -144,7 +144,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
                     }
                     _this.clearAllTimeouts();
                     var activeTab = _this.TabService.getActiveTab(_this.pageName);
-                    _this.refreshing = true;
+                    _this.showProgress = true;
                     var sortOptions = '';
                     var tabTitle = activeTab.title;
                     var filters = { tabTitle: tabTitle };
@@ -152,21 +152,22 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
                     var start = (limit * activeTab.currentPage) - limit; //this.query.page(this.selectedTab));
                     var sort = _this.PaginationDataService.sort(_this.pageName);
                     var canceler = _this.$q.defer();
-                    var successFn = function (response) {
-                        if (response.data) {
-                            //transform the data for UI
-                            _this.transformJobData(tabTitle, response.data.data);
-                            _this.TabService.setTotal(_this.pageName, tabTitle, response.data.recordsFiltered);
-                            if (_this.loading) {
-                                _this.loading = false;
-                            }
+                    var transformJobs = function (response) {
+                        //transform the data for UI
+                        _this.transformJobData(tabTitle, response.data.data);
+                        _this.TabService.setTotal(_this.pageName, tabTitle, response.data.recordsFiltered);
+                        if (_this.loading) {
+                            _this.loading = false;
                         }
                         _this.finishedRequest(canceler);
                     };
+                    var successFn = function (response) {
+                        if (response.data) {
+                            _this.fetchFeedNames(response).then(transformJobs);
+                        }
+                    };
                     var errorFn = function (err) {
                         _this.finishedRequest(canceler);
-                    };
-                    var finallyFn = function () {
                     };
                     _this.activeJobRequests.push(canceler);
                     _this.deferred = canceler;
@@ -191,6 +192,35 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
                 }
                 _this.showProgress = true;
                 return _this.deferred;
+            };
+            this.fetchFeedNames = function (response) {
+                var deferred = _this.$q.defer();
+                _this.showProgress = true;
+                var jobs = response.data.data;
+                if (jobs.length > 0) {
+                    //_.uniq method to remove duplicates, there may be multiple jobs for the same feed
+                    var feedNames = _.uniq(_.map(jobs, function (job) {
+                        return job.feedName;
+                    }));
+                    var namesPromise = _this.$http.post(_this.OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL, feedNames);
+                    namesPromise.then(function (result) {
+                        _.each(jobs, function (job) {
+                            job.displayName = _.find(result.data, function (systemNameToDisplayName) {
+                                return systemNameToDisplayName.key === job.feedName;
+                            });
+                        });
+                        _this.showProgress = false;
+                        deferred.resolve(response);
+                    }, function (err) {
+                        console.error('Failed to receive feed names', err);
+                        _this.showProgress = false;
+                        deferred.resolve(response);
+                    });
+                }
+                else {
+                    deferred.resolve(response);
+                }
+                return deferred.promise;
             };
             this.containsFilterOperator = function (filterStr) {
                 var contains = false;
@@ -536,7 +566,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
         .controller("JobsCardController", ["$scope", "$http", "$mdDialog", "$timeout", "$mdMenu", "$q", "$mdToast",
         "$mdPanel", "OpsManagerJobService", "TableOptionsService",
         "PaginationDataService", "StateService", "IconService", "TabService",
-        "AccessControlService", "BroadcastService", "$filter", JobsCardController]);
+        "AccessControlService", "BroadcastService", "OpsManagerRestUrlService", JobsCardController]);
     angular.module(module_name_1.moduleName).directive('tbaJobs', [
         function () {
             return {

@@ -190,6 +190,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 _.each(data.createFeedModel.table.tableSchema.fields, function (field) {
                     field._id = _.uniqueId();
                 });
+                _.each(data.createFeedModel.table.partitions, function (partition) {
+                    partition._id = _.uniqueId();
+                });
                 return data.createFeedModel;
             },
             /**

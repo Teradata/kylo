@@ -540,6 +540,14 @@ public class JerseyRestClient {
         return obj;
     }
 
+    /**
+     * Makes a GET request and doesn't handle errors on purpose.
+     */
+    public <T> T get(String path, Class<T> clazz) {
+        WebTarget target = getTargetFromPath(path);
+        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
+    }
+
 
     /**
      * call a GET request

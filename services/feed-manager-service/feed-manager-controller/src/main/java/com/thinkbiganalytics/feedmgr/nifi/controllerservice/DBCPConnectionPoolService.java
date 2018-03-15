@@ -283,7 +283,7 @@ public class DBCPConnectionPoolService {
                          dataSourceProperties.getUrl());
                 DataSource dataSource = PoolingDataSourceService.getDataSource(dataSourceProperties);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
-                return schemaParser.listCatalogs();
+                return schemaParser.listSchemasOrCatalogs();
             }
         }
         return null;

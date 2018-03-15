@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.datavalidator.functions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -70,6 +70,25 @@ public class CleanseAndValidateRowTest {
         @Override
         public Object convertRawValue(Object value) {
             return ((Integer) value) + 1;
+        }
+    };
+
+    @SuppressWarnings("serial")
+    private static final StandardizationPolicy EXCEPTION_POLICY = new StandardizationPolicy() {
+
+        @Override
+        public String convertValue(String value) {
+            throw new IllegalStateException("Method not implemented");
+        }
+
+        @Override
+        public Boolean accepts(Object value) {
+            return true;
+        }
+
+        @Override
+        public Object convertRawValue(Object value) {
+            return convertValue((String)value);
         }
     };
 
@@ -232,13 +251,27 @@ public class CleanseAndValidateRowTest {
         assertEquals(StandardDataValidator.VALID_RESULT, result.getFinalValidationResult());
     }
 
+
+    @Test
+    public void exceptionsShouldNotStopStandardization() {
+        StandardizationPolicy standardizer = EXCEPTION_POLICY;
+        String fieldName = "field1";
+        List<BaseFieldPolicy> policies = new ArrayList<>();
+        policies.add(standardizer);
+        FieldPolicy fieldPolicy = FieldPolicyBuilder.newBuilder().addPolicies(policies).tableName("emp").fieldName(fieldName).feedFieldName(fieldName).build();
+
+        HCatDataType fieldDataType = HCatDataType.createFromDataType(fieldName, "string");
+        StandardizationAndValidationResult result = validator.standardizeAndValidateField(fieldPolicy, "aafooaa", fieldDataType, new HashMap<Class, Class>());
+        assertEquals(result.getFieldValue(), "aafooaa");
+    }
+
     @Test
     public void convertBooleanType() {
         String booleanFieldName = "flag";
         HCatDataType fieldDataType = HCatDataType.createFromDataType(booleanFieldName, "boolean");
         assertNotNull(fieldDataType);
         assertFalse(fieldDataType.isUnchecked());
-        assertEquals(fieldDataType.getConvertibleType().getName(),"java.lang.Boolean");
+        assertEquals(fieldDataType.getConvertibleType().getName(), "java.lang.Boolean");
     }
 
     @Test
@@ -248,7 +281,7 @@ public class CleanseAndValidateRowTest {
         String booleanValueAsString = "true";
         HCatDataType dataType = HCatDataType.createFromDataType(booleanFieldName, "boolean");
         booleanValueAsBoolean = dataType.toNativeValue(booleanValueAsString);
-        assertEquals(booleanValueAsBoolean.getClass().getName(),"java.lang.Boolean");
+        assertEquals(booleanValueAsBoolean.getClass().getName(), "java.lang.Boolean");
         assertEquals(booleanValueAsBoolean.toString(), "true");
     }
 }

@@ -214,7 +214,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             ExtensibleEntity entity = entityProvider.getEntity(id);
 
             assertThat(entity).isNotNull();
-            assertThat(entity.getProperty("name")).isEqualTo("Bob");
+            assertThat(entity.<String>getProperty("name")).isEqualTo("Bob");
 
             return entity.getTypeName();
         }, MetadataAccess.SERVICE);

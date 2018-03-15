@@ -20,6 +20,7 @@ package com.thinkbiganalytics.policy.validation;
  * #L%
  */
 
+import org.joda.time.DateTimeZone;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
@@ -33,7 +34,7 @@ import static org.junit.Assert.fail;
 public class DateValidatorTest {
 
     @Test
-    public void testInstance() throws Exception {
+    public void testInstance() {
         DateValidator ts = DateValidator.instance();
         assertTrue(ts.validate("2015-01-15"));
         assertFalse(ts.validate("2015-01-15 11:00:15"));
@@ -43,7 +44,7 @@ public class DateValidatorTest {
     }
 
     @Test
-    public void testParse() throws Exception {
+    public void testParse() {
         DateValidator ts = DateValidator.instance();
         assertNotNull(ts.parseDate("2015-01-15"));
         try {
@@ -53,5 +54,18 @@ public class DateValidatorTest {
             // good
         }
 
+    }
+
+    @Test
+    public void testNST() {
+        DateTimeZone defaultTZ = DateTimeZone.getDefault();
+        DateTimeZone.setDefault(DateTimeZone.forID("Asia/Novosibirsk"));
+
+        // see: https://github.com/Teradata/kylo/pull/64, KYLO-1358 and https://github.com/JodaOrg/joda-time/issues/356
+        DateValidator ts = DateValidator.instance();
+        assertTrue(ts.validate("1983-04-02"));
+        assertTrue(ts.validate("1983-04-01"));
+
+        DateTimeZone.setDefault(defaultTZ);
     }
 }

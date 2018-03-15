@@ -16,6 +16,7 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
             this.data = {};
             this.data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
             this.data.FEED_NAMES_URL = this.OpsManagerRestUrlService.FEED_NAMES_URL;
+            this.data.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = OpsManagerRestUrlService.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL;
             this.data.FEED_HEALTH_COUNT_URL = this.OpsManagerRestUrlService.FEED_HEALTH_COUNT_URL;
             this.data.FETCH_FEED_HEALTH_INTERVAL = 5000;
             this.data.fetchFeedHealthInterval = null;

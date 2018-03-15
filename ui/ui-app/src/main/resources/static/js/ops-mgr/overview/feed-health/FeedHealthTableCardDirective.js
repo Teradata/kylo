@@ -17,6 +17,7 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
             this.StateService = StateService;
             this.BroadcastService = BroadcastService;
             this.onTabSelected = function (tab) {
+                tab.clearContent();
                 _this.TabService.selectedTab(_this.pageName, tab);
                 if (_this.loaded || (!_this.loaded && !_this.OpsManagerDashboardService.isFetchingDashboard())) {
                     return _this.loadFeeds(true, true);
@@ -155,7 +156,6 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
                     var filter = queryParams.filter;
                     this.OpsManagerDashboardService.updateFeedHealthQueryParams(tab, filter, start, limit, sort);
                     this.fetchFeedHealthPromise = this.OpsManagerDashboardService.fetchFeeds(tab, filter, start, limit, sort).then(function (response) {
-                        _this.populateFeedData(tab);
                     }, function (err) {
                         _this.loaded = true;
                         var activeTab = _this.TabService.getActiveTab(_this.pageName);

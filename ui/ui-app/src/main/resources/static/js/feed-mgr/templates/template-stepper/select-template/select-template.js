@@ -25,19 +25,22 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         };
     };
     var RegisterSelectTemplateController = /** @class */ (function () {
-        function RegisterSelectTemplateController($scope, $http, $mdDialog, $mdToast, $timeout, $q, RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService, UiComponentsService) {
+        function RegisterSelectTemplateController($scope, $http, $mdDialog, $mdToast, $timeout, $q, $state, RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, BroadcastService) {
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
             this.$timeout = $timeout;
             this.$q = $q;
+            this.$state = $state;
             this.RestUrlService = RestUrlService;
             this.RegisterTemplateService = RegisterTemplateService;
             this.StateService = StateService;
             this.AccessControlService = AccessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.UiComponentsService = UiComponentsService;
+            this.AngularModuleExtensionService = AngularModuleExtensionService;
+            this.BroadcastService = BroadcastService;
             var self = this;
             this.templates = [];
             this.model = RegisterTemplateService.model;
@@ -73,6 +76,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
              * @type {boolean}
              */
             self.fetchingTemplateList = false;
+            this.templateNavigationLinks = AngularModuleExtensionService.getTemplateNavigation();
             /**
              * The possible options to choose how this template should be displayed in the Feed Stepper
              * @type {Array.<TemplateTableOption>}
@@ -123,6 +127,15 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
                 return self.loadingTemplate || self.fetchingTemplateList || self.model.loading;
             };
             /**
+             * Navigate the user to the state
+             * @param link
+             */
+            this.templateNavigationLink = function (link) {
+                var templateId = self.registeredTemplateId;
+                var templateName = self.model.templateName;
+                $state.go(link.sref, { templateId: templateId, templateName: templateName, model: self.model });
+            };
+            /**
              * Gets the templates for the select dropdown
              * @returns {HttpPromise}
              */
@@ -132,9 +145,38 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
                 RegisterTemplateService.getTemplates().then(function (response) {
                     self.templates = response.data;
                     self.fetchingTemplateList = false;
+                    matchNiFiTemplateIdWithModel();
                     hideProgress();
                 });
             };
+            /**
+             * Ensure that the value for the select list matches the model(if a model is selected)
+             */
+            function matchNiFiTemplateIdWithModel() {
+                if (!self.isLoading() && self.model.nifiTemplateId != self.nifiTemplateId) {
+                    var matchingTemplate = self.templates.find(function (template) {
+                        var found = angular.isDefined(template.templateDto) ? template.templateDto.id == self.model.nifiTemplateId : template.id == self.model.nifiTemplateId;
+                        if (!found) {
+                            //check on template name
+                            found = self.model.templateName == template.name;
+                        }
+                        return found;
+                    });
+                    if (angular.isDefined(matchingTemplate)) {
+                        self.nifiTemplateId = matchingTemplate.templateDto.id;
+                    }
+                }
+            }
+            /**
+             * Called either after the the template has been selected from the previous screen, or after the template select list is loaded
+             */
+            function onRegisteredTemplateLoaded() {
+                matchNiFiTemplateIdWithModel();
+            }
+            /**
+             * Get notified when a already registered template is selected and loaded from the previous screen
+             */
+            BroadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", onRegisteredTemplateLoaded);
             this.changeTemplate = function () {
                 self.errorMessage = null;
                 self.loadingTemplate = true;
@@ -270,8 +312,8 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         return RegisterSelectTemplateController;
     }());
     exports.RegisterSelectTemplateController = RegisterSelectTemplateController;
-    angular.module(module_name_1.moduleName).controller('RegisterSelectTemplateController', ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "RestUrlService", "RegisterTemplateService", "StateService",
-        "AccessControlService", "EntityAccessControlService", "UiComponentsService", RegisterSelectTemplateController]);
+    angular.module(module_name_1.moduleName).controller('RegisterSelectTemplateController', ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "$state", "RestUrlService", "RegisterTemplateService", "StateService",
+        "AccessControlService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "BroadcastService", RegisterSelectTemplateController]);
     angular.module(module_name_1.moduleName)
         .directive('thinkbigRegisterSelectTemplate', directive);
 });

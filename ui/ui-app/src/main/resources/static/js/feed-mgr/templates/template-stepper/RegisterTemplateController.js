@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RegisterTemplateController = /** @class */ (function () {
-        function RegisterTemplateController($scope, $transition$, $http, $mdToast, $q, RegisterTemplateService, StateService, AccessControlService) {
+        function RegisterTemplateController($scope, $transition$, $http, $mdToast, $q, RegisterTemplateService, StateService, AccessControlService, BroadcastService) {
             var _this = this;
             this.$scope = $scope;
             this.$transition$ = $transition$;
@@ -12,6 +12,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.RegisterTemplateService = RegisterTemplateService;
             this.StateService = StateService;
             this.AccessControlService = AccessControlService;
+            this.BroadcastService = BroadcastService;
             this.init = function () {
                 _this.loading = true;
                 //Wait for the properties to come back before allowing the user to go to the next step
@@ -26,6 +27,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                         _this.allowAdmin = response.allowAdmin;
                         _this.allowEdit = response.allowEdit;
                         _this.updateAccessControl();
+                        _this.BroadcastService.notify("REGISTERED_TEMPLATE_LOADED", "LOADED");
                     });
                 }, function (err) {
                     _this.loading = false;
@@ -86,6 +88,6 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
         return RegisterTemplateController;
     }());
     exports.RegisterTemplateController = RegisterTemplateController;
-    angular.module(module_name_1.moduleName).controller('RegisterTemplateController', ["$scope", "$transition$", "$http", "$mdToast", "$q", "RegisterTemplateService", "StateService", "AccessControlService", RegisterTemplateController]);
+    angular.module(module_name_1.moduleName).controller('RegisterTemplateController', ["$scope", "$transition$", "$http", "$mdToast", "$q", "RegisterTemplateService", "StateService", "AccessControlService", "BroadcastService", RegisterTemplateController]);
 });
 //# sourceMappingURL=RegisterTemplateController.js.map

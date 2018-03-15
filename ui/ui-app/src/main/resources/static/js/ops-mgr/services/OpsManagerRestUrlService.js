@@ -5,7 +5,9 @@ define(["require", "exports", "angular", "../module-name", "../module"], functio
         function OpsManagerRestUrlService() {
             var _this = this;
             this.ROOT = "";
-            this.SLA_BASE_URL = "/proxy/v1/feedmgr/sla";
+            this.FEED_MGR_BASE = "/proxy/v1/feedmgr";
+            this.FEED_MGR_FEED_BASE_URL = this.FEED_MGR_BASE + "/feeds";
+            this.SLA_BASE_URL = this.FEED_MGR_BASE + "/sla";
             this.FEEDS_BASE = "/proxy/v1/feeds";
             this.JOBS_BASE = "/proxy/v1/jobs";
             this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
@@ -13,6 +15,7 @@ define(["require", "exports", "angular", "../module-name", "../module"], functio
             this.DASHBOARD_PAGEABLE_FEEDS_URL = this.ROOT + '/proxy/v1/dashboard/pageable-feeds';
             this.FEED_HEALTH_URL = this.FEEDS_BASE + "/health";
             this.FEED_NAMES_URL = this.FEEDS_BASE + "/names";
+            this.FEED_SYSTEM_NAMES_TO_DISPLAY_NAMES_URL = this.FEED_MGR_FEED_BASE_URL + "/feed-system-name-to-display-name";
             this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE + "/health-count";
             /*this.SPECIFIC_FEED_HEALTH_COUNT_URL = function (feedName) {
                 return this.FEED_HEALTH_COUNT_URL + '/' + feedName + '/';

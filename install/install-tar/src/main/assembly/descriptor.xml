@@ -64,6 +64,12 @@
       <fileMode>755</fileMode>
     </fileSet>
     <fileSet>
+      <!-- externalise static content in case end users want to customise look and feel of ui application -->
+      <outputDirectory>/kylo-ui/plugin/static</outputDirectory>
+      <directory>${project.parent.parent.basedir}/ui/ui-app/target/classes/static/assets/</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+    <fileSet>
       <outputDirectory>kylo-ui/lib</outputDirectory>
       <directory>${project.parent.parent.basedir}/ui/ui-app/target/kylo-ui-app-${project.version}-distribution/kylo-ui-app-${project.version}/lib</directory>
       <fileMode>755</fileMode>
@@ -316,6 +322,13 @@
     </fileSet>
 
     <fileSet>
+      <outputDirectory>setup/nifi/hdf</outputDirectory>
+      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
+      <directory>${project.parent.basedir}/setup/nifi/hdf</directory>
+      <fileMode>755</fileMode>
+    </fileSet>
+
+    <fileSet>
       <outputDirectory>setup/sql</outputDirectory>
       <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
       <directory>${project.parent.basedir}/setup/sql</directory>
@@ -456,6 +469,21 @@
     <file>
       <source>${project.parent.parent.basedir}/core/kerberos/kerberos-test-client/target/kylo-kerberos-test-client-${project.version}.jar</source>
       <outputDirectory>lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
+      <outputDirectory>lib/install-inspector</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-api/target/kylo-install-inspector-api-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-inspections/target/kylo-install-inspector-inspections-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>

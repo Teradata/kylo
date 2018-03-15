@@ -16,7 +16,7 @@ export class RegisterTemplateController {
     stepperUrl:any;
 
     constructor(private $scope:any,private $transition$:any, private $http:any,private $mdToast:any,private $q:any
-        ,private RegisterTemplateService:any, private StateService:any, private AccessControlService:any) {
+        ,private RegisterTemplateService:any, private StateService:any, private AccessControlService:any, private BroadcastService:any) {
         /**
          * Reference to the RegisteredTemplate Kylo id passed when editing a template
          * @type {null|*}
@@ -62,6 +62,7 @@ export class RegisterTemplateController {
                         this.allowAdmin = response.allowAdmin;
                         this.allowEdit = response.allowEdit;
                          this.updateAccessControl();
+                         this.BroadcastService.notify("REGISTERED_TEMPLATE_LOADED","LOADED");
 
                     });
                 },(err:any)=>{
@@ -99,4 +100,4 @@ export class RegisterTemplateController {
         }
 
 }
-angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService",RegisterTemplateController]);
+angular.module(moduleName).controller('RegisterTemplateController',["$scope","$transition$","$http","$mdToast","$q","RegisterTemplateService","StateService","AccessControlService","BroadcastService",RegisterTemplateController]);

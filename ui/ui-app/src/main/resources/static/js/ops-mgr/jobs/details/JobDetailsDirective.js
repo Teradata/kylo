@@ -225,7 +225,31 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
                 job.tabIconStyle = iconStyle;
                 angular.extend(_this.jobData, job);
                 if (job.executedSteps) {
-                    job.executedSteps = _.chain(job.executedSteps).sortBy('startTime').sortBy('nifiEventId').value();
+                    //Sort first by NiFi Event Id (only if its there and >=0 )
+                    // then by the start time
+                    job.executedSteps.sort(function (a, b) {
+                        function compareValues(a1, b1) {
+                            if (a1 > b1)
+                                return 1;
+                            if (b1 > a1)
+                                return -1;
+                            return 0;
+                        }
+                        var startTimeA = a['startTime'];
+                        var startTimeB = b['startTime'];
+                        var eventIdA = a['nifiEventId'];
+                        var eventIdB = b['nifiEventId'];
+                        var compareEventIdA = eventIdA != undefined && eventIdA >= 0 - 1;
+                        var compareEventIdB = eventIdB != undefined && eventIdB >= 0 - 1;
+                        var compare = 0;
+                        if (compareEventIdA && compareEventIdB) {
+                            compare = compareValues(eventIdA, eventIdB);
+                        }
+                        if (compare == 0) {
+                            compare = compareValues(startTimeA, startTimeB);
+                        }
+                        return compare;
+                    });
                     angular.forEach(job.executedSteps, function (step, i) {
                         var stepName = "Step " + (i + 1);
                         if (_this.stepData[stepName] == undefined) {

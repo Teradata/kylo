@@ -201,7 +201,7 @@ public class FeedDetails extends JcrPropertiesEntity {
     }
 
     public FeedManagerTemplate getTemplate() {
-        return getProperty(TEMPLATE, JcrFeedTemplate.class);
+        return getProperty(TEMPLATE, JcrFeedTemplate.class, true);
     }
 
     public void setTemplate(FeedManagerTemplate template) {

@@ -60,7 +60,7 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 /**
  * Ensures that all categories have the new, mandatory feedRoleMemberships node.
  */
-@Component("aclPrincipalTypeUpgradeAction084")
+@Component("aclPrincipalTypeUpgradeAction090")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class AclPrincipalTypeUpgradeAction implements UpgradeState {
 

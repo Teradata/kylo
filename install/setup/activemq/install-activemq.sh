@@ -79,7 +79,7 @@ echo "Installing as a service"
 chown -R $ACTIVEMQ_USER:$ACTIVEMQ_GROUP $ACTIVEMQ_INSTALL_HOME
 cp $ACTIVEMQ_INSTALL_HOME/current/bin/env /etc/default/activemq
 
-if [ -z "$ACTIVEMQ_JAVA_HOME" ] || ["$ACTIVEMQ_JAVA_HOME" == "SYSTEM_JAVA" ]
+if [ -z "$ACTIVEMQ_JAVA_HOME" ] || [ "$ACTIVEMQ_JAVA_HOME" == "SYSTEM_JAVA" ]
 then
  echo "No Java home has been specified for ActiveMQ. Using the system Java home"
 else
