@@ -27,13 +27,13 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
             this.templateVariables = this.SlaEmailTemplateService.getTemplateVariables();
             this.relatedSlas = [];
             this.validate = function () {
-                this.SlaEmailTemplateService.validateTemplate(this.template.subject, this.template.template).then(function (response) {
+                _this.SlaEmailTemplateService.validateTemplate(_this.template.subject, _this.template.template).then(function (response) {
                     response.data.sendTest = false;
                     this.showTestDialog(response.data);
                 });
             };
             this.sendTestEmail = function () {
-                this.SlaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then(function (response) {
+                _this.SlaEmailTemplateService.sendTestEmail(_this.emailAddress, _this.template.subject, _this.template.template).then(function (response) {
                     response.data.sendTest = true;
                     if (response.data.success) {
                         this.$mdToast.show(this.$mdToast.simple()
@@ -49,26 +49,26 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                 });
             };
             this.saveTemplate = function () {
-                this.showDialog("Saving", "Saving template. Please wait...");
+                _this.showDialog("Saving", "Saving template. Please wait...");
                 var successFn = function (response) {
-                    this.hideDialog();
+                    _this.hideDialog();
                     if (response.data) {
-                        this.$mdToast.show(this.$mdToast.simple()
+                        _this.$mdToast.show(_this.$mdToast.simple()
                             .textContent('Successfully saved the template')
                             .hideDelay(3000));
                     }
                 };
                 var errorFn = function (err) {
-                    this.hideDialog();
-                    this.$mdToast.show(this.$mdToast.simple()
+                    _this.hideDialog();
+                    _this.$mdToast.show(_this.$mdToast.simple()
                         .textContent('Error saving template ')
                         .hideDelay(3000));
                 };
-                this.SlaEmailTemplateService.save(this.template).then(successFn, errorFn);
+                _this.SlaEmailTemplateService.save(_this.template).then(successFn, errorFn);
             };
             this.exampleTemplate = function () {
-                this.template.subject = 'SLA Violation for $sla.name';
-                this.template.template = '<html>\n<body> \n' +
+                _this.template.subject = 'SLA Violation for $sla.name';
+                _this.template.template = '<html>\n<body> \n' +
                     '\t<table>\n' +
                     '\t\t<tr>\n' +
                     '\t\t\t<td align="center" style="background-color:rgb(43,108,154);">\n' +
@@ -100,26 +100,26 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                 '</html>';
             };
             this.getAvailableActionItems = function () {
-                this.SlaEmailTemplateService.getAvailableActionItems().then(function (response) {
-                    this.availableSlaActions = response;
+                _this.SlaEmailTemplateService.getAvailableActionItems().then(function (response) {
+                    _this.availableSlaActions = response;
                 });
             };
             this.navigateToSla = function (slaId) {
-                this.StateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
+                _this.StateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
             };
             this.getRelatedSlas = function () {
-                this.relatedSlas = [];
-                if (this.template != null && angular.isDefined(this.template) && angular.isDefined(this.template.id)) {
-                    this.SlaEmailTemplateService.getRelatedSlas(this.template.id).then(function (response) {
+                _this.relatedSlas = [];
+                if (_this.template != null && angular.isDefined(_this.template) && angular.isDefined(_this.template.id)) {
+                    _this.SlaEmailTemplateService.getRelatedSlas(_this.template.id).then(function (response) {
                         _.each(response.data, function (sla) {
-                            this.relatedSlas.push(sla);
-                            this.template.enabled = true;
+                            _this.relatedSlas.push(sla);
+                            _this.template.enabled = true;
                         });
                     });
                 }
             };
             this.showTestDialog = function (resolvedTemplate) {
-                this.$mdDialog.show({
+                _this.$mdDialog.show({
                     controller: 'VelocityTemplateTestController',
                     templateUrl: 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
                     parent: angular.element(document.body),
@@ -127,7 +127,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                     fullscreen: true,
                     locals: {
                         resolvedTemplate: resolvedTemplate,
-                        emailAddress: this.emailAddress
+                        emailAddress: _this.emailAddress
                     }
                 })
                     .then(function (answer) {
@@ -137,7 +137,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                 });
             };
             this.showDialog = function (title, message) {
-                this.$mdDialog.show(this.$mdDialog.alert()
+                _this.$mdDialog.show(_this.$mdDialog.alert()
                     .parent(angular.element(document.body))
                     .clickOutsideToClose(false)
                     .title(title)
@@ -145,7 +145,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                     .ariaLabel(title));
             };
             this.hideDialog = function () {
-                this.$mdDialog.hide();
+                _this.$mdDialog.hide();
             };
             this.templateId = this.$transition$.params().emailTemplateId;
             if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
@@ -163,7 +163,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
                     }
                 });
             }
-            else if ((this.template != null || angular.isDefined(this.template))) {
+            else if ((this.template != null && angular.isDefined(this.template))) {
                 this.queriedTemplate = angular.copy(this.template);
                 this.isDefault = this.queriedTemplate.default;
             }
@@ -176,7 +176,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
             // Fetch the allowed actions
             AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+                _this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
         }
         return controller;
@@ -184,13 +184,14 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
     exports.controller = controller;
     var testDialogController = /** @class */ (function () {
         function testDialogController($scope, $sce, $mdDialog, resolvedTemplate, emailAddress) {
+            var _this = this;
             this.$scope = $scope;
             this.$sce = $sce;
             this.$mdDialog = $mdDialog;
             this.resolvedTemplate = resolvedTemplate;
             this.emailAddress = emailAddress;
             this.trustAsHtml = function (string) {
-                return this.$sce.trustAsHtml(string);
+                return _this.$sce.trustAsHtml(string);
             };
             $scope.resolvedTemplateSubject = $sce.trustAsHtml(resolvedTemplate.subject);
             $scope.resolvedTemplateBody = $sce.trustAsHtml(resolvedTemplate.body);

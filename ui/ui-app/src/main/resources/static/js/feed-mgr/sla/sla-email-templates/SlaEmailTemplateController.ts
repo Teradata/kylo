@@ -46,7 +46,7 @@ export class controller implements ng.IComponentController{
                 }
             })
         }
-        else if((this.template != null || angular.isDefined(this.template))){
+        else if((this.template != null && angular.isDefined(this.template))){
             this.queriedTemplate = angular.copy(this.template);
             this.isDefault = this.queriedTemplate.default;
         }
@@ -59,7 +59,7 @@ export class controller implements ng.IComponentController{
 
         // Fetch the allowed actions
         AccessControlService.getUserAllowedActions()
-            .then(function(actionSet: any) {
+            .then((actionSet: any) =>{
                 this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
     }
@@ -67,7 +67,7 @@ export class controller implements ng.IComponentController{
       
 
 
-        validate = function () {
+        validate =  () =>{
             this.SlaEmailTemplateService.validateTemplate(this.template.subject,this.template.template).then(function (response: any) {
                 response.data.sendTest = false;
                 this.showTestDialog(response.data);
@@ -75,7 +75,7 @@ export class controller implements ng.IComponentController{
 
         }
 
-        sendTestEmail = function() {
+        sendTestEmail = ()=> {
             this.SlaEmailTemplateService.sendTestEmail(this.emailAddress, this.template.subject, this.template.template).then(function(response: any){
                 response.data.sendTest = true;
                 if(response.data.success){
@@ -97,10 +97,10 @@ export class controller implements ng.IComponentController{
         }
 
 
-        saveTemplate = function () {
+        saveTemplate =  ()=> {
             this.showDialog("Saving", "Saving template. Please wait...");
 
-           var successFn = function (response: any) {
+           var successFn =  (response: any)=> {
                 this.hideDialog();
                 if (response.data) {
                     this.$mdToast.show(
@@ -110,7 +110,7 @@ export class controller implements ng.IComponentController{
                     );
                 }
             }
-            var errorFn = function (err: any) {
+            var errorFn = (err: any)=> {
                 this.hideDialog();
                 this.$mdToast.show(
                     this.$mdToast.simple()
@@ -123,7 +123,7 @@ export class controller implements ng.IComponentController{
         }
 
 
-        exampleTemplate = function(){
+        exampleTemplate = ()=>{
             this.template.subject = 'SLA Violation for $sla.name';
             this.template.template = '<html>\n<body> \n'+
                                      '\t<table>\n'+
@@ -157,21 +157,21 @@ export class controller implements ng.IComponentController{
             '</html>';
         };
 
-        getAvailableActionItems= function() {
-            this.SlaEmailTemplateService.getAvailableActionItems().then(function (response: any) {
+        getAvailableActionItems= ()=> {
+            this.SlaEmailTemplateService.getAvailableActionItems().then((response: any)=>{
                     this.availableSlaActions = response;
             });
         }
 
-        navigateToSla=function(slaId: any){
+        navigateToSla=(slaId: any)=>{
             this.StateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
         }
 
-         getRelatedSlas = function(){
+         getRelatedSlas =()=>{
             this.relatedSlas = [];
             if(this.template != null && angular.isDefined(this.template) && angular.isDefined(this.template.id)) {
-                this.SlaEmailTemplateService.getRelatedSlas(this.template.id).then(function(response: any){
-                    _.each(response.data,function(sla: any){
+                this.SlaEmailTemplateService.getRelatedSlas(this.template.id).then((response: any)=>{
+                    _.each(response.data,(sla: any)=>{
                         this.relatedSlas.push(sla)
                         this.template.enabled = true;
                     })
@@ -179,7 +179,7 @@ export class controller implements ng.IComponentController{
             }
         }
 
-        showTestDialog= function(resolvedTemplate: any) {
+        showTestDialog= (resolvedTemplate: any)=>{
             this.$mdDialog.show({
                 controller: 'VelocityTemplateTestController',
                 templateUrl: 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
@@ -191,14 +191,14 @@ export class controller implements ng.IComponentController{
                     emailAddress: this.emailAddress
                 }
             })
-                .then(function (answer: any) {
+                .then( (answer: any)=> {
                     //do something with result
-                }, function () {
+                },  ()=> {
                     //cancelled the dialog
                 });
         };
 
-        showDialog = function(title: any, message: any) {
+        showDialog = (title: any, message: any) =>{
             this.$mdDialog.show(
                 this.$mdDialog.alert()
                     .parent(angular.element(document.body))
@@ -209,7 +209,7 @@ export class controller implements ng.IComponentController{
             );
         }
 
-       hideDialog= function() {
+       hideDialog= ()=> {
             this.$mdDialog.hide();
         }
 
@@ -227,11 +227,11 @@ export class testDialogController implements ng.IComponentController{
                 $scope.resolvedTemplateBody = $sce.trustAsHtml(resolvedTemplate.body);
                 $scope.resolvedTemplate = resolvedTemplate;
                 $scope.emailAddress = emailAddress;
-                    $scope.hide = function () {
+                    $scope.hide =  ()=> {
                             $mdDialog.hide();
                     };
 
-                    $scope.cancel = function () {
+                    $scope.cancel =  ()=> {
                         $mdDialog.cancel();
                     };
                     
@@ -239,7 +239,7 @@ export class testDialogController implements ng.IComponentController{
 
 
 
-        trustAsHtml = function(string: any) {
+        trustAsHtml = (string: any)=> {
             return this.$sce.trustAsHtml(string);
         };
 
