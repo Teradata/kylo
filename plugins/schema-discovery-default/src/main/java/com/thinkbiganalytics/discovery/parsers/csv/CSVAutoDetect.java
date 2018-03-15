@@ -26,6 +26,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -38,6 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,7 @@ import java.util.stream.Collectors;
 
 class CSVAutoDetect {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CSVAutoDetect.class);
 
     /**
      * Size of buffer for reading first 100 lines.
@@ -148,7 +151,7 @@ class CSVAutoDetect {
             if (firstLineDelimCounts != null && firstLineDelimCounts.size() > 0) {
                 List<Character> candidates = new ArrayList<>();
                 // Attempt to parse given delimiter
-                Set<Character> firstLineDelimKeys = firstLineDelimCounts.keySet();
+                Set<Character> firstLineDelimKeys = sortDelimitersIntoPreferredOrder(firstLineDelimCounts.keySet());
                 for (Character delim : firstLineDelimKeys) {
                     CSVFormat format;
                     if (headerRow) {
@@ -198,6 +201,31 @@ class CSVAutoDetect {
         return null;
     }
 
+    final private static String delimiterPreference = ",\t;:|~+ ";
+
+    /**
+     * Using data-gov as a guide for choice in delimiter preference, this method will take
+     * a set of delimiters and sort them into a preferred order for CSV parsing.
+     *
+     * @implNote see https://data-gov.tw.rpi.edu/wiki/CSV_files_use_delimiters_other_than_commas
+     * @param delimiters
+     */
+    private SortedSet<Character> sortDelimitersIntoPreferredOrder(Set<Character> delimiters) {
+        SortedSet<Character> sortedDelimiters = new TreeSet<>(
+            (o1, o2) -> {
+                // use position in the delimiterPreference. If not in preferred delimiters then lower preference is by codepoint
+                int o1Idx = delimiterPreference.indexOf(o1);
+                int o1Pos = (o1Idx == -1)?(delimiterPreference.length() + o1):(o1Idx);
+                int o2Idx = delimiterPreference.indexOf(o2);
+                int o2Pos = (o2Idx == -1)?(delimiterPreference.length() + o2):(o2Idx);
+                return o1Pos - o2Pos;
+            });
+
+
+        sortedDelimiters.addAll(delimiters);
+        return sortedDelimiters;
+    }
+
     static class LineStats {
 
         Map<Character, Integer> delimStats = new HashMap<Character, Integer>();
@@ -206,9 +234,6 @@ class CSVAutoDetect {
         boolean escapes;
         Character firstDelim;
 
-        public LineStats(String line) {
-            this(line, null);
-        }
 
         /**
          * @param line              the line to evaluate
@@ -217,7 +242,7 @@ class CSVAutoDetect {
         public LineStats(String line, final Character suppliedDelimiter) {
             // Look for delimiters
             char[] chars = line.toCharArray();
-            String delimiterString = " :;|\t+";
+            String delimiterString = " :;|\t+~";
             String nonDelimiterString = "\"'<>\\";
 
             if (suppliedDelimiter != null) {

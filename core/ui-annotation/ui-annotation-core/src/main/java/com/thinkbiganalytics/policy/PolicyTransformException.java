@@ -2,9 +2,9 @@ package com.thinkbiganalytics.policy;
 
 /*-
  * #%L
- * thinkbig-field-policy-common
+ * kylo-ui-annotation-core
  * %%
- * Copyright (C) 2017 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ package com.thinkbiganalytics.policy;
  * #L%
  */
 
+
+
 /**
- * An exception that is thrown if unable to convert a annotated policy to/from the user interface class
+ * An exception that is thrown if unable to convert an annotated policy to/from the user interface class
  */
 public class PolicyTransformException extends Exception {
 
