@@ -1,9 +1,8 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import module from "../module";
 import * as _ from 'underscore';
 import * as moment from "moment";
-import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
+import "../module";
 
 export default class AlertsServiceV2{
     data: any;    
@@ -56,6 +55,4 @@ export default class AlertsServiceV2{
 }
 
 angular.module(moduleName)
-.service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
 .factory('AlertsServiceV2',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2]);
-   

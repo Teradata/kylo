@@ -1,8 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import * as _ from 'underscore';
-import * as moment from "moment";
-import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 
 export default class OpsManagerJobService{
 data: any = {};
@@ -112,6 +109,4 @@ data: any = {};
 }
 
 angular.module(moduleName)
-        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
         .factory('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService]);
-    

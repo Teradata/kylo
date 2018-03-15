@@ -1,5 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import "../module";
 
 export default class OpsManagerRestUrlService{
     constructor(){}

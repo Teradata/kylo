@@ -1,7 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from 'underscore';
-import { Injectable } from '@angular/core';
 
 export default class TabService{
     tabs: any = {};

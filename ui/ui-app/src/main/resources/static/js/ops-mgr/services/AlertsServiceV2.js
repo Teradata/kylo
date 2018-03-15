@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "moment", "./OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, _, moment, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "../module-name", "underscore", "moment", "../module"], function (require, exports, angular, module_name_1, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsServiceV2 = /** @class */ (function () {
@@ -49,7 +49,6 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
     }());
     exports.default = AlertsServiceV2;
     angular.module(module_name_1.moduleName)
-        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('AlertsServiceV2', ["$q", "$http", "$interval", "OpsManagerRestUrlService", AlertsServiceV2]);
 });
 //# sourceMappingURL=AlertsServiceV2.js.map

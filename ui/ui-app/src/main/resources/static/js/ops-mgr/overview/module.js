@@ -3,7 +3,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
     Object.defineProperty(exports, "__esModule", { value: true });
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
-            this.module = angular.module(module_name_1.moduleName, []);
+            this.module = angular.module(module_name_1.moduleName, ['nvd3']);
             this.module.config(['$stateProvider', '$compileProvider', this.configFn.bind(this)]);
         }
         /**

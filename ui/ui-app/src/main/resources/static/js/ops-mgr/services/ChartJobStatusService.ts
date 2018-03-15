@@ -1,9 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import IconService from "./IconStatusService";
-import Nvd3ChartService from "./Nvd3ChartService";
 
-export default class ChartJobStatusService{;;
+export default class ChartJobStatusService{
     renderEndUpdated: any = {};
     toChartData = (jobStatusCountResponse: any)=>{
             return this.Nvd3ChartService.toLineChartData(jobStatusCountResponse,
@@ -24,6 +22,4 @@ export default class ChartJobStatusService{;;
 }
 
   angular.module(moduleName)
-  .service('IconService',[IconService])
-  .service('Nvd3ChartService',["$timeout","$filter", Nvd3ChartService])
   .service('ChartJobStatusService',["IconService", "Nvd3ChartService", ChartJobStatusService]);

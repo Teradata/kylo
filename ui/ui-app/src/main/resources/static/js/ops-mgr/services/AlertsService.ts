@@ -1,6 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import module from "../module";
 import * as moment from "moment";
 import * as _ from 'underscore';
 

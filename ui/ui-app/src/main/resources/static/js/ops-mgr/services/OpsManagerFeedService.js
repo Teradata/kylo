@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "moment", "./OpsManagerRestUrlService", "./AlertsService", "./IconStatusService"], function (require, exports, angular, module_name_1, moment, OpsManagerRestUrlService_1, AlertsService_1, IconStatusService_1) {
+define(["require", "exports", "angular", "../module-name", "moment"], function (require, exports, angular, module_name_1, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerFeedService = /** @class */ (function () {
@@ -153,9 +153,6 @@ define(["require", "exports", "angular", "../module-name", "moment", "./OpsManag
     }());
     exports.default = OpsManagerFeedService;
     angular.module(module_name_1.moduleName)
-        .service("AlertsService", [AlertsService_1.default])
-        .service("IconService", [IconStatusService_1.default])
-        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService',
         'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
 });

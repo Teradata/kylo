@@ -1,6 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
 
 export default class ProvenanceEventStatsService{
     constructor(
@@ -57,6 +56,4 @@ export default class ProvenanceEventStatsService{
 }
 
    angular.module(moduleName)
-   .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
    .factory('ProvenanceEventStatsService',['$http','$q','OpsManagerRestUrlService',ProvenanceEventStatsService]);
- 

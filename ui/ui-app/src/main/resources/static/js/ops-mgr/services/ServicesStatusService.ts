@@ -1,8 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import OpsManagerRestUrlService from "./OpsManagerRestUrlService";
-import AlertsService from "./AlertsService";
-import IconService from "./IconStatusService";
 
 export default class ServicesStatusData{
     ServicesStatusData: any;
@@ -106,9 +104,6 @@ export default class ServicesStatusData{
 
 
 angular.module(moduleName)
-        .service("AlertsService", [AlertsService])
-        .service("IconService",[IconService])
-        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
         .factory('ServicesStatusData',
                 ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 
                 'OpsManagerRestUrlService',

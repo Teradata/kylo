@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerJobService = /** @class */ (function () {
@@ -98,7 +98,6 @@ define(["require", "exports", "angular", "../module-name", "./OpsManagerRestUrlS
     }());
     exports.default = OpsManagerJobService;
     angular.module(module_name_1.moduleName)
-        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
         .factory('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService]);
 });
 //# sourceMappingURL=OpsManagerJobService.js.map

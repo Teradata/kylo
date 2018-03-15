@@ -12,7 +12,7 @@ import "pascalprecht.translate";
 class ModuleFactory  {
     module: ng.IModule;
     constructor () {
-        this.module = angular.module(moduleName,[]);
+        this.module = angular.module(moduleName,['nvd3']);
         this.module.config(['$stateProvider','$compileProvider',this.configFn.bind(this)]);
     }
     
