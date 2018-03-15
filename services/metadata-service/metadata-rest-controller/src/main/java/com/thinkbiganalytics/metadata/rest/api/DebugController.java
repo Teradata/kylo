@@ -543,10 +543,13 @@ public class DebugController {
             
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
+            // If the ID is over 36 characters long then assume it is a cache key and
+            // extract only the node ID portion of the key.
+            String nodeId = jcrId.length() > 36 ? jcrId.substring(jcrId.length() - 36, jcrId.length()) : jcrId;
 
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getNodeByIdentifier(jcrId);
+                Node node = session.getNodeByIdentifier(nodeId);
                 pw.print("Path: ");
                 pw.println(node.getPath());
                 JcrTools tools = new JcrTool(true, pw);

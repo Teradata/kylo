@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security.role;
 
+import java.security.AccessControlException;
+
 /*-
  * #%L
  * kylo-metadata-modeshape
@@ -177,26 +179,42 @@ public abstract class JcrAbstractRoleMembership extends JcrObject implements Rol
 
     @Override
     public void addMember(GroupPrincipal principal) {
-        JcrPropertyUtil.addToSetProperty(getNode(), GROUPS, principal.getName());
-        enable(principal);
+        try {
+            JcrPropertyUtil.addToSetProperty(getNode(), GROUPS, principal.getName());
+            enable(principal);
+        } catch (AccessControlException e) {
+            throw new AccessControlException("You do not have the permission to add role memberships for: " + principal.getName());
+        }
     }
 
     @Override
     public void addMember(UsernamePrincipal principal) {
-        JcrPropertyUtil.addToSetProperty(getNode(), USERS, principal.getName());
-        enable(principal);
+        try {
+            JcrPropertyUtil.addToSetProperty(getNode(), USERS, principal.getName());
+            enable(principal);
+        } catch (AccessControlException e) {
+            throw new AccessControlException("You do not have the permission to add role memberships for: " + principal.getName());
+        }
     }
 
     @Override
     public void removeMember(GroupPrincipal principal) {
-        JcrPropertyUtil.removeFromSetProperty(getNode(), GROUPS, principal.getName());
-        disable(principal);
+        try {
+            JcrPropertyUtil.removeFromSetProperty(getNode(), GROUPS, principal.getName());
+            disable(principal);
+        } catch (AccessControlException e) {
+            throw new AccessControlException("You do not have the permission to remove role memberships for: " + principal.getName());
+        }
     }
 
     @Override
     public void removeMember(UsernamePrincipal principal) {
-        JcrPropertyUtil.removeFromSetProperty(getNode(), USERS, principal.getName());
-        disable(principal);
+        try {
+            JcrPropertyUtil.removeFromSetProperty(getNode(), USERS, principal.getName());
+            disable(principal);
+        } catch (AccessControlException e) {
+            throw new AccessControlException("You do not have the permission to remove role memberships for: " + principal.getName());
+        }
     }
 
     @Override
