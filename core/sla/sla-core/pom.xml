@@ -32,21 +32,7 @@
       <groupId>com.thinkbiganalytics.kylo</groupId>
       <version>${project.version}</version>
     </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-scheduler-api</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-scheduler-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo</groupId>
-      <artifactId>kylo-scheduler-quartz</artifactId>
-      <version>${project.version}</version>
-    </dependency>
+
 
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
