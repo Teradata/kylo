@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
@@ -78,6 +79,9 @@ public class ImportUtil {
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_DATA, importType.equals(ImportType.TEMPLATE) ? true : false));
             } else if (entry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.REUSABLE_TEMPLATE, false));
+            }
+            else if (entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE)) {
+                options.add(new ImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP, false));
             }
             else if(entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)){
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION,true));
@@ -257,6 +261,11 @@ public class ImportUtil {
                 importTemplate.setTemplateJson(zipEntryContents);
             } else if (zipEntry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 importTemplate.addNifiConnectingReusableTemplateXml(zipEntryContents);
+            }
+            else if (zipEntry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE)) {
+                String json = zipEntryContents;
+                List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts = ObjectMapperSerializer.deserialize(json, new TypeReference<List<RemoteProcessGroupInputPort>>(){});
+                importTemplate.addRemoteProcessGroupInputPorts(remoteProcessGroupInputPorts);
             }
             else if (zipEntry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)) {
                 String json = zipEntryContents;

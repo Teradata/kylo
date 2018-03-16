@@ -162,6 +162,7 @@ public class TemplateImporter {
             Set<ImportComponentOption> componentOptions = ImportUtil.inspectZipComponents(file, ImportType.TEMPLATE);
             importTemplateOptions.addOptionsIfNotExists(componentOptions);
             importTemplateOptions.findImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION).addConnectionInfo(importTemplate.getReusableTemplateConnections());
+            importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP).addRemoteProcessGroupInputPorts(importTemplate.getRemoteProcessGroupInputPortNames());
             importTemplate.setImportOptions(this.importTemplateOptions);
         } catch (Exception e) {
             throw new ImportException("Unable to open template archive " + fileName + " for import. ", e);

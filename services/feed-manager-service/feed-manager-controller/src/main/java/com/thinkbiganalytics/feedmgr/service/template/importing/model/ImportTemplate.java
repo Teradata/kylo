@@ -42,6 +42,7 @@ public class ImportTemplate {
         XML, REUSABLE_TEMPLATE, ARCHIVE
     }
 
+    public static final String REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE = "nifiRemoteInputPorts.json";
     public static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate";
     public static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
     public static final String TEMPLATE_JSON_FILE = "template.json";
@@ -201,6 +202,20 @@ public class ImportTemplate {
 
     public void addReusableTemplateConnectionInformation(List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos) {
         this.reusableTemplateConnections = reusableTemplateConnectionInfos;
+    }
+
+    public void addRemoteProcessGroupInputPort(RemoteProcessGroupInputPort remoteProcessGroupInputPort) {
+        if(remoteProcessGroupInputPortNames == null){
+            remoteProcessGroupInputPortNames=new ArrayList<>();
+        }
+        this.remoteProcessGroupInputPortNames.add(remoteProcessGroupInputPort);
+    }
+
+    public void addRemoteProcessGroupInputPorts(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts) {
+        if(remoteProcessGroupInputPortNames == null){
+            remoteProcessGroupInputPortNames=new ArrayList<>();
+        }
+        this.remoteProcessGroupInputPortNames.addAll(remoteProcessGroupInputPorts);
     }
 
     public boolean hasConnectingReusableTemplate() {

@@ -79,4 +79,32 @@ public class RemoteProcessGroupInputPort {
     public void setExisting(boolean existing) {
         this.existing = existing;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof RemoteProcessGroupInputPort)) {
+            return false;
+        }
+
+        RemoteProcessGroupInputPort that = (RemoteProcessGroupInputPort) o;
+
+        if (templateName != null ? !templateName.equals(that.templateName) : that.templateName != null) {
+            return false;
+        }
+        if (inputPortName != null ? !inputPortName.equals(that.inputPortName) : that.inputPortName != null) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = templateName != null ? templateName.hashCode() : 0;
+        result = 31 * result + (inputPortName != null ? inputPortName.hashCode() : 0);
+        return result;
+    }
 }
