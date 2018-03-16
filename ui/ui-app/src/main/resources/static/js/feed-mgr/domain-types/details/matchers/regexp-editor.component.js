@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular"], function (require, exports, core_1, angular) {
+define(["require", "exports", "@angular/core", "angular", "../../module-name"], function (require, exports, core_1, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -175,7 +175,7 @@ define(["require", "exports", "@angular/core", "angular"], function (require, ex
         return RegExpEditorComponent;
     }());
     exports.RegExpEditorComponent = RegExpEditorComponent;
-    angular.module(require("feed-mgr/domain-types/module-name"))
+    angular.module(module_name_1.moduleName)
         .component("regexpEditor", {
         bindings: {
             onSyntaxError: "&"

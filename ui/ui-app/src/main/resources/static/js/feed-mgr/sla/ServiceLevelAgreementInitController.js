@@ -1,34 +1,14 @@
-define(['angular','feed-mgr/sla/module-name'], function (angular,moduleName) {
-
-    var controller = function($transition$){
-        var self = this;
-        this.slaId = $transition$.params().slaId;
-
-        /*self.loading = false;
-        self.assessment = {};
-
-        if(this.assessmentId != null){
-
-            var successFn = function(response) {
-                if (response.data) {
-                    self.assessment = response.data;
-                }
-                self.loading = false;
-
-            }
-            var errorFn = function(err) {
-                self.loading = false;
-            }
-
-
-            self.loading = true;
-            $http.get(OpsManagerRestUrlService.GET_SLA_ASSESSMENT_URL(self.assessmentId)).then(successFn, errorFn);
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ServiceLevelAgreementInitController = /** @class */ (function () {
+        function ServiceLevelAgreementInitController($transition$) {
+            this.$transition$ = $transition$;
+            this.slaId = this.$transition$.params().slaId;
         }
-        */
-
-
-    };
-
-    angular.module(moduleName).controller('ServiceLevelAgreementInitController',['$transition$',controller]);
-
+        return ServiceLevelAgreementInitController;
+    }());
+    exports.default = ServiceLevelAgreementInitController;
+    angular.module(module_name_1.moduleName).controller('ServiceLevelAgreementInitController', ['$transition$', ServiceLevelAgreementInitController]);
 });
+//# sourceMappingURL=ServiceLevelAgreementInitController.js.map

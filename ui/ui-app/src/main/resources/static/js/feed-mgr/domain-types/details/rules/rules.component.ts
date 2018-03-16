@@ -1,5 +1,6 @@
 import * as angular from "angular";
 
+import {moduleName} from "../../module-name";
 import {DomainType} from "../../../services/DomainTypesService";
 import {DomainTypeDetailsService} from "../../services/details.service";
 import {AbstractSectionComponent} from "../abstract-section.component";
@@ -101,7 +102,7 @@ export class DomainTypeRulesDetailsComponent extends AbstractSectionComponent {
     }
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .component("domainTypeRulesDetails", {
         bindings: {
             allowEdit: "<",

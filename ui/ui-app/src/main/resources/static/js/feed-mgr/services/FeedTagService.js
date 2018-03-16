@@ -1,7 +1,9 @@
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-
-    angular.module(moduleName).factory('FeedTagService', function () {
-
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
+    // export class FeedTagService {
+    function FeedTagService() {
         /**
          * Create filter function for a query string
          */
@@ -11,7 +13,6 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return (tag._lowername.indexOf(lowercaseQuery) === 0);
             };
         }
-
         var data = {
             querySearch: function (query) {
                 var self = this;
@@ -20,15 +21,16 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                 return results;
             },
             loadAvailableTags: function () {
-
                 var data = [];
                 return data.map(function (tag) {
                     tag._lowername = tag.name.toLowerCase();
                     return tag;
-                })
+                });
             }
         };
         return data;
-
-    });
+    }
+    // }
+    angular.module(moduleName).factory('FeedTagService', FeedTagService);
 });
+//# sourceMappingURL=FeedTagService.js.map

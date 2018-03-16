@@ -1,10 +1,5 @@
-/**
- * Include all common services/directives are are used for the kylo.feedmgr module
- */
-define(['angular',
-        'ops-mgr/service-health/ServiceComponentHealthDetailsController',
-        'ops-mgr/service-health/ServiceHealthDetailsController',
-        'ops-mgr/service-health/ServiceHealthDirective'
-        ],function() {
-
+define(["require", "exports", "./ServiceComponentHealthDetailsController", "./ServiceHealthDetailsController", "./ServiceHealthDirective"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
+//# sourceMappingURL=module-require.js.map

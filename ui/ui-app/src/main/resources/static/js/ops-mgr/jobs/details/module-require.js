@@ -1,12 +1,5 @@
-/**
- * Include all common services/directives are are used for the kylo.feedmgr module
- */
-define(['angular',
-        'ops-mgr/jobs/details/JobDetailsDirective',
-        'ops-mgr/jobs/details/JobDetailsController'
-        ],function() {
-
+define(["require", "exports", "./JobDetailsDirective", "./JobDetailsController"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
-
-
-
+//# sourceMappingURL=module-require.js.map

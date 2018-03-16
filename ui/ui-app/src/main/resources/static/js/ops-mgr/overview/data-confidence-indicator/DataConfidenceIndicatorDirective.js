@@ -1,205 +1,192 @@
-define(['angular','ops-mgr/overview/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-
-    var directive = function () {
-        return {
-            restrict: "EA",
-            scope: true,
-            bindToController: {
-                panelTitle: "@"
-            },
-            controllerAs: 'vm',
-            templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html',
-            controller: "DataConfidenceIndicatorController",
-            link: function ($scope, element, attrs) {
-                $scope.$on('$destroy', function () {
-
+define(["require", "exports", "angular", "../module-name", "../../services/OpsManagerDashboardService", "../../services/OpsManagerJobService", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1, OpsManagerJobService_1, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var controller = /** @class */ (function () {
+        function controller($scope, $element, $http, $interval, $mdDialog, OpsManagerJobService, OpsManagerDashboardService, BroadcastService, $filter) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$element = $element;
+            this.$http = $http;
+            this.$interval = $interval;
+            this.$mdDialog = $mdDialog;
+            this.OpsManagerJobService = OpsManagerJobService;
+            this.OpsManagerDashboardService = OpsManagerDashboardService;
+            this.BroadcastService = BroadcastService;
+            this.$filter = $filter;
+            this.openDetailsDialog = function (key) {
+                _this.$mdDialog.show({
+                    controller: "DataConfidenceDetailsDialogController",
+                    templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-details-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: true,
+                    fullscreen: true,
+                    locals: {
+                        status: key,
+                        allChartData: _this.allData
+                    }
                 });
-            } //DOM manipulation\}
-        }
-
-    };
-
-    var controller = function ($scope, $element, $http, $interval,$mdDialog, OpsManagerJobService,OpsManagerDashboardService,BroadcastService, $filter) {
-        var self = this;
-        this.refreshing = false;
-        this.dataLoaded = false;
-
-        this.dataMap = {'Healthy':{count:0, color:'#5cb85c'},'Unhealthy':{count:0,color:'#a94442'}};
-
-        /** All the data returned from the rest call
-         *
-         * @type {null}
-         */
-        self.allData = null;
-        this.chartApi = {};
-
-        this.chartOptions = {
-            chart: {
-                type: 'pieChart',
-                x: function(d){return d.key;},
-                y: function(d){return d.value;},
-                showLabels: false,
-                duration: 100,
-                height:150,
-                labelThreshold: 0.01,
-                labelSunbeamLayout: false,
-                "margin":{"top":10,"right":10,"bottom":10,"left":10},
-                donut:true,
-                donutRatio:0.65,
-                showLegend:false,
-                refreshDataOnly: false,
-                valueFormat: function(d){
-                    return parseInt(d);
-                },
-                color:function(d){
-                    if(d.key == 'Healthy'){
-                        return '#009933';
-                    }
-                    else if( d.key== 'Unhealthy'){
-                        return '#FF0000';
-                    }
-                },
-                pie: {
-                    dispatch: {
-                        'elementClick': function(e){
-                            self.openDetailsDialog(e.data.key);
+            };
+            this.onHealthyClick = function () {
+                if (_this.dataMap.Healthy.count > 0) {
+                    _this.openDetailsDialog('Healthy');
+                }
+            };
+            this.onUnhealthyClick = function () {
+                if (_this.dataMap.Unhealthy.count > 0) {
+                    _this.openDetailsDialog('Unhealthy');
+                }
+            };
+            this.updateChart = function () {
+                angular.forEach(_this.chartData, function (row, i) {
+                    row.value = _this.dataMap[row.key].count;
+                });
+                var title = (_this.dataMap.Healthy.count + _this.dataMap.Unhealthy.count) + " " + _this.$filter('translate')('Total');
+                _this.chartOptions.chart.title = title;
+                _this.dataLoaded = true;
+                if (_this.chartApi.update) {
+                    _this.chartApi.update();
+                }
+            };
+            this.initializePieChart = function () {
+                this.chartData.push({ key: "Healthy", value: 0 });
+                this.chartData.push({ key: "Unhealthy", value: 0 });
+            };
+            this.getDataConfidenceSummary = function () {
+                if (_this.refreshing == false) {
+                    _this.refreshing = true;
+                    var data = _this.OpsManagerDashboardService.dashboard.dataConfidenceSummary;
+                    if (angular.isDefined(data)) {
+                        _this.allData = data;
+                        if (_this.dataLoaded == false) {
+                            _this.dataLoaded = true;
                         }
+                        _this.dataMap.Healthy.count = data.successCount;
+                        _this.dataMap.Unhealthy.count = data.failedCount;
                     }
-                },
-                dispatch: {
-
+                    _this.updateChart();
                 }
-            }
-        };
-        this.chartData = [];
-
-        this.openDetailsDialog = function(key){
-            $mdDialog.show({
-                controller:"DataConfidenceDetailsDialogController",
-                templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-details-dialog.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose: true,
-                fullscreen: true,
-                locals: {
-                    status: key,
-                    allChartData: self.allData
-                }
-            });
-        }
-
-        this.onHealthyClick = function(){
-            if(self.dataMap.Healthy.count >0){
-                self.openDetailsDialog('Healthy');
-            }
-        }
-
-        this.onUnhealthyClick = function(){
-            if(self.dataMap.Unhealthy.count >0){
-                self.openDetailsDialog('Unhealthy');
-            }
-        }
-
-
-
-        this.updateChart = function(){
-            angular.forEach(self.chartData,function(row,i){
-                row.value = self.dataMap[row.key].count;
-            });
-            var title = (self.dataMap.Healthy.count+self.dataMap.Unhealthy.count)+" " + $filter('translate')('Total');
-            self.chartOptions.chart.title=title
-            self.dataLoaded = true;
-            if(self.chartApi.update) {
-                self.chartApi.update();
-            }
-        }
-
-
-        function initializePieChart() {
-            self.chartData.push({key: "Healthy", value: 0})
-            self.chartData.push({key: "Unhealthy", value: 0})
-        }
-
-
-        this.getDataConfidenceSummary = function () {
-            if (self.refreshing == false) {
-                self.refreshing = true;
-                    var data = OpsManagerDashboardService.dashboard.dataConfidenceSummary;
-                    if(angular.isDefined(data)) {
-                        self.allData = data;
-                        if (self.dataLoaded == false) {
-                            self.dataLoaded = true;
+                _this.refreshing = false;
+            };
+            this.watchDashboard = function () {
+                var _this = this;
+                this.BroadcastService.subscribe(this.$scope, this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
+                    _this.getDataConfidenceSummary();
+                });
+            };
+            this.init = function () {
+                this.initializePieChart();
+                this.watchDashboard();
+            };
+            this.refreshing = false;
+            this.dataLoaded = false;
+            this.dataMap = { 'Healthy': { count: 0, color: '#5cb85c' }, 'Unhealthy': { count: 0, color: '#a94442' } };
+            /** All the data returned from the rest call
+             *
+             * @type {null}
+             */
+            this.allData = null;
+            this.chartApi = {};
+            this.chartOptions = {
+                chart: {
+                    type: 'pieChart',
+                    x: function (d) { return d.key; },
+                    y: function (d) { return d.value; },
+                    showLabels: false,
+                    duration: 100,
+                    height: 150,
+                    labelThreshold: 0.01,
+                    labelSunbeamLayout: false,
+                    "margin": { "top": 10, "right": 10, "bottom": 10, "left": 10 },
+                    donut: true,
+                    donutRatio: 0.65,
+                    showLegend: false,
+                    refreshDataOnly: false,
+                    valueFormat: function (d) {
+                        return parseInt(d);
+                    },
+                    color: function (d) {
+                        if (d.key == 'Healthy') {
+                            return '#009933';
                         }
-                        self.dataMap.Healthy.count = data.successCount;
-                        self.dataMap.Unhealthy.count = data.failedCount;
-                    }
-                    self.updateChart();
+                        else if (d.key == 'Unhealthy') {
+                            return '#FF0000';
+                        }
+                    },
+                    pie: {
+                        dispatch: {
+                            'elementClick': function (e) {
+                                _this.openDetailsDialog(e.data.key);
+                            }
+                        }
+                    },
+                    dispatch: {}
                 }
-                 self.refreshing = false;
-        }
-
-        function watchDashboard() {
-            BroadcastService.subscribe($scope,OpsManagerDashboardService.DASHBOARD_UPDATED,function(dashboard){
-                self.getDataConfidenceSummary();
+            };
+            this.chartData = [];
+            this.init();
+            $scope.$on('$destroy', function () {
+                //cleanup
             });
+        } // end of constructor
+        return controller;
+    }());
+    exports.controller = controller;
+    var DataConfidenceDetailsDialogController = /** @class */ (function () {
+        function DataConfidenceDetailsDialogController($scope, $mdDialog, $interval, StateService, status, allChartData) {
+            this.$scope = $scope;
+            this.$mdDialog = $mdDialog;
+            this.$interval = $interval;
+            this.StateService = StateService;
+            this.status = status;
+            this.allChartData = allChartData;
+            $scope.jobs = this.jobs;
+            if (status == 'Unhealthy') {
+                $scope.css = "md-warn";
+                $scope.jobs = allChartData.failedJobs;
+            }
+            else {
+                $scope.css = "";
+                $scope.jobs = _.filter(allChartData.latestCheckDataFeeds, function (job) {
+                    return job.status != 'FAILED';
+                });
+            }
+            $scope.allChartData = allChartData;
+            $scope.status = status;
+            $scope.hide = function () {
+                $mdDialog.hide();
+            };
+            $scope.gotoJobDetails = function (jobExecutionId) {
+                $mdDialog.hide();
+                StateService.OpsManager().Job().navigateToJobDetails(jobExecutionId);
+            };
+            $scope.cancel = function () {
+                $mdDialog.cancel();
+            };
         }
-
-
-        this.init = function () {
-            initializePieChart();
-           watchDashboard();
-        }
-
-        this.init();
-
-        $scope.$on('$destroy', function () {
-            //cleanup
-        });
-    };
-
-
-    var DataConfidenceDetailsDialogController = function ($scope, $mdDialog, $interval,StateService,status,allChartData) {
-        var self = this;
-
-        $scope.jobs = [];
-
-        if(status == 'Unhealthy') {
-            $scope.css = "md-warn";
-            $scope.jobs = allChartData.failedJobs;
-        } else {
-            $scope.css = "";
-            $scope.jobs = _.filter(allChartData.latestCheckDataFeeds,function(job) {
-                return job.status != 'FAILED';
-            });
-        }
-
-        $scope.allChartData = allChartData;
-        $scope.status = status;
-
-        $scope.hide = function () {
-            $mdDialog.hide();
-
-        };
-
-        $scope.gotoJobDetails = function(jobExecutionId){
-            $mdDialog.hide();
-            StateService.OpsManager().Job().navigateToJobDetails(jobExecutionId);
-        }
-
-        $scope.cancel = function () {
-            $mdDialog.cancel();
-        };
-
-    };
-
-    angular.module(moduleName).controller('DataConfidenceDetailsDialogController', ["$scope","$mdDialog","$interval","StateService","status","allChartData",DataConfidenceDetailsDialogController]);
-
-
-
-
-    angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", "$filter", controller]);
-
-
-    angular.module(moduleName)
-        .directive('tbaDataConfidenceIndicator', directive);
-
+        return DataConfidenceDetailsDialogController;
+    }());
+    exports.DataConfidenceDetailsDialogController = DataConfidenceDetailsDialogController;
+    angular.module(module_name_1.moduleName).controller('DataConfidenceDetailsDialogController', ["$scope", "$mdDialog", "$interval", "StateService", "status", "allChartData", DataConfidenceDetailsDialogController]);
+    angular.module(module_name_1.moduleName)
+        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
+        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
+        .controller('DataConfidenceIndicatorController', ["$scope", "$element", "$http", "$interval", "$mdDialog", "OpsManagerJobService", "OpsManagerDashboardService", "BroadcastService", "$filter", controller]);
+    angular.module(module_name_1.moduleName)
+        .directive('tbaDataConfidenceIndicator', [function () {
+            return {
+                restrict: "EA",
+                scope: true,
+                bindToController: {
+                    panelTitle: "@"
+                },
+                controllerAs: 'vm',
+                templateUrl: 'js/ops-mgr/overview/data-confidence-indicator/data-confidence-indicator-template.html',
+                controller: "DataConfidenceIndicatorController",
+                link: function ($scope, element, attrs) {
+                    $scope.$on('$destroy', function () {
+                    });
+                } //DOM manipulation\}
+            };
+        }]);
 });
+//# sourceMappingURL=DataConfidenceIndicatorDirective.js.map

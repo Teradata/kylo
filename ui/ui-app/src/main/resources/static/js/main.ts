@@ -2,8 +2,8 @@ import {IAngularStatic} from "angular";
 import {Injector} from "@angular/core";
 import {platformBrowserDynamic} from "@angular/platform-browser-dynamic";
 import {UpgradeModule} from "@angular/upgrade/static";
-import {getUIRouter} from "@uirouter/angular-hybrid";
-import {servicesPlugin, UrlService} from "@uirouter/core";
+// import {getUIRouter} from "@uirouter/angular-hybrid";
+import {servicesPlugin, UrlService, UIRouter} from "@uirouter/core";
 
 import {KyloModule} from "./app.module";
 
@@ -21,7 +21,7 @@ platformBrowserDynamic().bootstrapModule(KyloModule).then(platformRef => {
     upgrade.bootstrap(document.body, ["kylo"]);
 
     // Initialize the Angular Module (get() any UIRouter service from DI to initialize it)
-    const url: UrlService = getUIRouter(injector).urlService;
+    const url: UrlService = injector.get(UIRouter).urlService;//getUIRouter(injector).urlService;
 
     // Instruct UIRouter to listen to URL changes
     url.listen();

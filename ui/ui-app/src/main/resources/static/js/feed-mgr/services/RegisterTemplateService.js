@@ -7,9 +7,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -17,13 +17,14 @@
  * limitations under the License.
  * #L%
  */
-define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-    angular.module(moduleName).factory('RegisterTemplateService', ["$http","$q","$mdDialog","RestUrlService","FeedInputProcessorOptionsFactory","FeedDetailsProcessorRenderingHelper","FeedPropertyService","AccessControlService","EntityAccessControlService",function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper,FeedPropertyService,AccessControlService,EntityAccessControlService, $filter) {
-
+define(["require", "exports", "angular", "underscore", "pascalprecht.translate"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
+    function RegisterTemplateService($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter) {
         function escapeRegExp(str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
         }
-
         /**
          * for a given processor assign the feedPropertiesUrl so it can be rendered correctly
          * @param processor
@@ -36,22 +37,20 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 FeedInputProcessorOptionsFactory.setFeedProcessingTemplateUrl(processor, mode);
             }
         }
-
         var data = {
             /**
              * Properties that require custom Rendering, separate from the standard Nifi Property (key  value) rendering
              * This is used in conjunction with the method {@code this.isCustomPropertyRendering(key)} to determine how to render the property to the end user
              */
             customPropertyRendering: ["metadata.table.targetFormat", "metadata.table.feedFormat"],
-
             codemirrorTypes: null,
-            propertyRenderTypes: [{type: 'text', 'label': 'Text'}, {type: 'password', 'label': 'Password'},{type: 'number', 'label': 'Number', codemirror: false},
-                {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
-                {type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false}],
-            trueFalseRenderTypes: [{type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false},
-                {type: 'select', label: 'Select', codemirror: false}],
-            selectRenderType: [{type: 'select', 'label': 'Select', codemirror: false},
-                {type: 'radio', label: 'Radio Button', codemirror: false}],
+            propertyRenderTypes: [{ type: 'text', 'label': 'Text' }, { type: 'password', 'label': 'Password' }, { type: 'number', 'label': 'Number', codemirror: false },
+                { type: 'textarea', 'label': 'Textarea', codemirror: false }, { type: 'select', label: 'Select', codemirror: false },
+                { type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false }],
+            trueFalseRenderTypes: [{ type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false },
+                { type: 'select', label: 'Select', codemirror: false }],
+            selectRenderType: [{ type: 'select', 'label': 'Select', codemirror: false },
+                { type: 'radio', label: 'Radio Button', codemirror: false }],
             codeMirrorRenderTypes: [],
             configurationProperties: [],
             metadataProperties: [],
@@ -74,24 +73,24 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 reusableTemplate: false,
                 needsReusableTemplate: false,
                 ports: [],
-                reusableTemplateConnections: [],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-                icon: {title: null, color: null},
+                reusableTemplateConnections: [],
+                icon: { title: null, color: null },
                 state: 'NOT REGISTERED',
                 updateDate: null,
                 feedsCount: 0,
                 registeredDatasources: [],
                 isStream: false,
                 validTemplateProcessorNames: true,
-                roleMemberships:[],
-                owner:null,
-                roleMembershipsUpdated:false
+                roleMemberships: [],
+                owner: null,
+                roleMembershipsUpdated: false
             },
             newModel: function () {
                 this.model = angular.copy(this.emptyModel);
             },
             resetModel: function () {
                 angular.extend(this.model, this.emptyModel);
-                this.model.icon = {title: null, color: null}
+                this.model.icon = { title: null, color: null };
             },
             init: function () {
                 this.newModel();
@@ -116,19 +115,18 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     reusableTemplateConnections: this.model.reusableTemplateConnections,
                     state: this.model.state,
                     isStream: this.model.isStream,
-                    roleMemberships:this.model.roleMemberships,
+                    roleMemberships: this.model.roleMemberships,
                     owner: this.model.owner,
                     roleMembershipsUpdated: this.model.roleMembershipsUpdated,
                     templateTableOption: this.model.templateTableOption,
                     timeBetweenStartingBatchJobs: this.model.timeBetweenStartingBatchJobs
-
-                }
+                };
             },
             newReusableConnectionInfo: function () {
-                return [{reusableTemplateFeedName: '', feedOutputPortName: '', reusableTemplateInputPortName: ''}];
+                return [{ reusableTemplateFeedName: '', feedOutputPortName: '', reusableTemplateInputPortName: '' }];
             },
             isSelectedProperty: function (property) {
-                var selected = (property.selected || ( property.value != null && property.value != undefined && (property.value.includes("${metadata") || property.value.includes("${config."))) );
+                var selected = (property.selected || (property.value != null && property.value != undefined && (property.value.includes("${metadata") || property.value.includes("${config."))));
                 if (selected) {
                     property.selected = true;
                 }
@@ -137,21 +135,18 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
             getSelectedProperties: function () {
                 var self = this;
                 var selectedProperties = [];
-
                 angular.forEach(self.model.inputProperties, function (property) {
                     if (data.isSelectedProperty(property)) {
-                        selectedProperties.push(property)
+                        selectedProperties.push(property);
                         if (property.processor && property.processor.topIndex != undefined) {
                             delete property.processor.topIndex;
                         }
                         if (property.processorOrigName != undefined && property.processorOrigName != null) {
                             property.processorName = property.processorOrigName;
                         }
-
                         FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
-
                 angular.forEach(self.model.additionalProperties, function (property) {
                     if (data.isSelectedProperty(property)) {
                         selectedProperties.push(property);
@@ -164,12 +159,10 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         FeedPropertyService.initSensitivePropertyForSaving(property);
                     }
                 });
-
                 return selectedProperties;
             },
             sortPropertiesForDisplay: function (properties) {
-                var propertiesAndProcessors = {properties: [], processors: []};
-
+                var propertiesAndProcessors = { properties: [], processors: [] };
                 //sort them by processor name and property key
                 var arr = _.chain(properties).sortBy('key').sortBy('processorName').value();
                 propertiesAndProcessors.properties = arr;
@@ -189,30 +182,27 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 return propertiesAndProcessors;
             },
             fetchConfigurationProperties: function (successFn, errorFn) {
-
                 var self = this;
                 if (self.configurationProperties.length == 0) {
                     var _successFn = function (response) {
                         self.configurationProperties = response.data;
                         angular.forEach(response.data, function (value, key) {
-                            self.propertyList.push({key: key, value: value, description: null, dataType: null, type: 'configuration'});
+                            self.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
                             self.configurationPropertyMap[key] = value;
-                        })
+                        });
                         if (successFn) {
                             successFn(response);
                         }
-                    }
+                    };
                     var _errorFn = function (err) {
                         if (errorFn) {
-                            errorFn(err)
+                            errorFn(err);
                         }
-                    }
-
+                    };
                     var promise = $http.get(RestUrlService.CONFIGURATION_PROPERTIES_URL);
                     promise.then(_successFn, _errorFn);
                     return promise;
                 }
-
             },
             fetchMetadataProperties: function (successFn, errorFn) {
                 var self = this;
@@ -227,35 +217,30 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                                 description: annotatedProperty.description,
                                 type: 'metadata'
                             });
-                        })
+                        });
                         if (successFn) {
                             successFn(response);
                         }
-                    }
+                    };
                     var _errorFn = function (err) {
                         if (errorFn) {
-                            errorFn(err)
+                            errorFn(err);
                         }
-                    }
-
+                    };
                     var promise = $http.get(RestUrlService.METADATA_PROPERTY_NAMES_URL);
                     promise.then(_successFn, _errorFn);
                     return promise;
                 }
-
             },
             fetchRegisteredReusableFeedInputPorts: function () {
-
                 var successFn = function (response) {
-                    self.feedInputPortMap = response.data;
-                }
+                    self["feedInputPortMap"] = response.data;
+                };
                 var errorFn = function (err) {
-
-                }
+                };
                 var promise = $http.get(RestUrlService.ALL_REUSABLE_FEED_INPUT_PORTS);
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             replaceAll: function (str, find, replace) {
                 return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
@@ -278,7 +263,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                                     expression = self.replaceAll(expression, variable, value);
                                     replaced = true;
                                 }
-
                             }
                         });
                     }
@@ -294,12 +278,11 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     var successFn = function (response) {
                         self.codemirrorTypes = response.data;
                         angular.forEach(self.codemirrorTypes, function (label, type) {
-                            self.propertyRenderTypes.push({type: type, label: label, codemirror: true});
+                            self.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
                         });
-                    }
+                    };
                     var errorFn = function (err) {
-
-                    }
+                    };
                     var promise = $http.get(RestUrlService.CODE_MIRROR_TYPES_URL);
                     promise.then(successFn, errorFn);
                     return promise;
@@ -323,7 +306,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 });
                 return custom !== undefined;
             },
-
             /**
              * Gets all templates registered or not.  (looks at Nifi)
              * id property will ref NiFi id
@@ -332,29 +314,22 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
              */
             getTemplates: function () {
                 var successFn = function (response) {
-
-                }
+                };
                 var errorFn = function (err) {
-
-                }
-
+                };
                 var promise = $http.get(RestUrlService.GET_TEMPLATES_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             },
-
             /**
              * Gets the Registered Templates
              * @returns {HttpPromise}
              */
             getRegisteredTemplates: function () {
                 var successFn = function (response) {
-
-                }
+                };
                 var errorFn = function (err) {
-
-                }
-
+                };
                 var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATES_URL);
                 promise.then(successFn, errorFn);
                 return promise;
@@ -364,15 +339,11 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 var validProcessors = [];
                 var processorsToRemove = [];
                 //temp placeholder until Register Templates allows for user defined input processor selection
-
                 _.each(processorArray, function (processor, i) {
                     processor.allProperties = processor.properties;
-
                     var validProperties = _.reject(processor.properties, function (property) {
                         return !property.userEditable;
                     });
-
-
                     processor.properties = validProperties;
                     if (validProperties != null && validProperties.length > 0) {
                         validProcessors.push(processor);
@@ -385,7 +356,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     }
                 });
                 var arr = null;
-
                 if (keepProcessorIfEmpty != undefined && keepProcessorIfEmpty == true) {
                     arr = processorArray;
                 }
@@ -394,35 +364,32 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                 }
                 // sort it
                 return _.sortBy(arr, 'sortIndex');
-
             },
             /**
              * Updates the feedProcessingTemplateUrl for each processor in the model
              * @param model
              */
-            setProcessorRenderTemplateUrl : function(model, mode){
+            setProcessorRenderTemplateUrl: function (model, mode) {
                 _.each(model.inputProcessors, function (processor) {
                     processor.feedPropertiesUrl = null;
                     //ensure the processorId attr is set
-                    processor.processorId = processor.id
+                    processor.processorId = processor.id;
                     setRenderTemplateForProcessor(processor, mode);
                 });
                 _.each(model.nonInputProcessors, function (processor) {
                     processor.feedPropertiesUrl = null;
                     //ensure the processorId attr is set
-                    processor.processorId = processor.id
+                    processor.processorId = processor.id;
                     setRenderTemplateForProcessor(processor, mode);
                 });
-
             },
-             /**
-             * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
-             * used in Feed creation and feed details to render the nifi input fields
-             * @param template
-             */
+            /**
+            * Setup the inputProcessor and nonInputProcessor and their properties on the registeredTemplate object
+            * used in Feed creation and feed details to render the nifi input fields
+            * @param template
+            */
             initializeProperties: function (template, mode, feedProperties) {
                 //get the saved properties
-
                 var savedProperties = {};
                 if (feedProperties) {
                     _.each(feedProperties, function (property) {
@@ -431,63 +398,53 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         }
                     });
                 }
-
-
                 function updateProperties(processor, properties) {
-
                     _.each(properties, function (property) {
                         //set the value if its saved
                         if (savedProperties[property.idKey] != undefined) {
-                            property.value == savedProperties[property.idKey]
+                            property.value == savedProperties[property.idKey];
                         }
                         //mark as not selected
                         property.selected = false;
-
                         property.value = data.deriveExpression(property.value, false);
                         property.renderWithCodeMirror = data.isRenderPropertyWithCodeMirror(property);
-
                         //if it is a custom render property then dont allow the default editing.
                         //the other fields are coded to look for these specific properties
                         //otherwise check to see if it is editable
                         if (data.isCustomPropertyRendering(property.key)) {
                             property.customProperty = true;
                             property.userEditable = false;
-                        } else if (property.userEditable == true) {
+                        }
+                        else if (property.userEditable == true) {
                             processor.userEditable = true;
                         }
-
                         //if it is sensitive treat the value as encrypted... store it off and use it later when saving/posting back if the value has not changed
                         FeedPropertyService.initSensitivePropertyForEditing(property);
-
                         FeedPropertyService.updateDisplayValue(property);
-
-                    })
-
+                    });
                 }
-
                 _.each(template.inputProcessors, function (processor) {
                     //ensure the processorId attr is set
-                    processor.processorId = processor.id
-                    updateProperties(processor, processor.properties)
+                    processor.processorId = processor.id;
+                    updateProperties(processor, processor.properties);
                     setRenderTemplateForProcessor(processor, mode);
                 });
                 _.each(template.nonInputProcessors, function (processor) {
                     //ensure the processorId attr is set
-                    processor.processorId = processor.id
-                    updateProperties(processor, processor.properties)
+                    processor.processorId = processor.id;
+                    updateProperties(processor, processor.properties);
                     setRenderTemplateForProcessor(processor, mode);
                 });
-
             },
             disableTemplate: function (templateId) {
                 var self = this;
                 var promise = $http.post(RestUrlService.DISABLE_REGISTERED_TEMPLATE_URL(templateId)).then(function (response) {
-                    self.model.state = response.data.state
+                    self.model.state = response.data.state;
                     if (self.model.state == 'ENABLED') {
-                        self.model.stateIcon = 'check_circle'
+                        self.model.stateIcon = 'check_circle';
                     }
                     else {
-                        self.model.stateIcon = 'block'
+                        self.model.stateIcon = 'block';
                     }
                 });
                 return promise;
@@ -500,16 +457,15 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
             enableTemplate: function (templateId) {
                 var self = this;
                 var promise = $http.post(RestUrlService.ENABLE_REGISTERED_TEMPLATE_URL(templateId)).then(function (response) {
-                    self.model.state = response.data.state
+                    self.model.state = response.data.state;
                     if (self.model.state == 'ENABLED') {
-                        self.model.stateIcon = 'check_circle'
+                        self.model.stateIcon = 'check_circle';
                     }
                     else {
-                        self.model.stateIcon = 'block'
+                        self.model.stateIcon = 'block';
                     }
                 });
                 return promise;
-
             },
             deleteTemplate: function (templateId) {
                 var deferred = $q.defer();
@@ -523,19 +479,17 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
             getTemplateProcessorDatasourceDefinitions: function (nifiTemplateId, inputPortIds) {
                 var deferred = $q.defer();
                 if (nifiTemplateId != null) {
-                    $http.get(RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId), {params: {inputPorts: inputPortIds}}).then(function (response) {
+                    $http.get(RestUrlService.TEMPLATE_PROCESSOR_DATASOURCE_DEFINITIONS(nifiTemplateId), { params: { inputPorts: inputPortIds } }).then(function (response) {
                         deferred.resolve(response);
                     }, function (response) {
                         deferred.reject(response);
                     });
                 }
                 else {
-                    deferred.resolve({data: []});
+                    deferred.resolve({ data: [] });
                 }
                 return deferred.promise;
-
             },
-
             /**
              * Walks the NiFi template and its related connections(if any) to the reusable flow and returns data about the graph, its processors, and any Datasource definitions
              *
@@ -552,7 +506,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     //build the request
                     var flowRequest = {};
                     flowRequest.connectionInfo = reusableTemplateConnections;
-
                     $http.post(RestUrlService.TEMPLATE_FLOW_INFORMATION(nifiTemplateId), flowRequest).then(function (response) {
                         deferred.resolve(response);
                     }, function (response) {
@@ -560,70 +513,59 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     });
                 }
                 else {
-                    deferred.resolve({data: []});
+                    deferred.resolve({ data: [] });
                 }
                 return deferred.promise;
-
             },
-
             /**
              * Warn if the model has multiple processors with the same name
              */
             warnInvalidProcessorNames: function () {
                 if (!this.model.validTemplateProcessorNames) {
                     $mdDialog.hide();
-                    $mdDialog.show(
-                        $mdDialog.alert()
-                            .ariaLabel("Template processor name warning")
-                            .clickOutsideToClose(true)
-                            .htmlContent("Warning the template contains multiple processors with the same name.  It is advised you fix this template in NiFi before registering")
-                            .ok("Got it!")
-                            .parent(document.body)
-                            .title("Template processor name warning"));
+                    $mdDialog.show($mdDialog.alert()
+                        .ariaLabel("Template processor name warning")
+                        .clickOutsideToClose(true)
+                        .htmlContent("Warning the template contains multiple processors with the same name.  It is advised you fix this template in NiFi before registering")
+                        .ok("Got it!")
+                        .parent(document.body)
+                        .title("Template processor name warning"));
                 }
             },
-
-            accessDeniedDialog:function($filter) {
-                $mdDialog.show(
-                    $mdDialog.alert()
-                        .clickOutsideToClose(true)
-                        .title($filter('translate')('views.main.registerService-accessDenied'))
-                        .textContent($filter('translate')('views.main.registerService-accessDenied2'))
-                        .ariaLabel($filter('translate')('views.main.registerService-accessDenied3'))
-                        .ok("OK")
-                );
+            accessDeniedDialog: function ($filter) {
+                $mdDialog.show($mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title($filter('translate')('views.main.registerService-accessDenied'))
+                    .textContent($filter('translate')('views.main.registerService-accessDenied2'))
+                    .ariaLabel($filter('translate')('views.main.registerService-accessDenied3'))
+                    .ok("OK"));
             },
-
             /**
              * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
              */
-            checkTemplateAccess:function(model){
+            checkTemplateAccess: function (model) {
                 var self = data;
-                if(model == undefined){
+                if (model == undefined) {
                     model = self.model;
                 }
                 model.errorMessage = '';
-
                 var entityAccessControlled = model.id != null && AccessControlService.isEntityAccessControlled();
                 var deferred = $q.defer();
                 var requests = {
-                    entityEditAccess: entityAccessControlled == true ? self.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE,model) : true,
-                    entityAdminAccess: entityAccessControlled == true ? self.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE,model) : true,
+                    entityEditAccess: entityAccessControlled == true ? self.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
+                    entityAdminAccess: entityAccessControlled == true ? self.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
                     functionalAccess: AccessControlService.getUserAllowedActions()
-                }
-
+                };
                 $q.all(requests).then(function (response) {
-
                     var allowEditAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
                     var allowAdminAccess = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
-
-                    var allowEdit = response.entityEditAccess && allowEditAccess
+                    var allowEdit = response.entityEditAccess && allowEditAccess;
                     var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
                     var allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
                     var accessAllowed = allowEdit || allowAdmin;
-                    var result = {allowEdit: allowEdit,allowAdmin:allowAdmin,isValid:model.valid && accessAllowed,allowAccessControl:allowAccessControl};
-                    if(!result.isValid){
-                        if(!accessAllowed) {
+                    var result = { allowEdit: allowEdit, allowAdmin: allowAdmin, isValid: model.valid && accessAllowed, allowAccessControl: allowAccessControl };
+                    if (!result.isValid) {
+                        if (!accessAllowed) {
                             model.errorMessage = "Access Denied.  You are unable to edit the template. ";
                             self.accessDeniedDialog();
                         }
@@ -632,11 +574,9 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         }
                     }
                     deferred.resolve(result);
-
                 });
                 return deferred.promise;
             },
-
             /**
              * Assigns the model properties and render types
              * Returns a promise
@@ -644,15 +584,12 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
              */
             loadTemplateWithProperties: function (registeredTemplateId, nifiTemplateId, templateName) {
                 var isValid = true;
-
                 var self = this;
-
                 /**
                  * Assign the render types to the properties
                  * @param property
                  */
                 function assignPropertyRenderType(property) {
-
                     var allowableValues = property.propertyDescriptor.allowableValues;
                     if (allowableValues !== undefined && allowableValues !== null && allowableValues.length > 0) {
                         if (allowableValues.length == 2) {
@@ -673,7 +610,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         property.renderType = property.renderType == undefined ? 'text' : property.renderType;
                     }
                 }
-
                 /**
                  * groups properties into processor groups
                  * @param properties
@@ -692,14 +628,12 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                             property.processor.groupId = property.processGroupId;
                             property.processor.groupName = property.processGroupName;
                         }
-
                         if (property.selected == undefined) {
                             property.selected = false;
                         }
                         if (property.renderOptions == undefined) {
                             property.renderOptions = {};
                         }
-
                         // convert the saved Select options store as JSON to the array for the chips to work.
                         if (property.renderOptions['selectCustom'] == 'true') {
                             if (property.renderOptions['selectOptions']) {
@@ -709,21 +643,16 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                                 property.selectOptions = [];
                             }
                         }
-
-                        assignPropertyRenderType(property)
-
+                        assignPropertyRenderType(property);
                         FeedPropertyService.initSensitivePropertyForEditing(property);
-
                         property.templateValue = property.value;
                         property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable;
-
                         if (property.inputProperty) {
                             property.mentioId = 'inputProperty' + property.processorName + '_' + i;
                         }
                         else {
                             property.mentioId = 'processorProperty_' + property.processorName + '_' + i;
                         }
-
                         if (property.inputProperty) {
                             inputProperties.push(property);
                         }
@@ -738,24 +667,20 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     var inputPropertiesAndProcessors = self.sortPropertiesForDisplay(inputProperties);
                     inputProperties = inputPropertiesAndProcessors.properties;
                     inputProcessors = inputPropertiesAndProcessors.processors;
-
                     var additionalPropertiesAndProcessors = self.sortPropertiesForDisplay(additionalProperties);
                     additionalProperties = additionalPropertiesAndProcessors.properties;
                     additionalProcessors = additionalPropertiesAndProcessors.processors;
-
                     self.model.inputProperties = inputProperties;
                     self.model.additionalProperties = additionalProperties;
                     self.model.inputProcessors = inputProcessors;
                     self.model.additionalProcessors = additionalProcessors;
-
                 }
-
                 /**
                  * Change the processor names for those that are duplicates
                  * @param properties
                  */
                 function fixDuplicateProcessorNames(properties) {
-                    var processorGroups = _.groupBy(properties, 'processorName')
+                    var processorGroups = _.groupBy(properties, 'processorName');
                     _.each(processorGroups, function (processorProps, processorName) {
                         var processorMap = _.groupBy(processorProps, 'processorId');
                         if (Object.keys(processorMap).length > 1) {
@@ -767,15 +692,14 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                                     idx++;
                                     _.each(props, function (prop) {
                                         prop.processorOrigName = prop.processorName;
-                                        prop.processorName += " " + idx
+                                        prop.processorName += " " + idx;
                                     });
                                 }
                                 lastId = processorId;
-                            })
+                            });
                         }
                     });
                 }
-
                 /**
                  * Validates the processor names in the template are unique.
                  * If not it will set the validTemplate property on self.model to false
@@ -785,35 +709,31 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     //validate the processor names are unique in the flow, if not warn the user
                     var groups = _.groupBy(inputProperties, 'nameKey');
                     var multiple = _.find(groups, function (arr, key) {
-                        return arr.length > 1
+                        return arr.length > 1;
                     });
                     if (multiple != undefined) {
                         self.model.validTemplateProcessorNames = false;
                     }
-
                     //validate the processor names are unique in the flow, if not warn the user
                     var groups = _.groupBy(additionalProperties, 'nameKey');
                     var multiple = _.find(groups, function (arr, key) {
-                        return arr.length > 1
+                        return arr.length > 1;
                     });
                     if (multiple != undefined) {
                         self.model.validTemplateProcessorNames = false;
                     }
                 }
-
                 function validate() {
                     if (self.model.reusableTemplate) {
                         self.model.valid = false;
-                        var errorMessage =
-                            "This is a reusable template and cannot be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .ariaLabel("Error loading the template")
-                                .clickOutsideToClose(true)
-                                .htmlContent(errorMessage)
-                                .ok("Got it!")
-                                .parent(document.body)
-                                .title("Error loading the template"));
+                        var errorMessage = "This is a reusable template and cannot be registered as it starts with an input port.  You need to create and register a template that has output ports that connect to this template";
+                        $mdDialog.show($mdDialog.alert()
+                            .ariaLabel("Error loading the template")
+                            .clickOutsideToClose(true)
+                            .htmlContent(errorMessage)
+                            .ok("Got it!")
+                            .parent(document.body)
+                            .title("Error loading the template"));
                         return false;
                     }
                     else {
@@ -821,7 +741,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         return true;
                     }
                 }
-
                 if (registeredTemplateId != null) {
                     self.resetModel();
                     //get the templateId for the registeredTemplateId
@@ -844,14 +763,13 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         self.model.state = templateData.state;
                         self.model.id = templateData.id;
                         if (self.model.id == null) {
-                            self.model.state = 'NOT REGISTERED'
+                            self.model.state = 'NOT REGISTERED';
                         }
                         self.model.updateDate = templateData.updateDate;
                         self.model.feedsCount = templateData.feedsCount;
                         self.model.allowPreconditions = templateData.allowPreconditions;
                         self.model.dataTransformation = templateData.dataTransformation;
                         self.model.description = templateData.description;
-
                         self.model.icon.title = templateData.icon;
                         self.model.icon.color = templateData.iconColor;
                         self.model.reusableTemplate = templateData.reusableTemplate;
@@ -863,21 +781,21 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                         self.model.allowedActions = templateData.allowedActions;
                         self.model.roleMemberships = templateData.roleMemberships;
                         self.model.templateTableOption = templateData.templateTableOption;
-                        self.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs
+                        self.model.timeBetweenStartingBatchJobs = templateData.timeBetweenStartingBatchJobs;
                         if (templateData.state == 'ENABLED') {
-                            self.model.stateIcon = 'check_circle'
+                            self.model.stateIcon = 'check_circle';
                         }
                         else {
-                            self.model.stateIcon = 'block'
+                            self.model.stateIcon = 'block';
                         }
                         validate();
                         self.model.loading = false;
-                    }
+                    };
                     var errorFn = function (err) {
                         self.model.loading = false;
-                    }
+                    };
                     var id = registeredTemplateId != undefined && registeredTemplateId != null ? registeredTemplateId : self.model.nifiTemplateId;
-                    var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true, templateName: templateName}});
+                    var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), { params: { allProperties: true, templateName: templateName } });
                     promise.then(successFn, errorFn);
                     return promise;
                 }
@@ -887,7 +805,6 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
                     deferred.resolve(self.properties);
                     return deferred.promise;
                 }
-
             },
             /**
              * check if the user has access on an entity
@@ -895,16 +812,18 @@ define(['angular','feed-mgr/module-name', 'pascalprecht.translate'], function (a
              * @param entity the entity to check. if its undefined it will use the current template in the model
              * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
              */
-            hasEntityAccess:function(permissionsToCheck,entity) {
-                if(entity == undefined){
+            hasEntityAccess: function (permissionsToCheck, entity) {
+                if (entity == undefined) {
                     entity = data.model;
                 }
-                return  AccessControlService.hasEntityAccess(permissionsToCheck,entity,EntityAccessControlService.entityRoleTypes.TEMPLATE);
+                return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.TEMPLATE);
             }
-
         };
         data.init();
         return data;
-
-    }]);
+    }
+    angular.module(moduleName).factory('RegisterTemplateService', ["$http", "$q", "$mdDialog", "RestUrlService",
+        "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper",
+        "FeedPropertyService", "AccessControlService", "EntityAccessControlService", RegisterTemplateService]);
 });
+//# sourceMappingURL=RegisterTemplateService.js.map

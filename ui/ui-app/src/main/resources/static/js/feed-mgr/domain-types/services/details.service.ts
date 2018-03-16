@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import {Subject} from "rxjs/Subject";
 
+import {moduleName} from "../module-name";
 import {DomainType} from "../../services/DomainTypesService";
 
 /**
@@ -85,5 +86,5 @@ export class DomainTypeDetailsService {
     }
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .service("DomainTypeDetailsService", DomainTypeDetailsService);
