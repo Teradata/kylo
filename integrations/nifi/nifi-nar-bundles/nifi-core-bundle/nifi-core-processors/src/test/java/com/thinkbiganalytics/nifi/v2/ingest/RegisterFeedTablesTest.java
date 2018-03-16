@@ -208,6 +208,20 @@ public class RegisterFeedTablesTest {
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
     }
 
+    @Test
+    public void testStructFieldEscaping() throws Exception {
+
+        String fieldSpec = "contributors|string||0|0|0|contributors\ncoordinates|string||0|0|0|coordinates\ncreated_at|string||0|0|0|created_at\ndisplay_text_range|array<bigint>||0|0|0|display_text_range\nentities|struct<hashtags:array<string>,symbols:array<string>,urls:array<string>,user_mentions:array<struct<id:bigint,id_str:string,indices:array<bigint>,name:string,screen_name:string>>>||0|0|0|entities\nfavorite_count|bigint||0|0|0|favorite_count\nfavorited|boolean||0|0|0|favorited\nfilter_level|string||0|0|0|filter_level\ngeo|string||0|0|0|geo\nid|bigint||0|0|0|id\nid_str|string||0|0|0|id_str\nin_reply_to_screen_name|string||0|0|0|in_reply_to_screen_name\nin_reply_to_status_id|bigint||0|0|0|in_reply_to_status_id\nin_reply_to_status_id_str|string||0|0|0|in_reply_to_status_id_str\nin_reply_to_user_id|bigint||0|0|0|in_reply_to_user_id\nin_reply_to_user_id_str|string||0|0|0|in_reply_to_user_id_str\nis_quote_status|boolean||0|0|0|is_quote_status\nlang|string||0|0|0|lang\nplace|string||0|0|0|place\nquote_count|bigint||0|0|0|quote_count\nreply_count|bigint||0|0|0|reply_count\nretweet_count|bigint||0|0|0|retweet_count\nretweeted|boolean||0|0|0|retweeted\nsource|string||0|0|0|source\ntext|string||0|0|0|text\ntimestamp_ms|string||0|0|0|timestamp_ms\ntruncated|boolean||0|0|0|truncated\nuser|struct<contributors_enabled:boolean,created_at:string,default_profile:boolean,default_profile_image:boolean,description:string,favourites_count:bigint,follow_request_sent:string,followers_count:bigint,following:string,friends_count:bigint,geo_enabled:boolean,id:bigint,id_str:string,is_translator:boolean,lang:string,listed_count:bigint,location:string,name:string,notifications:string,profile_background_color:string,profile_background_image_url:string,profile_background_image_url_https:string,profile_background_tile:boolean,profile_image_url:string,profile_image_url_https:string,profile_link_color:string,profile_sidebar_border_color:string,profile_sidebar_fill_color:string,profile_text_color:string,profile_use_background_image:boolean,protected:boolean,screen_name:string,statuses_count:bigint,time_zone:string,translator_type:string,url:string,utc_offset:string,verified:boolean>||0|0|0|user";
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, fieldSpec);
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, "MASTER");
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+
+    }
+
     /**
      * Verify error for missing feed name.
      */

@@ -1077,6 +1077,14 @@
             </goals>
             <!-- here to cause package phase or higher to fail build when headers are not up to date  -->
             <phase>prepare-package</phase>
+            <configuration>
+              <excludes>
+                <exclude>**/*.html</exclude>
+                <exclude>**/*.ftl</exclude>
+                <exclude>**/*.properties</exclude>
+                <exclude>**/*.json</exclude>
+              </excludes>
+            </configuration>
           </execution>
         </executions>
       </plugin>
