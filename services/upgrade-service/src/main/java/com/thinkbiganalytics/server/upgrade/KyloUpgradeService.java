@@ -65,6 +65,7 @@ public class KyloUpgradeService {
     private KyloVersion buildVersion;
     private boolean freshInstall = false;
     private List<KyloVersion> upgradeSequence;
+    private boolean initialized = false;
     
     public static void main(String... args) {
         try {
@@ -91,15 +92,19 @@ public class KyloUpgradeService {
      * @return a list of KyloVersions
      * @throws IOException 
      */
-    private static List<KyloVersion> readUpgradeVersions(Resource versionsResource) throws IOException {
-        if (! versionsResource.exists()) {
-            throw new UpgradeException("Kylo versions file does not exist: " + versionsResource.getURI());
+    private static List<KyloVersion> readUpgradeVersions(Resource versionsResource) {
+        try {
+            if (! versionsResource.exists()) {
+                throw new UpgradeException("Kylo versions file does not exist: " + versionsResource.getDescription());
+            }
+            
+            return Resources.readLines(versionsResource.getURL(), Charset.forName("UTF-8")).stream()
+                .filter(v -> StringUtils.isNotBlank(v))
+                .map(KyloVersionUtil::parseVersion)
+                .collect(Collectors.toCollection(ArrayList::new));
+        } catch (IOException e) {
+            throw new UpgradeException("I/O failure loading Kylo versions from: " + versionsResource.getDescription());
         }
-        
-        return Resources.readLines(versionsResource.getURL(), Charset.forName("UTF-8")).stream()
-            .filter(v -> StringUtils.isNotBlank(v))
-            .map(KyloVersionUtil::parseVersion)
-            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     /**
@@ -150,7 +155,7 @@ public class KyloUpgradeService {
                 log.info("Finished upgrade through v{}", nextVersion);
                 
                 isComplete = nextVersion.equals(this.buildVersion);
-//                
+                
                 // If upgrades are complete and this was starting from a fresh install then invoke any
                 // fresh install actions.
                 if (isComplete && this.freshInstall) {
@@ -182,17 +187,20 @@ public class KyloUpgradeService {
         return isComplete;
     }
     
-    @PostConstruct
-    public void init() throws IOException {
-        ClassPathResource versionsResource = new ClassPathResource(UPGRADE_VERSIONS_FILE, KyloUpgradeService.class.getClassLoader());
-        KyloVersion current = versionProvider.getCurrentVersion();
-        
-        this.freshInstall = current == null;
-        this.buildVersion = KyloVersionUtil.getBuildVersion();
-        this.upgradeSequence = readUpgradeVersions(versionsResource);
+    public void init() {
+        if (! this.initialized) {
+            ClassPathResource versionsResource = new ClassPathResource(UPGRADE_VERSIONS_FILE, KyloUpgradeService.class.getClassLoader());
+            KyloVersion current = versionProvider.getCurrentVersion();
+            this.freshInstall = current == null;
+            this.buildVersion = KyloVersionUtil.getBuildVersion();
+            this.upgradeSequence = readUpgradeVersions(versionsResource);
+            this.initialized = true;
+        }
     }
 
     private KyloVersion getNextVersion() {
+        init();
+        
         KyloVersion current = versionProvider.getCurrentVersion();
         // If there are no recorded versions then this is a fresh install so the next version is the actual build version.
         if (current == null) {
