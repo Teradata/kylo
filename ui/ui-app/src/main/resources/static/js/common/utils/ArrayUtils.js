@@ -21,19 +21,25 @@ var ArrayUtils = (function () {
     function ArrayUtils() {
     }
     ArrayUtils.sum = function (arr) {
-        return arr.reduce(function (total, num) { return total + num; }, 0);
-    }(ArrayUtils).avg = function (arr) {
+        return [].reduce.call(arr, function (total, num) { return total + num; }, 0);
+    };
+    ArrayUtils.avg = function (arr) {
         var sum = ArrayUtils.sum(arr);
         return sum / arr.length;
-    }(ArrayUtils).min = function (arr) {
+    };
+    ArrayUtils.min = function (arr) {
         return Math.min.apply(null, arr);
-    }(ArrayUtils).max = function (arr) {
+    };
+    ArrayUtils.max = function (arr) {
         return Math.max.apply(null, arr);
-    }(ArrayUtils).first = function (arr) {
+    };
+    ArrayUtils.first = function (arr) {
         return arr[0];
-    }(ArrayUtils).last = function (arr) {
+    };
+    ArrayUtils.last = function (arr) {
         return arr[arr.length - 1];
-    }(ArrayUtils).aggregrate = function (arr, fn) {
+    };
+    ArrayUtils.aggregrate = function (arr, fn) {
         if (arr === undefined) {
             arr = [];
         }

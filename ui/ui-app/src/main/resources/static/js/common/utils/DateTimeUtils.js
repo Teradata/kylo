@@ -94,7 +94,14 @@ var DateTimeUtils = function ($translate) {
         else {
             return showMillis ? format.millisStr : format.str;
         }
-    }(DateTimeUtils).formatMillisAsTime = function (ms, truncate, showMillis) {
+    };
+    /**
+     * Returns str is time  DD:HH:MM:SS  or truncated to the nearest value
+     * @param ms  millis
+     * @param truncate true to truncate, false to not
+     * @return {*} str is time  DD:HH:MM:SS  or truncated to the nearest value
+     */
+    DateTimeUtils.formatMillisAsTime = function (ms, truncate, showMillis) {
         var format = formatMillis(ms);
         if (truncate) {
             return showMillis && format.millisOnly ? format.millisStr : format.truncatedTimeFormat;

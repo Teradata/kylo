@@ -21,7 +21,7 @@
 var IDGenerator: any = (function () {
     function IDGenerator() {
     }
-    (IDGenerator as any).generateId = function (prefix: any): any{
+    (IDGenerator as any).generateId = (prefix: any)=>{
        (IDGenerator as any).idNumber++;
         if(prefix){
             return prefix+'_'+(IDGenerator as any).idNumber;
