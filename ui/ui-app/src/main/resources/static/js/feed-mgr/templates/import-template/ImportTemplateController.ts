@@ -199,6 +199,12 @@ export class ImportTemplateController implements ng.IController, OnInit {
      */
     message: string;
 
+    /**
+     * Flag to see if we should check and use remote input ports.
+     * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
+     */
+    remoteInputPortsCheckEnabled :boolean = false;
+
     static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
 
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
@@ -630,12 +636,13 @@ export class ImportTemplateController implements ng.IController, OnInit {
      */
     setNiFiClustered(): void {
         this.nifiClustered = false;
-        this.$http.get(this.RestUrlService.NIFI_STATUS).then((response: angular.IHttpResponse<any>) => {
-
-            if (response.data.clustered) {
-                this.nifiClustered = true;
-            }
-        });
+        if(this.remoteInputPortsCheckEnabled) {
+            this.$http.get(this.RestUrlService.NIFI_STATUS).then((response: angular.IHttpResponse<any>) => {
+                if (response.data.clustered) {
+                    this.nifiClustered = true;
+                }
+            });
+        }
     }
 
 

@@ -144,6 +144,11 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              */
             this.xmlType = false;
             /**
+             * Flag to see if we should check and use remote input ports.
+             * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
+             */
+            this.remoteInputPortsCheckEnabled = false;
+            /**
              * Called when a user changes a import option for overwriting
              */
             this.onOverwriteSelectOptionChanged = this.ImportService.onOverwriteSelectOptionChanged;
@@ -510,11 +515,13 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
         ImportTemplateController.prototype.setNiFiClustered = function () {
             var _this = this;
             this.nifiClustered = false;
-            this.$http.get(this.RestUrlService.NIFI_STATUS).then(function (response) {
-                if (response.data.clustered) {
-                    _this.nifiClustered = true;
-                }
-            });
+            if (this.remoteInputPortsCheckEnabled) {
+                this.$http.get(this.RestUrlService.NIFI_STATUS).then(function (response) {
+                    if (response.data.clustered) {
+                        _this.nifiClustered = true;
+                    }
+                });
+            }
         };
         /**
          * Index the import options  in a map by their type
