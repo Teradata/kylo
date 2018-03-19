@@ -35,6 +35,7 @@ import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -132,11 +133,17 @@ public class DefaultTemplateExporter implements TemplateExporter {
                     gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, outputPortConnectionMetadata, reusableTemplateConnectionInfos, reusableTemplateFlow);
                 }
 
-                //for all the reusable templates used gather any that have remote input ports
-                reusableTemplateConnectionInfos.stream().forEach(connectionInfo -> {
-                   Set<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts = findReusableTemplateRemoteInputPorts(reusableTemplateFlow,connectionInfo.getReusableTemplateProcessGroupName());
-                   templateRemoteInputPorts.addAll(remoteProcessGroupInputPorts);
-                });
+                //Only gather remote input ports on the reusable templates if we are clustered
+                NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
+                if(clusterSummary.getClustered()) {
+                    //for all the reusable templates used gather any that have remote input ports
+                    reusableTemplateConnectionInfos.stream().forEach(connectionInfo -> {
+                        Set<RemoteProcessGroupInputPort>
+                            remoteProcessGroupInputPorts =
+                            findReusableTemplateRemoteInputPorts(reusableTemplateFlow, connectionInfo.getReusableTemplateProcessGroupName());
+                        templateRemoteInputPorts.addAll(remoteProcessGroupInputPorts);
+                    });
+                }
 
             }
 

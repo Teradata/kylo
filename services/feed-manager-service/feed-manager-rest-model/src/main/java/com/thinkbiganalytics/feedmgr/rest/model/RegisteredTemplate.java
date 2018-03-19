@@ -279,6 +279,9 @@ public final class RegisteredTemplate extends EntityAccessControl {
     }
 
     public List<ReusableTemplateConnectionInfo> getReusableTemplateConnections() {
+        if(reusableTemplateConnections == null){
+            reusableTemplateConnections = new ArrayList<>();
+        }
         return reusableTemplateConnections;
     }
 
