@@ -1,7 +1,6 @@
 define(["require", "exports", "../module-name", "angular", "underscore", "../../services/ImportService"], function (require, exports, module_name_1, angular, _, ImportService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","ImportService","RegisterTemplateService",
     var ImportTemplateController = /** @class */ (function () {
         function ImportTemplateController($scope, $http, $interval, $timeout, $mdDialog, FileUpload, RestUrlService, ImportService, RegisterTemplateService) {
             this.$scope = $scope;
@@ -83,6 +82,10 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              * @type {boolean}
              */
             this.remoteProcessGroupInputPortsNeeded = false;
+            /**
+             * Array of the Remote Input Port options
+             * @type {RemoteProcessInputPort[]}
+             */
             this.remoteProcessGroupInputPortNames = [];
             /**
              * Flag to indicate we need to ask the user to wire and connect the reusable flow out ports to other input ports
@@ -150,13 +153,16 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
             this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
             this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
         }
+        /**
+         * Initialize the controller and properties
+         */
         ImportTemplateController.prototype.ngOnInit = function () {
             var _this = this;
             this.indexImportOptions();
             this.setDefaultImportOptions();
             this.setNiFiClustered();
             /**
-             * Watch when the file changs
+             * Watch when the file changes
              */
             var self = this;
             this.$scope.$watch(function () {
@@ -391,6 +397,9 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
             this.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
         };
         ;
+        /**
+         * If a user adds connection information connecting templates together this will get called from the UI and will them import the template with the connection information
+         */
         ImportTemplateController.prototype.setReusableConnections = function () {
             //TEMPLATE_CONNECTION_INFORMATION
             //submit form again for upload
@@ -495,6 +504,9 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 this.remoteProcessGroupImportOption.userAcknowledged = false;
             }
         };
+        /**
+         * Determine if we are clustered and if so set the flag to show the 'remote input port' options
+         */
         ImportTemplateController.prototype.setNiFiClustered = function () {
             var _this = this;
             this.nifiClustered = false;
@@ -502,9 +514,11 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 if (response.data.clustered) {
                     _this.nifiClustered = true;
                 }
-                _this.nifiClustered = true;
             });
         };
+        /**
+         * Index the import options  in a map by their type
+         */
         ImportTemplateController.prototype.indexImportOptions = function () {
             var arr = [this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.templateConnectionInfoImportOption, this.remoteProcessGroupImportOption];
             this.importComponentOptions = _.indexBy(arr, 'importComponent');
@@ -527,6 +541,9 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
             this.inputPortList = [];
             this.connectionMap = {};
         };
+        /**
+         * When the controller is ready, initialize
+         */
         ImportTemplateController.prototype.$onInit = function () {
             this.ngOnInit();
         };
