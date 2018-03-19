@@ -30,7 +30,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
-import com.thinkbiganalytics.feedmgr.service.template.importing.ImportException;
 import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportTemplateRoutine;
 import com.thinkbiganalytics.feedmgr.service.template.importing.importprocess.ImportTemplateRoutineFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
@@ -38,7 +37,6 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.validation.Abstr
 import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplateFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.validation.ValidateImportTemplatesArchive;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
-import com.thinkbiganalytics.feedmgr.util.UniqueIdentifier;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -49,7 +47,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.inject.Inject;
 
@@ -162,7 +159,7 @@ public class TemplateImporter {
             Set<ImportComponentOption> componentOptions = ImportUtil.inspectZipComponents(file, ImportType.TEMPLATE);
             importTemplateOptions.addOptionsIfNotExists(componentOptions);
             importTemplateOptions.findImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION).addConnectionInfo(importTemplate.getReusableTemplateConnections());
-            importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP).addRemoteProcessGroupInputPorts(importTemplate.getRemoteProcessGroupInputPortNames());
+            importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT).addRemoteProcessGroupInputPorts(importTemplate.getRemoteProcessGroupInputPortNames());
             importTemplate.setImportOptions(this.importTemplateOptions);
         } catch (Exception e) {
             throw new ImportException("Unable to open template archive " + fileName + " for import. ", e);

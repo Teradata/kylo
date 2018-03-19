@@ -81,7 +81,7 @@ public class ImportUtil {
                 options.add(new ImportComponentOption(ImportComponent.REUSABLE_TEMPLATE, false));
             }
             else if (entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE)) {
-                options.add(new ImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP, false));
+                options.add(new ImportComponentOption(ImportComponent.REMOTE_INPUT_PORT, false));
             }
             else if(entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)){
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION,true));

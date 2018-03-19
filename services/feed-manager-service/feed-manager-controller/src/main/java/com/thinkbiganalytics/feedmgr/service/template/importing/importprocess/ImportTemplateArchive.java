@@ -182,7 +182,7 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         //now connect these
         boolean validConnections = true;
         for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
-            ImportComponentOption remoteProcessGroupOption = importReusableTemplate.getImportTemplateOptions().findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP);
+            ImportComponentOption remoteProcessGroupOption = importReusableTemplate.getImportTemplateOptions().findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
             //first validate the remote inputs if they exist
             if (validConnections && remoteProcessGroupOption.isShouldImport()) {
                 validConnections &= importReusableTemplate.validateRemoteInputPorts(remoteProcessGroupOption);

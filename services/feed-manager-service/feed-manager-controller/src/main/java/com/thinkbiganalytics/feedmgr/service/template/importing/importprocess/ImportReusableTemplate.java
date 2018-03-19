@@ -277,7 +277,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
         //Check and set the Remote PRocess group settings.
         //use this later to determine if we need to create NiFi Flow input ports connected to this template
-         ImportComponentOption remoteProcessGroupOption= importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP);
+         ImportComponentOption remoteProcessGroupOption= importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
         if (validReusableTemplate && remoteProcessGroupOption.isShouldImport()) {
             validReusableTemplate &= validateRemoteInputPorts(remoteProcessGroupOption);
         }
@@ -412,7 +412,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
         //create any remote process group ports and connect them on the main NiFi canvas
 
-        ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP);
+        ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
         if(remoteProcessGroupOption.isUserAcknowledged() && remoteProcessGroupOption.isShouldImport()) {
             if (remoteProcessGroupOption.getRemoteProcessGroupInputPortsForTemplate(importTemplate.getTemplateName()).stream().anyMatch(inputPort -> inputPort.isSelected())) {
                 UploadProgressMessage
@@ -500,7 +500,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     private boolean createRemoteInputPorts( UploadProgressMessage
                                              remoteInputPortsMessage){
-        ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_PROCESS_GROUP);
+        ImportComponentOption remoteProcessGroupOption = importTemplateOptions.findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
         String rootProcessGroupId = templateConnectionUtil.getRootProcessGroup().getId();
         String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
 
