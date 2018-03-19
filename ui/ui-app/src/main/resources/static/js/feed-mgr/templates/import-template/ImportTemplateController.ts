@@ -9,7 +9,7 @@ import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
-import IImportService = Import.IImportService;
+import ImportService = Import.ImportService;
 import Map = Import.Map;
 
 export class ImportTemplateController implements ng.IController, OnInit {
@@ -208,7 +208,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
     static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
 
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
-        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: IImportService
+        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
         , private RegisterTemplateService: any) {
 
 
@@ -285,7 +285,15 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
             var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : ''
 
+            /**
+             * Count or errors after this upload
+             * @type {number}
+             */
             let count = 0;
+            /**
+             * Map of errors by type after this upload
+             * @type {{FATAL: any[]; WARN: any[]}}
+             */
             let errorMap: any = {"FATAL": [], "WARN": []};
 
             //reassign the options back from the response data
@@ -293,11 +301,12 @@ export class ImportTemplateController implements ng.IController, OnInit {
             //map the options back to the object map
             this.updateImportOptions(importComponentOptions);
 
+            this.importResult = responseData;
+
             if (!responseData.valid || !responseData.success) {
                 //Validation Error.  Additional Input is needed by the end user
                 this.additionalInputNeeded = true;
                 if (responseData.reusableFlowOutputPortConnectionsNeeded) {
-                    this.importResult = responseData;
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";
                     this.noReusableConnectionsFound = false;
@@ -323,7 +332,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     });
                 }
                 if (responseData.remoteProcessGroupInputPortsNeeded) {
-                    this.importResult = responseData;
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";
                     this.message = "Remote input port assignments needed";
@@ -339,9 +347,8 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
 
             }
-            else {
 
-                this.importResult = responseData;
+
                 if (responseData.templateResults.errors) {
                     angular.forEach(responseData.templateResults.errors, (processor) => {
                         if (processor.validationErrors) {
@@ -355,6 +362,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
                             });
                         }
                     });
+
                     this.errorMap = errorMap;
                     this.errorCount = count;
                 }
@@ -387,7 +395,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
                 }
 
 
-            }
             this.uploadInProgress = false;
             this.stopUploadStatus(1000);
 

@@ -207,17 +207,25 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 var responseData = response.data;
                 _this.xmlType = !responseData.zipFile;
                 var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : '';
+                /**
+                 * Count or errors after this upload
+                 * @type {number}
+                 */
                 var count = 0;
+                /**
+                 * Map of errors by type after this upload
+                 * @type {{FATAL: any[]; WARN: any[]}}
+                 */
                 var errorMap = { "FATAL": [], "WARN": [] };
                 //reassign the options back from the response data
                 var importComponentOptions = responseData.importOptions.importComponentOptions;
                 //map the options back to the object map
                 _this.updateImportOptions(importComponentOptions);
+                _this.importResult = responseData;
                 if (!responseData.valid || !responseData.success) {
                     //Validation Error.  Additional Input is needed by the end user
                     _this.additionalInputNeeded = true;
                     if (responseData.reusableFlowOutputPortConnectionsNeeded) {
-                        _this.importResult = responseData;
                         _this.importResultIcon = "warning";
                         _this.importResultIconColor = "#FF9901";
                         _this.noReusableConnectionsFound = false;
@@ -241,7 +249,6 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                         });
                     }
                     if (responseData.remoteProcessGroupInputPortsNeeded) {
-                        _this.importResult = responseData;
                         _this.importResultIcon = "warning";
                         _this.importResultIconColor = "#FF9901";
                         _this.message = "Remote input port assignments needed";
@@ -254,49 +261,46 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                         _this.importResult.remoteProcessGroupInputPortNames = selected;
                     }
                 }
-                else {
-                    _this.importResult = responseData;
-                    if (responseData.templateResults.errors) {
-                        angular.forEach(responseData.templateResults.errors, function (processor) {
-                            if (processor.validationErrors) {
-                                angular.forEach(processor.validationErrors, function (error) {
-                                    var copy = {};
-                                    angular.extend(copy, error);
-                                    angular.extend(copy, processor);
-                                    copy.validationErrors = null;
-                                    errorMap[error.severity].push(copy);
-                                    count++;
-                                });
-                            }
-                        });
-                        _this.errorMap = errorMap;
-                        _this.errorCount = count;
-                    }
-                    if (count == 0) {
-                        _this.showReorderList = responseData.zipFile;
-                        _this.importResultIcon = "check_circle";
-                        _this.importResultIconColor = "#009933";
-                        if (responseData.zipFile == true) {
-                            _this.message = "Successfully imported and registered the template " + responseData.templateName;
+                if (responseData.templateResults.errors) {
+                    angular.forEach(responseData.templateResults.errors, function (processor) {
+                        if (processor.validationErrors) {
+                            angular.forEach(processor.validationErrors, function (error) {
+                                var copy = {};
+                                angular.extend(copy, error);
+                                angular.extend(copy, processor);
+                                copy.validationErrors = null;
+                                errorMap[error.severity].push(copy);
+                                count++;
+                            });
                         }
-                        else {
-                            _this.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
-                        }
-                        _this.resetImportOptions();
+                    });
+                    _this.errorMap = errorMap;
+                    _this.errorCount = count;
+                }
+                if (count == 0) {
+                    _this.showReorderList = responseData.zipFile;
+                    _this.importResultIcon = "check_circle";
+                    _this.importResultIconColor = "#009933";
+                    if (responseData.zipFile == true) {
+                        _this.message = "Successfully imported and registered the template " + responseData.templateName;
                     }
                     else {
-                        if (responseData.success) {
-                            _this.resetImportOptions();
-                            _this.showReorderList = responseData.zipFile;
-                            _this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                            _this.importResultIcon = "warning";
-                            _this.importResultIconColor = "#FF9901";
-                        }
-                        else {
-                            _this.importResultIcon = "error";
-                            _this.importResultIconColor = "#FF0000";
-                            _this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
-                        }
+                        _this.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
+                    }
+                    _this.resetImportOptions();
+                }
+                else {
+                    if (responseData.success) {
+                        _this.resetImportOptions();
+                        _this.showReorderList = responseData.zipFile;
+                        _this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                        _this.importResultIcon = "warning";
+                        _this.importResultIconColor = "#FF9901";
+                    }
+                    else {
+                        _this.importResultIcon = "error";
+                        _this.importResultIconColor = "#FF0000";
+                        _this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
                     }
                 }
                 _this.uploadInProgress = false;

@@ -2,25 +2,24 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Import} from "./ImportComponentOptionTypes";
 import ImportComponentOption = Import.ImportComponentOption;
-import IImportComponentType = Import.IImportComponentType;
 import ImportProperty = Import.ImportProperty;
-import IImportService = Import.IImportService;
+import ImportService = Import.ImportService;
 import Map = Import.Map;
 
 const moduleName = require('feed-mgr/module-name');
 
 
 export enum ImportComponentType {
-    NIFI_TEMPLATE = IImportComponentType.NIFI_TEMPLATE,
-    TEMPLATE_DATA = IImportComponentType.TEMPLATE_DATA,
-    FEED_DATA = IImportComponentType.FEED_DATA,
-    REUSABLE_TEMPLATE = IImportComponentType.REUSABLE_TEMPLATE,
-    REMOTE_INPUT_PORT = IImportComponentType.REMOTE_INPUT_PORT,
-    USER_DATASOURCES = IImportComponentType.USER_DATASOURCES,
-    TEMPLATE_CONNECTION_INFORMATION = IImportComponentType.TEMPLATE_CONNECTION_INFORMATION
+    NIFI_TEMPLATE = Import.ImportComponentType.NIFI_TEMPLATE,
+    TEMPLATE_DATA = Import.ImportComponentType.TEMPLATE_DATA,
+    FEED_DATA =  Import.ImportComponentType.FEED_DATA,
+    REUSABLE_TEMPLATE =  Import.ImportComponentType.REUSABLE_TEMPLATE,
+    REMOTE_INPUT_PORT =  Import.ImportComponentType.REMOTE_INPUT_PORT,
+    USER_DATASOURCES =  Import.ImportComponentType.USER_DATASOURCES,
+    TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION
 }
 
-export class ImportService implements IImportService{
+export class DefaultImportService implements ImportService{
 
 
     private guid() {
@@ -48,40 +47,40 @@ export class ImportService implements IImportService{
      * @param component
      * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
      */
-    newImportComponentOption(component: IImportComponentType): ImportComponentOption {
+    newImportComponentOption(component:  Import.ImportComponentType): ImportComponentOption {
         let nameOfType = ImportComponentType[component];
         let option = {importComponent: nameOfType, overwrite: false, userAcknowledged: true, shouldImport: true, analyzed: false, continueIfExists: false, properties: [] as ImportProperty[]}
         return option;
     }
 
     newReusableTemplateImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.REUSABLE_TEMPLATE);
+        return this.newImportComponentOption( Import.ImportComponentType.REUSABLE_TEMPLATE);
     }
 
     newTemplateConnectionInfoImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.TEMPLATE_CONNECTION_INFORMATION);
+        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION);
     }
 
     newTemplateDataImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.TEMPLATE_DATA);
+        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_DATA);
     }
 
     newFeedDataImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.FEED_DATA);
+        return this.newImportComponentOption( Import.ImportComponentType.FEED_DATA);
     }
 
     newRemoteProcessGroupImportOption(): ImportComponentOption {
-        let option = this.newImportComponentOption(IImportComponentType.REMOTE_INPUT_PORT);
+        let option = this.newImportComponentOption( Import.ImportComponentType.REMOTE_INPUT_PORT);
         option.userAcknowledged = false;
         return option;
     }
 
     newNiFiTemplateImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.NIFI_TEMPLATE);
+        return this.newImportComponentOption( Import.ImportComponentType.NIFI_TEMPLATE);
     }
 
     newUserDatasourcesImportOption(): ImportComponentOption {
-        return this.newImportComponentOption(IImportComponentType.USER_DATASOURCES)
+        return this.newImportComponentOption( Import.ImportComponentType.USER_DATASOURCES)
     }
 
     newUploadKey(): string {
@@ -137,13 +136,13 @@ export class ImportService implements IImportService{
      * @param importComponentType the type of the option
      * @returns {boolean} true if match, false if not
      */
-    isImportOption(importOption: ImportComponentOption, importComponentType: IImportComponentType): boolean {
+    isImportOption(importOption: ImportComponentOption, importComponentType:  Import.ImportComponentType): boolean {
         let nameOfType = ImportComponentType[importComponentType]
         return importOption.importComponent == nameOfType;
     }
 
 }
 
-angular.module(moduleName).factory('ImportService', () => new ImportService());
+angular.module(moduleName).factory('ImportService', () => new DefaultImportService());
 
 

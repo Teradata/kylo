@@ -2,7 +2,7 @@ import * as angular from "angular";
 import * as _ from "underscore";
  declare namespace Import {
 
-     export const enum IImportComponentType {
+     export const enum ImportComponentType {
         NIFI_TEMPLATE, TEMPLATE_DATA, FEED_DATA, REUSABLE_TEMPLATE, REMOTE_INPUT_PORT, USER_DATASOURCES, TEMPLATE_CONNECTION_INFORMATION
     }
 
@@ -89,14 +89,14 @@ import * as _ from "underscore";
     }
 
 
-     export interface IImportService {
+     export interface ImportService {
         /**
          * return a new component option.
          * Defaults to not overwrite.
          * @param component
          * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
          */
-        newImportComponentOption(component: IImportComponentType): ImportComponentOption;
+        newImportComponentOption(component: ImportComponentType): ImportComponentOption;
 
         newReusableTemplateImportOption(): ImportComponentOption;
 
@@ -133,7 +133,7 @@ import * as _ from "underscore";
          * @param importComponentType the type of the option
          * @returns {boolean} true if match, false if not
          */
-        isImportOption(importOption: ImportComponentOption, importComponentType: IImportComponentType): boolean;
+        isImportOption(importOption: ImportComponentOption, importComponentType: ImportComponentType): boolean;
     }
 
 

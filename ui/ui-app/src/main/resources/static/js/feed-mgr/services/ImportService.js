@@ -12,10 +12,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         ImportComponentType[ImportComponentType["USER_DATASOURCES"] = 5] = "USER_DATASOURCES";
         ImportComponentType[ImportComponentType["TEMPLATE_CONNECTION_INFORMATION"] = 6] = "TEMPLATE_CONNECTION_INFORMATION";
     })(ImportComponentType = exports.ImportComponentType || (exports.ImportComponentType = {}));
-    var ImportService = /** @class */ (function () {
-        function ImportService() {
+    var DefaultImportService = /** @class */ (function () {
+        function DefaultImportService() {
         }
-        ImportService.prototype.guid = function () {
+        DefaultImportService.prototype.guid = function () {
             function s4() {
                 return Math.floor((1 + Math.random()) * 0x10000)
                     .toString(16)
@@ -24,7 +24,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
                 s4() + '-' + s4() + s4() + s4();
         };
-        ImportService.prototype.importComponentTypes = function () {
+        DefaultImportService.prototype.importComponentTypes = function () {
             return Object.keys(ImportComponentType);
         };
         /**
@@ -33,42 +33,42 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param component
          * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
          */
-        ImportService.prototype.newImportComponentOption = function (component) {
+        DefaultImportService.prototype.newImportComponentOption = function (component) {
             var nameOfType = ImportComponentType[component];
             var option = { importComponent: nameOfType, overwrite: false, userAcknowledged: true, shouldImport: true, analyzed: false, continueIfExists: false, properties: [] };
             return option;
         };
-        ImportService.prototype.newReusableTemplateImportOption = function () {
+        DefaultImportService.prototype.newReusableTemplateImportOption = function () {
             return this.newImportComponentOption(3 /* REUSABLE_TEMPLATE */);
         };
-        ImportService.prototype.newTemplateConnectionInfoImportOption = function () {
+        DefaultImportService.prototype.newTemplateConnectionInfoImportOption = function () {
             return this.newImportComponentOption(6 /* TEMPLATE_CONNECTION_INFORMATION */);
         };
-        ImportService.prototype.newTemplateDataImportOption = function () {
+        DefaultImportService.prototype.newTemplateDataImportOption = function () {
             return this.newImportComponentOption(1 /* TEMPLATE_DATA */);
         };
-        ImportService.prototype.newFeedDataImportOption = function () {
+        DefaultImportService.prototype.newFeedDataImportOption = function () {
             return this.newImportComponentOption(2 /* FEED_DATA */);
         };
-        ImportService.prototype.newRemoteProcessGroupImportOption = function () {
+        DefaultImportService.prototype.newRemoteProcessGroupImportOption = function () {
             var option = this.newImportComponentOption(4 /* REMOTE_INPUT_PORT */);
             option.userAcknowledged = false;
             return option;
         };
-        ImportService.prototype.newNiFiTemplateImportOption = function () {
+        DefaultImportService.prototype.newNiFiTemplateImportOption = function () {
             return this.newImportComponentOption(0 /* NIFI_TEMPLATE */);
         };
-        ImportService.prototype.newUserDatasourcesImportOption = function () {
+        DefaultImportService.prototype.newUserDatasourcesImportOption = function () {
             return this.newImportComponentOption(5 /* USER_DATASOURCES */);
         };
-        ImportService.prototype.newUploadKey = function () {
+        DefaultImportService.prototype.newUploadKey = function () {
             return _.uniqueId("upload_") + new Date().getTime() + this.guid();
         };
         /**
          * Update properties when a user chooses to overwrite or not
          * @param importComponentOption
          */
-        ImportService.prototype.onOverwriteSelectOptionChanged = function (importComponentOption) {
+        DefaultImportService.prototype.onOverwriteSelectOptionChanged = function (importComponentOption) {
             importComponentOption.userAcknowledged = true;
             if (importComponentOption.overwriteSelectValue == "true") {
                 importComponentOption.overwrite = true;
@@ -86,7 +86,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param importOptionsMap a map of {ImportType: importOption}
          * @returns {Array} the array of options to be imported
          */
-        ImportService.prototype.getImportOptionsForUpload = function (importOptionsMap) {
+        DefaultImportService.prototype.getImportOptionsForUpload = function (importOptionsMap) {
             var importComponentOptions = [];
             Object.keys(importOptionsMap).forEach(function (key) {
                 var option = importOptionsMap[key];
@@ -109,13 +109,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param importComponentType the type of the option
          * @returns {boolean} true if match, false if not
          */
-        ImportService.prototype.isImportOption = function (importOption, importComponentType) {
+        DefaultImportService.prototype.isImportOption = function (importOption, importComponentType) {
             var nameOfType = ImportComponentType[importComponentType];
             return importOption.importComponent == nameOfType;
         };
-        return ImportService;
+        return DefaultImportService;
     }());
-    exports.ImportService = ImportService;
-    angular.module(moduleName).factory('ImportService', function () { return new ImportService(); });
+    exports.DefaultImportService = DefaultImportService;
+    angular.module(moduleName).factory('ImportService', function () { return new DefaultImportService(); });
 });
 //# sourceMappingURL=ImportService.js.map

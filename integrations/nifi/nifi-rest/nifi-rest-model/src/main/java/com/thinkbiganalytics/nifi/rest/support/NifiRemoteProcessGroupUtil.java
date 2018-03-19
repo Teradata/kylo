@@ -44,7 +44,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
-//import org.apache.commons.beanutils.PropertyUtils;
 
 public class NifiRemoteProcessGroupUtil {
 
