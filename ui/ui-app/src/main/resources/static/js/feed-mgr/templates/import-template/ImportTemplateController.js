@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "../module-name", "angular", "underscore", "../../services/ImportService"], function (require, exports, module_name_1, angular, _, ImportService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ImportTemplateController = /** @class */ (function () {
@@ -12,11 +12,6 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
             this.RestUrlService = RestUrlService;
             this.ImportService = ImportService;
             this.RegisterTemplateService = RegisterTemplateService;
-            /**
-             * reference to the controller
-             * @type {controller}
-             */
-            var self = this;
             /**
              * the angular ng-form for validity checks
              * @type {{}}
@@ -77,25 +72,21 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
              */
             this.importComponentOptions = {};
             /**
-             * Registered Template import options
+             * boolean to indicate if nifi is clustered.
+             * If it is the remoteProcessGroupOption will be exposed when importing reusable templates
+             * @type {boolean}
              */
-            this.templateDataImportOption = ImportService.newTemplateDataImportOption();
+            this.nifiClustered = false;
             /**
-             * NiFi template options
+             * Flag to indicate the user needs to provide ports before uploading
+             * @type {boolean}
              */
-            this.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
+            this.remoteProcessGroupInputPortsNeeded = false;
             /**
-             * Reusable template options
+             * Array of the Remote Input Port options
+             * @type {RemoteProcessInputPort[]}
              */
-            this.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
-            /**
-             * Connection information options to connect out ports to other input ports
-             */
-            this.templateConnectionInfoImportOption = ImportService.newTemplateConnectionInfoImportOption();
-            /**
-             * Called when a user changes a import option for overwriting
-             */
-            this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
+            this.remoteProcessGroupInputPortNames = [];
             /**
              * Flag to indicate we need to ask the user to wire and connect the reusable flow out ports to other input ports
              * @type {boolean}
@@ -117,293 +108,456 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
              * @type {Array} of {label: port.name, value: port.name}
              */
             this.inputPortList = [];
-            self.importResult = null;
-            self.importResultIcon = "check_circle";
-            self.importResultIconColor = "#009933";
-            self.errorMap = null;
-            self.errorCount = 0;
-            self.showReorderList = false;
-            self.xmlType = false;
-            this.importTemplate = function () {
-                self.showReorderList = false;
-                self.uploadInProgress = true;
-                self.importResult = null;
-                var file = self.templateFile;
-                var uploadUrl = RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
-                var successFn = function (response) {
-                    var responseData = response.data;
-                    self.xmlFile = !responseData.zipFile;
-                    var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : '';
-                    var count = 0;
-                    var errorMap = { "FATAL": [], "WARN": [] };
-                    /*
-                       if(responseData.importOptions.properties){
-                            _.each(responseData.importOptions.properties,function(prop){
-                                var inputName = prop.processorName.split(' ').join('_')+prop.propertyKey.split(' ').join('_');
-                                prop.inputName = inputName.toLowerCase();
-                            });
-                        }
-                        */
-                    //reassign the options back from the response data
-                    var importComponentOptions = responseData.importOptions.importComponentOptions;
-                    //map the options back to the object map
-                    updateImportOptions(importComponentOptions);
-                    if (!responseData.valid || !responseData.success) {
-                        //Validation Error.  Additional Input is needed by the end user
-                        self.additionalInputNeeded = true;
-                        if (responseData.reusableFlowOutputPortConnectionsNeeded) {
-                            self.importResult = responseData;
-                            self.importResultIcon = "warning";
-                            self.importResultIconColor = "#FF9901";
-                            self.noReusableConnectionsFound = false;
-                            self.reusableTemplateInputPortsNeeded = true;
-                            self.message = "Additional connection information needed";
-                            //show the user the list and allow them to configure and save it.
-                            //add button that will make these connections
-                            RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (inputPortsResponse) {
-                                //Update connectionMap and inputPortList
-                                self.inputPortList = [];
-                                if (inputPortsResponse.data) {
-                                    angular.forEach(inputPortsResponse.data, function (port, i) {
-                                        var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
-                                        self.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled });
-                                        self.connectionMap[port.name] = port;
-                                    });
-                                }
-                                if (self.inputPortList.length == 0) {
-                                    self.noReusableConnectionsFound = true;
-                                }
-                            });
-                        }
-                    }
-                    else {
-                        self.importResult = responseData;
-                        //if(responseData.templateResults.errors) {
-                        if (responseData.templateResults.errors) {
-                            //angular.forEach(responseData.templateResults.errors, function (processor) {
-                            angular.forEach(responseData.templateResults.errors, function (processor) {
-                                if (processor.validationErrors) {
-                                    angular.forEach(processor.validationErrors, function (error) {
-                                        var copy = {};
-                                        angular.extend(copy, error);
-                                        angular.extend(copy, processor);
-                                        copy.validationErrors = null;
-                                        errorMap[error.severity].push(copy);
-                                        count++;
-                                    });
-                                }
-                            });
-                            self.errorMap = errorMap;
-                            self.errorCount = count;
-                        }
-                        if (count == 0) {
-                            self.showReorderList = responseData.zipFile;
-                            self.importResultIcon = "check_circle";
-                            self.importResultIconColor = "#009933";
-                            if (responseData.zipFile == true) {
-                                self.message = "Successfully imported and registered the template " + responseData.templateName;
-                            }
-                            else {
-                                self.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
-                            }
-                            resetImportOptions();
-                        }
-                        else {
-                            if (responseData.success) {
-                                resetImportOptions();
-                                self.showReorderList = responseData.zipFile;
-                                self.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                                self.importResultIcon = "warning";
-                                self.importResultIconColor = "#FF9901";
-                            }
-                            else {
-                                self.importResultIcon = "error";
-                                self.importResultIconColor = "#FF0000";
-                                self.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
-                            }
-                        }
-                    }
-                    self.uploadInProgress = false;
-                    stopUploadStatus(1000);
-                };
-                var errorFn = function (response) {
-                    self.importResult = response.data;
-                    self.uploadInProgress = false;
-                    self.importResultIcon = "error";
-                    self.importResultIconColor = "#FF0000";
-                    var msg = response.data.message != undefined ? response.data.message : "Unable to import the template.";
-                    self.message = msg;
-                    stopUploadStatus(1000);
-                };
-                //build up the options from the Map and into the array for uploading
-                var importComponentOptions = ImportService.getImportOptionsForUpload(self.importComponentOptions);
-                //generate a new upload key for status tracking
-                self.uploadKey = ImportService.newUploadKey();
-                var params = {
-                    uploadKey: self.uploadKey,
-                    importComponents: angular.toJson(importComponentOptions)
-                };
-                startUploadStatus();
-                FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
-            };
             /**
-             * Watch when the file changs
+             * The Resulting object regurend after a user uploads
+             * @type {null}
              */
-            $scope.$watch(function () {
-                return self.templateFile;
+            this.importResult = null;
+            /**
+             * The resulting succsss/failure icon
+             * @type {string}
+             */
+            this.importResultIcon = "check_circle";
+            /**
+             * The reuslting color of the icon
+             * @type {string}
+             */
+            this.importResultIconColor = "#009933";
+            /**
+             * A mayp of any additional errors that should be displayed
+             * @type {null}
+             */
+            this.errorMap = null;
+            /**
+             * The count of errors after an upload
+             * @type {number}
+             */
+            this.errorCount = 0;
+            /**
+             * Flag to indicate if the Reorder list should be shown
+             * @type {boolean}
+             */
+            this.showReorderList = false;
+            /**
+             * Is this an XML file upload
+             * @type {boolean}
+             */
+            this.xmlType = false;
+            /**
+             * Flag to see if we should check and use remote input ports.
+             * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
+             */
+            this.remoteInputPortsCheckEnabled = false;
+            /**
+             * Called when a user changes a import option for overwriting
+             */
+            this.onOverwriteSelectOptionChanged = this.ImportService.onOverwriteSelectOptionChanged;
+            this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+            this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+            this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+            this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
+            this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
+        }
+        /**
+         * Initialize the controller and properties
+         */
+        ImportTemplateController.prototype.ngOnInit = function () {
+            var _this = this;
+            this.indexImportOptions();
+            this.setDefaultImportOptions();
+            this.setNiFiClustered();
+            /**
+             * Watch when the file changes
+             */
+            var self = this;
+            this.$scope.$watch(function () {
+                return _this.templateFile;
             }, function (newVal, oldValue) {
                 if (newVal != null) {
-                    self.fileName = newVal.name;
-                    if (self.fileName.toLowerCase().endsWith(".xml")) {
-                        self.uploadType = 'xml';
+                    _this.fileName = newVal.name;
+                    if (_this.fileName.toLowerCase().endsWith(".xml")) {
+                        _this.uploadType = 'xml';
                     }
                     else {
-                        self.uploadType = 'zip';
+                        _this.uploadType = 'zip';
                     }
                 }
                 else {
-                    self.fileName = null;
-                    self.uploadType = null;
+                    _this.fileName = null;
+                    _this.uploadType = null;
                 }
                 //reset them if changed
                 if (newVal != oldValue) {
-                    resetImportOptions();
+                    _this.resetImportOptions();
                 }
             });
-            /**
-             * Called when the user changes the output port connections
-             * @param connection
-             */
-            self.onReusableTemplateConnectionChange = function (connection) {
-                var port = self.connectionMap[connection.inputPortDisplayName];
-                connection.reusableTemplateInputPortName = port.name;
-                self.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
-            };
-            self.setReusableConnections = function () {
-                //TEMPLATE_CONNECTION_INFORMATION
-                //submit form again for upload
-                self.importComponentOptions[ImportService.importComponentTypes.TEMPLATE_CONNECTION_INFORMATION].connectionInfo = self.importResult.reusableTemplateConnections;
-                self.importTemplate();
-            };
-            self.cancelImport = function () {
-                //reset and reneable import button
-                resetImportOptions();
-                self.uploadStatusMessages = [];
-                self.importResult = null;
-            };
-            /**
-             * Set the default values for the import options
-             */
-            function setDefaultImportOptions() {
-                if (self.uploadType == 'zip') {
-                    //only if it is a zip do we continue with the niFi template
-                    self.templateDataImportOption.continueIfExists = false;
-                    self.reusableTemplateImportOption.shouldImport = true;
-                    self.reusableTemplateImportOption.userAcknowledged = true;
+        };
+        /**
+         * Called when a user uploads a template
+         */
+        ImportTemplateController.prototype.importTemplate = function () {
+            var _this = this;
+            //reset some flags
+            this.showReorderList = false;
+            this.uploadInProgress = true;
+            this.importResult = null;
+            var file = this.templateFile;
+            var uploadUrl = this.RestUrlService.ADMIN_IMPORT_TEMPLATE_URL;
+            var successFn = function (response) {
+                var responseData = response.data;
+                _this.xmlType = !responseData.zipFile;
+                var processGroupName = (responseData.templateResults != undefined && responseData.templateResults.processGroupEntity != undefined) ? responseData.templateResults.processGroupEntity.name : '';
+                var count = 0;
+                var errorMap = { "FATAL": [], "WARN": [] };
+                //reassign the options back from the response data
+                var importComponentOptions = responseData.importOptions.importComponentOptions;
+                //map the options back to the object map
+                _this.updateImportOptions(importComponentOptions);
+                if (!responseData.valid || !responseData.success) {
+                    //Validation Error.  Additional Input is needed by the end user
+                    _this.additionalInputNeeded = true;
+                    if (responseData.reusableFlowOutputPortConnectionsNeeded) {
+                        _this.importResult = responseData;
+                        _this.importResultIcon = "warning";
+                        _this.importResultIconColor = "#FF9901";
+                        _this.noReusableConnectionsFound = false;
+                        _this.reusableTemplateInputPortsNeeded = true;
+                        _this.message = "Additional connection information needed";
+                        //show the user the list and allow them to configure and save it.
+                        //add button that will make these connections
+                        _this.RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function (inputPortsResponse) {
+                            //Update connectionMap and inputPortList
+                            _this.inputPortList = [];
+                            if (inputPortsResponse.data) {
+                                angular.forEach(inputPortsResponse.data, function (port, i) {
+                                    var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
+                                    _this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled });
+                                    _this.connectionMap[port.name] = port;
+                                });
+                            }
+                            if (_this.inputPortList.length == 0) {
+                                _this.noReusableConnectionsFound = true;
+                            }
+                        });
+                    }
+                    if (responseData.remoteProcessGroupInputPortsNeeded) {
+                        _this.importResult = responseData;
+                        _this.importResultIcon = "warning";
+                        _this.importResultIconColor = "#FF9901";
+                        _this.message = "Remote input port assignments needed";
+                        _this.remoteProcessGroupInputPortsNeeded = true;
+                        //reset the value on the importResult that will be uploaded again
+                        _this.remoteProcessGroupInputPortNames = responseData.remoteProcessGroupInputPortNames;
+                        var selected = _.filter(_this.remoteProcessGroupInputPortNames, function (inputPort) {
+                            return inputPort.selected;
+                        });
+                        _this.importResult.remoteProcessGroupInputPortNames = selected;
+                    }
                 }
                 else {
-                    self.nifiTemplateImportOption.continueIfExists = false;
-                    self.reusableTemplateImportOption.shouldImport = true;
-                    self.reusableTemplateImportOption.userAcknowledged = true;
+                    _this.importResult = responseData;
+                    if (responseData.templateResults.errors) {
+                        angular.forEach(responseData.templateResults.errors, function (processor) {
+                            if (processor.validationErrors) {
+                                angular.forEach(processor.validationErrors, function (error) {
+                                    var copy = {};
+                                    angular.extend(copy, error);
+                                    angular.extend(copy, processor);
+                                    copy.validationErrors = null;
+                                    errorMap[error.severity].push(copy);
+                                    count++;
+                                });
+                            }
+                        });
+                        _this.errorMap = errorMap;
+                        _this.errorCount = count;
+                    }
+                    if (count == 0) {
+                        _this.showReorderList = responseData.zipFile;
+                        _this.importResultIcon = "check_circle";
+                        _this.importResultIconColor = "#009933";
+                        if (responseData.zipFile == true) {
+                            _this.message = "Successfully imported and registered the template " + responseData.templateName;
+                        }
+                        else {
+                            _this.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
+                        }
+                        _this.resetImportOptions();
+                    }
+                    else {
+                        if (responseData.success) {
+                            _this.resetImportOptions();
+                            _this.showReorderList = responseData.zipFile;
+                            _this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                            _this.importResultIcon = "warning";
+                            _this.importResultIconColor = "#FF9901";
+                        }
+                        else {
+                            _this.importResultIcon = "error";
+                            _this.importResultIconColor = "#FF0000";
+                            _this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        }
+                    }
                 }
+                _this.uploadInProgress = false;
+                _this.stopUploadStatus(1000);
+            };
+            var errorFn = function (response) {
+                _this.importResult = response.data;
+                _this.uploadInProgress = false;
+                _this.importResultIcon = "error";
+                _this.importResultIconColor = "#FF0000";
+                var msg = response.data.message != undefined ? response.data.message : "Unable to import the template.";
+                _this.message = msg;
+                _this.stopUploadStatus(1000);
+            };
+            //build up the options from the Map and into the array for uploading
+            var importComponentOptions = this.ImportService.getImportOptionsForUpload(this.importComponentOptions);
+            //generate a new upload key for status tracking
+            this.uploadKey = this.ImportService.newUploadKey();
+            var params = {
+                uploadKey: this.uploadKey,
+                importComponents: angular.toJson(importComponentOptions)
+            };
+            this.startUploadStatus();
+            this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+        };
+        /**
+         * Stop the upload and stop the progress indicator
+         * @param {number} delay  wait this amount of millis before stopping
+         */
+        ImportTemplateController.prototype.stopUploadStatus = function (delay) {
+            var _this = this;
+            var stopStatusCheck = function () {
+                _this.uploadProgress = 0;
+                if (angular.isDefined(_this.uploadStatusCheck)) {
+                    _this.$interval.cancel(_this.uploadStatusCheck);
+                    _this.uploadStatusCheck = undefined;
+                }
+            };
+            if (delay != null && delay != undefined) {
+                this.$timeout(function () {
+                    stopStatusCheck();
+                }, delay);
             }
-            /**
-             * Initialize the Controller
-             */
-            function init() {
-                indexImportOptions();
-                setDefaultImportOptions();
+            else {
+                stopStatusCheck();
             }
-            function indexImportOptions() {
-                var arr = [self.templateDataImportOption, self.nifiTemplateImportOption, self.reusableTemplateImportOption];
-                self.importComponentOptions = _.indexBy(arr, 'importComponent');
-            }
-            /**
-             * Reset the options back to their orig. state
-             */
-            function resetImportOptions() {
-                self.importComponentOptions = {};
-                self.templateDataImportOption = ImportService.newTemplateDataImportOption();
-                self.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
-                self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
-                self.templateConnectionInfoImportOption = ImportService.newTemplateConnectionInfoImportOption();
-                indexImportOptions();
-                setDefaultImportOptions();
-                self.additionalInputNeeded = false;
-                self.reusableTemplateInputPortsNeeded = false;
-                self.inputPortList = [];
-                self.connectionMap = {};
-            }
-            init();
-            /**
-             *
-             * @param importOptionsArr array of importOptions
-             */
-            function updateImportOptions(importOptionsArr) {
-                var map = _.indexBy(importOptionsArr, 'importComponent');
-                _.each(importOptionsArr, function (option) {
-                    if (option.userAcknowledged) {
-                        option.overwriteSelectValue = "" + option.overwrite;
+        };
+        /**
+         * Start the upload
+         */
+        ImportTemplateController.prototype.startUploadStatus = function () {
+            var _this = this;
+            this.stopUploadStatus(null);
+            this.uploadStatusMessages = [];
+            this.uploadStatusCheck = this.$interval(function () {
+                //poll for status
+                _this.$http.get(_this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(_this.uploadKey)).then(function (response) {
+                    if (response && response.data && response.data != null) {
+                        _this.uploadStatusMessages = response.data.messages;
+                        _this.uploadProgress = response.data.percentComplete;
                     }
-                    if (option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA) {
-                        self.templateDataImportOption = option;
-                    }
-                    else if (option.importComponent == ImportService.importComponentTypes.REUSABLE_TEMPLATE) {
-                        self.reusableTemplateImportOption = option;
-                    }
-                    else if (option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE) {
-                        self.nifiTemplateImportOption = option;
-                    }
-                    else if (option.importComponent == ImportService.importComponentTypes.TEMPLATE_CONNECTION_INFORMATION) {
-                        self.templateConnectionInfoImportOption = option;
-                    }
-                    self.importComponentOptions[option.importComponent] = option;
+                }, function (err) {
+                    //  self.uploadStatusMessages = [];
+                });
+            }, 500);
+        };
+        /**
+         *
+         * @param importOptionsArr array of importOptions
+         */
+        ImportTemplateController.prototype.updateImportOptions = function (importOptionsArr) {
+            var _this = this;
+            var map = _.indexBy(importOptionsArr, 'importComponent');
+            _.each(importOptionsArr, function (option) {
+                if (option.userAcknowledged) {
+                    option.overwriteSelectValue = "" + option.overwrite;
+                }
+                if (option.importComponent == ImportService_1.ImportComponentType.TEMPLATE_DATA) {
+                    _this.templateDataImportOption = option;
+                }
+                else if (option.importComponent == ImportService_1.ImportComponentType.REUSABLE_TEMPLATE) {
+                    _this.reusableTemplateImportOption = option;
+                }
+                else if (option.importComponent == ImportService_1.ImportComponentType.NIFI_TEMPLATE) {
+                    _this.nifiTemplateImportOption = option;
+                }
+                else if (option.importComponent == ImportService_1.ImportComponentType.REMOTE_INPUT_PORT) {
+                    _this.remoteProcessGroupImportOption = option;
+                }
+                else if (option.importComponent == ImportService_1.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION) {
+                    _this.templateConnectionInfoImportOption = option;
+                }
+                _this.importComponentOptions[option.importComponent] = option;
+            });
+        };
+        /**
+         * Called when the user changes the output port connections
+         * @param connection
+         */
+        ImportTemplateController.prototype.onReusableTemplateConnectionChange = function (connection) {
+            var port = this.connectionMap[connection.inputPortDisplayName];
+            connection.reusableTemplateInputPortName = port.name;
+            this.importTemplateForm["port-" + connection.feedOutputPortName].$setValidity("invalidConnection", true);
+        };
+        ;
+        /**
+         * If a user adds connection information connecting templates together this will get called from the UI and will them import the template with the connection information
+         */
+        ImportTemplateController.prototype.setReusableConnections = function () {
+            //TEMPLATE_CONNECTION_INFORMATION
+            //submit form again for upload
+            var option = ImportService_1.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION;
+            this.importComponentOptions[ImportService_1.ImportComponentType[option]].connectionInfo = this.importResult.reusableTemplateConnections;
+            this.importTemplate();
+        };
+        /**
+         * Called from the UI after a user has assigned some input ports to be 'remote aware input ports'
+         */
+        ImportTemplateController.prototype.setRemoteProcessInputPorts = function () {
+            var _this = this;
+            var option = ImportService_1.ImportComponentType.REMOTE_INPUT_PORT;
+            this.importComponentOptions[ImportService_1.ImportComponentType[option]].remoteProcessGroupInputPorts = this.importResult.remoteProcessGroupInputPortNames;
+            var inputPortMap = {};
+            _.each(this.remoteProcessGroupInputPortNames, function (port) {
+                port.selected = false;
+                inputPortMap[port.inputPortName] = port;
+            });
+            _.each(this.importResult.remoteProcessGroupInputPortNames, function (inputPort) {
+                inputPort.selected = true;
+                //find the matching in the complete set and mark it as selected
+                var matchingPort = inputPortMap[inputPort.inputPortName];
+                if (angular.isDefined(matchingPort)) {
+                    matchingPort.selected = true;
+                }
+            });
+            //warn if existing ports are not selected
+            var portsToRemove = [];
+            _.each(this.remoteProcessGroupInputPortNames, function (port) {
+                if (port.existing && !port.selected) {
+                    portsToRemove.push(port);
+                }
+            });
+            if (portsToRemove.length > 0) {
+                //Warn and confirm before importing
+                var names = _.map(portsToRemove, function (port) {
+                    return port.inputPortName;
+                }).join(",");
+                var confirm = this.$mdDialog.confirm()
+                    .title('Warning You are about to delete template items.')
+                    .htmlContent('The following \'remote input ports\' exist, but are not selected to be imported:<br/><br/> <b>' + names
+                    + '</b>. <br/><br/>Continuing will result in these remote input ports being \ndeleted from the parent NiFi canvas. <br/><br/>Are you sure you want to continue?<br/>')
+                    .ariaLabel('Removal of Input Ports detected')
+                    .ok('Please do it!')
+                    .cancel('Cancel and Review');
+                this.$mdDialog.show(confirm).then(function () {
+                    var option = ImportService_1.ImportComponentType.REMOTE_INPUT_PORT;
+                    _this.importComponentOptions[ImportService_1.ImportComponentType[option]].userAcknowledged = true;
+                    _this.importTemplate();
+                }, function () {
+                    //do nothing
                 });
             }
-            /**
-             * Stop the upload status check,
-             * @param delay wait xx millis before stopping (allows for the last status to be queried)
-             */
-            function stopUploadStatus(delay) {
-                function stopStatusCheck() {
-                    self.uploadProgress = 0;
-                    if (angular.isDefined(self.uploadStatusCheck)) {
-                        $interval.cancel(self.uploadStatusCheck);
-                        self.uploadStatusCheck = undefined;
-                    }
-                }
-                if (delay != null && delay != undefined) {
-                    $timeout(function () {
-                        stopStatusCheck();
-                    }, delay);
+            else {
+                if (this.importResult.remoteProcessGroupInputPortNames.length == 0) {
+                    var confirm = this.$mdDialog.confirm()
+                        .title('No remote input ports selected')
+                        .htmlContent('You have not selected any input ports to be exposed as \'remote input ports\'.<br/> Are you sure you want to continue?<br/>')
+                        .ariaLabel('No Remote Input Ports Selected')
+                        .ok('Please do it!')
+                        .cancel('Cancel and Review');
+                    this.$mdDialog.show(confirm).then(function () {
+                        var option = ImportService_1.ImportComponentType.REMOTE_INPUT_PORT;
+                        _this.importComponentOptions[ImportService_1.ImportComponentType[option]].userAcknowledged = true;
+                        _this.importTemplate();
+                    }, function () {
+                        //do nothing
+                    });
                 }
                 else {
-                    stopStatusCheck();
+                    var option_1 = ImportService_1.ImportComponentType.REMOTE_INPUT_PORT;
+                    this.importComponentOptions[ImportService_1.ImportComponentType[option_1]].userAcknowledged = true;
+                    this.importTemplate();
                 }
             }
-            /**
-             * starts the upload status check
-             */
-            function startUploadStatus() {
-                stopUploadStatus(null);
-                self.uploadStatusMessages = [];
-                self.uploadStatusCheck = $interval(function () {
-                    //poll for status
-                    $http.get(RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(self.uploadKey)).then(function (response) {
-                        if (response && response.data && response.data != null) {
-                            self.uploadStatusMessages = response.data.messages;
-                            self.uploadProgress = response.data.percentComplete;
-                        }
-                    }, function (err) {
-                        //  self.uploadStatusMessages = [];
-                    });
-                }, 500);
+        };
+        ImportTemplateController.prototype.cancelImport = function () {
+            //reset and reneable import button
+            this.resetImportOptions();
+            this.uploadStatusMessages = [];
+            this.importResult = null;
+        };
+        /**
+         * Set the default values for the import options
+         */
+        ImportTemplateController.prototype.setDefaultImportOptions = function () {
+            if (this.uploadType == 'zip') {
+                //only if it is a zip do we continue with the niFi template
+                this.templateDataImportOption.continueIfExists = false;
+                this.reusableTemplateImportOption.shouldImport = true;
+                this.reusableTemplateImportOption.userAcknowledged = true;
+                //remote process group option
+                this.remoteProcessGroupImportOption.shouldImport = true;
+                this.remoteProcessGroupImportOption.userAcknowledged = true;
             }
-        }
-        ;
+            else {
+                this.nifiTemplateImportOption.continueIfExists = false;
+                this.reusableTemplateImportOption.shouldImport = true;
+                this.reusableTemplateImportOption.userAcknowledged = true;
+                this.remoteProcessGroupImportOption.shouldImport = true;
+                this.remoteProcessGroupImportOption.userAcknowledged = false;
+            }
+        };
+        /**
+         * Determine if we are clustered and if so set the flag to show the 'remote input port' options
+         */
+        ImportTemplateController.prototype.setNiFiClustered = function () {
+            var _this = this;
+            this.nifiClustered = false;
+            if (this.remoteInputPortsCheckEnabled) {
+                this.$http.get(this.RestUrlService.NIFI_STATUS).then(function (response) {
+                    if (response.data.clustered) {
+                        _this.nifiClustered = true;
+                    }
+                });
+            }
+        };
+        /**
+         * Index the import options  in a map by their type
+         */
+        ImportTemplateController.prototype.indexImportOptions = function () {
+            var arr = [this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.templateConnectionInfoImportOption, this.remoteProcessGroupImportOption];
+            this.importComponentOptions = _.indexBy(arr, 'importComponent');
+        };
+        /**
+         * Reset the options back to their orig. state
+         */
+        ImportTemplateController.prototype.resetImportOptions = function () {
+            this.importComponentOptions = {};
+            this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+            this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+            this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+            this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
+            this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
+            this.indexImportOptions();
+            this.setDefaultImportOptions();
+            this.additionalInputNeeded = false;
+            this.reusableTemplateInputPortsNeeded = false;
+            this.remoteProcessGroupInputPortsNeeded = false;
+            this.inputPortList = [];
+            this.connectionMap = {};
+        };
+        /**
+         * When the controller is ready, initialize
+         */
+        ImportTemplateController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        ImportTemplateController.$inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
         return ImportTemplateController;
     }());
     exports.ImportTemplateController = ImportTemplateController;
-    angular.module(module_name_1.moduleName).controller('ImportTemplateController', ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService", ImportTemplateController]);
+    angular.module(module_name_1.moduleName).controller('ImportTemplateController', ImportTemplateController);
 });
 //# sourceMappingURL=ImportTemplateController.js.map

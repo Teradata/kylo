@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
@@ -433,6 +434,9 @@ public class RegisteredTemplateService {
             registeredTemplate.setNifiTemplateId(nifiTemplateId);
 
             properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true, null);
+            // TODO not sure if this is needed
+            List<NiFiRemoteProcessGroup> remoteProcessGroups = niFiTemplateCache.getRemoteProcessGroups(nifiTemplate);
+            registeredTemplate.setRemoteProcessGroups(remoteProcessGroups);
             registeredTemplate.setNifiTemplate(nifiTemplate);
             registeredTemplate.setTemplateName(nifiTemplate.getName());
             registeredTemplate.setProperties(properties);

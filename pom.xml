@@ -120,6 +120,7 @@
     <slf4j.log4j12.version>1.7.10</slf4j.log4j12.version>
     <io.swagger.version>1.5.9</io.swagger.version>
     <commons-beanutils.version>1.9.2</commons-beanutils.version>
+    <commons-propertyutils.version>1.9.2</commons-propertyutils.version>
     <commons.dbcp>1.4</commons.dbcp>
     <commons.dbcp2>2.1.1</commons.dbcp2>
     <commons-exec.version>1.3</commons-exec.version>
@@ -726,6 +727,12 @@
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
         <version>${commons-beanutils.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-propertyutils</groupId>
+        <artifactId>commons-propertyutils</artifactId>
+        <version>${commons-propertyutils.version}</version>
       </dependency>
 
       <dependency>

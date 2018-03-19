@@ -156,7 +156,7 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
                 //1 fetch ports in reusable templates
                 Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
-                Set<PortDTO> ports = getReusableFeedInputPorts();
+                Set<PortDTOWithGroupInfo> ports = getReusableFeedInputPorts();
                 if (ports != null) {
                     ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
                 }
@@ -364,36 +364,8 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
     /**
      * @return all input ports under the {@link TemplateCreationHelper#REUSABLE_TEMPLATES_PROCESS_GROUP_NAME} process group
      */
-    public Set<PortDTO> getReusableFeedInputPorts() {
-        Set<PortDTO> ports = new HashSet<>();
-        String reusableProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
-        if (reusableProcessGroupId != null) {
-            ProcessGroupFlowDTO processGroup = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
-            if (processGroup != null) {
-
-                //fetch the ports
-                Set<PortDTO> inputPortsEntity = processGroup.getFlow().getInputPorts().stream()
-                    .map(portEntity -> {
-                        PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
-                        //find the connection destination processgroup id
-                        Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent())
-                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                            .flatMap(connectionDTO -> processGroup.getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent())
-                                .filter(processGroupDTO -> processGroupDTO.getId().equals(connectionDTO.getDestination().getGroupId())))
-                            .findFirst();
-                        if (destinationGroup.isPresent()) {
-                            portDTOWithGroupInfo.setDestinationProcessGroupName(destinationGroup.get().getName());
-                        }
-
-                        return portDTOWithGroupInfo;
-                    }).collect(Collectors.toSet());
-                if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
-                    ports.addAll(inputPortsEntity);
-                }
-            }
-        }
-        return ports;
+    public Set<PortDTOWithGroupInfo> getReusableFeedInputPorts() {
+        return templateConnectionUtil.getReusableFeedInputPorts();
     }
 
 
@@ -481,7 +453,7 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
                 //fetch the Content
                 ProcessGroupDTO content = nifiRestClient.getProcessGroup(processGroup.getId(), true, true);
                 processGroup.setContents(content.getContents());
-                Set<PortDTO> ports = getReusableFeedInputPorts();
+                Set<PortDTOWithGroupInfo> ports = getReusableFeedInputPorts();
                 ports.stream()
                     .filter(portDTO -> inputPortIds.contains(portDTO.getId()))
                     .forEach(port -> {

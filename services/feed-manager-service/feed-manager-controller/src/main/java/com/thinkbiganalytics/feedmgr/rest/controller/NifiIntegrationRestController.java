@@ -274,7 +274,7 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getReusableFeedInputPorts() {
-        Set<PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
+        Set<? extends PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
         return Response.ok(ports).build();
     }
 
@@ -503,4 +503,8 @@ public class NifiIntegrationRestController {
         boolean isRunning = nifiConnectionService.isNiFiRunning();
         return Response.ok(isRunning).build();
     }
+
+
+
+
 }
