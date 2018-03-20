@@ -1,24 +1,33 @@
 package com.thinkbiganalytics.nifi.v2.sqoop;
 
-import com.thinkbiganalytics.nifi.v2.hdfs.AbstractHadoopProcessor;
-import com.thinkbiganalytics.nifi.v2.hdfs.RemoveHDFSFolder;
-import com.thinkbiganalytics.nifi.v2.hdfs.RemoveHDFSFolderTest;
+/*-
+ * #%L
+ * thinkbig-nifi-hadoop-processors
+ * %%
+ * Copyright (C) 2017 ThinkBig Analytics
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.thinkbiganalytics.nifi.v2.sqoop.core.ImportSqoop;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.math3.analysis.function.Abs;
-import org.apache.hadoop.fs.FileSystem;
-import org.apache.hadoop.fs.Path;
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.controller.AbstractControllerService;
-import org.apache.nifi.controller.ControllerService;
-import org.apache.nifi.controller.ControllerServiceInitializationContext;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.MockProcessContext;
 import org.apache.nifi.util.TestRunner;
@@ -26,16 +35,11 @@ import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mock;
-import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 public class ImportSqoopTest {
 
@@ -50,22 +54,22 @@ public class ImportSqoopTest {
         MockSqoopConnectionService mockSqoopConnectionService = new MockSqoopConnectionService();
         // Setup test runner
         runner.setValidateExpressionUsage(false);
-        runner.addControllerService("sqoop-connection-service",mockSqoopConnectionService);
+        runner.addControllerService("sqoop-connection-service", mockSqoopConnectionService);
 
         runner.enableControllerService(mockSqoopConnectionService);
 
     }
 
     @Test
-    public void testImportSqoopCommand(){
-        String systemProperties = "-Dsystem.prop1=1prop -Dsystem.prop2=prop2 ";
+    public void testImportSqoopCommand() {
+        String systemProperties = "-Dsystem.prop1=prop1 -Dsystem.prop2=prop2 ";
         String additionalProperties = "--arg1=test1 --arg=test2";
         runner.setProperty(ImportSqoop.SQOOP_SYSTEM_PROPERTIES, systemProperties);
-        runner.setProperty(ImportSqoop.TARGET_COMPRESSION_ALGORITHM,"SNAPPY");
-        runner.setProperty(ImportSqoop.SQOOP_CONNECTION_SERVICE,"sqoop-connection-service");
-        runner.setProperty(ImportSqoop.SQOOP_ADDITIONAL_ARGUMENTS,additionalProperties);
-        runner.setProperty(ImportSqoop.SOURCE_TABLE_WHERE_CLAUSE,"where clause");
-        runner.setProperty(ImportSqoop.SOURCE_LOAD_STRATEGY,"FULL_LOAD");
+        runner.setProperty(ImportSqoop.TARGET_COMPRESSION_ALGORITHM, "SNAPPY");
+        runner.setProperty(ImportSqoop.SQOOP_CONNECTION_SERVICE, "sqoop-connection-service");
+        runner.setProperty(ImportSqoop.SQOOP_ADDITIONAL_ARGUMENTS, additionalProperties);
+        runner.setProperty(ImportSqoop.SOURCE_TABLE_WHERE_CLAUSE, "where clause");
+        runner.setProperty(ImportSqoop.SOURCE_LOAD_STRATEGY, "FULL_LOAD");
         runner.enqueue(new byte[0]);
         ProcessContext ctx = runner.getProcessContext();
         Collection<ValidationResult> validationResults = validate(runner);
@@ -76,8 +80,8 @@ public class ImportSqoopTest {
 
         MockFlowFile result = failResults.get(0);
         String sqoopCommand = result.getAttribute("sqoop.command.text");
-        Assert.assertTrue(StringUtils.startsWithIgnoreCase(sqoopCommand,"sqoop import "+systemProperties));
-        Assert.assertTrue(StringUtils.endsWithIgnoreCase(sqoopCommand.trim(),additionalProperties));
+        Assert.assertTrue(StringUtils.startsWithIgnoreCase(sqoopCommand, "sqoop import " + systemProperties));
+        Assert.assertTrue(StringUtils.endsWithIgnoreCase(sqoopCommand.trim(), additionalProperties));
 
     }
 
@@ -141,6 +145,7 @@ public class ImportSqoopTest {
      * Provides a stubbed processor instance for testing
      */
     public static class MockImportSqoop extends ImportSqoop {
+
         @Override
         public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
             // nothing to do
