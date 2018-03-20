@@ -42,7 +42,8 @@ export class FeedAdditionalPropertiesController {
         securityGroupChips:any = {};
         isValid:boolean = true;
         feedSecurityGroups:any = this.FeedSecurityGroups;
-        securityGroupsEnabled:boolean = false
+        securityGroupsEnabled:boolean = false;
+        userProperties: any = [];
  
         transformChip = function(chip:any) {
             // If it is an object, it's already a known chip
@@ -148,6 +149,63 @@ export class FeedAdditionalPropertiesController {
                 return self.FeedService.versionFeedModelDiff;
             },function(newVal:any) {
                 self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+
+                self.userProperties = [];
+                _.each(self.versionFeedModel.userProperties, function(versionedProp) {
+                    let property:any = {};
+                    property.versioned = angular.copy(versionedProp);
+                    property.op = 'no-op';
+                    property.systemName = property.versioned.systemName;
+                    property.displayName = property.versioned.displayName;
+                    property.description = property.versioned.description;
+                    property.current = angular.copy(property.versioned);
+                    self.userProperties.push(property);
+                });
+                _.each(_.values(self.versionFeedModelDiff), function(diff){
+                    if (diff.path.startsWith("/userProperties")) {
+                        if (diff.path.startsWith("/userProperties/")) {
+                            //individual versioned indexed action
+                            let remainder = diff.path.substring("/userProperties/".length, diff.path.length);
+                            let indexOfSlash = remainder.indexOf("/");
+                            let versionedPropIdx = remainder.substring(0, indexOfSlash > 0 ? indexOfSlash : remainder.length);
+                            if ("replace" === diff.op) {
+                                let property = self.userProperties[versionedPropIdx];
+                                property.op = diff.op;
+                                let replacedPropertyName = remainder.substring(remainder.indexOf("/") + 1, remainder.length);
+                                property.current[replacedPropertyName] = diff.value;
+                                property[replacedPropertyName] = diff.value;
+                            } else if ("add" === diff.op) {
+                                if (_.isArray(diff.value)) {
+                                    _.each(diff.value, function(prop){
+                                        self.userProperties.push(self.createProperty(prop, diff.op));
+                                    });
+                                } else {
+                                    self.userProperties.unshift(self.createProperty(diff.value, diff.op));
+                                }
+                            } else if ("remove" === diff.op) {
+                                let property = self.userProperties[versionedPropIdx];
+                                property.op = diff.op;
+                                property.current = {};
+                            }
+                        } else {
+                            //group versioned action, can be either "add" or "remove"
+                            if ("add" === diff.op) {
+                                if (_.isArray(diff.value)) {
+                                    _.each(diff.value, function(prop){
+                                        self.userProperties.push(self.createProperty(prop, diff.op));
+                                    });
+                                } else {
+                                    self.userProperties.push(self.createProperty(diff.value, diff.op));
+                                }
+                            } else if ("remove" === diff.op) {
+                                _.each(self.userProperties, function(prop:any){
+                                    prop.op = diff.op;
+                                    prop.current = {};
+                                });
+                            }
+                        }
+                    }
+                });
             });
         }
 
@@ -157,8 +215,20 @@ export class FeedAdditionalPropertiesController {
         });
     }
 
+    createProperty(original:any, operation:any) {
+        let property:any = {};
+        property.versioned = {};
+        property.current = angular.copy(original);
+        property.systemName = property.current.systemName;
+        property.displayName = property.current.displayName;
+        property.description = property.current.description;
+        property.op = operation;
+        return property;
+    };
+
+
     findVersionedUserProperty(property:any) {
-        var versionedProperty = _.find(this.versionFeedModel.userProperties, function(p:any) {
+        let versionedProperty = _.find(this.versionFeedModel.userProperties, function(p:any) {
             return p.systemName === property.systemName;
         });
         if (versionedProperty === undefined) {

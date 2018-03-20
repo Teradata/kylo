@@ -272,7 +272,7 @@
     - tba:systemName (STRING) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
 
-[tba:feedDetails] > nt:hierarchyNode, tba:propertied
+[tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
     - tba:feedTemplate (REFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple

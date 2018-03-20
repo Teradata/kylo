@@ -25,6 +25,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
@@ -46,9 +47,11 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
@@ -348,4 +351,14 @@ public class FeedDetails extends JcrPropertiesEntity {
             throw new MetadataRepositoryException("Failed to create the precondition for feed " + getParentFeed().getId(), e);
         }
     }
+
+    @Nonnull
+    public Map<String, String> getUserProperties() {
+        return JcrPropertyUtil.getUserProperties(node);
+    }
+
+    public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+    }
+
 }
