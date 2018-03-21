@@ -32,7 +32,7 @@
 
         <body-section>
             <md-content>
-                <ng-form name="propertiesForm" layout-fill>
+                <ng-form name="vm.propertiesForm" layout-fill>
                     <md-virtual-repeat-container browser-height browser-height-offset="400"
                                                  browser-height-scroll-y="false" style="width:100%;"
                                                  md-top-index="vm.topIndex">
@@ -51,9 +51,8 @@
                                 </md-input-container>
                                 <div class="register-template-property md-padding" layout="column" layout-fill>
                                     <h3 ng-class="{'md-warn':property.sensitive}">{{property.key}}</h3>
-                                    <span class="hint" ng-if="property.sensitive">This is a sensitive property</span>
-                                    <span class="md-warn" ng-show="property.requiredEmpty">This is a required field.  You need to either allow the user to input data, or supply a default value.</span>
-
+                                    <span class="hint" ng-if="property.propertyDescriptor.sensitive">This is a NiFi sensitive property</span>
+                                    <span class="hint" ng-show="property.propertyDescriptor.required">This is a NiFi required field.  You need to either allow the user to input data, or supply a default value.</span>
                                     <div class="hint">{{property.propertyDescriptor.description}}</div>
 
                                     <div ng-if="property.selected == true" style="padding-top:10px;" class="fade">
@@ -77,16 +76,20 @@
                                             <div ng-if="property.propertyDescriptor.allowableValues == null && property.selected == true">
 
 
-                                                <md-input-container style="height:30px;margin-bottom:5px;"
-                                                                    class="md-block">
+                                                <md-input-container style="height:30px;margin-bottom:5px;" class="md-block">
                                                     <label>Default Value (Supports Expressions)</label>
-                                                    <input name="property"
+                                                    <input name="propertyInput"
                                                            placeholder="Enter a string or ${expression})" mentio
                                                            type="text"
-                                                           mentio-id="property.mentioId" mentio-typed-text="typedTerm"
-                                                           ng-model="property.value" size="100"/>
+                                                           mentio-id="property.mentioId"
+                                                           mentio-typed-text="typedTerm"
+                                                           ng-model="property.value"
+                                                           size="100"
+                                                           ng-required="!property.userEditable"
+                                                           ng-change="vm.changedPropertyInput(property)"
+                                                           ng-keydown="vm.keydownPropertyInput(property)"
+                                                    ng-init="property.changed=false"/>
                                                 </md-input-container>
-
 
                                                 <mentio-menu style="display:none;"
                                                              mentio-for="property.mentioId"
@@ -156,7 +159,8 @@
                                                                         class="md-block">
                                                         <div class="md-checkbox-div-top" ng-repeat="v in [0]">
                                                             <md-checkbox aria-label="Sensitive"
-                                                                         ng-model="property.sensitive">
+                                                                         ng-model="property.sensitive"
+                                                                         ng-disabled="property.propertyDescriptor.sensitive">
                                                                 Sensitive
                                                             </md-checkbox>
                                                         </div>
@@ -167,7 +171,8 @@
                                                                         class="md-block">
                                                         <div class="md-checkbox-div-top" ng-repeat="v in [0]">
                                                             <md-checkbox aria-label="Required"
-                                                                         ng-model="property.required">
+                                                                         ng-model="property.required"
+                                                                         ng-disabled="property.propertyDescriptor.required">
                                                                 Required
                                                             </md-checkbox>
                                                         </div>
@@ -190,7 +195,7 @@
                     </md-virtual-repeat-container>
 
 
-                    <thinkbig-step-buttons can-continue="vm.isValid && propertiesForm.$valid"
+                    <thinkbig-step-buttons can-continue="vm.isValid && vm.propertiesForm.$valid"
                                            step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
                 </ng-form>
 

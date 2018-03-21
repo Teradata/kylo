@@ -40,6 +40,8 @@ export class RegisterProcessorPropertiesController {
     processorPropertiesFieldName:any;
     selectedProperties:any;
     onShowOnlySelected:any;
+    changedPropertyInput:any;
+    keydownPropertyInput:any;
     onRenderTypeChange:any;
     customSelectOptionChanged:any;
     initializeRenderTypes:any;
@@ -49,6 +51,7 @@ export class RegisterProcessorPropertiesController {
     minProcessorItems:any;
     scrollToProcessor:any;
     topIndex:any;
+    propertiesForm:any;
     
     constructor(private $scope:any, private $element:any,private $http:any,private $q:any,private $mdToast:any
         ,private $location:any,private $window:any,private RestUrlService:any, private RegisterTemplateService:any
@@ -93,7 +96,7 @@ export class RegisterProcessorPropertiesController {
             self.allProperties = self.model[propertiesKey]
 
             // Find controller services
-            _.chain(self.allProperties).filter(function(property) {
+            _.chain(self.allProperties).filter(function(property:any) {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
                 .each(FeedService.findControllerServicesForProperty);
@@ -107,7 +110,7 @@ export class RegisterProcessorPropertiesController {
 
         function showSelected() {
             var selectedProperties:any = [];
-            angular.forEach(self.allProperties,function(property) {
+            angular.forEach(self.allProperties,function(property:any) {
                 if(property.selected) {
                     selectedProperties.push(property);
                 }
@@ -122,6 +125,17 @@ export class RegisterProcessorPropertiesController {
         this.onShowOnlySelected = function(){
             transformPropertiesToArray();
         }
+
+        this.changedPropertyInput = function(property:any) {
+            property.changed = true;
+        }
+
+        this.keydownPropertyInput = function(property:any) {
+            if( ! property.changed && property.sensitive ) {
+                property.value = "";
+            }
+        }
+
         this.onRenderTypeChange = function(property:any){
             if(property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
                 if(property.selectOptions == undefined){
@@ -146,7 +160,7 @@ export class RegisterProcessorPropertiesController {
 
 
         function initializeRenderTypes() {
-            angular.forEach(RegisterTemplateService.codemirrorTypes,function(label,type){
+            angular.forEach(RegisterTemplateService.codemirrorTypes,function(label:any,type:any){
                 self.propertyRenderTypes.push({type:type,label:label,codemirror:true});
             });
         }
