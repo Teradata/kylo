@@ -27,6 +27,7 @@
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
     <module>spark-catalog</module>
+    <module>spark-ingest</module>
   </modules>
 
 </project>
