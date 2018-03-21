@@ -1,4 +1,4 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var WindowUnloadService = /** @class */ (function () {
@@ -51,6 +51,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return WindowUnloadService;
     }());
     exports.WindowUnloadService = WindowUnloadService;
-    angular.module(require("services/module-name")).service("WindowUnloadService", WindowUnloadService);
+    angular.module(module_name_1.moduleName).service("WindowUnloadService", WindowUnloadService);
 });
 //# sourceMappingURL=WindowUnloadService.js.map

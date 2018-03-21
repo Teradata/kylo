@@ -1,24 +1,6 @@
-define(['angular',
-        'services/module-name',
-        'jquery',
-        'services/AccessControlService',
-        'services/StateService',
-        'services/SearchService',
-        'services/broadcast-service',
-        'services/CommonRestUrlService',
-        'services/PaginationDataService',
-        'services/SideNavService',
-        'services/TableOptionsService',
-        'services/ConfigurationService',
-        'services/AddButtonService',
-        'services/FileUploadService',
-        'services/WindowUnloadService',
-        'services/Utils',
-        'services/HttpService',
-        'services/notification.service',
-        'services/AngularHttpInterceptor',
-        'services/UserGroupService',
-        'services/AngularModuleExtensionService',
-        'services/BroadcastConstants'], function (angular,moduleName) {
-   return angular.module(moduleName);
+define(["require", "exports", "angular", "./module-name", "jquery", "./AccessControlService", "./StateService", "./SearchService", "./broadcast-service", "./CommonRestUrlService", "./PaginationDataService", "./SideNavService", "./TableOptionsService", "./ConfigurationService", "./AddButtonService", "./FileUploadService", "./WindowUnloadService", "./Utils", "./HttpService", "./notification.service", "./AngularHttpInterceptor", "./UserGroupService", "./AngularModuleExtensionService", "./BroadcastConstants"], function (require, exports, angular, module_name_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    exports.moduleRequire = angular.module(module_name_1.moduleName);
 });
+//# sourceMappingURL=module-require.js.map

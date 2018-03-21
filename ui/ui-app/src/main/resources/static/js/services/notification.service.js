@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/auditTime", "./module"], function (require, exports, angular, Subject_1) {
+define(["require", "exports", "angular", "rxjs/Subject", "./module-name", "rxjs/add/operator/auditTime", "./module"], function (require, exports, angular, Subject_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -277,7 +277,7 @@ define(["require", "exports", "angular", "rxjs/Subject", "rxjs/add/operator/audi
         return NotificationService;
     }());
     exports.NotificationService = NotificationService;
-    angular.module(require("services/module-name"))
+    angular.module(module_name_1.moduleName)
         .service("NotificationService", NotificationService);
 });
 //# sourceMappingURL=notification.service.js.map

@@ -1,41 +1,30 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('SearchService',["$q", "$http", "CommonRestUrlService", function ($q, $http, CommonRestUrlService) {
-
-        function performSearch(query, rowsPerPage, start) {
-            return $http.get(CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}}).then(function (response) {
-                return response.data;
-
-            });
+define(["require", "exports", "angular", "./module-name", "./CommonRestUrlService"], function (require, exports, angular, module_name_1, CommonRestUrlService_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var SearchService = /** @class */ (function () {
+        function SearchService($q, $http, CommonRestUrlService) {
+            var _this = this;
+            this.$q = $q;
+            this.$http = $http;
+            this.CommonRestUrlService = CommonRestUrlService;
+            this.performSearch = function (query, rowsPerPage, start) {
+                return _this.$http.get(_this.CommonRestUrlService.SEARCH_URL, { params: { q: query, rows: rowsPerPage, start: start } }).then(function (response) {
+                    return response.data;
+                });
+            };
+            var data = {
+                searchQuery: '',
+                search: function (query, rows, start) {
+                    return this.performSearch(query, rows, start);
+                }
+            };
+            return data;
         }
-
-        var data = {
-            searchQuery: '',
-            search: function (query, rows, start) {
-                return performSearch(query, rows, start);
-            }
-
-        };
-
-        return data;
-
-    }]);
+        return SearchService;
+    }());
+    exports.default = SearchService;
+    angular.module(module_name_1.moduleName)
+        .service('CommonRestUrlService', CommonRestUrlService_1.default)
+        .factory('SearchService', ["$q", "$http", "CommonRestUrlService", SearchService]);
 });
+//# sourceMappingURL=SearchService.js.map
