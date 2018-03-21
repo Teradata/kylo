@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import * as _ from "underscore";
-import {DomainType} from "./DomainTypesService";
+import {DomainType} from "./DomainTypesService.d";
 
 function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToast: angular.material.IToastService, $mdDialog: angular.material.IDialogService, RestUrlService: any,
                      VisualQueryService: any, FeedCreationErrorService: any, FeedPropertyService: any, AccessControlService: any, EntityAccessControlService: any, StateService: any) {
