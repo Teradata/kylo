@@ -3,7 +3,7 @@ import * as angular from "angular";
 import {Subscription} from "rxjs/Subscription";
 
 import {moduleName} from "../module-name";
-import {DomainType} from "../../services/DomainTypesService";
+import {DomainType} from "../../services/DomainTypesService.d";
 import {DomainTypeDetailsService} from "../services/details.service";
 
 /**
