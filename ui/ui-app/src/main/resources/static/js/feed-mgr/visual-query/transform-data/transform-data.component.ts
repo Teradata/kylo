@@ -5,7 +5,8 @@ import * as _ from "underscore";
 
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {DomainType} from "../../services/DomainTypesService.d";
+import DomainTypesService from "../../services/DomainTypesService";
 import {DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
@@ -243,8 +244,8 @@ export class TransformDataComponent implements OnInit {
             }, true);
 
             // Fetch domain types
-            this.domainTypesService.findAll()
-                .then(domainTypes => {
+            this.domainTypesService.DomainTypesService.prototype.findAll()
+                .then((domainTypes: any)=> {
                     this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
 
