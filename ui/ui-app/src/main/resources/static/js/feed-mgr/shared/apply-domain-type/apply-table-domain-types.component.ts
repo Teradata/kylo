@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import * as uiGrid from "ui-grid";
 
-import {DomainType} from "../../services/DomainTypesService";
+import {DomainType} from "../../services/DomainTypesService.d";
 
 /**
  * Local data for {@link ApplyTableDomainTypesDialog}.

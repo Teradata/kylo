@@ -1,6 +1,6 @@
 import * as angular from "angular";
 
-import {DomainType} from "../../services/DomainTypesService";
+import {DomainType} from "../../services/DomainTypesService.d";
 
 /**
  * Local data for {@link DomainTypeConflictDialog}.
