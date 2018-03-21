@@ -2,7 +2,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/feeds/module-name');
 
-export default class controller{
+export default class controller  implements ng.IComponentController{
     model: any;
     current: any;
     leftVersion: any;
