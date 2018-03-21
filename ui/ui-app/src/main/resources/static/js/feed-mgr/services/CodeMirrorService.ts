@@ -1,26 +1,28 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var moduleName = require('feed-mgr/module-name');
-    var CodeMirrorService = /** @class */ (function () {
-        function CodeMirrorService($q) {
-            this.$q = $q;
-            var data = {
-                transformToCodeMirrorData: function (response) {
-                    return this.populateCodeMirrorTablesAndColumns(response.data);
-                }
-            };
-            return data;
-        }
-        CodeMirrorService.prototype.populateCodeMirrorTablesAndColumns = function (tableColumns) {
-            var codeMirrorData = {};
+const moduleName = require('feed-mgr/module-name');
+import * as angular from 'angular';
+import * as _ from "underscore";
+
+export default class CodeMirrorService{
+
+ constructor (private $q: any){
+        var data: any = {
+            transformToCodeMirrorData: function (response: any) {
+                return this.populateCodeMirrorTablesAndColumns(response.data);
+            }
+        };
+
+        return data;
+ }
+populateCodeMirrorTablesAndColumns(tableColumns: any){
+            var codeMirrorData: any = {};
             //store metadata in 3 objects and figure out what to expose to the editor
-            var databaseNames = [];
-            var databaseGroup = {}; //Group data by {Database: { table: [fields]} }
-            var databaseTableGroup = {}; //Group data by {database.Table: [fields] }
-            var tablesObj = {}; //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
+            var databaseNames: any = [];
+            var databaseGroup: any = {};  //Group data by {Database: { table: [fields]} }
+            var databaseTableGroup: any = {};  //Group data by {database.Table: [fields] }
+            var tablesObj: any = {};  //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
             //TODO need to figure out how to expose the database names to the codemirror editor
-            angular.forEach(tableColumns, function (row) {
+
+            angular.forEach(tableColumns, function(row: any) {
                 var db = row.databaseName;
                 var dbTable = row.databaseName + "." + row.tableName;
                 if (databaseGroup[db] === undefined) {
@@ -31,28 +33,31 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 if (tableObj[row.tableName] === undefined) {
                     tableObj[row.tableName] = [];
                 }
+
                 if (tablesObj[row.tableName] === undefined) {
                     tablesObj[row.tableName] = [];
                 }
                 var tablesArr = tablesObj[row.tableName];
+
                 var tableFields = tableObj[row.tableName];
                 if (databaseTableGroup[dbTable] === undefined) {
                     databaseTableGroup[dbTable] = [];
                 }
                 var databaseTableGroupObj = databaseTableGroup[dbTable];
+
                 //now populate the tableFields and databaseTableGroupObj with the field Name
                 tableFields.push(row.columnName);
                 databaseTableGroupObj.push(row.columnName);
                 tablesArr.push(row.columnName);
+
             });
-            codeMirrorData.hintOptions = { tables: databaseTableGroup };
+            codeMirrorData.hintOptions = {tables: databaseTableGroup};
             codeMirrorData.databaseMetadata = databaseGroup;
             codeMirrorData.databaseNames = databaseNames;
             return codeMirrorData;
-        };
-        return CodeMirrorService;
-    }());
-    exports.default = CodeMirrorService;
-    angular.module(moduleName).factory('CodeMirrorService', ["$q", CodeMirrorService]);
-});
-//# sourceMappingURL=CodeMirrorService.js.map
+        }
+
+     
+}
+ angular.module(moduleName).factory('CodeMirrorService', ["$q", CodeMirrorService]);
+ 
