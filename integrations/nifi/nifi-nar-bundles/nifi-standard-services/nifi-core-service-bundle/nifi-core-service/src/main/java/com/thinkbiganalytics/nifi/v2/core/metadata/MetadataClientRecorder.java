@@ -25,6 +25,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.ActiveWaterMarksCancelledException;
@@ -33,7 +35,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingS
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
-import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -50,13 +51,20 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
-public class MetadataClientRecorder extends AbstractControllerService implements MetadataRecorder {
+public class MetadataClientRecorder implements MetadataRecorder {
+
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
 
+    /** The amount of seconds to cache the feed initialization statuses retrieved from the metadata server */
+    private static final int FEED_INIT_STATUS_EXPIRE_SEC = 60;
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final TypeReference<NavigableMap<String, WaterMarkParam>> WM_MAP_TYPE = new TypeReference<NavigableMap<String, WaterMarkParam>>() { };
     private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(WM_MAP_TYPE);
@@ -65,6 +73,8 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     private MetadataClient client;
     private NavigableMap<String, Long> activeWaterMarks = new ConcurrentSkipListMap<>();
     private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
+    
+    private volatile Cache<String, Optional<InitializationStatus>> initStatusCache;
 
     /**
      * constructor creates a MetadataClientRecorder with the default URI constant
@@ -89,9 +99,9 @@ public class MetadataClientRecorder extends AbstractControllerService implements
      */
     public MetadataClientRecorder(MetadataClient client) {
         this.client = client;
+        getInitStatusCache();
     }
-
-
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#loadWaterMark(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String, java.lang.String)
      */
@@ -254,9 +264,12 @@ public class MetadataClientRecorder extends AbstractControllerService implements
      */
     @Override
     public Optional<InitializationStatus> getInitializationStatus(String feedId) {
-        // Defer to the local active state first
-        Optional<InitializationStatus> option = Optional.ofNullable(this.activeInitStatuses.get(feedId));
-        return option.isPresent() ? option : Optional.ofNullable(this.client.getCurrentInitStatus(feedId));
+        // Checks in order: active statuses, statuses cache, metadata server status
+        return Stream.of(getActiveInitStatus(feedId), getCachedInitStatus(feedId))
+                        .map(Supplier::get)
+                        .filter(Optional::isPresent)
+                        .map(Optional::get)
+                        .findFirst();
     }
 
     /* (non-Javadoc)
@@ -278,9 +291,11 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         try {
             this.client.updateCurrentInitStatus(feedId, status);
             this.activeInitStatuses.remove(feedId);
+            this.initStatusCache.put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
             log.error("Failed to update metadata with feed initialization completion status: {},  feed: {}", status.getState(), feedId, e);
+            this.initStatusCache.invalidate(feedId);
             throw new ProcessException("Failed to update metadata with feed initialization completion status: " + status + ",  feed: " + feedId, e);
         }
     }
@@ -294,10 +309,12 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         try {
             this.client.updateCurrentInitStatus(feedId, status);
             this.activeInitStatuses.remove(feedId);
+            this.initStatusCache.put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
             log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
             this.activeInitStatuses.put(feedId, status);
+            this.initStatusCache.put(feedId, Optional.of(status));
             return status;
         }
     }
@@ -311,6 +328,39 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     @Override
     public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
             return (this.client.updateFeedHistoryReindexing(feedId, historyReindexingStatus));
+    }
+
+    private Supplier<Optional<InitializationStatus>> getActiveInitStatus(String feedId) {
+        return () -> Optional.ofNullable(this.activeInitStatuses.get(feedId));
+    }
+
+    private Supplier<Optional<InitializationStatus>> getCachedInitStatus(String feedId) {
+        return () -> {
+            try {
+                return getInitStatusCache().get(feedId, () -> getFeedInitStatus(feedId));
+            } catch (ExecutionException e) {
+                log.error("Failed to obtain initialization status feed: {}", feedId, e);
+                throw new ProcessException("Failed to obtain initialization status feed: " + feedId, e.getCause());
+            }
+        };
+    }
+
+    private Optional<InitializationStatus> getFeedInitStatus(String feedId) {
+        return Optional.ofNullable(this.client.getCurrentInitStatus(feedId));
+    }
+
+    private Cache<String, Optional<InitializationStatus>> getInitStatusCache() {
+        Cache<String, Optional<InitializationStatus>> cache = this.initStatusCache;
+        if (cache == null) {
+            synchronized (this) {
+                cache = this.initStatusCache;
+                if (cache == null) {
+                    this.initStatusCache = cache = CacheBuilder.newBuilder().expireAfterWrite(FEED_INIT_STATUS_EXPIRE_SEC, TimeUnit.SECONDS).build();
+                }
+            }
+        }
+        
+        return cache;
     }
 
     private String toWaterMarksKey(String feedId) {
