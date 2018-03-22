@@ -1,368 +1,273 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
-import OpsManagerFeedService from "../../services/OpsManagerFeedService";
-import ProvenanceEventStatsService from "../../services/ProvenanceEventStatsService";
-import Nvd3ChartService from "../../services/Nvd3ChartService";
-const d3 = require('../../bower_components/d3');
+//import OpsManagerFeedService from "../../services/OpsManagerFeedService";
+//import Nvd3ChartService from "../../services/Nvd3ChartService";
+//import {FeedStatsService} from "./FeedStatsService"
+const d3 = require('d3');
 import * as _ from "underscore";
 import * as moment from "moment";
 
 export default class controller{
-    dataLoaded: boolean;
-    processChartLoading: boolean;
-    lastProcessorChartRefresh: any;
-    lastFeedTimeChartRefresh: any;
-    showFeedTimeChartLoading: any;
-    showProcessorChartLoading: any;
-    //showProcessorChartLoading: any;
-    statusPieChartApi: any;
-    timeFrame: any;
-    timeframeOptions: any;
-    lastRefreshTime: any;
-    timeFramOptionsLookupMap: any;
-    selectedTimeFrameOptionObject: any;
-    autoRefresh: any;
-    isZoomed: any;
-    isAtInitialZoom: any;
-    timeDiff: any;
-    ZOOM_DELAY: any;
-    preventZoomChange: any;
-    preventZoomPromise: any;
-    minDisplayTime: any;
-    maxDisplayTime: any;
-    maxY: any;
-    minY: any;
-    zoomMaxY: any;
-    zoomMinY: any;
-    minZoomTime: any;
-    zoomEnabled: any;
-    forceXDomain: any;
-    forceChartRefresh: any;
-    summaryStatistics: any;
-    feedChartLegendState: any[];
-    feedChartData: any;
-    feedChartApi: any;
-    feedChartOptions: any;
-    processorChartApi: any;
-    processorChartData: any[];
-    processorChartOptions: any;
-    selectedProcessorStatisticFunction: any;
-    processorStatsFunctions: any;
-    feed: any;
-    summaryStatsData: any;
-    eventSuccessKpi: any;
-    flowRateKpi: any;
-    avgDurationKpi: any;
-    feedProcessorErrorsTable: any;
+
+
+    dataLoaded:boolean = false;
+    /** flag when processor chart is loading **/
+    processChartLoading:boolean = false;
+    /**
+     * the last time the data was refreshed
+     * @type {null}
+     */
+    lastProcessorChartRefresh: any = null;
+    /**
+     * last time the execution graph was refreshed
+     * @type {null}
+     */
+    lastFeedTimeChartRefresh:any = null;
+
+    /** flag when the feed time chart is loading **/
+    showFeedTimeChartLoading:boolean = false;
+
+    showProcessorChartLoading:boolean = false;
+
+    statusPieChartApi:any = {};
+
+    /**
+     * Initial Time Frame setting
+     * @type {string}
+     */
+     timeFrame:string = 'FIVE_MIN';
+    /**
+     * Array of fixed times
+     * @type {Array}
+     */
+    timeframeOptions:any[] = [];
+    /**
+     * last time the page was refreshed
+     * @type {null}
+     */
+    lastRefreshTime:any = null;
+    /**
+     * map of the the timeFrame value to actual timeframe object (i.e. FIVE_MIN:{timeFrameObject})
+     * @type {{}}
+     */
+    timeFramOptionsLookupMap:any = {};
+    /**
+     * The selected Time frame
+     * @type {{}}
+     */
+    selectedTimeFrameOptionObject:any = {};
+    /**
+     * Flag to enable disable auto refresh
+     * @type {boolean}
+     */
+    autoRefresh:boolean = true;
+
+    /**
+     * Flag to indicate if we are zoomed or not
+     * @type {boolean}
+     */
+     isZoomed:boolean = false;
+
+    /**
+     * Zoom helper
+     * @type {boolean}
+     */
+     isAtInitialZoom:boolean = true;
+
+    /**
+     * Difference in overall min/max time for the chart
+     * Used to help calcuate the correct xXais label (i.e. for larger time periods show Date + time, else show time
+     * @type {null}
+     */
+    timeDiff:number = null;
+
+    /**
+     * millis to wait after a zoom is complete to update the charts
+     * @type {number}
+     */
+     ZOOM_DELAY:number = 700;
+
+    /**
+     * Constant set to indicate we are not zoomed
+     * @type {number}
+     */
+    UNZOOMED_VALUE:number = -1;
+
+    /**
+     * After a chart is rendered it will always call the zoom function.
+     * Flag to prevent the initial zoom from triggering after refresh of the chart
+     * @type {boolean}
+     */
+    preventZoomChange:boolean = false;
+
+    /**
+     * Timeout promise to prevent zoom
+     * @type {undefined}
+     */
+    preventZoomPromise:angular.IPromise<any> = undefined;
+
+    /**
+     * The Min Date of data.  This will be the zoomed value if we are zooming, otherwise the min value in the dataset
+     */
+    minDisplayTime:any;
+
+    /**
+     * The max date of the data.  this will be the zoomed value if zooming otherwise the max value in the dataset
+     */
+    maxDisplayTime:any;
+
+    /**
+     * max Y value (when not zoomed)
+     * @type {number}
+     */
+    maxY:number = 0;
+
+    minY:number = 0;
+
+    /**
+     * max Y Value when zoomed
+     * @type {number}
+     */
+    zoomMaxY:number = 0;
+
+    zoomMinY:number = 0;
+
+    /**
+     * Min time frame to enable zooming.
+     * Defaults to 30 min.
+     * Anything less than this will not be zoomable
+     * @type {number}
+     */
+    minZoomTime:number = 1000*60*30;
+    /**
+     * Flag to indicate if zooming is enabled.
+     * Zooming is only enabled for this.minZoomTime or above
+     *
+     * @type {boolean}
+     */
+    zoomEnabled:boolean = false;
+
+    /**
+     * A bug in nvd3 charts exists where if the zoom is toggle to true it requires a force of the x axis when its toggled back to false upon every data refresh.
+     * this flag will be triggered when the zoom enabled changes and from then on it will manually reset the x domain when the data refreshes
+     * @type {boolean}
+     */
+    forceXDomain:boolean = false;
+
+    /**
+     * Flag to force the rendering of the chart to refresh
+     * @type {boolean}
+     */
+    forceChartRefresh:boolean = false;
+
+
+    /**
+     * Summary stats should come from the service
+     * @type {*}
+     */
+    summaryStatistics:any;
+
+    feedChartLegendState:any[] = [];
+    feedChartData:any[] = [];
+    feedChartApi:any = {};
+    feedChartOptions:any = {};
+
+    processorChartApi:any = {};
+    processorChartData:any[] = [];
+    processorChartOptions:any = {};
+    selectedProcessorStatisticFunction:string = 'Average Duration';
+    processorStatsFunctions:any;
+
+    /**
+     * The Feed we are looking at
+     * @type {{displayStatus: string}}
+     */
+    feed:any  = {
+        displayStatus: ''
+    };
+
+    /**
+     * Latest summary stats
+     * @type {{}}
+     */
+    summaryStatsData:any = {};
+
+    eventSuccessKpi:any = {
+        value: 0,
+        icon: '',
+        color: ''
+    };
+
+    flowRateKpi:any = {
+        value: 0,
+        icon: 'tune',
+        color: '#1f77b4'
+    };
+
+    avgDurationKpi:any = {
+        value: 0,
+        icon: 'access_time',
+        color: '#1f77b4'
+    };
+
+    /**
+     * Errors for th error table (if any)
+     * @type {*}
+     */
+    feedProcessorErrorsTable:any = {
+        sortOrder: '-errorMessageTimestamp',
+        filter: '',
+        rowLimit: 5,
+        page: 1
+    };
+
     feedProcessorErrors: any;
-    onProcessorChartFunctionChangedVar: any;
     zoomedMinTime: any;
     zoomedMaxTime: any;
     changeZoomPromise: any;
     minTime: any;
     maxTime: any;
-    timeSeriesXAxisLabel: any;
-    canZoom: any;
     timeFrameOptions: any;
     timeFrameOptionIndex: any;
-    displayLabel: any;
-    UNZOOMED_VALUE: any;
+    displayLabel: string;
     feedTimeChartLoading: any;
     feedProcessorErrorsLoading: any;
-    feedName: any;
-    refreshInterval: any;
-    refreshIntervalTime: any;
+    feedName: string;
+    refreshInterval: angular.IPromise<any>;
+    refreshIntervalTime: number;
     timeFrameOptionIndexLength: any;
     
-    constructor(private $scope: any,
-                private $element: any,
-                private $http: any,
-                private $interval: any,
-                private $timeout: any,
-                private $q: any, 
-                private $mdToast: any,
+    constructor(private $scope: angular.IScope,
+                private $element: angular.IAugmentedJQuery,
+                private $http: angular.IHttpService,
+                private $interval: angular.IIntervalService,
+                private $timeout: angular.ITimeoutService,
+                private $q: angular.IQService,
+                private $mdToast: angular.material.IToastService,
                 private ProvenanceEventStatsService: any,
                 private FeedStatsService: any,
                 private Nvd3ChartService: any,
                 private OpsManagerFeedService: any,
                 private StateService: any,
-                private $filter: any){
-        this.dataLoaded = false;
-        /** flag when processor chart is loading **/
-        this.processChartLoading = false;
-        /**
-         * the last time the data was refreshed
-         * @type {null}
-         */
-        this.lastProcessorChartRefresh = null;
-        /**
-         * last time the execution graph was refreshed
-         * @type {null}
-         */
-        this.lastFeedTimeChartRefresh = null;
+                private $filter: angular.IFilterService){
 
-        /** flag when the feed time chart is loading **/
+
         this.showFeedTimeChartLoading = true;
 
         this.showProcessorChartLoading = true;
 
-        this.statusPieChartApi = {};
-
-        /**
-         * Initial Time Frame setting
-         * @type {string}
-         */
-        this.timeFrame = 'FIVE_MIN';
-        /**
-         * Array of fixed times
-         * @type {Array}
-         */
-        this.timeframeOptions = [];
-        /**
-         * last time the page was refreshed
-         * @type {null}
-         */
-        this.lastRefreshTime = null;
-        /**
-         * map of the the timeFrame value to actual timeframe object (i.e. FIVE_MIN:{timeFrameObject})
-         * @type {{}}
-         */
-        this.timeFramOptionsLookupMap = {};
-        /**
-         * The selected Time frame
-         * @type {{}}
-         */
-        this.selectedTimeFrameOptionObject = {};
-        /**
-         * Flag to enable disable auto refresh
-         * @type {boolean}
-         */
-        this.autoRefresh = true;
-
-        /**
-         * Flag to indicate if we are zoomed or not
-         * @type {boolean}
-         */
-        this.isZoomed = false;
-
-        /**
-         * Zoom helper
-         * @type {boolean}
-         */
-        this.isAtInitialZoom = true;
-
-        /**
-         * Difference in overall min/max time for the chart
-         * Used to help calcuate the correct xXais label (i.e. for larger time periods show Date + time, else show time
-         * @type {null}
-         */
-        this.timeDiff = null;
-
-        /**
-         * millis to wait after a zoom is complete to update the charts
-         * @type {number}
-         */
-        this.ZOOM_DELAY = 700;
-
-        /**
-         * Constant set to indicate we are not zoomed
-         * @type {number}
-         */
-        this.UNZOOMED_VALUE = -1;
-
-        /**
-         * After a chart is rendered it will always call the zoom function.
-         * Flag to prevent the initial zoom from triggering after refresh of the chart
-         * @type {boolean}
-         */
-        this.preventZoomChange = false;
-
-        /**
-         * Timeout promise to prevent zoom
-         * @type {undefined}
-         */
-        this.preventZoomPromise = undefined;
-
-        /**
-         * The Min Date of data.  This will be the zoomed value if we are zooming, otherwise the min value in the dataset
-         */
-        this.minDisplayTime;
-
-        /**
-         * The max date of the data.  this will be the zoomed value if zooming otherwise the max value in the dataset
-         */
-        this.maxDisplayTime;
-
-        /**
-         * max Y value (when not zoomed)
-         * @type {number}
-         */
-        this.maxY = 0;
-
-        /**
-         * max Y Value when zoomed
-         * @type {number}
-         */
-        this.zoomMaxY = 0;
-
-        /**
-         * Min time frame to enable zooming.
-         * Defaults to 30 min.
-         * Anything less than this will not be zoomable
-         * @type {number}
-         */
-        this.minZoomTime = 1000*60*30;
-        /**
-         * Flag to indicate if zooming is enabled.
-         * Zooming is only enabled for this.minZoomTime or above
-         *
-         * @type {boolean}
-         */
-        this.zoomEnabled = false;
-
-        /**
-         * A bug in nvd3 charts exists where if the zoom is toggle to true it requires a force of the x axis when its toggled back to false upon every data refresh.
-         * this flag will be triggered when the zoom enabled changes and from then on it will manually reset the x domain when the data refreshes
-         * @type {boolean}
-         */
-        this.forceXDomain = false;
-
-        /**
-         * Flag to force the rendering of the chart to refresh
-         * @type {boolean}
-         */
-        this.forceChartRefresh = false;
-
-        /**
-         * Summary stats
-         * @type {*}
-         */
         this.summaryStatistics = FeedStatsService.summaryStatistics;
-
-        this.feedChartLegendState = [];
-        this.feedChartData = [];
-        this.feedChartApi = {};
-        this.feedChartOptions = {};
-
-        this.processorChartApi = {};
-        this.processorChartData = [];
-        this.processorChartOptions = {};
-        this.selectedProcessorStatisticFunction = 'Average Duration';
         this.processorStatsFunctions = FeedStatsService.processorStatsFunctions();
-
-        /**
-         * The Feed we are looking at
-         * @type {{displayStatus: string}}
-         */
-        this.feed = {
-            displayStatus: ''
-        };
-
-        /**
-         * Latest summary stats
-         * @type {{}}
-         */
-        this.summaryStatsData = {};
-
-        this.eventSuccessKpi = {
-            value: 0,
-            icon: '',
-            color: ''
-        };
-
-        this.flowRateKpi = {
-            value: 0,
-            icon: 'tune',
-            color: '#1f77b4'
-        };
-
-        this.avgDurationKpi = {
-            value: 0,
-            icon: 'access_time',
-            color: '#1f77b4'
-        };
-
-        this.feedProcessorErrorsTable = {
-            sortOrder: '-errorMessageTimestamp',
-            filter: '',
-            rowLimit: 5,
-            page: 1
-        };
-
-        /**
-         * Errors for th error table (if any)
-         * @type {*}
-         */
         this.feedProcessorErrors = FeedStatsService.feedProcessorErrors;
 
 
 
-        /**
-         * When a user changes the Processor drop down
-         * @type {onProcessorChartFunctionChanged}
-         */
-        this.onProcessorChartFunctionChangedVar = this.onProcessorChartFunctionChanged;
 
-
-          /**
-         * Enable/disable the refresh interval
-         */
-        $scope.$watch(
-             ()=> {
-                return this.autoRefresh;
-            },
-            (newVal: any, oldVal: any)=> {
-                if (!this.autoRefresh) {
-                    this.clearRefreshInterval();
-                    //toast
-                    $mdToast.show(
-                        $mdToast.simple()
-                            .textContent('Auto refresh disabled')
-                            .hideDelay(3000)
-                    );
-                } else {
-                    this.setRefreshInterval();
-                    $mdToast.show(
-                        $mdToast.simple()
-                            .textContent('Auto refresh enabled')
-                            .hideDelay(3000)
-                    );
-                }
-            }
-        );
-
-        /**
-         * Watch when a zoom is active.
-         */
-        $scope.$watch(
-            ()=> {
-                return this.zoomedMinTime;
-            },
-             (newVal: any, oldVal: any)=> {
-                if (!_.isUndefined(this.zoomedMinTime) && this.zoomedMinTime > 0) {
-                  //  if (this.isAtInitialZoom) {
-                  //      this.isAtInitialZoom = false;
-                   // } else {
-                        this.cancelPreviousOnZoomed();
-                        this.changeZoomPromise = $timeout(this.changeZoom, this.ZOOM_DELAY);
-                   // }
-                }
-            }
-        );
-        //Load the page
-        this.init();
-
-        $scope.$on('$destroy',  ()=> {
-            this.clearRefreshInterval();
-            this.cancelPreviousOnZoomed();
-        });
-    }// constructor ends here
-
-     //// USER INTERACTIONS, buttons
+    }
         /**
          * When a user clicks the Refresh Button
          */
-        onRefreshButtonClick = ()=> {
+        onRefreshButtonClick () {
             this.refresh();
         };
 
@@ -371,7 +276,7 @@ export default class controller{
          * Navigate to the Feed Manager Feed Details
          * @param ev
          */
-        gotoFeedDetails = (ev: any)=> {
+        gotoFeedDetails(ev: any){
             if (this.feed.feedId != undefined) {
                 this.StateService.FeedManager().Feed().navigateToFeedDetails(this.feed.feedId);
             }
@@ -380,11 +285,11 @@ export default class controller{
         /**
          * Show detailed Errors
          */
-        viewNewFeedProcessorErrors =  ()=> {
+        viewNewFeedProcessorErrors (){
             this.feedProcessorErrors.viewAllData();
         };
 
-        toggleFeedProcessorErrorsRefresh = (autoRefresh: any)=> {
+        toggleFeedProcessorErrorsRefresh(autoRefresh: boolean) {
             if (autoRefresh) {
                 this.feedProcessorErrors.viewAllData();
                 this.feedProcessorErrors.autoRefreshMessage = 'enabled';
@@ -397,7 +302,7 @@ export default class controller{
         /**
          * Called when a user click on the Reset Zoom button
          */
-        onResetZoom = ()=> {
+        onResetZoom(){
             if(this.isZoomed) {
                 this.initiatePreventZoom();
                 this.resetZoom();
@@ -411,7 +316,7 @@ export default class controller{
         /**
          * prevent the initial zoom to fire in chart after reload
          */
-        initiatePreventZoom=()=>{
+        initiatePreventZoom(){
             var cancelled = false;
             if(angular.isDefined(this.preventZoomPromise)) {
                this.$timeout.cancel(this.preventZoomPromise);
@@ -426,10 +331,62 @@ export default class controller{
                         }, 1000);
                     }
         }
+
+
+    /**
+     * Help adjust the x axis label depending on time window
+     * @param d
+     */
+    private timeSeriesXAxisLabel(d:number){
+        var maxTime = 1000*60*60*12; //12 hrs
+        if(this.timeDiff >=maxTime ){
+            //show the date if it spans larger than maxTime
+            return d3.time.format('%Y-%m-%d %H:%M')(new Date(d))
+        }
+        else {
+            return d3.time.format('%X')(new Date(d))
+        }
+    }
+
+    /**
+     * Prevent zooming into a level of detail that the data doesnt allow
+     * Stats > a day are aggregated up to the nearest hour
+     * Stats > 10 hours are aggregated up to the nearest minute
+     * If a user is looking at data within the 2 time frames above, prevent the zoom to a level greater than the hour/minute
+     * @param xDomain
+     * @param yDomain
+     * @return {boolean}
+     */
+    private canZoom(xDomain:number[], yDomain:number[]) {
+
+        var diff = this.maxTime - this.minTime;
+
+        var minX  = Math.floor(xDomain[0]);
+        var maxX = Math.floor(xDomain[1]);
+        var zoomDiff = maxX - minX;
+        //everything above the day should be zoomed at the hour level
+        //everything above 10 hrs should be zoomed at the minute level
+        if(diff >= (1000*60*60*24)){
+            if(zoomDiff < (1000*60*60)){
+                return false   //prevent zooming!
+            }
+        }
+        else if(diff >= (1000*60*60*10)) {
+            // zoom at minute level
+            if(zoomDiff < (1000*60)){
+                return false;
+            }
+        }
+        return true;
+
+    };
+
+
         /**
          * Initialize the Charts
          */
-        setupChartOptions=()=> {
+        setupChartOptions() {
+            let self = this;
             this.processorChartOptions = {
                 chart: {
                     type: 'multiBarHorizontalChart',
@@ -454,7 +411,7 @@ export default class controller{
                     },
                     interactiveLayer: {tooltip: {gravity: 's'}},
                     yAxis: {
-                        axisLabel: this.FeedStatsService.processorStatsFunctionMap[this.selectedProcessorStatisticFunction].axisLabel,
+                        axisLabel: self.FeedStatsService.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].axisLabel,
                         tickFormat: (d: any)=> {
                             return d3.format(',.2f')(d);
                         }
@@ -462,57 +419,10 @@ export default class controller{
                     valueFormat: (d: any)=> {
                         return d3.format(',.2f')(d);
                     },
-                     noData: this.$filter('translate')('view.feed-stats-charts.noData')
-                }
-            };
-
-            /**
-             * Help adjust the x axis label depending on time window
-             * @param d
-             */
-           this.timeSeriesXAxisLabel=(d: any)=>{
-                var maxTime = 1000*60*60*12; //12 hrs
-                if(this.timeDiff >=maxTime ){
-                    //show the date if it spans larger than maxTime
-                    return d3.time.format('%Y-%m-%d %H:%M')(new Date(d))
-                }
-                else {
-                    return d3.time.format('%X')(new Date(d))
+                     noData: self.$filter('translate')('view.feed-stats-charts.noData')
                 }
             }
 
-            /**
-             * Prevent zooming into a level of detail that the data doesnt allow
-             * Stats > a day are aggregated up to the nearest hour
-             * Stats > 10 hours are aggregated up to the nearest minute
-             * If a user is looking at data within the 2 time frames above, prevent the zoom to a level greater than the hour/minute
-             * @param xDomain
-             * @param yDomain
-             * @return {boolean}
-             */
-            this.canZoom=(xDomain: any, yDomain: any)=> {
-
-                var diff = this.maxTime - this.minTime;
-
-                var minX  = Math.floor(xDomain[0]);
-                var maxX = Math.floor(xDomain[1]);
-                var zoomDiff = maxX - minX;
-                //everything above the day should be zoomed at the hour level
-                //everything above 10 hrs should be zoomed at the minute level
-                if(diff >= (1000*60*60*24)){
-                    if(zoomDiff < (1000*60*60)){
-                        return false   //prevent zooming!
-                    }
-                }
-                else if(diff >= (1000*60*60*10)) {
-                    // zoom at minute level
-                    if(zoomDiff < (1000*60)){
-                        return false;
-                    }
-                }
-                return true;
-
-            }
 
             this.feedChartOptions = {
                 chart: {
@@ -541,9 +451,9 @@ export default class controller{
                         return d3.format(',')(parseInt(d))
                     },
                     xAxis: {
-                        axisLabel: this.$filter('translate')('view.feed-stats-charts.Time'),
+                        axisLabel: self.$filter('translate')('view.feed-stats-charts.Time'),
                         showMaxMin: false,
-                        tickFormat: this.timeSeriesXAxisLabel,
+                        tickFormat: (d:number) =>self.timeSeriesXAxisLabel(d),
                         rotateLabels: -45
                     },
                     yAxis: {
@@ -553,7 +463,7 @@ export default class controller{
                     legend: {
                         dispatch: {
                             stateChange: (e: any)=>{
-                                this.feedChartLegendState = e.disabled;
+                                self.feedChartLegendState = e.disabled;
                             }
                         }
                     },
@@ -568,25 +478,25 @@ export default class controller{
                         zoomed: (xDomain: any, yDomain: any)=> {
                             //zoomed will get called initially (even if not zoomed)
                             // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
-                            if(!this.preventZoomChange) {
-                                this.isZoomed = true;
-                                if(this.canZoom(xDomain,yDomain)) {
-                                    this.zoomedMinTime = Math.floor(xDomain[0]);
-                                    this.zoomedMaxTime = Math.floor(xDomain[1]);
-                                    this.timeDiff = this.zoomedMaxTime - this.zoomedMinTime;
+                            if(!self.preventZoomChange) {
+                                self.isZoomed = true;
+                                if(self.canZoom(xDomain,yDomain)) {
+                                    self.zoomedMinTime = Math.floor(xDomain[0]);
+                                    self.zoomedMaxTime = Math.floor(xDomain[1]);
+                                    self.timeDiff = self.zoomedMaxTime - self.zoomedMinTime;
                                     var max1 = Math.ceil(yDomain[0]);
                                     var max2 = Math.ceil(yDomain[1]);
-                                    this.zoomMaxY = max2 > max1 ? max2 : max1;
+                                    self.zoomMaxY = max2 > max1 ? max2 : max1;
 
                                 }
-                                return {x1: this.zoomedMinTime, x2: this.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
+                                return {x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
                             }
                             else {
-                                return {x1: this.minTime, x2: this.maxTime, y1: this.minY, y2: this.maxY}
+                                return {x1: self.minTime, x2: self.maxTime, y1: self.minY, y2: self.maxY}
                             }
                         },
                         unzoomed: (xDomain: any, yDomain: any)=> {
-                            return this.resetZoom();
+                            return self.resetZoom();
                         }
                         },
                      interactiveLayer2: { //interactiveLayer
@@ -606,7 +516,7 @@ export default class controller{
          * Reset the Zoom and return the x,y values pertaining to the min/max of the complete dataset
          * @return {{x1: *, x2: (*|number|endTime|{name, fn}|Number), y1: number, y2: (number|*)}}
          */
-        resetZoom=() =>{
+        resetZoom(){
             if(this.isZoomed) {
                 this.isZoomed = false;
                 this.zoomedMinTime = this.UNZOOMED_VALUE;
@@ -619,7 +529,7 @@ export default class controller{
         }
 
 
-        changeZoom = ()=> {
+        changeZoom(){
             this.timeDiff = this.zoomedMaxTime- this.zoomedMinTime;
             this.autoRefresh = false;
             this.isZoomed = true;
@@ -648,12 +558,12 @@ export default class controller{
 
 
 
-        };
+        }
 
         /**
          * Cancel the zoom timeout watcher
          */
-        cancelPreviousOnZoomed=()=> {
+        cancelPreviousOnZoomed(){
             if (!_.isUndefined(this.changeZoomPromise)) {
                 this.$timeout.cancel(this.changeZoomPromise);
                 this.changeZoomPromise = undefined;
@@ -661,10 +571,10 @@ export default class controller{
         }
 
 
-        onTimeFrameChanged = ()=>{
+        onTimeFrameChanged(){
             if (!_.isUndefined(this.timeFrameOptions)) {
                 this.timeFrame = this.timeFrameOptions[Math.floor(this.timeFrameOptionIndex)].value;
-                this.displayLabel = this.timeFrame.label;
+                this.displayLabel = this.timeFrameOptions[Math.floor(this.timeFrameOptionIndex)].label;
                 this.isZoomed = false;
                 this.zoomedMinTime = this.UNZOOMED_VALUE;
                 this.zoomedMaxTime = this.UNZOOMED_VALUE;
@@ -694,7 +604,7 @@ export default class controller{
 
       
 
-        refresh=()=>{
+        refresh(){
             var to = new Date().getTime();
             var millis = this.timeFrameOptions[this.timeFrameOptionIndex].properties.millis;
             var from = to - millis;
@@ -706,7 +616,7 @@ export default class controller{
             this.buildChartData(true);
         }
 
-        enableZoom=()=>{
+        enableZoom(){
             this.zoomEnabled = true;
             this.feedChartOptions.chart.zoom.enabled=true;
             this.forceChartRefresh = true;
@@ -714,22 +624,25 @@ export default class controller{
 
         }
 
-        disableZoom=()=>{
+        disableZoom(){
             this.resetZoom();
             this.zoomEnabled = false;
             this.feedChartOptions.chart.zoom.enabled=false;
             this.forceChartRefresh = true;
         }
 
-
-        onProcessorChartFunctionChanged=()=> {
+    /**
+     * When a user changes the Processor drop down
+     * @type {onProcessorChartFunctionChanged}
+     */
+        onProcessorChartFunctionChanged(){
             this.FeedStatsService.setSelectedChartFunction(this.selectedProcessorStatisticFunction);
             var chartData = this.FeedStatsService.changeProcessorChartDataFunction(this.selectedProcessorStatisticFunction);
             this.processorChartData[0].values = chartData.data;
             this.FeedStatsService.updateBarChartHeight(this.processorChartOptions, this.processorChartApi, chartData.data.length, this.selectedProcessorStatisticFunction);
         }
 
-        buildChartData=(timeIntervalChange: any)=> {
+        buildChartData(timeIntervalChange: boolean){
             if (!this.FeedStatsService.isLoading()) {
                 timeIntervalChange = angular.isUndefined(timeIntervalChange) ? false : timeIntervalChange;
                 this.feedTimeChartLoading = true;
@@ -741,7 +654,7 @@ export default class controller{
             this.getFeedHealth();
         }
 
-        updateSuccessEventsPercentKpi=()=> {
+        updateSuccessEventsPercentKpi() {
             if (this.summaryStatsData.totalEvents == 0) {
                 this.eventSuccessKpi.icon = 'remove';
                 this.eventSuccessKpi.color = "#1f77b4"
@@ -760,26 +673,26 @@ export default class controller{
             }
         }
 
-        updateFlowRateKpi=()=> {
+        updateFlowRateKpi() {
             this.flowRateKpi.value = this.summaryStatistics.flowsStartedPerSecond;
         }
 
-        updateAvgDurationKpi = function(){
+        updateAvgDurationKpi(){
             var avgMillis = this.summaryStatistics.avgFlowDurationMilis;
-            this.avgDurationKpi.value = this.DateTimeUtils(this.$filter('translate')).formatMillisAsText(avgMillis,false,true);
+            this.avgDurationKpi.value = DateTimeUtils(this.$filter('translate')).formatMillisAsText(avgMillis,false,true);
         }
 
-        formatSecondsToMinutesAndSeconds=(s:any)=> {   // accepts seconds as Number or String. Returns m:ss
+        formatSecondsToMinutesAndSeconds(s:number) {   // accepts seconds as Number or String. Returns m:ss
             return ( s - ( s %= 60 )) / 60 + (9 < s ? ':' : ':0' ) + s;
         }
 
-        updateSummaryKpis=()=> {
+        updateSummaryKpis() {
             this.updateFlowRateKpi();
             this.updateSuccessEventsPercentKpi();
             this.updateAvgDurationKpi();
         }
 
-        buildProcessorChartData=()=> {
+        buildProcessorChartData() {
             var values = [];
             this.processChartLoading = true;
             var minTime = undefined;
@@ -804,7 +717,7 @@ export default class controller{
             });
         }
 
-        buildFeedCharts=()=> {
+        buildFeedCharts() {
 
             this.feedTimeChartLoading = true;
             this.$q.when( this.FeedStatsService.fetchFeedTimeSeriesData()).then( (feedTimeSeries: any)=> {
@@ -892,7 +805,7 @@ export default class controller{
          * fetch and append the errors to the FeedStatsService.feedProcessorErrors.data object
          * @param resetWindow optionally reset the feed errors to start a new array of errors in the feedProcessorErrors.data
          */
-        fetchFeedProcessorErrors=(resetWindow: any)=> {
+        fetchFeedProcessorErrors(resetWindow: any) {
             this.feedProcessorErrorsLoading = true;
             this.$q.when(this.FeedStatsService.fetchFeedProcessorErrors(resetWindow)).then((feedProcessorErrors: any)=> {
                 this.feedProcessorErrorsLoading = false;
@@ -905,7 +818,7 @@ export default class controller{
         /**
          * Gets the Feed Health
          */
-        getFeedHealth=()=> {
+        getFeedHealth(){
             var successFn = (response: any)=> {
                 if (response.data) {
                     //transform the data for UI
@@ -929,14 +842,14 @@ export default class controller{
         }
 
 
-        clearRefreshInterval=()=> {
+        clearRefreshInterval() {
             if (this.refreshInterval != null) {
                 this.$interval.cancel(this.refreshInterval);
                 this.refreshInterval = null;
             }
         }
 
-        setRefreshInterval=()=> {
+        setRefreshInterval() {
             this.clearRefreshInterval();
 
             if (this.autoRefresh ) {
@@ -961,7 +874,7 @@ export default class controller{
         /**
          * Initialize the charts
          */
-        initCharts=() =>{
+        initCharts() {
             this.FeedStatsService.setFeedName(this.feedName);
             this.setupChartOptions();
             this.onRefreshButtonClick();
@@ -971,7 +884,7 @@ export default class controller{
         /**
          * Fetch and load the Time slider options
          */
-        loadTimeFrameOption=()=> {
+        loadTimeFrameOption() {
             this.ProvenanceEventStatsService.getTimeFrameOptions().then((response: any)=> {
                 this.timeFrameOptions = response.data;
                 this.timeFrameOptionIndexLength = this.timeFrameOptions.length;
@@ -988,18 +901,71 @@ export default class controller{
             });
         }
 
+
+    /**
+     * When the controller is ready, initialize
+     */
+    $onInit(): void {
         /**
-         * Initialize the page.  Called when first page loads to set it up
+         * Enable/disable the refresh interval
          */
-        init=()=>{
-            this.loadTimeFrameOption();
-        }
+        this.$scope.$watch(
+            ()=> {
+                return this.autoRefresh;
+            },
+            (newVal: any, oldVal: any)=> {
+                if (!this.autoRefresh) {
+                    this.clearRefreshInterval();
+                    //toast
+                    this.$mdToast.show(
+                        this.$mdToast.simple()
+                            .textContent('Auto refresh disabled')
+                            .hideDelay(3000)
+                    );
+                } else {
+                    this.setRefreshInterval();
+                    this.$mdToast.show(
+                        this.$mdToast.simple()
+                            .textContent('Auto refresh enabled')
+                            .hideDelay(3000)
+                    );
+                }
+            }
+        );
+
+        /**
+         * Watch when a zoom is active.
+         */
+        this.$scope.$watch(
+            ()=> {
+                return this.zoomedMinTime;
+            },
+            (newVal: any, oldVal: any)=> {
+                if (!_.isUndefined(this.zoomedMinTime) && this.zoomedMinTime > 0) {
+                    //  if (this.isAtInitialZoom) {
+                    //      this.isAtInitialZoom = false;
+                    // } else {
+                    this.cancelPreviousOnZoomed();
+                    this.changeZoomPromise = this.$timeout(this.changeZoom, this.ZOOM_DELAY);
+                    // }
+                }
+            }
+        );
+
+
+        this.$scope.$on('$destroy',  ()=> {
+            this.clearRefreshInterval();
+            this.cancelPreviousOnZoomed();
+        });
+        this.loadTimeFrameOption();
+    }
+
 
                 /**
          * When the slider is changed refresh the charts/data
          * @param timeFrame
          */
-        onTimeFrameChanged2=(timeFrame?: any)=> {
+        onTimeFrameChanged2(timeFrame?: any) {
             if(this.isZoomed){
                 this.resetZoom();
             }
@@ -1035,9 +1001,6 @@ export default class controller{
 
 
 angular.module(moduleName)
- .service('ProvenanceEventStatsService',['$http','$q','OpsManagerRestUrlService',ProvenanceEventStatsService])
- .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
- .service('Nvd3ChartService',["$timeout","$filter", Nvd3ChartService])
  .controller('FeedStatsChartsController',
         ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", 
         "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", 

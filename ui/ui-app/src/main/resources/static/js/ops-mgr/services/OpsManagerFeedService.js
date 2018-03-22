@@ -3,7 +3,7 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerFeedService = /** @class */ (function () {
         //static $inject = ['OpsManagerRestUrlService'];
-        function OpsManagerFeedService($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService) {
+        function OpsManagerFeedService($q, $http, $interval, $timeout, HttpService, IconService, OpsManagerRestUrlService) {
             var _this = this;
             this.$q = $q;
             this.$http = $http;
@@ -11,7 +11,6 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
             this.$timeout = $timeout;
             this.HttpService = HttpService;
             this.IconService = IconService;
-            this.AlertsService = AlertsService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.data = {};
             this.data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
@@ -155,6 +154,6 @@ define(["require", "exports", "angular", "../module-name", "moment"], function (
     exports.default = OpsManagerFeedService;
     angular.module(module_name_1.moduleName)
         .factory('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService',
-        'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
+        'IconService', 'OpsManagerRestUrlService', OpsManagerFeedService]);
 });
 //# sourceMappingURL=OpsManagerFeedService.js.map

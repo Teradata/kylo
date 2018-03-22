@@ -11,7 +11,6 @@ export default class OpsManagerDashboardService{
                 private $timeout: any,
                 private HttpService: any,
                 private IconService: any,
-                private AlertsService: any,
                 private OpsManagerRestUrlService: any,
                 private BroadcastService: any,
                 private OpsManagerFeedService: any
@@ -234,5 +233,5 @@ export default class OpsManagerDashboardService{
 
 angular.module(moduleName)
 .factory('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
-                                        'AlertsService', 'OpsManagerRestUrlService','BroadcastService',
+                                         'OpsManagerRestUrlService','BroadcastService',
                                         'OpsManagerFeedService',OpsManagerDashboardService]);

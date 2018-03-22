@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "../../services/OpsManagerJobService", "../../services/IconStatusService", "../../services/OpsManagerRestUrlService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, OpsManagerJobService_1, IconStatusService_1, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "./module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobDetailsDirectiveController = /** @class */ (function () {
@@ -487,11 +487,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
         return JobDetailsDirectiveController;
     }());
     exports.JobDetailsDirectiveController = JobDetailsDirectiveController;
-    //$scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
-        .service('IconService', [IconStatusService_1.default])
         .controller("JobDetailsDirectiveController", ["$scope", "$http", "$state", "$interval", "$timeout", "$q",
         "$mdToast", "OpsManagerRestUrlService",
         "OpsManagerJobService", "IconService", "AccessControlService", "AngularModuleExtensionService",

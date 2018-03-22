@@ -41,12 +41,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     static $inject = ["$http", "$q", "$mdDialog", "RestUrlService"
         , "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper"
-        , "FeedPropertyService", "AccessControlService", "EntityAccessControlService","$filter"]
+        , "FeedPropertyService", "AccessControlService", "EntityAccessControlService", "$filter"]
 
     constructor(private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
         , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any
         , private FeedPropertyService: FeedPropertyService, private AccessControlService: any
         , private EntityAccessControlService: any, private $filter: angular.IFilterService) {
+        this.init();
 
     }
 
@@ -671,7 +672,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
              *                                                                 datasourceDefinition:{identityString:"",title:"",description:""}},...],
              *            request:{connectionInfo:reusableTemplateConnections}}
      */
-    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: any): angular.IPromise<any> {
+    getNiFiTemplateFlowInformation(nifiTemplateId: string, reusableTemplateConnections: ReusableTemplateConnectionInfo[]): angular.IPromise<any> {
         var deferred = this.$q.defer();
         if (nifiTemplateId != null) {
             //build the request
@@ -1033,15 +1034,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         let instance = ($http: angular.IHttpService, $q: angular.IQService, $mdDialog: angular.material.IDialogService, RestUrlService: any
             , FeedInputProcessorOptionsFactory: any, FeedDetailsProcessorRenderingHelper: any
             , FeedPropertyService: FeedPropertyService, AccessControlService: any
-            , EntityAccessControlService: any, $filter: angular.IFilterService) => {
-            var r = new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
-            r.init();
-            return r;
-        }
+            , EntityAccessControlService: any, $filter: angular.IFilterService) =>
+             new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
+
 
         return instance;
     }
 }
 
 
-angular.module(moduleName).factory('RegisterTemplateService', RegisterTemplateServiceFactory.factory());
+angular.module(moduleName).factory('RegisterTemplateService',  RegisterTemplateServiceFactory.factory());

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "../services/OpsManagerJobService", "../services/IconStatusService", "../services/TabService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, OpsManagerJobService_1, IconStatusService_1, TabService_1) {
+define(["require", "exports", "angular", "./module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobsCardController = /** @class */ (function () {
@@ -560,9 +560,6 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
     angular.module(module_name_1.moduleName).controller('AbandonAllJobsDialogController', ["$scope", "$mdDialog", "$interval", "feedName", abandonAllDialogController]);
     angular.module(module_name_1.moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef", JobFilterHelpPanelMenuCtrl]);
     angular.module(module_name_1.moduleName)
-        .service('IconService', [IconStatusService_1.default])
-        .service('TabService', ['PaginationDataService', TabService_1.default])
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
         .controller("JobsCardController", ["$scope", "$http", "$mdDialog", "$timeout", "$mdMenu", "$q", "$mdToast",
         "$mdPanel", "OpsManagerJobService", "TableOptionsService",
         "PaginationDataService", "StateService", "IconService", "TabService",

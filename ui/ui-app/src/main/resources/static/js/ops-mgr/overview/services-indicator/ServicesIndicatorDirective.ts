@@ -295,17 +295,11 @@ constructor(private $scope: any,
             }
 }
 
-angular.module(moduleName)
+
 angular.module(moduleName).controller('ServicesDetailsDialogController', 
                                         ["$scope","$mdDialog","$interval","StateService","status",
                                         "selectedStatusData",servicesDetailsDialogController]);
-angular.module(moduleName)
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
-                                     'AlertsService', 'OpsManagerRestUrlService','BroadcastService',
-                                     'OpsManagerFeedService',OpsManagerDashboardService])
-.service('ServicesStatusData',["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 
-                                'OpsManagerRestUrlService',ServicesStatusData])
-.controller('ServicesIndicatorController', ["$scope","$element","$http",
+angular.module(moduleName).controller('ServicesIndicatorController', ["$scope","$element","$http",
                                         "$mdDialog","$mdPanel","$interval","$timeout",
                                         "ServicesStatusData","OpsManagerDashboardService",
                                         "BroadcastService",'$filter',controller]);

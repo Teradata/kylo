@@ -1,7 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
-import ServicesStatusData from "../services/ServicesStatusService";
-import AlertsService from "../services/AlertsService";
+
 
 export class controller implements ng.IComponentController{
         pageName: string;
@@ -29,7 +28,6 @@ constructor(private $scope: any,
             private ServicesStatusData: any,
             private TableOptionsService: any,
             private PaginationDataService: any,
-            private AlertsService: any,
             private StateService: any){
 
                 this.pageName = 'service-health';
@@ -167,13 +165,10 @@ constructor(private $scope: any,
          RefreshIntervalClear: any = this.clearRefreshInterval();
 }
  angular.module(moduleName)
- .service("ServicesStatusData", ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 
-                'OpsManagerRestUrlService',ServicesStatusData])
- .service("AlertsService", [AlertsService])
  .controller('ServiceHealthController', 
                                         ["$scope","$http","$filter","$interval","$timeout","$q",
                                         "ServicesStatusData","TableOptionsService","PaginationDataService",
-                                        "AlertsService","StateService",controller]);
+                                        "StateService",controller]);
 
     angular.module(moduleName)
             .directive('tbaServiceHealth',()=>

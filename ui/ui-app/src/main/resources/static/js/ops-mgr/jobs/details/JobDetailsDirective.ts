@@ -614,11 +614,7 @@ constructor(private $scope: any,
             })
         };
 }
-//$scope,$http, $state, $interval, $timeout, $q, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter
 angular.module(moduleName)
-.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
-.service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
-.service('IconService',[IconService])
 .controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q",
             "$mdToast","OpsManagerRestUrlService",
             "OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",

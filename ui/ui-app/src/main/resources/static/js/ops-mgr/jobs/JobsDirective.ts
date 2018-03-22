@@ -692,9 +692,6 @@ angular.module(moduleName).controller('AbandonAllJobsDialogController', ["$scope
 angular.module(moduleName).controller("JobFilterHelpPanelMenuCtrl", ["mdPanelRef",JobFilterHelpPanelMenuCtrl]);
 
 angular.module(moduleName)
-.service('IconService',[IconService])
-.service('TabService',['PaginationDataService',TabService])
-.service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
 .controller("JobsCardController", 
             ["$scope","$http","$mdDialog","$timeout","$mdMenu","$q","$mdToast",
              "$mdPanel","OpsManagerJobService","TableOptionsService",

@@ -3,13 +3,12 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     Object.defineProperty(exports, "__esModule", { value: true });
     var ServicesStatusData = /** @class */ (function () {
         //static $inject = ['OpsManagerRestUrlService'];
-        function ServicesStatusData($q, $http, $interval, $timeout, AlertsService, IconService, OpsManagerRestUrlService) {
+        function ServicesStatusData($q, $http, $interval, $timeout, IconService, OpsManagerRestUrlService) {
             var _this = this;
             this.$q = $q;
             this.$http = $http;
             this.$interval = $interval;
             this.$timeout = $timeout;
-            this.AlertsService = AlertsService;
             this.IconService = IconService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.ServicesStatusData = {};
@@ -95,7 +94,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     }());
     exports.default = ServicesStatusData;
     angular.module(module_name_1.moduleName)
-        .factory('ServicesStatusData', ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService',
+        .factory('ServicesStatusData', ["$q", '$http', '$interval', '$timeout', 'IconService',
         'OpsManagerRestUrlService',
         ServicesStatusData]);
 });

@@ -429,10 +429,7 @@ export class AlertsController implements ng.IComponentController{
     }
 }
 angular.module(moduleName).controller("AlertsController",["$transition$",AlertsController]);
-angular.module(moduleName)
-.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
-.service('TabService',['PaginationDataService',TabService])
-.controller("AlertsTableController", 
+angular.module(moduleName).controller("AlertsTableController",
     ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService",
     "TabService","OpsManagerRestUrlService",AlertsTableController]);
 angular.module(moduleName).directive("tbaAlertsTable", [

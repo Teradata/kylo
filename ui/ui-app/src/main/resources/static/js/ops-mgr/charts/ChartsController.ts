@@ -1,12 +1,6 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import PivotTableUtil from "./PivotTableUtil";
-import OpsManagerFeedService from "../services/OpsManagerFeedService";
-import OpsManagerJobService from "../services/OpsManagerJobService";
-import IconService from "../services/IconStatusService";
-
-import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
-import AlertsService from "../services/AlertsService";
 import * as _ from "underscore";
 import * as moment from "moment";
 
@@ -262,10 +256,5 @@ constructor(private $scope: any,
 }
 
 angular.module(moduleName)
-        .service("AlertsService", [AlertsService])
-        .service("IconService",[IconService])
-        .service("OpsManagerRestUrlService",[OpsManagerRestUrlService])
- .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
- .service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
  .controller('ChartsController',
 ["$scope","$element","$http","HttpService","OpsManagerJobService","OpsManagerFeedService",controller]);

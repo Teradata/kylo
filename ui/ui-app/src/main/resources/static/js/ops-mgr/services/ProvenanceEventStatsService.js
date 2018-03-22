@@ -8,7 +8,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             var data = {
                 getTimeFrameOptions: function () {
-                    var promise = $http.get(this.OpsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS);
+                    var promise = $http.get(OpsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS);
                     return promise;
                 },
                 getFeedProcessorDuration: function (feedName, from, to) {

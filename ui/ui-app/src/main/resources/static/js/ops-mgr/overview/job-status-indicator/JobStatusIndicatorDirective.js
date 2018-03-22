@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "../../services/OpsManagerDashboardService", "../../services/OpsManagerJobService", "../../services/ChartJobStatusService"], function (require, exports, angular, module_name_1, _, OpsManagerDashboardService_1, OpsManagerJobService_1, ChartJobStatusService_1) {
+define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -224,9 +224,6 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
     }());
     exports.default = controller;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
-        .service('ChartJobStatusService', ["IconService", "Nvd3ChartService", ChartJobStatusService_1.default])
         .controller('JobStatusIndicatorController', ["$scope", "$element", "$http", "$q", "$interval", "StateService",
         "OpsManagerJobService", "OpsManagerDashboardService",
         "HttpService", "ChartJobStatusService", "BroadcastService", controller]);

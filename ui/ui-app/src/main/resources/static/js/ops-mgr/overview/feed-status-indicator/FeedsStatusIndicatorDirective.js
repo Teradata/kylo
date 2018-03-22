@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "../../services/OpsManagerDashboardService", "../../services/OpsManagerFeedService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1, OpsManagerFeedService_1) {
+define(["require", "exports", "angular", "../module-name", "pascalprecht.translate"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -99,8 +99,6 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
     }());
     exports.default = controller;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
         .controller('FeedStatusIndicatorController', ["$scope", "$element", "$http", "$interval", "$timeout", "OpsManagerFeedService", "OpsManagerDashboardService", "BroadcastService", "$filter", controller]);
     angular.module(module_name_1.moduleName)
         .directive('tbaFeedStatusIndicator', [function () {

@@ -83,6 +83,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 owner: null,
                 roleMembershipsUpdated: false
             };
+            this.init();
         }
         RegisterTemplateServiceFactory.prototype.escapeRegExp = function (str) {
             return str.replace(/([.*+?^=!:${}()|\[\]\/\\])/g, "\\$1");
@@ -891,9 +892,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
         };
         RegisterTemplateServiceFactory.factory = function () {
             var instance = function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter) {
-                var r = new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
-                r.init();
-                return r;
+                return new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
             };
             return instance;
         };

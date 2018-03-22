@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "../services/OpsManagerFeedService", "../services/AlertsService", "../services/ChartJobStatusService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, OpsManagerFeedService_1, AlertsService_1, ChartJobStatusService_1) {
+define(["require", "exports", "angular", "./module-name", "pascalprecht.translate"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $http, $interval, $timeout, $q, Utils, OpsManagerFeedService, TableOptionsService, PaginationDataService, AlertsService, StateService, ChartJobStatusService, BroadcastService, $filter) {
+        function controller($scope, $http, $interval, $timeout, $q, Utils, OpsManagerFeedService, TableOptionsService, PaginationDataService, StateService, ChartJobStatusService, BroadcastService, $filter) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -13,7 +13,6 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
             this.OpsManagerFeedService = OpsManagerFeedService;
             this.TableOptionsService = TableOptionsService;
             this.PaginationDataService = PaginationDataService;
-            this.AlertsService = AlertsService;
             this.StateService = StateService;
             this.ChartJobStatusService = ChartJobStatusService;
             this.BroadcastService = BroadcastService;
@@ -145,11 +144,8 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
-        .service('AlertsService', [AlertsService_1.default])
-        .service('ChartJobStatusService', ["IconService", "Nvd3ChartService", ChartJobStatusService_1.default])
         .controller('FeedActivityController', ["$scope", "$http", "$interval", "$timeout", "$q", "Utils",
-        "OpsManagerFeedService", "TableOptionsService", "PaginationDataService", "AlertsService", "StateService",
+        "OpsManagerFeedService", "TableOptionsService", "PaginationDataService", "StateService",
         "ChartJobStatusService", "BroadcastService", "$filter", controller]);
     angular.module(module_name_1.moduleName)
         .directive('tbaFeedActivity', [function (Utils) {

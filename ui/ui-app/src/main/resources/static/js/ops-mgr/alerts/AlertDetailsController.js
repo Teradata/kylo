@@ -240,9 +240,7 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
     }());
     exports.AlertDetailsController = AlertDetailsController;
     angular.module(module_name_1.moduleName).controller("AlertDetailsController", ["$transition$", AlertDetailsController]);
-    angular.module(module_name_1.moduleName)
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
-        .controller("AlertDetailsDirectiveController", ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService", AlertDetailsDirectiveController]);
+    angular.module(module_name_1.moduleName).controller("AlertDetailsDirectiveController", ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService", AlertDetailsDirectiveController]);
     angular.module(module_name_1.moduleName).directive("tbaAlertDetails", [
         function () {
             return {

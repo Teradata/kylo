@@ -111,7 +111,6 @@ constructor(private $scope: any,
 }
 
  angular.module(moduleName)
-        .service("ServicesStatusData", [ServicesStatusData])
         .controller('ServiceComponentHealthDetailsController',
                                         ["$scope","$http","$filter","$transition$","$interval",
                                         "$timeout","$q","ServicesStatusData","TableOptionsService",

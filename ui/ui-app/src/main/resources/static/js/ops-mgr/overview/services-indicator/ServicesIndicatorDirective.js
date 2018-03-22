@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "../../services/OpsManagerDashboardService", "../../services/ServicesStatusService", "moment", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, OpsManagerDashboardService_1, ServicesStatusService_1, moment) {
+define(["require", "exports", "angular", "../module-name", "underscore", "moment", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -254,16 +254,9 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../../
         return servicesDetailsDialogController;
     }());
     exports.servicesDetailsDialogController = servicesDetailsDialogController;
-    angular.module(module_name_1.moduleName);
     angular.module(module_name_1.moduleName).controller('ServicesDetailsDialogController', ["$scope", "$mdDialog", "$interval", "StateService", "status",
         "selectedStatusData", servicesDetailsDialogController]);
-    angular.module(module_name_1.moduleName)
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
-        'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService',
-        'OpsManagerFeedService', OpsManagerDashboardService_1.default])
-        .service('ServicesStatusData', ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService',
-        'OpsManagerRestUrlService', ServicesStatusService_1.default])
-        .controller('ServicesIndicatorController', ["$scope", "$element", "$http",
+    angular.module(module_name_1.moduleName).controller('ServicesIndicatorController', ["$scope", "$element", "$http",
         "$mdDialog", "$mdPanel", "$interval", "$timeout",
         "ServicesStatusData", "OpsManagerDashboardService",
         "BroadcastService", '$filter', controller]);

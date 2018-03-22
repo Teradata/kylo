@@ -265,9 +265,7 @@ export class AlertDetailsController implements ng.IComponentController{
 
 
 angular.module(moduleName).controller("AlertDetailsController",["$transition$",AlertDetailsController]);
-angular.module(moduleName)
-.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
-.controller("AlertDetailsDirectiveController", ["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService",AlertDetailsDirectiveController]);
+angular.module(moduleName).controller("AlertDetailsDirectiveController", ["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService",AlertDetailsDirectiveController]);
 angular.module(moduleName).directive("tbaAlertDetails",
                     [
                         ()=> {

@@ -1,9 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
-import ChartJobStatusService from "../../services/ChartJobStatusService";
 declare const d3: any;
 
 export default class controller implements ng.IComponentController{
@@ -255,9 +252,6 @@ constructor(private $scope: any,
 }
 
  angular.module(moduleName)
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
-.service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
-.service('ChartJobStatusService',["IconService", "Nvd3ChartService", ChartJobStatusService])
 .controller('JobStatusIndicatorController', 
                                         ["$scope","$element","$http","$q","$interval","StateService",
                                         "OpsManagerJobService","OpsManagerDashboardService",

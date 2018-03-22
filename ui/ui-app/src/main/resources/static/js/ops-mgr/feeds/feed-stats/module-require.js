@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./feed-stats", "./feed-stats-charts", "./FeedStatsService"], function (require, exports) {
+define(["require", "exports", "angular", "./FeedStatsService", "./feed-stats", "./feed-stats-charts"], function (require, exports) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
 });

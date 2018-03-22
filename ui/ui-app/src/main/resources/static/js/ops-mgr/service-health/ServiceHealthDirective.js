@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "../services/ServicesStatusService", "../services/AlertsService"], function (require, exports, angular, module_name_1, ServicesStatusService_1, AlertsService_1) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $http, $filter, $interval, $timeout, $q, ServicesStatusData, TableOptionsService, PaginationDataService, AlertsService, StateService) {
+        function controller($scope, $http, $filter, $interval, $timeout, $q, ServicesStatusData, TableOptionsService, PaginationDataService, StateService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -13,7 +13,6 @@ define(["require", "exports", "angular", "./module-name", "../services/ServicesS
             this.ServicesStatusData = ServicesStatusData;
             this.TableOptionsService = TableOptionsService;
             this.PaginationDataService = PaginationDataService;
-            this.AlertsService = AlertsService;
             this.StateService = StateService;
             this.paginationId = function () {
                 return this.PaginationDataService.paginationId(this.pageName);
@@ -128,12 +127,9 @@ define(["require", "exports", "angular", "./module-name", "../services/ServicesS
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
-        .service("ServicesStatusData", ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService',
-        'OpsManagerRestUrlService', ServicesStatusService_1.default])
-        .service("AlertsService", [AlertsService_1.default])
         .controller('ServiceHealthController', ["$scope", "$http", "$filter", "$interval", "$timeout", "$q",
         "ServicesStatusData", "TableOptionsService", "PaginationDataService",
-        "AlertsService", "StateService", controller]);
+        "StateService", controller]);
     angular.module(module_name_1.moduleName)
         .directive('tbaServiceHealth', function () {
         return {
