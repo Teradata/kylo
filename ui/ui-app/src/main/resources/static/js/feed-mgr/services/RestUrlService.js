@@ -123,6 +123,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         this.GET_CONTROLLER_SERVICE_URL = function (serviceId) {
             return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
         };
+        this.CONTROLLER_SERVICES_PREVIEW_QUERY_URL = function (serviceId, schema, table, limit) {
+            return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
+        };
         this.FEED_VERSIONS_URL = function (feedId) {
             return self.GET_FEEDS_URL + "/" + feedId + "/versions";
         };
@@ -236,6 +239,12 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         this.QUERY_DATASOURCE_URL = function (id) {
             return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.PREVIEW_DATASOURCE_URL = function (id, schema, table, limit) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/preview/" + schema + "/" + table + "?limit=" + limit;
         };
         this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id) {
             return self.ROOT + "/proxy/v1/feedmgr/nifi/controller-services/" + id + "/references";

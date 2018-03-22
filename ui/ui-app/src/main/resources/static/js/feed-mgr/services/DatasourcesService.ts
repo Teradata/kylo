@@ -203,6 +203,24 @@ export class DatasourcesService {
                     });
             },
 
+            preview: function(datasourceId:any, schema:string, table:string, limit:number) {
+                return $http.post(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                    .then(function (response:any) {
+                        return response;
+                    }).catch(function(e:any){
+                        throw e;
+                    });
+            },
+
+            getPreviewSql: function(datasourceId:any, schema:string, table:string, limit:number) {
+                return $http.get(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                    .then(function (response:any) {
+                        return response.data;
+                    }).catch(function(e:any){
+                        throw e;
+                    });
+            },
+
             getTablesAndColumns: function(datasourceId:any, schema:any) {
                 var params = {schema: schema};
                 return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});

@@ -168,6 +168,22 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     throw e;
                 });
             },
+            preview: function (datasourceId, schema, table, limit) {
+                return $http.post(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                    .then(function (response) {
+                    return response;
+                }).catch(function (e) {
+                    throw e;
+                });
+            },
+            getPreviewSql: function (datasourceId, schema, table, limit) {
+                return $http.get(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+                    .then(function (response) {
+                    return response.data;
+                }).catch(function (e) {
+                    throw e;
+                });
+            },
             getTablesAndColumns: function (datasourceId, schema) {
                 var params = { schema: schema };
                 return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", { params: params });

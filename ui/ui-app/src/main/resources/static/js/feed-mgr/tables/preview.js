@@ -39,12 +39,6 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             this.query = function () {
                 console.log('query');
                 self.loading = true;
-                if (self.defaultSchemaName != null && self.defaultTableName != null) {
-                    if (self.rowsPerPage == null) {
-                        self.rowsPerPage = 50;
-                    }
-                    self.sql = 'SELECT * FROM ' + self.defaultSchemaName + "." + self.defaultTableName + " LIMIT " + self.limit;
-                }
                 var successFn = function (tableData) {
                     console.log('got response', tableData);
                     var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
@@ -58,12 +52,17 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                 var errorFn = function (err) {
                     self.loading = false;
                 };
-                var promise;
-                if (self.datasource.isHive) {
-                    promise = HiveService.queryResult(self.sql);
-                }
-                else {
-                    promise = DatasourcesService.query(self.datasourceId, self.sql);
+                if (self.defaultSchemaName != null && self.defaultTableName != null) {
+                    if (self.rowsPerPage == null) {
+                        self.rowsPerPage = 50;
+                    }
+                    var promise;
+                    if (self.datasource.isHive) {
+                        promise = HiveService.queryResult('SELECT * FROM ' + self.defaultSchemaName + "." + self.defaultTableName + " LIMIT " + self.limit);
+                    }
+                    else {
+                        promise = DatasourcesService.preview(self.datasourceId, self.defaultSchemaName, self.defaultTableName, self.limit);
+                    }
                 }
                 promise.then(successFn, errorFn);
             };
