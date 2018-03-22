@@ -1,11 +1,13 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {ListTableView} from "./ListTableViewTypes";
+import {Common} from "../common/CommonTypes";
 import PaginationData = ListTableView.PaginationData;
 import PaginationDataService = ListTableView.PaginationDataService;
 import Tab = ListTableView.Tab;
 import {DefaultImportService} from "../feed-mgr/services/ImportService";
 const moduleName = require('services/module-name');
+
 
 
 export enum ViewType {
@@ -15,7 +17,11 @@ export enum ViewType {
 
 export class DefaultPaginationDataService implements PaginationDataService{
 
-    data:ListTableView.Map<PaginationData> = {};
+    data:Common.Map<PaginationData> = {};
+
+    constructor() {
+
+    }
 
     paginationData(pageName:string, tabName?:string,defaultRowsPerPage?:number) :PaginationData {
         if (this.data[pageName] === undefined) {

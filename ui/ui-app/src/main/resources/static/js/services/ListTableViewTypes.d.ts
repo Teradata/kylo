@@ -1,15 +1,8 @@
 import * as _ from "underscore";
 import * as angular from "angular";
+import {Common} from "../common/CommonTypes";
 
 declare namespace ListTableView {
-
-
-    interface Collection<T> {
-    }
-
-    export interface Map<T> extends Collection<T> {
-        [K: string]: T;
-    }
 
     export interface Tab {
         paginationId: string;
@@ -21,7 +14,7 @@ declare namespace ListTableView {
 
     export interface PaginationData {
         rowsPerPage: number;
-        tabs: Map<Tab>,
+        tabs: Common.Map<Tab>,
         filter: string;
         sort: string;
         sortDesc: boolean;
@@ -155,7 +148,7 @@ declare namespace ListTableView {
 
 export interface TableOptionService {
 
-    newSortOptions(key: string, labelValueMap: ListTableView.Map<string>, defaultValue: string, defaultDirection: string): SortOption[]
+    newSortOptions(key: string, labelValueMap: Common.Map<string>, defaultValue: string, defaultDirection: string): SortOption[]
 
     newOption(label: string, type: string, isHeader: boolean, disabled: boolean, icon: string): TableOption
 

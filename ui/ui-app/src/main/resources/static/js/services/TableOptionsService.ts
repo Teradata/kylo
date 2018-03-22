@@ -1,4 +1,5 @@
 import {ListTableView} from "./ListTableViewTypes";
+import {Common} from "../common/CommonTypes";
 import * as angular from 'angular';
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
@@ -10,7 +11,7 @@ const moduleName = require('services/module-name');
 export class DefaultTableOptionsService implements ListTableView.TableOptionService{
 
 
-    sortOptions:ListTableView.Map<SortOption[]> = {};
+    sortOptions:Common.Map<SortOption[]> = {};
 
     static $inject = ["PaginationDataService"]
 
@@ -18,7 +19,7 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
 
     }
    
-    newSortOptions(key:string, labelValueMap:ListTableView.Map<string>, defaultValue:string, defaultDirection:string) :SortOption[]{
+    newSortOptions(key:string, labelValueMap:Common.Map<string>, defaultValue:string, defaultDirection:string) :SortOption[]{
 
         var sortOptions = Object.keys(labelValueMap).map((mapKey:string) => {
             var value = labelValueMap[mapKey];

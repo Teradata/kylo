@@ -1,10 +1,11 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {Import} from "./ImportComponentOptionTypes";
+import {Common} from "../../common/CommonTypes";
 import ImportComponentOption = Import.ImportComponentOption;
 import ImportProperty = Import.ImportProperty;
 import ImportService = Import.ImportService;
-import Map = Import.Map;
+import Map = Common.Map;
 
 const moduleName = require('feed-mgr/module-name');
 

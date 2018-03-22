@@ -4,13 +4,14 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {ImportComponentType} from "../../services/ImportService";
 import {Import} from "../../services/ImportComponentOptionTypes";
+import {Common} from "../../../common/CommonTypes";
 import {OnInit} from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import ImportService = Import.ImportService;
-import Map = Import.Map;
+import Map = Common.Map;
 
 export class ImportTemplateController implements ng.IController, OnInit {
 

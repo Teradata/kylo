@@ -1,25 +1,15 @@
 import * as angular from "angular";
 import * as _ from "underscore";
+import {Common} from "../../common/CommonTypes";
+import {Templates} from "./TemplateTypes";
+import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+
  declare namespace Import {
 
      export const enum ImportComponentType {
         NIFI_TEMPLATE, TEMPLATE_DATA, FEED_DATA, REUSABLE_TEMPLATE, REMOTE_INPUT_PORT, USER_DATASOURCES, TEMPLATE_CONNECTION_INFORMATION
     }
 
-     interface Collection<T> { }
-
-     export interface Map<T> extends Collection<T>{
-        [K: string]: T;
-    }
-
-    export interface ImportProperty {
-
-        processorName: string;
-        processorId: string;
-        processorType: string;
-        propertyKey: string;
-        propertyValue: string;
-    }
 
      export interface InputPortListItem {
         label: string;
@@ -79,7 +69,7 @@ import * as _ from "underscore";
         /**
          * connection info to connect reusable templates together
          */
-        connectionInfo?:ReusableTemplateConnectionInfo[];
+        connectionInfo?:Templates.ReusableTemplateConnectionInfo[];
 
         /**
          * information about what ports should be created as 'remote input ports'
@@ -125,7 +115,7 @@ import * as _ from "underscore";
          * @param importOptionsMap a map of {ImportType: importOption}
          * @returns {Array} the array of options to be imported
          */
-        getImportOptionsForUpload(importOptionsMap: Map<ImportComponentOption>): ImportComponentOption[];
+        getImportOptionsForUpload(importOptionsMap: Common.Map<ImportComponentOption>): ImportComponentOption[];
 
         /**
          * Check if an importOption is a specific type
@@ -135,6 +125,15 @@ import * as _ from "underscore";
          */
         isImportOption(importOption: ImportComponentOption, importComponentType: ImportComponentType): boolean;
     }
+
+     export interface ImportProperty {
+
+         processorName: string;
+         processorId: string;
+         processorType: string;
+         propertyKey: string;
+         propertyValue: string;
+     }
 
 
      export interface ProcessGroupEntity {
@@ -173,12 +172,7 @@ import * as _ from "underscore";
         existing: boolean;
     }
 
-     export interface ReusableTemplateConnectionInfo {
-        feedOutputPortName: string;
-        reusableTemplateInputPortName: string;
-        inputPortDisplayName: string;
-        reusableTemplateProcessGroupName: string;
-    }
+
 
      export  interface TemplateResults {
         processGroupEntity: ProcessGroupEntity;
