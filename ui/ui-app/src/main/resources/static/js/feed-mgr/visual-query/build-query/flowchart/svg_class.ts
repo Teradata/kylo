@@ -3,17 +3,17 @@
 // jQuery's removeClass doesn't work for SVG, but this does!
 // takes the object obj to remove from, and removes class remove
 // returns true if successful, false if remove does not exist in obj
-var removeClassSVG = function (obj, remove) {
-    var classes = obj.attr('class');
+var removeClassSVG: any = (obj: any, remove: any)=>{
+    var classes: any = obj.attr('class');
     if (!classes) {
-        return false;
+    	return false;
     }
-    var index = classes.search(remove);
+    var index: any = classes.search(remove);
     // if the class already doesn't exist, return false now
     if (index == -1) {
         return false;
     }
-    else {
+    else {    
         // string manipulation to remove the class
         classes = classes.substring(0, index) + classes.substring((index + remove.length), classes.length);
         // set the new string as the object's class
@@ -21,20 +21,20 @@ var removeClassSVG = function (obj, remove) {
         return true;
     }
 };
+
 // jQuery's hasClass doesn't work for SVG, but this does!
 // takes an object obj and checks for class has
 // returns true if the class exits in obj, false otherwise
-var hasClassSVG = function (obj, has) {
+var hasClassSVG: any = (obj: any, has: any)=>{
     var classes = obj.attr('class');
     if (!classes) {
-        return false;
+    	return false;
     }
-    var index = classes.search(has);
+    var index: any = classes.search(has);
     if (index == -1) {
-        return false;
+    	return false;
     }
     else {
-        return true;
+    	return true;
     }
 };
-//# sourceMappingURL=svg_class.js.map

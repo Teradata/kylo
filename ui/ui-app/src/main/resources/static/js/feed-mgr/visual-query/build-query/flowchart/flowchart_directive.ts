@@ -1,31 +1,47 @@
-define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_capture_service", "./svg_class", "./dragging_service"], function (require, exports, angular) {
-    "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var FlowChartController = /** @class */ (function () {
-        function FlowChartController($scope, dragging, $element) {
-            var _this = this;
-            this.$scope = $scope;
-            this.dragging = dragging;
-            this.$element = $element;
+import * as angular from "angular";
+import "./flowchart_viewmodel";
+import './mouse_capture_service';
+import './svg_class';
+import './dragging_service';
+
+export default class FlowChartController{
+// Controller for the flowchart directive.
+// Having a separate controller is better for unit testing, otherwise
+// it is painful to unit test a directive without instantiating the DOM
+// (which is possible, just not ideal).
+document: any;
+jQuery: any;
+connectionClass: any;
+connectorClass: any;
+nodeClass: any;
+searchUp: any;
+hitTest: any;
+checkForHit: any;
+translateCoordinates: any;
+
+constructor(private $scope: any,
+            private dragging: any,
+            private $element: any){
             var controller = this;
             // Reference to the document and jQuery, can be overridden for testting.
             this.document = document;
             // Wrap jQuery so it can easily be  mocked for testing.
-            this.jQuery = function (element) {
+            this.jQuery = (element: any)=> {
                 return $(element);
-            };
+            }
             // Init data-model variables.
             $scope.draggingConnection = false;
             $scope.connectorSize = 10;
             $scope.dragSelecting = false;
-            /* Can use this to test the drag selection rect.
-             $scope.dragSelectionRect = {
-             x: 0,
-             y: 0,
-             width: 0,
-             height: 0,
-             };
-             */
+			/* Can use this to test the drag selection rect.
+			 $scope.dragSelectionRect = {
+			 x: 0,
+			 y: 0,
+			 width: 0,
+			 height: 0,
+			 };
+			 */
+
             // Reference to the connection, connector or node that the mouse is currently over.
             $scope.mouseOverConnector = null;
             $scope.mouseOverConnection = null;
@@ -35,7 +51,7 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
             this.connectorClass = 'connector';
             this.nodeClass = 'node';
             // Search up the HTML element tree for an element the requested class.
-            this.searchUp = function (element, parentClass) {
+            this.searchUp = (element: any, parentClass: any)=> {
                 // Reached the root.
                 if (element == null || element.length == 0) {
                     return null;
@@ -46,24 +62,25 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     return element;
                 }
                 // Recursively search parent elements.
-                return _this.searchUp(element.parent(), parentClass);
+                return this.searchUp(element.parent(), parentClass);
             };
             // Hit test and retreive node and connector that was hit at the specified coordinates.
-            this.hitTest = function (clientX, clientY) {
-                // Retreive the element the mouse is currently over.
-                return _this.document.elementFromPoint(clientX, clientY);
+            this.hitTest = (clientX: any, clientY: any)=> {
+              // Retreive the element the mouse is currently over.
+                return this.document.elementFromPoint(clientX, clientY);
             };
             // Hit test and retreive node and connector that was hit at the specified coordinates.
-            this.checkForHit = function (mouseOverElement, whichClass) {
+
+            this.checkForHit = (mouseOverElement: any, whichClass: any)=>{
                 // Find the parent element, if any, that is a connector.
-                var hoverElement = _this.searchUp(_this.jQuery(mouseOverElement), whichClass);
+                var hoverElement = this.searchUp(this.jQuery(mouseOverElement), whichClass);
                 if (!hoverElement) {
                     return null;
                 }
                 return hoverElement.scope();
             };
             // Translate the coordinates so they are relative to the svg element.
-            this.translateCoordinates = function (x, y, evt) {
+            this.translateCoordinates = (x: any, y: any, evt: any)=> {
                 var svg_elem = $element.get(0);
                 var matrix = svg_elem.getScreenCTM();
                 var point = svg_elem.createSVGPoint();
@@ -72,11 +89,11 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                 return point.matrixTransform(matrix.inverse());
             };
             // Called on mouse down in the chart.
-            $scope.mouseDown = function (evt) {
+            $scope.mouseDown = (evt: any)=> {
                 $scope.chart.deselectAll();
                 dragging.startDrag(evt, {
                     // Commence dragging... setup variables to display the drag selection rect.
-                    dragStarted: function (x, y) {
+                    dragStarted: (x: any, y: any)=>{
                         $scope.dragSelecting = true;
                         var startPoint = controller.translateCoordinates(x, y, evt);
                         $scope.dragSelectionStartPoint = startPoint;
@@ -87,12 +104,13 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                             height: 0,
                         };
                     },
+
                     //
                     // Update the drag selection rect while dragging continues.
                     //
-                    dragging: function (x, y) {
-                        var startPoint = $scope.dragSelectionStartPoint;
-                        var curPoint = controller.translateCoordinates(x, y, evt);
+                    dragging: function (x: any, y: any) {
+                        var startPoint: any = $scope.dragSelectionStartPoint;
+                        var curPoint: any = controller.translateCoordinates(x, y, evt);
                         $scope.dragSelectionRect = {
                             x: curPoint.x > startPoint.x ? startPoint.x : curPoint.x,
                             y: curPoint.y > startPoint.y ? startPoint.y : curPoint.y,
@@ -100,6 +118,7 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                             height: curPoint.y > startPoint.y ? curPoint.y - startPoint.y : startPoint.y - curPoint.y,
                         };
                     },
+
                     //
                     // Dragging has ended... select all that are within the drag selection rect.
                     //
@@ -111,10 +130,11 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     },
                 });
             };
+
             //
             // Called for each mouse move on the svg element.
             //
-            $scope.mouseMove = function (evt) {
+            $scope.mouseMove = (evt: any)=> {
                 // Clear out all cached mouse over elements.
                 $scope.mouseOverConnection = null;
                 $scope.mouseOverConnector = null;
@@ -124,9 +144,9 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     // Mouse isn't over anything, just clear all.
                     return;
                 }
-                if (!$scope.draggingConnection) {
+                if (!$scope.draggingConnection) { // Only allow 'connection mouse over' when not dragging out a connection.
                     // Figure out if the mouse is over a connection.
-                    var scope = controller.checkForHit(mouseOverElement, controller.connectionClass);
+                    var scope: any = controller.checkForHit(mouseOverElement, controller.connectionClass);
                     $scope.mouseOverConnection = (scope && scope.connection) ? scope.connection : null;
                     if ($scope.mouseOverConnection) {
                         // Don't attempt to mouse over anything else.
@@ -134,25 +154,25 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     }
                 }
                 // Figure out if the mouse is over a connector.
-                var scope = controller.checkForHit(mouseOverElement, controller.connectorClass);
+                var scope: any = controller.checkForHit(mouseOverElement, controller.connectorClass);
                 $scope.mouseOverConnector = (scope && scope.connector) ? scope.connector : null;
                 if ($scope.mouseOverConnector) {
                     // Don't attempt to mouse over anything else.
                     return;
                 }
                 // Figure out if the mouse is over a node.
-                var scope = controller.checkForHit(mouseOverElement, controller.nodeClass);
+                var scope: any = controller.checkForHit(mouseOverElement, controller.nodeClass);
                 $scope.mouseOverNode = (scope && scope.node) ? scope.node : null;
             };
             //
             // Handle mousedown on a node.
             //
-            $scope.nodeMouseDown = function (evt, node) {
-                var chart = $scope.chart;
-                var lastMouseCoords;
+            $scope.nodeMouseDown = (evt: any, node: any)=>{
+                var chart: any = $scope.chart;
+                var lastMouseCoords: any;
                 dragging.startDrag(evt, {
                     // Node dragging has commenced.
-                    dragStarted: function (x, y) {
+                    dragStarted: function (x: any, y: any) {
                         lastMouseCoords = controller.translateCoordinates(x, y, evt);
                         // If nothing is selected when dragging starts,
                         // at least select the node we are dragging.
@@ -162,7 +182,7 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                         }
                     },
                     // Dragging selected nodes... update their x,y coordinates.
-                    dragging: function (x, y) {
+                    dragging: function (x: any, y: any) {
                         var curCoords = controller.translateCoordinates(x, y, evt);
                         var deltaX = curCoords.x - lastMouseCoords.x;
                         var deltaY = curCoords.y - lastMouseCoords.y;
@@ -173,23 +193,24 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     clicked: function () {
                         chart.handleNodeClicked(node, evt.ctrlKey);
                     },
+
                 });
             };
             // Handle mousedown on a connection.
-            $scope.connectionMouseDown = function (evt, connection) {
-                var chart = $scope.chart;
+            $scope.connectionMouseDown = (evt: any, connection: any)=>{
+                var chart: any = $scope.chart;
                 chart.handleConnectionMouseDown(connection, evt.ctrlKey);
                 // Don't let the chart handle the mouse down.
                 evt.stopPropagation();
                 evt.preventDefault();
             };
             // Handle mousedown on an input connector.
-            $scope.connectorMouseDown = function (evt, node, connector, connectorIndex, isInputConnector) {
+            $scope.connectorMouseDown = (evt: any, node: any, connector: any, connectorIndex: any, isInputConnector: any)=> {
                 // Initiate dragging out of a connection.
                 dragging.startDrag(evt, {
                     // Called when the mouse has moved greater than the threshold distance
                     // and dragging has commenced.
-                    dragStarted: function (x, y) {
+                    dragStarted: function (x: any, y: any) {
                         var curCoords = controller.translateCoordinates(x, y, evt);
                         $scope.draggingConnection = true;
                         //$scope.dragPoint1 = flowchart.computeConnectorPos(node, connectorIndex, isInputConnector);
@@ -201,10 +222,11 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                         $scope.dragTangent1 = flowchart.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
                         $scope.dragTangent2 = flowchart.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
                     },
+
                     //
                     // Called on mousemove while dragging out a connection.
                     //
-                    dragging: function (x, y, evt) {
+                    dragging: function (x: any, y: any, evt: any) {
                         var startCoords = controller.translateCoordinates(x, y, evt);
                         //$scope.dragPoint1 = flowchart.computeConnectorPos(node, connectorIndex, isInputConnector);
                         $scope.dragPoint1 = flowchart.computeConnectorPos(node, connector);
@@ -215,12 +237,15 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                         $scope.dragTangent1 = flowchart.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
                         $scope.dragTangent2 = flowchart.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
                     },
+
                     //
                     // Clean up when dragging has finished.
                     //
                     dragEnded: function () {
+
                         if ($scope.mouseOverConnector &&
                             $scope.mouseOverConnector !== connector) {
+
                             //
                             // Dragging has ended...
                             // The mouse is over a valid connector...
@@ -228,23 +253,26 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                             //
                             $scope.chart.createNewConnection(connector, $scope.mouseOverConnector, $scope.onCreateConnectionCallback, $scope.onEditConnectionCallback);
                         }
+
                         $scope.draggingConnection = false;
                         delete $scope.dragPoint1;
                         delete $scope.dragTangent1;
                         delete $scope.dragPoint2;
                         delete $scope.dragTangent2;
                     },
+
                 });
             };
-        }
-        return FlowChartController;
-    }());
-    exports.default = FlowChartController;
-    //
-    // Flowchart module.
-    //
-    angular.module('flowChart', ['dragging'])
-        .directive('flowChart', [function () {
+            }
+}
+//
+// Flowchart module.
+//
+ angular.module('flowChart', ['dragging'])
+        //
+        // Directive that generates the rendered chart from the data model.
+        //
+        .directive('flowChart',[()=> {
             return {
                 restrict: 'E',
                 templateUrl: "js/feed-mgr/visual-query/build-query/flowchart/flowchart_table_template.html",
@@ -261,17 +289,21 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                 controller: 'FlowChartController'
             };
         }])
-        .directive('chartJsonEdit', [function () {
+
+        //
+        // Directive that allows the chart to be edited as json in a textarea.
+        //
+        .directive('chartJsonEdit', [()=> {
             return {
                 restrict: 'A',
                 scope: {
                     viewModel: "="
                 },
-                link: function (scope, elem, attr) {
+                link: function (scope: any, elem: any, attr: any) {
                     // Serialize the data model as json and update the textarea.
                     var updateJson = function () {
                         if (scope.viewModel) {
-                            var json = JSON.stringify(scope.viewModel.data, null, 4);
+                            var json: any = JSON.stringify(scope.viewModel.data, null, 4);
                             $(elem).val(json);
                         }
                     };
@@ -287,14 +319,13 @@ define(["require", "exports", "angular", "./flowchart_viewmodel", "./mouse_captu
                     // from the modified json.
                     //
                     $(elem).bind("input propertychange", function () {
-                        var json = $(elem).val();
-                        var dataModel = JSON.parse(json);
+                        var json: any = $(elem).val();
+                        var dataModel: any = JSON.parse(json);
                         scope.viewModel = new flowchart.ChartViewModel(dataModel);
                         scope.$digest();
                     });
                 }
-            };
+            }
         }])
-        .controller('FlowChartController', ['$scope', 'dragging', '$element', FlowChartController]);
-});
-//# sourceMappingURL=flowchart_directive.js.map
+    .controller('FlowChartController', ['$scope', 'dragging', '$element', FlowChartController]);
+
