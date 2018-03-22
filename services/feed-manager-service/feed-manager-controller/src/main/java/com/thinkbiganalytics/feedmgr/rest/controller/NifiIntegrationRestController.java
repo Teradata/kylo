@@ -359,7 +359,7 @@ public class NifiIntegrationRestController {
     public Response generatePreviewQuery(@PathParam("serviceId") final String serviceId, 
                                          @PathParam("schema") final String schema,
                                          @PathParam("table") final String tableName,
-                                         @QueryParam("limit") final int limit) {
+                                         @QueryParam("limit") @DefaultValue("10") final int limit) {
         log.debug("Generate preview query against service '{}', table: {}, schema: {}, limit: {}", serviceId, tableName, schema, limit);
         try {
             final String query = dbcpConnectionPoolTableInfo.generatePreviewQueryForControllerService(serviceId, "", schema, tableName, limit);
@@ -385,7 +385,7 @@ public class NifiIntegrationRestController {
     public Response executePreviewQuery(@PathParam("serviceId") final String serviceId, 
                                         @PathParam("schema") final String schema,
                                         @PathParam("table") final String tableName,
-                                        @QueryParam("limit") final int limit) {
+                                        @QueryParam("limit") @DefaultValue("10") final int limit) {
         log.debug("Execute preview query against service '{}', schema: {}, table: {}, limit: {}", serviceId, schema, tableName, limit);
         try {
             final QueryResult results = dbcpConnectionPoolTableInfo.executePreviewQueryForControllerService(serviceId, "", schema, tableName, limit);

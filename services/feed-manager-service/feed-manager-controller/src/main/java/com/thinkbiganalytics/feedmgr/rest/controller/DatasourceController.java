@@ -335,6 +335,88 @@ public class DatasourceController {
             return Response.ok(result).build();
         }, MetadataAccess.SERVICE);
     }
+    
+    /**
+     * Executes a query on the specified datasource.
+     *
+     * @param idStr the datasource id
+     * @param query the SQL query
+     * @return the SQL result
+     */
+    @GET
+    @Path("{id}/preview/{schema}/{table}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Generates a preview query appropriate for the type of datasource and returns the result.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+        @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+        @ApiResponse(code = 400, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+    })
+    public Response generatePreviewQuery(@PathParam("id") final String idStr, 
+                                         @PathParam("schema") final String schema,
+                                         @PathParam("table") final String tableName,
+                                         @QueryParam("limit") @DefaultValue("10") final int limit) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+            
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+        
+        // Execute query
+        return metadata.read(() -> {
+            final String result = id.map(datasetProvider::getDatasource)
+                            .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                            .filter(JdbcDatasource.class::isInstance)
+                            .map(JdbcDatasource.class::cast)
+                            .map(datasource -> dbcpConnectionPoolTableInfo.generatePreviewQueryForDatasource(datasource, schema, tableName, limit))
+                            .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(result).build();
+        }, MetadataAccess.SERVICE);
+    }
+    
+    /**
+     * Executes a query on the specified datasource.
+     *
+     * @param idStr the datasource id
+     * @param query the SQL query
+     * @return the SQL result
+     */
+    @POST
+    @Path("{id}/preview/{schema}/{table}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Executes a preview query appropriate for the type of datasource and returns the result.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+        @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+        @ApiResponse(code = 400, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+    })
+    public Response previewQuery(@PathParam("id") final String idStr, 
+                                 @PathParam("schema") final String schema,
+                                 @PathParam("table") final String tableName,
+                                 @QueryParam("limit") @DefaultValue("10") final int limit) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+            
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+        
+        // Execute query
+        return metadata.read(() -> {
+            final QueryResult result = id.map(datasetProvider::getDatasource)
+                            .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                            .filter(JdbcDatasource.class::isInstance)
+                            .map(JdbcDatasource.class::cast)
+                            .map(datasource -> dbcpConnectionPoolTableInfo.executePreviewQueryForDatasource(datasource, schema, tableName, limit))
+                            .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(result).build();
+        }, MetadataAccess.SERVICE);
+    }
 
     /**
      * Gets the table names from the specified data source.

@@ -111,14 +111,14 @@ public class DBCPConnectionPoolService {
      *
      * @param serviceId   a NiFi controller service id
      * @param serviceName a NiFi controller service name
-     * @param tableName the name of the table
      * @param schema the schema determining the SQL dialect, or null/empty for the default dialect
+     * @param tableName the name of the table
      * @param limit the result size
      * @return the query results
      * @throws DataAccessException      if the query cannot be executed
      * @throws IllegalArgumentException if the controller service cannot be found, the tableName is empty, or the limit is less than zero
      */
-    public String generatePreviewQueryForControllerService(String serviceId, String serviceName, String schema, String tableName, int limit) {
+    public String generatePreviewQueryForControllerService(final String serviceId, final String serviceName, @Nonnull final String schema, @Nonnull final String tableName, final int limit) {
         Validate.notEmpty(schema, "No schema provided");
         Validate.notEmpty(tableName, "No table name provided");
         Validate.isTrue(limit >= 0, "The query result size must be greater than or equal to 0");
@@ -152,7 +152,7 @@ public class DBCPConnectionPoolService {
      * @throws DataAccessException      if the query cannot be executed
      * @throws IllegalArgumentException if the controller service cannot be found, the schema/tableName is empty, or the limit is less than zero
      */
-    public QueryResult executePreviewQueryForControllerService(String serviceId, String serviceName, String schema, String tableName, int limit) {
+    public QueryResult executePreviewQueryForControllerService(final String serviceId, final String serviceName, @Nonnull final String schema, @Nonnull final String tableName, final int limit) {
         Validate.notEmpty(schema, "No schema provided");
         Validate.notEmpty(tableName, "No table name provided");
         Validate.isTrue(limit >= 0, "The query result size must be greater than or equal to 0");
@@ -172,6 +172,32 @@ public class DBCPConnectionPoolService {
             throw new IllegalArgumentException("Not a valid controller service: " + serviceId + ", " + serviceName);
         }
     }
+    
+    /**
+     * Generates a preview query on a table that is appropriate for the type of specified data source.
+     *
+     * @param datasource the JDBC datasource
+     * @param schema the schema determining the SQL dialect, or null/empty for the default dialect
+     * @param tableName the name of the table
+     * @param limit the result size
+     * @return the query string
+     * @throws IllegalArgumentException if the datasource is invalid
+     */
+    @Nonnull
+    public String generatePreviewQueryForDatasource(@Nonnull final JdbcDatasource datasource, @Nonnull final String schema, @Nonnull final String tableName, final int limit) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+                        .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DatabaseType dbType = DatabaseType.fromJdbcConnectionString(datasource.getDatabaseConnectionUrl());
+            final ExecuteQueryControllerServiceRequest serviceProperties = new ExecuteQueryControllerServiceRequestBuilder(controllerService.get())
+                            .previewQuery(dbType, schema, tableName, limit)
+                            .build();
+            return serviceProperties.getQuery();
+        } else {
+            log.error("Cannot execute query for datasource: {}", datasource);
+            throw new IllegalArgumentException("Missing controller service for datasource: " + datasource);
+        }
+    }
 
     /**
      * Executes the specified SELECT query in the context of the specified data source.
@@ -189,6 +215,34 @@ public class DBCPConnectionPoolService {
         if (controllerService.isPresent()) {
             final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(controllerService.get());
             final ExecuteQueryControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).query(query).useEnvironmentProperties(false).build();
+            final PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(serviceProperties);
+            return executeQueryForControllerService(dataSourceProperties, serviceProperties);
+        } else {
+            log.error("Cannot execute query for datasource: {}", datasource);
+            throw new IllegalArgumentException("Missing controller service for datasource: " + datasource);
+        }
+    }
+    
+    /**
+     * Executes the specified SELECT query in the context of the specified data source.
+     *
+     * @param datasource the JDBC datasource
+     * @param query      the query to execute
+     * @return the query results
+     * @throws DataAccessException      if the query cannot be executed
+     * @throws IllegalArgumentException if the datasource is invalid
+     */
+    @Nonnull
+    public QueryResult executePreviewQueryForDatasource(@Nonnull final JdbcDatasource datasource, @Nonnull final String schema, @Nonnull final String tableName, final int limit) {
+        final Optional<ControllerServiceDTO> controllerService = Optional.ofNullable(datasource.getControllerServiceId())
+                        .map(id -> getControllerService(id, null));
+        if (controllerService.isPresent()) {
+            final DatabaseType dbType = DatabaseType.fromJdbcConnectionString(datasource.getDatabaseConnectionUrl());
+            final ExecuteQueryControllerServiceRequest serviceProperties = new ExecuteQueryControllerServiceRequestBuilder(controllerService.get())
+                            .password(datasource.getPassword())
+                            .previewQuery(dbType, schema, tableName, limit)
+                            .useEnvironmentProperties(false)
+                            .build();
             final PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(serviceProperties);
             return executeQueryForControllerService(dataSourceProperties, serviceProperties);
         } else {
