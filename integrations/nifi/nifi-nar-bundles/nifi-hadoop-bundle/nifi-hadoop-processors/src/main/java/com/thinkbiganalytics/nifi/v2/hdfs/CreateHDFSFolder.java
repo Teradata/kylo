@@ -83,7 +83,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     public static final PropertyDescriptor UMASK = new PropertyDescriptor.Builder()
         .name("Permissions umask")
         .description(
-            "A umask represented as an octal number which determines the permissions of files written to HDFS. This overrides the Hadoop Configuration dfs.umaskmode")
+            "A umask represented as an octal number which determines the permissions of files written to HDFS. This overrides the Hadoop Configuration " + FsPermission.UMASK_LABEL)
         .addValidator(createUmaskValidator())
         .build();
 
@@ -171,16 +171,18 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     @OnScheduled
     public void onScheduled(ProcessContext context) throws IOException {
         super.abstractOnScheduled(context);
+    }
 
+    @Override
+    protected void modifyConfig(ProcessContext context, Configuration config) {
         // Set umask once, to avoid thread safety issues doing it in onTrigger
         final PropertyValue umaskProp = context.getProperty(UMASK);
         final short dfsUmask = resolveUMask(umaskProp);
 
-        final Configuration conf = getConfiguration();
-        short oldUmask = Short.parseShort(conf.get(FsPermission.UMASK_LABEL));
+        short oldUmask = Short.parseShort(config.get(FsPermission.UMASK_LABEL), 8);
         if (oldUmask != dfsUmask) {
-            FsPermission.setUMask(conf, new FsPermission(dfsUmask));
-            resetFileSystem();
+            FsPermission umask = FsPermission.createImmutable(dfsUmask);
+            FsPermission.setUMask(config, umask);
         }
     }
 
