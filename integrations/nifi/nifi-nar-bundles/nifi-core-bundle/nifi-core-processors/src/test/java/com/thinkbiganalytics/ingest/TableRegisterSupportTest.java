@@ -146,6 +146,20 @@ public class TableRegisterSupportTest {
     }
 
     @Test
+    public void testProfileTableCreateS3() {
+        ColumnSpec[] specs = ColumnSpec.createFromString("id|bigint|my comment\nname|string\ncompany|string|some description\nzip|string\nphone|string\nemail|string\ncountry|string\nhired|date");
+        ColumnSpec[] parts = ColumnSpec.createFromString("year|int\ncountry|string");
+        TableRegisterConfiguration conf = new TableRegisterConfiguration("s3a://testBucket/model.db/", "s3a://testBucket/model.db/", "s3a://testBucket/app/warehouse/");
+        TableRegisterSupport support = new TableRegisterSupport(connection, conf);
+        String ddl =
+                support.createDDL("bar", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", "stored as orc", "tblproperties (\"orc.compress\"=\"SNAPPY\")",
+                        TableType.PROFILE);
+
+        String expectedDDL = "CREATE TABLE IF NOT EXISTS `bar`.`employee_" + TableType.PROFILE.toString().toLowerCase() + "` ( `columnname` string,`metrictype` string,`metricvalue` string)   PARTITIONED BY (`processing_dttm` string)  stored as orc LOCATION 's3a://testBucket/model.db/bar/employee/" + TableType.PROFILE.toString().toLowerCase() + "'";
+        assertEquals("DDL do not match", expectedDDL, ddl);
+    }
+
+    @Test
     public void testRemovingColumns() {
         ColumnSpec[] feedSpecs = ColumnSpec.createFromString("id|string|my comment|0|0|0|id\n"
                                                          + "name|string||0|0|0|name\n"
