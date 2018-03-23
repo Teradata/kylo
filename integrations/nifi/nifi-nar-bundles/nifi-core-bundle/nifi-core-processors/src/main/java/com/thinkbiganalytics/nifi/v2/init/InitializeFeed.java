@@ -91,6 +91,15 @@ public class InitializeFeed extends FeedProcessor {
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    
+    protected static final PropertyDescriptor CLONE_INIT_FLOWFILE = new PropertyDescriptor.Builder()
+        .name("Clone initialization flowfile")
+        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. including all content.")
+        .required(false)
+        .defaultValue("true")
+        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     Relationship REL_INITIALIZE = new Relationship.Builder()
         .name("Initialize")
@@ -138,6 +147,7 @@ public class InitializeFeed extends FeedProcessor {
         list.add(FAILURE_STRATEGY);
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
+        list.add(CLONE_INIT_FLOWFILE);
     }
 
     @Override
@@ -185,7 +195,14 @@ public class InitializeFeed extends FeedProcessor {
 
     private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF) {
         getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
-        FlowFile initFF = session.create(inputFF);
+        FlowFile initFF;
+        
+        if (context.getProperty(CLONE_INIT_FLOWFILE).asBoolean()) {
+            initFF = session.clone(inputFF);
+        } else {
+            initFF = session.create(inputFF);
+        }
+        
         session.transfer(initFF, REL_INITIALIZE);
     }
 
