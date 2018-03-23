@@ -64,6 +64,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
 
     /** The amount of seconds to cache the feed initialization statuses retrieved from the metadata server */
+    // TODO: Expiration may not be necessary if we implement init status change signaling coming from the metadata server
     private static final int FEED_INIT_STATUS_EXPIRE_SEC = 60;
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final TypeReference<NavigableMap<String, WaterMarkParam>> WM_MAP_TYPE = new TypeReference<NavigableMap<String, WaterMarkParam>>() { };
