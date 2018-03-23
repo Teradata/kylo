@@ -20,13 +20,6 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
@@ -34,42 +27,36 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
-import javax.jcr.query.Row;
-import javax.jcr.query.RowIterator;
 
 /**
  */
-public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, PostMetadataConfigAction {
+public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider {
+
+    public static final String RELATED_FEEDS_NODE = "tba:relatedFeeds"; /// A node containing list of feed references related to an SLA
+
+    private static final String RELATIONSHIP_QUERY = "SELECT feedsRel.* from " + "[" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
+                    + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedsRel ON ISCHILDNODE(feedsRel, sla) ";
 
     @Inject
     FeedProvider feedProvider;
-    @Inject
-    private ExtensibleTypeProvider typeProvider;
-    @Inject
-    private ExtensibleEntityProvider entityProvider;
-    @Inject
-    private JcrMetadataAccess metadata;
-
-    private AtomicBoolean typeCreated = new AtomicBoolean(false);
 
     /**
      * Finds All Service Level Agreements and also adds in an related feeds
@@ -77,190 +64,72 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
      */
     @Override
     public List<FeedServiceLevelAgreement> findAllAgreements() {
-        String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] ";
-                      // + "WHERE ISDESCENDANTNODE('" + EntityUtil.pathForSla()+"') ";
-        return queryToList(query, null);
-
-    }
-
-    @Override
-    public void run() {
-        createType();
-    }
-
-    private List<FeedServiceLevelAgreement> queryToList(String query, Map<String, String> params) {
-        QueryResult result = null;
-        try {
-            result = JcrQueryUtil.query(getSession(), query, params);
-
-            List<FeedServiceLevelAgreement> entities = new ArrayList<>();
-
-            if (result != null) {
-                try {
-                    RowIterator rowIterator = result.getRows();
-                    while (rowIterator.hasNext()) {
-                        Row row = rowIterator.nextRow();
-                        Node slaNode = row.getNode("sla");
-                        Set<JcrFeed> feeds = null;
-
-                        Node feedSlaNode = row.getNode("feedSla");
-                        //Left Join will result in the node being NULL if its not there
-                        if (feedSlaNode != null) {
-                            JcrFeedServiceLevelAgreementRelationship feedServiceLevelAgreementRelationship = new JcrFeedServiceLevelAgreementRelationship(feedSlaNode);
-                            feeds = (Set<JcrFeed>) feedServiceLevelAgreementRelationship.getFeeds();
-                        }
-                        JcrFeedServiceLevelAgreement entity = new JcrFeedServiceLevelAgreement(slaNode, feeds);
-                        entities.add(entity);
-                    }
-                } catch (RepositoryException e) {
-                    throw new MetadataRepositoryException("Unable to parse QueryResult to List for feedSla", e);
-
-                }
-            }
-            return entities;
-
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to execute Feed SLA Query.  Query is: " + query, e);
-        }
+        return findAllRelationships().stream()
+            .map(rel -> rel.getAgreement())
+            .collect(Collectors.toList());
     }
 
     public FeedServiceLevelAgreement findAgreement(ServiceLevelAgreement.ID id) {
-        String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
-                       + "WHERE sla.[jcr:uuid] = $slaId ";
+        String query = RELATIONSHIP_QUERY + "WHERE sla.[mode:id] = $slaId ";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("slaId", id.toString());
-        List<FeedServiceLevelAgreement> list = queryToList(query, bindParams);
-        if (list != null && !list.isEmpty()) {
-            return list.get(0);
-        }
-        return null;
-
+        
+        return streamQueryResult(query, bindParams).findFirst()
+            .map(rel -> rel.getAgreement())
+            .orElse(null);
     }
-
 
     public List<FeedServiceLevelAgreement> findFeedServiceLevelAgreements(Feed.ID feedId) {
-        String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
-                       + "WHERE feedSla.[" + JcrFeedServiceLevelAgreementRelationship.FEEDS + "] IN ('" + feedId.toString() + "')";
-        List<FeedServiceLevelAgreement> list = queryToList(query, null);
-        return list;
+        String query = RELATIONSHIP_QUERY + "WHERE feedsRel.[" + JcrFeedServiceLevelAgreementRelationship.FEEDS + "] IN ('" + feedId.toString() + "')";
+
+        return streamQueryResult(query, null)
+            .map(rel -> rel.getAgreement())
+            .collect(Collectors.toList());
     }
 
-
-    public List<ExtensibleEntity> findAllRelationships() {
-        return entityProvider.getEntities(JcrFeedServiceLevelAgreementRelationship.NODE_TYPE);
+    public List<FeedServiceLevelAgreementRelationship> findAllRelationships() {
+        return streamQueryResult(RELATIONSHIP_QUERY, null).collect(Collectors.toList());
     }
 
     public FeedServiceLevelAgreementRelationship findRelationship(ServiceLevelAgreement.ID id) {
-        List<? extends ExtensibleEntity> entities = entityProvider.findEntitiesMatchingProperty(JcrFeedServiceLevelAgreementRelationship.NODE_TYPE, JcrFeedServiceLevelAgreementRelationship.SLA, id);
-        if (entities != null && !entities.isEmpty()) {
-            return new JcrFeedServiceLevelAgreementRelationship((JcrExtensibleEntity) entities.get(0));
-        }
-        return null;
+        String query = RELATIONSHIP_QUERY + "WHERE sla.[mode:id] = $slaId ";
+        Map<String, String> bindParams = new HashMap<>();
+        bindParams.put("slaId", id.toString());
+        
+        return streamQueryResult(query, bindParams).findFirst().orElse(null);
     }
-
-    /**
-     * Returns the relationship object for SLA to a Set of Feeds
-     */
-    public FeedServiceLevelAgreementRelationship getRelationship(ExtensibleEntity.ID id) {
-        ExtensibleEntity entity = entityProvider.getEntity(id);
-        return new JcrFeedServiceLevelAgreementRelationship((JcrExtensibleEntity) entity);
-    }
-
-
-    /**
-     * Creates the Extensible Entity Type
-     */
-    public String createType() {
-        // TODO service?
-        if (typeCreated.compareAndSet(false, true)) {
-            return metadata.commit(() -> {
-                ExtensibleType feedSla = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
-                if (feedSla == null) {
-                    feedSla = typeProvider.buildType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME)
-                        // @formatter:off
-                         .field(JcrFeedServiceLevelAgreementRelationship.FEEDS)
-                            .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                            .displayName("Feeds")
-                            .description("The Feeds referenced on this SLA")
-                            .required(false)
-                            .collection(true)
-                            .add()
-                        .field(JcrFeedServiceLevelAgreementRelationship.SLA)
-                            .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                            .displayName("SLA")
-                            .description("The SLA")
-                            .required(true)
-                            .add()
-                        .build();
-                        // @formatter:on
-                }
-
-                return feedSla.getName();
-            }, MetadataAccess.SERVICE);
-        }
-        return null;
-    }
-
 
     /**
      * Create/Update the Relationship between a SLA and a Set of Feeds
      */
     @Override
     public FeedServiceLevelAgreementRelationship relate(ServiceLevelAgreement sla, Set<Feed.ID> feedIds) {
-        JcrFeedServiceLevelAgreementRelationship relationship = null;
-        //find if this relationship already exists
-        Set<Node> feedNodes = new HashSet<>();
-        Map<String, Object> props = new HashMap<>();
-        Set<Feed> feeds = new HashSet<>();
-        for (Feed.ID feedId : feedIds) {
-            Feed feed = feedProvider.getFeed(feedId);
-            if (feed != null) {
-                feeds.add(feed);
-            }
-        }
+        Set<Feed> feeds = feedIds.stream()
+            .map(id -> feedProvider.getFeed(id))
+            .filter(feed -> feed != null)
+            .collect(Collectors.toSet());
+        
         return relateFeeds(sla, feeds);
     }
 
     @Override
     public FeedServiceLevelAgreementRelationship relateFeeds(ServiceLevelAgreement sla, Set<Feed> feeds) {
-        JcrFeedServiceLevelAgreementRelationship relationship = null;
-        //find if this relationship already exists
-        JcrFeedServiceLevelAgreementRelationship feedSla = (JcrFeedServiceLevelAgreementRelationship) findRelationship(sla.getId());
-        Set<Node> feedNodes = new HashSet<>();
-        Map<String, Object> props = new HashMap<>();
-        for (Feed feed : feeds) {
-            if (feed != null) {
-                JcrFeed jcrFeed = (JcrFeed) feed;
-                feedNodes.add(jcrFeed.getNode());
-            }
-        }
-        props.put(JcrFeedServiceLevelAgreementRelationship.FEEDS, feedNodes);
-        props.put(JcrFeedServiceLevelAgreementRelationship.SLA, ((JcrServiceLevelAgreement) sla).getNode());
-
-        //remove any existing relationships
-        removeFeedRelationships(sla.getId());
-        if (feedSla == null) {
-
-            ExtensibleType type = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
-            JcrExtensibleEntity entity = (JcrExtensibleEntity) entityProvider.createEntity(type, props);
-
-            relationship = new JcrFeedServiceLevelAgreementRelationship(entity.getNode());
-        } else {
-            JcrExtensibleEntity entity = (JcrExtensibleEntity) entityProvider.updateEntity(feedSla, props);
-            relationship = new JcrFeedServiceLevelAgreementRelationship(entity.getNode());
-        }
-        //update the feed relationships
-        for (Feed feed : feeds) {
-            feedProvider.updateFeedServiceLevelAgreement(feed.getId(), sla);
-        }
-
+        Node slaNode = ((JcrServiceLevelAgreement) sla).getNode();
+        JcrFeedServiceLevelAgreementRelationship relationship = JcrUtil.getOrCreateNode(slaNode, 
+                                                                                        RELATED_FEEDS_NODE, 
+                                                                                        JcrFeedServiceLevelAgreementRelationship.NODE_TYPE, 
+                                                                                        JcrFeedServiceLevelAgreementRelationship.class);
+        
+        feeds.stream()
+            .map(feed -> feedProvider.updateFeedServiceLevelAgreement(feed.getId(), sla))
+            .map(JcrFeed.class::cast)
+            .map(JcrFeed::getNode)
+            .forEach(node -> JcrPropertyUtil.addToSetProperty(relationship.getNode(), 
+                                                              JcrFeedServiceLevelAgreementRelationship.FEEDS, 
+                                                              node, 
+                                                              true));
         return relationship;
     }
-
 
     @Override
     public boolean removeFeedRelationships(ServiceLevelAgreement.ID id) {
@@ -285,10 +154,17 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
         return false;
     }
 
-
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
+    
+    private Stream<JcrFeedServiceLevelAgreementRelationship> streamQueryResult(String query, Map<String, String> params) {
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query, params);
 
-
+            return JcrQueryUtil.queryResultStream(result, JcrFeedServiceLevelAgreementRelationship.class);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("failed to query feed SLA relationships", e);
+        }
+    }
 }

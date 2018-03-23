@@ -23,6 +23,9 @@ package com.thinkbiganalytics.nifi.rest.model;
 
 import com.thinkbiganalytics.metadata.MetadataField;
 
+import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+
 /**
  * Hold Schedule information for the feed
  */
@@ -43,6 +46,15 @@ public class NifiProcessorSchedule {
 
     public NifiProcessorSchedule() {
 
+    }
+    
+    public NifiProcessorSchedule(ProcessorDTO processor) {
+        ProcessorConfigDTO config = processor.getConfig();
+        this.processorId = processor.getId();
+        this.schedulingPeriod = config.getSchedulingPeriod();
+        this.schedulingStrategy = config.getSchedulingStrategy();
+        this.concurrentTasks = config.getConcurrentlySchedulableTaskCount();
+//        this.executionNode = config.getExecutionNode();
     }
 
     public NifiProcessorSchedule(NifiProcessorSchedule other) {

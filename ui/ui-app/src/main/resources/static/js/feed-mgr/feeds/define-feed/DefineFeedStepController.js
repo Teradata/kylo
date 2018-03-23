@@ -1,4 +1,7 @@
-define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular, moduleName) {
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     /**
      * An individual step in the Define Feed wizard.
      */
@@ -15,17 +18,15 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
             link: function link($scope, element, attrs, controller, $transclude) {
                 $scope.$transclude = $transclude;
                 var stepperController = controller[0];
-                if($scope.step != undefined) {
+                if ($scope.step != undefined) {
                     stepperController.assignStepName($scope.step, $scope.title);
                 }
                 else {
-                    console.error("UNDEFINED STEP!!!",$scope);
+                    console.error("UNDEFINED STEP!!!", $scope);
                 }
-
             }
         };
     };
-
     /**
      * Transcludes the HTML contents of a <kylo-define-feed-step/> into the template of kyloDefineFeedStep.
      */
@@ -40,7 +41,13 @@ define(["angular", "feed-mgr/feeds/define-feed/module-name"], function (angular,
             }
         };
     };
-
-    angular.module(moduleName).directive("kyloDefineFeedStep",['StepperService', kyloDefineFeedStep]);
+    var DefineFeedStep = /** @class */ (function () {
+        function DefineFeedStep() {
+        }
+        return DefineFeedStep;
+    }());
+    exports.DefineFeedStep = DefineFeedStep;
+    angular.module(moduleName).directive("kyloDefineFeedStep", ['StepperService', kyloDefineFeedStep]);
     angular.module(moduleName).directive("kyloDefineFeedStepTransclude", kyloDefineFeedStepTransclude);
 });
+//# sourceMappingURL=DefineFeedStepController.js.map

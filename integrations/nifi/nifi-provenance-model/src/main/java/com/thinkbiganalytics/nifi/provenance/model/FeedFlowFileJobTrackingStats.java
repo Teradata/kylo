@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
  */
 public class FeedFlowFileJobTrackingStats implements Serializable{
 
+    private static final long serialVersionUID = -6092283143558777891L;
+
     //track flows sent vs actual
 
     private Map<String,Integer> actualProcessorIdParentFlowFileCount = null;
@@ -94,7 +96,11 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
         if(actualFlowFilesProcessed == null) {
             actualFlowFilesProcessed = new ConcurrentHashMap<>();
         }
-        actualFlowFilesProcessed.computeIfAbsent(processorId, id -> new HashSet<String>()).add(flowFileId);
+        if(!actualFlowFilesProcessed.containsKey(processorId)){
+            actualFlowFilesProcessed.put(processorId,new HashSet<String>());
+        }
+        actualFlowFilesProcessed.get(processorId).add(flowFileId);
+        //actualFlowFilesProcessed.computeIfAbsent(processorId, id -> new HashSet<String>()).add(flowFileId);
     }
 
     @JsonIgnore
@@ -227,7 +233,7 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
         Integer flowFilesProcessed = getActualFlowFilesProcessed(processorId);
         if(actualParents != 0 || actualChildren != 0 || flowFilesProcessed != 0) {
             if(event.getUpdatedAttributes() == null){
-                event.setUpdatedAttributes(new HashMap<>());
+                event.setUpdatedAttributes(new HashMap<String,String>());
             }
             if(actualParents  != 0) {
                 event.setUpdatedAttribute(ProvenanceEventExtendedAttributes.PARENT_FLOW_FILES_COUNT.getDisplayName(), actualParents + "");
@@ -285,7 +291,10 @@ public class FeedFlowFileJobTrackingStats implements Serializable{
                 list.add(event);
             }
             //check
-            list.stream().forEach(e -> dirtyCheck(e));
+            for(ProvenanceEventRecordDTO e : list) {
+                dirtyCheck(e);
+            }
+            //list.stream().forEach(e -> dirtyCheck(e));
         }
         else {
             list = Collections.emptyList();

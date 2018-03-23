@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.auth.jaas;
 
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
 /*-
  * #%L
  * kylo-security-auth
@@ -31,6 +33,7 @@ import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.session.SessionDestroyedEvent;
 
 import java.io.IOException;
+import java.security.AccessController;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.List;
@@ -119,11 +122,12 @@ public class DefaultKyloJaasAuthenticationProvider extends DefaultJaasAuthentica
         if (auth instanceof JaasAuthenticationToken) {
             JaasAuthenticationToken token = (JaasAuthenticationToken) auth;
             loginContext = ((JaasAuthenticationToken) auth).getLoginContext();
-            log.debug("Using LoginContext from token: {}", token);
             
             if (loginContext == null) {
                 loginContext = createLoginContext(createSubject(auth), new InternalCallbackHandler(auth));
                 log.debug("Created LoginContext for auth: {}", auth);
+            } else {
+                log.debug("Using LoginContext from token: {}", token);
             }
         } else {
             loginContext = createLoginContext(createSubject(auth), new InternalCallbackHandler(auth));
@@ -134,18 +138,22 @@ public class DefaultKyloJaasAuthenticationProvider extends DefaultJaasAuthentica
     }
     
 
-    /**
-     * @param auth
-     * @return
-     */
     private Subject createSubject(Authentication auth) {
         Set<Principal> principals = auth.getAuthorities().stream()
             .filter(grant -> grant instanceof JaasGrantedAuthority)
             .map(JaasGrantedAuthority.class::cast)
             .map(jga -> jga.getPrincipal())
-            .collect(Collectors.toSet());
+            .collect(Collectors.toCollection(HashSet::new));
             
-        return new Subject(false, principals, new HashSet<>(), new HashSet<>());
+        principals.add(new UsernamePrincipal(auth.getName()));
+        
+        Subject subject = Subject.getSubject(AccessController.getContext());
+        if (subject == null) {
+            return new Subject(false, principals, new HashSet<>(), new HashSet<>());
+        } else {
+            subject.getPrincipals().addAll(principals);
+            return subject;
+        }
     }
 
 

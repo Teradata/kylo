@@ -17,48 +17,66 @@
   limitations under the License.
   #L%
   -->
-<vertical-section-layout section-title='{{"views.feed-definition.FD" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.allowEdit"
+<vertical-section-layout section-title='{{"views.feed-definition.FD" | translate}}' on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
+                         allow-edit="vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true" the-form="vm.editFeedDefinitionForm">
 
     <readonly-section>
-        <div layout="row" class="layout-padding-top-bottom">
+        <div layout="row" class="feed-property"
+             ng-class="'versions-' + vm.diff('/feedName')">
             <span flex="25" class="property-name"> {{"views.feed-definition.FN" | translate}} </span>
             <div flex>
                 {{vm.model.feedName}}
             </div>
+            <div flex ng-if="vm.versions">
+                {{vm.versionFeedModel.feedName}}
+            </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
+        <div layout="row" class="feed-property">
             <span flex="25" class="property-name"> {{"views.feed-definition.SN" | translate}} </span>
 
             <div flex>
                 {{vm.model.systemFeedName}}
             </div>
+            <div flex ng-if="vm.versions">
+                {{vm.versionFeedModel.systemFeedName}}
+            </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
+        <div layout="row" class="feed-property"
+             ng-class="'versions-' + vm.diff('/description')">
+
             <span flex="25" class="property-name">{{"views.import_feed.Description" | translate}} </span>
 
             <div flex>
                 {{vm.model.description}}
             </div>
+            <div flex ng-if="vm.versions">
+                {{vm.versionFeedModel.description}}
+            </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
+        <div layout="row" class="feed-property">
             <span flex="25" class="property-name"> {{"views.feed-definition.FT" | translate}} </span>
 
             <div flex>
                 {{vm.model.templateName}}
             </div>
+            <div flex ng-if="vm.versions">
+                {{vm.versionFeedModel.templateName}}
+            </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
+        <div layout="row" class="feed-property">
             <span flex="25" class="property-name"> {{"views.feed-definition.FP" | translate}} </span>
 
-            <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
-                <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Stream" | translate}} </span>
-                <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
-            </div>
+            <div flex>
+                <div ng-if="vm.model.isStream" layout="column" layout-align="start start">
+                    <span><ng-md-icon icon="tune" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Stream" | translate}} </span>
+                    <span class="hint">Kylo will only track key metrics.  Individual jobs and steps will not be tracked.</span>
+                </div>
 
-            <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
-                <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Batch" | translate}} </span>
-                <span class="hint"> {{"views.feed-definition.Kwtijas" | translate}} </span>
+                <div ng-if="!vm.model.isStream" layout="column" layout-align="start start">
+                    <span><ng-md-icon icon="trending_flat" style="fill:#3483BA"></ng-md-icon> {{"views.feed-definition.Batch" | translate}} </span>
+                    <span class="hint"> {{"views.feed-definition.Kwtijas" | translate}} </span>
+                </div>
             </div>
         </div>
     </readonly-section>

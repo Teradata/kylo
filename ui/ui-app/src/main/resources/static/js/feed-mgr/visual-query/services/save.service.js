@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../wrangler/api/rest-model", "rxjs/add/operator/let", "rxjs/add/operator/share"], function (require, exports, angular, rest_model_1) {
+define(["require", "exports", "angular", "rxjs/Subject", "../wrangler/api/rest-model", "rxjs/add/operator/share"], function (require, exports, angular, Subject_1, rest_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -12,7 +12,20 @@ define(["require", "exports", "angular", "../wrangler/api/rest-model", "rxjs/add
              * Map of save id to notification.
              */
             this.notifications = {};
+            /**
+             * Subject for notification removal.
+             */
+            this.removeSubject = new Subject_1.Subject();
         }
+        /**
+         * Removes the notification for the specified save identifier.
+         */
+        VisualQuerySaveService.prototype.removeNotification = function (id) {
+            if (this.notifications[id]) {
+                this.notificationService.removeNotification(this.notifications[id]);
+                delete this.notifications[id];
+            }
+        };
         /**
          * Saves the specified transformation.
          *
@@ -25,6 +38,12 @@ define(["require", "exports", "angular", "../wrangler/api/rest-model", "rxjs/add
             var save = engine.saveResults(request).share();
             save.subscribe(function (response) { return _this.onSaveNext(request, response); }, function (response) { return _this.onSaveError(response); });
             return save;
+        };
+        /**
+         * Subscribes to notification removal events.
+         */
+        VisualQuerySaveService.prototype.subscribeRemove = function (cb) {
+            return this.removeSubject.subscribe(cb);
         };
         /**
          * Gets a notification message for the specified save request.
@@ -67,6 +86,7 @@ define(["require", "exports", "angular", "../wrangler/api/rest-model", "rxjs/add
          * Handle save progress.
          */
         VisualQuerySaveService.prototype.onSaveNext = function (request, response) {
+            var _this = this;
             // Find or create notification
             var notification = this.notifications[response.id];
             if (notification == null && response.status !== rest_model_1.SaveResponseStatus.SUCCESS) {
@@ -80,13 +100,20 @@ define(["require", "exports", "angular", "../wrangler/api/rest-model", "rxjs/add
                     this.notificationService.addNotification("Transformation saved to " + request.tableName, "grid_on");
                 }
                 else {
-                    var download = this.notificationService.addNotification("Transformation ready for download", "file_download");
-                    download.callback = function () { return window.open(response.location, "_blank"); };
+                    var download_1 = this.notificationService.addNotification("Transformation ready for download", "file_download");
+                    download_1.callback = function () {
+                        window.open(response.location, "_blank");
+                        _this.removeNotification(download_1.id);
+                        _this.removeSubject.next({ id: response.id, notification: download_1 });
+                    };
+                    this.notifications[response.id] = download_1;
                 }
                 // Remove old notification
                 if (notification) {
                     this.notificationService.removeNotification(notification);
-                    delete this.notifications[response.id];
+                    if (this.notifications[response.id] === notification) {
+                        delete this.notifications[response.id];
+                    }
                 }
             }
         };

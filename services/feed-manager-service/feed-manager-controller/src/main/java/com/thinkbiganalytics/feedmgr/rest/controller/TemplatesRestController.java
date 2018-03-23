@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateOrder;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateProcessorDatasourceDefinition;
+import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
@@ -41,10 +42,10 @@ import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.rest.controller.SecurityModelTransform;
 import com.thinkbiganalytics.security.rest.model.ActionGroup;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
-import com.thinkbiganalytics.security.rest.model.RoleMembership;
 import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
@@ -62,7 +63,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -98,17 +98,20 @@ public class TemplatesRestController {
     public static final String BASE = "/v1/feedmgr/templates";
     public static final String REGISTERED = "/registered";
 
-    @Autowired
-    LegacyNifiRestClient nifiRestClient;
+    @Inject
+    private LegacyNifiRestClient nifiRestClient;
 
-    @Autowired
-    MetadataService metadataService;
+    @Inject
+    private MetadataService metadataService;
+    
+    @Inject
+    private AccessController accessController;
 
-    @Autowired
-    FeedManagerTemplateService feedManagerTemplateService;
+    @Inject
+    private FeedManagerTemplateService feedManagerTemplateService;
 
-    @Autowired
-    DatasourceService datasourceService;
+    @Inject
+    private DatasourceService datasourceService;
 
     @Inject
     private SecurityService securityService;
@@ -117,10 +120,10 @@ public class TemplatesRestController {
     private SecurityModelTransform securityTransform;
 
     @Inject
-    RegisteredTemplateService registeredTemplateService;
+    private RegisteredTemplateService registeredTemplateService;
 
     @Inject
-    NifiFlowCache nifiFlowCache;
+    private NifiFlowCache nifiFlowCache;
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -193,6 +196,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         return Response.ok(ports).build();
     }
@@ -206,6 +212,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getInputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
             @Override
@@ -226,6 +235,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public List<RegisteredTemplate.Processor> getReusableTemplateProcessorsForInputPorts(@QueryParam("inputPorts") String inputPortIds) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<RegisteredTemplate.Processor> processorProperties = new ArrayList<>();
         if (StringUtils.isNotBlank(inputPortIds)) {
             List<String> inputPortIdsList = Arrays.asList(StringUtils.split(inputPortIds, ","));
@@ -244,6 +256,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getNiFiTemplateProcessors(@PathParam("templateId") String templateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<RegisteredTemplate.Processor> processorProperties = feedManagerTemplateService.getNiFiTemplateProcessorsWithProperties(templateId);
         return Response.ok(processorProperties).build();
     }
@@ -262,6 +277,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getNiFiTemplateFlowInfo(@PathParam("templateId") String templateId, NiFiTemplateFlowRequest flowRequest) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         List<TemplateProcessorDatasourceDefinition> templateProcessorDatasourceDefinitions = new ArrayList<>();
         NiFiTemplateFlowResponse response = new NiFiTemplateFlowResponse();
         response.setRequest(flowRequest);
@@ -315,6 +333,9 @@ public class TemplatesRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getOutputPortsForNifiTemplate(@PathParam("templateId") String nifiTemplateId) {
+        
+        this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_TEMPLATES);
+        
         Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
         List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
             @Override

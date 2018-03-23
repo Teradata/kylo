@@ -20,6 +20,10 @@ package com.thinkbiganalytics.ui;
  * #L%
  */
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
@@ -30,10 +34,23 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 @Configuration
 public class OpsManagerWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
 
-        @Override
-        public void addResourceHandlers(ResourceHandlerRegistry registry) {
-            registry.addResourceHandler("/ops-mgr/**").addResourceLocations("classpath:/static/");
-            registry.addResourceHandler("/kylo/**").addResourceLocations("classpath:/static/");
+    private static final Logger LOG = LoggerFactory.getLogger(OpsManagerWebMvcConfigurerAdapter.class);
+
+    @Value("${static.path:}")
+    private String staticPath;
+
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/ops-mgr/**").addResourceLocations("classpath:/static/");
+        registry.addResourceHandler("/kylo/**").addResourceLocations("classpath:/static/");
+
+        if (StringUtils.isNotBlank(staticPath)) {
+            //static path will not be defined when running from source
+            LOG.info("Setting up static resources to be at '{}'", staticPath);
+            registry.addResourceHandler("/ops-mgr/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/kylo/assets/**").addResourceLocations("file:" + staticPath);
+            registry.addResourceHandler("/assets/**").addResourceLocations("file:" + staticPath);
         }
+    }
 
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.csv;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,6 +26,7 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
@@ -38,6 +39,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.Vector;
 import java.util.stream.Collectors;
 
@@ -47,7 +50,12 @@ import java.util.stream.Collectors;
 
 class CSVAutoDetect {
 
-    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CSVAutoDetect.class);
+
+    /**
+     * Size of buffer for reading first 100 lines.
+     */
+    private int bufferSize = 32765;
 
     private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
         return map.entrySet()
@@ -71,11 +79,11 @@ class CSVAutoDetect {
     public CSVFormat detectCSVFormat(String sampleText, boolean headerRow, String seperatorStr) throws IOException {
         CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
         Character separatorChar = null;
-        if(StringUtils.isNotBlank(seperatorStr)){
+        if (StringUtils.isNotBlank(seperatorStr)) {
             separatorChar = seperatorStr.charAt(0);
         }
         try (BufferedReader br = new BufferedReader(new StringReader(sampleText))) {
-            List<LineStats> lineStats = generateStats(br,separatorChar);
+            List<LineStats> lineStats = generateStats(br, separatorChar);
             Character quote = guessQuote(lineStats);
             Character delim = guessDelimiter(lineStats, sampleText, quote, headerRow);
             if (delim == null) {
@@ -87,13 +95,22 @@ class CSVAutoDetect {
         return format;
     }
 
-    private List<LineStats> generateStats(BufferedReader br,Character separatorChar) throws IOException {
+    /**
+     * Sets the internal buffer size for reading the first 100 lines of the file.
+     *
+     * @param bufferSize minimum number of characters
+     */
+    public void setBufferSize(final int bufferSize) {
+        this.bufferSize = bufferSize;
+    }
+
+    private List<LineStats> generateStats(BufferedReader br, Character separatorChar) throws IOException {
         List<LineStats> lineStats = new Vector<>();
         String line;
         int rows = 0;
-        br.mark(32765);
+        br.mark(bufferSize);
         while ((line = br.readLine()) != null && rows < 100) {
-            LineStats stats = new LineStats(line,separatorChar);
+            LineStats stats = new LineStats(line, separatorChar);
             rows++;
             lineStats.add(stats);
         }
@@ -134,13 +151,12 @@ class CSVAutoDetect {
             if (firstLineDelimCounts != null && firstLineDelimCounts.size() > 0) {
                 List<Character> candidates = new ArrayList<>();
                 // Attempt to parse given delimiter
-                Set<Character> firstLineDelimKeys = firstLineDelimCounts.keySet();
+                Set<Character> firstLineDelimKeys = sortDelimitersIntoPreferredOrder(firstLineDelimCounts.keySet());
                 for (Character delim : firstLineDelimKeys) {
                     CSVFormat format;
                     if (headerRow) {
                         format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(delim).withQuote(quote);
-                    }
-                    else {
+                    } else {
                         format = CSVFormat.DEFAULT.withDelimiter(delim).withQuote(quote);
                     }
                     try (StringReader sr = new StringReader(value)) {
@@ -185,6 +201,31 @@ class CSVAutoDetect {
         return null;
     }
 
+    final private static String delimiterPreference = ",\t;:|~+ ";
+
+    /**
+     * Using data-gov as a guide for choice in delimiter preference, this method will take
+     * a set of delimiters and sort them into a preferred order for CSV parsing.
+     *
+     * @implNote see https://data-gov.tw.rpi.edu/wiki/CSV_files_use_delimiters_other_than_commas
+     * @param delimiters
+     */
+    private SortedSet<Character> sortDelimitersIntoPreferredOrder(Set<Character> delimiters) {
+        SortedSet<Character> sortedDelimiters = new TreeSet<>(
+            (o1, o2) -> {
+                // use position in the delimiterPreference. If not in preferred delimiters then lower preference is by codepoint
+                int o1Idx = delimiterPreference.indexOf(o1);
+                int o1Pos = (o1Idx == -1)?(delimiterPreference.length() + o1):(o1Idx);
+                int o2Idx = delimiterPreference.indexOf(o2);
+                int o2Pos = (o2Idx == -1)?(delimiterPreference.length() + o2):(o2Idx);
+                return o1Pos - o2Pos;
+            });
+
+
+        sortedDelimiters.addAll(delimiters);
+        return sortedDelimiters;
+    }
+
     static class LineStats {
 
         Map<Character, Integer> delimStats = new HashMap<Character, Integer>();
@@ -193,23 +234,19 @@ class CSVAutoDetect {
         boolean escapes;
         Character firstDelim;
 
-        public LineStats(String line) {
-        this(line, null);
-        }
 
         /**
-         *
-         * @param line the line to evaluate
+         * @param line              the line to evaluate
          * @param suppliedDelimiter the explicit delimiter supplied by the user, or null if not defined
          */
         public LineStats(String line, final Character suppliedDelimiter) {
             // Look for delimiters
             char[] chars = line.toCharArray();
-            String delimiterString=" :;|\t+";
+            String delimiterString = " :;|\t+~";
             String nonDelimiterString = "\"'<>\\";
 
-            if(suppliedDelimiter != null){
-                delimiterString+=Character.toString(suppliedDelimiter);
+            if (suppliedDelimiter != null) {
+                delimiterString += Character.toString(suppliedDelimiter);
             }
 
             char[] delimiters = delimiterString.toCharArray();
@@ -219,22 +256,22 @@ class CSVAutoDetect {
                 char c = chars[i];
 
                 boolean found = false;
-                for(char delim: delimiters){
-                    if(c == delim){
+                for (char delim : delimiters) {
+                    if (c == delim) {
                         increment(delim, true);
                         found = true;
                         break;
                     }
                 }
-                if(!found){
-                    for(char delim: nonDelimiters){
-                        if(c == delim){
+                if (!found) {
+                    for (char delim : nonDelimiters) {
+                        if (c == delim) {
                             increment(delim, false);
                             break;
                         }
                     }
                 }
-                }
+            }
         }
 
         boolean containsNoDelimCharOfType(Character quoteType) {

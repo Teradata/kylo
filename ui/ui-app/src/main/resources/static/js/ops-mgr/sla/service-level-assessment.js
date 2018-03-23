@@ -1,59 +1,59 @@
-define(['angular','ops-mgr/sla/module-name'], function (angular,moduleName) {
-
-    var controller = function($transition$, $http,OpsManagerRestUrlService,StateService){
-        var self = this;
-        this.assessmentId = $transition$.params().assessmentId;
-
-        self.loading = false;
-        self.assessment = {};
-        self.assessmentNotFound = false;
-        self.agreementNotFound = false;
-
-        if(this.assessmentId != null){
-
-            var successFn = function(response) {
-                if (response.data && response.data != '') {
-                    self.assessment = response.data;
-                    self.assessmentNotFound = false;
-
-                    self.getSlaById(self.assessment.agreement.id).then(function(response) {
-                        self.agreementNotFound = response.status === 404;
-                    }, function(){
-                        self.agreementNotFound = true;
-                    });
-                }
-                else {
-                    self.assessmentNotFound = true;
-                }
-                self.loading = false;
-
+define(["require", "exports", "angular", "./module-name", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var controller = /** @class */ (function () {
+        function controller($transition$, $http, OpsManagerRestUrlService, StateService) {
+            this.$transition$ = $transition$;
+            this.$http = $http;
+            this.OpsManagerRestUrlService = OpsManagerRestUrlService;
+            this.StateService = StateService;
+            var assessmentId = this.$transition$.params().assessmentId;
+            var loading = false;
+            var assessment = {};
+            var assessmentNotFound = false;
+            var agreementNotFound = false;
+            var getSlaById = function (slaId) {
+                var successFn = function (response) {
+                    return response.data;
+                };
+                var errorFn = function (err) {
+                    console.log('ERROR ', err);
+                };
+                var promise = this.$http.get(this.OpsManagerRestUrlService.GET_SLA_BY_ID_URL(slaId), { acceptStatus: 404 });
+                promise.then(successFn, errorFn);
+                return promise;
             };
-            var errorFn = function(err) {
-                self.loading = false;
+            var serviceLevelAgreement = function () {
+                this.StateService.FeedManager().Sla().navigateToServiceLevelAgreement(this.assessment.agreement.id);
             };
-
-
-            self.loading = true;
-            $http.get(OpsManagerRestUrlService.GET_SLA_ASSESSMENT_URL(self.assessmentId)).then(successFn, errorFn);
+            if (assessmentId != null) {
+                var successFn = function (response) {
+                    if (response.data && response.data != '') {
+                        assessment = response.data;
+                        assessmentNotFound = false;
+                        getSlaById(assessment.agreement.id).then(function (response) {
+                            agreementNotFound = response.status === 404;
+                        }, function () {
+                            this.agreementNotFound = true;
+                        });
+                    }
+                    else {
+                        assessmentNotFound = true;
+                    }
+                    loading = false;
+                };
+                var errorFn = function (err) {
+                    loading = false;
+                };
+                loading = true;
+                $http.get(OpsManagerRestUrlService.GET_SLA_ASSESSMENT_URL(assessmentId)).then(successFn, errorFn);
+            }
         }
-
-        self.serviceLevelAgreement= function(){
-            StateService.FeedManager().Sla().navigateToServiceLevelAgreement(self.assessment.agreement.id);
-        };
-
-        self.getSlaById = function (slaId) {
-            var successFn = function (response) {
-                return response.data;
-            };
-            var errorFn = function (err) {
-                console.log('ERROR ', err)
-            };
-            var promise = $http.get(OpsManagerRestUrlService.GET_SLA_BY_ID_URL(slaId), {acceptStatus: 404});
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-    };
-
-    angular.module(moduleName).controller('ServiceLevelAssessmentController',['$transition$','$http','OpsManagerRestUrlService','StateService',controller]);
-
+        return controller;
+    }());
+    exports.controller = controller;
+    angular.module(module_name_1.moduleName)
+        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
+        .controller('ServiceLevelAssessmentController', ['$transition$', '$http', 'OpsManagerRestUrlService', 'StateService', controller]);
 });
+//# sourceMappingURL=service-level-assessment.js.map

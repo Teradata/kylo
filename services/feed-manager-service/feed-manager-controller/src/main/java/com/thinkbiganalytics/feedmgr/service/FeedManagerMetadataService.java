@@ -23,6 +23,7 @@ package com.thinkbiganalytics.feedmgr.service;
 import com.thinkbiganalytics.datalake.authorization.service.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersion;
+import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -45,13 +46,18 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil.PROCESS_STATE;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -66,9 +72,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -98,9 +106,18 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedManagerFeedService feedProvider;
+    
+    @Inject
+    private FeedProvider domainFeedProvider;
 
     @Inject
     LegacyNifiRestClient nifiRestClient;
+
+    /**
+     * NiFi REST client
+     */
+    @Inject
+    private NiFiRestClient nifiClient;
 
     @Inject
     MetadataAccess metadataAccess;
@@ -119,12 +136,6 @@ public class FeedManagerMetadataService implements MetadataService {
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
-
-    /**
-     * NiFi REST client
-     */
-    @Inject
-    private NiFiRestClient nifiClient;
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
@@ -299,6 +310,36 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         return true;
+    }
+    
+    @Override
+    @SuppressWarnings("deprecation")
+    public FeedSummary startFeed(String feedId) {
+        FeedMetadata feedMetadata = this.metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+            
+            Feed.ID domainId = domainFeedProvider.resolveId(feedId);
+            Feed domainFeed = domainFeedProvider.findById(domainId);
+            
+            if (domainFeed != null) {
+                domainFeed.getAllowedActions().checkPermission(FeedAccessControl.START);
+                return feedModelTransform.domainToFeedMetadata(domainFeed);
+            } else {
+                throw new FeedNotFoundException(domainId);
+            }
+        });
+        
+        nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
+            .flatMap(categoryGroup -> nifiClient.processGroups().findByName(categoryGroup.getId(), feedMetadata.getSystemFeedName(), false, true))
+            .ifPresent(feedGroup -> {
+                this.nifiRestClient.getInputProcessors(feedGroup.getId()).stream()
+                    .filter(proc -> feedMetadata.getInputProcessorName().equals(proc.getName()))
+                    .forEach(processor -> {
+                        this.nifiClient.processors().wakeUp(processor);
+                    });
+            });
+        
+        return new FeedSummary(feedMetadata);
     }
 
     public FeedSummary enableFeed(String feedId) {
@@ -480,8 +521,16 @@ public class FeedManagerMetadataService implements MetadataService {
         return feedProvider.getFeedVersions(feedId, includeFeeds);
     }
 
+    @Nonnull
+    @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
+    }
+    
+    @Nonnull
+    @Override
+    public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {
+        return feedProvider.getFeedVersionDifference(feedId, versionId1, versionId2);
     }
 
 

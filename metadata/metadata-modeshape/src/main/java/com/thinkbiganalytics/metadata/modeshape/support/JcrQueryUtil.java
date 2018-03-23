@@ -30,6 +30,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Spliterator;
+import java.util.Spliterators;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -65,30 +70,33 @@ public class JcrQueryUtil {
     }
 
     public static <T extends Object> List<T> queryResultToList(QueryResult result, Integer fetchSize, Class<T> type, Object... args) {
-        List<T> entities = new ArrayList<>();
-
-        if (result != null) {
-            try {
-                NodeIterator nodeIterator = result.getNodes();
-                int cntr = 0;
-                while (nodeIterator.hasNext()) {
-                    Node node = nodeIterator.nextNode();
-                    T entity = JcrUtil.constructNodeObject(node, type, args);
-                    entities.add(entity);
-                    cntr++;
-                    if (fetchSize != null && cntr == fetchSize) {
-                        break;
-                    }
-
-                }
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Unable to parse QueryResult to List for type  : " + type, e);
-
-            }
-        }
-        return entities;
+        return queryResultStream(result, fetchSize, type, args).collect(Collectors.toList());
+    }
+    
+    public static <T extends Object> Stream<T> queryResultStream(QueryResult result, Class<T> type, Object... args) {
+        return queryResultStream(result, null, type, args);
     }
 
+    public static <T extends Object> Stream<T> queryResultStream(QueryResult result, Integer fetchSize, Class<T> type, Object... args) {
+        if (result != null) {
+            try {
+                @SuppressWarnings("unchecked")
+                Iterator<Node> nodeItr = (Iterator<Node>) result.getNodes();
+                Stream<T> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, 0), false)
+                                .map(node -> JcrUtil.constructNodeObject(node, type, args));
+                
+                if (fetchSize != null) {
+                    return stream.limit(fetchSize);
+                } else {
+                    return stream;
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Unable to parse QueryResult to stream for type  : " + type, e);
+            }
+        } else {
+            return Stream.empty();
+        }
+    }
 
     public static <T extends Object> List<T> queryRowItrNodeResultToList(QueryResult result, Class<T> type, String nodeName) {
         return queryRowItrNodeResultToList(result, type, nodeName, null);

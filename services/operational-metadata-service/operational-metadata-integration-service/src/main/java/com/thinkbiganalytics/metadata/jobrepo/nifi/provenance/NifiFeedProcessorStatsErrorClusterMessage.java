@@ -23,13 +23,15 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedProcessorErrors;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
 
 /**
  * Cluster Message that is sent to other cluser members indicating any errors captured when receiving jms feed processor stats
  */
 public class NifiFeedProcessorStatsErrorClusterMessage implements Serializable {
+    
+    private static final long serialVersionUID = -753740878011117863L;
+
     private Set<? extends NifiFeedProcessorErrors> errors;
 
     public NifiFeedProcessorStatsErrorClusterMessage(Set<? extends NifiFeedProcessorErrors> errors) {

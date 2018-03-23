@@ -27,6 +27,7 @@
   </changeSet>
 
   <changeSet id="create_feed_name_index" author="sr186054">
+    <preConditions onFail="MARK_RAN"><not><indexExists tableName="FEED" indexName="FEED_IDX1"/></not></preConditions>
   <createIndex indexName="FEED_IDX1" unique="false" tableName="FEED">
     <column name="NAME"  />
   </createIndex>
@@ -34,6 +35,7 @@
 
 
   <changeSet id="create_feed_stats_feed_name_index" author="sr186054">
+    <preConditions onFail="MARK_RAN"><not><indexExists tableName="NIFI_FEED_STATS" indexName="NIFI_FEED_STATS_IDX1"/></not></preConditions>
     <createIndex indexName="NIFI_FEED_STATS_IDX1" unique="true" tableName="NIFI_FEED_STATS">
       <column name="FEED_NAME"  />
     </createIndex>

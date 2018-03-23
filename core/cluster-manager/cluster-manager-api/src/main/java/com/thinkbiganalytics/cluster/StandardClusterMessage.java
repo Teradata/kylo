@@ -26,6 +26,9 @@ import java.io.Serializable;
  * A standard cluster message implementation
  */
 public class StandardClusterMessage implements ClusterMessage, Serializable {
+
+    private static final long serialVersionUID = 8137855394654778278L;
+
     private String id;
 
     private String type;

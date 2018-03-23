@@ -22,28 +22,56 @@
 
     <readonly-section>
         <div layout="column">
-            <div layout="row" class="layout-padding-top-bottom">
+            <div layout="row" class="feed-property versions-{{vm.diff('/dataOwner')}}">
                 <span flex="25" class="property-name"> {{"views.feed-additional-properties.DO" | translate}} </span>
 
                 <div flex>
                     {{vm.model.dataOwner}}
                 </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.dataOwner}}
+                </div>
             </div>
-            <div layout="row" class="layout-padding-top-bottom">
+            <div layout="row" class="feed-property versions-{{vm.diffCollection('/tags')}}">
                 <span flex="25" class="property-name"> {{"views.feed-additional-properties.Tags" | translate}} </span>
 
                 <div flex>
                     {{vm.model.tags | join: ',':'name'}}
                 </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.tags | join: ',':'name'}}
+                </div>
             </div>
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.securityGroupsEnabled == true">
+            <div layout="row" class="feed-property" ng-if="vm.securityGroupsEnabled == true">
                 <span flex="25" class="property-name">Hadoop Security Groups</span>
 
                 <div flex>
                     {{vm.model.securityGroups | join: ',':'name'}}
                 </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.securityGroups | join: ',':'name'}}
+                </div>
             </div>
-            <thinkbig-property-list properties="vm.model.userProperties"></thinkbig-property-list>
+
+            <thinkbig-property-list
+                ng-if="!vm.versions"
+                properties="vm.model.userProperties"></thinkbig-property-list>
+
+            <div ng-if="vm.versions" layout="row" ng-repeat="(propIdx, property) in vm.userProperties" class="feed-property versions-{{property.op}}">
+                <div ng-if="property.current.locked" layout="column" flex="25" class="property-name">
+                    <span>{{property.displayName}}</span>
+                    <span class="hint">{{property.description}}</span>
+                </div>
+                <span ng-if="!property.current.locked" flex="25" class="property-name">{{property.systemName}}</span>
+
+                <div flex>
+                    {{property.current.value}}
+                </div>
+                <div flex>
+                    {{property.versioned.value}}
+                </div>
+            </div>
+
         </div>
     </readonly-section>
 

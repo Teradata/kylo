@@ -141,7 +141,7 @@ public abstract class AbstractControllerServiceRequest {
         return Objects.hash(connectionStringPropertyKey, controllerServiceName, controllerServiceId);
     }
 
-    public abstract static class AbstractControllerServiceRequestBuilder<T extends AbstractControllerServiceRequestBuilder> {
+    public abstract static class AbstractControllerServiceRequestBuilder<T extends AbstractControllerServiceRequestBuilder<T>> {
 
         private String connectionStringPropertyKey;
         private String userNamePropertyKey;
@@ -224,6 +224,22 @@ public abstract class AbstractControllerServiceRequest {
 
         public T useEnvironmentProperties(boolean useEnvironmentProperties) {
             this.useEnvironmentProperties = useEnvironmentProperties;
+            return (T) this;
+        }
+        
+        @Nonnull
+        protected <R extends AbstractControllerServiceRequest> T using(@Nonnull final R request) {
+            this.connectionStringPropertyKey(request.getConnectionStringPropertyKey());
+            this.connectionStringPropertyKey(request.getConnectionStringPropertyKey());
+            this.controllerServiceName(request.getControllerServiceName());
+            this.controllerServiceId(request.getControllerServiceId());
+            this.controllerServiceType(request.getControllerServiceType());
+            this.userNamePropertyKey(request.getUserNamePropertyKey());
+            this.passwordPropertyKey(request.getPasswordPropertyKey());
+            this.controllerService(request.getControllerServiceDTO());
+            this.driverClassNamePropertyKey(request.getDriverClassNamePropertyKey());
+            this.password(request.getPassword());
+            this.useEnvironmentProperties(request.useEnvironmentProperties());
             return (T) this;
         }
 

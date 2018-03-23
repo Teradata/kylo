@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of short data type <br>
  * [Hive data type: SMALLINT]
  */
-@SuppressWarnings("serial")
 public class ShortColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = -5873752851022168813L;
 
     /* Short specific metrics */
     private short max;

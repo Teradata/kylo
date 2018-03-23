@@ -35,6 +35,8 @@ import java.util.List;
  */
 public class FieldPolicy implements Serializable {
 
+    private static final long serialVersionUID = -1621554527501342218L;
+
     private static final Logger log = LoggerFactory.getLogger(FieldPolicy.class);
 
     private String table;

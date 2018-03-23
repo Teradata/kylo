@@ -9,9 +9,9 @@ package com.thinkbiganalytics.policy.validation;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package com.thinkbiganalytics.policy.validation;
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
  */
 @Validator(name = "Date", description = "Validate Hive-friendly date format")
 public class DateValidator implements ValidationPolicy<String> {
+
     private static final Logger log = LoggerFactory.getLogger(DateValidator.class);
 
     private static final DateValidator instance = new DateValidator();
@@ -68,7 +70,7 @@ public class DateValidator implements ValidationPolicy<String> {
     public DateTime parseDate(String value) {
         int cnt = value.length();
         if (cnt == LENGTH) {
-            return DATE.parseDateTime(value);
+            return LocalDate.parse(value, DATE).toDateTimeAtStartOfDay();
         } else {
             throw new IllegalArgumentException("Expecting yyyy-MM-dd");
         }

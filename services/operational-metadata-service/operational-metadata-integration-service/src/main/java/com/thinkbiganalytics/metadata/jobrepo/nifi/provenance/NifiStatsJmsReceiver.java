@@ -39,6 +39,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvide
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedProcessorStats;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.JpaNifiFeedStats;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
@@ -53,6 +55,7 @@ import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.joda.time.DateTime;
@@ -116,6 +119,9 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     @Inject
     private ClusterService clusterService;
 
+    @Inject
+    private ProvenanceEventReceiver provenanceEventReceiver;
+
     @Value("${kylo.ops.mgr.stats.nifi.bulletins.mem.size:30}")
     private Integer errorsToStorePerFeed = 30;
 
@@ -138,6 +144,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
 
     private static final String JMS_LISTENER_ID = "nifiStatesJmsListener";
 
+    private static final String JMS_LISTENER_ID2 = "nifiStatesJmsListener2";
     @PostConstruct
     private void init() {
         retryProvenanceEventWithDelay.setStatsJmsReceiver(this);
@@ -239,6 +246,18 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         return !(stats instanceof RetryAggregatedFeedProcessorStatisticsHolder) || (stats instanceof RetryAggregatedFeedProcessorStatisticsHolder
                                                                                     && ((RetryAggregatedFeedProcessorStatisticsHolder) stats).shouldRetry());
     }
+    @JmsListener(id = JMS_LISTENER_ID2, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE2, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
+    public void receiveTopic(byte[] stats) {
+        Object o = null;
+        try {
+            o = SerializationUtils.deserialize(stats);
+        } catch (Exception e) {
+            log.error("Unable to deserialize object ", e);
+        }
+        if (o != null && o instanceof AggregatedFeedProcessorStatisticsHolder) {
+            receiveTopic((AggregatedFeedProcessorStatisticsHolder) o);
+        }
+    }
 
     @JmsListener(id = JMS_LISTENER_ID, destination = Queues.PROVENANCE_EVENT_STATS_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY)
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
@@ -256,6 +275,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                             //offload the query to nifi and merge back in
                             failedStatsWithFlowFiles.add((JpaNifiFeedProcessorStats) savedStats);
                         }
+                        ensureStreamingJobExecutionRecord(stat);
                     }
                     if (stats instanceof AggregatedFeedProcessorStatisticsHolderV2) {
                         saveFeedStats((AggregatedFeedProcessorStatisticsHolderV2) stats, summaryStats);
@@ -397,12 +417,16 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                         stats.setStream(opsManagerFeed.isStream());
                     }
                     stats.addRunningFeedFlows(runningCount);
-                    if(holder instanceof AggregatedFeedProcessorStatisticsHolderV3){
-                        stats.setTime(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
-                        stats.setLastActivityTimestamp(((AggregatedFeedProcessorStatisticsHolderV3)holder).getTimestamp());
-                    }
-                    else {
+                    if (holder instanceof AggregatedFeedProcessorStatisticsHolderV3) {
+                        stats.setTime(((AggregatedFeedProcessorStatisticsHolderV3) holder).getTimestamp());
+                        if (stats.getLastActivityTimestamp() == null) {
+                            stats.setLastActivityTimestamp(((AggregatedFeedProcessorStatisticsHolderV3) holder).getTimestamp());
+                        }
+                    } else {
                         stats.setTime(DateTime.now().getMillis());
+                    }
+                    if (stats.getLastActivityTimestamp() == null) {
+                        log.warn("The JpaNifiFeedStats.lastActivityTimestamp for the feed {} is NULL.  The JMS Class was: {}", feedName, holder.getClass().getSimpleName());
                     }
                 }
             });
@@ -411,14 +435,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         //group stats to save together by feed name
         if (!feedStatsMap.isEmpty()) {
             //only save those that have changed
-            List<NifiFeedStats> updatedStats = feedStatsMap.entrySet().stream().filter(e -> {
-                                                                                           String key = e.getKey();
-                                                                                           JpaNifiFeedStats value = e.getValue();
-                                                                                           JpaNifiFeedStats savedStats = latestStatsCache.computeIfAbsent(key, name -> value);
-                                                                                           return ((value.getLastActivityTimestamp() != null && savedStats.getLastActivityTimestamp() != null && value.getLastActivityTimestamp() > savedStats.getLastActivityTimestamp()) ||
-                                                                                                   (value.getLastActivityTimestamp() != null && value.getRunningFeedFlows() != savedStats.getRunningFeedFlows()));
-                                                                                       }
-            ).map(e -> e.getValue()).collect(Collectors.toList());
+            List<NifiFeedStats> updatedStats = feedStatsMap.entrySet().stream().map(e -> e.getValue()).collect(Collectors.toList());
 
             //if the running flows are 0 and its streaming we should try back to see if this feed is running or not
             updatedStats.stream().filter(s -> s.isStream()).forEach(stats -> {
@@ -440,6 +457,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats -> {
             Long collectionIntervalMillis = feedProcessorStats.getCollectionIntervalMillis();
             String feedProcessorId = feedProcessorStats.getStartingProcessorId();
+
             String feedName = getFeedName(feedProcessorStats);
             if (StringUtils.isNotBlank(feedName)) {
                 String feedProcessGroupId = provenanceEventFeedUtil.getFeedProcessGroupId(feedProcessorId);
@@ -478,12 +496,38 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
 
         });
 
-        if (!unregisteredEvents.isEmpty()) {
 
-            //reprocess
-
-        }
         return nifiFeedProcessorStatsList;
+
+    }
+
+    private void ensureStreamingJobExecutionRecord(NifiFeedProcessorStats stats) {
+        if(stats.getJobsStarted() >0 || stats.getJobsFinished() >0) {
+            OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(stats.getFeedName());
+            if(feed.isStream()) {
+                ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
+                event.setEventId(stats.getMaxEventId());
+                event.setEventTime(stats.getMinEventTime().getMillis());
+                event.setEventDuration(stats.getDuration());
+                event.setFlowFileUuid(stats.getLatestFlowFileId());
+                event.setJobFlowFileId(stats.getLatestFlowFileId());
+                event.setComponentId(stats.getProcessorId());
+                event.setComponentName(stats.getProcessorName());
+                event.setIsFailure(stats.getFailedCount() > 0L);
+                event.setStream(feed.isStream());
+                event.setIsStartOfJob(stats.getJobsStarted() > 0L);
+                event.setIsFinalJobEvent(stats.getJobsFinished() > 0L);
+                event.setFeedProcessGroupId(stats.getFeedProcessGroupId());
+                event.setFeedName(stats.getFeedName());
+                ProvenanceEventRecordDTOHolder holder = new ProvenanceEventRecordDTOHolder();
+                List<ProvenanceEventRecordDTO> events = new ArrayList<>();
+                events.add(event);
+                holder.setEvents(events);
+                log.info("Ensuring Streaming Feed Event: {} has a respective JobExecution record ",event);
+                provenanceEventReceiver.receiveEvents(holder);
+            }
+        }
+
 
     }
 

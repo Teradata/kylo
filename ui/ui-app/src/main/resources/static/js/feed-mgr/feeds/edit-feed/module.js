@@ -11,7 +11,7 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
         //https://docs.angularjs.org/guide/migration#migrating-from-1-5-to-1-6
         $compileProvider.preAssignBindingsEnabled(true);
 
-        $stateProvider.state(AccessConstants.UI_STATES.FEED_DETAILS.state,{
+        $stateProvider.state(AccessConstants.default.UI_STATES.FEED_DETAILS.state,{
             url:'/feed-details/{feedId}',
             params: {
                 feedId: null,
@@ -31,9 +31,9 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                 breadcrumbRoot:false,
                 displayName:'Edit Feed',
                 module:moduleName,
-                permissions:AccessConstants.UI_STATES.FEED_DETAILS.permissions
+                permissions:AccessConstants.default.UI_STATES.FEED_DETAILS.permissions
             }
-        }).state(AccessConstants.UI_STATES.EDIT_FEED.state,{
+        }).state(AccessConstants.default.UI_STATES.EDIT_FEED.state,{
                 url:'/edit-feed/{feedId}',
                 params: {
                     feedId: null
@@ -52,12 +52,12 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name','kylo-utils/LazyLoadUti
                     breadcrumbRoot: false,
                     displayName: 'Edit Feed',
                     module:moduleName,
-                    permissions:AccessConstants.UI_STATES.EDIT_FEED.permissions
+                    permissions:AccessConstants.default.UI_STATES.EDIT_FEED.permissions
                 }
             })
 
         function lazyLoadController(path){
-            return lazyLoadUtil.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
+            return lazyLoadUtil.default.lazyLoadController(path,['feed-mgr/feeds/module-require','feed-mgr/feeds/edit-feed/module-require','feed-mgr/sla/module-require','feed-mgr/visual-query/module-require','angular-visjs']);
         }
     }]);
 

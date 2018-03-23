@@ -25,8 +25,10 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDerivedDatasource;
 import com.thinkbiganalytics.search.api.Search;
 import com.thinkbiganalytics.search.api.SearchIndex;
 
@@ -45,7 +47,10 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.Value;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventIterator;
 import javax.jcr.observation.EventListener;
@@ -143,38 +148,72 @@ public class JcrIndexService implements EventListener {
      */
     private boolean indexDerivedDatasource(@Nonnull final DerivedDatasource datasource) {
         if (HIVE_DATASOURCE.equals(datasource.getDatasourceType())) {
-            final Map<String, Object> fields = new HashMap<>();
-
-            // Determine database and table names
-            final Map<String, Object> properties = datasource.getProperties();
-            fields.put("databaseName", properties.get("Target schema"));
-            fields.put("tableName", properties.get("Target table"));
-
-            // Generate list of column metadata
-            final Map<String, Object> genericProperties = datasource.getGenericProperties();
-            final Object columns = genericProperties.get("columns");
-            if (columns != null && columns instanceof List) {
-                final List<Map<String, Object>> hiveColumns = ((List<?>) columns).stream()
-                    .map(Map.class::cast)
-                    .map(map -> {
-                        final Map<String, Object> column = new HashMap<>();
-                        column.put("columnComment", map.get("description"));
-                        column.put("columnName", map.get("name"));
-                        @SuppressWarnings("unchecked") final List<Map<String, String>> tags = (List<Map<String, String>>) map.get("tags");
-                        if (tags != null && !tags.isEmpty()) {
-                            column.put("columnTags", tags.stream().map(tag -> tag.get("name")).collect(Collectors.toList()));
+            boolean allowIndexing = metadataAccess.read(() -> {
+                boolean allowIndexingEvaluation = true;
+                Session session = JcrMetadataAccess.getActiveSession();
+                if (session != null) {
+                    Value[] feedDestinationsArray = ((JcrDerivedDatasource) datasource).getNode().getProperty("tba:feedDestinations").getValues();
+                    for (Value feedDestination : feedDestinationsArray) {
+                        Node feedDestinationNode = session.getNodeByIdentifier(feedDestination.getString());
+                        if (feedDestinationNode != null) {
+                            Node feedDetailsNode = feedDestinationNode.getParent();
+                            if (feedDetailsNode != null) {
+                                Node feedSummaryNode = feedDetailsNode.getParent();
+                                if (feedSummaryNode != null) {
+                                    String indexingOption = feedSummaryNode.getProperty("tba:allowIndexing").getString();
+                                    if ((indexingOption != null) && (indexingOption.equals("N"))) {
+                                        allowIndexingEvaluation = false;
+                                    }
+                                }
+                            }
                         }
-                        column.put("columnType", map.get("derivedDataType"));
-                        return column;
-                    })
-                    .collect(Collectors.toList());
-                fields.put("hiveColumns", hiveColumns);
-            }
+                    }
+                }
+                return allowIndexingEvaluation;
+            }, MetadataAccess.SERVICE);
 
-            // Index the Hive schema
-            if (fields.get("databaseName") != null && fields.get("tableName") != null) {
-                search.index(SearchIndex.DATASOURCES, datasource.getDatasourceType(), datasource.getId().toString(), fields);
-                return true;
+            if (allowIndexing) {
+                final Map<String, Object> fields = new HashMap<>();
+
+                // Determine database and table names
+                final Map<String, Object> properties = datasource.getProperties();
+                fields.put("databaseName", properties.get("Target schema"));
+                fields.put("tableName", properties.get("Target table"));
+
+                // Generate list of column metadata
+                final Map<String, Object> genericProperties = datasource.getGenericProperties();
+                final Object columns = genericProperties.get("columns");
+                if (columns != null && columns instanceof List) {
+                    final List<Map<String, Object>> hiveColumns = ((List<?>) columns).stream()
+                        .map(Map.class::cast)
+                        .map(map -> {
+                            final Map<String, Object> column = new HashMap<>();
+                            column.put("columnComment", map.get("description"));
+                            column.put("columnName", map.get("name"));
+                            @SuppressWarnings("unchecked") final List<Map<String, String>> tags = (List<Map<String, String>>) map.get("tags");
+                            if (tags != null && !tags.isEmpty()) {
+                                column.put("columnTags", tags.stream().map(tag -> tag.get("name")).collect(Collectors.toList()));
+                            }
+                            column.put("columnType", map.get("derivedDataType"));
+                            return column;
+                        })
+                        .collect(Collectors.toList());
+                    fields.put("hiveColumns", hiveColumns);
+                }
+
+                // Index the Hive schema
+                if (fields.get("databaseName") != null && fields.get("tableName") != null) {
+                    search.index(SearchIndex.DATASOURCES, datasource.getDatasourceType(), datasource.getId().toString(), fields);
+                    return true;
+                }
+            }
+            else {
+                //Drop schema from index if feed's indexing is disabled
+                try {
+                    return checkAndDeleteSchema(((JcrDerivedDatasource) datasource).getId().getIdValue(), ((JcrDerivedDatasource) datasource).getPath());
+                } catch (RepositoryException e) {
+                    log.warn("Unable to get id and/or path for datasource: {}", e.getMessage());
+                }
             }
         }
         return false;
@@ -187,18 +226,7 @@ public class JcrIndexService implements EventListener {
         boolean commit = false;
 
         if (event.getType() == Event.NODE_REMOVED) {
-            Pattern nodePattern = Pattern.compile("^/metadata/datasources/derived/HiveDatasource-([^/.]+)\\.([^/.]+)$");
-            Matcher nodeMatcher = nodePattern.matcher(event.getPath());
-
-            if (nodeMatcher.matches()) {
-                if (nodeMatcher.groupCount() != 2) {
-                    log.warn("Schema and table information not received for deletion event (id = {}). Deletion should be handled separately.", event.getIdentifier());
-                }
-                else {
-                    search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, event.getIdentifier(), nodeMatcher.group(1), nodeMatcher.group(2));
-                    commit = true;
-                }
-            }
+            commit = checkAndDeleteSchema(event.getIdentifier(), event.getPath());
         } else {
             commit = metadataAccess.read(() -> {
                 final Datasource datasource = datasourceProvider.getDatasource(datasourceProvider.resolve(event.getIdentifier()));
@@ -214,6 +242,23 @@ public class JcrIndexService implements EventListener {
         if (commit) {
             search.commit(SearchIndex.DATASOURCES);
         }
+    }
+
+    private boolean checkAndDeleteSchema(@Nonnull final String identifier, @Nonnull final String path) throws RepositoryException {
+        boolean retVal = false;
+        Pattern nodePattern = Pattern.compile("^/metadata/datasources/derived/HiveDatasource-([^/.]+)\\.([^/.]+)$");
+        Matcher nodeMatcher = nodePattern.matcher(path);
+
+        if (nodeMatcher.matches()) {
+            if (nodeMatcher.groupCount() != 2) {
+                log.warn("Schema and table information not received for deletion event (id = {}). Deletion should be handled separately.", identifier);
+            }
+            else {
+                search.delete(SearchIndex.DATASOURCES, HIVE_DATASOURCE, identifier, nodeMatcher.group(1), nodeMatcher.group(2));
+                retVal = true;
+            }
+        }
+        return retVal;
     }
 
     /**

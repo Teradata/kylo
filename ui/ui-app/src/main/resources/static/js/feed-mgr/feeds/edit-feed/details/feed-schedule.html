@@ -23,25 +23,34 @@
 
     <readonly-section>
         <div ng-if="vm.model.reusableFeed == false">
-        <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name"> {{"views.feed-schedule.Strategy" | translate}} </span>
+            <div layout="row" class="feed-property versions-{{vm.diff('/schedule/schedulingStrategy')}}">
+                <span flex="25" class="property-name"> {{"views.feed-schedule.Strategy" | translate}} </span>
 
-            <div flex>
-                {{vm.model.schedule.schedulingStrategy | translate}}
+                <div flex>
+                    {{vm.model.schedule.schedulingStrategy | translate}}
+                </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.schedule.schedulingStrategy | translate}}
+                </div>
             </div>
-        </div>
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
-            <span flex="25" class="property-name"> {{"views.feed-schedule.Period" | translate}} </span>
+            <div layout="row" class="feed-property versions-{{vm.diff('/schedule/schedulingPeriod')}}" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
+                <span flex="25" class="property-name"> {{"views.feed-schedule.Period" | translate}} </span>
 
-            <div flex>
-                {{vm.model.schedule.schedulingPeriod}}
+                <div flex>
+                    {{vm.model.schedule.schedulingPeriod}}
+                </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.schedule.schedulingPeriod}}
+                </div>
             </div>
-        </div>
-            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.isClustered && vm.supportsExecutionNode">
+            <div layout="row" class="feed-property versions-{{vm.diff('/schedule/executionNode')}}" ng-if="vm.isClustered && vm.supportsExecutionNode">
                 <span flex="25" class="property-name">Execution Node</span>
 
                 <div flex>
                     {{vm.model.schedule.executionNode}}
+                </div>
+                <div flex ng-if="vm.versions">
+                    {{vm.versionFeedModel.schedule.executionNode}}
                 </div>
             </div>
             <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
@@ -50,10 +59,16 @@
                 </div>
                 <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
                     <md-list class="md-2-line">
-                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding layout-padding-top-bottom">
-                            <div layout="column" flex="75" class="md-list-item-text">
-                                <span>{{rule.propertyValuesDisplayString}}</span>
-                                <span class="hint">{{rule.name}}</span>
+                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding feed-property versions-{{vm.diffCollection('/schedule/preconditions/' + $index)}}"">
+                            <div layout="row" flex>
+                                <div layout="column" flex class="md-list-item-text">
+                                    <span>{{rule.propertyValuesDisplayString}}</span>
+                                    <span class="hint">{{rule.name}}</span>
+                                </div>
+                                <div layout="column" flex class="md-list-item-text" ng-if="vm.versions">
+                                    <span>{{vm.versionFeedModel.schedule.preconditions[$index].propertyValuesDisplayString}}</span>
+                                    <span class="hint">{{vm.versionFeedModel.schedule.preconditions[$index].name}}</span>
+                                </div>
                             </div>
                             <md-divider ng-if="!$last"></md-divider>
                         </md-list-item>

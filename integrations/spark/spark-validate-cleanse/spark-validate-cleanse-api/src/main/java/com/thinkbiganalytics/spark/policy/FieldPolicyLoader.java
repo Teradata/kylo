@@ -36,6 +36,8 @@ import java.util.Map;
 @Component
 public class FieldPolicyLoader implements Serializable {
 
+    private static final long serialVersionUID = 6930067628549528683L;
+
     private static final Logger log = LoggerFactory.getLogger(FieldPolicyLoader.class);
 
     /**

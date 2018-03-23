@@ -59,6 +59,7 @@ import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.hive.ql.session.SessionState;
 import org.apache.spark.sql.types.StructType;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -110,6 +111,12 @@ public class TransformService {
      */
     @Nullable
     private Profiler profiler;
+
+    /**
+     * Hive SessionState for adding to other threads.
+     */
+    @Nullable
+    private final SessionState sessionState = SessionState.get();
 
     /**
      * Provides access to the Spark context
@@ -444,6 +451,11 @@ public class TransformService {
             } else {
                 throw log.throwing(new ScriptException("Script cannot be executed because no data source provider factory is available."));
             }
+        }
+
+        // Ensure SessionState is valid
+        if (SessionState.get() == null && sessionState != null) {
+            SessionState.setCurrentSessionState(sessionState);
         }
 
         // Execute script

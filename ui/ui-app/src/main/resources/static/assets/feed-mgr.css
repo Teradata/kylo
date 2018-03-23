@@ -463,6 +463,7 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
 
 .tooltip-multi-line {
   height: auto;
+  width: auto;
 }
 
 .validation-error {

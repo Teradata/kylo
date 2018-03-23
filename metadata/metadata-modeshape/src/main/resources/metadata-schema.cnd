@@ -97,6 +97,8 @@
     + * (tba:project) sns
 
 [tba:feedsFolder] > nt:folder 
+    + tba:categoryUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
+    + tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
     + * (tba:category) sns
 
 [tba:feedFolder] > nt:folder 
@@ -218,6 +220,9 @@
 [tba:initStatus] > nt:hierarchyNode, mix:created
     - tba:state (STRING)
 
+[tba:historyReindexing] > nt:hierarchyNode, mix:lastModified
+    - tba:reindexingStatus (STRING) = 'NEVER_RUN' mandatory
+
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
 [tba:extensibleEntity] > tba:entity
@@ -237,7 +242,10 @@
     - tba:isStream (BOOLEAN) = 'false'
     - tba:templateTableOption (STRING)
 
-[tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled
+[tba:indexControlled] mixin
+	- tba:allowIndexing (STRING) = 'Y' mandatory
+
+[tba:category] > tba:extensibleEntity, tba:propertied, mix:referenceable, mix:title, tba:accessControlled, tba:indexControlled
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	+ tba:details (tba:categoryDetails) = tba:categoryDetails autocreated mandatory
@@ -246,7 +254,11 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:securityGroups (WEAKREFERENCE) multiple
 	+ tba:feedRoleMemberships (tba:CategoryFeedRoleMemberships) = tba:CategoryFeedRoleMemberships autocreated 
+	+ tba:feedUserFields (tba:userFieldDescriptors) = tba:userFieldDescriptors autocreated
 	+ * (tba:feed) sns
+
+[tba:userFieldDescriptors] > nt:hierarchyNode
+    + * (tba:fieldDescriptor)
 
 [tba:CategoryFeedRoleMemberships] > nt:hierarchyNode
     + tba:roleMemberships (tba:roleMembership) sns
@@ -256,12 +268,11 @@
     + tba:summary (tba:feedSummary) = tba:feedSummary autocreated mandatory
     + tba:data (tba:feedData) = tba:feedData autocreated mandatory
 
-[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable
+[tba:feedSummary] > tba:extensibleEntity, mix:title, tba:propertied, tba:taggable, mix:versionable, tba:indexControlled
     - tba:systemName (STRING) mandatory
-    - tba:category (REFERENCE) mandatory
     + tba:details (tba:feedDetails) = tba:feedDetails autocreated mandatory
 
-[tba:feedDetails] > nt:hierarchyNode, tba:propertied
+[tba:feedDetails] > nt:hierarchyNode, tba:propertied, tba:extensibleEntity
     - tba:feedTemplate (REFERENCE)
     - tba:slas (WEAKREFERENCE) multiple
     - tba:dependentFeeds (WEAKREFERENCE) multiple
@@ -278,6 +289,7 @@
     - tba:securityGroups (WEAKREFERENCE) multiple
     + tba:highWaterMarks (tba:waterMarks)
     + tba:initialization (tba:initialization)
+    + tba:historyReindexing (tba:historyReindexing) = tba:historyReindexing autocreated mandatory
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)
@@ -331,6 +343,10 @@
     - tba:enabled (BOOLEAN) = 'true'
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
+    + tba:relatedFeeds (tba:slaFeedsRelationship)
+
+[tba:slaFeedsRelationship] > nt:hierarchyNode
+    - tba:feeds (WEAKREFERENCE) multiple
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory

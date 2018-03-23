@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>kylo-modeshape</artifactId>
+    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <version>0.9.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>kylo-modeshape-elasticsearch-index-provider</artifactId>
+
+  <properties>
+    <plugin.license.parentRelative>../../../</plugin.license.parentRelative>
+  </properties>
+
+  <dependencies>
+
+    <!--
+     The modeshape bom does not include this dependency. Hence, specifying explicit version.
+     Each upgrade of modeshape version in Kylo needs to ensure availability of upgraded artifact for es index provider below
+   -->
+    <dependency>
+      <groupId>org.modeshape</groupId>
+      <artifactId>modeshape-elasticsearch-index-provider</artifactId>
+      <version>${modeshape.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-metadata-api</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-metadata-modeshape</artifactId>
+      <version>${project.version}</version>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.jettison</groupId>
+      <artifactId>jettison</artifactId>
+    </dependency>
+  </dependencies>
+
+  <!--<build>-->
+    <!--<plugins>-->
+      <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-shade-plugin</artifactId>-->
+        <!--<version>3.0.0</version>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<phase>package</phase>-->
+            <!--<goals>-->
+              <!--<goal>shade</goal>-->
+            <!--</goals>-->
+            <!--<configuration>-->
+              <!--<artifactSet>-->
+                <!--<excludes>-->
+                  <!--<exclude>org.slf4j:*</exclude>-->
+                  <!--<exclude>log4j:*</exclude>-->
+                  <!--<exclude>ch.qos.logback:*</exclude>-->
+                <!--</excludes>-->
+              <!--</artifactSet>-->
+              <!--<createDependencyReducedPom>false</createDependencyReducedPom>-->
+            <!--</configuration>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
+    <!--</plugins>-->
+  <!--</build>-->
+
+</project>

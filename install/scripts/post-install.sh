@@ -95,7 +95,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
-java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
+java \$KYLO_UI_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --static.path=$INSTALL_HOME/kylo-ui/plugin/static/ --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh
   #!/bin/bash
@@ -104,7 +104,7 @@ export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_UI_OPTS=-Xmx512m
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
-java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
+java \$KYLO_UI_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-ui/conf:$INSTALL_HOME/kylo-ui/lib/*:$INSTALL_HOME/kylo-ui/plugin/* com.thinkbiganalytics.KyloUiApplication  --static.path=$INSTALL_HOME/kylo-ui/plugin/static/ --pgrep-marker=$pgrepMarkerKyloUi > $LOG_DIRECTORY_LOCATION/kylo-ui/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-ui/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui.sh
 chmod +x $INSTALL_HOME/kylo-ui/bin/run-kylo-ui-with-debug.sh

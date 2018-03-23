@@ -1,62 +1,29 @@
-define(['angular','ops-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).service('ChartJobStatusService', ["IconService", "Nvd3ChartService",function (IconService, Nvd3ChartService) {
-
-        var self = this;
-        this.renderEndUpdated = {};
-        /*
-         this.toChartData = function(jobStatusCountResponse) {
-         var statusMap = {}
-
-         var data = [];
-         var dateMap = {};
-         var responseData = jobStatusCountResponse;
-         if(responseData) {
-
-         angular.forEach(responseData, function (statusCount, i) {
-         if (statusMap[statusCount.status] == undefined) {
-         statusMap[statusCount.status] = {};
-         }
-         dateMap[statusCount.date] = statusCount.date;
-         statusMap[statusCount.status][statusCount.date] = statusCount.count;
-         });
-
-         var keys = Object.keys(dateMap),
-         len = keys.length;
-         keys.sort();
-
-         angular.forEach(statusMap, function (dateCounts, status) {
-         //fill in any empty dates with 0 values
-         var valuesArray = [];
-         angular.forEach(dateMap, function (date) {
-         if (dateCounts[date] == undefined) {
-         dateCounts[date] = 0;
-         }
-         });
-
-         for (var i = 0; i < len; i++) {
-         var date = keys[i];
-         var count = dateCounts[date];
-         valuesArray.push([parseInt(date), count]);
-         }
-         data.push({key: status, values: valuesArray, area: true, color: IconService.colorForJobStatus(status)});
-         })
-         }
-         return data;
-         }
-         */
-        this.toChartData = function (jobStatusCountResponse) {
-            return Nvd3ChartService.toLineChartData(jobStatusCountResponse, [{label: 'status', value: 'count'}], 'date', IconService.colorForJobStatus);
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var ChartJobStatusService = /** @class */ (function () {
+        function ChartJobStatusService(IconService, Nvd3ChartService) {
+            var _this = this;
+            this.IconService = IconService;
+            this.Nvd3ChartService = Nvd3ChartService;
+            this.renderEndUpdated = {};
+            this.toChartData = function (jobStatusCountResponse) {
+                return _this.Nvd3ChartService.toLineChartData(jobStatusCountResponse, [{ label: 'status', value: 'count' }], 'date', _this.IconService.colorForJobStatus);
+            };
+            this.shouldManualUpdate = function (chart) {
+                if (_this.renderEndUpdated[chart] == undefined) {
+                    _this.renderEndUpdated[chart] = chart;
+                    return true;
+                }
+                else {
+                    return false;
+                }
+            };
         }
-
-        this.shouldManualUpdate = function (chart) {
-            if (self.renderEndUpdated[chart] == undefined) {
-                self.renderEndUpdated[chart] = chart;
-                return true;
-            }
-            else {
-                return false;
-            }
-        }
-
-    }]);
+        return ChartJobStatusService;
+    }());
+    exports.default = ChartJobStatusService;
+    angular.module(module_name_1.moduleName)
+        .service('ChartJobStatusService', ["IconService", "Nvd3ChartService", ChartJobStatusService]);
 });
+//# sourceMappingURL=ChartJobStatusService.js.map

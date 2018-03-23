@@ -21,8 +21,8 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
  */
 
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.jobrepo.model.SavepointReplayJobExecution;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobModelTransform;
 import com.thinkbiganalytics.jobrepo.query.model.transform.JobStatusTransform;
@@ -37,11 +37,14 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiFeedStatisticsProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecutionProvider;
+import com.thinkbiganalytics.nifi.savepoint.model.SavepointReplayEvent;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.security.AccessController;
 
 import org.joda.time.Period;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 
 import java.util.Collections;
@@ -75,6 +78,8 @@ import io.swagger.annotations.ApiResponses;
 public class JobsRestController {
 
     public static final String BASE = "/v1/jobs";
+
+    private static final Logger log = LoggerFactory.getLogger(JobsRestController.class);
 
     @Inject
     OpsManagerFeedProvider opsFeedManagerFeedProvider;
@@ -111,7 +116,7 @@ public class JobsRestController {
 
         return metadataAccess.read(() -> {
             ExecutedJob executedJob = null;
-            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId));
+            BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(Long.parseLong(executionId),false);
             if (jobExecution != null) {
                 if (includeSteps) {
                     executedJob = JobModelTransform.executedJob(jobExecution);
@@ -122,66 +127,6 @@ public class JobsRestController {
             return executedJob;
         });
 
-    }
-
-    /**
-     * Restart the job associated with the given instance id
-     *
-     * @return A status message and the appropriate http status code
-     */
-    @POST
-    @Path("/{executionId}/restart")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Restarts the specified job.", hidden = true)
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
-                      @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
-                  })
-    public ExecutedJob restartJob(@PathParam("executionId") Long executionId) throws JobExecutionException {
-
-        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-        ExecutedJob job = metadataAccess.commit(() -> {
-            Long newJobExecutionId = this.jobService.restartJobExecution(executionId);
-            if (newJobExecutionId != null) {
-                BatchJobExecution jobExecution = jobExecutionProvider.findByJobExecutionId(newJobExecutionId);
-                if (jobExecution != null) {
-                    return JobModelTransform.executedJob(jobExecution);
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
-        });
-        if (job == null) {
-            throw new JobExecutionException("Could not restart the job with execution Id of " + executionId);
-        }
-        return job;
-    }
-
-    /**
-     * Stop the job associated with the given instance id
-     *
-     * @param executionId The job instance id
-     * @return A status message and the appropriate http status code
-     */
-    @POST
-    @Path("/{executionId}/stop")
-    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation(value = "Stops the specified job.", hidden = true)
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
-                      @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
-                  })
-    public ExecutedJob stopJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
-
-        this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
-        metadataAccess.commit(() -> {
-            boolean stopped = this.jobService.stopJobExecution(executionId);
-            return stopped;
-        });
-        return getJob(executionId.toString(), jobAction.isIncludeSteps());
     }
 
     /**
@@ -260,6 +205,43 @@ public class JobsRestController {
         return getJob(executionId.toString(), jobAction.isIncludeSteps());
     }
 
+    @POST
+    @Path("/{executionId}/savepoint/trigger-retry/{flowfileId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "replay the specified job.", hidden = true)
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+                      @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+                  })
+    public Response triggerSavepointRetry(@PathParam("executionId") Long executionId, @PathParam("flowfileId") String flowfileId) throws JobExecutionException {
+        log.info("Attempt to trigger Retry for savepoint on job {} with flowfile: {} ",executionId,flowfileId);
+        SavepointReplayJobExecution savepointReplayJobExecution = new SavepointReplayJobExecution(executionId,flowfileId,SavepointReplayEvent.Action.RETRY.name());
+
+        this.jobService.restartJobExecution(savepointReplayJobExecution);
+
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+
+    }
+
+    @POST
+    @Path("/{executionId}/savepoint/trigger-release/{flowfileId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "replay the specified job.", hidden = true)
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the job.", response = ExecutedJob.class),
+                      @ApiResponse(code = 404, message = "The executionId is not a valid integer.", response = RestResponseStatus.class)
+                  })
+    public Response triggerSavepointRelease(@PathParam("executionId") Long executionId, @PathParam("flowfileId") String flowfileId) throws JobExecutionException {
+        log.info("Attempt to trigger Release for savepoint on job {} with flowfile: {} ",executionId,flowfileId);
+
+        SavepointReplayJobExecution savepointReplayJobExecution = new SavepointReplayJobExecution(executionId,flowfileId,SavepointReplayEvent.Action.RELEASE.name());
+
+        this.jobService.stopJobExecution(savepointReplayJobExecution);
+
+
+        return Response.ok(new RestResponseStatus.ResponseStatusBuilder().buildSuccess()).build();
+
+    }
 
     @GET
     @Path("/")

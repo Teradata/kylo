@@ -81,7 +81,7 @@ public class TransformRequest {
      *
      * @param datasources the data sources
      */
-    public void setDatasources(@Nonnull final List<Datasource> datasources) {
+    public void setDatasources(final List<Datasource> datasources) {
         this.datasources = datasources;
     }
 
@@ -99,7 +99,7 @@ public class TransformRequest {
      *
      * @param parent the previous result
      */
-    public void setParent(@Nonnull final Parent parent) {
+    public void setParent(final Parent parent) {
         this.parent = parent;
     }
 
@@ -128,7 +128,7 @@ public class TransformRequest {
      *
      * @param script the transformation script
      */
-    public void setScript(@Nonnull final String script) {
+    public void setScript(final String script) {
         this.script = script;
     }
 

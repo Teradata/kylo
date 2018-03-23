@@ -41,8 +41,9 @@ export class WranglerDataService {
     getCellSync(i: number, j: number): any {
         const column: any = this.columns_[j];
         if (i >= 0 && i < this.rows_.length) {
-            const validation = (this.validationResults != null && i < this.validationResults.length && this.validationResults[i] != null)
-                ? this.validationResults[i].filter(result => result.field === column.headerTooltip)
+            const originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
+            const validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
+                ? this.validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
                 : null;
             return {
                 column: j,

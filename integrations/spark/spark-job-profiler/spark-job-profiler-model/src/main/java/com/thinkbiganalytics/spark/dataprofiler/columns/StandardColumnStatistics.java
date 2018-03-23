@@ -38,8 +38,9 @@ import javax.annotation.Nonnull;
 /**
  * Class to hold common profile statistics for columns of all data types
  */
-@SuppressWarnings("serial")
 public abstract class StandardColumnStatistics implements ColumnStatistics, Serializable {
+
+    private static final long serialVersionUID = 1602490256792712550L;
 
     /* Schema information for column */
     final StructField columnField;

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -39,6 +39,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
+import org.apache.commons.lang.SerializationUtils;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.hibernate.exception.LockAcquisitionException;
 import org.joda.time.DateTime;
@@ -48,8 +49,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
 import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
@@ -77,6 +82,14 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
     Cache<String, DateTime> lastFeedFinishedNotificationCache = CacheBuilder.newBuilder().build();
+
+    /**
+     * Map of flowfiles attempting to get/create job executions
+     * When an Event comes it Kylo needs to associate it with a given JobExecution in the database.
+     * This process will lock on the events JobExecution Id.
+     * If the lock cant be acquired it will increment a retrycounter into this map and try again
+     */
+    private Map<String, AtomicInteger> findJobExecutionAttempts = new HashMap<>();
 
 
     /**
@@ -109,6 +122,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
 
 
     private static final String JMS_LISTENER_ID = "provenanceEventReceiverJmsListener";
+    private static final String JMS_LISTENER_ID2 = "provenanceEventReceiverJmsListener2";
 
 
     @Inject
@@ -177,6 +191,28 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      *
      * @param events The events obtained from JMS
      */
+    @JmsListener(id = JMS_LISTENER_ID2, destination = Queues.FEED_MANAGER_QUEUE2, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY, concurrency = "3-10")
+    public void receiveEvents(byte[] events) {
+        Object o = null;
+        try {
+            o = SerializationUtils.deserialize(events);
+        } catch (Exception e) {
+            log.error("Unable to deserialize object ", e);
+        }
+        if (o != null && o instanceof ProvenanceEventRecordDTOHolder) {
+            receiveEvents((ProvenanceEventRecordDTOHolder) o);
+        }
+
+    }
+
+    /**
+     * Process the Events from Nifi
+     * If it is a batch job, write the records to Ops manager.
+     * if it is a stream just write to the Nifi_event table.
+     * When either are marked as the last event Notify the event bus for the trigger feed mechanism to work.
+     *
+     * @param events The events obtained from JMS
+     */
     @JmsListener(id = JMS_LISTENER_ID, destination = Queues.FEED_MANAGER_QUEUE, containerFactory = JmsConstants.QUEUE_LISTENER_CONTAINER_FACTORY, concurrency = "3-10")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to {} batch: {},  {} events from the {} queue ", (events instanceof RetryProvenanceEventRecordHolder) ? "RETRY" : "process", events.getBatchId(), events.getEvents().size(),
@@ -212,6 +248,45 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             log.info("NiFi is not up yet. Sending batch {} back to JMS for later dequeue ", events.getBatchId());
             throw new JmsProcessingException("Unable to process events.  NiFi is either not up, or there is an error trying to populate the Kylo NiFi Flow Cache. ");
         }
+    }
+
+    /**
+     * Try to get JobExecution for the given event.
+     * This will lock on the events JobFlowFileId when looking for the jobExecution
+     * @param event the event to process
+     * @return the JobExeuction related to this Event
+     * @throws InterruptedException
+     */
+    private BatchJobExecution findOrCreateJobExecution(ProvenanceEventRecordDTO event, OpsManagerFeed feed) throws InterruptedException{
+        BatchJobExecution jobExecution = null;
+        Lock lock = ProvenanceEventJobExecutionLockManager.getLock(event.getJobFlowFileId());
+        String key = event.getJobFlowFileId() + "-" + event.getFlowFileUuid() + "-" + event.getEventId();
+        findJobExecutionAttempts.putIfAbsent(key, new AtomicInteger(0));
+        try {
+            if (lock.tryLock(2L, TimeUnit.SECONDS)) {
+                try {
+                     jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event,feed),
+                                                                           MetadataAccess.SERVICE);
+                } finally {
+                    findJobExecutionAttempts.remove(key);
+                    ProvenanceEventJobExecutionLockManager.releaseLock(event.getJobFlowFileId());
+                }
+            } else {
+                int retries = findJobExecutionAttempts.get(key).incrementAndGet();
+                log.warn("unable to acquire lock for {} while looking for JobExecution.  Retry attempt: {} ",event.getJobFlowFileId(),retries);
+                //try three times before giving up
+                if (retries < 3) {
+                    findOrCreateJobExecution(event, feed);
+                } else {
+                    //give up
+                    findJobExecutionAttempts.remove(key);
+                    log.error("Unable to acquire the Lock to get/create the JobExecution for this event {}. This event will not be processed",event);
+                }
+            }
+        }catch (InterruptedException e) {
+          throw e;
+        }
+        return jobExecution;
 
     }
 
@@ -227,10 +302,9 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(event);
             log.debug("Process {} for flowfile: {} and processorId: {} ", event, event.getJobFlowFileId(), event.getFirstEventProcessorId());
             //ensure the job is there
-            BatchJobExecution jobExecution = metadataAccess.commit(() -> batchJobExecutionProvider.getOrCreateJobExecution(event, feed),
-                                                                   MetadataAccess.SERVICE);
 
-            if(jobExecution != null){
+            BatchJobExecution jobExecution = findOrCreateJobExecution(event, feed);
+            if (jobExecution != null) {
                 batchJobExecutionProvider.updateFeedJobStartTime(jobExecution, feed);
             }
 
@@ -275,7 +349,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         //   NifiEvent nifiEvent = null;
         log.debug("Received ProvenanceEvent {}.  is ending flowfile:{}", event, event.isEndingFlowFileEvent());
         //query it again
-        jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
+        jobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId(), true);
         BatchJobExecution job = batchJobExecutionProvider.save(jobExecution, event);
         if (job == null) {
             log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, ", event, event.isEndingFlowFileEvent(),
@@ -287,10 +361,11 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
      * When should the system notify others the job has finished with success/failure.
      * if Batch always notify
      * if Stream notify every 5 sec
+     *
      * @param event final event
      * @return true if notify, false if not
      */
-    private boolean isNotifyJobFinished(ProvenanceEventRecordDTO event){
+    private boolean isNotifyJobFinished(ProvenanceEventRecordDTO event) {
         if (event.isFinalJobEvent()) {
             String mapKey = triggeredEventsKey(event);
             String alreadyTriggered = completedJobEvents.getIfPresent(mapKey);
@@ -302,7 +377,7 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
         }
         return false;
 
-}
+    }
 
     /**
      * Notify that the Job is complete either as a successful job or failed Job
@@ -316,20 +391,20 @@ public class ProvenanceEventReceiver implements FailedStepExecutionListener {
             //register the event as being triggered
             String mapKey = triggeredEventsKey(event);
             completedJobEvents.put(mapKey, mapKey);
-            lastFeedFinishedNotificationCache.put(event.getFeedName(),DateTime.now());
-                metadataAccess.commit(() -> {
-                    BatchJobExecution batchJobExecution = jobExecution;
-                    if ((!event.isStream() && batchJobExecution.isFailed()) || (event.isStream() && event.isFailure())) {
-                        //requery for failure events as we need to access the map of data for alert generation
-                        batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId());
-                        failedJob(batchJobExecution, event);
-                    } else {
-                        successfulJob(batchJobExecution, event);
-                    }
+            lastFeedFinishedNotificationCache.put(event.getFeedName(), DateTime.now());
+            metadataAccess.commit(() -> {
+                BatchJobExecution batchJobExecution = jobExecution;
+                if ((!event.isStream() && batchJobExecution.isFailed()) || (event.isStream() && event.isFailure())) {
+                    //requery for failure events as we need to access the map of data for alert generation
+                    batchJobExecution = batchJobExecutionProvider.findByJobExecutionId(jobExecution.getJobExecutionId(), false);
+                    failedJob(batchJobExecution, event);
+                } else {
+                    successfulJob(batchJobExecution, event);
+                }
 
-                }, MetadataAccess.SERVICE);
-        }else {
-            log.debug("skipping job finished notification for feed: {}, isStream:{}, isFailure:{} ",event.getFeedName(),event.isStream(), event.isFailure());
+            }, MetadataAccess.SERVICE);
+        } else {
+            log.debug("skipping job finished notification for feed: {}, isStream:{}, isFailure:{} ", event.getFeedName(), event.isStream(), event.isFailure());
         }
     }
 

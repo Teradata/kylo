@@ -44,6 +44,8 @@ import javax.persistence.Table;
 @Table(name = "KYLO_VERSION")
 public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion, Serializable {
 
+    private static final long serialVersionUID = -2921950159106351783L;
+
     private static final Logger log = LoggerFactory.getLogger(JpaKyloVersion.class);
 
     @Id

@@ -1,5 +1,6 @@
-define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleName) {
-
+define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
     var directive = function () {
         return {
             restrict: "EA",
@@ -18,71 +19,67 @@ define(['angular',"feed-mgr/templates/module-name"], function (angular,moduleNam
             }
         };
     };
-
-    function TemplateOrderController($http, $mdToast,  RestUrlService, RegisterTemplateService) {
-        var self = this;
-        self.model = [];
-        //order list
-        RegisterTemplateService.getRegisteredTemplates().then(function (response) {
-
-
-            //order by .order
-            var templates = _.sortBy(response.data, 'order');
-            if (self.addAsNew && (self.templateId == null || self.templateId == undefined)) {
-                //append to bottom
-                templates.push({id: 'NEW', templateName: self.templateName, currentTemplate: true});
-            }
-            else {
-                var currentTemplate = _.filter(templates, function (template) {
-                    return template.id == self.templateId;
-                });
-                if (currentTemplate && currentTemplate.length == 1) {
-                    currentTemplate[0].currentTemplate = true;
+    var TemplateOrderController = /** @class */ (function () {
+        function TemplateOrderController($http, $mdToast, RestUrlService, RegisterTemplateService) {
+            this.$http = $http;
+            this.$mdToast = $mdToast;
+            this.RestUrlService = RestUrlService;
+            this.RegisterTemplateService = RegisterTemplateService;
+            var self = this;
+            self.model = [];
+            //order list
+            RegisterTemplateService.getRegisteredTemplates().then(function (response) {
+                //order by .order
+                var templates = _.sortBy(response.data, 'order');
+                if (self.addAsNew && (self.templateId == null || self.templateId == undefined)) {
+                    //append to bottom
+                    templates.push({ id: 'NEW', templateName: self.templateName, currentTemplate: true });
                 }
-            }
-            self.model = templates;
-        });
-
-        self.saveOrder = function () {
-
-            var order = [];
-            _.each(self.model, function (template) {
-                order.push(template.id);
+                else {
+                    var currentTemplate = _.filter(templates, function (template) {
+                        return template.id == self.templateId;
+                    });
+                    if (currentTemplate && currentTemplate.length == 1) {
+                        currentTemplate[0].currentTemplate = true;
+                    }
+                }
+                self.model = templates;
             });
-
-            var successFn = function (response) {
-                //toast created!!!
-                var message = 'Saved the template order';
-                self.message = message;
-                $mdToast.show(
+            self.saveOrder = function () {
+                var order = [];
+                _.each(self.model, function (template) {
+                    order.push(template.id);
+                });
+                var successFn = function (response) {
+                    //toast created!!!
+                    var message = 'Saved the template order';
+                    self.message = message;
+                    $mdToast.show($mdToast.simple()
+                        .textContent(message)
+                        .hideDelay(3000));
+                };
+                var errorFn = function (err) {
+                    var message = 'Error ordering templates ' + err;
+                    self.message = message;
                     $mdToast.simple()
                         .textContent(message)
-                        .hideDelay(3000)
-                );
-
-            }
-            var errorFn = function (err) {
-                var message = 'Error ordering templates ' + err;
-                self.message = message;
-                $mdToast.simple()
-                    .textContent(message)
-                    .hideDelay(3000);
-            }
-
-            var obj = {templateIds: order};
-            var promise = $http({
-                url: RestUrlService.SAVE_TEMPLATE_ORDER_URL,
-                method: "POST",
-                data: angular.toJson(obj),
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
-            }).then(successFn, errorFn);
-
+                        .hideDelay(3000);
+                };
+                var obj = { templateIds: order };
+                var promise = $http({
+                    url: RestUrlService.SAVE_TEMPLATE_ORDER_URL,
+                    method: "POST",
+                    data: angular.toJson(obj),
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8'
+                    }
+                }).then(successFn, errorFn);
+            };
         }
-
-    }
-
-    angular.module(moduleName).controller("TemplateOrderController", ["$http","$mdToast","RestUrlService","RegisterTemplateService",TemplateOrderController]);
-    angular.module(moduleName).directive("thinkbigTemplateOrder", directive);
+        return TemplateOrderController;
+    }());
+    exports.TemplateOrderController = TemplateOrderController;
+    angular.module(module_name_1.moduleName).controller("TemplateOrderController", ["$http", "$mdToast", "RestUrlService", "RegisterTemplateService", TemplateOrderController]);
+    angular.module(module_name_1.moduleName).directive("thinkbigTemplateOrder", directive);
 });
+//# sourceMappingURL=template-order.js.map

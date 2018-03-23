@@ -22,6 +22,8 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 import com.thinkbiganalytics.search.api.RepositoryIndexConfiguration;
+import com.thinkbiganalytics.spring.CommonsSpringConfiguration;
+import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
@@ -31,7 +33,7 @@ import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.modeshape.schematic.document.EditableDocument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -50,7 +52,7 @@ import javax.jcr.Repository;
  *
  */
 @Configuration
-@Import({MetadataJcrConfig.class, ModeShapeAuthConfig.class})
+@Import({MetadataJcrConfig.class, ModeShapeAuthConfig.class, CommonsSpringConfiguration.class})
 public class ModeShapeEngineConfig {
 
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
@@ -128,7 +130,7 @@ public class ModeShapeEngineConfig {
     }
 
     @Bean(destroyMethod="shutdown")
-    public ModeShapeEngine modeShapeEngine() {
+    public ModeShapeEngine modeShapeEngine(@Qualifier("springApplicationContext")SpringApplicationContext springApplicationContext) {
         ModeShapeEngine engine = new ModeShapeEngine();
         log.info("Starting ModeShape engine...");
         engine.start();
@@ -137,8 +139,8 @@ public class ModeShapeEngineConfig {
     }
 
     @Bean(name = "metadataJcrRepository")
-    public Repository metadataJcrRepository() throws Exception {
-        JcrRepository repo = modeShapeEngine().deploy(metadataRepoConfig());
+    public Repository metadataJcrRepository(@Qualifier("springApplicationContext")SpringApplicationContext springApplicationContext) throws Exception {
+        JcrRepository repo = modeShapeEngine(springApplicationContext).deploy(metadataRepoConfig());
 
         try {
             Problems problems = repo.getStartupProblems();

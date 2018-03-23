@@ -26,6 +26,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 import org.jboss.security.auth.spi.MemoryUsersRolesLoginModule;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -33,7 +34,6 @@ import org.springframework.context.annotation.Profile;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 /**
  * Configures a memory-based login module.
@@ -42,7 +42,11 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 @Profile("auth-spark")
 public class MemoryAuthConfig {
 
-    public static final int AUTH_SPARK_ORDER = LoginConfiguration.LOW_ORDER + 10;
+    @Value("${security.auth.spark.login.flag:sufficient}")
+    private String loginFlag;
+    
+    @Value("${security.auth.spark.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).LOWEST_ORDER + 10}}")
+    private int loginOrder;
 
     @Bean(name = "sparkLoginRoles")
     public Properties getRoles() {
@@ -60,10 +64,10 @@ public class MemoryAuthConfig {
                                                              @Qualifier("sparkLoginRoles") final Properties roles) {
         // @formatter:off
         return builder
-                .order(AUTH_SPARK_ORDER)
+                .order(this.loginOrder)
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(MemoryUsersRolesLoginModule.class)
-                    .controlFlag(LoginModuleControlFlag.SUFFICIENT)
+                    .controlFlag(this.loginFlag)
                     .option("users", users)
                     .option("roles", roles)
                     .add()

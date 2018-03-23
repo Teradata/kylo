@@ -40,7 +40,13 @@ public class ProvenanceEventDtoUtil {
     protected static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE"};
 
     public static boolean contains(String[] allowedEvents, String event) {
-        return Arrays.stream(allowedEvents).anyMatch(event::equals);
+        for(String e : allowedEvents){
+            if(e.equalsIgnoreCase(event)){
+                return true;
+            }
+        }
+        return false;
+        //return Arrays.stream(allowedEvents).anyMatch(event::equals);
     }
 
     /**

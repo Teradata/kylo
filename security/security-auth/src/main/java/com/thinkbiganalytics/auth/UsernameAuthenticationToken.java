@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.auth;
 
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
 /*-
  * #%L
  * kylo-security-auth
@@ -38,6 +40,19 @@ public class UsernameAuthenticationToken extends AbstractAuthenticationToken {
     private static final long serialVersionUID = 3803881659484269062L;
 
     private UsernamePasswordAuthenticationToken wrappedToken;
+    
+    /**
+     * Constructs an instance with a {@link UsernamePrincipal} as its principal created from the 
+     * provided username argument.
+     * <p>
+     * This constructor can be safely used by any code that wishes to create a
+     * <code>UsernameAuthenticationToken</code>, as the {@link #isAuthenticated()}
+     * will return <code>false</code>.
+     */
+    public UsernameAuthenticationToken(String principal) {
+        super(null);
+        this.wrappedToken = new UsernamePasswordAuthenticationToken(new UsernamePrincipal(principal), null);
+    }
 
     /**
      * This constructor can be safely used by any code that wishes to create a

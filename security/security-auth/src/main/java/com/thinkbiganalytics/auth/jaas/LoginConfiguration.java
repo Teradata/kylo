@@ -27,15 +27,13 @@ import java.util.Map;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
-import org.springframework.core.Ordered;
-
 /**
  * Represents a JAAS login configuration of one or more {@link AppConfigurationEntry} instances for
  * applications.  When more than one LoginConfiguration bean exists then all of the 
  * entries from each bean are merged into a single, combined JAAS configuration.
  * <p>
  * Beans that implement this interface may use the @Ordered annotation to set a precedence order.
- * This order will used when more than LoginConfiguration bean exists and their entries are to be merged.  
+ * This order will used when more than one LoginConfiguration bean exists and their entries are to be merged.  
  * Higher precedence (lower order numbered) LoginConfiguration entries
  * will be placed before lower precedence LoginConfiguration entries in the login sequence for a given 
  * application (i.e. "service", "UI", etc.)

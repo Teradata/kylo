@@ -106,6 +106,7 @@ public class NifiIntegrationRestController {
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.NiFiIntegrationMessages");
     public static final String BASE = "/v1/feedmgr/nifi";
     public static final String FLOWS = "/flows";
+    public static final String FLOW = "/flow";
     public static final String REUSABLE_INPUT_PORTS = "/reusable-input-ports";
     @Inject
     DBCPConnectionPoolService dbcpConnectionPoolTableInfo;
@@ -196,7 +197,7 @@ public class NifiIntegrationRestController {
     }
 
     @GET
-    @Path("/flow/{processGroupId}")
+    @Path(FLOW+"/{processGroupId}")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Gets the flow of the specified process group.")
     @ApiResponses({
@@ -273,7 +274,7 @@ public class NifiIntegrationRestController {
                       @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getReusableFeedInputPorts() {
-        Set<PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
+        Set<? extends PortDTO> ports = feedManagerTemplateService.getReusableFeedInputPorts();
         return Response.ok(ports).build();
     }
 
@@ -344,6 +345,56 @@ public class NifiIntegrationRestController {
         final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
         entity.setControllerServiceTypes(legacyNifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
+    }
+    
+    @GET
+    @Path("/controller-services/{serviceId}/preview/{schema}/{table}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation(value = "Generates a preview SELECT query appropriate for the datasource of the service.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The preview query.", response = String.class),
+        @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response generatePreviewQuery(@PathParam("serviceId") final String serviceId, 
+                                         @PathParam("schema") final String schema,
+                                         @PathParam("table") final String tableName,
+                                         @QueryParam("limit") @DefaultValue("10") final int limit) {
+        log.debug("Generate preview query against service '{}', table: {}, schema: {}, limit: {}", serviceId, tableName, schema, limit);
+        try {
+            final String query = dbcpConnectionPoolTableInfo.generatePreviewQueryForControllerService(serviceId, "", schema, tableName, limit);
+            return Response.ok(query).build();
+        } catch (final DataAccessException e) {
+            throw new BadRequestException(ExceptionUtils.getRootCause(e).getMessage(), e);
+        } catch (final IllegalArgumentException e) {
+            throw new NotFoundException("The controller service could not be found.", e);
+        }
+    }
+    
+    @POST
+    @Path("/controller-services/{serviceId}/preview/{schema}/{table}")
+    @Consumes(MediaType.WILDCARD)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Generates a preview SELECT query appropriate for the datasource of the service.", 
+                    notes = "Connects to the database specified by the controller service using the password defined in Kylo's application.properties file.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Result of the query.", response = QueryResult.class),
+        @ApiResponse(code = 404, message = "The controller service could not be found.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi is unavailable.", response = RestResponseStatus.class)
+    })
+    public Response executePreviewQuery(@PathParam("serviceId") final String serviceId, 
+                                        @PathParam("schema") final String schema,
+                                        @PathParam("table") final String tableName,
+                                        @QueryParam("limit") @DefaultValue("10") final int limit) {
+        log.debug("Execute preview query against service '{}', schema: {}, table: {}, limit: {}", serviceId, schema, tableName, limit);
+        try {
+            final QueryResult results = dbcpConnectionPoolTableInfo.executePreviewQueryForControllerService(serviceId, "", schema, tableName, limit);
+            return Response.ok(results).build();
+        } catch (final DataAccessException e) {
+            throw new BadRequestException(ExceptionUtils.getRootCause(e).getMessage(), e);
+        } catch (final IllegalArgumentException e) {
+            throw new NotFoundException("The controller service could not be found.", e);
+        }
     }
 
     @POST
@@ -502,4 +553,8 @@ public class NifiIntegrationRestController {
         boolean isRunning = nifiConnectionService.isNiFiRunning();
         return Response.ok(isRunning).build();
     }
+
+
+
+
 }

@@ -83,18 +83,18 @@ export class SparkColumnDelegate extends ColumnDelegate {
     castTo(dataType: DataType): void {
         if (dataType === SparkDataType.BIGINT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to bigint"});
+            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to bigint"});
         }
         if (dataType === SparkDataType.DATE) {
             return this.castToDate();
         }
         if (dataType === SparkDataType.DOUBLE) {
             const formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to double"});
+            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to double"});
         }
         if (dataType === SparkDataType.INT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "hashtag", name: "Cast " + this.displayName + " to int"});
+            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to int"});
         }
         if (dataType === SparkDataType.STRING) {
             return this.castToString();

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.datavalidator.functions;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark.datavalidator.functions;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.policy.BaseFieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicy;
@@ -256,7 +257,13 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
                 }
 
                 if (shouldStandardize) {
-                    Object newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
+                    Object newValue = result.getFieldValue();
+                    try {
+                        newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
+                    } catch (Exception e) {
+                        log.error("Standardizer '{}' threw exception while attempting to standardize value, original value will be kept. Exception: {}",
+                                  standardizationPolicy.getClass(), e);
+                    }
 
                     //If this is the last standardizer for this field and the standardized value is returned as a String, and target column is not String, then validate and convert it to correct type
                     if (newValue != null && dataType.getConvertibleType() != newValue.getClass() && standardizerCount == processedStandardizers) {
@@ -331,21 +338,20 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
      */
     @Nonnull
     private List<String> getPolicyMapFeedFieldNames() {
-        return FluentIterable.from(Arrays.asList(policies))
-            .filter(new Predicate<FieldPolicy>() {
-                @Override
-                public boolean apply(@Nullable FieldPolicy input) {
-                    return (input != null && input.getFeedField() != null);
-                }
-            })
-            .transform(new com.google.common.base.Function<FieldPolicy, String>() {
-                @Override
-                public String apply(@Nullable FieldPolicy input) {
-                    assert input != null;
-                    return input.getFeedField().toLowerCase();
-                }
-            })
-            .toList();
+        return ImmutableList.copyOf(FluentIterable.from(Arrays.asList(policies))
+                                        .filter(new Predicate<FieldPolicy>() {
+                                            @Override
+                                            public boolean apply(@Nullable FieldPolicy input) {
+                                                return (input != null && input.getFeedField() != null);
+                                            }
+                                        })
+                                        .transform(new com.google.common.base.Function<FieldPolicy, String>() {
+                                            @Override
+                                            public String apply(@Nullable FieldPolicy input) {
+                                                assert input != null;
+                                                return input.getFeedField().toLowerCase();
+                                            }
+                                        }));
     }
 
     /**

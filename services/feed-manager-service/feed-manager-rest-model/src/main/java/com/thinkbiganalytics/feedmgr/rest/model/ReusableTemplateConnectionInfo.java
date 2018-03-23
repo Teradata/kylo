@@ -30,6 +30,16 @@ public class ReusableTemplateConnectionInfo {
     private String inputPortDisplayName;
     private String reusableTemplateProcessGroupName;
 
+    public ReusableTemplateConnectionInfo(){
+
+    }
+
+    public ReusableTemplateConnectionInfo(String feedOutputPortName, String reusableTemplateInputPortName, String inputPortDisplayName, String reusableTemplateProcessGroupName) {
+        this.feedOutputPortName = feedOutputPortName;
+        this.reusableTemplateInputPortName = reusableTemplateInputPortName;
+        this.inputPortDisplayName = inputPortDisplayName;
+        this.reusableTemplateProcessGroupName = reusableTemplateProcessGroupName;
+    }
 
     public String getFeedOutputPortName() {
         return feedOutputPortName;

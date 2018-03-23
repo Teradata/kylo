@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,12 +22,12 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
-import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCacheImpl;
 import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.feed.StreamingFeedJmsNotificationService;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataChange;
@@ -80,16 +80,16 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
     private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerTemplateService.class);
 
     @Inject
-    FeedManagerTemplateProvider templateProvider;
+    private FeedManagerTemplateProvider templateProvider;
 
     @Inject
-    TemplateModelTransform templateModelTransform;
+    private TemplateModelTransform templateModelTransform;
 
     @Inject
-    MetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
-    NifiFlowCache nifiFlowCache;
+    private NifiFlowCache nifiFlowCache;
 
     @Inject
     private MetadataEventService metadataEventService;
@@ -110,14 +110,16 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
 
     @Inject
-    RegisteredTemplateUtil registeredTemplateUtil;
+    private RegisteredTemplateUtil registeredTemplateUtil;
 
     @Inject
-    OpsManagerFeedProvider opsManagerFeedProvider;
+    private OpsManagerFeedProvider opsManagerFeedProvider;
 
     @Inject
     private TemplateConnectionUtil templateConnectionUtil;
 
+    @Inject
+    private StreamingFeedJmsNotificationService streamingFeedJmsNotificationService;
 
 
     @Inject
@@ -154,7 +156,7 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
                 //1 fetch ports in reusable templates
                 Map<String, PortDTO> reusableTemplateInputPorts = new HashMap<>();
-                Set<PortDTO> ports = getReusableFeedInputPorts();
+                Set<PortDTOWithGroupInfo> ports = getReusableFeedInputPorts();
                 if (ports != null) {
                     ports.stream().forEach(portDTO -> reusableTemplateInputPorts.put(portDTO.getName(), portDTO));
                 }
@@ -183,34 +185,37 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
     }
 
     /**
-     * Updates the Streaming flag on the feeds related to this template, when the template is updated and the streamign flag is changed
-     * @param templateName the name of the template
+     * Updates the Streaming flag on the feeds related to this template, when the template is updated and the streaming flag is changed
+     *
+     * @param templateName     the name of the template
      * @param previousTemplate the previous template
      */
-    private void notifyOperationsManagerOfStreamingUpdate(String templateName,RegisteredTemplate previousTemplate) {
+    private void notifyOperationsManagerOfStreamingUpdate(String templateName, RegisteredTemplate previousTemplate) {
 
-            RegisteredTemplate
-                newTemplate =
-                registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(templateName));
-            if(newTemplate != null) {
-                //notify if this is the first template update, or if we have changed the streaming flag
-                boolean notifyOfStreamingChange = (previousTemplate == null || previousTemplate.isStream() != newTemplate.isStream());
-                boolean notifyOfTimeChange = (previousTemplate == null || previousTemplate.getTimeBetweenStartingBatchJobs() != newTemplate.getTimeBetweenStartingBatchJobs());
+        RegisteredTemplate
+            newTemplate =
+            registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(templateName));
+        if (newTemplate != null) {
+            //notify if this is the first template update, or if we have changed the streaming flag
+            boolean notifyOfStreamingChange = (previousTemplate == null || previousTemplate.isStream() != newTemplate.isStream());
+            boolean notifyOfTimeChange = (previousTemplate == null || previousTemplate.getTimeBetweenStartingBatchJobs() != newTemplate.getTimeBetweenStartingBatchJobs());
 
-                if (notifyOfStreamingChange) {
-                    Set<String> feedNames = newTemplate.getFeedNames();
-                    if(feedNames != null && !feedNames.isEmpty()) {
-                        metadataAccess.commit(() -> opsManagerFeedProvider.updateStreamingFlag(feedNames, newTemplate.isStream()),MetadataAccess.SERVICE);
-                    }
-                }
-
-                if (notifyOfTimeChange) {
-                    Set<String> feedNames = newTemplate.getFeedNames();
-                    if(feedNames != null && !feedNames.isEmpty()) {
-                        metadataAccess.commit(() -> opsManagerFeedProvider.updateTimeBetweenBatchJobs(feedNames, newTemplate.getTimeBetweenStartingBatchJobs()),MetadataAccess.SERVICE);
-                    }
+            if (notifyOfStreamingChange) {
+                Set<String> feedNames = newTemplate.getFeedNames();
+                if (feedNames != null && !feedNames.isEmpty()) {
+                    metadataAccess.commit(() -> opsManagerFeedProvider.updateStreamingFlag(feedNames, newTemplate.isStream()), MetadataAccess.SERVICE);
+                    //Notify NiFi of the change in streaming status change
+                    streamingFeedJmsNotificationService.notifyNiFiOfFeedBatchStreamChange(feedNames, newTemplate.isStream());
                 }
             }
+
+            if (notifyOfTimeChange) {
+                Set<String> feedNames = newTemplate.getFeedNames();
+                if (feedNames != null && !feedNames.isEmpty()) {
+                    metadataAccess.commit(() -> opsManagerFeedProvider.updateTimeBetweenBatchJobs(feedNames, newTemplate.getTimeBetweenStartingBatchJobs()), MetadataAccess.SERVICE);
+                }
+            }
+        }
 
     }
 
@@ -219,16 +224,16 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
         boolean isNew = StringUtils.isBlank(registeredTemplate.getId());
         //detect if we changed the stream setting
         RegisteredTemplate previousTemplate = null;
-        if(!isNew){
+        if (!isNew) {
             //run as service account
             previousTemplate = registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestAccessAsServiceAccountByTemplateName(registeredTemplate.getTemplateName()));
         }
 
         RegisteredTemplate template = saveRegisteredTemplate(registeredTemplate);
         if (template.isUpdated()) {
-            nifiFlowCache.updateRegisteredTemplate(template,true);
+            nifiFlowCache.updateRegisteredTemplate(template, true);
             //update ops manager for feed.isStream
-            notifyOperationsManagerOfStreamingUpdate(template.getTemplateName(),previousTemplate);
+            notifyOperationsManagerOfStreamingUpdate(template.getTemplateName(), previousTemplate);
 
             //only allow update to the Access control if the user has the CHANGE_PERMS permission on this template entity
             if (accessController.isEntityAccessControlled() && template.hasAction(TemplateAccessControl.CHANGE_PERMS.getSystemName())) {
@@ -256,8 +261,8 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
 
     }
 
-    public RegisteredTemplate findRegisteredTemplateByName(final String templateName){
-       return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(templateName));
+    public RegisteredTemplate findRegisteredTemplateByName(final String templateName) {
+        return registeredTemplateService.findRegisteredTemplate(RegisteredTemplateRequest.requestByTemplateName(templateName));
     }
 
     public RegisteredTemplate getRegisteredTemplate(final String templateId) {
@@ -359,50 +364,8 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
     /**
      * @return all input ports under the {@link TemplateCreationHelper#REUSABLE_TEMPLATES_PROCESS_GROUP_NAME} process group
      */
-    public Set<PortDTO> getReusableFeedInputPorts() {
-        Set<PortDTO> ports = new HashSet<>();
-        String reusableProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
-        if(reusableProcessGroupId != null) {
-            ProcessGroupFlowDTO processGroup = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableProcessGroupId);
-            if (processGroup != null) {
-
-                //fetch the ports
-                Set<PortDTO> inputPortsEntity = processGroup.getFlow().getInputPorts().stream()
-                    .map(portEntity -> {
-                        PortDTOWithGroupInfo portDTOWithGroupInfo = new PortDTOWithGroupInfo(portEntity.getComponent());
-                        //find the connection destination processgroup id
-
-                        List<ConnectionDTO> connList = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent()).collect(Collectors.toList());
-
-                        Optional<ConnectionDTO> connection = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent())
-                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                            .findFirst();
-
-                        Optional<ProcessGroupDTO> pg1 = processGroup.getFlow().getProcessGroups().stream()
-                            .map(processGroupEntity -> processGroupEntity.getComponent())
-                            .filter(processGroupDTO -> processGroupDTO.getId().equals(connection.get().getDestination().getGroupId()))
-                            .findFirst();
-
-                        Optional<ProcessGroupDTO> destinationGroup = processGroup.getFlow().getConnections().stream()
-                            .map(connectionEntity -> connectionEntity.getComponent())
-                            .filter(connectionDTO -> connectionDTO.getSource().getId().equals(portEntity.getComponent().getId()))
-                            .flatMap(connectionDTO -> processGroup.getFlow().getProcessGroups().stream().map(processGroupEntity -> processGroupEntity.getComponent())
-                                .filter(processGroupDTO -> processGroupDTO.getId().equals(connectionDTO.getDestination().getGroupId())))
-                            .findFirst();
-                        if (destinationGroup.isPresent()) {
-                            portDTOWithGroupInfo.setDestinationProcessGroupName(destinationGroup.get().getName());
-                        }
-
-                        return portDTOWithGroupInfo;
-                    }).collect(Collectors.toSet());
-                if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
-                    ports.addAll(inputPortsEntity);
-                }
-            }
-        }
-        return ports;
+    public Set<PortDTOWithGroupInfo> getReusableFeedInputPorts() {
+        return templateConnectionUtil.getReusableFeedInputPorts();
     }
 
 
@@ -490,7 +453,7 @@ public class DefaultFeedManagerTemplateService implements FeedManagerTemplateSer
                 //fetch the Content
                 ProcessGroupDTO content = nifiRestClient.getProcessGroup(processGroup.getId(), true, true);
                 processGroup.setContents(content.getContents());
-                Set<PortDTO> ports = getReusableFeedInputPorts();
+                Set<PortDTOWithGroupInfo> ports = getReusableFeedInputPorts();
                 ports.stream()
                     .filter(portDTO -> inputPortIds.contains(portDTO.getId()))
                     .forEach(port -> {

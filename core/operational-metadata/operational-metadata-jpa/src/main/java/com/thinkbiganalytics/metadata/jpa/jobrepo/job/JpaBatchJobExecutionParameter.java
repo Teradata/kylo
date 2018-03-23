@@ -49,6 +49,8 @@ import javax.persistence.Table;
 @Table(name = "BATCH_JOB_EXECUTION_PARAMS")
 public class JpaBatchJobExecutionParameter implements Serializable, BatchJobExecutionParameter {
 
+    private static final long serialVersionUID = -5728274722237317174L;
+
 
     @EmbeddedId
     private BatchJobExecutionParametersPK jobExecutionParametersPK;

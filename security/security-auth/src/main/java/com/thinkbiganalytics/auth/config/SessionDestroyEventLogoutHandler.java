@@ -52,9 +52,10 @@ public class SessionDestroyEventLogoutHandler implements LogoutHandler {
      */
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
-        SecurityContext context = SecurityContextHolder.getContext();
-        
-        this.listener.onApplicationEvent(new ContextSessionDestroyEvent(this, context));
+        if (authentication != null) {
+            SecurityContext context = SecurityContextHolder.getContext();
+            this.listener.onApplicationEvent(new ContextSessionDestroyEvent(this, context));
+        }
     }
     
     private static class ContextSessionDestroyEvent extends SessionDestroyedEvent {

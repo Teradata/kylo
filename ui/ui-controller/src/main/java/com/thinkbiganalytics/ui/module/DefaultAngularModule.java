@@ -25,10 +25,10 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.thinkbiganalytics.ui.api.module.AngularModule;
 import com.thinkbiganalytics.ui.api.module.AngularStateMetadata;
+import com.thinkbiganalytics.ui.api.module.EntityNavigationLink;
 import com.thinkbiganalytics.ui.api.module.NavigationLink;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * Created by sr186054 on 8/16/17.
@@ -46,6 +46,13 @@ public class DefaultAngularModule implements AngularModule {
     @JsonDeserialize(contentAs = DefaultNavigationLink.class)
     private List<NavigationLink> navigation;
 
+    @JsonSerialize(contentAs = DefaultEntityNavigationLink.class)
+    @JsonDeserialize(contentAs = DefaultEntityNavigationLink.class)
+    private List<EntityNavigationLink> feedNavigation;
+
+    @JsonSerialize(contentAs = DefaultEntityNavigationLink.class)
+    @JsonDeserialize(contentAs = DefaultEntityNavigationLink.class)
+    private List<EntityNavigationLink> templateNavigation;
 
     public DefaultAngularModule(){
 
@@ -75,5 +82,21 @@ public class DefaultAngularModule implements AngularModule {
 
     public void setNavigation(List<NavigationLink> navigation) {
         this.navigation = navigation;
+    }
+
+    public List<EntityNavigationLink> getFeedNavigation() {
+        return feedNavigation;
+    }
+
+    public void setFeedNavigation(List<EntityNavigationLink> feedNavigation) {
+        this.feedNavigation = feedNavigation;
+    }
+
+    public List<EntityNavigationLink> getTemplateNavigation() {
+        return templateNavigation;
+    }
+
+    public void setTemplateNavigation(List<EntityNavigationLink> templateNavigation) {
+        this.templateNavigation = templateNavigation;
     }
 }

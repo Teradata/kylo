@@ -29,6 +29,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.DropRequestDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
+import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 
 import java.util.Optional;
@@ -51,7 +52,10 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
      */
     private static final String QUEUE_PATH = "/flowfile-queues/";
 
+    private static final String FLOW_PATH = "/flow";
+
     /**
+     * REST client for communicating with NiFi
      * REST client for communicating with NiFi
      */
     private final NiFiRestClientV1 client;
@@ -119,6 +123,15 @@ public class NiFiConnectionsRestClientV1 extends AbstractNiFiConnectionsRestClie
     private Optional<ConnectionEntity> findEntityById(@Nonnull final String connectionId) {
         try {
             return Optional.of(client.get(CONNECTION_PATH + connectionId, null, ConnectionEntity.class));
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+    }
+
+    @Nonnull
+    public Optional<ConnectionStatusEntity> getConnectionStatus(@Nonnull final String connectionId) {
+        try {
+            return Optional.of(client.get(FLOW_PATH + "/connections/"+connectionId+"/status", null, ConnectionStatusEntity.class));
         } catch (final NotFoundException e) {
             return Optional.empty();
         }

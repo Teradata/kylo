@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape;
 
 /*-
@@ -58,6 +55,7 @@ import com.thinkbiganalytics.search.api.Search;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import java.util.List;
 
@@ -183,8 +181,10 @@ public class MetadataJcrConfig {
         return new JcrDomainTypeProvider();
     }
 
+    //should not run during upgrade
     @Bean
     @ConditionalOnProperty(prefix = "config", value = "search.engine")
+    @Profile("!kyloUpgrade")
     public JcrIndexService indexService(final Search search, final DatasourceProvider datasourceProvider, final MetadataAccess metadataAccess, final Repository repository) {
         final JcrIndexService indexService = new JcrIndexService(search, datasourceProvider, metadataAccess);
         try {

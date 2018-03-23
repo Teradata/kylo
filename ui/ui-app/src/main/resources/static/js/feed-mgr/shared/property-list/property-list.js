@@ -1,4 +1,7 @@
-define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
+define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
     /**
      * A user-defined property (or business metadata) on a category or feed.
      *
@@ -12,7 +15,6 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
      * @property {string} value the value assign to the property
      * @property {Object.<string, boolean>} [$error] used for validation
      */
-
     /**
      * Manages a view containing a list of properties.
      *
@@ -21,61 +23,45 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
      */
     function PropertyListController($scope) {
         var self = this;
-
         /**
          * Copy of model that mirrors the property list.
          * @type {Array.<UserProperty>}
          */
         self.lastModel = {};
-
         /**
          * List of properties in the model.
          * @type {Array.<UserProperty>}
          */
         $scope.propertyList = [];
-
         /**
          * Indicates if all properties are valid.
          * @type {boolean} {@code true} if all properties are valid, or {@code false} otherwise
          */
         $scope.isValid = true;
-
         // Watch for changes to model
-        $scope.$watch(
-                function() { return $scope.model; },
-                function() { self.onModelChange(); },
-                true
-        );
-
+        $scope.$watch(function () { return $scope.model; }, function () { self.onModelChange(); }, true);
         // Watch for changes to property list
-        $scope.$watch(
-                function() { return $scope.propertyList; },
-                function() { self.onPropertyChange(); },
-                true
-        );
-
+        $scope.$watch(function () { return $scope.propertyList; }, function () { self.onPropertyChange(); }, true);
         /**
          * Adds a new user-defined property.
          */
-        self.addProperty = function() {
-            $scope.propertyList.push({description: null, displayName: null, locked: false, order: $scope.propertyList.length, required: true, systemName: "", value: "", $error: {}});
+        self.addProperty = function () {
+            $scope.propertyList.push({ description: null, displayName: null, locked: false, order: $scope.propertyList.length, required: true, systemName: "", value: "", $error: {} });
         };
-
         /**
          * Updates the property list with changes to the model.
          */
-        self.onModelChange = function() {
+        self.onModelChange = function () {
             if (!angular.equals($scope.model, self.lastModel)) {
                 // Convert model to properties
                 $scope.propertyList = [];
-                angular.forEach($scope.model, function(element) {
+                angular.forEach($scope.model, function (element) {
                     var property = angular.copy(element);
                     property.$error = {};
                     $scope.propertyList.push(property);
                 });
-
                 // Sort properties
-                $scope.propertyList.sort(function(a, b) {
+                $scope.propertyList.sort(function (a, b) {
                     if (a.order === null && b.order === null) {
                         return a.systemName.localeCompare(b.systemName);
                     }
@@ -87,34 +73,32 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                     }
                     return a.order - b.order;
                 });
-
                 // Save a copy for update detection
                 self.lastModel = angular.copy($scope.model);
             }
         };
-
         /**
          * Updates the model with changes to the property list.
          */
-        self.onPropertyChange = function() {
+        self.onPropertyChange = function () {
             // Convert properties to model
             var hasError = false;
             var keys = {};
             var model = [];
-
-            angular.forEach($scope.propertyList, function(property) {
+            angular.forEach($scope.propertyList, function (property) {
+                var mn = (property.systemName.length === 0 && property.value.length > 0);
+                var mv = (property.required && property.systemName.length > 0 && (angular.isUndefined(property.value) || property.value === null || property.value.length === 0));
                 // Validate property
-                hasError |= (property.$error.duplicate = angular.isDefined(keys[property.systemName]));
-                hasError |= (property.$error.missingName = (property.systemName.length === 0 && property.value.length > 0));
-                hasError |= (property.$error.missingValue = (property.required && property.systemName.length > 0 && (property.value === null || property.value.length === 0)));
-
+                var _ = (property.$error.duplicate = angular.isDefined(keys[property.systemName]));
+                hasError |= _;
+                hasError |= (property.$error.missingName = mn);
+                hasError |= (property.$error.missingValue = mv);
                 // Add to user properties object
                 if (property.systemName.length > 0) {
                     keys[property.systemName] = true;
                     model.push(angular.copy(property));
                 }
             });
-
             // Update model
             $scope.isValid = !hasError;
             if (!hasError) {
@@ -122,17 +106,15 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
                 self.lastModel = angular.copy($scope.model);
             }
         };
-
         /**
          * Deletes the item at the specified index from the user-defined properties list.
          *
          * @param {number} index the index of the property to delete
          */
-        self.removeProperty = function(index) {
+        self.removeProperty = function (index) {
             $scope.propertyList.splice(index, 1);
         };
     }
-
     /**
      * Creates a directive for displaying a list of properties.
      *
@@ -151,7 +133,6 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             templateUrl: "js/feed-mgr/shared/property-list/property-list.html"
         };
     }
-
     /**
      * Creates a directive for editing a list of properties.
      *
@@ -162,8 +143,8 @@ define(['angular',"feed-mgr/module-name"], function (angular,moduleName) {
             templateUrl: "js/feed-mgr/shared/property-list/property-list-editor.html"
         }, thinkbigPropertyList());
     }
-
-    angular.module(moduleName).controller("PropertyListController",["$scope", PropertyListController]);
+    angular.module(moduleName).controller("PropertyListController", ["$scope", PropertyListController]);
     angular.module(moduleName).directive("thinkbigPropertyList", thinkbigPropertyList);
     angular.module(moduleName).directive("thinkbigPropertyListEditor", thinkbigPropertyListEditor);
 });
+//# sourceMappingURL=property-list.js.map

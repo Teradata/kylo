@@ -48,7 +48,7 @@ public class FeedCategory extends EntityAccessControl {
     private String icon;
     private String iconColor;
     private String description;
-
+    private boolean allowIndexing;
     private List<HadoopSecurityGroup> securityGroups;
 
     /**
@@ -231,6 +231,14 @@ public class FeedCategory extends EntityAccessControl {
 
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isAllowIndexing() {
+        return allowIndexing;
+    }
+
+    public void setAllowIndexing(boolean allowIndexing) {
+        this.allowIndexing = allowIndexing;
     }
 
     public List<HadoopSecurityGroup> getSecurityGroups() {

@@ -27,8 +27,9 @@ import java.util.TreeSet;
 /**
  * Class to store top-N items<br>
  */
-@SuppressWarnings("serial")
 public class TopNDataList implements Serializable {
+
+    private static final long serialVersionUID = 2214315303761738639L;
 
     /**
      * Delimiter to use when storing top-N values in result table<br>

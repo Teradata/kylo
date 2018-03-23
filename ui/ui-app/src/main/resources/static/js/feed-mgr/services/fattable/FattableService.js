@@ -27,13 +27,15 @@
  *  });
  *
  */
-define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleName) {
-    angular.module(moduleName).service('FattableService', ["$window", function ($window) {
-
+define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
+    // export class FattableService {
+    function FattableService($window) {
         var self = this;
-
+        var setupTable;
         var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
-
         var optionDefaults = {
             tableContainerId: "",
             headers: [],
@@ -50,16 +52,16 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
             rowFontSize: "14px",
             rowFontWeight: "normal",
             setupRefreshDebounce: 300,
-            headerText: function(header) {
+            headerText: function (header) {
                 return header.displayName;
             },
-            cellText: function(row, column) {
+            cellText: function (row, column) {
                 return row[column.displayName];
             },
-            fillCell: function(cellDiv, data) {
+            fillCell: function (cellDiv, data) {
                 cellDiv.innerHTML = data.value;
             },
-            getCellSync: function(i, j) {
+            getCellSync: function (i, j) {
                 var displayName = this.headers[j].displayName;
                 var row = this.rows[i];
                 if (row === undefined) {
@@ -68,26 +70,22 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 }
                 return {
                     "value": row[displayName]
-                }
+                };
             },
-            fillHeader: function(headerDiv, header) {
+            fillHeader: function (headerDiv, header) {
                 headerDiv.innerHTML = '<div>' + header + '</div>';
             },
-            getHeaderSync: function(j) {
+            getHeaderSync: function (j) {
                 return this.headers[j].displayName;
             }
         };
-
-        self.setupTable = function(options) {
+        self.setupTable = function (options) {
             var optionsCopy = _.clone(options);
             var settings = _.defaults(optionsCopy, optionDefaults);
-
             var tableData = new fattable.SyncTableModel();
             var painter = new fattable.Painter();
-
             var headers = settings.headers;
             var rows = settings.rows;
-
             function get2dContext(font) {
                 var canvas = document.createElement("canvas");
                 document.createDocumentFragment().appendChild(canvas);
@@ -95,13 +93,11 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 context.font = font;
                 return context;
             }
-
             var headerContext = get2dContext(settings.headerFontWeight + " " + settings.headerFontSize + " " + settings.headerFontFamily);
             var rowContext = get2dContext(settings.rowFontWeight + " " + settings.rowFontSize + " " + settings.rowFontFamily);
-
             tableData.columnHeaders = [];
             var columnWidths = [];
-            _.each(headers, function(column) {
+            _.each(headers, function (column) {
                 var headerText = settings.headerText(column);
                 var headerTextWidth = headerContext.measureText(headerText).width;
                 var longestColumnText = _.reduce(rows, function (previousMax, row) {
@@ -109,12 +105,10 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                     var cellTextLength = cellText === undefined || cellText === null ? 0 : cellText.length;
                     return previousMax.length < cellTextLength ? cellText : previousMax;
                 }, "");
-
                 var columnTextWidth = rowContext.measureText(longestColumnText).width;
                 columnWidths.push(Math.min(settings.maxColumnWidth, Math.max(settings.minColumnWidth, headerTextWidth, columnTextWidth)) + settings.padding);
                 tableData.columnHeaders.push(headerText);
             });
-
             painter.fillCell = function (div, data) {
                 if (data === undefined) {
                     return;
@@ -130,14 +124,12 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 }
                 settings.fillCell(div, data);
             };
-
-            painter.fillHeader = function(div, header) {
+            painter.fillHeader = function (div, header) {
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
                 div.style.fontWeight = "bold";
                 settings.fillHeader(div, header);
             };
-
             tableData.getCellSync = function (i, j) {
                 var data = settings.getCellSync(i, j);
                 if (data !== undefined) {
@@ -146,11 +138,9 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 }
                 return data;
             };
-
-            tableData.getHeaderSync = function(j) {
+            tableData.getHeaderSync = function (j) {
                 return settings.getHeaderSync(j);
             };
-
             var selector = "#" + settings.tableContainerId;
             var table = fattable({
                 "container": selector,
@@ -161,21 +151,19 @@ define(['angular','feed-mgr/module-name','fattable'], function (angular,moduleNa
                 "painter": painter,
                 "columnWidths": columnWidths
             });
-
             table.setup();
-
-
             var eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);
             var debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
-            angular.element($window).on(eventId, function() {
+            angular.element($window).on(eventId, function () {
                 debounced(settings);
             });
-
-            angular.element(selector).on('$destroy', function() {
+            angular.element(selector).on('$destroy', function () {
                 angular.element($window).unbind(eventId);
             });
-        }
-
-    }]);
+        };
+    }
+    // }
+    angular.module(moduleName).service('FattableService', ["$window", FattableService]);
 });
+//# sourceMappingURL=FattableService.js.map

@@ -35,8 +35,9 @@ import javax.annotation.Nonnull;
  * Class to hold profile statistics for columns of byte data type<br>
  * [Hive data type: TINYINT]
  */
-@SuppressWarnings("serial")
 public class ByteColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 7973992984124134919L;
 
     /* Byte specific metrics */
     private byte max;

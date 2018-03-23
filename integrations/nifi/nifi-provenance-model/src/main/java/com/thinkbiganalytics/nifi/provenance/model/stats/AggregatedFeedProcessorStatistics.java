@@ -33,6 +33,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AggregatedFeedProcessorStatistics implements Serializable {
 
+    private static final long serialVersionUID = -6344769389124838681L;
+
     String startingProcessorId;
     String processGroup;
     Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
@@ -89,12 +91,24 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     }
 
     public boolean hasStats(){
-        return processorStats.values().stream().anyMatch(s -> s.hasStats());
+        //return processorStats.values().stream().anyMatch(s -> s.hasStats());
+
+        boolean hasStats = false;
+        for(AggregatedProcessorStatistics feedProcessorStatistics : processorStats.values()){
+            if(feedProcessorStatistics.hasStats()){
+                hasStats = true;
+                break;
+            }
+        }
+        return hasStats;
     }
 
     public void clear(String newCollectionId) {
         this.collectionId = newCollectionId;
-        processorStats.entrySet().forEach(e -> e.getValue().clear());
+        for(Map.Entry<String,AggregatedProcessorStatistics> e : processorStats.entrySet()){
+            e.getValue().clear();
+        }
+       // processorStats.entrySet().forEach(e -> e.getValue().clear());
     }
 
     public String getCollectionId() {

@@ -22,6 +22,8 @@ package com.thinkbiganalytics.nifi.rest.client;
 
 import org.apache.nifi.web.api.dto.PortDTO;
 
+import java.util.List;
+
 import javax.annotation.Nonnull;
 
 /**
@@ -64,4 +66,19 @@ public interface NiFiPortsRestClient {
      * @return the port
      */
     PortDTO getOutputPort(@Nonnull String portId);
+
+
+    /**
+     * Return a List of all input ports for the parent group id
+     * @param parentGroupId the  parent group id to search for the input ports
+     * @return a list of the input ports under the parent group id
+     */
+    List<PortDTO> findInputPorts(String parentGroupId);
+
+    /**
+     * Deletes an input port with a given id
+     * @param portId the port to delete
+     * @return the port object that has been deleted
+     */
+    PortDTO deleteInputPort(String portId);
 }

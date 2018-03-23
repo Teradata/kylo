@@ -51,14 +51,14 @@ import javax.inject.Inject;
 @Profile("auth-kylo-groups")
 public class KyloGroupsConfig {
 
-    @Value("${security.auth.kylo.login.flag:required}")
+    @Value("${security.auth.kylo.groups.login.flag:required}")
     private String loginFlag;
 
     /*
-     * This should be of the highest order, i.e. be the last one to commit, otherwise if a user has no
+     * This should be a little less than the highest order, i.e. be one of the last ones to commit, otherwise if a user has no
      * groups and this is committed first then all of kylo groups would be assigned to the user
      */
-    @Value("${security.auth.kylo.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).HIGHEST_ORDER}}")
+    @Value("${security.auth.kylo.groups.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).HIGHEST_ORDER}}")
     private int loginOrder;
 
     @Bean(name = "kyloGroupsLoginRestClientConfig")

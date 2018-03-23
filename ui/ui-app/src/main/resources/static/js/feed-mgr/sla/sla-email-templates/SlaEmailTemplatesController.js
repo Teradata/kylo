@@ -1,130 +1,130 @@
-define(['angular',"feed-mgr/sla/module-name"], function (angular,moduleName) {
-
-    var controller = function($scope, $http, $mdDialog, $q,$transition$,AccessControlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, SlaEmailTemplateService) {
-
-        var self = this;
-
-        /**
-         * Indicates if templates are allowed to be edited.
-         * @type {boolean}
-         */
-        self.allowEdit = false;
-
-        self.templates = [];
-        this.loading = true;
-        this.cardTitle = 'SLA Email Templates';
-
-        // Register Add button
-        AccessControlService.getUserAllowedActions()
-            .then(function(actionSet) {
+define(["require", "exports", "angular", "../module-name", "./SlaEmailTemplateService"], function (require, exports, angular, module_name_1, SlaEmailTemplateService_1) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var controller = /** @class */ (function () {
+        function controller($scope, $http, $mdDialog, $q, $transition$, AccessControlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, SlaEmailTemplateService) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$http = $http;
+            this.$mdDialog = $mdDialog;
+            this.$q = $q;
+            this.$transition$ = $transition$;
+            this.AccessControlService = AccessControlService;
+            this.PaginationDataService = PaginationDataService;
+            this.TableOptionsService = TableOptionsService;
+            this.AddButtonService = AddButtonService;
+            this.StateService = StateService;
+            this.SlaEmailTemplateService = SlaEmailTemplateService;
+            /**
+             * Build the possible Sorting Options
+             * @returns {*[]}
+             */
+            this.loadSortOptions = function () {
+                var options = { 'Template': 'name' };
+                var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'templateName', 'asc');
+                this.TableOptionsService.initializeSortOption(this.pageName);
+                return sortOptions;
+            };
+            /**
+* Indicates if templates are allowed to be edited.
+* @type {boolean}
+*/
+            this.allowEdit = false;
+            this.templates = [];
+            this.loading = true;
+            this.cardTitle = 'SLA Email Templates';
+            //Pagination DAta
+            this.pageName = "sla-email-templates";
+            this.paginationData = this.PaginationDataService.paginationData(this.pageName);
+            this.paginationId = 'sla-email-templates';
+            this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
+            this.viewType = this.PaginationDataService.viewType(this.pageName);
+            this.sortOptions = this.loadSortOptions();
+            this.filter = this.PaginationDataService.filter(this.pageName);
+            this.onViewTypeChange = function (viewType) {
+                _this.PaginationDataService.viewType(_this.pageName, _this.viewType);
+            };
+            this.onOrderChange = function (order) {
+                _this.PaginationDataService.sort(_this.pageName, order);
+                _this.TableOptionsService.setSortOption(_this.pageName, order);
+            };
+            this.onPaginationChange = function (page, limit) {
+                _this.PaginationDataService.currentPage(_this.pageName, null, page);
+                _this.currentPage = page;
+            };
+            /**
+             * Called when a user Clicks on a table Option
+             * @param option
+             */
+            this.selectedTableOption = function (option) {
+                var sortString = _this.TableOptionsService.toSortString(option);
+                _this.PaginationDataService.sort(_this.pageName, sortString);
+                var updatedOption = _this.TableOptionsService.toggleSort(_this.pageName, option);
+                _this.TableOptionsService.setSortOption(_this.pageName, sortString);
+            };
+            /**
+             * Displays the details of the specified template.
+             *
+             * @param event
+             * @param template
+             */
+            this.editTemplate = function (event, template) {
+                if (_this.allowEdit && template != undefined) {
+                    _this.SlaEmailTemplateService.template = template;
+                    _this.StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
+                }
+                else {
+                    _this.SlaEmailTemplateService.accessDeniedDialog();
+                }
+            };
+            this.getExistingTemplates = function () {
+                var successFn = function (response) {
+                    _this.loading = false;
+                    _this.templates = response.data;
+                };
+                var errorFn = function (err) {
+                    _this.loading = false;
+                };
+                var promise = _this.SlaEmailTemplateService.getExistingTemplates();
+                promise.then(successFn, errorFn);
+                return promise;
+            };
+            // Register Add button
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
                 if (AccessControlService.hasAction(AccessControlService.SLA_EMAIL_TEMPLATES_ACCESS, actionSet.actions)) {
-                    AddButtonService.registerAddButton("sla-email-templates", function() {
+                    AddButtonService.registerAddButton("sla-email-templates", function () {
                         SlaEmailTemplateService.newTemplate();
                         StateService.FeedManager().Sla().navigateToNewEmailTemplate();
                     });
                 }
             });
-
-        //Pagination DAta
-        this.pageName = "sla-email-templates";
-        this.paginationData = PaginationDataService.paginationData(this.pageName);
-        this.paginationId = 'sla-email-templates';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
-        this.viewType = PaginationDataService.viewType(this.pageName);
-        this.sortOptions = loadSortOptions();
-
-        this.filter = PaginationDataService.filter(self.pageName);
-
-        $scope.$watch(function() {
-            return self.viewType;
-        }, function(newVal) {
-            self.onViewTypeChange(newVal);
-        });
-
-        $scope.$watch(function () {
-            return self.filter;
-        }, function (newVal) {
-            PaginationDataService.filter(self.pageName, newVal)
-        })
-
-        this.onViewTypeChange = function(viewType) {
-            PaginationDataService.viewType(this.pageName, self.viewType);
-        }
-
-        this.onOrderChange = function(order) {
-            PaginationDataService.sort(self.pageName, order);
-            TableOptionsService.setSortOption(self.pageName, order);
-        };
-
-        this.onPaginationChange = function(page, limit) {
-            PaginationDataService.currentPage(self.pageName, null, page);
-            self.currentPage = page;
-        };
-
-        /**
-         * Called when a user Clicks on a table Option
-         * @param option
-         */
-        this.selectedTableOption = function(option) {
-            var sortString = TableOptionsService.toSortString(option);
-            PaginationDataService.sort(self.pageName, sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
-            TableOptionsService.setSortOption(self.pageName, sortString);
-        }
-
-        /**
-         * Build the possible Sorting Options
-         * @returns {*[]}
-         */
-        function loadSortOptions() {
-            var options = {'Template': 'name'};
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'templateName', 'asc');
-            TableOptionsService.initializeSortOption(self.pageName);
-            return sortOptions;
-        }
-
-        /**
-         * Displays the details of the specified template.
-         *
-         * @param event
-         * @param template
-         */
-        this.editTemplate = function(event, template) {
-            if (self.allowEdit && template != undefined) {
-                SlaEmailTemplateService.template = template;
-                StateService.FeedManager().Sla().navigateToNewEmailTemplate(template.id);
-
-            } else {
-                SlaEmailTemplateService.accessDeniedDialog();
-            }
-        };
-
-        function getExistingTemplates() {
-
-            var successFn = function(response) {
-                self.loading = false;
-                self.templates = response.data;
-            }
-            var errorFn = function(err) {
-                self.loading = false;
-            }
-            var promise = SlaEmailTemplateService.getExistingTemplates()
-            promise.then(successFn, errorFn);
-            return promise;
-
-        }
-
-
-        getExistingTemplates();
-
-        // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
-            .then(function(actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+            $scope.$watch(function () {
+                return _this.viewType;
+            }, function (newVal) {
+                _this.onViewTypeChange(newVal);
             });
-    };
-
-    angular.module(moduleName).controller('SlaEmailTemplatesController', ["$scope","$http","$mdDialog","$q","$transition$","AccessControlService","PaginationDataService","TableOptionsService","AddButtonService","StateService","SlaEmailTemplateService",controller]);
-
+            $scope.$watch(function () {
+                return _this.filter;
+            }, function (newVal) {
+                PaginationDataService.filter(_this.pageName, newVal);
+            });
+            this.getExistingTemplates();
+            // Fetch the allowed actions
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                _this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+            });
+        }
+        return controller;
+    }());
+    exports.controller = controller;
+    angular.module(module_name_1.moduleName)
+        .service('SlaEmailTemplateService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", SlaEmailTemplateService_1.default])
+        .controller('SlaEmailTemplatesController', ["$scope", "$http", "$mdDialog", "$q", "$transition$",
+        "AccessControlService", "PaginationDataService",
+        "TableOptionsService", "AddButtonService", "StateService",
+        "SlaEmailTemplateService", controller]);
 });
+//# sourceMappingURL=SlaEmailTemplatesController.js.map

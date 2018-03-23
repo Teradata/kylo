@@ -115,13 +115,9 @@ public interface NifiFeedProcessorStatisticsProvider {
      */
     List<NifiFeedProcessorStats> findLatestFinishedStats(String feedName);
 
-    /**
-     * Finds the latest stats for a feed.
-     * This is NOT bound by Entity Access control rules
-     * @param feedName the name of the feed
-     * @return the stats
-     */
-    List<NifiFeedProcessorStats> findLatestFinishedStatsWithoutAcl(String feedName);
+    List<NifiFeedProcessorStats> findLatestFinishedStatsSince(String feedName, DateTime latestTime);
+
+
 
     /**
      * Compact the NiFi Feed Processor Stats table.

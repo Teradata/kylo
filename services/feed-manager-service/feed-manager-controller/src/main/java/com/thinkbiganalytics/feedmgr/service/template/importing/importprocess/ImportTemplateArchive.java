@@ -182,16 +182,32 @@ public class ImportTemplateArchive extends AbstractImportTemplateRoutine {
         //now connect these
         boolean validConnections = true;
         for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
-            validConnections &= importReusableTemplate.connectAndValidate();
-            if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {
-                importReusableTemplate.getImportTemplate().getReusableTemplateConnections().stream().forEach(connectionInfo -> this.importTemplate.addReusableTemplateConnection(connectionInfo));
-                this.importTemplate.setReusableFlowOutputPortConnectionsNeeded(true);
+            ImportComponentOption remoteProcessGroupOption = importReusableTemplate.getImportTemplateOptions().findImportComponentOption(ImportComponent.REMOTE_INPUT_PORT);
+            //first validate the remote inputs if they exist
+            if (validConnections && remoteProcessGroupOption.isShouldImport()) {
+                validConnections &= importReusableTemplate.validateRemoteInputPorts(remoteProcessGroupOption);
+                if (importReusableTemplate.getImportTemplate().isRemoteProcessGroupInputPortsNeeded()) {
+                    importReusableTemplate.getImportTemplate().getRemoteProcessGroupInputPortNames().stream().forEach(connectionInfo -> this.importTemplate.addRemoteProcessGroupInputPort(connectionInfo));
+                    this.importTemplate.setRemoteProcessGroupInputPortsNeeded(true);
+                }
             }
-            if (!validConnections) {
-                break;
+        }
+
+        if (validConnections) {
+
+            for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
+                validConnections &= importReusableTemplate.connectAndValidate();
+                if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {
+                    importReusableTemplate.getImportTemplate().getReusableTemplateConnections().stream().forEach(connectionInfo -> this.importTemplate.addReusableTemplateConnection(connectionInfo));
+                    this.importTemplate.setReusableFlowOutputPortConnectionsNeeded(true);
+                }
+                if (!validConnections) {
+                    break;
+                }
             }
         }
         if (validConnections) {
+
             for (ImportReusableTemplate importReusableTemplate : importedReusableTemplates) {
                 validConnections &= importReusableTemplate.validateInstance();
                 if (importReusableTemplate.getImportTemplate().isReusableFlowOutputPortConnectionsNeeded()) {

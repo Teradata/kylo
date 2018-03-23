@@ -38,8 +38,9 @@ import javax.annotation.Nullable;
  * Class to hold profile statistics for columns of timestamp data type <br>
  * [Hive data type: TIMESTAMP]
  */
-@SuppressWarnings("serial")
 public class TimestampColumnStatistics extends StandardColumnStatistics {
+
+    private static final long serialVersionUID = 1352400209627105475L;
 
     /**
      * Records the maximum value of the column

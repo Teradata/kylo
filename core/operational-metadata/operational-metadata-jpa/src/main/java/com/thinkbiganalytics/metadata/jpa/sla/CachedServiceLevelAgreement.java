@@ -29,6 +29,8 @@ import java.util.Set;
  */
 public class CachedServiceLevelAgreement implements Serializable {
 
+    private static final long serialVersionUID = 2615928119119153488L;
+
 
     private String name;
     private String id;

@@ -40,10 +40,11 @@ import java.util.Objects;
 /**
  *
  */
-@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Dataset implements Serializable {
+
+    private static final long serialVersionUID = 6172997424378190960L;
 
     private String time;
     private Datasource datasource;

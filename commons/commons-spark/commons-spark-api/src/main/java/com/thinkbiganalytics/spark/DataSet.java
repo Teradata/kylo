@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark;
 
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.rdd.RDD;
+import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrameWriter;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
@@ -128,4 +129,9 @@ public interface DataSet {
      * Interface for saving the content of the non-streaming DataSet out into external storage.
      */
     DataFrameWriter write();
+
+    /**
+     * Selects a set of column based expressions.
+     */
+    DataSet select(Column... cols);
 }

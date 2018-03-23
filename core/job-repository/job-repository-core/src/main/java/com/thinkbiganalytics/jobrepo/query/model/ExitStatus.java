@@ -24,6 +24,8 @@ import java.io.Serializable;
 
 public class ExitStatus implements Serializable, Comparable<ExitStatus> {
 
+    private static final long serialVersionUID = -7478575185601667437L;
+
     public static final ExitStatus UNKNOWN = new ExitStatus("UNKNOWN");
     public static final ExitStatus EXECUTING = new ExitStatus("EXECUTING");
     public static final ExitStatus COMPLETED = new ExitStatus("COMPLETED");

@@ -335,6 +335,8 @@ public class JpaNifiEvent extends AbstractAuditedEntity implements NifiEvent {
     @Embeddable
     public static class NiFiEventPK implements Serializable {
 
+        private static final long serialVersionUID = -1709077666909588873L;
+
         @Column(name = "EVENT_ID")
         private Long eventId;
 

@@ -40,8 +40,9 @@ import javax.annotation.Nonnull;
 /**
  * Class to write profile statistics result to Hive table
  */
-@SuppressWarnings("serial")
 public class OutputWriter implements Serializable {
+
+    private static final long serialVersionUID = -1250818467175932284L;
 
     /**
      * Write the profile statistics to Hive.

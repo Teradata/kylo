@@ -147,7 +147,7 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     }
 
     @Override
-    public void setIcon(@Nonnull final String icon) {
+    public void setIcon(final String icon) {
         setProperty(ICON, icon);
     }
 
@@ -157,7 +157,7 @@ public class JcrUserDatasource extends JcrDatasource implements UserDatasource, 
     }
 
     @Override
-    public void setIconColor(@Nonnull final String iconColor) {
+    public void setIconColor(final String iconColor) {
         setProperty(ICON_COLOR, iconColor);
     }
 

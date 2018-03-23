@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
     <artifactId>kylo-nifi-standard-services</artifactId>
-    <version>0.9.0-SNAPSHOT</version>
+    <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../../../../</plugin.license.parentRelative>
@@ -17,6 +17,7 @@
 
   <modules>
     <module>nifi-core-service</module>
+    <module>nifi-core-service-v1.2</module>
     <module>nifi-core-service-nar</module>
     <module>nifi-core-service-v1.2-nar</module>
   </modules>

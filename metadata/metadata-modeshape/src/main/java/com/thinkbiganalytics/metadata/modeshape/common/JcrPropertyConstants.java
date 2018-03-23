@@ -36,5 +36,6 @@ public class JcrPropertyConstants {
     public static final String MODIFIED_BY = "jcr:lastModifiedBy";
     public static final String JSON = "tba:json";
 
-
+    public static final String ALLOW_INDEXING = "tba:allowIndexing";
+    public static final String CATEGORY = "tba:category";
 }

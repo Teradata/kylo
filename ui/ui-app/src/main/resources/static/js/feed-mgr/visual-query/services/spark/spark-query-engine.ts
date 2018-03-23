@@ -49,6 +49,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     private dialog: DialogService;
 
+    private VALID_NAME_PATTERN = /[^a-zA-Z0-9\s_]|\s/g;
+
     static readonly $inject: string[] = ["$http", "$mdDialog", "$timeout", "DatasourcesService", "HiveService", "RestUrlService", "uiGridConstants", "VisualQueryService", "$$wranglerInjector"];
 
     /**
@@ -56,7 +58,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      */
     constructor(private $http: angular.IHttpService, $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService,
                 DatasourcesService: DatasourcesServiceStatic.DatasourcesService, private HiveService: any, private RestUrlService: any, uiGridConstants: any, private VisualQueryService: any,
-                private $$angularInjector: Injector) {
+                private $$angularInjector?: Injector) {
         super($mdDialog, DatasourcesService, uiGridConstants, $$angularInjector);
 
         // Initialize properties
@@ -122,11 +124,21 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 
     /**
+     * Returns valid alpha numeric name
+     * @param {string} label
+     * @return {string}
+     */
+    getValidHiveColumnName(label: string){
+        return label.replace(this.VALID_NAME_PATTERN,'')
+    }
+
+    /**
      * Gets the schema fields for the the current transformation.
      *
      * @returns the schema fields or {@code null} if the transformation has not been applied
      */
     getFields(): SchemaField[] | null {
+        var self = this;
         // Get list of columns
         const columns = this.getColumns();
         if (columns === null) {
@@ -144,7 +156,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
             } else {
                 dataType = col.dataType;
             }
-            const colDef = {name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
+            var name = angular.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
+
+            const colDef = {name: name, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: []} as SchemaField;
             if (dataType === 'decimal') {
                 //parse out the precisionScale
                 let precisionScale = '20,2';
@@ -305,7 +319,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             // Map result to SaveResponse
             .map(response => {
                 const save = response.data;
-                if (save.location !== null && save.location.startsWith("./")) {
+                if (save.location != null && save.location.startsWith("./")) {
                     save.location = this.apiUrl + "/transform/" + transformId + "/save/" + save.id + save.location.substr(1);
                 }
                 return save;
@@ -481,6 +495,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * @param {ScriptState<string>} state
      */
     private updateFieldPolicies(state: ScriptState<string>) {
+        var self = this;
         if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
             const policyMap = {};
             state.fieldPolicies.forEach(policy => {
@@ -488,13 +503,14 @@ export class SparkQueryEngine extends QueryEngine<string> {
             });
 
             state.fieldPolicies = state.columns.map(column => {
-                if (policyMap[column.hiveColumnLabel]) {
-                    return policyMap[column.hiveColumnLabel];
+                var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                if (policyMap[name]) {
+                    return policyMap[name];
                 } else {
                     return {
-                        name: column.hiveColumnLabel,
-                        fieldName: column.hiveColumnLabel,
-                        feedFieldName: column.hiveColumnLabel,
+                        name:name,
+                        fieldName:name,
+                        feedFieldName:name,
                         domainTypeId: null,
                         partition: null,
                         profile: true,

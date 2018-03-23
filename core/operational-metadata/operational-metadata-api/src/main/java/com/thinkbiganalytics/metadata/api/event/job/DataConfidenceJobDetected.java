@@ -29,6 +29,8 @@ import java.io.Serializable;
  */
 public class DataConfidenceJobDetected extends OperationStatus implements Serializable {
 
+    private static final long serialVersionUID = 4600288004150299218L;
+
     public DataConfidenceJobDetected(Feed.ID id, String feedName, FeedOperation.FeedType feedType,
                                      FeedOperation.ID opId, FeedOperation.State state, String status) {
         super(id, feedName, feedType, opId, state, status);

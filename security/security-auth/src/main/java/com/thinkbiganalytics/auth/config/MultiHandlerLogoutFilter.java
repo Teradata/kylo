@@ -1,5 +1,13 @@
 package com.thinkbiganalytics.auth.config;
 
+import com.thinkbiganalytics.auth.UsernameAuthenticationToken;
+
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.context.SecurityContextImpl;
+
 /*-
  * #%L
  * kylo-security-auth
@@ -24,13 +32,27 @@ import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 
+import java.io.IOException;
 import java.util.List;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * A logout filter that invokes all supplied LogoutHandlers and then all supplied logoutSuccessHandlers
  * during logout.  It differs from the LogoutFilter in that multiple LogoutSuccessHandlers can be specified.
  */
 public class MultiHandlerLogoutFilter extends LogoutFilter {
+
+    /**
+     * The parameter used to indicate an alternative user to be logged out
+     * than the user executing the logout request.
+     */
+    private static final String ALT_USER_PARAM = "user";
 
     /**
      * Creates a new filter triggered by a logout URL to match and triggers the specified handlers to perform 
@@ -55,5 +77,54 @@ public class MultiHandlerLogoutFilter extends LogoutFilter {
      */
     public MultiHandlerLogoutFilter(List<LogoutSuccessHandler> logoutSuccessHandlers, List<LogoutHandler> logoutHandlers) {
         this(CompositeLogoutSuccessHandler.DEFAULT_LOGOUT_URL, logoutHandlers, logoutSuccessHandlers);
+    }
+    
+    /* (non-Javadoc)
+     * @see org.springframework.security.web.authentication.logout.LogoutFilter#doFilter(javax.servlet.ServletRequest, javax.servlet.ServletResponse, javax.servlet.FilterChain)
+     */
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+
+        if (isAlternateUser(request)) {
+            if (requiresLogout(request, response)) {
+                // If logout is required but the user is specified as a different user than the one currently executing this request,
+                // then temporarily set the SecurityContext to be one constructed from that different user before processing the logout request.
+                SecurityContext originalCxt = SecurityContextHolder.getContext();
+                
+                try {
+                    Authentication auth = createAuthentication(request);
+                    SecurityContextImpl tmpCtx = new SecurityContextImpl();
+                    
+                    tmpCtx.setAuthentication(auth);
+                    SecurityContextHolder.setContext(tmpCtx);
+                    
+                    super.doFilter(req, res, chain);
+                } finally {
+                    SecurityContextHolder.setContext(originalCxt);
+                }
+            }
+        } else {
+            super.doFilter(req, res, chain);
+        }
+    }
+
+    private Authentication createAuthentication(HttpServletRequest request) {
+        String altUser = request.getParameter(ALT_USER_PARAM);
+        
+        if (StringUtils.isBlank(altUser)) {
+            return SecurityContextHolder.getContext().getAuthentication();
+        } else {
+            return new UsernameAuthenticationToken(altUser);
+        }
+    }
+
+    /**
+     * @param request
+     * @return
+     */
+    private boolean isAlternateUser(HttpServletRequest request) {
+        return request.getParameter(ALT_USER_PARAM) != null;
     }
 }
