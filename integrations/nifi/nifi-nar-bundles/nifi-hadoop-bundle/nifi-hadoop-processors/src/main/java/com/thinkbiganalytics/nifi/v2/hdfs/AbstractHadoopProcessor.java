@@ -202,7 +202,19 @@ public abstract class AbstractHadoopProcessor extends AbstractNiFiProcessor {
 
     @OnStopped
     public final void abstractOnStopped() {
-        hdfsResources.set(new   HdfsResources(null, null, null));
+        HdfsResources hdfs = hdfsResources.get();
+        if( hdfs != null ) {
+            FileSystem fs = hdfsResources.get().getFileSystem();
+            if (fs != null) {
+                try {
+                    getLog().info("Processor Stop in progress. Will release HDFS resources.");
+                    fs.close();
+                } catch (IOException e) {
+                    getLog().error("Received IOException when attempting to close HDFS FileSystem handle");
+                }
+            }
+        }
+        hdfsResources.set(new  HdfsResources(null, null, null));
     }
 
     /**
