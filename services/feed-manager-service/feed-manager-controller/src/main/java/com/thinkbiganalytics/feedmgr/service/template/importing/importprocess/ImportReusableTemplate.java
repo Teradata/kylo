@@ -693,7 +693,12 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         if (reusableTemplateFlow == null) {
             String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
             if(reusableTemplateProcessGroupId != null) {
-                reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+                try {
+                    reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+                }catch(Exception e){
+                    log.error("Unable to get Reusable Process Group flow from cache.  Attempted to reset the cache ",e.getMessage());
+                    templateConnectionUtil.resetReusableTemplateProcessGroupCache();
+                }
             }
         }
         if(reusableTemplateFlow == null) {

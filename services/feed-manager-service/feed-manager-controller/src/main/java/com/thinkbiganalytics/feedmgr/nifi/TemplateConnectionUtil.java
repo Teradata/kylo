@@ -72,8 +72,15 @@ public class TemplateConnectionUtil {
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
+
     public ProcessGroupDTO getRootProcessGroup() {
         return niFiObjectCache.getRootProcessGroup();
+    }
+
+
+    @Nullable
+    public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
+        return niFiObjectCache.getReusableTemplateCategoryProcessGroup();
     }
 
     @Nullable
@@ -105,6 +112,11 @@ public class TemplateConnectionUtil {
             return reusableTemplateFlow;
         }
         return null;
+    }
+
+
+    public void resetReusableTemplateProcessGroupCache(){
+        niFiObjectCache.resetReusableProcessGroup();
     }
 
 
