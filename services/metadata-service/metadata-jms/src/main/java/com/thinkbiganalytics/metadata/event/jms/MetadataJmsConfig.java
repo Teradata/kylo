@@ -72,6 +72,17 @@ public class MetadataJmsConfig {
     public Topic cancelActiveWaterMarkTopic() {
         return jmsService.getTopic(MetadataTopics.CANCEL_ACTIVE_WATER_MARK);
     }
+    
+    /**
+     * Gets the topic for triggering the canceling of active water marks.
+     *
+     * @return the water mark cancel even topic
+     */
+    @Bean(name = MetadataTopics.FEED_INIT_STATUS_CHANGE)
+    @Nonnull
+    public Topic feedInitStatusChangeTopic() {
+        return jmsService.getTopic(MetadataTopics.FEED_INIT_STATUS_CHANGE);
+    }
 
 
 }

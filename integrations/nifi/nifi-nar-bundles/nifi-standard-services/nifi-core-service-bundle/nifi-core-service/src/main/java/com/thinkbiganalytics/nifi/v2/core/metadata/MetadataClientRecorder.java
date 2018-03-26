@@ -50,7 +50,6 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
 
@@ -59,9 +58,9 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
 
-    /** The amount of seconds to cache the feed initialization statuses retrieved from the metadata server */
-    // TODO: Expiration may not be necessary if we implement init status change signaling coming from the metadata server
-    private static final int FEED_INIT_STATUS_EXPIRE_SEC = 60;
+//    private static final int FEED_INIT_STATUS_EXPIRE_SEC = 60;
+    private static final int FEED_INIT_STATUS_CACHE_SIZE = 1024;
+    
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final TypeReference<NavigableMap<String, WaterMarkParam>> WM_MAP_TYPE = new TypeReference<NavigableMap<String, WaterMarkParam>>() { };
     private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(WM_MAP_TYPE);
@@ -319,6 +318,14 @@ public class MetadataClientRecorder implements MetadataRecorder {
             return status;
         }
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#initializationStatusChanged(java.lang.String, com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus)
+     */
+    @Override
+    public void initializationStatusChanged(String feedId, InitializationStatus status) {
+        getInitStatusCache().invalidate(feedId);
+    }
 
     @Override
     public void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg) {
@@ -341,7 +348,10 @@ public class MetadataClientRecorder implements MetadataRecorder {
             synchronized (this) {
                 cache = this.initStatusCache;
                 if (cache == null) {
-                    this.initStatusCache = cache = CacheBuilder.newBuilder().expireAfterWrite(FEED_INIT_STATUS_EXPIRE_SEC, TimeUnit.SECONDS).build();
+                    this.initStatusCache = cache = CacheBuilder.newBuilder()
+//                                    .expireAfterWrite(FEED_INIT_STATUS_EXPIRE_SEC, TimeUnit.SECONDS)
+                                    .maximumSize(FEED_INIT_STATUS_CACHE_SIZE)
+                                    .build();
                 }
             }
         }
