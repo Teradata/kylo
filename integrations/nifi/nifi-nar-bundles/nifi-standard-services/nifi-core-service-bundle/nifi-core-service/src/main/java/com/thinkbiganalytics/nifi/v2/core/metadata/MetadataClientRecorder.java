@@ -305,8 +305,9 @@ public class MetadataClientRecorder implements MetadataRecorder {
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#failFeedInitialization(java.lang.String)
      */
     @Override
-    public InitializationStatus failFeedInitialization(String feedId) {
-        InitializationStatus status = new InitializationStatus(InitializationStatus.State.FAILED);
+    public InitializationStatus failFeedInitialization(String feedId, boolean isReinitialize) {
+        InitializationStatus.State state = isReinitialize ? InitializationStatus.State.REINITIALIZE_FAILED : InitializationStatus.State.FAILED;
+        InitializationStatus status = new InitializationStatus(state);
         try {
             this.client.updateCurrentInitStatus(feedId, status);
             this.activeInitStatuses.remove(feedId);

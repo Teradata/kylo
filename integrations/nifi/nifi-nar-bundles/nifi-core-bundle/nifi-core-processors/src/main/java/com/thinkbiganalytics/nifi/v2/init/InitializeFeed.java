@@ -58,6 +58,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Tags({"feed", "initialize", "initialization", "thinkbig"})
 @CapabilityDescription("Controls setup of a feed by routing to an initialization flow.")
 public class InitializeFeed extends FeedProcessor {
+    
+    public static final String REINITIALIZING_FLAG = "reinitializing";
 
     protected static final AllowableValue[] FAIL_STRATEGY_VALUES = new AllowableValue[]{
         new AllowableValue("FAIL", "Fail", "Immediately fail the flow file"),
@@ -96,14 +98,32 @@ public class InitializeFeed extends FeedProcessor {
         .name("Clone initialization flowfile")
         .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. including all content.")
         .required(false)
+        .allowableValues(CommonProperties.BOOLEANS)
         .defaultValue("true")
-        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-        .expressionLanguageSupported(true)
+//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//        .expressionLanguageSupported(true)
+        .build();
+    
+    protected static final PropertyDescriptor USE_REINIT_RELATIONSHIP = new PropertyDescriptor.Builder()
+        .name("Use re-initialization flow")
+        .description("Indicates whether a separate re-initialization relationship should be followed when the feed must be re-initialized.  If false (default) then the "
+                        + "regular Initialize relationship is followd.  If true then the 'Re-Initialize' relationship is followed; which must be connected to the alternate flow.")
+        .required(false)
+        .allowableValues(CommonProperties.BOOLEANS)
+        .defaultValue("false")
+//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
+//        .expressionLanguageSupported(true)
         .build();
 
     Relationship REL_INITIALIZE = new Relationship.Builder()
         .name("Initialize")
         .description("Begin initialization")
+        .build();
+    
+    Relationship REL_REINITIALIZE = new Relationship.Builder()
+        .name("Re-Initialize")
+        .description("Begin re-initialization")
+        .autoTerminateDefault(true)
         .build();
 
     private Map<String, AtomicInteger> retryCounts = Collections.synchronizedMap(new HashMap<>());
@@ -133,9 +153,15 @@ public class InitializeFeed extends FeedProcessor {
                     inProgress(context, session, inputFF);
                     break;
                 case FAILED:
-                    failed(context, session, inputFF, status.getTimestamp());
+                    failed(context, session, inputFF, status.getTimestamp(), false);
                     break;
-                default:
+                case REINITIALIZE:
+                    reinitialize(context, session, inputFF);
+                    break;
+                case REINITIALIZE_FAILED:
+                    reinitializeFailed(context, session, inputFF, status.getTimestamp());
+                    break;
+                case SUCCESS:
                     success(context, session, inputFF);
             }
         }
@@ -148,6 +174,7 @@ public class InitializeFeed extends FeedProcessor {
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
         list.add(CLONE_INIT_FLOWFILE);
+        list.add(USE_REINIT_RELATIONSHIP);
     }
 
     @Override
@@ -156,18 +183,19 @@ public class InitializeFeed extends FeedProcessor {
         set.add(CommonProperties.REL_SUCCESS);
         set.add(CommonProperties.REL_FAILURE);
         set.add(REL_INITIALIZE);
+        set.add(REL_REINITIALIZE);
     }
 
     private void pending(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        beginInitialization(context, session, inputFF);
-        rejectFlowFile(session, inputFF);
+        beginInitialization(context, session, inputFF, false);
+        requeueFlowFile(session, inputFF);
     }
 
     private void inProgress(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        rejectFlowFile(session, inputFF);
+        requeueFlowFile(session, inputFF);
     }
 
-    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
+    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime, boolean reinitializing) {
         String strategy = context.getProperty(FAILURE_STRATEGY).getValue();
 
         if (strategy.equals("RETRY")) {
@@ -179,8 +207,8 @@ public class InitializeFeed extends FeedProcessor {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             } else if (failTime.plusSeconds(delay).isBefore(DateTime.now(DateTimeZone.UTC))) {
-                beginInitialization(context, session, inputFF);
-                rejectFlowFile(session, inputFF);
+                beginInitialization(context, session, inputFF, reinitializing);
+                requeueFlowFile(session, inputFF);
             } else {
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             }
@@ -188,14 +216,24 @@ public class InitializeFeed extends FeedProcessor {
             session.transfer(inputFF, CommonProperties.REL_FAILURE);
         }
     }
+    
+    private void reinitialize(ProcessContext context, ProcessSession session, FlowFile inputFF) {
+        beginInitialization(context, session, inputFF, true);
+        requeueFlowFile(session, inputFF);
+    }
+    
+    private void reinitializeFailed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
+        failed(context, session, inputFF, failTime, true);
+    }
 
     private void success(ProcessContext context, ProcessSession session, FlowFile inputFF) {
         session.transfer(inputFF, CommonProperties.REL_SUCCESS);
     }
 
-    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF) {
+    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF, boolean reinitializing) {
         getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
         FlowFile initFF;
+        Relationship initRelationship;
         
         if (context.getProperty(CLONE_INIT_FLOWFILE).asBoolean()) {
             initFF = session.clone(inputFF);
@@ -203,10 +241,18 @@ public class InitializeFeed extends FeedProcessor {
             initFF = session.create(inputFF);
         }
         
-        session.transfer(initFF, REL_INITIALIZE);
+        if (reinitializing) {
+            boolean useReinit = context.getProperty(USE_REINIT_RELATIONSHIP).asBoolean();
+            initRelationship = useReinit ? REL_REINITIALIZE : REL_INITIALIZE;
+        } else {
+            initRelationship = REL_INITIALIZE;
+        }
+        
+        initFF = session.putAttribute(initFF, REINITIALIZING_FLAG, Boolean.valueOf(reinitializing).toString());
+        session.transfer(initFF, initRelationship);
     }
 
-    private void rejectFlowFile(ProcessSession session, FlowFile inputFF) {
+    private void requeueFlowFile(ProcessSession session, FlowFile inputFF) {
         FlowFile penalizedFF = session.penalize(inputFF);
         session.transfer(penalizedFF);
     }

@@ -73,7 +73,7 @@ public interface MetadataRecorder {
 
     InitializationStatus completeFeedInitialization(String feedId);
 
-    InitializationStatus failFeedInitialization(String feedId);
+    InitializationStatus failFeedInitialization(String feedId, boolean isReinitialize);
 
 
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
