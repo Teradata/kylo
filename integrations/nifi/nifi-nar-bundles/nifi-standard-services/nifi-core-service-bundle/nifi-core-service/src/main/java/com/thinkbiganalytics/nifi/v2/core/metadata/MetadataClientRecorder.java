@@ -42,8 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -53,8 +51,6 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -73,7 +69,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     private MetadataClient client;
     private NavigableMap<String, Long> activeWaterMarks = new ConcurrentSkipListMap<>();
-    private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
     
     private volatile Cache<String, Optional<InitializationStatus>> initStatusCache;
 
@@ -265,12 +260,12 @@ public class MetadataClientRecorder implements MetadataRecorder {
      */
     @Override
     public Optional<InitializationStatus> getInitializationStatus(String feedId) {
-        // Checks in order: active statuses, statuses cache, metadata server status
-        return Stream.of(getActiveInitStatus(feedId), getCachedInitStatus(feedId))
-                        .map(Supplier::get)
-                        .filter(Optional::isPresent)
-                        .map(Optional::get)
-                        .findFirst();
+        try {
+            return getInitStatusCache().get(feedId, () -> getFeedInitStatus(feedId));
+        } catch (ExecutionException e) {
+            log.error("Failed to obtain initialization status feed: {}", feedId, e);
+            throw new ProcessException("Failed to obtain initialization status feed: " + feedId, e.getCause());
+        }
     }
 
     /* (non-Javadoc)
@@ -279,8 +274,15 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     public InitializationStatus startFeedInitialization(String feedId) {
         InitializationStatus status = new InitializationStatus(InitializationStatus.State.IN_PROGRESS);
-        this.activeInitStatuses.put(feedId, status);
-        return status;
+        try {
+            this.client.updateCurrentInitStatus(feedId, status);
+            getInitStatusCache().put(feedId, Optional.of(status));
+            return status;
+        } catch (Exception e) {
+            log.error("Failed to update metadata with feed initialization in-progress status: {},  feed: {}", status.getState(), feedId, e);
+            getInitStatusCache().invalidate(feedId);
+            throw new ProcessException("Failed to update metadata with feed initialization in-progress status: " + status + ",  feed: " + feedId, e);
+        }
     }
 
     /* (non-Javadoc)
@@ -291,12 +293,11 @@ public class MetadataClientRecorder implements MetadataRecorder {
         InitializationStatus status = new InitializationStatus(InitializationStatus.State.SUCCESS);
         try {
             this.client.updateCurrentInitStatus(feedId, status);
-            this.activeInitStatuses.remove(feedId);
-            this.initStatusCache.put(feedId, Optional.of(status));
+            getInitStatusCache().put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
             log.error("Failed to update metadata with feed initialization completion status: {},  feed: {}", status.getState(), feedId, e);
-            this.initStatusCache.invalidate(feedId);
+            getInitStatusCache().invalidate(feedId);
             throw new ProcessException("Failed to update metadata with feed initialization completion status: " + status + ",  feed: " + feedId, e);
         }
     }
@@ -310,13 +311,11 @@ public class MetadataClientRecorder implements MetadataRecorder {
         InitializationStatus status = new InitializationStatus(state);
         try {
             this.client.updateCurrentInitStatus(feedId, status);
-            this.activeInitStatuses.remove(feedId);
-            this.initStatusCache.put(feedId, Optional.of(status));
+            getInitStatusCache().put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
-            log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
-            this.activeInitStatuses.put(feedId, status);
-            this.initStatusCache.put(feedId, Optional.of(status));
+            log.error("Failed to update feed initialization failed status: {},  feed: {}", status.getState(), feedId);
+            getInitStatusCache().invalidate(feedId);
             return status;
         }
     }
@@ -330,21 +329,6 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
             return (this.client.updateFeedHistoryReindexing(feedId, historyReindexingStatus));
-    }
-
-    private Supplier<Optional<InitializationStatus>> getActiveInitStatus(String feedId) {
-        return () -> Optional.ofNullable(this.activeInitStatuses.get(feedId));
-    }
-
-    private Supplier<Optional<InitializationStatus>> getCachedInitStatus(String feedId) {
-        return () -> {
-            try {
-                return getInitStatusCache().get(feedId, () -> getFeedInitStatus(feedId));
-            } catch (ExecutionException e) {
-                log.error("Failed to obtain initialization status feed: {}", feedId, e);
-                throw new ProcessException("Failed to obtain initialization status feed: " + feedId, e.getCause());
-            }
-        };
     }
 
     private Optional<InitializationStatus> getFeedInitStatus(String feedId) {
