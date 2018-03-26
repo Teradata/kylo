@@ -148,7 +148,14 @@ public class TemplateCreationHelper {
 
         //next create the temp group
         snapshotControllerServiceReferences();
-        ProcessGroupDTO tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        ProcessGroupDTO tempGroup = null;
+        try {
+         tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        }
+        catch (NifiComponentNotFoundException e){
+            nifiObjectCache.resetTemporaryTemplateInspectionGroup();
+            tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        }
         TemplateInstance instance= instantiateFlowFromTemplate(tempGroup.getId(), templateId);
         FlowSnippetDTO snippet = instance.getFlowSnippetDTO();
         identifyNewlyCreatedControllerServiceReferences(instance);

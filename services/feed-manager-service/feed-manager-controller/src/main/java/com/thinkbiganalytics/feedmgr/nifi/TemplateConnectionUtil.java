@@ -77,6 +77,10 @@ public class TemplateConnectionUtil {
         return niFiObjectCache.getReusableTemplateProcessGroupId();
     }
 
+    public void resetReusableTemplateProcessGroupCache(){
+        niFiObjectCache.resetTemporaryTemplateInspectionGroup();
+    }
+
     public void connectFeedToReusableTemplate(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup, List<InputOutputPort> inputOutputPorts) throws NifiComponentNotFoundException {
 
         Stopwatch stopwatch = Stopwatch.createStarted();
