@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.nifi.v2.core.watermark;
+package com.thinkbiganalytics.nifi.v2.core.feedinit;
 
 /*-
  * #%L
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
  * Bean configuration for water mark management.
  */
 @Configuration
-public class WaterMarkJmsConfiguration {
+public class FeedInitializationJmsConfiguration {
 
     /**
      * Constructs the consumer for water mark cancel events.
@@ -35,7 +35,7 @@ public class WaterMarkJmsConfiguration {
      * @return the cancel event consumer
      */
     @Bean
-    public CancelActiveWaterMarkEventConsumer cancelActiveWaterMarkEventConsumer() {
-        return new CancelActiveWaterMarkEventConsumer();
+    public FeedInitializationChangeEventConsumer feedInitializationChangeEventConsumer() {
+        return new FeedInitializationChangeEventConsumer();
     }
 }

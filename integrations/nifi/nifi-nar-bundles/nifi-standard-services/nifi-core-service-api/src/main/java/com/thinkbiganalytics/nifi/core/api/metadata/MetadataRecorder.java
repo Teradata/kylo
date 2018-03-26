@@ -86,4 +86,11 @@ public interface MetadataRecorder {
      */
     FeedDataHistoryReindexParams updateFeedHistoryReindexing(String feedId, HistoryReindexingStatus historyReindexingStatus);
 
+    /**
+     * Notifies a change in a feed's initialization status
+     * @param feedId the feed's ID
+     * @param status the new status
+     */
+    void initializationStatusChanged(String feedId, InitializationStatus status);
+
 }
