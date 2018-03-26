@@ -90,7 +90,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
-    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional). System Time = Kylo", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
+    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional).", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"", "ACT",
                                         "AET",
                                         "AGT",
