@@ -18,11 +18,10 @@ const moduleName = require('feed-mgr/module-name');
 import * as angular from 'angular';
 import * as _ from "underscore";
 
-export default class DomainTypesService{
-      /**
+     /**
          * Gets the specified RegExp.
          */
-     getRegExp=(pattern: any, flags: any)=> {
+    function getRegExp(pattern: any, flags: any) {
             var safeFlags = angular.isString(flags) ? flags : "";
             return (angular.isString(pattern) && pattern.length > 0) ? new RegExp(pattern, safeFlags) : null;
         }
@@ -30,7 +29,7 @@ export default class DomainTypesService{
         /**
          * Gets the specified domain type's regular expression for matching field names.
          */
-    getFieldNameRegExp=(domainType: any)=> {
+    function getFieldNameRegExp(domainType: any){
             if (angular.isUndefined(domainType.$fieldNameRegexp)) {
                 domainType.$fieldNameRegexp = this.getRegExp(domainType.fieldNamePattern, domainType.fieldNameFlags);
             }
@@ -40,7 +39,7 @@ export default class DomainTypesService{
         /**
          * Gets the specified domain type's regular expression for matching sample values.
          */
-    getSampleDataRegExp=(domainType: any)=> {
+    function getSampleDataRegExp(domainType: any){
             if (angular.isUndefined(domainType.$regexp)) {
                 domainType.$regexp = this.getRegExp(domainType.regexPattern, domainType.regexFlags);
             }
@@ -50,34 +49,37 @@ export default class DomainTypesService{
         /**
          * Indicates if the specified value exactly matches the regular expression.
          */
-     matches=(regexp: any, value: any)=> {
+     function matches(regexp: any, value: any){
             var result = regexp.exec(value);
             return (result !== null && result.index === 0 && result[0].length === value.length);
         }
 
+export default class DomainTypesService{
         /**
          * Interacts with the Domain Types REST API.
          * @constructor
          */
-    DomainTypesService() {
-        }
  constructor (private $http?: any,
                 private $q?: any,
                 private RestUrlService?: any) {
 
-        angular.extend(DomainTypesService.prototype, {
-            /**
+      // angular.extend(DomainTypesService.prototype, {
+      
+      //  });
+        //return new DomainTypesService();
+    }
+           /**
              * Deletes the domain type with the specified id.
              *
              * @param {string} id the domain type id
              * @returns {Promise} for when the domain type is deleted
              */
-            deleteById: function (id: any) {
-                return $http({
+            deleteById=(id: any)=>{
+                return this.$http({
                     method: "DELETE",
-                    url: RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id)
+                    url: this.RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id)
                 });
-            },
+            }
 
             /**
              * Detects the appropriate domain type for the specified values.
@@ -86,7 +88,7 @@ export default class DomainTypesService{
              * @param {DomainType[]} domainTypes - the list of domain types
              * @returns {DomainType|null} - the matching domain type or null if none match
              */
-            detectDomainType: function (columnDef: any, domainTypes: any) {
+            detectDomainType=(columnDef: any, domainTypes: any)=>{
                 // Remove empty values
                 var valueArray: any;
                 if (columnDef.sampleValues != null && columnDef.sampleValues.length > 0) {
@@ -103,33 +105,33 @@ export default class DomainTypesService{
                     var match = null;
 
                     // Match field name
-                    var fieldNameRegexp = this.getFieldNameRegExp(domainType);
+                    var fieldNameRegexp = getFieldNameRegExp(domainType);
                     if (fieldNameRegexp !== null) {
-                        match = this.matches(fieldNameRegexp, columnDef.name);
+                        match = matches(fieldNameRegexp, columnDef.name);
                     }
 
                     // Match sample values
-                    var sampleValuesRegexp = this.getSampleDataRegExp(domainType);
+                    var sampleValuesRegexp = getSampleDataRegExp(domainType);
                     if (sampleValuesRegexp !== null && valueArray.length > 0 && match !== false) {
-                        match = valueArray.every(this.matches.bind(null, sampleValuesRegexp));
+                        match = valueArray.every(matches.bind(null, sampleValuesRegexp));
                     }
 
                     return (match === true);
                 });
                 return angular.isObject(matchingDomainType) ? matchingDomainType : null;
-            },
+            }
 
             /**
              * Finds all domain types.
              *
              * @returns {Promise} with the list of domain types
              */
-            findAll: function() {
-                return $http.get(RestUrlService.DOMAIN_TYPES_BASE_URL)
+            findAll=()=> {
+                return this.$http.get(this.RestUrlService.DOMAIN_TYPES_BASE_URL)
                     .then((response: any)=> {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Finds the domain type with the specified id.
@@ -137,12 +139,12 @@ export default class DomainTypesService{
              * @param {string} id the domain type id
              * @returns {Promise} with the domain type
              */
-            findById: function (id: any) {
-                return $http.get(RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id))
+            findById=(id: any)=>{
+                return this.$http.get(this.RestUrlService.DOMAIN_TYPES_BASE_URL + "/" + encodeURIComponent(id))
                     .then((response: any)=> {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets the specified domain type's regular expression for matching sample values.
@@ -150,7 +152,7 @@ export default class DomainTypesService{
              * @param {DomainType} domainType the domain type
              * @returns {(RegExp|null)} the regular expression
              */
-            getRegExp: this.getSampleDataRegExp,
+            getRegExp: any= getSampleDataRegExp;
 
             /**
              * Indicates if the specified field properties match the specified domain type.
@@ -159,20 +161,20 @@ export default class DomainTypesService{
              * @param field - the field
              * @returns {boolean} true if the field and domain type match, otherwise false
              */
-            matchesField: function (domainType: any, field: any) {
+            matchesField=(domainType: any, field: any)=>{
                 if (domainType.field == null) {
                     return true;
                 }
                 return (domainType.field.name == null || domainType.field.name === field.name)
                        && (domainType.field.derivedDataType == null || domainType.field.derivedDataType === field.derivedDataType);
-            },
+            }
 
             /**
              * Creates a new domain type.
              *
              * @returns {DomainType} the domain type
              */
-            newDomainType: function () {
+            newDomainType= ()=>{
                 return {
                     description: "",
                     field: {
@@ -188,27 +190,28 @@ export default class DomainTypesService{
                     regexPattern: "",
                     title: ""
                 };
-            },
+            }
             /**
              * Saves the specified domain type.
              *
              * @param {DomainType} domainType the domain type to be saved
              * @returns {Promise} with the updated domain type
              */
-            save: function (domainType: any) {
-                return $http.post(RestUrlService.DOMAIN_TYPES_BASE_URL, domainType)
+            save=(domainType: any)=>{
+                return this.$http.post(this.RestUrlService.DOMAIN_TYPES_BASE_URL, domainType)
                     .then((response: any)=>{
                         return response.data;
                     });
             }
-        });
-        return new DomainTypesService();
-    }
     emptyArray: any[]= [];
     nullVar: any = null;
 }
 
 
-  angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",DomainTypesService]);
+  angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
+  function($http: any,$q: any,RestUrlService:any){
+        return new DomainTypesService($http , $q, RestUrlService);
+  }
+  ]);
   
   
