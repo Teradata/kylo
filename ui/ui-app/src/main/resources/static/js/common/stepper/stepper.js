@@ -203,7 +203,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                                 // And let Angular $compile it
                                 $compile(template)($scope);
                                 $element.find('md-tabs-wrapper:first').append('  <div class="step-progressbar"  style="display:block;"></div>');
-                                var progressBar = this.$compile('<md-progress-linear md-mode="indeterminate" ng-if="vm.showProgress"></md-progress-linear>')($scope);
+                                var progressBar = $compile('<md-progress-linear md-mode="indeterminate" ng-if="vm.showProgress"></md-progress-linear>')($scope);
                                 $element.find('.step-progressbar').append(progressBar);
                             });
                         }
