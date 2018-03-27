@@ -189,7 +189,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     }
                 }, true);
                 // Fetch domain types
-                _this.domainTypesService.DomainTypesService.prototype.findAll()
+                _this.domainTypesService.findAll()
                     .then(function (domainTypes) {
                     _this.domainTypes = domainTypes;
                     domainTypesLoaded = true;

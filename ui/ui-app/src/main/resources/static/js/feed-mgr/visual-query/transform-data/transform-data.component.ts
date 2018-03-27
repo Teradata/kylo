@@ -244,7 +244,7 @@ export class TransformDataComponent implements OnInit {
             }, true);
 
             // Fetch domain types
-            this.domainTypesService.DomainTypesService.prototype.findAll()
+            this.domainTypesService.findAll()
                 .then((domainTypes: any)=> {
                     this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
