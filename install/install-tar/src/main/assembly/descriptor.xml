@@ -493,6 +493,12 @@
       <fileMode>755</fileMode>
     </file>
     <file>
+      <source>${project.parent.basedir}/setup/kylo-service</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
       <source>${project.parent.parent.basedir}/plugins/search-elasticsearch-rest/scripts/es/create-kylo-indexes-es.sh</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>

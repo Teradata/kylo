@@ -1,6 +1,6 @@
 #!/bin/bash
 ACTIONS=("restart" "stop" "start" "status" "list" "enable" "disable")
-SERVICES=("kylo-ui" "kylo-services" "kylo-spark-shell")
+SERVICES=("kylo-ui" "kylo-services")
 OPTIONAL_SERVICES=("nifi" "activemq" "elasticsearch" "mysqld" "mariadb" "postgresql")
 USER_ACTION=${1,,}
 OPTIONAL=${2,,}
