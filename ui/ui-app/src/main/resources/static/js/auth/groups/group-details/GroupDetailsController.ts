@@ -1,65 +1,26 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-//const PAGE_NAME:string = "group-details";
-//const moduleName = require('auth/module-name');
-
 import {UserService} from "../../services/UserService";
 import {moduleName} from "../../module-name";
 import {PermissionsTableController} from "../../shared/permissions-table/permissions-table";
 
 export default class GroupDetailsController implements ng.IComponentController {
-     $error:any = {duplicateName: false, missingName: false };
-        /**
-         * Indicates that admin operations are allowed.
-         * @type {boolean}
-         */
-        allowAdmin:any = false;
-        /**
-         * User model for the edit view.
-         * @type {UserPrincipal}
-         */
-        editModel:any = {};
-        /**
-         * Map of group system names to group objects.
-         * @type {Object.<string, GroupPrincipal>}
-         */
-        groupMap:any = {};
-
-        /**
-         * Indicates if the edit view is displayed.
-         * @type {boolean}
-         */
-        isEditable:any = false;
-
-        /**
-         * Indicates if the edit form is valid.
-         * @type {boolean}
-         */
-        isValid:any = false;
-
-        groupId: any = this.$transition$.params().groupId;
-        /**
-         * Indicates that the user is currently being loaded.
-         * @type {boolean}
-         */
-        loading:any = true;
-
-        /**
-         * User model for the read-only view.
-         * @type {UserPrincipal}
-         */
-        model:any = {description: null, memberCount: 0, systemName: null, title: null};
-
-        actions: any[] = []; // List of actions allowed to the group. //  @type {Array.<Action>}
-        allowUsers: boolean = false;  // Indicates that user operations are allowed. //boolean
-        editActions: any[] = [];    // Editable list of actions allowed to the group. //@type {Array.<Action>}
-        isPermissionsEditable = false; //Indicates if the permissions edit view is displayed.// @type {boolean}
-        users: any[] = [];            // Users in the group. // @type {Array.<UserPrincipal>}
+    $error:any = {duplicateName: false, missingName: false };
+    allowAdmin:boolean = false; // Indicates that admin operations are allowed  {boolean}
+    editModel:any = {}; //User model for the edit view {UserPrincipal}
+    groupMap:any = {}; //Map of group system names to group objects {Object.<string, GroupPrincipal>}
+    isEditable:boolean = false; //Indicates if the edit view is displayed  {boolean}
+    isValid:boolean = false; //Indicates if the edit form is valid {boolean}
+    groupId:any = this.$transition$.params().groupId;
+    loading:boolean = true; //Indicates that the user is currently being loaded {boolean}
+    model:any = {description: null, memberCount: 0, systemName: null, title: null}; //User model for the read-only view {UserPrincipal}
+    actions: any[] = []; // List of actions allowed to the group. //  @type {Array.<Action>}
+    allowUsers: boolean = false;  // Indicates that user operations are allowed. //boolean
+    editActions: any[] = [];    // Editable list of actions allowed to the group. //@type {Array.<Action>}
+    isPermissionsEditable: boolean = false; //Indicates if the permissions edit view is displayed.// @type {boolean}
+    users: any[] = []; // Users in the group. // @type {Array.<UserPrincipal>}
    
-
-    ngOnInit(){
-    }
-
+    ngOnInit(){}
      constructor(
         private $scope:angular.IScope,
         private $mdDialog:angular.material.IDialogService,
@@ -99,25 +60,20 @@ export default class GroupDetailsController implements ng.IComponentController {
 
         /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
-         *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
         canDelete() {
             return (this.model.systemName !== null);
         };       
 
-        /**
-         * Cancels the current edit operation. If a new user is being created then redirects to the users page.
-         */
+        //Cancels the current edit operation. If a new user is being created then redirects to the users page.
         onCancel() {
             if (this.model.systemName === null) {
                 this.StateService.Auth().navigateToGroups();
             }
         };
 
-        /**
-         * Deletes the current user.
-         */
+        // Deletes the current user.
         onDelete() {
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
              this.UserService.deleteGroup(encodeURIComponent(this.$transition$.params().groupId))
@@ -140,22 +96,16 @@ export default class GroupDetailsController implements ng.IComponentController {
                     });
         };
 
-        /**
-        //  * Creates a copy of the user model for editing.
-         */
+       //  * Creates a copy of the user model for editing.
         onEdit() {
             this.editModel = angular.copy(this.model);
         };
-        /**
-             * Creates a copy of the permissions for editing.
-             */
+        //Creates a copy of the permissions for editing.
         onEditPermissions() {
            this.editActions = angular.copy(this.actions);
         };
 
-        /**
-         * Loads the user details.
-         */
+        // Loads the user details.
         onLoad() {
             // Load allowed permissions
             this.AccessControlService.getUserAllowedActions()
@@ -183,54 +133,42 @@ export default class GroupDetailsController implements ng.IComponentController {
                     this.onEdit();
                     this.isEditable = true;
                     this.loading = false;
-
-                    this.UserService.getGroups()
-                            .then(function(groups: any) {
+                    this.UserService.getGroups().then(function(groups: any) {
                                 this.groupMap = {};
                                 angular.forEach(groups, function(group: any) {
                                     this.groupMap[group.systemName] = true;
                                 });
                             });
                 }
-                
         };
         
-        /**
-         * Saves the current group.
-         */
-        onSave() {
-            var model = angular.copy(this.editModel);
-            this.UserService.saveGroup(model)
-                    .then(() => {
-                        this.model = model;
-                        this.groupId = this.model.systemName;
+    onSave() { //Saves the current group.
+        var model = angular.copy(this.editModel);
+        this.UserService.saveGroup(model)
+                .then(() => {
+                    this.model = model;
+                    this.groupId = this.model.systemName;
+                });
+    };
+     /**
+     * Saves the current permissions.
+     */
+    onSavePermissions() {
+            var actions = angular.copy(this.editActions);
+            this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
+                    .then((actionSet: any) =>{
+                        this.actions = actionSet.actions;
                     });
-        };
-             /**
-             * Saves the current permissions.
-             */
-        onSavePermissions() {
-                var actions = angular.copy(this.editActions);
-                this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
-                        .then((actionSet: any) =>{
-                            this.actions = actionSet.actions;
-                        });
-            };
+    };
 
-              /**
-             * Navigates to the details page for the specified user.
-             *
-             * @param user the user
-             */
-         onUserClick = function(user: any) {
-                this.StateService.Auth().navigateToUserDetails(user.systemName);
-            };
-
+    /**
+     * Navigates to the details page for the specified user.
+     * @param user the user
+     */
+    onUserClick = function(user: any) {
+        this.StateService.Auth().navigateToUserDetails(user.systemName);
+    };
 }
 
-angular.module(moduleName)
-.service("UserService",['$http',
-                          'CommonRestUrlService',
-                          'UserGroupService', UserService])
-.controller('GroupDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",GroupDetailsController]);
+angular.module(moduleName).controller('GroupDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",GroupDetailsController]);
 
