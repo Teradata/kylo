@@ -6,24 +6,11 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             var _this = this;
             this.$scope = $scope;
             this.AccessControlService = AccessControlService;
-            /**
-            * List of available actions to be displayed.
-            * @type {Array.<ActionState>}
-            */
-            this.available = [];
-            /**
-             * Copy of model for detecting outside changes.
-             * @type {Array.<Action>}
-             */
-            this.lastModel = [];
-            /**
-             * List of top-level available actions.
-             * @type {Array.<ActionState>}
-             */
-            this.roots = [];
+            this.available = []; //List of available actions to be displayed {Array.<ActionState>}
+            this.lastModel = []; //Copy of model for detecting outside changes {Array.<Action>}
+            this.roots = []; //List of top-level available actions  {Array.<ActionState>}
             /**
                * Adds any allowed actions in the specified list to the model.
-               *
                * @param {Array.<ActionState>} actions the list of actions
                * @param {Array.<Action>} target the destination
                */
@@ -40,12 +27,11 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
                 });
             };
             /**
-           * Adds the specified action to the list of available actions.
-           *
-           * @param {Action} action the action
-           * @param {number} level the indent level, starting at 0
-           * @param {ActionState|null} parent the parent action
-           */
+             * Adds the specified action to the list of available actions.
+             * @param {Action} action the action
+             * @param {number} level the indent level, starting at 0
+             * @param {ActionState|null} parent the parent action
+             */
             this.addAction = function (action, level, parent) {
                 var state = _.pick(action, "description", "systemName", "title");
                 state.$$allowed = false;
@@ -62,7 +48,6 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             };
             /**
              * Toggles the allowed state of the specified action.
-             *
              * @param {ActionState} action the action
              */
             this.toggle = function (action) {
@@ -78,20 +63,10 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             $scope.$watch(function () { return $scope.model; }, function () { _this.refresh(); });
             // Fetch the list of available actions
             this.getAvailableActions();
-            /* AccessControlService.getAvailableActions()
-                         .then((actionSet:any)=> {
-                             angular.forEach(actionSet.actions, (action:any)=> {
-                                                                 var state = this.addAction(action, 0, null);
-                                                                 this.roots.push(state);
-                                                             });
-                             this.refresh();
-                     });*/
         }
         PermissionsTableController.prototype.getAvailableActions = function () {
             var _this = this;
-            this.AccessControlService
-                .getAvailableActions()
-                .then(function (actionSet) {
+            this.AccessControlService.getAvailableActions().then(function (actionSet) {
                 angular.forEach(actionSet.actions, function (action) {
                     var state = _this.addAction(action, 0, null);
                     _this.roots.push(state);
@@ -101,7 +76,6 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         };
         /**
       * Returns an array containing the specified number of elements.
-      *
       * @param {number} n the number of elements for the array
       * @returns {Array.<number>} the array
       */
@@ -137,7 +111,6 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         ;
         /**
               * Sets the state of the specified action to the specified value.
-              *
               * @param {ActionState} action the action
               * @param {boolean} allowed {@code true} if the action is allowed, or {@code false} otherwise
               */
@@ -162,24 +135,10 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         return PermissionsTableController;
     }());
     exports.PermissionsTableController = PermissionsTableController;
-    /*export function thinkbigPermissionsTable(): ng.IDirective
-        {
-            return {
-                controller: "PermissionsTableController",
-                controllerAs: "vm",
-                require: "ngModel",
-                restrict: "E",
-                scope: {
-                    model: "=allowed",
-                    readOnly: "=?"
-                },
-                templateUrl: "js/auth/shared/permissions-table/permissions-table.html"
-            };
-        }
-    */
     angular.module(module_name_1.moduleName).controller("PermissionsTableController", ["$scope", "AccessControlService", PermissionsTableController]);
-    angular.module(module_name_1.moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
-    [function () {
+    /* Creates a directive for displaying and editing permissions.
+     * @returns {Object} the directive */
+    angular.module(module_name_1.moduleName).directive("thinkbigPermissionsTable", [function () {
             return {
                 controller: "PermissionsTableController",
                 controllerAs: "vm",

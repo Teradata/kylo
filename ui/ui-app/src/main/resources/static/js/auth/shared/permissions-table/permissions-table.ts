@@ -1,29 +1,14 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-//const moduleName = require('auth/module-name');
 import {moduleName} from "../../module-name";
 export interface IMyScope extends ng.IScope {
   model?: any;
   readOnly?: boolean;
 }
 export  class PermissionsTableController implements ng.IComponentController {
-         /**
-         * List of available actions to be displayed.
-         * @type {Array.<ActionState>}
-         */
-         available:any = [];
-
-        /**
-         * Copy of model for detecting outside changes.
-         * @type {Array.<Action>}
-         */
-        lastModel: any = [];
-
-        /**
-         * List of top-level available actions.
-         * @type {Array.<ActionState>}
-         */
-        roots: any  = [];
+    available:any = [];  //List of available actions to be displayed {Array.<ActionState>}
+    lastModel: any = []; //Copy of model for detecting outside changes {Array.<Action>}
+    roots: any  = []; //List of top-level available actions  {Array.<ActionState>}
         
     constructor (private $scope:IMyScope,
                  private AccessControlService:any) {
@@ -33,31 +18,19 @@ export  class PermissionsTableController implements ng.IComponentController {
                       );
           // Fetch the list of available actions
        this.getAvailableActions();
-       /* AccessControlService.getAvailableActions()
-                    .then((actionSet:any)=> {
-                        angular.forEach(actionSet.actions, (action:any)=> {
-                                                            var state = this.addAction(action, 0, null);
-                                                            this.roots.push(state);
-                                                        });
-                        this.refresh();
-                });*/
     }
     
     getAvailableActions(){
-        this.AccessControlService
-            .getAvailableActions()
-            .then((actionSet:any)=> {
-                            angular.forEach(actionSet.actions, 
-                                            (action:any)=> { //fun(val,key)
-                                                            var state = this.addAction(action, 0, null);
-                                                            this.roots.push(state);
-                                                            });
+        this.AccessControlService.getAvailableActions().then((actionSet:any)=> {
+                            angular.forEach(actionSet.actions, (action:any)=> 
+                                                    {var state = this.addAction(action, 0, null);
+                                                     this.roots.push(state);
+                                                     });
                             this.refresh();
                     });
     }
       /**
          * Adds any allowed actions in the specified list to the model.
-         *
          * @param {Array.<ActionState>} actions the list of actions
          * @param {Array.<Action>} target the destination
          */
@@ -74,9 +47,8 @@ export  class PermissionsTableController implements ng.IComponentController {
             });
         };
 
-          /**
+        /**
          * Adds the specified action to the list of available actions.
-         *
          * @param {Action} action the action
          * @param {number} level the indent level, starting at 0
          * @param {ActionState|null} parent the parent action
@@ -101,7 +73,6 @@ export  class PermissionsTableController implements ng.IComponentController {
 
            /**
          * Returns an array containing the specified number of elements.
-         *
          * @param {number} n the number of elements for the array
          * @returns {Array.<number>} the array
          */
@@ -139,7 +110,6 @@ export  class PermissionsTableController implements ng.IComponentController {
 
    /**
          * Sets the state of the specified action to the specified value.
-         *
          * @param {ActionState} action the action
          * @param {boolean} allowed {@code true} if the action is allowed, or {@code false} otherwise
          */
@@ -164,7 +134,6 @@ export  class PermissionsTableController implements ng.IComponentController {
 
         /**
          * Toggles the allowed state of the specified action.
-         *
          * @param {ActionState} action the action
          */
         toggle = (action: any)=> {
@@ -176,33 +145,13 @@ export  class PermissionsTableController implements ng.IComponentController {
                 this.addAllowed(this.roots, model);
                 this.$scope.model = this.lastModel = model;
             }
-        };
+        };   
+}
 
-        
-                    /**
-     * Creates a directive for displaying and editing permissions.
-     *
-     * @returns {Object} the directive
-     */
-        }
-
-/*export function thinkbigPermissionsTable(): ng.IDirective
-    {
-        return {
-            controller: "PermissionsTableController",
-            controllerAs: "vm",
-            require: "ngModel",
-            restrict: "E",
-            scope: {
-                model: "=allowed",
-                readOnly: "=?"
-            },
-            templateUrl: "js/auth/shared/permissions-table/permissions-table.html"
-        };
-    }
-*/
 angular.module(moduleName).controller("PermissionsTableController",["$scope", "AccessControlService", PermissionsTableController]);
-angular.module(moduleName).directive("thinkbigPermissionsTable", //[this.thinkbigPermissionsTable]);
+/* Creates a directive for displaying and editing permissions.
+ * @returns {Object} the directive */
+angular.module(moduleName).directive("thinkbigPermissionsTable", 
   [ () => { return {
             controller: "PermissionsTableController",
             controllerAs: "vm",
