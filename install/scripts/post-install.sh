@@ -368,8 +368,6 @@ echo "   - Added service 'kylo-services'"
 
 echo "    - Completed kylo-services install"
 
-echo "    - Install kylo-spark-shell application"
-
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 
@@ -413,9 +411,6 @@ spark-submit --master local --conf spark.driver.userClassPathFirst=true --class 
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
-echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"
-
-echo "    - Added spark shell scripts"
 
 {
 echo "    - Create an RPM Removal script at: $INSTALL_HOME/remove-kylo.sh"

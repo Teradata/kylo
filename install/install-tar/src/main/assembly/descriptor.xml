@@ -142,14 +142,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-app/src/main/config/rpm-build</directory>
-      <outputDirectory>kylo-services/conf</outputDirectory>
-      <fileMode>755</fileMode>
-      <includes>
-        <include>log4j-spark.properties</include>
-      </includes>
-    </fileSet>
-    <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/precondition-default/target</directory>
       <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
@@ -437,7 +429,6 @@
         <include>start-kylo-apps.sh</include>
         <include>stop-kylo-apps.sh</include>
         <include>status-kylo-apps.sh</include>
-        <include>kylo-service</include>
       </includes>
     </fileSet>
 
