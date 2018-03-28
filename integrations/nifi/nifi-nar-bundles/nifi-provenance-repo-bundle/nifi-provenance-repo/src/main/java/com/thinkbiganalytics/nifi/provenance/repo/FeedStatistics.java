@@ -110,13 +110,13 @@ public class FeedStatistics {
                     //we got more than x events within the threshold... throttle
                     key += eventTimeNearestSecond(event);
                     if(isThrottled.compareAndSet(false,true)) {
-                        log.info("Detected over {} flows/sec starting within the given window, throttling back starting events ", throttleStartingFeedFlowsThreshold);
+                        log.debug("Detected over {} flows starting within the given window of {} ms for key {}.  Throttling back starting events (for batch job processing) to only 1 per second until it slows down. ", throttleStartingFeedFlowsThreshold,throttleStartingFeedFlowsTimePeriod, key );
                     }
                 } else {
                     key +=":" + feedFlowFileId;
                     startingFeedFlowQueue.clear();
                     if(isThrottled.compareAndSet(true,false)) {
-                        log.info("Resetting throttle flow rate is slower than threshold {} flows/se for flows starting within the given window.", throttleStartingFeedFlowsThreshold);
+                        log.debug("Resetting the batch job processing throttle flow rate.  Fewer than {} flows within the given window of {} ms for key {} were detected.", throttleStartingFeedFlowsThreshold, throttleStartingFeedFlowsTimePeriod, key);
                     }
                 }
 

@@ -135,7 +135,7 @@ public class ConfigurationProperties {
     }
 
     public Integer getDefaultThrottleStartingFeedFlowsTimePeriodMillis(){
-        return throttleStartingFeedFlowsTimePeriodMillis == null ? DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD : throttleStartingFeedFlowsTimePeriodMillis;
+        return throttleStartingFeedFlowsTimePeriodMillis == null ? DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS : throttleStartingFeedFlowsTimePeriodMillis;
     }
 
     public Long getFeedProcessingRunInterval() {
