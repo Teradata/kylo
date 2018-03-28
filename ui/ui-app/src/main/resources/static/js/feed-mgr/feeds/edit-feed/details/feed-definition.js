@@ -60,7 +60,7 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
                 });
             }
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, this.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+            $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, this.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
                 _this.allowEdit = !_this.versions && access && !_this.model.view.generalInfo.disabled;
             });
         }

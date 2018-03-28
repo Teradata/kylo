@@ -21,6 +21,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
     };
     var FeedAdditionalPropertiesController = /** @class */ (function () {
         function FeedAdditionalPropertiesController($scope, $q, AccessControlService, EntityAccessControlService, FeedService, FeedTagService, FeedSecurityGroups, $filter) {
+            var _this = this;
             this.$scope = $scope;
             this.$q = $q;
             this.AccessControlService = AccessControlService;
@@ -103,37 +104,37 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     _this.editableSection = true;
                 });
             };
-            var self = this;
+            // var self = this;
             this.tagChips.selectedItem = null;
             this.tagChips.searchText = null;
             this.securityGroupChips.selectedItem = null;
             this.securityGroupChips.searchText = null;
             FeedSecurityGroups.isEnabled().then(function (isValid) {
-                self.securityGroupsEnabled = isValid;
+                _this.securityGroupsEnabled = isValid;
             });
             $scope.$watch(function () {
                 return FeedService.editFeedModel;
             }, function (newVal) {
                 //only update the model if it is not set yet
-                if (self.model == null) {
-                    self.model = FeedService.editFeedModel;
+                if (_this.model == null) {
+                    _this.model = FeedService.editFeedModel;
                 }
             });
-            if (self.versions) {
+            if (this.versions) {
                 $scope.$watch(function () {
-                    return self.FeedService.versionFeedModel;
+                    return _this.FeedService.versionFeedModel;
                 }, function (newVal) {
-                    self.versionFeedModel = self.FeedService.versionFeedModel;
+                    _this.versionFeedModel = _this.FeedService.versionFeedModel;
                 });
                 $scope.$watch(function () {
-                    return self.FeedService.versionFeedModelDiff;
+                    return _this.FeedService.versionFeedModelDiff;
                 }, function (newVal) {
-                    self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+                    _this.versionFeedModelDiff = _this.FeedService.versionFeedModelDiff;
                 });
             }
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
-                self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
+            $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, this.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+                _this.allowEdit = !_this.versions && access && !_this.model.view.properties.disabled;
             });
         }
         FeedAdditionalPropertiesController.prototype.findVersionedUserProperty = function (property) {

@@ -630,7 +630,7 @@ export class Controller implements ng.IComponentController {
             };
     
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access:any) {
+            $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, self.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any)=> {
                 self.allowEdit = !self.versions && access && !self.model.view.dataPolicies.disabled
             });
 

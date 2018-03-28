@@ -360,7 +360,7 @@ export class FeedScheduleController implements ng.IComponentController {
          */
         this.updateScheduleStrategies();
         
-        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,this.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) =>{
+        $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) =>{
             this.allowEdit = !this.versions && access && !this.model.view.schedule.disabled;
         });
 

@@ -110,50 +110,41 @@ export class FeedAdditionalPropertiesController {
 
 
     constructor (private $scope:any,private $q:any, private AccessControlService:any, private EntityAccessControlService:any,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
-        var self = this;
-
+       // var self = this;
         this.tagChips.selectedItem = null;
         this.tagChips.searchText = null;
-
-
         this.securityGroupChips.selectedItem = null;
         this.securityGroupChips.searchText = null;
-        
-
 
         FeedSecurityGroups.isEnabled().then((isValid:any) => {
-                self.securityGroupsEnabled = isValid;
+                this.securityGroupsEnabled = isValid;
             }
-
         );
-
-        
-
         $scope.$watch(() => {
             return FeedService.editFeedModel;
         }, (newVal:any) => {
             //only update the model if it is not set yet
-            if (self.model == null) {
-                self.model = FeedService.editFeedModel;
+            if (this.model == null) {
+                this.model = FeedService.editFeedModel;
             }
         });
         
-        if (self.versions) {
-            $scope.$watch(function(){
-                return self.FeedService.versionFeedModel;
-            },function(newVal:any) {
-                self.versionFeedModel = self.FeedService.versionFeedModel;
+        if (this.versions) {
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModel;
+            },(newVal:any)=>{
+                this.versionFeedModel = this.FeedService.versionFeedModel;
             });
-            $scope.$watch(function(){
-                return self.FeedService.versionFeedModelDiff;
-            },function(newVal:any) {
-                self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+            $scope.$watch(()=>{
+                return this.FeedService.versionFeedModelDiff;
+            },(newVal:any)=>{
+                this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
             });
         }
 
         //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
-            self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
+        $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
+            this.allowEdit = !this.versions && access && !this.model.view.properties.disabled;
         });
     }
 
