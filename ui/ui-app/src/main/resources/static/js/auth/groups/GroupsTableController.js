@@ -1,8 +1,7 @@
-define(["require", "exports", "angular", "../services/UserService", "../module-name"], function (require, exports, angular, UserService_1, module_name_1) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PAGE_NAME = "groups";
-    //const moduleName = require('auth/module-name');
     var GroupsTableController = /** @class */ (function () {
         function GroupsTableController($scope, AddButtonService, PaginationDataService, StateService, TableOptionsService, UserService) {
             var _this = this;
@@ -12,70 +11,28 @@ define(["require", "exports", "angular", "../services/UserService", "../module-n
             this.StateService = StateService;
             this.TableOptionsService = TableOptionsService;
             this.UserService = UserService;
-            /**
-               * Page title.
-               * @type {string}
-               */
-            this.cardTitle = "Groups";
-            /**
-             * Index of the current page.
-             * @type {number}
-             */
-            this.currentPage = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
-            /**
-             * Helper for table filtering.
-             * @type {*}
-             */
-            this.filter = this.PaginationDataService.filter(PAGE_NAME);
-            /**
-            * Indicates that the table data is being loaded.
-            * @type {boolean}
-            */
-            this.loading = true;
-            /**
-             * Identifier for this page.
-             * @type {string}
-             */
-            this.pageName = PAGE_NAME;
-            /**
-             * Helper for table pagination.
-             * @type {*}
-             */
-            this.paginationData = this.getPaginatedData();
+            this.cardTitle = "Groups"; //Page title {string}
+            this.currentPage = this.PaginationDataService.currentPage(PAGE_NAME) || 1; // Index of the current page {number}
+            this.filter = this.PaginationDataService.filter(PAGE_NAME); //Helper for table filtering  {*}
+            this.loading = true; // Indicates that the table data is being loaded {boolean}
+            this.pageName = PAGE_NAME; // Identifier for this page {string}
+            this.paginationData = this.getPaginatedData(); //Helper for table pagination {*}
             this.sortOptions = this.getSortOptions();
+            this.groups = []; //List of groups  {Array.<GroupPrincipal>}
+            // options:any = this.TableOptionsService.currentOption;
+            this.viewType = this.PaginationDataService.viewType(PAGE_NAME); //Type of view for the table  {any}
             /**
              * Updates the order of the table.
-             *
              * @param option the sort order
              */
             this.selectedTableOption = function (option) {
-                // getSelectedTableOption(option: any) {
-                /*  this.TableOptionsService.toSortString(option)
-                        .then((sortString: any)=> {
-                            this.PaginationDataService.sort(this.pageName, sortString);
-                            this.TableOptionsService.toggleSort(this.pageName, option);
-                            this.TableOptionsService.setSortOption(this.pageName, sortString);
-                        });*/
                 var sortString = _this.TableOptionsService.toSortString(option);
-                // alert(this.options);
                 _this.PaginationDataService.sort(_this.pageName, sortString);
                 _this.TableOptionsService.toggleSort(_this.pageName, option);
                 _this.TableOptionsService.setSortOption(_this.pageName, sortString);
             };
             /**
-           * List of groups.
-           * @type {Array.<GroupPrincipal>}
-           */
-            this.groups = [];
-            // options:any = this.TableOptionsService.currentOption;
-            /**
-             * Type of view for the table.
-             * @type {any}
-             */
-            this.viewType = this.PaginationDataService.viewType(PAGE_NAME);
-            /**
             * Updates the order of the table.
-            *
             * @param order the sort order
             */
             this.onOrderChange = function (order) {
@@ -83,22 +40,28 @@ define(["require", "exports", "angular", "../services/UserService", "../module-n
                 _this.TableOptionsService.setSortOption(_this.pageName, order);
             };
             /**
-                * Updates the pagination of the table.
-                *
-                * @param page the page number
-                */
+             * Updates the pagination of the table.
+             * @param page the page number
+             */
             this.onPaginationChange = function (page) {
                 _this.PaginationDataService.currentPage(_this.pageName, null, page);
                 _this.currentPage = page;
             };
             /**
-                 * Gets the title of the specified group. Defaults to the system name if the title is blank.
-                 *
-                 * @param group the group
-                 * @returns {string} the title
-                 */
+             * Gets the title of the specified group. Defaults to the system name if the title is blank.
+             * @param group the group
+             * @returns {string} the title
+             */
             this.getTitle = function (group) {
                 return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
+            };
+            /**
+            * Navigates to the details page for the specified user.
+            *
+            * @param user the user
+            */
+            this.groupDetails = function (group) {
+                _this.StateService.Auth().navigateToGroupDetails(group.systemName);
             };
             // Notify pagination service of changes to view type
             this.$scope.$watch(function () {
@@ -132,31 +95,17 @@ define(["require", "exports", "angular", "../services/UserService", "../module-n
             return sortOptions;
         };
         /**
-        * Gets the display name of the specified group. Defaults to the system name if the display name is blank.
-        *
-        * @param group the group
-        * @returns {string} the display name
-        */
+    * Gets the display name of the specified group. Defaults to the system name if the display name is blank.
+    * @param group the group
+    * @returns {string} the display name
+    */
         GroupsTableController.prototype.getDisplayName = function (group) {
             return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
-        };
-        ;
-        /**
-        * Navigates to the details page for the specified user.
-        *
-        * @param user the user
-        */
-        GroupsTableController.prototype.groupDetails = function (group) {
-            this.StateService.Auth().navigateToGroupDetails(group.systemName);
         };
         ;
         return GroupsTableController;
     }());
     exports.default = GroupsTableController;
-    angular.module(module_name_1.moduleName)
-        .service("UserService", ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService_1.UserService])
-        .controller("GroupsTableController", ["$scope", "AddButtonService", "PaginationDataService", "StateService", "TableOptionsService", "UserService", GroupsTableController]);
+    angular.module(module_name_1.moduleName).controller("GroupsTableController", ["$scope", "AddButtonService", "PaginationDataService", "StateService", "TableOptionsService", "UserService", GroupsTableController]);
 });
 //# sourceMappingURL=GroupsTableController.js.map
