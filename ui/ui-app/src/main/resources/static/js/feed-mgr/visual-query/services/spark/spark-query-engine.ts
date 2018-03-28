@@ -90,7 +90,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         return [
             {name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))"},
             {name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)"},
-            {name: "Pivot", formula: "groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))"},
+            {name: "Pivot", formula: "groupBy(COLUMN).pivot(COLUMN).agg(count(COLUMN))"},
             {name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))"}
         ];
     }
