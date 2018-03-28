@@ -3,6 +3,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
     Object.defineProperty(exports, "__esModule", { value: true });
     var StateService = /** @class */ (function () {
         function StateService($state) {
+            var _this = this;
             this.$state = $state;
             this.AuthStates = function () {
                 var data = {};
@@ -10,7 +11,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                  * Navigates to the Groups page.
                  */
                 data.navigateToGroups = function () {
-                    this.$state.go("groups");
+                    _this.$state.go("groups");
                 };
                 /**
                  * Navigates to the Group Details page.
@@ -19,13 +20,13 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                  */
                 data.navigateToGroupDetails = function (opt_groupId) {
                     var safeGroupId = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
-                    this.$state.go("group-details", { groupId: safeGroupId });
+                    _this.$state.go("group-details", { groupId: safeGroupId });
                 };
                 /**
                  * Navigates to the Users page.
                  */
                 data.navigateToUsers = function () {
-                    this.$state.go("users");
+                    _this.$state.go("users");
                 };
                 /**
                  * Navigates to the User Details page.
@@ -34,7 +35,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                  */
                 data.navigateToUserDetails = function (opt_userId) {
                     var safeUserId = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
-                    this.$state.go("user-details", { userId: safeUserId });
+                    _this.$state.go("user-details", { userId: safeUserId });
                 };
                 return data;
             };
@@ -259,7 +260,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             };
             var States = function () {
                 var data = {};
-                data.Auth = this.AuthStates;
+                data.Auth = _this.AuthStates;
                 data.Search = SearchStates;
                 data.FeedManager = FeedManagerStates;
                 data.OpsManager = OpsManagerStates;

@@ -30,7 +30,7 @@ AuthStates=()=> {
         /**
          * Navigates to the Groups page.
          */
-        data.navigateToGroups = function () {
+        data.navigateToGroups = ()=> {
             this.$state.go("groups");
         };
         /**
@@ -38,7 +38,7 @@ AuthStates=()=> {
          *
          * @param {string} [opt_groupId] the system name of the group
          */
-        data.navigateToGroupDetails = function (opt_groupId: any) {
+        data.navigateToGroupDetails = (opt_groupId: any)=> {
             var safeGroupId: any = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
             this.$state.go("group-details", {groupId: safeGroupId});
         };
@@ -46,7 +46,7 @@ AuthStates=()=> {
         /**
          * Navigates to the Users page.
          */
-        data.navigateToUsers = function () {
+        data.navigateToUsers = ()=> {
             this.$state.go("users");
         };
 
@@ -55,7 +55,7 @@ AuthStates=()=> {
          *
          * @param {string} [opt_userId] the system name of the user
          */
-        data.navigateToUserDetails = function (opt_userId: any) {
+        data.navigateToUserDetails = (opt_userId: any)=> {
             var safeUserId: any = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
             this.$state.go("user-details", {userId: safeUserId});
         };
@@ -313,7 +313,7 @@ constructor (private $state: any){
             return data;
         }
 
-        var States: any = function () {
+        var States: any = ()=> {
             var data: any = {};
             data.Auth = this.AuthStates;
             data.Search = SearchStates;
