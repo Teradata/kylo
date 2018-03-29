@@ -79,7 +79,7 @@
         <md-button ng-click="$mdOpenMenu()">
           <i class="material-icons">filter_list</i> {{"views.query-table-header.filter" | translate}}
         </md-button>
-        <md-menu-content class="visual-query-column-menu">
+        <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
             <div>
               <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>

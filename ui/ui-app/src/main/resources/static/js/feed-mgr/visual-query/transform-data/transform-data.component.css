@@ -181,6 +181,10 @@ md-menu-item > .md-menu > .md-button span {
       text-align: right;
       vertical-align: super; }
 
+.visual-query-filter-menu {
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
 /** Column menu text inputs */
 md-menu-item > div > md-input-container {
   margin: 0; }
