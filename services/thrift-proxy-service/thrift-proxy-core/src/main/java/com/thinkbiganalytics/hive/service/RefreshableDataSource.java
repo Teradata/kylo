@@ -231,6 +231,8 @@ public class RefreshableDataSource implements DataSource {
         return ds;
     }
 
+
+
     /**
      * Gets the environment setting for how the username case sensitivity should be handled
      * By default it uses the exact case as specified
@@ -240,7 +242,11 @@ public class RefreshableDataSource implements DataSource {
     private UsernameCase getUsernameCaseSetting(String prefix){
         UsernameCase usernameCase = UsernameCase.AS_SPECIFIED;
         try {
-            usernameCase = UsernameCase.valueOf(env.getProperty(prefix+"username.case","AS_SPECIFIED"));
+            String username = env.getProperty(prefix+"username.case");
+            if(username == null && propertyPrefix.equals("hive.datasource")){
+                username = env.getProperty("hive.server2.proxy.user.case",UsernameCase.AS_SPECIFIED.name());
+            }
+            usernameCase = UsernameCase.valueOf(username);
         }catch (Exception e){
             usernameCase = UsernameCase.AS_SPECIFIED;
         }
