@@ -37,13 +37,11 @@ const moduleName = require('feed-mgr/module-name');
 
     
     function FattableService ($window:any){
+        const self = this;
 
-        var self = this;
-        var setupTable:any;
+        const FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
 
-        var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
-
-        var optionDefaults:any = {
+        const optionDefaults:any = {
             tableContainerId: "",
             headers: [],
             rows: [],
@@ -66,11 +64,11 @@ const moduleName = require('feed-mgr/module-name');
                 return row[column.displayName];
             },
             fillCell: function(cellDiv:any, data:any) {
-                cellDiv.innerHTML = data.value;
+                cellDiv.innerHTML = _.escape(data.value);
             },
             getCellSync: function(i:any, j:any) {
-                var displayName = this.headers[j].displayName;
-                var row = this.rows[i];
+                const displayName = this.headers[j].displayName;
+                const row = this.rows[i];
                 if (row === undefined) {
                     //occurs when filtering table
                     return undefined;
@@ -80,7 +78,7 @@ const moduleName = require('feed-mgr/module-name');
                 }
             },
             fillHeader: function(headerDiv:any, header:any) {
-                headerDiv.innerHTML = '<div>' + header + '</div>';
+                headerDiv.innerHTML = '<div>' + _.escape(header) + '</div>';
             },
             getHeaderSync: function(j:any) {
                 return this.headers[j].displayName;
@@ -88,38 +86,38 @@ const moduleName = require('feed-mgr/module-name');
         };
 
         self.setupTable = function(options:any) {
-            var optionsCopy = _.clone(options);
-            var settings = _.defaults(optionsCopy, optionDefaults);
+            const optionsCopy = _.clone(options);
+            const settings = _.defaults(optionsCopy, optionDefaults);
 
-            var tableData:any = new fattable.SyncTableModel();
-            var painter = new fattable.Painter();
+            const tableData:any = new fattable.SyncTableModel();
+            const painter = new fattable.Painter();
 
-            var headers = settings.headers;
-            var rows = settings.rows;
+            const headers = settings.headers;
+            const rows = settings.rows;
 
             function get2dContext(font:any) {
-                var canvas = document.createElement("canvas");
+                const canvas = document.createElement("canvas");
                 document.createDocumentFragment().appendChild(canvas);
-                var context = canvas.getContext("2d");
+                const context = canvas.getContext("2d");
                 context.font = font;
                 return context;
             }
 
-            var headerContext = get2dContext(settings.headerFontWeight + " " + settings.headerFontSize + " " + settings.headerFontFamily);
-            var rowContext = get2dContext(settings.rowFontWeight + " " + settings.rowFontSize + " " + settings.rowFontFamily);
+            const headerContext = get2dContext(settings.headerFontWeight + " " + settings.headerFontSize + " " + settings.headerFontFamily);
+            const rowContext = get2dContext(settings.rowFontWeight + " " + settings.rowFontSize + " " + settings.rowFontFamily);
 
             tableData.columnHeaders = [];
-            var columnWidths:any = [];
+            const columnWidths:any = [];
             _.each(headers, function(column) {
-                var headerText = settings.headerText(column);
-                var headerTextWidth = headerContext.measureText(headerText).width;
-                var longestColumnText = _.reduce(rows, function (previousMax, row) {
-                    var cellText = settings.cellText(row, column);
-                    var cellTextLength = cellText === undefined || cellText === null ? 0 : cellText.length;
+                const headerText = settings.headerText(column);
+                const headerTextWidth = headerContext.measureText(headerText).width;
+                const longestColumnText = _.reduce(rows, function (previousMax, row) {
+                    const cellText = settings.cellText(row, column);
+                    const cellTextLength = cellText === undefined || cellText === null ? 0 : cellText.length;
                     return previousMax.length < cellTextLength ? cellText : previousMax;
                 }, "");
 
-                var columnTextWidth = rowContext.measureText(longestColumnText).width;
+                const columnTextWidth = rowContext.measureText(longestColumnText).width;
                 columnWidths.push(Math.min(settings.maxColumnWidth, Math.max(settings.minColumnWidth, headerTextWidth, columnTextWidth)) + settings.padding);
                 tableData.columnHeaders.push(headerText);
             });
@@ -148,7 +146,7 @@ const moduleName = require('feed-mgr/module-name');
             };
 
             tableData.getCellSync = function (i:any, j:any) {
-                var data = settings.getCellSync(i, j);
+                const data = settings.getCellSync(i, j);
                 if (data !== undefined) {
                     //add row id so that we can add odd/even classes to rows
                     data.rowId = i;
@@ -160,8 +158,8 @@ const moduleName = require('feed-mgr/module-name');
                 return settings.getHeaderSync(j);
             };
 
-            var selector = "#" + settings.tableContainerId;
-            var table = fattable({
+            const selector = "#" + settings.tableContainerId;
+            const table = fattable({
                 "container": selector,
                 "model": tableData,
                 "nbRows": rows.length,
@@ -174,9 +172,9 @@ const moduleName = require('feed-mgr/module-name');
             table.setup();
 
 
-            var eventId = "resize.fattable." + settings.tableContainerId;
+            const eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);
-            var debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
+            const debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);
             angular.element($window).on(eventId, function() {
                 debounced(settings);
             });

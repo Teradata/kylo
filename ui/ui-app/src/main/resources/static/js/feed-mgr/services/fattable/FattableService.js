@@ -34,7 +34,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     // export class FattableService {
     function FattableService($window) {
         var self = this;
-        var setupTable;
         var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
         var optionDefaults = {
             tableContainerId: "",
@@ -59,7 +58,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return row[column.displayName];
             },
             fillCell: function (cellDiv, data) {
-                cellDiv.innerHTML = data.value;
+                cellDiv.innerHTML = _.escape(data.value);
             },
             getCellSync: function (i, j) {
                 var displayName = this.headers[j].displayName;
@@ -73,7 +72,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
             },
             fillHeader: function (headerDiv, header) {
-                headerDiv.innerHTML = '<div>' + header + '</div>';
+                headerDiv.innerHTML = '<div>' + _.escape(header) + '</div>';
             },
             getHeaderSync: function (j) {
                 return this.headers[j].displayName;
