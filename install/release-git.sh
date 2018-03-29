@@ -43,8 +43,7 @@ git commit -a -m "Begin $NEXT_VERSION-SNAPSHOT"
 git checkout master
 git merge release-$RELEASE_VERSION
 
-git push 
-git push --tags
+git push --follow-tags
 ##git branch -d release-$RELEASE_VERSION
 
 
