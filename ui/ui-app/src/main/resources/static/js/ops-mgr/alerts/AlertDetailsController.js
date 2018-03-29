@@ -1,8 +1,7 @@
-define(["require", "exports", "angular", "../module-name", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "../module-name", "../../constants/AccessConstants"], function (require, exports, angular, module_name_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    /**
-      * Manages the Alert Details page.
+    /** Manages the Alert Details page.
       * @constructor
       * @param $scope the Angular scope
       * @param $http the HTTP service
@@ -18,6 +17,7 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
             this.$mdDialog = $mdDialog;
             this.AccessControlService = AccessControlService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
+            this.allowAdmin = false; //Indicates that admin operations are allowed. {boolean}
             /**
             * Gets the class for the specified state.
             * @param {string} state the name of the state
@@ -66,22 +66,17 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
                     return state;
                 }
             };
-            /**
-             * Hides this alert on the list page.
-             */
+            //Hides this alert on the list page.
             this.hideAlert = function () {
                 _this.alertData.cleared = true;
                 _this.$http.post(_this.OpsManagerRestUrlService.ALERT_DETAILS_URL(_this.alertData.id), { state: _this.alertData.state, clear: true });
             };
-            /**
-             * Shows the alert removing the 'cleared' flag
-             */
+            //Shows the alert removing the 'cleared' flag
             this.showAlert = function () {
                 _this.alertData.cleared = false;
                 _this.$http.post(_this.OpsManagerRestUrlService.ALERT_DETAILS_URL(_this.alertData.id), { state: _this.alertData.state, clear: false, unclear: true });
             };
-            /**
-             * Loads the data for the specified alert.
+            /** Loads the data for the specified alert.
              * @param {string} alertId the id of the alert
              */
             this.loadAlert = function (alertId) {
@@ -161,22 +156,10 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
                     }
                 });
             };
-            /**
-             * Indicates that admin operations are allowed.
-             * @type {boolean}
-             */
-            this.allowAdmin = false;
-            /**
-             * The alert details.
-             * @type {Object}
-             */
-            this.alertData = {};
-            // Fetch alert details
-            this.loadAlert(this.alertId);
-            // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            this.loadAlert(this.alertId); // Fetch alert details
+            AccessControlService.getUserAllowedActions() // Fetch allowed permissions
                 .then(function (actionSet) {
-                _this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                _this.allowAdmin = AccessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
         } // end of constructor
         return AlertDetailsDirectiveController;
@@ -186,28 +169,25 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
         * Manages the Update Alert dialog.
         * @constructor
         * @param $scope the Angular scope
-        * @param $http the HTTP service
+        * @param $http
         * @param $mdDialog the dialog service
         * @param OpsManagerRestUrlService the REST URL service
         * @param alert the alert to update
         */
     var EventDialogController = /** @class */ (function () {
-        function EventDialogController($scope, $http, $mdDialog, OpsManagerRestUrlService, alert) {
+        function EventDialogController($scope, //the Angular scope
+            $http, //the HTTP service
+            $mdDialog, //the dialog service
+            OpsManagerRestUrlService, //the REST URL service
+            alert //the alert to update
+        ) {
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
-            this.alert = alert;
-            /**
-             * Indicates that this update is currently being saved.
-             * @type {boolean}
-             */
-            $scope.saving = false;
-            /**
-             * The new state for the alert.
-             * @type {string}
-             */
-            $scope.state = (alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS";
+            this.alert = alert; //the alert to update
+            $scope.saving = false; //Indicates that this update is currently being saved  {boolean}
+            $scope.state = (alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
             /**
              * Closes this dialog and discards any changes.
              */
@@ -240,9 +220,7 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
     }());
     exports.AlertDetailsController = AlertDetailsController;
     angular.module(module_name_1.moduleName).controller("AlertDetailsController", ["$transition$", AlertDetailsController]);
-    angular.module(module_name_1.moduleName)
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
-        .controller("AlertDetailsDirectiveController", ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService", AlertDetailsDirectiveController]);
+    angular.module(module_name_1.moduleName).controller("AlertDetailsDirectiveController", ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService", AlertDetailsDirectiveController]);
     angular.module(module_name_1.moduleName).directive("tbaAlertDetails", [
         function () {
             return {
@@ -258,8 +236,6 @@ define(["require", "exports", "angular", "../module-name", "../services/OpsManag
             };
         }
     ]);
-    angular.module(module_name_1.moduleName)
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
-        .controller("EventDialogController", ["$scope", "$http", "$mdDialog", "OpsManagerRestUrlService", "alert", EventDialogController]);
+    angular.module(module_name_1.moduleName).controller("EventDialogController", ["$scope", "$http", "$mdDialog", "OpsManagerRestUrlService", "alert", EventDialogController]);
 });
 //# sourceMappingURL=AlertDetailsController.js.map
