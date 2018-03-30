@@ -564,6 +564,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 _this.editableSection = true;
             });
         };
+        Controller.$inject = ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
+            "FeedFieldPolicyRuleService", "DomainTypesService", "$filter"];
         return Controller;
     }());
     exports.Controller = Controller;
@@ -618,8 +620,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
     }());
     exports.EditFieldDialogController = EditFieldDialogController;
     angular.module(moduleName)
-        .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
-        "FeedFieldPolicyRuleService", "DomainTypesService", "$filter", Controller])
+        .controller('FeedDataPoliciesController', Controller)
         .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
         .directive('thinkbigFeedDataPolicies', directiveConfig);
 });

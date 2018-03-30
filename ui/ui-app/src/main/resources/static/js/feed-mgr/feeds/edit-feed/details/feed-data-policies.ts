@@ -183,6 +183,9 @@ export class Controller implements ng.IComponentController {
      */
     fieldNameMap: any;
 
+    static $inject = ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
+        "FeedFieldPolicyRuleService", "DomainTypesService", "$filter"];
+
     constructor(private $scope: any, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $compile: angular.ICompileService, private $sce: angular.ISCEService, private AccessControlService: any, private EntityAccessControlService: any, private FeedService: any, private StateService: any, private FeedFieldPolicyRuleService: any,
                 DomainTypesService: DomainTypesService, private $filter: angular.IFilterService) {
 
@@ -732,7 +735,6 @@ export class EditFieldDialogController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-    .controller('FeedDataPoliciesController', ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
-        "FeedFieldPolicyRuleService", "DomainTypesService", "$filter", Controller])
+    .controller('FeedDataPoliciesController',  Controller)
     .controller("EditFieldDialogController", ["$scope", "$mdDialog", "FeedTagService", "field", EditFieldDialogController])
     .directive('thinkbigFeedDataPolicies', directiveConfig);
