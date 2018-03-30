@@ -29,11 +29,7 @@ thinkbig-visual-query-transform md-toolbar.md-kylo-theme:not(.md-menu-toolbar) {
   z-index: 1; }
 
 thinkbig-visual-query-transform .formula-editor {
-  font-size: 13px;
-  font-family: 'SourceSansPro';
-  padding: 0 5px;
-  white-space: pre;
-  line-height: 25px;
+  font-size: 14px;
   letter-spacing: normal; }
 
 thinkbig-visual-query-transform .visual-query-function-history md-list-item > md-icon:first-child {
@@ -145,6 +141,7 @@ md-menu-item > .md-menu {
   height: 100%;
   padding: 0;
   width: 173px; }
+
 md-menu-item>.md-button{
   font-size:13px;
 }
@@ -172,7 +169,7 @@ md-menu-item > .md-menu > .md-button:after {
   display: block;
   content: '\25BC';
   position: absolute;
-  top: 7px;
+  top: 0px;
   speak: none;
   -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
   transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
@@ -203,6 +200,11 @@ md-menu-item > .md-menu > .md-button span {
 /** Column menu text inputs */
 md-menu-item > div > md-input-container {
   margin: 0; }
+
+md-menu-item {
+  height: 36px;
+  min-height: 36px;
+}
 
 /** Menu */
 .md-panel.visual-query-menu {
