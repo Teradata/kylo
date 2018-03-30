@@ -7,7 +7,7 @@ import {DataCategory} from "../../wrangler/column-delegate";
 /**
  * Default font.
  */
-const DEFAULT_FONT = "10px sans-serif";
+const DEFAULT_FONT = "10px ''SourceSansPro'";
 
 /**
  * HTML template for header cells.
@@ -24,7 +24,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Left and right padding for normal columns.
      */
-    static readonly COLUMN_PADDING = 28;
+    static readonly COLUMN_PADDING = 5;
 
     /**
      * Left padding for the first column.
@@ -39,7 +39,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Height of data rows.
      */
-    static readonly ROW_HEIGHT = 48;
+    static readonly ROW_HEIGHT = 27;
 
     /**
      * Class for selected cells.
@@ -186,6 +186,8 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableCell|null} cell the cell object
      */
     fillCell(cellDiv: HTMLElement, cell: any) {
+
+
         // Adjust padding based on column number
         if (cell !== null && cell.column === 0) {
             cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
@@ -193,6 +195,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         } else {
             cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
             cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
+            cell.i
         }
 
         // Set style
@@ -205,6 +208,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         } else {
             cellDiv.className = "";
         }
+
+        cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
 
         // Set contents
         if (cell === null) {
@@ -383,6 +388,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : cellDiv.innerText;
+        $scope.displayValue = ($scope.value.length > 25 ? $scope.value.substring(0,25) + "...": $scope.value)
 
         // Update position
         this.menuPanel.updatePosition(

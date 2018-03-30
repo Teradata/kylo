@@ -57,8 +57,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              * @type {Object}
              */
             this.tableOptions = {
-                headerFont: "700 12px Roboto, 'Helvetica Neue', sans-serif",
-                rowFont: "400 14px Roboto, 'Helvetica Neue', sans-serif"
+                headerFont: "500 13px Roboto, 'Helvetica Neue', sans-serif",
+                rowFont: "regular 13px Roboto, 'Helvetica Neue', sans-serif"
             };
             //noinspection JSUnusedGlobalSymbols
             /**

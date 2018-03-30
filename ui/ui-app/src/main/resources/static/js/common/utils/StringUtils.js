@@ -23,6 +23,15 @@ var StringUtils = (function () {
         return str.replace(/\\/g, "\\\\").replace(/"/g, "\\\"");
     };
     /**
+     * Escapes single quote in the specified string.
+     *
+     * @param {string} str the string to be escaped
+     * @returns {string} the string with parentheses escaped
+     */
+    StringUtils.singleQuote = function (str) {
+        return str.replace(/\\/g, "\\\\").replace(/'/g, "\\\'");
+    };
+    /**
      * Escapes backticks in SQL identifiers.
      *
      * @param str - the identifier

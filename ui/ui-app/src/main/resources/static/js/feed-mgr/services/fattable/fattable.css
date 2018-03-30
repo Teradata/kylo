@@ -17,14 +17,12 @@
 .fattable .fattable-header-container .fattable-viewport div {
   padding-left: 15px;
   font-weight: bold;
-  font-size: 12px;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .fattable .fattable-body-container .fattable-viewport div {
-  font-weight: 400;
-  font-size: 14px;
+  font-weight: normal;
   text-overflow: ellipsis;
   overflow: hidden;
 }
@@ -33,7 +31,6 @@
   padding-left: 25px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
-  border-bottom: 1px solid lightgray;
 }
 
 .fattable .fattable-body-container > div > div.even {

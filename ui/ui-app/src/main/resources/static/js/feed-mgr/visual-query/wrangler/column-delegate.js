@@ -85,7 +85,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.deleteRowsContaining = function (value, column) {
-            var formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "')))";
+            var formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "')))";
             this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value });
         };
         /**
@@ -95,7 +95,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.deleteRowsEqualTo = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value });
         };
         /**
@@ -105,7 +105,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.deleteRowsGreaterThan = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value });
         };
         /**
@@ -115,7 +115,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.deleteRowsLessThan = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value });
         };
         /**
@@ -132,7 +132,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.findRowsContaining = function (value, column) {
-            var formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "'))";
+            var formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'))";
             this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value });
         };
         /**
@@ -142,7 +142,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.findRowsEqualTo = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value });
         };
         /**
@@ -152,7 +152,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.findRowsGreaterThan = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value });
         };
         /**
@@ -162,7 +162,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param column - the column
          */
         ColumnDelegate.prototype.findRowsLessThan = function (value, column) {
-            var formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.quote(value) + "')";
+            var formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.singleQuote(value) + "')";
             this.controller.addFunction(formula, { formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value });
         };
         /**
@@ -173,7 +173,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         ColumnDelegate.prototype.hideColumn = function (column, grid) {
             column.visible = false;
-            var formula = "drop(\"" + StringUtils.quote(column.headerTooltip) + "\")";
+            var formula = "drop(\"" + StringUtils.singleQuote(column.headerTooltip) + "\")";
             this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column) });
             this.controller.fieldPolicies = this.controller.fieldPolicies.filter(function (value, index) { return index == column.index; });
             grid.onColumnsChange();
@@ -221,7 +221,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     policy.feedFieldName = name_1;
                 }
                 // Add rename function
-                var script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.quote(name) + "\")";
+                var script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.singleQuote(name) + "\")";
                 var formula = self.toFormula(script, column, grid);
                 self.controller.addFunction(formula, {
                     formula: formula, icon: "mode_edit",
@@ -256,8 +256,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         ColumnDelegate.prototype.splitOn = function (value, column, grid) {
             var displayName = this.getColumnDisplayName(column);
             var fieldName = this.getColumnFieldName(column);
-            var pattern = "[" + StringUtils.quote(value).replace(/]/g, "\\]") + "]";
-            var formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.quote(displayName) + "\")", column, grid);
+            var pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
+            var formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.singleQuote(displayName) + "\")", column, grid);
             this.controller.addFunction(formula, { formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value });
         };
         /**
@@ -269,7 +269,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         ColumnDelegate.prototype.transformColumn = function (transform, column, grid) {
             var fieldName = this.getColumnFieldName(column);
-            var script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.quote(fieldName) + "\")";
+            var script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
             var formula = this.toFormula(script, column, grid);
             var name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
             this.controller.addFunction(formula, { formula: formula, icon: transform.icon, name: name });

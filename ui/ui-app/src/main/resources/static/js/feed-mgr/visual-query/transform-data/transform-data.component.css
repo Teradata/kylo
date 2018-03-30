@@ -29,7 +29,11 @@ thinkbig-visual-query-transform md-toolbar.md-kylo-theme:not(.md-menu-toolbar) {
   z-index: 1; }
 
 thinkbig-visual-query-transform .formula-editor {
-  font-size: 14px;
+  font-size: 13px;
+  font-family: 'SourceSansPro';
+  padding: 0 5px;
+  white-space: pre;
+  line-height: 25px;
   letter-spacing: normal; }
 
 thinkbig-visual-query-transform .visual-query-function-history md-list-item > md-icon:first-child {
@@ -68,15 +72,20 @@ thinkbig-visual-query-transform visual-query-table {
   position: absolute;
   top: 0; }
   thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-    padding: 0 28px;
+    padding: 0px 5px 0px 0px;
     text-overflow: ellipsis;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     vertical-align: middle;
-    white-space: nowrap; }
+    white-space: nowrap;
+    font-size: 13px;
+    border-right: 1px solid lightgray;  }
+
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
+   background-color:rgb(248, 248, 248);  }
+
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
       background-color: #ffcdd2; }
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
@@ -87,9 +96,12 @@ thinkbig-visual-query-transform visual-query-table {
       -ms-user-select: text;
       user-select: text; }
   thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+    font-size: 13px;
     color: rgba(0, 0, 0, 0.54);
     letter-spacing: .02em;
-    white-space: nowrap; }
+    white-space: nowrap;
+    border-right: 1px solid lightgray;
+  }
   thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
     padding-left: 24px;
     padding-right: 0; }
@@ -120,7 +132,8 @@ thinkbig-visual-query-transform visual-query-table {
 .ui-grid-column-menu-button > .md-button.md-icon-button {
   height: inherit;
   line-height: inherit;
-  padding: 0 6px; }
+  padding: 0 6px;
+  font-size: 13px;}
 
 .ui-grid-column-menu-button .ui-grid-icon-angle-down {
   display: inline-block;
@@ -132,11 +145,13 @@ md-menu-item > .md-menu {
   height: 100%;
   padding: 0;
   width: 173px; }
-
+md-menu-item>.md-button{
+  font-size:13px;
+}
 md-menu-item > .md-menu > .md-button {
   border-radius: 0;
   margin: auto 0;
-  font-size: 15px;
+  font-size: 13px;
   text-transform: none;
   font-weight: 400;
   text-align: left;

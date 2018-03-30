@@ -10,22 +10,22 @@
   </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>
   <md-menu-item ng-if="value !== null">
-    <md-button ng-click="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ value }}</md-button>
+    <md-button ng-click="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <md-button ng-click="header.delegate.findRowsLessThan(value, header)">Find rows less than {{ value }}</md-button>
+    <md-button ng-click="header.delegate.findRowsLessThan(value, header)">Find rows less than {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <md-button ng-click="header.delegate.findRowsGreaterThan(value, header)">Find rows greater than {{ value }}</md-button>
+    <md-button ng-click="header.delegate.findRowsGreaterThan(value, header)">Find rows greater than {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null">
-    <md-button ng-click="header.delegate.deleteRowsEqualTo(value, header)">Delete rows equal to {{ value }}</md-button>
+    <md-button ng-click="header.delegate.deleteRowsEqualTo(value, header)">Delete rows equal to {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <md-button ng-click="header.delegate.deleteRowsLessThan(value, header)">Delete rows less than {{ value }}</md-button>
+    <md-button ng-click="header.delegate.deleteRowsLessThan(value, header)">Delete rows less than {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null && (header.delegate.dataCategory == DataCategory.DATETIME || header.delegate.dataCategory == DataCategory.NUMERIC)">
-    <md-button ng-click="header.delegate.deleteRowsGreaterThan(value, header)">Delete rows greater than {{ value }}</md-button>
+    <md-button ng-click="header.delegate.deleteRowsGreaterThan(value, header)">Delete rows greater than {{ displayValue }}</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value === null">
     <md-button ng-click="header.delegate.findNullRows(header)">Find null rows</md-button>
