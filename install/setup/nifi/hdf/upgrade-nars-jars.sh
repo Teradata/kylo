@@ -1,5 +1,9 @@
 #!/bin/bash
 
+#######
+# Note: This script has not been tested yet but should be close. Please create a Jira if you use it and there is a typo somewhere
+######
+
 if [ $# -eq 4 ]
 then
     NIFI_KYLO_FOLDER=$1
