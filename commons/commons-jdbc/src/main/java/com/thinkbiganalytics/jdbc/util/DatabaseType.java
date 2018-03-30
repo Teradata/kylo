@@ -46,7 +46,7 @@ public enum DatabaseType {
     HSQL("HSQL Database Engine", "jdbc:hsqldb", "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     MYSQL("MySQL", "jdbc:mysql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     ORACLE("Oracle", "jdbc:oracle", "select 1 from dual", "SELECT {0} FROM {1}.{2} FETCH FIRST {3} ROWS ONLY"),  
-    POSTGRES("PostgreSQL", "jdbc:postgressql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    POSTGRES("PostgreSQL", "jdbc:postgresql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SQLITE("SQLite", "jdbc:sqlite", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
     SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
     SYBASE("Sybase", "jdbc:sybase", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),

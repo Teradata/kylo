@@ -47,6 +47,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.dao.DataAccessResourceFailureException;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -200,6 +201,36 @@ public class DBCPConnectionPoolService {
     }
 
     /**
+     * Tests connection for specified data source using Validation Query defined in DatabaseType
+     *
+     * @param datasource the JDBC datasource
+     * @param query validation query
+     * @throws DataAccessException      if the query cannot be executed
+     * @throws IllegalArgumentException if the datasource is invalid
+     */
+    @Nonnull
+    public QueryResult testConnectionForDatasource(@Nonnull final JdbcDatasource datasource, @Nonnull String query) {
+        ControllerServiceDTO dummyService = new ControllerServiceDTO(); //this service does not exist in Nifi, just to reuse existing code
+        dummyService.setType("org.apache.nifi.dbcp.DBCPConnectionPool");
+        dummyService.setName(datasource.getName()); //service name may be used to look up values from application.properties, e.g. nifi.service.<service_name>.password=***
+        dummyService.setId("Test Connection Service"); //arbitrary, appears in the logs
+        HashMap<String, String> properties = new HashMap<>();
+        dummyService.setProperties(properties);
+
+        if (isMasked(datasource.getPassword())) {
+            datasource.setPassword(null);
+        }
+
+        final ExecuteQueryControllerServiceRequestBuilder builder = new ExecuteQueryControllerServiceRequestBuilder(dummyService);
+        final ExecuteQueryControllerServiceRequest serviceProperties = builder.password(datasource.getPassword()).query(query).useEnvironmentProperties(true).build();
+        properties.put(serviceProperties.getConnectionStringPropertyKey(), datasource.getDatabaseConnectionUrl());
+        properties.put(serviceProperties.getUserNamePropertyKey(), datasource.getDatabaseUser());
+        properties.put(serviceProperties.getDriverClassNamePropertyKey(), datasource.getDatabaseDriverClassName());
+        final PoolingDataSourceService.DataSourceProperties dataSourceProperties = getDataSourceProperties(serviceProperties);
+        return executeQueryForControllerService(dataSourceProperties, serviceProperties);
+    }
+    
+    /**
      * Executes the specified SELECT query in the context of the specified data source.
      *
      * @param datasource the JDBC datasource
@@ -222,7 +253,7 @@ public class DBCPConnectionPoolService {
             throw new IllegalArgumentException("Missing controller service for datasource: " + datasource);
         }
     }
-    
+
     /**
      * Executes the specified SELECT query in the context of the specified data source.
      *
@@ -448,7 +479,7 @@ public class DBCPConnectionPoolService {
     }
 
     private boolean evaluateWithUserDefinedDatasources(PoolingDataSourceService.DataSourceProperties dataSourceProperties, AbstractControllerServiceRequest serviceProperties) {
-        boolean valid = (StringUtils.isNotBlank(dataSourceProperties.getPassword()) && !dataSourceProperties.getPassword().startsWith("**"));
+        boolean valid = !isMasked(dataSourceProperties.getPassword());
         if (!valid) {
             List<Datasource> matchingDatasources = metadataAccess.read(() -> {
                 //attempt to get the properties from the stored datatsource
@@ -482,6 +513,17 @@ public class DBCPConnectionPoolService {
         }
         return valid;
 
+    }
+
+    /**
+     * isMasked(null)    == false
+     * isMasked("")      == false
+     * isMasked(" ")     == false
+     * isMasked("**")    == true
+     * isMasked("abc")   == false
+     */
+    private boolean isMasked(String password) {
+        return StringUtils.isNotBlank(password) && password.startsWith("**");
     }
 
 
