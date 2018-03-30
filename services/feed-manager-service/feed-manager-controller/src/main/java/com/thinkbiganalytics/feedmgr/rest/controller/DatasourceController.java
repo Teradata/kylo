@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -52,14 +53,17 @@ import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
 
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -196,6 +200,37 @@ public class DatasourceController {
                 ((JdbcDatasource) datasource).setPassword(null);
             }
             return datasource;
+        });
+    }
+
+    @POST
+    @Path("test")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Tests datasource connection")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Connection was tested, test failure will appear in message, successful connections return no message", response = RestResponseStatus.class),
+                      @ApiResponse(code = 400, message = "UserDatasource is not a JdbcDatasource", response = RestResponseStatus.class)
+                  })
+    public Response testConnection(@Nonnull final UserDatasource datasource) {
+        return metadata.commit(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_DATASOURCES);
+
+            if (datasource instanceof JdbcDatasource) {
+                JdbcDatasource jdbcDatasource = (JdbcDatasource) datasource;
+                DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(jdbcDatasource.getDatabaseConnectionUrl());
+                String query = databaseType.getValidationQuery();
+                try {
+                    dbcpConnectionPoolTableInfo.testConnectionForDatasource(jdbcDatasource, query);
+                    return Response.ok().build();
+                } catch (CannotGetJdbcConnectionException e) {
+                    Map<String, String> message = new HashMap<>(1);
+                    message.put("message", e.getRootCause().toString());
+                    return Response.ok(message).build();
+                }
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
         });
     }
 

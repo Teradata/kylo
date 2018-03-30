@@ -222,6 +222,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     .then(function (response) {
                     return response.data;
                 });
+            },
+            testConnection: function (datasource) {
+                return $http.post(RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+                    .then(function (response) {
+                    return response.data;
+                });
             }
         });
         return new DatasourcesService();

@@ -28,6 +28,8 @@ export class DatasourcesDetailsController {
     onDetailsSave:any;
     saveModel:any;
     validate:any;
+    testConnection:any;
+    testConnectionResult:any;
     existingDatasourceNames:any;
     allowDelete:any;
     /**
@@ -113,6 +115,12 @@ export class DatasourcesDetailsController {
          * @type {JdbcDatasource}
          */
         self.model = DatasourcesService.newJdbcDatasource();
+
+        /**
+         * Result which is returned from server when user tests datasource connection
+         * @type {Object}
+         */
+        self.testConnectionResult = {};
 
         /**
          * Shows the icon picker dialog.
@@ -301,6 +309,19 @@ export class DatasourcesDetailsController {
             if (angular.isDefined(self.datasourceDetailsForm["datasourceName"])) {
                 self.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]));
             }
+        };
+
+        self.testConnection = function() {
+            self.testConnectionResult = {
+            };
+            DatasourcesService.testConnection(self.editModel).then(function(response: any) {
+                const isConnectionOk = response.message === undefined;
+                const msg = isConnectionOk ? "" : response.message;
+                self.testConnectionResult = {
+                    msg: msg,
+                    status: isConnectionOk
+                };
+            });
         };
 
         // Load the data source
