@@ -37,6 +37,11 @@
       </md-button>
     </md-menu-item>
     <md-menu-item>
+      <md-button ng-click="header.delegate.cloneColumn(header, table)">
+        <i class="material-icons">content_copy</i> {{"views.query-table-header.clone-column" | translate}}
+      </md-button>
+    </md-menu-item>
+    <md-menu-item>
       <md-button ng-click="header.delegate.renameColumn(header, table)">
         <i class="material-icons">mode_edit</i> {{"views.query-table-header.rename-column" | translate}}
       </md-button>
@@ -82,7 +87,7 @@
         <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
             <div>
-              <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
+              <i class="material-icons" style="margin-left:-14px"  ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
               <md-input-container>
                 <label>{{ filter.label }}</label>
                 <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(filter, table)">

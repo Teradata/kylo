@@ -180,6 +180,18 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             grid.refresh();
         };
         /**
+         * Clone the specified column.
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.cloneColumn = function (column, grid) {
+            var fieldName = this.getColumnFieldName(column);
+            var script = "clone(" + fieldName + ")";
+            var formula = this.toAppendColumnFormula(script, column, grid);
+            this.controller.addFunction(formula, { formula: formula, icon: 'content_copy', name: 'Clone ' + this.getColumnDisplayName(column) });
+        };
+        /**
          * Gets the target data types supported for casting this column.
          */
         ColumnDelegate.prototype.getAvailableCasts = function () {
@@ -388,9 +400,58 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 transforms.push({ description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
             }
             if (dataCategory === DataCategory.STRING) {
-                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' });
+                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' });
             }
             return transforms;
+        };
+        /**
+         * Creates a guaranteed unique field name
+         * @param columns column list
+         * @returns {string} a unique fieldname
+         */
+        ColumnDelegate.prototype.toAsUniqueColumnName = function (columns, columnFieldName) {
+            var prefix = "new_";
+            var idx = 0;
+            var columnSet = new Set();
+            var uniqueName = null;
+            var self = this;
+            columnSet.add(columnFieldName);
+            angular.forEach(columns, function (item) {
+                columnSet.add(self.getColumnFieldName(item));
+            });
+            while (uniqueName == null) {
+                var name_2 = prefix + idx;
+                uniqueName = (columnSet.has(name_2) ? null : name_2);
+                idx++;
+            }
+            return ".as(\"" + uniqueName + "\")";
+        };
+        /**
+         * Creates a formula that adds a new column with the specified script. It generates a unique column name.
+         *
+         * @param {string} script the expression for the column
+         * @param {ui.grid.GridColumn} column the column to be replaced
+         * @param {ui.grid.Grid} grid the grid with the column
+         * @returns {string} a formula that replaces the column
+         */
+        ColumnDelegate.prototype.toAppendColumnFormula = function (script, column, grid) {
+            var columnFieldName = this.getColumnFieldName(column);
+            var formula = "";
+            var self = this;
+            var match = false;
+            angular.forEach(grid.columns, function (item, idx) {
+                if (item.visible) {
+                    var itemFieldName = self.getColumnFieldName(item);
+                    formula += (formula.length == 0) ? "select(" : ", ";
+                    if (match) {
+                        formula += script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                    }
+                    formula += itemFieldName;
+                    match = (itemFieldName == columnFieldName);
+                }
+            });
+            formula += ")";
+            return formula;
         };
         /**
          * Creates a formula that replaces the specified column with the specified script.

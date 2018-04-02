@@ -214,6 +214,19 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Clone the specified column.
+     *
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    cloneColumn(column: any, grid: any) {
+        const fieldName = this.getColumnFieldName(column);
+        const script = "clone(" + fieldName + ")";
+        const formula = this.toAppendColumnFormula(script, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: 'content_copy', name: 'Clone ' + this.getColumnDisplayName(column)});
+    }
+
+    /**
      * Gets the target data types supported for casting this column.
      */
     getAvailableCasts(): DT[] {
@@ -467,12 +480,64 @@ export class ColumnDelegate implements IColumnDelegate {
         }
         if (dataCategory === DataCategory.STRING) {
             transforms.push({description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower'},
+                {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap'},
-                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'});
+                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'});
         }
-
         return transforms;
+    }
+
+    /**
+     * Creates a guaranteed unique field name
+     * @param columns column list
+     * @returns {string} a unique fieldname
+     */
+    protected toAsUniqueColumnName(columns : Array<any>, columnFieldName: any) : string {
+        let prefix = "new_";
+        let idx = 0;
+        let columnSet = new Set();
+        let uniqueName = null;
+        const self = this;
+        columnSet.add(columnFieldName);
+        angular.forEach(columns, function (item) {
+            columnSet.add(self.getColumnFieldName(item));
+        });
+
+        while (uniqueName == null) {
+            let name = prefix+idx;
+            uniqueName = (columnSet.has(name) ? null : name);
+            idx++;
+        }
+        return ".as(\""+uniqueName+"\")"
+    }
+
+    /**
+     * Creates a formula that adds a new column with the specified script. It generates a unique column name.
+     *
+     * @param {string} script the expression for the column
+     * @param {ui.grid.GridColumn} column the column to be replaced
+     * @param {ui.grid.Grid} grid the grid with the column
+     * @returns {string} a formula that replaces the column
+     */
+    protected toAppendColumnFormula(script: string, column: any, grid: any): string {
+        const columnFieldName = this.getColumnFieldName(column);
+        let formula = "";
+        const self = this;
+        let match = false;
+        angular.forEach(grid.columns, function (item, idx) {
+            if (item.visible) {
+                const itemFieldName = self.getColumnFieldName(item);
+                formula += (formula.length == 0) ? "select(" : ", ";
+                if (match) {
+                    formula += script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                }
+                formula += itemFieldName;
+                match = (itemFieldName == columnFieldName);
+            }
+        });
+
+        formula += ")";
+        return formula;
     }
 
     /**
@@ -484,6 +549,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @returns {string} a formula that replaces the column
      */
     protected toFormula(script: string, column: any, grid: any): string {
+
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
         const self = this;
@@ -499,4 +565,6 @@ export class ColumnDelegate implements IColumnDelegate {
         formula += ")";
         return formula;
     }
+
+
 }

@@ -143,7 +143,6 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             else {
                 cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
                 cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-                cell.i;
             }
             // Set style
             if (cell === null) {
@@ -158,7 +157,6 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             else {
                 cellDiv.className = "";
             }
-            cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
             // Set contents
             if (cell === null) {
                 cellDiv.textContent = "";
@@ -170,6 +168,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 cellDiv.textContent = cell.value;
             }
             if (cell !== null) {
+                cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
                 angular.element(cellDiv)
                     .data("column", cell.column)
                     .data("validation", cell.validation);
@@ -327,7 +326,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;
             $scope.value = isNull ? null : cellDiv.innerText;
-            $scope.displayValue = ($scope.value.length > 25 ? $scope.value.substring(0, 25) + "..." : $scope.value);
+            $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "..." : $scope.value);
             // Update position
             this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
@@ -389,6 +388,10 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 this.delegate.unsort();
             }
         };
+        /**
+         * Maximum display length for column context functions before they are ellipses (asthetics)
+         */
+        VisualQueryPainterService.MAX_DISPLAY_LENGTH = 25;
         /**
          * Left and right padding for normal columns.
          */
