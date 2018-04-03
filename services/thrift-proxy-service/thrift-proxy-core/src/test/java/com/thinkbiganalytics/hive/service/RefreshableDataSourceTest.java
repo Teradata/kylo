@@ -96,7 +96,7 @@ public class RefreshableDataSourceTest {
 
 
         Mockito.when(env.getProperty("hive.datasource.username"))
-            .thenReturn(principal);
+            .thenReturn(principal+"");
 
         Mockito.when(env.getProperty("hive.datasource.password"))
             .thenReturn("password1234");
@@ -146,7 +146,7 @@ public class RefreshableDataSourceTest {
     @Test
     public void testLowerCase() throws Exception {
 
-        String hiveUser = principal.toLowerCase();
+        String hiveUser = principal;
         initUserNameMocks(hiveUser, "LOWER_CASE");
         Map<String,String> props = testCreateDataSourceAndGetProperties();
         String url = props.get("url");
@@ -157,7 +157,7 @@ public class RefreshableDataSourceTest {
     @Test
     public void testAsSpecified() throws Exception {
 
-        String hiveUser = principal.toLowerCase();
+        String hiveUser = principal;
         initUserNameMocks(hiveUser, "AS_SPECIFIED");
         Map<String,String> props = testCreateDataSourceAndGetProperties();
         String url = props.get("url");
