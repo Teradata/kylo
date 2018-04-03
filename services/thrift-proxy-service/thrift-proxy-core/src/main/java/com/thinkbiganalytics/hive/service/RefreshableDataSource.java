@@ -219,14 +219,12 @@ public class RefreshableDataSource implements DataSource {
         String url = env.getProperty(prefix + "url");
         String password = env.getProperty(prefix + "password");
         String userName = env.getProperty(prefix + "username");
-
+        String username = userName;
         if (proxyUser && propertyPrefix.equals("hive.datasource")) {
-            userName = principal;
             url = url + ";hive.server2.proxy.user=" + convertUsernameCase(principal,getUsernameCaseSetting(prefix));
         }
-        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
-        String username = userName;
 
+        log.debug("The JDBC URL for {}, is {} --- User impersonation enabled: {} ",username, url,proxyUser);
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }
