@@ -40,6 +40,7 @@ const moduleName = require('feed-mgr/module-name');
         const self = this;
 
         const FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
+        const ATTR_DATA_COLUMN_ID = "data-column-id";
 
         const optionDefaults:any = {
             tableContainerId: "",
@@ -49,7 +50,7 @@ const moduleName = require('feed-mgr/module-name');
             maxColumnWidth: 300,
             rowHeight: 53,
             headerHeight: 40,
-            padding: 40,
+            padding: 50,
             headerFontFamily: FONT_FAMILY,
             headerFontSize: "12px",
             headerFontWeight: "bold",
@@ -78,7 +79,7 @@ const moduleName = require('feed-mgr/module-name');
                 }
             },
             fillHeader: function(headerDiv:any, header:any) {
-                headerDiv.innerHTML = '<div>' + _.escape(header) + '</div>';
+                headerDiv.innerHTML = _.escape(header.value);
             },
             getHeaderSync: function(j:any) {
                 return this.headers[j].displayName;
@@ -107,7 +108,7 @@ const moduleName = require('feed-mgr/module-name');
             const rowContext = get2dContext(settings.rowFontWeight + " " + settings.rowFontSize + " " + settings.rowFontFamily);
 
             tableData.columnHeaders = [];
-            const columnWidths:any = [];
+            const columnWidths: number[] = [];
             _.each(headers, function(column) {
                 const headerText = settings.headerText(column);
                 const headerTextWidth = headerContext.measureText(headerText).width;
@@ -121,6 +122,24 @@ const moduleName = require('feed-mgr/module-name');
                 columnWidths.push(Math.min(settings.maxColumnWidth, Math.max(settings.minColumnWidth, headerTextWidth, columnTextWidth)) + settings.padding);
                 tableData.columnHeaders.push(headerText);
             });
+
+            painter.setupHeader = function (div) {
+                console.log("setupHeader");
+                const separator = angular.element('<span class="separator" draggable="true"></span>');
+                separator
+                    .on("dragstart", event => dragstart(separator, event))
+                    .on("drag", event => drag(separator, event))
+                    .on("dragend", event => dragend(separator, event))
+                ;
+
+                const heading = angular.element('<span class="value"></span>');
+
+                const headerDiv = angular.element(div);
+                headerDiv.css('display', 'flex');
+                headerDiv.css('justify-content', 'space-between');
+
+                headerDiv.append(heading).append(separator);
+            };
 
             painter.fillCell = function (div, data) {
                 if (data === undefined) {
@@ -138,11 +157,17 @@ const moduleName = require('feed-mgr/module-name');
                 settings.fillCell(div, data);
             };
 
-            painter.fillHeader = function(div, header) {
+            painter.fillHeader = function(div: any, header: any) {
+                console.log('fill header', header);
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
                 div.style.fontWeight = "bold";
-                settings.fillHeader(div, header);
+                const children = angular.element(div).children();
+
+                setColumnId(children.last(), header.id);
+
+                const valueSpan = children.first().get(0);
+                settings.fillHeader(valueSpan, header);
             };
 
             tableData.getCellSync = function (i:any, j:any) {
@@ -155,11 +180,15 @@ const moduleName = require('feed-mgr/module-name');
             };
 
             tableData.getHeaderSync = function(j:any) {
-                return settings.getHeaderSync(j);
+                const header = settings.getHeaderSync(j);
+                return {
+                    value: header,
+                    id: j
+                };
             };
 
             const selector = "#" + settings.tableContainerId;
-            const table = fattable({
+            const parameters = {
                 "container": selector,
                 "model": tableData,
                 "nbRows": rows.length,
@@ -167,10 +196,77 @@ const moduleName = require('feed-mgr/module-name');
                 "headerHeight": settings.headerHeight,
                 "painter": painter,
                 "columnWidths": columnWidths
-            });
+            };
 
-            table.setup();
+            // let x = 0;
+            // let y = 0;
+            // function onScroll(scrollX: number, scrollY: number) {
+            //     console.log("scrolling to x,y", x, y);
+            //     x = scrollX;
+            //     y = scrollY;
+            // }
+            self.table = fattable(parameters);
+            self.table.setup();
+            // self.table.onScroll = onScroll;
 
+            // window.setInterval(changeWidth, 5000, table);
+            function changeWidth(table: any) {
+                // console.log('widening first column');
+                // columnWidths[0] = columnWidths[0] + 10;
+
+                // table.cleanUp();
+                // table = fattable(parameters);
+                // table.setup();
+                // table.onScroll = onScroll;
+                // console.log('resetting to x,y', x, y);
+                // const cells = table.leftTopCornerFromXY(x, y);
+                // console.log('resetting to cells', cells);
+                // table.goTo(cells[0],cells[1]);
+
+                // table.refreshAllContent(true);
+                // table.setup();
+
+            }
+
+            function getColumnId(separatorSpan:any) {
+                return separatorSpan.attr(ATTR_DATA_COLUMN_ID);
+            }
+
+            function setColumnId(separatorSpan:any, id: any) {
+                separatorSpan.attr(ATTR_DATA_COLUMN_ID, id);
+            }
+
+            function dragstart(separator:any, event:any) {
+                const columnId = getColumnId(separator);
+                console.log('dragstart header, event/columnId', event, columnId);
+                self.dragstartX = event.originalEvent.x;
+                self.dragstartColumnWidth = self.table.columnWidths[columnId];
+            }
+            function drag(separator:any, event:any) {
+                const columnId = getColumnId(separator);
+                console.log('drag header, event/columnId', event, columnId);
+                const dragX = event.originalEvent.x;
+                //todo use for visual feedback
+            }
+            function dragend(separator:any, event:any) {
+                const columnId = getColumnId(separator);
+                console.log('dragend header, event/columnId', event, columnId);
+                const dragendX = event.originalEvent.x;
+                const newWidth = self.dragstartColumnWidth + (dragendX - self.dragstartX);
+                resizeColumn(columnId, newWidth < settings.minColumnWidth ? settings.minColumnWidth : newWidth);
+            }
+
+            function resizeColumn(columnId: number, columnWidth: number) {
+                console.log('resize to new width', columnWidth);
+                self.table.columnWidths[columnId] = columnWidth;
+                const columnOffset = _.reduce((self.table.columnWidths as number[]), function (memo, width) {
+                    memo.push(memo[memo.length - 1] + width);
+                    return memo;
+                }, [0]);
+                self.table.columnOffset = columnOffset;
+                self.table.W = columnOffset[columnOffset.length - 1];
+                self.table.setup();
+            }
 
             const eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);

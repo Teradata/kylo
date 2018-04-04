@@ -37,3 +37,8 @@
   background-color: rgba(0,0,0, 0.01);
 }
 
+.separator {
+  border-left: 1px solid lightgrey;
+  cursor: col-resize;
+}
+
