@@ -271,4 +271,34 @@ public class JdbcCommonTest {
 
         assertEquals("Avro schema not mapped correctly for feed table setup", expected, obtained);
     }
+
+    /**
+     * Verify handling of null values.
+     */
+    @Test
+    public void testNullValues() throws Exception {
+        // Mock result set metadata
+        final ResultSetMetaData metadata = Mockito.mock(ResultSetMetaData.class);
+        Mockito.when(metadata.getColumnCount()).thenReturn(5);
+        Mockito.when(metadata.getColumnName(1)).thenReturn("date");
+        Mockito.when(metadata.getColumnName(2)).thenReturn("timestamp");
+        Mockito.when(metadata.getColumnName(3)).thenReturn("time");
+        Mockito.when(metadata.getColumnName(4)).thenReturn("blob");
+        Mockito.when(metadata.getColumnName(5)).thenReturn("string");
+        Mockito.when(metadata.getColumnType(1)).thenReturn(Types.DATE);
+        Mockito.when(metadata.getColumnType(2)).thenReturn(Types.TIMESTAMP);
+        Mockito.when(metadata.getColumnType(3)).thenReturn(Types.TIME);
+        Mockito.when(metadata.getColumnType(4)).thenReturn(Types.BLOB);
+        Mockito.when(metadata.getColumnType(5)).thenReturn(Types.VARCHAR);
+
+        // Mock result set
+        final ResultSet results = Mockito.mock(ResultSet.class);
+        Mockito.when(results.getMetaData()).thenReturn(metadata);
+        Mockito.when(results.next()).thenReturn(true, false, true, false);
+
+        // Test converting to delimited text
+        final ByteArrayOutputStream out = new ByteArrayOutputStream();
+        final RowVisitor visitor = Mockito.mock(RowVisitor.class);
+        JdbcCommon.convertToDelimitedStream(results, out, visitor, ",");
+    }
 }
