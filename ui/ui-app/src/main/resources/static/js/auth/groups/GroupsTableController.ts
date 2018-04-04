@@ -1,23 +1,62 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-import {UserService} from "../services/UserService";
 import {moduleName} from "../module-name";
+import UserService from "../services/UserService";
+import AddButtonService from  "../../services/AddButtonService";
+import PaginationDataService from  "../../services/PaginationDataService";
+import StateService from  "../../services/StateService";
+import TableOptionsService from  "../../services/TableOptionsService";
+import "../module";
+import "../module-require";
+/**
+ * Identifier for this page.
+ * @type {string}
+ */
 const PAGE_NAME:string = "groups";
 
 export default class GroupsTableController implements ng.IComponentController {
-    cardTitle:string = "Groups"; //Page title {string}
-    currentPage:number = this.PaginationDataService.currentPage(PAGE_NAME) || 1; // Index of the current page {number}
-    filter:any = this.PaginationDataService.filter(PAGE_NAME); //Helper for table filtering  {*}
-    loading:boolean = true; // Indicates that the table data is being loaded {boolean}
-    pageName:string = PAGE_NAME; // Identifier for this page {string}
-    paginationData  = this.getPaginatedData(); //Helper for table pagination {*}
-    sortOptions     = this.getSortOptions();
-    groups:any = []; //List of groups  {Array.<GroupPrincipal>}
-   // options:any = this.TableOptionsService.currentOption;
-    viewType:any = this.PaginationDataService.viewType(PAGE_NAME);  //Type of view for the table  {any}
-
-   // selectedTableOption = this.getSelectedTableOption(this.$scope);
-  
+    /**
+     * Page title.
+     * @type {string}
+     */
+    cardTitle:string = "Groups";
+    /**
+     * Index of the current page.
+     * @type {number}
+     */
+    currentPage:number = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
+    /**
+     * Helper for table filtering.
+     * @type {*}
+     */
+    filter:any = this.PaginationDataService.filter(PAGE_NAME);
+    /**
+     * Indicates that the table data is being loaded.
+     * @type {boolean}
+     */
+    loading:boolean = true;
+    /**
+     * Identifier for this page.
+     * @type {string}
+     */
+    pageName:string = PAGE_NAME;
+    /**
+     * Helper for table pagination.
+     * @type {*}
+     */
+    paginationData = this.getPaginatedData();
+    sortOptions    = this.getSortOptions();
+    /**
+     * List of groups.
+     * @type {Array.<GroupPrincipal>}
+     */
+    groups:any[] = [];
+    // options:any = this.TableOptionsService.currentOption;
+    /**
+     * Type of view for the table
+     * @type {any}
+     */
+    viewType:any = this.PaginationDataService.viewType(PAGE_NAME);
     getPaginatedData () {
         var paginationData = this.PaginationDataService.paginationData(PAGE_NAME);
         this.PaginationDataService.setRowsPerPageOptions(PAGE_NAME, ['5', '10', '20', '50']);
@@ -42,7 +81,7 @@ export default class GroupsTableController implements ng.IComponentController {
         this.TableOptionsService.toggleSort(this.pageName, option);
         this.TableOptionsService.setSortOption(this.pageName, sortString);
     };
-         /**
+    /**
      * Gets the display name of the specified group. Defaults to the system name if the display name is blank.
      * @param group the group
      * @returns {string} the display name
@@ -83,35 +122,48 @@ export default class GroupsTableController implements ng.IComponentController {
     groupDetails=(group:any)=>{
         this.StateService.Auth().navigateToGroupDetails(group.systemName);
     };
-    
+    //$inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
+    static readonly $inject = ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService"];
+    /**
+     * Displays a list of groups in a table.
+     *
+     * @constructor
+     * @param $scope the application model
+     * @param AddButtonService the Add button service
+     * @param PaginationDataService the table pagination service
+     * @param StateService the page state service
+     * @param TableOptionsService the table options service
+     * @param UserService the user service
+     */
         constructor (
         private $scope:angular.IScope,
-        private AddButtonService:any,
-        private PaginationDataService:any,
-        private StateService:any,
-        private TableOptionsService:any,
+        private AddButtonService:AddButtonService,
+        private PaginationDataService:PaginationDataService,
+        private StateService:StateService,
+        private TableOptionsService:TableOptionsService,
         private UserService:UserService
     ) {
-
         // Notify pagination service of changes to view type
-        this.$scope.$watch(() => {
+        this.$scope.$watch(() => { //$onChanges()
             return this.viewType;
         }, (viewType) => {
-            this.PaginationDataService.viewType(PAGE_NAME, viewType);
+            PaginationDataService.viewType(PAGE_NAME, viewType);
         });
-
         // Register Add button
-        this.AddButtonService.registerAddButton('groups', () => {
-            this.StateService.Auth().navigateToGroupDetails();
+        AddButtonService.registerAddButton('groups', () => {
+            StateService.Auth().navigateToGroupDetails();
         });
-
         // Get the list of users and groups
-        this.UserService.getGroups().then((groups:any) => {
+        UserService.getGroups().then((groups:any) => {
              this.groups = groups;
              this.loading = false;
         });
-             
     }
 }
-angular.module(moduleName).controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
-
+angular.module(moduleName)
+.component("groupsTableController", {
+        controller: GroupsTableController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/groups/groups-table.html"
+    });
+//.controller("GroupsTableController", GroupsTableController]);
