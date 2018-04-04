@@ -1,25 +1,66 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
-import {UserService} from "../services/UserService";
-const PAGE_NAME:string = "users";
+import UserService from "../services/UserService";
+import AddButtonService from  "../../services/AddButtonService";
+import PaginationDataService from  "../../services/PaginationDataService";
+import StateService from  "../../services/StateService";
+import TableOptionsService from  "../../services/TableOptionsService";
+import "../module";
+import "../module-require";
 import {moduleName} from "../module-name";
-
+const PAGE_NAME:string = "users";
 export default class UsersTableController implements ng.IComponentController {
-    cardTitle:string = "Users"; // Page Title  {string}
-    currentPage:number = this.PaginationDataService.currentPage(PAGE_NAME) || 1; // Index of the current page {number}
-    filter:any = this.PaginationDataService.filter(PAGE_NAME); //Helper for table filtering. {*}
-    groups:any = {}; //Mapping of group names to group metadata. {Object.<string, GroupPrincipal>}
-    loading:boolean = true; // Indicates that the table data is being loaded. {boolean}
-    pageName: string = PAGE_NAME; // Identifier for this page  {string}
-    paginationData = this.getPaginatedData(); // Helper for table pagination {*}
+    /**
+     * Page title.
+     * @type {string}
+     */
+    cardTitle:string = "Users";
+
+    /**
+     * Index of the current page.
+     * @type {number}
+     */
+    currentPage:any = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
+
+    /**
+     * Helper for table filtering.
+     * @type {*}
+     */
+    filter:any = this.PaginationDataService.filter(PAGE_NAME);
+
+    /**
+     * Mapping of group names to group metadata.
+     * @type {Object.<string, GroupPrincipal>}
+     */
+    groups:any = {};
+
+    /**
+     * Indicates that the table data is being loaded.
+     * @type {boolean}
+     */
+    loading:boolean = true;
+
+    /**
+     * Identifier for this page.
+     * @type {string}
+     */
+    pageName = PAGE_NAME;
+
+    /**
+     * Helper for table pagination.
+     * @type {*}
+     */
+    paginationData = this.getPaginatedData()
+
     sortOptions = this.getSortOptions();
     getPaginatedData () {
         var paginationData = this.PaginationDataService.paginationData(PAGE_NAME);
         this.PaginationDataService.setRowsPerPageOptions(PAGE_NAME, ['5', '10', '20', '50']);
         return paginationData;
     }
+
     getSortOptions() {
-        var fields: any = {"Display Name": "displayName", "Email Address": "email", "State": "enabled", "Groups": "groups"};
+        var fields = {"Display Name": "displayName", "Email Address": "email", "State": "enabled", "Groups": "groups"};
         var sortOptions = this.TableOptionsService.newSortOptions(PAGE_NAME, fields, "displayName", "asc");
         var currentOption = this.TableOptionsService.getCurrentSort(PAGE_NAME);
         if (currentOption) {
@@ -28,11 +69,22 @@ export default class UsersTableController implements ng.IComponentController {
         return sortOptions;
     }
 
-    users:any[] = []; // List of users {Array.<UserPrincipal>}
-    viewType:any = this.PaginationDataService.viewType(PAGE_NAME); //  Type of view for the table  {any}
+
+    /**
+     * List of users.
+     * @type {Array.<UserPrincipal>}
+     */
+    users:any = [];
+
+    /**
+     * Type of view for the table.
+     * @type {any}
+     */
+    viewType:any = this.PaginationDataService.viewType(PAGE_NAME);
 
     /**
      * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+     *
      * @param user the user
      * @returns {string} the display name
      */
@@ -42,6 +94,7 @@ export default class UsersTableController implements ng.IComponentController {
 
     /**
      * Gets the title for each group the user belongs to.
+     *
      * @param user the user
      * @returns {Array.<string>} the group titles
      */
@@ -57,6 +110,7 @@ export default class UsersTableController implements ng.IComponentController {
 
     /**
      * Updates the order of the table.
+     *
      * @param order the sort order
      */
     onOrderChange=(order:any)=>{
@@ -66,6 +120,7 @@ export default class UsersTableController implements ng.IComponentController {
 
     /**
      * Updates the pagination of the table.
+     *
      * @param page the page number
      */
     onPaginationChange= (page:any)=> {
@@ -75,6 +130,7 @@ export default class UsersTableController implements ng.IComponentController {
 
     /**
      * Updates the order of the table.
+     *
      * @param option the sort order
      */
     selectedTableOption =(option:any) =>{
@@ -86,18 +142,24 @@ export default class UsersTableController implements ng.IComponentController {
 
     /**
      * Navigates to the details page for the specified user.
+     *
      * @param user the user
      */
     userDetails (user:any) {
         this.StateService.Auth().navigateToUserDetails(user.systemName);
     };
-
+    static readonly $inject = ["$scope",
+                                "AddButtonService",
+                                "PaginationDataService",
+                                "StateService",
+                                "TableOptionsService",
+                                "UserService"];
     constructor (
         private $scope:angular.IScope,
-        private AddButtonService:any,
-        private PaginationDataService:any,
-        private StateService:any,
-        private TableOptionsService:any,
+        private AddButtonService:AddButtonService,
+        private PaginationDataService:PaginationDataService,
+        private StateService:StateService,
+        private TableOptionsService:TableOptionsService,
         private UserService:UserService
     ) {
         // Notify pagination service of changes to view type
@@ -125,4 +187,10 @@ export default class UsersTableController implements ng.IComponentController {
         });
     }
 }
-angular.module(moduleName).controller("UsersTableController", ["$scope","AddButtonService","PaginationDataService","StateService", "TableOptionsService","UserService",UsersTableController]);
+angular.module(moduleName)
+.component("usersTableController", {
+        controller: UsersTableController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/users/users-table.html"
+    });
+

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../module-name", "../module", "../module-require"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PAGE_NAME = "users";
@@ -11,18 +11,55 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
             this.StateService = StateService;
             this.TableOptionsService = TableOptionsService;
             this.UserService = UserService;
-            this.cardTitle = "Users"; // Page Title  {string}
-            this.currentPage = this.PaginationDataService.currentPage(PAGE_NAME) || 1; // Index of the current page {number}
-            this.filter = this.PaginationDataService.filter(PAGE_NAME); //Helper for table filtering. {*}
-            this.groups = {}; //Mapping of group names to group metadata. {Object.<string, GroupPrincipal>}
-            this.loading = true; // Indicates that the table data is being loaded. {boolean}
-            this.pageName = PAGE_NAME; // Identifier for this page  {string}
-            this.paginationData = this.getPaginatedData(); // Helper for table pagination {*}
+            /**
+             * Page title.
+             * @type {string}
+             */
+            this.cardTitle = "Users";
+            /**
+             * Index of the current page.
+             * @type {number}
+             */
+            this.currentPage = this.PaginationDataService.currentPage(PAGE_NAME) || 1;
+            /**
+             * Helper for table filtering.
+             * @type {*}
+             */
+            this.filter = this.PaginationDataService.filter(PAGE_NAME);
+            /**
+             * Mapping of group names to group metadata.
+             * @type {Object.<string, GroupPrincipal>}
+             */
+            this.groups = {};
+            /**
+             * Indicates that the table data is being loaded.
+             * @type {boolean}
+             */
+            this.loading = true;
+            /**
+             * Identifier for this page.
+             * @type {string}
+             */
+            this.pageName = PAGE_NAME;
+            /**
+             * Helper for table pagination.
+             * @type {*}
+             */
+            this.paginationData = this.getPaginatedData();
             this.sortOptions = this.getSortOptions();
-            this.users = []; // List of users {Array.<UserPrincipal>}
-            this.viewType = this.PaginationDataService.viewType(PAGE_NAME); //  Type of view for the table  {any}
+            /**
+             * List of users.
+             * @type {Array.<UserPrincipal>}
+             */
+            this.users = [];
+            /**
+             * Type of view for the table.
+             * @type {any}
+             */
+            this.viewType = this.PaginationDataService.viewType(PAGE_NAME);
             /**
              * Updates the order of the table.
+             *
              * @param order the sort order
              */
             this.onOrderChange = function (order) {
@@ -31,6 +68,7 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
             };
             /**
              * Updates the pagination of the table.
+             *
              * @param page the page number
              */
             this.onPaginationChange = function (page) {
@@ -39,6 +77,7 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
             };
             /**
              * Updates the order of the table.
+             *
              * @param option the sort order
              */
             this.selectedTableOption = function (option) {
@@ -85,6 +124,7 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
         };
         /**
          * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+         *
          * @param user the user
          * @returns {string} the display name
          */
@@ -94,6 +134,7 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
         ;
         /**
          * Gets the title for each group the user belongs to.
+         *
          * @param user the user
          * @returns {Array.<string>} the group titles
          */
@@ -111,15 +152,27 @@ define(["require", "exports", "angular", "underscore", "../module-name"], functi
         ;
         /**
          * Navigates to the details page for the specified user.
+         *
          * @param user the user
          */
         UsersTableController.prototype.userDetails = function (user) {
             this.StateService.Auth().navigateToUserDetails(user.systemName);
         };
         ;
+        UsersTableController.$inject = ["$scope",
+            "AddButtonService",
+            "PaginationDataService",
+            "StateService",
+            "TableOptionsService",
+            "UserService"];
         return UsersTableController;
     }());
     exports.default = UsersTableController;
-    angular.module(module_name_1.moduleName).controller("UsersTableController", ["$scope", "AddButtonService", "PaginationDataService", "StateService", "TableOptionsService", "UserService", UsersTableController]);
+    angular.module(module_name_1.moduleName)
+        .component("usersTableController", {
+        controller: UsersTableController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/users/users-table.html"
+    });
 });
 //# sourceMappingURL=UsersTableController.js.map
