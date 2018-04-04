@@ -1,15 +1,18 @@
 import * as angular from 'angular';
 import { Injectable } from '@angular/core';
-import { Http, Response, Headers, RequestOptions, URLSearchParams } from '@angular/http';
-import * as http from '@angular/http';
+import { Http, Response, Headers, RequestOptions } from '@angular/http';
 import {moduleName} from "../module-name";
+import UserGroupService from "../../services/UserGroupService";
+import CommonRestUrlService from "../../services/CommonRestUrlService";
 
-export  class UserService{
+@Injectable()
+export default class UserService{
 headers: Headers;
 options: RequestOptions;
-constructor(private http: any,
-            private CommonRestUrlService:any,
-            private UserGroupService: any){}
+static readonly $inject = ['$http','CommonRestUrlService','UserGroupService'];
+constructor(private $http: angular.IHttpService,
+            private CommonRestUrlService:CommonRestUrlService,
+            private UserGroupService: UserGroupService){}
 
     private extractData(res: Response) {
         let body =  res.json();
@@ -21,12 +24,31 @@ constructor(private http: any,
     }    
 
     /**
+     * Deletes the group with the specified system name.
+     *
+     * @param {string} groupId the system name
+     * @returns {Promise} for when the group is deleted
+     */
+    deleteGroup(groupId: any) : Promise<any>{
+        return Promise.resolve(
+        this.$http({
+            method: "DELETE",
+            url: this.CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId)
+        })
+        );
+    }
+    /**
      * Deletes the user with the specified system name.
      * @param {string} userId the system name
      * @returns {Promise} for when the user is deleted
      */
     deleteUser(userId: any): Promise<any> {
-        return this.http.delete(this.CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId));
+         return Promise.resolve(this.$http({
+                    method: "DELETE",
+                    url: this.CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId)
+                })
+         );
+       // return this.http.delete(this.CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId));
     }
         
     /**
@@ -68,7 +90,7 @@ constructor(private http: any,
      * @param groupId the system name of the group
      * @returns {Array.<UserPrincipal>} the users
      */
-    getUsersByGroup(groupId:any):any[] {
+    getUsersByGroup(groupId:any):any {
         return this.UserGroupService.getUsersByGroup(groupId);
     }
 
@@ -78,7 +100,15 @@ constructor(private http: any,
      * @returns {Promise} for when the group is saved
      */
     saveGroup(group: any) : Promise<any>{
-            return this.http.post(this.CommonRestUrlService.SECURITY_GROUPS_URL,angular.toJson(group));
+        return Promise.resolve(this.$http({
+                    data: angular.toJson(group),
+                    headers: {"Content-Type": "application/json; charset=UTF-8"},
+                    method: "POST",
+                    url: this.CommonRestUrlService.SECURITY_GROUPS_URL
+                })).then(function () {
+                    return group;
+                });
+//            return this.http.post(this.CommonRestUrlService.SECURITY_GROUPS_URL,angular.toJson(group));
     }
     /**
      * Saves the specified user.
@@ -86,8 +116,16 @@ constructor(private http: any,
      * @returns {Promise} for when the user is saved
      */
     saveUser(user: any):Promise<any>{
-        return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL,angular.toJson(user));
+        return Promise.resolve(this.$http({
+                    data: angular.toJson(user),
+                    headers: {"Content-Type": "application/json; charset=UTF-8"},
+                    method: "POST",
+                    url: this.CommonRestUrlService.SECURITY_USERS_URL
+                })).then(function () {
+                    return user;
+                });
+//        return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL,angular.toJson(user));
     }
 }
 
- angular.module(moduleName).service('UserService',['$http','CommonRestUrlService','UserGroupService', UserService]);
+ angular.module(moduleName).service('UserService',UserService);
