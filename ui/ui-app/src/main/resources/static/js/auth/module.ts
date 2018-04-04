@@ -1,12 +1,10 @@
 import * as angular from 'angular';
 import AccessConstants from "../constants/AccessConstants";
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
-//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import UserDetailsController from "./users/user-details/UserDetailsController";
 import GroupDetailsController from "./groups/group-details/GroupDetailsController";
-import * as moduleRequire  from "./module-require";
 import {moduleName} from "./module-name";
-//const moduleName = require('auth/module-name');
+import {TargetState} from "@uirouter/core";
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -15,15 +13,14 @@ class ModuleFactory  {
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
     }
     configFn($stateProvider:any) {
-            
         $stateProvider.state(AccessConstants.UI_STATES.USERS.state, {
             url: '/users',
             params: {},
             views: {
                 'content': {
-                    templateUrl: 'js/auth/users/users-table.html',
-                    controller: "UsersTableController",
-                    controllerAs: "vm"
+                   // templateUrl: 'js/auth/users/users-table.html',
+                    component: "usersTableController",
+                   // controllerAs: "vm"
                 }
             },
             resolve: {
@@ -43,9 +40,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/auth/users/user-details/user-details.html',
-                    controller: "UserDetailsController",
-                    controllerAs: "vm"
+                   // templateUrl: 'js/auth/users/user-details/user-details.html',
+                    component: "userDetailsController",
+                   // controllerAs: "vm"
                 }
             },
             resolve: {
@@ -57,17 +54,15 @@ class ModuleFactory  {
                 module:moduleName,
                 permissions:AccessConstants.UI_STATES.USERS_DETAILS.permissions
             }
-
-        
         });
         $stateProvider.state(AccessConstants.UI_STATES.GROUPS.state, {
             url: "/groups",
             params: {},
             views: {
                 'content': {
-                    templateUrl: 'js/auth/groups/groups-table.html',
-                    controller: "GroupsTableController",
-                    controllerAs: "vm"
+                  //  templateUrl: 'js/auth/groups/groups-table.html',
+                    component: "groupsTableController",
+                   // controllerAs: "vm"
                 }
             },
             resolve: {
@@ -87,9 +82,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/auth/groups/group-details/group-details.html',
-                    controller: "GroupDetailsController",
-                    controllerAs: "vm"
+                  //  templateUrl: 'js/auth/groups/group-details/group-details.html',
+                    component: "groupDetailsController",
+                   // controllerAs: "vm"
                 }
             },
             resolve: {
@@ -107,8 +102,6 @@ class ModuleFactory  {
     lazyLoadController(path:any){
         return lazyLoadUtil.lazyLoadController(path,"auth/module-require");
     }
-
-    
 } 
 
 const module = new ModuleFactory();

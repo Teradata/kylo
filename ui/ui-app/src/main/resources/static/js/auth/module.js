@@ -1,7 +1,6 @@
 define(["require", "exports", "angular", "../constants/AccessConstants", "../kylo-utils/LazyLoadUtil", "./module-name"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //const moduleName = require('auth/module-name');
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.module = angular.module(module_name_1.moduleName, []);
@@ -13,9 +12,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 params: {},
                 views: {
                     'content': {
-                        templateUrl: 'js/auth/users/users-table.html',
-                        controller: "UsersTableController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/auth/users/users-table.html',
+                        component: "usersTableController",
                     }
                 },
                 resolve: {
@@ -35,9 +33,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/auth/users/user-details/user-details.html',
-                        controller: "UserDetailsController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/auth/users/user-details/user-details.html',
+                        component: "userDetailsController",
                     }
                 },
                 resolve: {
@@ -55,9 +52,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 params: {},
                 views: {
                     'content': {
-                        templateUrl: 'js/auth/groups/groups-table.html',
-                        controller: "GroupsTableController",
-                        controllerAs: "vm"
+                        //  templateUrl: 'js/auth/groups/groups-table.html',
+                        component: "groupsTableController",
                     }
                 },
                 resolve: {
@@ -77,9 +73,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/auth/groups/group-details/group-details.html',
-                        controller: "GroupDetailsController",
-                        controllerAs: "vm"
+                        //  templateUrl: 'js/auth/groups/group-details/group-details.html',
+                        component: "groupDetailsController",
                     }
                 },
                 resolve: {
