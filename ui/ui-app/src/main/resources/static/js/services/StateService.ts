@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-/**
+ /**
  * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
  * See the corresponding name references in app.js
  */
@@ -25,43 +25,44 @@ import * as angular from 'angular';
 import {moduleName} from './module-name';
 
 export default class StateService{
-AuthStates=()=> {
-    var data: any = {}
-        /**
-         * Navigates to the Groups page.
-         */
-        data.navigateToGroups = ()=> {
-            this.$state.go("groups");
-        };
-        /**
-         * Navigates to the Group Details page.
-         *
-         * @param {string} [opt_groupId] the system name of the group
-         */
-        data.navigateToGroupDetails = (opt_groupId: any)=> {
-            var safeGroupId: any = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
-            this.$state.go("group-details", {groupId: safeGroupId});
-        };
+    Auth: any;
+    constructor (private $state: any){
+        var AuthStates = function(){
+            var data: any = {}
+            /**
+             * Navigates to the Groups page.
+             */
+            data.navigateToGroups = ()=> {
+                $state.go("groups");
+            };
+            /**
+             * Navigates to the Group Details page.
+             *
+             * @param {string} [opt_groupId] the system name of the group
+             */
+            data.navigateToGroupDetails = (opt_groupId: string)=> {
+                var safeGroupId: any = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
+                $state.go("group-details", {groupId: safeGroupId});
+            };
 
-        /**
-         * Navigates to the Users page.
-         */
-        data.navigateToUsers = ()=> {
-            this.$state.go("users");
-        };
+            /**
+             * Navigates to the Users page.
+             */
+            data.navigateToUsers = ()=> {
+                $state.go("users");
+            };
 
-        /**
-         * Navigates to the User Details page.
-         *
-         * @param {string} [opt_userId] the system name of the user
-         */
-        data.navigateToUserDetails = (opt_userId: any)=> {
-            var safeUserId: any = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
-            this.$state.go("user-details", {userId: safeUserId});
-        };
-        return data;
-    }
-constructor (private $state: any){
+            /**
+             * Navigates to the User Details page.
+             *
+             * @param {string} [opt_userId] the system name of the user
+             */
+            data.navigateToUserDetails = (opt_userId: string)=> {
+                var safeUserId: any = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
+                $state.go("user-details", {userId: safeUserId});
+            };
+            return data;
+        }
         var TemplateStates = function () {
             var data: any = {};
             data.navigateToRegisterNewTemplate = function () {
@@ -89,7 +90,6 @@ constructor (private $state: any){
             data.navigateToRegisteredTemplates = function () {
                 $state.go("registered-templates");
             };
-
             return data;
         }
 
@@ -315,7 +315,8 @@ constructor (private $state: any){
 
         var States: any = ()=> {
             var data: any = {};
-            data.Auth = this.AuthStates;
+            data.Auth = AuthStates;
+            this.Auth = AuthStates;
             data.Search = SearchStates;
             data.FeedManager = FeedManagerStates;
             data.OpsManager = OpsManagerStates;

@@ -247,7 +247,7 @@ export default class AccessControlService{
              * @param {string|null} [opt_module] name of the access module, or {@code null}
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            getAvailableActions= (opt_module: any)=> {
+            getAvailableActions= (opt_module?: any)=> {
                 // Send request
                 if (this.AVAILABLE_ACTIONS_ === null) {
                     var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : this.DEFAULT_MODULE;

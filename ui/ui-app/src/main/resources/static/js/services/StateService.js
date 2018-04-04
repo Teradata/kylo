@@ -5,13 +5,13 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
         function StateService($state) {
             var _this = this;
             this.$state = $state;
-            this.AuthStates = function () {
+            var AuthStates = function () {
                 var data = {};
                 /**
                  * Navigates to the Groups page.
                  */
                 data.navigateToGroups = function () {
-                    _this.$state.go("groups");
+                    $state.go("groups");
                 };
                 /**
                  * Navigates to the Group Details page.
@@ -20,13 +20,13 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                  */
                 data.navigateToGroupDetails = function (opt_groupId) {
                     var safeGroupId = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
-                    _this.$state.go("group-details", { groupId: safeGroupId });
+                    $state.go("group-details", { groupId: safeGroupId });
                 };
                 /**
                  * Navigates to the Users page.
                  */
                 data.navigateToUsers = function () {
-                    _this.$state.go("users");
+                    $state.go("users");
                 };
                 /**
                  * Navigates to the User Details page.
@@ -35,7 +35,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                  */
                 data.navigateToUserDetails = function (opt_userId) {
                     var safeUserId = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
-                    _this.$state.go("user-details", { userId: safeUserId });
+                    $state.go("user-details", { userId: safeUserId });
                 };
                 return data;
             };
@@ -260,7 +260,8 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             };
             var States = function () {
                 var data = {};
-                data.Auth = _this.AuthStates;
+                data.Auth = AuthStates;
+                _this.Auth = AuthStates;
                 data.Search = SearchStates;
                 data.FeedManager = FeedManagerStates;
                 data.OpsManager = OpsManagerStates;
