@@ -1,32 +1,120 @@
-define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../../module-name", "../../../constants/AccessConstants", "../../module", "../../module-require"], function (require, exports, angular, _, module_name_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var GroupDetailsController = /** @class */ (function () {
-        function GroupDetailsController($scope, $mdDialog, $mdToast, $transition$, AccessControlService, UserService, StateService) {
+        function GroupDetailsController($scope, $mdDialog, $mdToast, 
+            //private $transition$: Transition,
+            AccessControlService, UserService, StateService) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
-            this.$transition$ = $transition$;
             this.AccessControlService = AccessControlService;
             this.UserService = UserService;
             this.StateService = StateService;
             this.$error = { duplicateName: false, missingName: false };
-            this.allowAdmin = false; // Indicates that admin operations are allowed  {boolean}
-            this.editModel = {}; //User model for the edit view {UserPrincipal}
-            this.groupMap = {}; //Map of group system names to group objects {Object.<string, GroupPrincipal>}
-            this.isEditable = false; //Indicates if the edit view is displayed  {boolean}
-            this.isValid = false; //Indicates if the edit form is valid {boolean}
+            /**
+             * Indicates that admin operations are allowed.
+             * @type {boolean}
+             */
+            this.allowAdmin = false;
+            /**
+            * User model for the edit view.
+            * @type {UserPrincipal}
+            */
+            this.editModel = {};
+            /**
+             * Map of group system names to group objects.
+             * @type {Object.<string, GroupPrincipal>}
+             */
+            this.groupMap = {};
+            /**
+             * Indicates if the edit view is displayed.
+             * @type {boolean}
+             */
+            this.isEditable = false;
+            /**
+            * Indicates if the edit form is valid.
+            * @type {boolean}
+            */
+            this.isValid = false;
             this.groupId = this.$transition$.params().groupId;
-            this.loading = true; //Indicates that the user is currently being loaded {boolean}
-            this.model = { description: null, memberCount: 0, systemName: null, title: null }; //User model for the read-only view {UserPrincipal}
-            this.actions = []; // List of actions allowed to the group. //  @type {Array.<Action>}
-            this.allowUsers = false; // Indicates that user operations are allowed. //boolean
-            this.editActions = []; // Editable list of actions allowed to the group. //@type {Array.<Action>}
-            this.isPermissionsEditable = false; //Indicates if the permissions edit view is displayed.// @type {boolean}
-            this.users = []; // Users in the group. // @type {Array.<UserPrincipal>}
+            /**
+            * Indicates that the user is currently being loaded.
+            * @type {boolean}
+            */
+            this.loading = true;
+            /**
+             * User model for the read-only view.
+             * @type {UserPrincipal}
+             */
+            this.model = { description: null, memberCount: 0, systemName: null, title: null };
+            /**
+            * List of actions allowed to the group.
+            * @type {Array.<Action>}
+            */
+            this.actions = [];
+            /**
+             * Indicates that user operations are allowed.
+             * @type boolean
+             */
+            this.allowUsers = false;
+            /**
+             * Editable list of actions allowed to the group.
+             * @type {Array.<Action>}
+             */
+            this.editActions = [];
+            /**
+             * Indicates if the permissions edit view is displayed.
+             * @type {boolean}
+             */
+            this.isPermissionsEditable = false;
+            /**
+             *  Users in the group.
+             * @type {Array.<UserPrincipal>}
+             */
+            this.users = [];
+            /**
+             * Loads the user details.
+             */
+            this.onLoad = function () {
+                // Load allowed permissions
+                _this.AccessControlService.getUserAllowedActions()
+                    .then(function (actionSet) {
+                    _this.allowAdmin = _this.AccessControlService.hasAction(AccessConstants_1.default.GROUP_ADMIN, actionSet.actions);
+                    _this.allowUsers = _this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actionSet.actions);
+                });
+                // Fetch group details
+                if (angular.isString(_this.$transition$.params().groupId)) {
+                    _this.UserService.getGroup(_this.$transition$.params().groupId)
+                        .then(function (group) {
+                        _this.model = group;
+                        _this.loading = false; // _this
+                    });
+                    _this.UserService.getUsersByGroup(_this.$transition$.params().groupId)
+                        .then(function (users) {
+                        _this.users = users;
+                    });
+                    _this.AccessControlService.getAllowedActions(null, null, _this.$transition$.params().groupId)
+                        .then(function (actionSet) {
+                        _this.actions = actionSet.actions;
+                    });
+                }
+                else {
+                    _this.onEdit();
+                    _this.isEditable = true;
+                    _this.loading = false;
+                    _this.UserService.getGroups().then(function (groups) {
+                        this.groupMap = {};
+                        angular.forEach(groups, function (group) {
+                            this.groupMap[group.systemName] = true;
+                        });
+                    });
+                }
+            };
             /**
              * Navigates to the details page for the specified user.
+             *
              * @param user the user
              */
             this.onUserClick = function (user) {
@@ -57,20 +145,25 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         ;
         /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
+         *
          * @returns {boolean} {@code true} if the user can be deleted, or {@code false} otherwise
          */
         GroupDetailsController.prototype.canDelete = function () {
             return (this.model.systemName !== null);
         };
         ;
-        //Cancels the current edit operation. If a new user is being created then redirects to the users page.
+        /**
+         * Cancels the current edit operation. If a new user is being created then redirects to the users page.
+         */
         GroupDetailsController.prototype.onCancel = function () {
             if (this.model.systemName === null) {
                 this.StateService.Auth().navigateToGroups();
             }
         };
         ;
-        // Deletes the current user.
+        /**
+         * Deletes the current user.
+         */
         GroupDetailsController.prototype.onDelete = function () {
             var _this = this;
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
@@ -90,54 +183,23 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             });
         };
         ;
+        /**
         //  * Creates a copy of the user model for editing.
+         */
         GroupDetailsController.prototype.onEdit = function () {
             this.editModel = angular.copy(this.model);
         };
         ;
-        //Creates a copy of the permissions for editing.
+        /**
+            * Creates a copy of the permissions for editing.
+            */
         GroupDetailsController.prototype.onEditPermissions = function () {
             this.editActions = angular.copy(this.actions);
         };
         ;
-        // Loads the user details.
-        GroupDetailsController.prototype.onLoad = function () {
-            var _this = this;
-            // Load allowed permissions
-            this.AccessControlService.getUserAllowedActions()
-                .then(function (actionSet) {
-                _this.allowAdmin = _this.AccessControlService.hasAction(_this.AccessControlService.GROUP_ADMIN, actionSet.actions);
-                _this.allowUsers = _this.AccessControlService.hasAction(_this.AccessControlService.USERS_ACCESS, actionSet.actions);
-            });
-            // Fetch group details
-            if (angular.isString(this.$transition$.params().groupId)) {
-                this.UserService.getGroup(this.$transition$.params().groupId)
-                    .then(function (group) {
-                    _this.model = group;
-                    _this.loading = false; // _this
-                });
-                this.UserService.getUsersByGroup(this.$transition$.params().groupId)
-                    .then(function (users) {
-                    _this.users = users;
-                });
-                this.AccessControlService.getAllowedActions(null, null, this.$transition$.params().groupId)
-                    .then(function (actionSet) {
-                    _this.actions = actionSet.actions;
-                });
-            }
-            else {
-                this.onEdit();
-                this.isEditable = true;
-                this.loading = false;
-                this.UserService.getGroups().then(function (groups) {
-                    this.groupMap = {};
-                    angular.forEach(groups, function (group) {
-                        this.groupMap[group.systemName] = true;
-                    });
-                });
-            }
-        };
-        ;
+        /**
+             * Saves the current group.
+             */
         GroupDetailsController.prototype.onSave = function () {
             var _this = this;
             var model = angular.copy(this.editModel);
@@ -160,9 +222,19 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             });
         };
         ;
+        GroupDetailsController.$inject = ["$scope", "$mdDialog", "$mdToast",
+            "AccessControlService", "UserService", "StateService"];
         return GroupDetailsController;
     }());
     exports.default = GroupDetailsController;
-    angular.module(module_name_1.moduleName).controller('GroupDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", GroupDetailsController]);
+    angular.module(module_name_1.moduleName)
+        .component("groupDetailsController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: GroupDetailsController,
+        controllerAs: "vm",
+        templateUrl: "js/auth/groups/group-details/group-details.html"
+    });
 });
 //# sourceMappingURL=GroupDetailsController.js.map
