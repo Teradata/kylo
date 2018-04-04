@@ -1,27 +1,39 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import {moduleName} from "../../module-name";
+import AccessControlService from "../../../services/AccessControlService";
 export interface IMyScope extends ng.IScope {
   model?: any;
   readOnly?: boolean;
 }
-export  class PermissionsTableController implements ng.IComponentController {
-    available:any = [];  //List of available actions to be displayed {Array.<ActionState>}
-    lastModel: any = []; //Copy of model for detecting outside changes {Array.<Action>}
-    roots: any  = []; //List of top-level available actions  {Array.<ActionState>}
-        
+export default class PermissionsTableController implements ng.IComponentController {
+    /**
+     * List of available actions to be displayed.
+     * @type {Array.<ActionState>}
+     */
+        available:any = [];
+
+    /**
+     * Copy of model for detecting outside changes.
+     * @type {Array.<Action>}
+     */
+    lastModel: any = [];
+
+    /**
+     * List of top-level available actions.
+     * @type {Array.<ActionState>}
+     */
+    roots: any  = [];
+    static readonly $inject = ["$scope", "AccessControlService"];     
     constructor (private $scope:IMyScope,
-                 private AccessControlService:any) {
+                 private AccessControlService:AccessControlService) {
         // Watch for changes to the model
         $scope.$watch(() => { return $scope.model;},
                       () => { this.refresh();}
                       );
           // Fetch the list of available actions
-       this.getAvailableActions();
-    }
-    
-    getAvailableActions(){
-        this.AccessControlService.getAvailableActions().then((actionSet:any)=> {
+      // this.getAvailableActions();
+       AccessControlService.getAvailableActions().then((actionSet:any)=> {
                             angular.forEach(actionSet.actions, (action:any)=> 
                                                     {var state = this.addAction(action, 0, null);
                                                      this.roots.push(state);
@@ -148,12 +160,18 @@ export  class PermissionsTableController implements ng.IComponentController {
         };   
 }
 
-angular.module(moduleName).controller("PermissionsTableController",["$scope", "AccessControlService", PermissionsTableController]);
+angular.module(moduleName).component("permissionsTableController",
+{
+        controller: PermissionsTableController,
+        controllerAs: "vm",
+        //templateUrl: "js/auth/shared/permissions-table/permissions-table.html"
+});
+//angular.module(moduleName).controller("PermissionsTableController",[PermissionsTableController]);
 /* Creates a directive for displaying and editing permissions.
  * @returns {Object} the directive */
 angular.module(moduleName).directive("thinkbigPermissionsTable", 
   [ () => { return {
-            controller: "PermissionsTableController",
+            controller: PermissionsTableController,
             controllerAs: "vm",
             require: "ngModel",
             restrict: "E",

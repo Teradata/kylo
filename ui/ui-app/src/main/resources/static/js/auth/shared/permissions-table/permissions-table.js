@@ -6,9 +6,21 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             var _this = this;
             this.$scope = $scope;
             this.AccessControlService = AccessControlService;
-            this.available = []; //List of available actions to be displayed {Array.<ActionState>}
-            this.lastModel = []; //Copy of model for detecting outside changes {Array.<Action>}
-            this.roots = []; //List of top-level available actions  {Array.<ActionState>}
+            /**
+             * List of available actions to be displayed.
+             * @type {Array.<ActionState>}
+             */
+            this.available = [];
+            /**
+             * Copy of model for detecting outside changes.
+             * @type {Array.<Action>}
+             */
+            this.lastModel = [];
+            /**
+             * List of top-level available actions.
+             * @type {Array.<ActionState>}
+             */
+            this.roots = [];
             /**
                * Adds any allowed actions in the specified list to the model.
                * @param {Array.<ActionState>} actions the list of actions
@@ -62,18 +74,15 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             // Watch for changes to the model
             $scope.$watch(function () { return $scope.model; }, function () { _this.refresh(); });
             // Fetch the list of available actions
-            this.getAvailableActions();
-        }
-        PermissionsTableController.prototype.getAvailableActions = function () {
-            var _this = this;
-            this.AccessControlService.getAvailableActions().then(function (actionSet) {
+            // this.getAvailableActions();
+            AccessControlService.getAvailableActions().then(function (actionSet) {
                 angular.forEach(actionSet.actions, function (action) {
                     var state = _this.addAction(action, 0, null);
                     _this.roots.push(state);
                 });
                 _this.refresh();
             });
-        };
+        }
         /**
       * Returns an array containing the specified number of elements.
       * @param {number} n the number of elements for the array
@@ -132,15 +141,20 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             }
         };
         ;
+        PermissionsTableController.$inject = ["$scope", "AccessControlService"];
         return PermissionsTableController;
     }());
-    exports.PermissionsTableController = PermissionsTableController;
-    angular.module(module_name_1.moduleName).controller("PermissionsTableController", ["$scope", "AccessControlService", PermissionsTableController]);
+    exports.default = PermissionsTableController;
+    angular.module(module_name_1.moduleName).component("permissionsTableController", {
+        controller: PermissionsTableController,
+        controllerAs: "vm",
+    });
+    //angular.module(moduleName).controller("PermissionsTableController",[PermissionsTableController]);
     /* Creates a directive for displaying and editing permissions.
      * @returns {Object} the directive */
     angular.module(module_name_1.moduleName).directive("thinkbigPermissionsTable", [function () {
             return {
-                controller: "PermissionsTableController",
+                controller: PermissionsTableController,
                 controllerAs: "vm",
                 require: "ngModel",
                 restrict: "E",
