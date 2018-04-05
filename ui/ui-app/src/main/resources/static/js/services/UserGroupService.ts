@@ -23,22 +23,20 @@ import {moduleName} from './module-name';
 import CommonRestUrlService from "./CommonRestUrlService";
 
 export default class UserGroupService{
+    currentUser: any = null;
 /**
  * Interacts with the Users REST API.
  * @constructor
  */
-UserGroupService() {
+
+constructor (private $http: any,
+            private $q: any,
+            private CommonRestUrlService: any) {
+        //angular.extend(UserGroupService.prototype, 
+       // });
 }
-constructor (private $http?: any,
-            private $q?: any,
-            private CommonRestUrlService?: any) {
-
-        var currentUser: any = null;
-        angular.extend(UserGroupService.prototype, {
-
-            getCurrentUser: function(){
-                var deferred: any = $q.defer();
-
+           getCurrentUser(){
+                var deferred: any = this.$q.defer();
                 var user : any= {
                     "displayName": null,
                     "email": null,
@@ -47,19 +45,19 @@ constructor (private $http?: any,
                     "systemName": null
                 };
 
-                if(currentUser == null){
-                    $http.get("/proxy/v1/about/me").then(function (response: any) {
-                            currentUser = response.data;
-                            deferred.resolve(currentUser);
-                    },function(response: any) {
+                if(this.currentUser == null){
+                    this.$http.get("/proxy/v1/about/me").then((response: any)=>{
+                            this.currentUser = response.data;
+                            deferred.resolve(this.currentUser);
+                    },(response: any)=> {
                         deferred.reject(response);
                     });
                 }
                 else {
-                    deferred.resolve(currentUser);
+                    deferred.resolve(this.currentUser);
                 }
                 return deferred.promise;
-            },
+            }
 
             /**
              * Gets metadata for the specified group.
@@ -67,24 +65,24 @@ constructor (private $http?: any,
              * @param {string} groupId the system name
              * @returns {GroupPrincipal} the group
              */
-            getGroup: function (groupId: any) {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId))
+            getGroup(groupId: any) {
+                return this.$http.get(this.CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId))
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets metadata on all groups.
              *
              * @returns {Promise} with the list of groups
              */
-            getGroups: function () {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL)
+            getGroups() {
+                return this.$http.get(this.CommonRestUrlService.SECURITY_GROUPS_URL)
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets metadata for the specified user.
@@ -92,24 +90,24 @@ constructor (private $http?: any,
              * @param {string} userId the system name
              * @returns {UserPrincipal} the user
              */
-            getUser: function (userId: any) {
-                return $http.get(CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId))
+            getUser(userId: any) {
+                return this.$http.get(this.CommonRestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId))
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets metadata on all users.
              *
              * @returns {Array.<UserPrincipal>} the users
              */
-            getUsers: function () {
-                return $http.get(CommonRestUrlService.SECURITY_USERS_URL)
+            getUsers() {
+                return this.$http.get(this.CommonRestUrlService.SECURITY_USERS_URL)
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets metadata for all users in the specified group.
@@ -117,14 +115,12 @@ constructor (private $http?: any,
              * @param groupId the system name of the group
              * @returns {Array.<UserPrincipal>} the users
              */
-            getUsersByGroup: function (groupId: any) {
-                return $http.get(CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId) + "/users")
+            getUsersByGroup(groupId: any) {
+                return this.$http.get(this.CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId) + "/users")
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
-        });
-}
+            }
 }
  angular.module(moduleName)
  .service('CommonRestUrlService',CommonRestUrlService)
