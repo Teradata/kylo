@@ -278,6 +278,10 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                 };
                 return data;
             };
+            this.Auth = AuthStates;
+            this.FeedManager = FeedManagerStates;
+            this.OpsManager = OpsManagerStates;
+            this.Search = SearchStates;
             return new States;
         }
         return StateService;

@@ -26,6 +26,9 @@ import {moduleName} from './module-name';
 
 export default class StateService{
     Auth: any;
+    FeedManager: any;
+    OpsManager: any;
+    Search: any;
     constructor (private $state: any){
         var AuthStates = function(){
             var data: any = {}
@@ -333,6 +336,10 @@ export default class StateService{
             };
             return data;
         }
+        this.Auth = AuthStates;
+        this.FeedManager = FeedManagerStates;
+        this.OpsManager = OpsManagerStates;
+        this.Search = SearchStates;
 
         return new States;
 } 

@@ -22,16 +22,17 @@ import {moduleName} from './module-name';
 import CommonRestUrlService from "./CommonRestUrlService";
 
 export default class SearchService{
+data: any = {
+searchQuery: '',
+search: function (query: any, rows: any, start: any) {
+    return this.performSearch(query, rows, start);
+    }
+};
 constructor (private $q: any,
             private $http: any,
             private CommonRestUrlService: any) {
-            var data: any = {
-            searchQuery: '',
-            search: function (query: any, rows: any, start: any) {
-                return this.performSearch(query, rows, start);
-                }
-            };
-        return data;
+          
+        return this.data;
 
 }
  performSearch=(query: any, rowsPerPage: any, start: any)=>{
