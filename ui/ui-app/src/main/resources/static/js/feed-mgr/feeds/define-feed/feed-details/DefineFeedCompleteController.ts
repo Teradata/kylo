@@ -5,73 +5,62 @@ const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export default class DefineFeedCompleteController {
 
-    model:any;
-    error:any;
-    isValid:any;
-    onAddServiceLevelAgreement:any;
-    onViewDetails:any;
-    onViewFeedsList:any;
-    gotIt:any;
+    model: any;
+    error: any;
+    isValid: any;
 
+    // static readonly $inject = ["$scope", "$q", "$http", "$mdToast", "$transition$", "RestUrlService", "FeedService", "StateService"];
 
-    constructor(private $scope:any, private $q:any, private $http:any, private $mdToast:any,private $transition$:any, private RestUrlService:any, private FeedService:any, private StateService:any) {
-        var self = this;
-       // self.model = $transition$.params().feedModel;
-       // self.error = $transition$.params().error;
-        self.model = $transition$.params().feedModel;
-        self.error = $transition$.params().error;
+    constructor(private $scope: any, private $q: any, private $http: any, private $mdToast: any, private $transition$: any, private RestUrlService: any, private FeedService: any, private StateService: any) {
 
-        self.isValid = self.error == null;
+        this.model = $transition$.params().feedModel;
+        this.error = $transition$.params().error;
 
-        /**
+        this.isValid = this.error == null;
+             
+    };
+
+    /**
          * Gets the feed id from the FeedService
          * @returns {*}
-         */
-        function getFeedId() {
-            var feedId = self.model != null ? self.model.id : null;
-            if (feedId == null && FeedService.createFeedModel != null) {
-                feedId = FeedService.createFeedModel.id;
-            }
-            if (feedId == null && FeedService.editFeedModel != null) {
-                feedId = FeedService.editFeedModel.id;
-            }
-            return feedId;
+    */
+    getFeedId() {
+        var feedId = this.model != null ? this.model.id : null;
+        if (feedId == null && this.FeedService.createFeedModel != null) {
+            feedId = this.FeedService.createFeedModel.id;
         }
+        if (feedId == null && this.FeedService.editFeedModel != null) {
+            feedId = this.FeedService.editFeedModel.id;
+        }
+        return feedId;
+    }
+    /**
+        * Navigate to the Feed Details first tab
+    */
+    onViewDetails() {
+        var feedId = this.getFeedId();
+        this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 0);
+    }
+    gotIt() {
+        this.onViewFeedsList();
+    }
 
-        /**
-         * Navigate to the Feed Details SLA tab
-         */
-        this.onAddServiceLevelAgreement = function () {
-            //navigate to Feed Details and move to the 3 tab (SLA)
-            var feedId = getFeedId();
-            StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
-        }
-        this.onViewDetails = function () {
-            StateService.FeedManager().Sla().navigateToServiceLevelAgreements();
-        }
-
-        /**
-         * Navigate to the Feed Details first tab
-         */
-        this.onViewDetails = function () {
-            var feedId = getFeedId();
-            StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 0);
-        }
-
-        /**
+    /**
          * Navigate to the Feed List page
          */
-        this.onViewFeedsList = function () {
-            FeedService.resetFeed();
-            StateService.FeedManager().Feed().navigateToFeeds();
-        }
+    onViewFeedsList() {
+        this.FeedService.resetFeed();
+        this.StateService.FeedManager().Feed().navigateToFeeds();
+    }
 
-        this.gotIt = function () {
-            self.onViewFeedsList();
-        }
-
-    };    
+    /**
+         * Navigate to the Feed Details SLA tab
+    */
+    onAddServiceLevelAgreement = function () {
+        //navigate to Feed Details and move to the 3 tab (SLA)
+        var feedId = this.getFeedId(this.FeedService);
+        this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
+    }
 }
 
 angular.module(moduleName).controller('DefineFeedCompleteController', ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService",DefineFeedCompleteController]);
-
