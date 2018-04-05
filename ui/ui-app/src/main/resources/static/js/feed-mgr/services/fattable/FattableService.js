@@ -80,6 +80,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }
         };
         self.setupTable = function (options) {
+            var topLeftVisibleCell;
             var optionsCopy = _.clone(options);
             var settings = _.defaults(optionsCopy, optionDefaults);
             var tableData = new fattable.SyncTableModel();
@@ -110,16 +111,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 tableData.columnHeaders.push(headerText);
             });
             painter.setupHeader = function (div) {
-                console.log("setupHeader");
-                var separator = angular.element('<span class="separator" draggable="true"></span>');
-                separator
-                    .on("dragstart", function (event) { return dragstart(separator, event); })
-                    .on("drag", function (event) { return drag(separator, event); })
-                    .on("dragend", function (event) { return dragend(separator, event); });
-                var heading = angular.element('<span class="value"></span>');
+                // console.log("setupHeader");
+                var separator = angular.element('<div class="header-separator"></div>');
+                separator.on("mousedown", function (event) { return mousedown(separator, event); });
+                var heading = angular.element('<div class="header-value"></div>');
                 var headerDiv = angular.element(div);
-                headerDiv.css('display', 'flex');
-                headerDiv.css('justify-content', 'space-between');
+                // headerDiv.css('display', 'flex');
+                // headerDiv.css('justify-content', 'space-between');
                 headerDiv.append(heading).append(separator);
             };
             painter.fillCell = function (div, data) {
@@ -138,7 +136,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 settings.fillCell(div, data);
             };
             painter.fillHeader = function (div, header) {
-                console.log('fill header', header);
+                // console.log('fill header', header);
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
                 div.style.fontWeight = "bold";
@@ -172,66 +170,72 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 "painter": painter,
                 "columnWidths": columnWidths
             };
-            // let x = 0;
-            // let y = 0;
-            // function onScroll(scrollX: number, scrollY: number) {
-            //     console.log("scrolling to x,y", x, y);
-            //     x = scrollX;
-            //     y = scrollY;
-            // }
-            self.table = fattable(parameters);
-            self.table.setup();
-            // self.table.onScroll = onScroll;
-            // window.setInterval(changeWidth, 5000, table);
-            function changeWidth(table) {
-                // console.log('widening first column');
-                // columnWidths[0] = columnWidths[0] + 10;
-                // table.cleanUp();
-                // table = fattable(parameters);
-                // table.setup();
-                // table.onScroll = onScroll;
-                // console.log('resetting to x,y', x, y);
-                // const cells = table.leftTopCornerFromXY(x, y);
-                // console.log('resetting to cells', cells);
-                // table.goTo(cells[0],cells[1]);
-                // table.refreshAllContent(true);
-                // table.setup();
+            function onScroll(x, y) {
+                topLeftVisibleCell = self.table.leftTopCornerFromXY(x, y);
+                //correct fattable's visible column x position
+                topLeftVisibleCell[1] = _.sortedIndex(self.table.columnOffset, x);
             }
+            self.table = fattable(parameters);
+            self.table.onScroll = onScroll;
+            self.table.setup();
             function getColumnId(separatorSpan) {
                 return separatorSpan.attr(ATTR_DATA_COLUMN_ID);
             }
             function setColumnId(separatorSpan, id) {
                 separatorSpan.attr(ATTR_DATA_COLUMN_ID, id);
             }
-            function dragstart(separator, event) {
+            function mousedown(separator, e) {
+                e.preventDefault(); //prevent default action of selecting text
                 var columnId = getColumnId(separator);
-                console.log('dragstart header, event/columnId', event, columnId);
-                self.dragstartX = event.originalEvent.x;
-                self.dragstartColumnWidth = self.table.columnWidths[columnId];
-            }
-            function drag(separator, event) {
-                var columnId = getColumnId(separator);
-                console.log('drag header, event/columnId', event, columnId);
-                var dragX = event.originalEvent.x;
-                //todo use for visual feedback
-            }
-            function dragend(separator, event) {
-                var columnId = getColumnId(separator);
-                console.log('dragend header, event/columnId', event, columnId);
-                var dragendX = event.originalEvent.x;
-                var newWidth = self.dragstartColumnWidth + (dragendX - self.dragstartX);
-                resizeColumn(columnId, newWidth < settings.minColumnWidth ? settings.minColumnWidth : newWidth);
+                e = e || window.event;
+                var start = 0, diff = 0, newWidth = 0;
+                if (e.pageX) {
+                    start = e.pageX;
+                }
+                else if (e.clientX) {
+                    start = e.clientX;
+                }
+                var headerDiv = separator.parent();
+                headerDiv.css("z-index", "1"); //to hide other columns behind the one being resized
+                var headerElem = headerDiv.get(0);
+                var initialHeaderWidth = headerElem.offsetWidth;
+                document.body.style.cursor = "col-resize";
+                document.body.onmousemove = function (e) {
+                    e = e || window.event;
+                    var end = 0;
+                    if (e.pageX) {
+                        end = e.pageX;
+                    }
+                    else if (e.clientX) {
+                        end = e.clientX;
+                    }
+                    diff = end - start;
+                    var width = initialHeaderWidth + diff;
+                    newWidth = width < settings.minColumnWidth ? settings.minColumnWidth : width;
+                    headerElem.style.width = newWidth + "px";
+                };
+                document.body.onmouseup = function () {
+                    document.body.onmousemove = document.body.onmouseup = null;
+                    headerDiv.css("z-index", "unset");
+                    document.body.style.cursor = null;
+                    resizeColumn(columnId, newWidth);
+                };
             }
             function resizeColumn(columnId, columnWidth) {
-                console.log('resize to new width', columnWidth);
+                var scrolledCellX = topLeftVisibleCell[0];
+                var scrolledCellY = topLeftVisibleCell[1];
+                // console.log('resize to new width', columnWidth);
                 self.table.columnWidths[columnId] = columnWidth;
                 var columnOffset = _.reduce(self.table.columnWidths, function (memo, width) {
                     memo.push(memo[memo.length - 1] + width);
                     return memo;
                 }, [0]);
+                // console.log('columnWidths, columnOffset', columnWidths, columnOffset);
                 self.table.columnOffset = columnOffset;
                 self.table.W = columnOffset[columnOffset.length - 1];
                 self.table.setup();
+                // console.log('displaying cells', scrolledCellX, scrolledCellY);
+                self.table.goTo(scrolledCellX, scrolledCellY);
             }
             var eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);

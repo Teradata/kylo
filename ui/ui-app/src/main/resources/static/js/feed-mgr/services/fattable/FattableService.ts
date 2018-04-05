@@ -28,9 +28,10 @@
  *
  */
 
- 
+
 import * as angular from 'angular';
 import * as _ from "underscore";
+
 const moduleName = require('feed-mgr/module-name');
 
 // export class FattableService {
@@ -87,6 +88,8 @@ const moduleName = require('feed-mgr/module-name');
         };
 
         self.setupTable = function(options:any) {
+            let topLeftVisibleCell:number[];
+
             const optionsCopy = _.clone(options);
             const settings = _.defaults(optionsCopy, optionDefaults);
 
@@ -124,19 +127,15 @@ const moduleName = require('feed-mgr/module-name');
             });
 
             painter.setupHeader = function (div) {
-                console.log("setupHeader");
-                const separator = angular.element('<span class="separator" draggable="true"></span>');
-                separator
-                    .on("dragstart", event => dragstart(separator, event))
-                    .on("drag", event => drag(separator, event))
-                    .on("dragend", event => dragend(separator, event))
-                ;
+                // console.log("setupHeader");
+                const separator = angular.element('<div class="header-separator"></div>');
+                separator.on("mousedown", event => mousedown(separator, event));
 
-                const heading = angular.element('<span class="value"></span>');
+                const heading = angular.element('<div class="header-value"></div>');
 
                 const headerDiv = angular.element(div);
-                headerDiv.css('display', 'flex');
-                headerDiv.css('justify-content', 'space-between');
+                // headerDiv.css('display', 'flex');
+                // headerDiv.css('justify-content', 'space-between');
 
                 headerDiv.append(heading).append(separator);
             };
@@ -158,7 +157,7 @@ const moduleName = require('feed-mgr/module-name');
             };
 
             painter.fillHeader = function(div: any, header: any) {
-                console.log('fill header', header);
+                // console.log('fill header', header);
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
                 div.style.fontWeight = "bold";
@@ -198,35 +197,14 @@ const moduleName = require('feed-mgr/module-name');
                 "columnWidths": columnWidths
             };
 
-            // let x = 0;
-            // let y = 0;
-            // function onScroll(scrollX: number, scrollY: number) {
-            //     console.log("scrolling to x,y", x, y);
-            //     x = scrollX;
-            //     y = scrollY;
-            // }
-            self.table = fattable(parameters);
-            self.table.setup();
-            // self.table.onScroll = onScroll;
-
-            // window.setInterval(changeWidth, 5000, table);
-            function changeWidth(table: any) {
-                // console.log('widening first column');
-                // columnWidths[0] = columnWidths[0] + 10;
-
-                // table.cleanUp();
-                // table = fattable(parameters);
-                // table.setup();
-                // table.onScroll = onScroll;
-                // console.log('resetting to x,y', x, y);
-                // const cells = table.leftTopCornerFromXY(x, y);
-                // console.log('resetting to cells', cells);
-                // table.goTo(cells[0],cells[1]);
-
-                // table.refreshAllContent(true);
-                // table.setup();
-
+            function onScroll(x: number, y: number) {
+                topLeftVisibleCell = self.table.leftTopCornerFromXY(x, y);
+                //correct fattable's visible column x position
+                topLeftVisibleCell[1] = _.sortedIndex(self.table.columnOffset, x);
             }
+            self.table = fattable(parameters);
+            self.table.onScroll = onScroll;
+            self.table.setup();
 
             function getColumnId(separatorSpan:any) {
                 return separatorSpan.attr(ATTR_DATA_COLUMN_ID);
@@ -236,36 +214,61 @@ const moduleName = require('feed-mgr/module-name');
                 separatorSpan.attr(ATTR_DATA_COLUMN_ID, id);
             }
 
-            function dragstart(separator:any, event:any) {
+            function mousedown(separator:any, e:any) {
+                e.preventDefault(); //prevent default action of selecting text
+
                 const columnId = getColumnId(separator);
-                console.log('dragstart header, event/columnId', event, columnId);
-                self.dragstartX = event.originalEvent.x;
-                self.dragstartColumnWidth = self.table.columnWidths[columnId];
-            }
-            function drag(separator:any, event:any) {
-                const columnId = getColumnId(separator);
-                console.log('drag header, event/columnId', event, columnId);
-                const dragX = event.originalEvent.x;
-                //todo use for visual feedback
-            }
-            function dragend(separator:any, event:any) {
-                const columnId = getColumnId(separator);
-                console.log('dragend header, event/columnId', event, columnId);
-                const dragendX = event.originalEvent.x;
-                const newWidth = self.dragstartColumnWidth + (dragendX - self.dragstartX);
-                resizeColumn(columnId, newWidth < settings.minColumnWidth ? settings.minColumnWidth : newWidth);
+                e = e || window.event;
+                let start = 0, diff = 0, newWidth = 0;
+                if (e.pageX) {
+                    start = e.pageX;
+                } else if (e.clientX) {
+                    start = e.clientX;
+                }
+
+                const headerDiv = separator.parent();
+                headerDiv.css("z-index", "1"); //to hide other columns behind the one being resized
+                const headerElem = headerDiv.get(0);
+                const initialHeaderWidth = headerElem.offsetWidth;
+                document.body.style.cursor = "col-resize";
+                document.body.onmousemove = function (e) {
+                    e = e || window.event;
+                    let end = 0;
+                    if (e.pageX) {
+                        end = e.pageX;
+                    } else if (e.clientX) {
+                        end = e.clientX;
+                    }
+
+                    diff = end - start;
+                    const width = initialHeaderWidth + diff;
+                    newWidth = width < settings.minColumnWidth ? settings.minColumnWidth : width;
+                    headerElem.style.width = newWidth + "px";
+                };
+                document.body.onmouseup = function () {
+                    document.body.onmousemove = document.body.onmouseup = null;
+                    headerDiv.css("z-index", "unset");
+                    document.body.style.cursor = null;
+                    resizeColumn(columnId, newWidth);
+                };
             }
 
             function resizeColumn(columnId: number, columnWidth: number) {
-                console.log('resize to new width', columnWidth);
+                const scrolledCellX = topLeftVisibleCell[0];
+                const scrolledCellY = topLeftVisibleCell[1];
+                // console.log('resize to new width', columnWidth);
                 self.table.columnWidths[columnId] = columnWidth;
                 const columnOffset = _.reduce((self.table.columnWidths as number[]), function (memo, width) {
                     memo.push(memo[memo.length - 1] + width);
                     return memo;
                 }, [0]);
+                // console.log('columnWidths, columnOffset', columnWidths, columnOffset);
                 self.table.columnOffset = columnOffset;
                 self.table.W = columnOffset[columnOffset.length - 1];
                 self.table.setup();
+
+                // console.log('displaying cells', scrolledCellX, scrolledCellY);
+                self.table.goTo(scrolledCellX, scrolledCellY);
             }
 
             const eventId = "resize.fattable." + settings.tableContainerId;
