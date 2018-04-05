@@ -59,7 +59,6 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             else {
                 $location.url("/home")
             }
-
         });
 
         $stateProvider
@@ -67,9 +66,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                 url: '/home',
                 views: {
                     "content": {
-                        templateUrl: "js/main/home.html",
-                        controller: 'HomeController',
-                        controllerAs: 'vm'
+                        //templateUrl: "js/main/home.html",
+                        component: 'homeController',
+                       // controllerAs: 'vm'
                     }
                 },
                 resolve: { // Any property in resolve should return a promise and is executed before the view is loaded
@@ -759,9 +758,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
            params:{attemptedState:null},
            views: {
                "content": {
-                   templateUrl: "js/main/access-denied.html",
-                   controller:'AccessDeniedController',
-                   controllerAs:'vm'
+                  // templateUrl: "js/main/access-denied.html",
+                   component:'acessDeniedController',
+                   //controllerAs:'vm'
                }
            },
            resolve: { // Any property in resolve should return a promise and is executed before the view is loaded

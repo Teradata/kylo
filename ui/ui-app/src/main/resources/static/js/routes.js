@@ -54,9 +54,8 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                 url: '/home',
                 views: {
                     "content": {
-                        templateUrl: "js/main/home.html",
-                        controller: 'HomeController',
-                        controllerAs: 'vm'
+                        //templateUrl: "js/main/home.html",
+                        component: 'homeController',
                     }
                 },
                 resolve: {
@@ -710,9 +709,8 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                 params: { attemptedState: null },
                 views: {
                     "content": {
-                        templateUrl: "js/main/access-denied.html",
-                        controller: 'AccessDeniedController',
-                        controllerAs: 'vm'
+                        // templateUrl: "js/main/access-denied.html",
+                        component: 'acessDeniedController',
                     }
                 },
                 resolve: {
