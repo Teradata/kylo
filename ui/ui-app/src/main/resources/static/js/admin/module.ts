@@ -1,13 +1,9 @@
 import * as angular from 'angular';
 import AccessConstants from '../constants/AccessConstants';
-//const lazyLoadUtil = require('../kylo-utils/LazyLoadUtil');
 import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
-//const codeMirrorRequire = require('../codemirror-require/module');
 import "../codemirror-require/module";
-import {KyloServicesModule} from "../services/services.module";
-//const moduleName =require("./module-name");
+import "../services/services.module";
 import {moduleName} from "./module-name";
-//export * from "../codemirror-require/module"; 
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -21,9 +17,9 @@ class ModuleFactory  {
             url:'/admin/jcr-query',
             views: {
                 'content': {
-                    templateUrl: 'js/admin/jcr/jcr-query.html',
-                    controller:"JcrQueryController",
-                    controllerAs:"vm"
+                    //templateUrl: 'js/admin/jcr/jcr-query.html',
+                    component:"jcrQueryController",
+                    //controllerAs:"vm"
                 }
             },
             resolve: {
@@ -41,9 +37,9 @@ class ModuleFactory  {
             url:'/admin/cluster',
             views: {
                 'content': {
-                    templateUrl: 'js/admin/cluster/cluster-test.html',
-                    controller:"ClusterController",
-                    controllerAs:"vm"
+                   // templateUrl: 'js/admin/cluster/cluster-test.html',
+                    component:"clusterController",
+                    //controllerAs:"vm"
                 }
             },
             resolve: {
@@ -69,7 +65,6 @@ class ModuleFactory  {
     lazyLoadController(path:any){
         return lazyLoadUtil.lazyLoadController(path,"admin/module-require");
     }
-
 } 
 const module = new ModuleFactory();
 export default module;

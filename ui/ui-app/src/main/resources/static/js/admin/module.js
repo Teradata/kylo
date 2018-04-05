@@ -1,7 +1,6 @@
-define(["require", "exports", "angular", "../constants/AccessConstants", "../kylo-utils/LazyLoadUtil", "./module-name", "../codemirror-require/module"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1, module_name_1) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "../kylo-utils/LazyLoadUtil", "./module-name", "../codemirror-require/module", "../services/services.module"], function (require, exports, angular, AccessConstants_1, LazyLoadUtil_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //export * from "../codemirror-require/module"; 
     var ModuleFactory = /** @class */ (function () {
         function ModuleFactory() {
             this.module = angular.module(module_name_1.moduleName, []);
@@ -13,9 +12,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 url: '/admin/jcr-query',
                 views: {
                     'content': {
-                        templateUrl: 'js/admin/jcr/jcr-query.html',
-                        controller: "JcrQueryController",
-                        controllerAs: "vm"
+                        //templateUrl: 'js/admin/jcr/jcr-query.html',
+                        component: "jcrQueryController",
                     }
                 },
                 resolve: {
@@ -32,9 +30,8 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "../kyl
                 url: '/admin/cluster',
                 views: {
                     'content': {
-                        templateUrl: 'js/admin/cluster/cluster-test.html',
-                        controller: "ClusterController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/admin/cluster/cluster-test.html',
+                        component: "clusterController",
                     }
                 },
                 resolve: {
