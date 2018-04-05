@@ -8,7 +8,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
             this.AccessControlService = AccessControlService;
-            // sql: string;
             this.sql = "";
             this.loading = false;
             this.errorMessage = null;
@@ -227,9 +226,16 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             return data;
         };
         ;
+        JcrQueryController.$inject = ["$scope", "$http", "$mdDialog", "$mdToast", "AccessControlService"];
         return JcrQueryController;
     }());
     exports.JcrQueryController = JcrQueryController;
-    angular.module(module_name_1.moduleName).controller("JcrQueryController", ["$scope", "$http", "$mdDialog", "$mdToast", "AccessControlService", JcrQueryController]);
+    angular.module(module_name_1.moduleName)
+        .component("jcrQueryController", {
+        controller: JcrQueryController,
+        controllerAs: "vm",
+        templateUrl: "js/admin/jcr/jcr-query.html"
+    });
 });
+//.controller("JcrQueryController", [JcrQueryController]);
 //# sourceMappingURL=JcrQueryController.js.map
