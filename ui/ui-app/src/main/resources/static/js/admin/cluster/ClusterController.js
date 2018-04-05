@@ -1,7 +1,6 @@
 define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    //const moduleName = require('../module-name');
     var ClusterController = /** @class */ (function () {
         function ClusterController($scope, $http, $mdDialog, $mdToast, $interval, AccessControlService) {
             var _this = this;
@@ -83,9 +82,15 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             this.setIsClustered();
             this.getMembers();
         };
+        ClusterController.$inject = ["$scope", "$http", "$mdDialog", "$mdToast", "$interval", "AccessControlService"];
         return ClusterController;
     }());
     exports.ClusterController = ClusterController;
-    angular.module(module_name_1.moduleName).controller("ClusterController", ["$scope", "$http", "$mdDialog", "$mdToast", "$interval", "AccessControlService", ClusterController]);
+    angular.module(module_name_1.moduleName).component("clusterController", {
+        controller: ClusterController,
+        controllerAs: "vm",
+        templateUrl: "js/admin/cluster/cluster-test.html"
+    });
 });
+//...controller("ClusterController", [ClusterController]);
 //# sourceMappingURL=ClusterController.js.map
