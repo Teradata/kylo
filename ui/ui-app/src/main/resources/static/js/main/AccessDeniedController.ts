@@ -1,13 +1,18 @@
 import * as angular from 'angular';
+import StateService from  "../services/StateService";
+import AccessControlService from "../services/AccessControlService";
+import {Transition} from "@uirouter/core";
 
 export class AccessDeniedController implements ng.IComponentController{
-constructor(
+    $transition$: Transition;
+    static readonly $inject = ["$scope","$mdDialog","AccessControlService","StateService"];
+    constructor(
         private $scope:angular.IScope,
-        private $mdDialog:any,
-        private AccessControlService:any,
-        private StateService:any,  
-        private  $transition$:any){
-
+        private $mdDialog:angular.material.IDialogService,
+        private AccessControlService:AccessControlService,
+        private StateService:StateService,  
+       // private  $transition$:any
+        ){
         var attemptedState = this.$transition$.params().attemptedState;
         if( attemptedState == undefined){
             attemptedState = {displayName:'the page'};
@@ -18,11 +23,10 @@ constructor(
         }
 }
 
-  angular.module('kylo').controller('AccessDeniedController', 
-                                    ["$scope", 
-                                    "$mdDialog", 
-                                    "AccessControlService", 
-                                    "StateService", 
-                                    "$transition$",
-                                    AccessDeniedController]);
+  angular.module('kylo').component("accessDeniedController", { 
+        controller: AccessDeniedController,
+        controllerAs: "vm",
+        templateUrl: "js/main/access-denied.html"
+    });
+  //.controller('AccessDeniedController',[AccessDeniedController]);
 

@@ -1,15 +1,17 @@
 import * as angular from 'angular';
-
+import StateService from  "../services/StateService";
+import AccessControlService from "../services/AccessControlService";
+import AccessConstants from "../constants/AccessConstants";
 export class HomeController implements ng.IComponentController{
-constructor(
+    static readonly $inject = ['$scope', '$mdDialog', 'AccessControlService','StateService'];
+    constructor(
         private $scope:angular.IScope,
-        private $mdDialog:any,
-        private AccessControlService:any,
-        private StateService:any,  
+        private $mdDialog:angular.material.IDialogService,
+        private AccessControlService:AccessControlService,
+        private StateService:StateService
         ){
-        //$scope, $mdDialog, AccessControlService, StateService
-          // Fetch the list of allowed actions
-       this.AccessControlService.getUserAllowedActions()
+        // Fetch the list of allowed actions
+       AccessControlService.getUserAllowedActions()
                                 .then((actionSet: any)=>{
                                     this.onLoad(actionSet.actions);
                                 });
@@ -18,7 +20,7 @@ constructor(
          * Indicates that the page is currently being loaded.
          * @type {boolean}
          */
-        loading = true;
+        loading: boolean = true;
 
         /**
          * Determines the home page based on the specified allowed actions.
@@ -27,22 +29,22 @@ constructor(
          */
         onLoad(actions: any) {
             // Determine the home page
-            if (this.AccessControlService.hasAction(this.AccessControlService.FEEDS_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.FEEDS_ACCESS, actions)) {
                 return this.StateService.FeedManager().Feed().navigateToFeeds();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_MANAGER_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.OPERATIONS_MANAGER_ACCESS, actions)) {
                 return this.StateService.OpsManager().dashboard();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.CATEGORIES_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.CATEGORIES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Category().navigateToCategories();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.TEMPLATES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.USERS_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.USERS_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToUsers();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.GROUP_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants.GROUP_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToGroups();
             }
 
@@ -61,16 +63,13 @@ constructor(
                 return;
             }
             */
-
             // Otherwise, let the user pick
             this.loading = false;
         }
 }
-
-
-  angular.module('kylo').controller('HomeController', 
-                                    ['$scope',
-                                    '$mdDialog', 
-                                    'AccessControlService', 
-                                    'StateService',
-                                    HomeController]);
+  angular.module('kylo').component("homeController", { 
+        controller: HomeController,
+        controllerAs: "vm",
+        templateUrl: "js/main/home.html"
+    });
+//  .controller('HomeController', [HomeController]);

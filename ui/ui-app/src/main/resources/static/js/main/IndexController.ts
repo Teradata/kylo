@@ -1,60 +1,68 @@
 import * as angular from 'angular';
 import "app";
+import StateService from  "../services/StateService";
+import AccessControlService from "../services/AccessControlService";
+import AccessConstants from "../constants/AccessConstants";
+import SearchService from "../services/SearchService";
+import SideNavService from "../services/SideNavService";
 
 export class controller implements ng.IComponentController{
-        /**
+    /**
      * Time to wait before initializing the loading dialog
      * @type {number}
      */
     LOADING_DIALOG_WAIT_TIME:any = 100;
+    static readonly $inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", 
+                                "$mdBottomSheet", "$log", "$q", "$element","$rootScope", "$transitions", 
+                                "$mdDialog", "StateService", "SearchService", "SideNavService", 
+                                "AccessControlService"];
     constructor(
-        private $scope:any,
-        private $http:any,
-        private $location: any,
-        private $timeout: any,
-        private $window: any,
+        private $scope:any,//angular.IScope,
+        private $http:angular.IHttpService,
+        private $location: angular.ILocationService,
+        private $timeout: angular.ITimeoutService,
+        private $window: angular.IWindowService,
         private $mdSidenav: any,
         private $mdMedia: any,
-        private $mdBottomSheet: any,
-        private $log: any,
-        private $q: any,
+        private $mdBottomSheet: angular.material.IBottomSheetService,
+        private $log: angular.ILogService,
+        private $q: angular.IQService,
         private $element: any,
-        private $rootScope: any,
+        private $rootScope: any, //angular.IRootScopeService,
         private $transitions: any,
-        private $mdDialog:any,
-        private StateService:any,  
-        private SearchService: any,
-        private SideNavService: any,
-        private AccessControlService:any)
+        private $mdDialog:angular.material.IDialogService,
+        private StateService:StateService,  
+        private SearchService: SearchService,
+        private SideNavService: SideNavService,
+        private AccessControlService:AccessControlService)
         { 
          this.LOADING_DIALOG_WAIT_TIME= 100;
     
          /**
           * Media object to help size the panels on the screen when shrinking/growing the window
           */
-          this.$scope.$mdMedia= this.$mdMedia;
+          $scope.$mdMedia= $mdMedia;
           /**
           * Set the ui-router states to the $rootScope for easy access
           */
-            this.$rootScope.previousState;
-            this.$rootScope.currentState;
-  
+            $rootScope.previousState;
+            $rootScope.currentState;
 
-            this.$transitions.onSuccess({}, (transition: any)=> {
+            $transitions.onSuccess({}, (transition: any)=> {
             this.currentState = transition.to();
             if (this.currentState.name != 'search') {
                 this.searchQuery = '';
             }
             else {
-                this.searchQuery = this.SearchService.searchQuery;
+                this.searchQuery = SearchService.data.searchQuery;
             }
-            this.$rootScope.previousState = transition.from().name;
-            this.$rootScope.currentState = transition.to().name;
+            $rootScope.previousState = transition.from().name;
+            $rootScope.currentState = transition.to().name;
 
             //hide the loading dialog
-            if (!this.AccessControlService.isFutureState(this.currentState.name)) {
+            if (!AccessControlService.isFutureState(this.currentState.name)) {
                 if (this.loadingTimeout != null) {
-                    this.$timeout.cancel(this.loadingTimeout);
+                    $timeout.cancel(this.loadingTimeout);
                     this.loadingTimeout = null;
                 }
                 if (this.loading) {
@@ -62,13 +70,12 @@ export class controller implements ng.IComponentController{
                     this.$mdDialog.hide();
                 }
             }
-
         });
          // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            AccessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
-                    this.allowSearch = this.AccessControlService
-                                            .hasAction(this.AccessControlService.GLOBAL_SEARCH_ACCESS, 
+                    this.allowSearch = AccessControlService
+                                            .hasAction(AccessConstants.GLOBAL_SEARCH_ACCESS, 
                                                         actionSet.actions);
                 });
 
@@ -137,7 +144,7 @@ export class controller implements ng.IComponentController{
          * Search for something
          */
         search = () =>{
-            this.SearchService.searchQuery = this.searchQuery;
+            this.SearchService.data.searchQuery = this.searchQuery;
             if (this.currentState.name != 'search') {
                 this.StateService.Search().navigateToSearch(true);
             }
@@ -178,6 +185,12 @@ export class controller implements ng.IComponentController{
 
 }
 
-angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-                                                                 "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-                                                                 controller]);
+//angular.module('kylo')
+  angular.module('kylo').component("indexController", { 
+        controller: controller,
+        controllerAs: "vm",
+        //templateUrl: "js/main/home.html"
+    });
+//.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
+                                                             //    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
+                                                               // controller]);

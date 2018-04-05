@@ -1,4 +1,4 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../constants/AccessConstants"], function (require, exports, angular, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HomeController = /** @class */ (function () {
@@ -13,9 +13,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
              * @type {boolean}
              */
             this.loading = true;
-            //$scope, $mdDialog, AccessControlService, StateService
             // Fetch the list of allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                 _this.onLoad(actionSet.actions);
             });
@@ -27,22 +26,22 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         HomeController.prototype.onLoad = function (actions) {
             // Determine the home page
-            if (this.AccessControlService.hasAction(this.AccessControlService.FEEDS_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.FEEDS_ACCESS, actions)) {
                 return this.StateService.FeedManager().Feed().navigateToFeeds();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_MANAGER_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.OPERATIONS_MANAGER_ACCESS, actions)) {
                 return this.StateService.OpsManager().dashboard();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.CATEGORIES_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.CATEGORIES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Category().navigateToCategories();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.TEMPLATES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.USERS_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToUsers();
             }
-            if (this.AccessControlService.hasAction(this.AccessControlService.GROUP_ACCESS, actions)) {
+            if (this.AccessControlService.hasAction(AccessConstants_1.default.GROUP_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToGroups();
             }
             /*
@@ -63,13 +62,15 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             // Otherwise, let the user pick
             this.loading = false;
         };
+        HomeController.$inject = ['$scope', '$mdDialog', 'AccessControlService', 'StateService'];
         return HomeController;
     }());
     exports.HomeController = HomeController;
-    angular.module('kylo').controller('HomeController', ['$scope',
-        '$mdDialog',
-        'AccessControlService',
-        'StateService',
-        HomeController]);
+    angular.module('kylo').component("homeController", {
+        controller: HomeController,
+        controllerAs: "vm",
+        templateUrl: "js/main/home.html"
+    });
 });
+//  .controller('HomeController', [HomeController]);
 //# sourceMappingURL=HomeController.js.map

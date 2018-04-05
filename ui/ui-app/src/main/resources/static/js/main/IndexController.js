@@ -1,8 +1,10 @@
-define(["require", "exports", "angular", "app"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "app"], function (require, exports, angular, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
+        function controller($scope, //angular.IScope,
+            $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, //angular.IRootScopeService,
+            $transitions, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -23,9 +25,9 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
             this.SideNavService = SideNavService;
             this.AccessControlService = AccessControlService;
             /**
-         * Time to wait before initializing the loading dialog
-         * @type {number}
-         */
+             * Time to wait before initializing the loading dialog
+             * @type {number}
+             */
             this.LOADING_DIALOG_WAIT_TIME = 100;
             /**
                  * Function to toggle the left nav
@@ -77,7 +79,7 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
              * Search for something
              */
             this.search = function () {
-                _this.SearchService.searchQuery = _this.searchQuery;
+                _this.SearchService.data.searchQuery = _this.searchQuery;
                 if (_this.currentState.name != 'search') {
                     _this.StateService.Search().navigateToSearch(true);
                 }
@@ -102,26 +104,26 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
             /**
              * Media object to help size the panels on the screen when shrinking/growing the window
              */
-            this.$scope.$mdMedia = this.$mdMedia;
+            $scope.$mdMedia = $mdMedia;
             /**
             * Set the ui-router states to the $rootScope for easy access
             */
-            this.$rootScope.previousState;
-            this.$rootScope.currentState;
-            this.$transitions.onSuccess({}, function (transition) {
+            $rootScope.previousState;
+            $rootScope.currentState;
+            $transitions.onSuccess({}, function (transition) {
                 _this.currentState = transition.to();
                 if (_this.currentState.name != 'search') {
                     _this.searchQuery = '';
                 }
                 else {
-                    _this.searchQuery = _this.SearchService.searchQuery;
+                    _this.searchQuery = SearchService.data.searchQuery;
                 }
-                _this.$rootScope.previousState = transition.from().name;
-                _this.$rootScope.currentState = transition.to().name;
+                $rootScope.previousState = transition.from().name;
+                $rootScope.currentState = transition.to().name;
                 //hide the loading dialog
-                if (!_this.AccessControlService.isFutureState(_this.currentState.name)) {
+                if (!AccessControlService.isFutureState(_this.currentState.name)) {
                     if (_this.loadingTimeout != null) {
-                        _this.$timeout.cancel(_this.loadingTimeout);
+                        $timeout.cancel(_this.loadingTimeout);
                         _this.loadingTimeout = null;
                     }
                     if (_this.loading) {
@@ -131,10 +133,10 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
                 }
             });
             // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowSearch = _this.AccessControlService
-                    .hasAction(_this.AccessControlService.GLOBAL_SEARCH_ACCESS, actionSet.actions);
+                _this.allowSearch = AccessControlService
+                    .hasAction(AccessConstants_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
             });
         }
         controller.prototype.closeSideNavList = function () {
@@ -149,11 +151,20 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
                 fullscreen: true
             });
         };
+        controller.$inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia",
+            "$mdBottomSheet", "$log", "$q", "$element", "$rootScope", "$transitions",
+            "$mdDialog", "StateService", "SearchService", "SideNavService",
+            "AccessControlService"];
         return controller;
     }());
     exports.controller = controller;
-    angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-        "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-        controller]);
+    //angular.module('kylo')
+    angular.module('kylo').component("indexController", {
+        controller: controller,
+        controllerAs: "vm",
+    });
 });
+//.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
+//    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
+// controller]);
 //# sourceMappingURL=IndexController.js.map
