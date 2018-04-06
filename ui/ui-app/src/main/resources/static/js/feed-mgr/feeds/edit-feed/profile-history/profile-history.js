@@ -195,6 +195,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.showProfileDialog('profile-stats', row);
         };
         FeedProfileHistoryController.prototype.showProfileDialog = function (currentTab, profileRow) {
+            console.log("showProfileDialog currentTag,profileRow", currentTab, profileRow);
             this.$mdDialog.show({
                 controller: 'FeedProfileItemController',
                 templateUrl: 'js/feed-mgr/feeds/edit-feed/profile-history/profile-history-dialog.html',

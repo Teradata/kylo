@@ -45,6 +45,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 self.loadingData = false;
             };
             function getProfileValidation() {
+                console.log('get profile validation');
                 self.loadingData = true;
                 var successFn = function (response) {
                     var result = self.queryResults = HiveService.transformResultsToUiGridModel(response, [], transformFn.bind(self));
@@ -86,7 +87,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return promise;
             }
             function setupTable() {
-                var _this = this;
                 FattableService.setupTable({
                     tableContainerId: "invalidProfile",
                     headers: self.headers,
@@ -103,7 +103,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         return textArray.sort(function (a, b) { return b.length - a.length; })[0];
                     },
                     fillCell: function (cellDiv, data) {
-                        var html = data.value;
+                        var html = _.escape(data.value);
                         if (data.isInvalid) {
                             html += '<span class="violation hint">' + data.rule + '</span>';
                             html += '<span class="violation hint">' + data.reason + '</span>';
@@ -112,8 +112,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         cellDiv.innerHTML = html;
                     },
                     getCellSync: function (i, j) {
-                        var displayName = _this.headers[j].displayName;
-                        var row = _this.rows[i];
+                        var displayName = self.headers[j].displayName;
+                        var row = self.rows[i];
                         if (row === undefined) {
                             //occurs when filtering table
                             return undefined;

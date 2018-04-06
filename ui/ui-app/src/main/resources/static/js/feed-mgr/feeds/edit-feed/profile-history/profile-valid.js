@@ -33,41 +33,41 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.limitOptions = [10, 50, 100, 500, 1000];
             this.limit = this.limitOptions[2];
             this.queryResults = null;
-            this.getProfileValidation().then(this.setupTable);
+            var self = this;
+            //noinspection JSUnusedGlobalSymbols
+            function onLimitChange() {
+                getProfileValidation().then(setupTable);
+            }
+            function getProfileValidation() {
+                self.loading = true;
+                var successFn = function (response) {
+                    var result = self.queryResults = HiveService.transformResultsToUiGridModel(response);
+                    self.headers = result.columns;
+                    self.rows = result.rows;
+                    self.loading = false;
+                    BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'valid');
+                };
+                var errorFn = function (err) {
+                    self.loading = false;
+                };
+                var promise = $http.get(RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(self.model.id), {
+                    params: {
+                        'processingdttm': self.processingdttm,
+                        'limit': self.limit
+                    }
+                });
+                promise.then(successFn, errorFn);
+                return promise;
+            }
+            function setupTable() {
+                FattableService.setupTable({
+                    tableContainerId: "validProfile",
+                    headers: self.headers,
+                    rows: self.rows
+                });
+            }
+            getProfileValidation().then(setupTable);
         }
-        //noinspection JSUnusedGlobalSymbols
-        FeedProfileValidResultsController.prototype.onLimitChange = function () {
-            this.getProfileValidation().then(this.setupTable);
-        };
-        ;
-        FeedProfileValidResultsController.prototype.getProfileValidation = function () {
-            var _this = this;
-            this.loading = true;
-            var successFn = function (response) {
-                var result = _this.queryResults = _this.HiveService.transformResultsToUiGridModel(response);
-                _this.headers = result.columns;
-                _this.rows = result.rows;
-                _this.loading = false;
-                _this.BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'valid');
-            };
-            var errorFn = function (err) {
-                _this.loading = false;
-            };
-            var promise = this.$http.get(this.RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(this.model.id), { params: {
-                    'processingdttm': this.processingdttm,
-                    'limit': this.limit
-                }
-            });
-            promise.then(successFn, errorFn);
-            return promise;
-        };
-        FeedProfileValidResultsController.prototype.setupTable = function () {
-            this.FattableService.setupTable({
-                tableContainerId: "validProfile",
-                headers: this.headers,
-                rows: this.rows
-            });
-        };
         return FeedProfileValidResultsController;
     }());
     exports.FeedProfileValidResultsController = FeedProfileValidResultsController;

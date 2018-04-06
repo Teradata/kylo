@@ -55,6 +55,7 @@ export class FeedProfileInvalidResultsController implements ng.IComponentControl
                 self.loadingData = false;
             };
             function getProfileValidation(){
+                console.log('get profile validation');
                 self.loadingData = true;
     
                 var successFn = (response:any) => {
@@ -121,7 +122,7 @@ export class FeedProfileInvalidResultsController implements ng.IComponentControl
                     return textArray.sort(function(a,b) { return b.length - a.length })[0];
                 },
                 fillCell: (cellDiv:any, data:any) => {
-                    var html = data.value;
+                    var html = _.escape(data.value);
                     if (data.isInvalid) {
                         html += '<span class="violation hint">' + data.rule + '</span>';
                         html += '<span class="violation hint">' + data.reason + '</span>';
@@ -130,8 +131,8 @@ export class FeedProfileInvalidResultsController implements ng.IComponentControl
                     cellDiv.innerHTML = html;
                 },
                 getCellSync: (i:any, j:any) => {
-                    var displayName = this.headers[j].displayName;
-                    var row = this.rows[i];
+                    var displayName = self.headers[j].displayName;
+                    var row = self.rows[i];
                     if (row === undefined) {
                         //occurs when filtering table
                         return undefined;
