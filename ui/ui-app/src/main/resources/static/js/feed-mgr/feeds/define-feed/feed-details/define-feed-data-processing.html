@@ -67,7 +67,7 @@
                           <md-checkbox aria-label="Select All"
                                        ng-checked="vm.indexCheckAll.isChecked"
                                        md-indeterminate="vm.indexCheckAll.isIndeterminate"
-                                       ng-click="vm.indexCheckAll.toggleAll()"></md-checkbox>
+                                       ng-click="vm.indexCheckAll.toggleAll(vm)"></md-checkbox>
                         </md-input-container>
                       </div>
                       <div flex="10" class="md-list-item-text hint" layout="column" layout-align="start center">
@@ -79,7 +79,7 @@
                           <md-checkbox aria-label="Select All"
                                        ng-checked="vm.profileCheckAll.isChecked"
                                        md-indeterminate="vm.profileCheckAll.isIndeterminate"
-                                       ng-click="vm.profileCheckAll.toggleAll()">
+                                       ng-click="vm.profileCheckAll.toggleAll(vm)">
                           </md-checkbox>
                         </md-input-container>
                       </div>

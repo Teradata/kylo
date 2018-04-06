@@ -9,7 +9,7 @@ export default class DefineFeedCompleteController {
     error: any;
     isValid: any;
 
-    // static readonly $inject = ["$scope", "$q", "$http", "$mdToast", "$transition$", "RestUrlService", "FeedService", "StateService"];
+    static readonly $inject = ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService"];
 
     constructor(private $scope: any, private $q: any, private $http: any, private $mdToast: any, private $transition$: any, private RestUrlService: any, private FeedService: any, private StateService: any) {
 
@@ -63,4 +63,9 @@ export default class DefineFeedCompleteController {
     }
 }
 
-angular.module(moduleName).controller('DefineFeedCompleteController', ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService",DefineFeedCompleteController]);
+angular.module(moduleName)
+    .component('thinkbigDefineFeedCompleteController', {
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
+        controllerAs: 'vm',
+        controller: DefineFeedCompleteController,
+    });
