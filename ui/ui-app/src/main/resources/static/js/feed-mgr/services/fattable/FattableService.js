@@ -185,7 +185,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 e.preventDefault(); //prevent default action of selecting text
                 var columnId = getColumnId(separator);
                 e = e || window.event;
-                var start = 0, diff = 0, newWidth = 0;
+                var start = 0, diff = 0, newWidth = settings.minColumnWidth;
                 if (e.pageX) {
                     start = e.pageX;
                 }

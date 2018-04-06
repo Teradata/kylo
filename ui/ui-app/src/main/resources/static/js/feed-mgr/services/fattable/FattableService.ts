@@ -216,7 +216,7 @@ const moduleName = require('feed-mgr/module-name');
 
                 const columnId = getColumnId(separator);
                 e = e || window.event;
-                let start = 0, diff = 0, newWidth = 0;
+                let start = 0, diff = 0, newWidth = settings.minColumnWidth;
                 if (e.pageX) {
                     start = e.pageX;
                 } else if (e.clientX) {
