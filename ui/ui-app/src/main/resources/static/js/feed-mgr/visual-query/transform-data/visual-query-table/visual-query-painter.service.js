@@ -14,7 +14,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
     /**
      * Default font.
      */
-    var DEFAULT_FONT = "10px sans-serif";
+    var DEFAULT_FONT = "10px ''SourceSansPro'";
     /**
      * HTML template for header cells.
      */
@@ -168,6 +168,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 cellDiv.textContent = cell.value;
             }
             if (cell !== null) {
+                cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
                 angular.element(cellDiv)
                     .data("column", cell.column)
                     .data("validation", cell.validation);
@@ -325,6 +326,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;
             $scope.value = isNull ? null : cellDiv.innerText;
+            $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "..." : $scope.value);
             // Update position
             this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
@@ -387,9 +389,13 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             }
         };
         /**
+         * Maximum display length for column context functions before they are ellipses (asthetics)
+         */
+        VisualQueryPainterService.MAX_DISPLAY_LENGTH = 25;
+        /**
          * Left and right padding for normal columns.
          */
-        VisualQueryPainterService.COLUMN_PADDING = 28;
+        VisualQueryPainterService.COLUMN_PADDING = 5;
         /**
          * Left padding for the first column.
          */
@@ -401,7 +407,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
         /**
          * Height of data rows.
          */
-        VisualQueryPainterService.ROW_HEIGHT = 48;
+        VisualQueryPainterService.ROW_HEIGHT = 27;
         /**
          * Class for selected cells.
          */

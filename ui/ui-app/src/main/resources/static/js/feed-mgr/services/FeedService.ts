@@ -748,7 +748,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         getUserPropertyList: function (model: any): {key: string, value: string}[] {
             var userPropertyList: any[] = [];
-            angular.forEach(model.userProperties, function (value, key) {
+            angular.forEach(model.userProperties, function (value, key: string) {
                 if (!key.startsWith("jcr:")) {
                     userPropertyList.push({key: key, value: value});
                 }

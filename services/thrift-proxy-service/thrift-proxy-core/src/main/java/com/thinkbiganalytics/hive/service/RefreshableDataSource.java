@@ -50,6 +50,10 @@ public class RefreshableDataSource implements DataSource {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
 
+    public static enum UsernameCase {
+        AS_SPECIFIED,LOWER_CASE,UPPER_CASE;
+    }
+
     private static final String DEFAULT_DATASOURCE_NAME = "DEFAULT";
     String propertyPrefix;
     @Autowired
@@ -207,6 +211,7 @@ public class RefreshableDataSource implements DataSource {
         return prefix;
     }
 
+
     private DataSource create(boolean proxyUser, String principal) {
         String prefix = getPrefixWithTrailingDot();
 
@@ -214,16 +219,48 @@ public class RefreshableDataSource implements DataSource {
         String url = env.getProperty(prefix + "url");
         String password = env.getProperty(prefix + "password");
         String userName = env.getProperty(prefix + "username");
-
-        if (proxyUser && propertyPrefix.equals("hive.datasource")) {
-            userName = principal;
-            url = url + ";hive.server2.proxy.user=" + principal;
-        }
-        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
         String username = userName;
+        if (proxyUser && propertyPrefix.equals("hive.datasource")) {
+            url = url + ";hive.server2.proxy.user=" + convertUsernameCase(principal,getUsernameCaseSetting(prefix));
+        }
 
+        log.debug("The JDBC URL for {}, is {} --- User impersonation enabled: {} ",username, url,proxyUser);
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }
+
+
+
+    /**
+     * Gets the environment setting for how the username case sensitivity should be handled
+     * By default it uses the exact case as specified
+     * @param prefix
+     * @return
+     */
+    private UsernameCase getUsernameCaseSetting(String prefix){
+        UsernameCase usernameCase = UsernameCase.AS_SPECIFIED;
+        try {
+            String username = env.getProperty(prefix+"username.case");
+            if(username == null && propertyPrefix.equals("hive.datasource")){
+                username = env.getProperty("hive.server2.proxy.user.case",UsernameCase.AS_SPECIFIED.name());
+            }
+            usernameCase = UsernameCase.valueOf(username);
+        }catch (Exception e){
+            usernameCase = UsernameCase.AS_SPECIFIED;
+        }
+        return usernameCase;
+    }
+
+    private String convertUsernameCase(String username, UsernameCase usernameCase){
+        if(usernameCase == UsernameCase.LOWER_CASE){
+            return username.toLowerCase();
+        }
+        else if(usernameCase == UsernameCase.UPPER_CASE){
+            return username.toUpperCase();
+        }
+            return username;
+
+    }
+
 
 }

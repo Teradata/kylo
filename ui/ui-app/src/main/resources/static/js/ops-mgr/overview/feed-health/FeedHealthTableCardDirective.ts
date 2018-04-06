@@ -1,9 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import OpsManagerFeedService from "../../services/OpsManagerFeedService";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import TabService from "../../services/TabService";
-import AlertsService from "../../services/AlertsService";
 import * as _ from 'underscore';
 
 export default class FeedHealthTableCardController implements ng.IComponentController{
@@ -32,7 +28,6 @@ constructor(private $scope: any,
         private TableOptionsService: any,
         private PaginationDataService: any,
         private TabService: any,
-        private AlertsService: any,
         private StateService: any,
         private BroadcastService: any
         ){
@@ -363,15 +358,11 @@ constructor(private $scope: any,
 }
 
  angular.module(moduleName)
-.service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
-.service("AlertsService", [AlertsService])
-.service('TabService',['PaginationDataService',TabService])
 .controller('FeedHealthTableCardController',
                                         ["$scope","$rootScope","$http","$interval",
                                         "OpsManagerFeedService","OpsManagerDashboardService",
                                         "TableOptionsService","PaginationDataService","TabService",
-                                        "AlertsService","StateService","BroadcastService",FeedHealthTableCardController]);
+                                        "StateService","BroadcastService",FeedHealthTableCardController]);
     angular.module(moduleName)
         .directive('tbaFeedHealthTableCard', [()=> {
 

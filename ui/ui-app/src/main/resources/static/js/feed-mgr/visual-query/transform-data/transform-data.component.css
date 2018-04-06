@@ -68,15 +68,20 @@ thinkbig-visual-query-transform visual-query-table {
   position: absolute;
   top: 0; }
   thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
-    border-bottom: 1px solid rgba(0, 0, 0, 0.24);
-    padding: 0 28px;
+    padding: 0px 5px 0px 0px;
     text-overflow: ellipsis;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
     vertical-align: middle;
-    white-space: nowrap; }
+    white-space: nowrap;
+    font-size: 13px;
+    border-right: 1px solid lightgray;  }
+
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
+   background-color:rgb(248, 248, 248);  }
+
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
       background-color: #ffcdd2; }
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
@@ -87,9 +92,12 @@ thinkbig-visual-query-transform visual-query-table {
       -ms-user-select: text;
       user-select: text; }
   thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+    font-size: 13px;
     color: rgba(0, 0, 0, 0.54);
     letter-spacing: .02em;
-    white-space: nowrap; }
+    white-space: nowrap;
+    border-right: 1px solid lightgray;
+  }
   thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
     padding-left: 24px;
     padding-right: 0; }
@@ -120,7 +128,8 @@ thinkbig-visual-query-transform visual-query-table {
 .ui-grid-column-menu-button > .md-button.md-icon-button {
   height: inherit;
   line-height: inherit;
-  padding: 0 6px; }
+  padding: 0 6px;
+  font-size: 13px;}
 
 .ui-grid-column-menu-button .ui-grid-icon-angle-down {
   display: inline-block;
@@ -133,10 +142,13 @@ md-menu-item > .md-menu {
   padding: 0;
   width: 173px; }
 
+md-menu-item>.md-button{
+  font-size:13px;
+}
 md-menu-item > .md-menu > .md-button {
   border-radius: 0;
   margin: auto 0;
-  font-size: 15px;
+  font-size: 13px;
   text-transform: none;
   font-weight: 400;
   text-align: left;
@@ -157,7 +169,7 @@ md-menu-item > .md-menu > .md-button:after {
   display: block;
   content: '\25BC';
   position: absolute;
-  top: 7px;
+  top: 0px;
   speak: none;
   -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
   transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
@@ -181,9 +193,18 @@ md-menu-item > .md-menu > .md-button span {
       text-align: right;
       vertical-align: super; }
 
+.visual-query-filter-menu {
+  padding-top: 10px;
+  padding-bottom: 10px; }
+
 /** Column menu text inputs */
 md-menu-item > div > md-input-container {
   margin: 0; }
+
+md-menu-item {
+  height: 36px;
+  min-height: 36px;
+}
 
 /** Menu */
 .md-panel.visual-query-menu {

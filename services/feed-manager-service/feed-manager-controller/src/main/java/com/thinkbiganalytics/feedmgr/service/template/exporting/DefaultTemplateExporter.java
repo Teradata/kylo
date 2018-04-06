@@ -19,9 +19,12 @@ package com.thinkbiganalytics.feedmgr.service.template.exporting;
  * #L%
  */
 import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
+import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
+import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateRemoteInputPortConnections;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
@@ -32,9 +35,11 @@ import com.thinkbiganalytics.metadata.api.template.export.TemplateExporter;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -43,6 +48,8 @@ import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -104,18 +111,43 @@ public class DefaultTemplateExporter implements TemplateExporter {
             List<String> connectingReusableTemplates = new ArrayList<>();
             Set<String> connectedTemplateIds = new HashSet<>();
             Set<ReusableTemplateConnectionInfo> outputPortConnectionMetadata = new HashSet<>();
+
+            Set<RemoteProcessGroupInputPort> templateRemoteInputPorts = new HashSet<>();
+
             if (template.usesReusableTemplate()) {
+                ProcessGroupFlowDTO  reusableTemplateFlow = templateConnectionUtil.getReusableTemplateCategoryProcessGroupFlow();
                 List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
 
+                Map<String,PortDTOWithGroupInfo> reusableTemplatePorts = templateConnectionUtil.getReusableFeedInputPorts(reusableTemplateFlow).stream().collect(Collectors.toMap(port ->port.getName(),port->port));
+                reusableTemplateConnectionInfos.stream().filter(connectionInfo -> StringUtils.isBlank(connectionInfo.getReusableTemplateProcessGroupName())).forEach(connectionInfo ->{
+                    PortDTOWithGroupInfo port = reusableTemplatePorts.get(connectionInfo.getReusableTemplateInputPortName());
+                    if(port != null){
+                        connectionInfo.setReusableTemplateProcessGroupName(port.getDestinationProcessGroupName());
+                    }
+                });
+
+
                 //Get flow information for the 'reusable_templates' process group in NiFi
-                String reusableTemplateProcessGroupId = templateConnectionUtil.getReusableTemplateProcessGroupId();
-                if(reusableTemplateProcessGroupId != null) {
-                    ProcessGroupFlowDTO reusableTemplateFlow = nifiRestClient.getNiFiRestClient().processGroups().flow(reusableTemplateProcessGroupId);
+                if(reusableTemplateFlow != null) {
 
                     gatherConnectedReusableTemplates(connectingReusableTemplates, connectedTemplateIds, outputPortConnectionMetadata, reusableTemplateConnectionInfos, reusableTemplateFlow);
                 }
 
+                //Only gather remote input ports on the reusable templates if we are clustered
+                NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
+                if(clusterSummary.getClustered()) {
+                    //for all the reusable templates used gather any that have remote input ports
+                    reusableTemplateConnectionInfos.stream().forEach(connectionInfo -> {
+                        Set<RemoteProcessGroupInputPort>
+                            remoteProcessGroupInputPorts =
+                            findReusableTemplateRemoteInputPorts(reusableTemplateFlow, connectionInfo.getReusableTemplateProcessGroupName());
+                        templateRemoteInputPorts.addAll(remoteProcessGroupInputPorts);
+                    });
+                }
+
             }
+
+
             String templateXml = null;
             try {
                 if (template != null) {
@@ -133,13 +165,26 @@ public class DefaultTemplateExporter implements TemplateExporter {
             }
 
             //create a zip file with the template and xml
-            byte[] zipFile = zip(template, templateXml, connectingReusableTemplates,outputPortConnectionMetadata);
+            byte[] zipFile = zip(template, templateXml, connectingReusableTemplates,outputPortConnectionMetadata,templateRemoteInputPorts);
 
             return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".template.zip", zipFile);
 
         } else {
             throw new UnsupportedOperationException("Unable to find Template for " + templateId);
         }
+    }
+
+    public Set<RemoteProcessGroupInputPort> findReusableTemplateRemoteInputPorts(ProcessGroupFlowDTO reusableTemplateFlow,String templateName){
+       Optional<TemplateRemoteInputPortConnections> remoteInputPortConnections = templateConnectionUtil.getRemoteInputPortsForReusableTemplate(reusableTemplateFlow, templateName);
+       if(remoteInputPortConnections.isPresent()) {
+        return   remoteInputPortConnections.get().getExistingRemoteInputPortNames().stream().map(name -> {
+            RemoteProcessGroupInputPort port = new RemoteProcessGroupInputPort(templateName, name);
+            port.setSelected(true);
+            return port;
+        })
+               .collect(Collectors.toSet());
+       }
+       return Collections.emptySet();
     }
 
     private void gatherConnectedReusableTemplates(List<String> connectingReusableTemplates, Set<String> connectedTemplateIds, Set<ReusableTemplateConnectionInfo> connectingOutputPortConnectionMetadata,List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos,
@@ -209,7 +254,7 @@ public class DefaultTemplateExporter implements TemplateExporter {
         }
     }
 
-    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls, Set<ReusableTemplateConnectionInfo> outputPortMetadata) {
+    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, List<String> reusableTemplateXmls, Set<ReusableTemplateConnectionInfo> outputPortMetadata,Set<RemoteProcessGroupInputPort> reusableTemplateRemoteInputPorts) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 
@@ -234,6 +279,14 @@ public class DefaultTemplateExporter implements TemplateExporter {
                 entry = new ZipEntry(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE);
                 zos.putNextEntry(entry);
                 json = ObjectMapperSerializer.serialize(outputPortMetadata);
+                zos.write(json.getBytes());
+                zos.closeEntry();
+            }
+
+            if(reusableTemplateRemoteInputPorts != null && !reusableTemplateRemoteInputPorts.isEmpty()) {
+                entry = new ZipEntry(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE);
+                zos.putNextEntry(entry);
+                json = ObjectMapperSerializer.serialize(reusableTemplateRemoteInputPorts);
                 zos.write(json.getBytes());
                 zos.closeEntry();
             }

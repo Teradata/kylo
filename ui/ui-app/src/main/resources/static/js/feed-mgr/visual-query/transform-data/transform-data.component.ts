@@ -6,7 +6,7 @@ import * as _ from "underscore";
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType} from "../../services/DomainTypesService.d";
-import DomainTypesService from "../../services/DomainTypesService";
+import {DomainTypesService} from "../../services/DomainTypesService";
 import {DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
@@ -75,8 +75,8 @@ export class TransformDataComponent implements OnInit {
      * @type {Object}
      */
     tableOptions = {
-        headerFont: "700 12px Roboto, 'Helvetica Neue', sans-serif",
-        rowFont: "400 14px Roboto, 'Helvetica Neue', sans-serif"
+        headerFont: "500 13px Roboto, 'Helvetica Neue', sans-serif",
+        rowFont: "regular 13px Roboto, 'Helvetica Neue', sans-serif"
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -295,7 +295,7 @@ export class TransformDataComponent implements OnInit {
             controller: "VisualQueryProfileStatsController",
             fullscreen: true,
             locals: {
-                profile: self.engine.getProfile()
+                profile: angular.copy( self.engine.getProfile() )
             },
             parent: angular.element(document.body),
             templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"

@@ -53,7 +53,7 @@ public class InitializationStatus {
     }
 
     public enum State {
-        PENDING, IN_PROGRESS, SUCCESS, FAILED
+        PENDING, IN_PROGRESS, SUCCESS, FAILED, REINITIALIZE, REINITIALIZE_FAILED
     }
 
 

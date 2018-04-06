@@ -74,7 +74,8 @@ public class CompleteInitializeFeed extends FeedProcessor {
             if ("SUCCESSFUL".equals(mode)) {
                 getMetadataRecorder().completeFeedInitialization(getFeedId(context, inputFF));
             } else {
-                getMetadataRecorder().failFeedInitialization(getFeedId(context, inputFF));
+                boolean reinit = Boolean.parseBoolean(inputFF.getAttribute(InitializeFeed.REINITIALIZING_FLAG));
+                getMetadataRecorder().failFeedInitialization(getFeedId(context, inputFF), reinit);
             }
 
             session.transfer(inputFF, CommonProperties.REL_SUCCESS);

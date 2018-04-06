@@ -194,7 +194,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         }
         return DomainTypesService;
     }());
-    exports.default = DomainTypesService;
+    exports.DomainTypesService = DomainTypesService;
     angular.module(moduleName).factory("DomainTypesService", ["$http", "$q", "RestUrlService",
         function ($http, $q, RestUrlService) {
             return new DomainTypesService($http, $q, RestUrlService);

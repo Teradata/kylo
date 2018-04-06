@@ -9,7 +9,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
     /**
      * Minimum width of a column including padding.
      */
-    var COLUMN_WIDTH_MIN = 150;
+    var COLUMN_WIDTH_MIN = 100;
     /**
      * Width of the domain type icon.
      */

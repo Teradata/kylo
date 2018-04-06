@@ -141,6 +141,7 @@ public class TableRegisterSupport {
 
         // Register the table
         String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
+
         return createTable(ddl);
     }
 

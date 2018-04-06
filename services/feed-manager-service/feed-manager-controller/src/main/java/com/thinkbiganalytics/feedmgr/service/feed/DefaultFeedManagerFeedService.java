@@ -65,6 +65,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
@@ -310,49 +311,69 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            Feed.ID domainId = feedProvider.resolveId(feedId);
-
-            return feedProvider.findVersions(domainId, includeContent)
-                .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
-                .orElse((FeedVersions) null);
-        });
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                return feedProvider.findVersions(domainFeedId, includeContent)
+                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId))
+                    .orElse((FeedVersions) null);
+            }, MetadataAccess.SERVICE);
+        }).orElse((FeedVersions) null);
     }
 
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
-
-            return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                .map(version -> feedModelTransform.domainToFeedVersion(version));
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.flatMap(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
+                
+                return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+            }, MetadataAccess.SERVICE);
         });
     }
-    
+
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+                
+                Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+                Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+                
+                return fromVer.map(from -> {
+                    return toVer.map(to -> {
+                        return feedModelTransform.generateDifference(from, to);
+                    }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }, MetadataAccess.SERVICE);
+        }).orElseThrow(() -> new FeedNotFoundException(feedProvider.resolveId(feedId)));
+    }
+
+    private Optional<Feed.ID> checkAccessVersions(String feedId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
             
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
-            
-            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
-            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
-            
-            return fromVer.map(from -> {
-                return toVer.map(to -> {
-                    return feedModelTransform.generateDifference(from, to);
-                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            Feed feed = feedProvider.getFeed(domainFeedId);
+    
+            if (feed != null) {
+                if (accessController.isEntityAccessControlled()) {
+                    feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
+                }
+                return Optional.of(domainFeedId);
+            } else {
+                return Optional.empty();
+            }
         });
     }
 

@@ -1,8 +1,6 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
 import * as _ from 'underscore';
-import ServicesStatusData from "../services/ServicesStatusService";
-import AlertsService from "../services/AlertsService";
 
 export class controller implements ng.IComponentController{
 pageName: string;
@@ -31,7 +29,6 @@ constructor(private $scope: any,
             private ServicesStatusData: any,
             private TableOptionsService: any,
             private PaginationDataService: any,
-            private AlertsService: any,
             private StateService: any){
                 this.pageName = 'service-details';
                 this.cardTitle = 'Service Components';
@@ -125,9 +122,7 @@ constructor(private $scope: any,
         }
 }
 angular.module(moduleName)
-        .service("ServicesStatusData", [ServicesStatusData])
-        .service("AlertsService", [AlertsService])
         .controller('ServiceHealthDetailsController',
                                     ["$scope","$http","$filter","$transition$","$interval",
                                     "$timeout","$q","ServicesStatusData","TableOptionsService",
-                                    "PaginationDataService","AlertsService","StateService",controller]);
+                                    "PaginationDataService","StateService",controller]);

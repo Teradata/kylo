@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "../services/ServicesStatusService"], function (require, exports, angular, module_name_1, ServicesStatusService_1) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -84,7 +84,6 @@ define(["require", "exports", "angular", "./module-name", "../services/ServicesS
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
-        .service("ServicesStatusData", [ServicesStatusService_1.default])
         .controller('ServiceComponentHealthDetailsController', ["$scope", "$http", "$filter", "$transition$", "$interval",
         "$timeout", "$q", "ServicesStatusData", "TableOptionsService",
         "PaginationDataService", controller]);

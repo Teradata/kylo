@@ -1,126 +1,149 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {Import} from "./ImportComponentOptionTypes";
+import {Common} from "../../common/CommonTypes";
+import ImportComponentOption = Import.ImportComponentOption;
+import ImportProperty = Import.ImportProperty;
+import ImportService = Import.ImportService;
+import Map = Common.Map;
+
 const moduleName = require('feed-mgr/module-name');
 
 
-// export class ImportService {
+export enum ImportComponentType {
+    NIFI_TEMPLATE = Import.ImportComponentType.NIFI_TEMPLATE,
+    TEMPLATE_DATA = Import.ImportComponentType.TEMPLATE_DATA,
+    FEED_DATA =  Import.ImportComponentType.FEED_DATA,
+    REUSABLE_TEMPLATE =  Import.ImportComponentType.REUSABLE_TEMPLATE,
+    REMOTE_INPUT_PORT =  Import.ImportComponentType.REMOTE_INPUT_PORT,
+    USER_DATASOURCES =  Import.ImportComponentType.USER_DATASOURCES,
+    TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION
+}
 
-    function ImportService() {
+export class DefaultImportService implements ImportService{
 
-        var importComponentTypes = {NIFI_TEMPLATE:"NIFI_TEMPLATE",
-            TEMPLATE_DATA:"TEMPLATE_DATA",
-            FEED_DATA:"FEED_DATA",
-            REUSABLE_TEMPLATE:"REUSABLE_TEMPLATE",
-            USER_DATASOURCES: "USER_DATASOURCES",
-            TEMPLATE_CONNECTION_INFORMATION:"TEMPLATE_CONNECTION_INFORMATION"
 
-        };
-
-        function guid() {
-            function s4() {
-                return Math.floor((1 + Math.random()) * 0x10000)
-                    .toString(16)
-                    .substring(1);
-            }
-            return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
-                   s4() + '-' + s4() + s4() + s4();
+    private guid() {
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
         }
 
-        var data = {
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+            s4() + '-' + s4() + s4() + s4();
+    }
 
-            importComponentTypes : importComponentTypes,
+    constructor() {
 
-            /**
-             * return a new component option.
-             * Defaults to not overwrite.
-             * @param component
-             * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
-             */
-            newImportComponentOption: function(component:any) {
-                var option:any = {importComponent:component,overwriteSelectValue:"false",overwrite:false,userAcknowledged:true,shouldImport:true,analyzed:false,continueIfExists:true,properties:[]}
-                return option;
-            },
-            newReusableTemplateImportOption: function(){
-                return data.newImportComponentOption(importComponentTypes.REUSABLE_TEMPLATE);
-            },
+    }
 
-            newTemplateConnectionInfoImportOption: function(){
-                return data.newImportComponentOption(importComponentTypes.TEMPLATE_CONNECTION_INFORMATION);
-            },
+    importComponentTypes(): string[] {
+        return Object.keys(ImportComponentType)
+    }
 
-            newTemplateDataImportOption: function(){
-                return data.newImportComponentOption(importComponentTypes.TEMPLATE_DATA);
-            },
-            newFeedDataImportOption: function(){
-                return data.newImportComponentOption(importComponentTypes.FEED_DATA);
-            },
-            newNiFiTemplateImportOption: function(){
-                return data.newImportComponentOption(importComponentTypes.NIFI_TEMPLATE);
-            },
-            newUserDatasourcesImportOption: function () {
-                return data.newImportComponentOption(importComponentTypes.USER_DATASOURCES)
-            },
-            newUploadKey:function(){
-                return _.uniqueId("upload_")+new Date().getTime()+guid();
-            },
+    /**
+     * return a new component option.
+     * Defaults to not overwrite.
+     * @param component
+     * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
+     */
+    newImportComponentOption(component:  Import.ImportComponentType): ImportComponentOption {
+        let nameOfType = ImportComponentType[component];
+        let option = {importComponent: nameOfType, overwrite: false, userAcknowledged: true, shouldImport: true, analyzed: false, continueIfExists: false, properties: [] as ImportProperty[]}
+        return option;
+    }
 
-            /**
-             * Update properties when a user chooses to overwrite or not
-             * @param importComponentOption
-             */
-            onOverwriteSelectOptionChanged :function(importComponentOption:any){
-                importComponentOption.userAcknowledged = true;
-                if(importComponentOption.overwriteSelectValue == "true"){
-                    importComponentOption.overwrite = true;
-                }
-                else if(importComponentOption.overwriteSelectValue == "false"){
-                    importComponentOption.overwrite = false;
-                    importComponentOption.continueIfExists = true;
-                }
-                else {
-                    importComponentOption.userAcknowledged = false;
-                }
-            },
+    newReusableTemplateImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.REUSABLE_TEMPLATE);
+    }
 
-            /**
-             * return the map of options as an array ready for upload/import
-             * @param importOptionsMap a map of {ImportType: importOption}
-             * @returns {Array} the array of options to be imported
-             */
-            getImportOptionsForUpload:function(importOptionsMap:any){
-                var importComponentOptions:any = []
-                _.each(importOptionsMap,function(option:any,key:any){
-                    //set defaults for options
-                    option.errorMessages = [];
+    newTemplateConnectionInfoImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION);
+    }
 
-                    if(option.overwrite){
-                        option.userAcknowledged = true;
-                        option.shouldImport = true;
-                        option.continueIfExists = true;
-                    }
+    newTemplateDataImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.TEMPLATE_DATA);
+    }
 
-                 //   if(option.userAcknowledged && !option.overwrite){
-                  //      option.continueIfExists = true;
-                  //  }
-                    //reset the errors
-                    option.errorMessages = [];
-                    importComponentOptions.push(option);
-                });
-                return importComponentOptions;
-            },
-            /**
-             * Check if an importOption is a specific type
-             * @param importOption the option to check
-             * @param importComponentType the type of the option
-             * @returns {boolean} true if match, false if not
-             */
-            isImportOption: function(importOption:any, importComponentType:any){
-                return this.importComponent.importComponent == importComponentType;
+    newFeedDataImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.FEED_DATA);
+    }
+
+    newRemoteProcessGroupImportOption(): ImportComponentOption {
+        let option = this.newImportComponentOption( Import.ImportComponentType.REMOTE_INPUT_PORT);
+        option.userAcknowledged = false;
+        return option;
+    }
+
+    newNiFiTemplateImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.NIFI_TEMPLATE);
+    }
+
+    newUserDatasourcesImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.USER_DATASOURCES)
+    }
+
+    newUploadKey(): string {
+        return _.uniqueId("upload_") + new Date().getTime() + this.guid();
+    }
+
+    /**
+     * Update properties when a user chooses to overwrite or not
+     * @param importComponentOption
+     */
+    onOverwriteSelectOptionChanged(importComponentOption: ImportComponentOption) {
+        importComponentOption.userAcknowledged = true;
+        if (importComponentOption.overwriteSelectValue == "true") {
+            importComponentOption.overwrite = true;
+        }
+        else if (importComponentOption.overwriteSelectValue == "false") {
+            importComponentOption.overwrite = false;
+            importComponentOption.continueIfExists = true;
+        }
+        else {
+            importComponentOption.userAcknowledged = false;
+        }
+    }
+
+    /**
+     * return the map of options as an array ready for upload/import
+     * @param importOptionsMap a map of {ImportType: importOption}
+     * @returns {Array} the array of options to be imported
+     */
+    getImportOptionsForUpload(importOptionsMap: Map<ImportComponentOption>): ImportComponentOption[] {
+        let importComponentOptions: ImportComponentOption[] = []
+        Object.keys(importOptionsMap).forEach((key) => {
+            let option = importOptionsMap[key];
+            //set defaults for options
+            option.errorMessages = [];
+
+            if (option.overwrite) {
+                option.userAcknowledged = true;
+                option.shouldImport = true;
+                option.continueIfExists = true;
             }
+
+            //reset the errors
+            option.errorMessages = [];
+            importComponentOptions.push(option);
+        })
+        return importComponentOptions;
     }
-        return data;
+
+    /**
+     * Check if an importOption is a specific type
+     * @param importOption the option to check
+     * @param importComponentType the type of the option
+     * @returns {boolean} true if match, false if not
+     */
+    isImportOption(importOption: ImportComponentOption, importComponentType:  Import.ImportComponentType): boolean {
+        let nameOfType = ImportComponentType[importComponentType]
+        return importOption.importComponent == nameOfType;
     }
-// }
-angular.module(moduleName).factory('ImportService', [ImportService]);
+
+}
+
+angular.module(moduleName).factory('ImportService', () => new DefaultImportService());
 
 

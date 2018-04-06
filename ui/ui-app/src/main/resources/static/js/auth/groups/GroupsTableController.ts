@@ -3,9 +3,9 @@ import * as _ from 'underscore';
 import {moduleName} from "../module-name";
 import UserService from "../services/UserService";
 import AddButtonService from  "../../services/AddButtonService";
-import PaginationDataService from  "../../services/PaginationDataService";
+import {DefaultPaginationDataService} from  "../../services/PaginationDataService";
 import StateService from  "../../services/StateService";
-import TableOptionsService from  "../../services/TableOptionsService";
+import {DefaultTableOptionsService} from  "../../services/TableOptionsService";
 import "../module";
 import "../module-require";
 /**
@@ -138,9 +138,9 @@ export default class GroupsTableController implements ng.IComponentController {
         constructor (
         private $scope:angular.IScope,
         private AddButtonService:AddButtonService,
-        private PaginationDataService:PaginationDataService,
+        private PaginationDataService:DefaultPaginationDataService,
         private StateService:StateService,
-        private TableOptionsService:TableOptionsService,
+        private TableOptionsService:DefaultTableOptionsService,
         private UserService:UserService
     ) {
         // Notify pagination service of changes to view type

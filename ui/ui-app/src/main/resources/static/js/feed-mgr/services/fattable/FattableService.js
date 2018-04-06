@@ -34,8 +34,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     // export class FattableService {
     function FattableService($window) {
         var self = this;
-        var setupTable;
         var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
+        var ATTR_DATA_COLUMN_ID = "data-column-id";
         var optionDefaults = {
             tableContainerId: "",
             headers: [],
@@ -44,7 +44,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             maxColumnWidth: 300,
             rowHeight: 53,
             headerHeight: 40,
-            padding: 40,
+            padding: 50,
             headerFontFamily: FONT_FAMILY,
             headerFontSize: "12px",
             headerFontWeight: "bold",
@@ -59,7 +59,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return row[column.displayName];
             },
             fillCell: function (cellDiv, data) {
-                cellDiv.innerHTML = data.value;
+                cellDiv.innerHTML = _.escape(data.value);
             },
             getCellSync: function (i, j) {
                 var displayName = this.headers[j].displayName;
@@ -73,13 +73,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
             },
             fillHeader: function (headerDiv, header) {
-                headerDiv.innerHTML = '<div>' + header + '</div>';
+                headerDiv.innerHTML = _.escape(header.value);
             },
             getHeaderSync: function (j) {
                 return this.headers[j].displayName;
             }
         };
         self.setupTable = function (options) {
+            var scrollXY = [];
             var optionsCopy = _.clone(options);
             var settings = _.defaults(optionsCopy, optionDefaults);
             var tableData = new fattable.SyncTableModel();
@@ -109,6 +110,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 columnWidths.push(Math.min(settings.maxColumnWidth, Math.max(settings.minColumnWidth, headerTextWidth, columnTextWidth)) + settings.padding);
                 tableData.columnHeaders.push(headerText);
             });
+            painter.setupHeader = function (div) {
+                // console.log("setupHeader");
+                var separator = angular.element('<div class="header-separator"></div>');
+                separator.on("mousedown", function (event) { return mousedown(separator, event); });
+                var heading = angular.element('<div class="header-value"></div>');
+                var headerDiv = angular.element(div);
+                headerDiv.append(heading).append(separator);
+            };
             painter.fillCell = function (div, data) {
                 if (data === undefined) {
                     return;
@@ -125,10 +134,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 settings.fillCell(div, data);
             };
             painter.fillHeader = function (div, header) {
+                // console.log('fill header', header);
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
                 div.style.fontWeight = "bold";
-                settings.fillHeader(div, header);
+                var children = angular.element(div).children();
+                setColumnId(children.last(), header.id);
+                var valueSpan = children.first().get(0);
+                settings.fillHeader(valueSpan, header);
             };
             tableData.getCellSync = function (i, j) {
                 var data = settings.getCellSync(i, j);
@@ -139,10 +152,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return data;
             };
             tableData.getHeaderSync = function (j) {
-                return settings.getHeaderSync(j);
+                var header = settings.getHeaderSync(j);
+                return {
+                    value: header,
+                    id: j
+                };
             };
             var selector = "#" + settings.tableContainerId;
-            var table = fattable({
+            var parameters = {
                 "container": selector,
                 "model": tableData,
                 "nbRows": rows.length,
@@ -150,8 +167,73 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 "headerHeight": settings.headerHeight,
                 "painter": painter,
                 "columnWidths": columnWidths
-            });
-            table.setup();
+            };
+            function onScroll(x, y) {
+                scrollXY[0] = x;
+                scrollXY[1] = y;
+            }
+            self.table = fattable(parameters);
+            self.table.onScroll = onScroll;
+            self.table.setup();
+            function getColumnId(separatorSpan) {
+                return separatorSpan.attr(ATTR_DATA_COLUMN_ID);
+            }
+            function setColumnId(separatorSpan, id) {
+                separatorSpan.attr(ATTR_DATA_COLUMN_ID, id);
+            }
+            function mousedown(separator, e) {
+                e.preventDefault(); //prevent default action of selecting text
+                var columnId = getColumnId(separator);
+                e = e || window.event;
+                var start = 0, diff = 0, newWidth = settings.minColumnWidth;
+                if (e.pageX) {
+                    start = e.pageX;
+                }
+                else if (e.clientX) {
+                    start = e.clientX;
+                }
+                var headerDiv = separator.parent();
+                headerDiv.css("z-index", "1"); //to hide other columns behind the one being resized
+                var headerElem = headerDiv.get(0);
+                var initialHeaderWidth = headerElem.offsetWidth;
+                document.body.style.cursor = "col-resize";
+                document.body.onmousemove = function (e) {
+                    e = e || window.event;
+                    var end = 0;
+                    if (e.pageX) {
+                        end = e.pageX;
+                    }
+                    else if (e.clientX) {
+                        end = e.clientX;
+                    }
+                    diff = end - start;
+                    var width = initialHeaderWidth + diff;
+                    newWidth = width < settings.minColumnWidth ? settings.minColumnWidth : width;
+                    headerElem.style.width = newWidth + "px";
+                };
+                document.body.onmouseup = function () {
+                    document.body.onmousemove = document.body.onmouseup = null;
+                    headerDiv.css("z-index", "unset");
+                    document.body.style.cursor = null;
+                    resizeColumn(columnId, newWidth);
+                };
+            }
+            function resizeColumn(columnId, columnWidth) {
+                var x = scrollXY[0];
+                var y = scrollXY[1];
+                // console.log('resize to new width', columnWidth);
+                self.table.columnWidths[columnId] = columnWidth;
+                var columnOffset = _.reduce(self.table.columnWidths, function (memo, width) {
+                    memo.push(memo[memo.length - 1] + width);
+                    return memo;
+                }, [0]);
+                // console.log('columnWidths, columnOffset', columnWidths, columnOffset);
+                self.table.columnOffset = columnOffset;
+                self.table.W = columnOffset[columnOffset.length - 1];
+                self.table.setup();
+                // console.log('displaying cells', scrolledCellX, scrolledCellY);
+                self.table.scroll.setScrollXY(x, y); //table.setup() scrolls to 0,0, here we scroll back to were we were while resizing column
+            }
             var eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);
             var debounced = _.debounce(self.setupTable, settings.setupRefreshDebounce);

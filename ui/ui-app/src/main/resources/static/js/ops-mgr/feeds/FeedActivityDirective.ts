@@ -1,9 +1,6 @@
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import "pascalprecht.translate";
-import OpsManagerFeedService from "../services/OpsManagerFeedService";
-import AlertsService from "../services/AlertsService";
-import ChartJobStatusService from "../services/ChartJobStatusService";
 declare const d3: any;
 
 export class controller implements ng.IComponentController{
@@ -28,7 +25,6 @@ export class controller implements ng.IComponentController{
                 private OpsManagerFeedService: any,
                 private TableOptionsService: any,
                 private PaginationDataService: any,
-                private AlertsService: any,
                 private StateService: any,
                 private ChartJobStatusService: any,
                 private BroadcastService: any, 
@@ -172,11 +168,8 @@ export class controller implements ng.IComponentController{
 }
 
   angular.module(moduleName)
-  .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
-  .service('AlertsService',[AlertsService])
-  .service('ChartJobStatusService',["IconService", "Nvd3ChartService", ChartJobStatusService])
   .controller('FeedActivityController', ["$scope","$http","$interval","$timeout","$q","Utils",
-  "OpsManagerFeedService","TableOptionsService","PaginationDataService","AlertsService","StateService",
+  "OpsManagerFeedService","TableOptionsService","PaginationDataService","StateService",
   "ChartJobStatusService","BroadcastService","$filter",controller]);
 
     angular.module(moduleName)

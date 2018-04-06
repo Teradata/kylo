@@ -2816,6 +2816,12 @@
     "!spark": "functions.ceil(%c)",
     "!sparkType": "column"
   },
+  "clone": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a copy of a column.",
+    "!spark": "functions.lit(%c)",
+    "!sparkType": "column"
+  },
   "conv": {
     "!type": "fn(num: Column, fromBase: number, toBase: number) -> Column",
     "!doc": "Convert a number in a string column from one base to another.",

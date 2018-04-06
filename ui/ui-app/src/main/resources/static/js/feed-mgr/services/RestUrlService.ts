@@ -170,6 +170,10 @@ const moduleName = require('feed-mgr/module-name');
         this.GET_CONTROLLER_SERVICE_URL = function (serviceId:any) {
             return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
         }
+
+        this.CONTROLLER_SERVICES_PREVIEW_QUERY_URL = function (serviceId:any, schema:string, table:string, limit:number) {
+            return self.CONTROLLER_SERVICES_BASE_URL + "/" + serviceId;
+        }
         
         this.FEED_VERSIONS_URL = function (feedId:any) {
         		return self.GET_FEEDS_URL + "/" + feedId + "/versions";
@@ -319,6 +323,13 @@ const moduleName = require('feed-mgr/module-name');
          */
         this.QUERY_DATASOURCE_URL = function (id:any) {
             return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/query";
+        };
+
+        /**
+         * The endpoint for querying a data source.
+         */
+        this.PREVIEW_DATASOURCE_URL = function (id:any, schema:string, table:string, limit:number) {
+            return self.ROOT + "/proxy/v1/metadata/datasource/" + id + "/preview/" + schema + "/" + table + "?limit=" + limit;
         };
 
         this.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL = function (id:any) {

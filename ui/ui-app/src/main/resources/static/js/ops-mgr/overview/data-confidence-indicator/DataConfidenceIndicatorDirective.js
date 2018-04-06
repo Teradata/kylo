@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "../../services/OpsManagerDashboardService", "../../services/OpsManagerJobService", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1, OpsManagerJobService_1, _) {
+define(["require", "exports", "angular", "../module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -167,10 +167,7 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
     }());
     exports.DataConfidenceDetailsDialogController = DataConfidenceDetailsDialogController;
     angular.module(module_name_1.moduleName).controller('DataConfidenceDetailsDialogController', ["$scope", "$mdDialog", "$interval", "StateService", "status", "allChartData", DataConfidenceDetailsDialogController]);
-    angular.module(module_name_1.moduleName)
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
-        .controller('DataConfidenceIndicatorController', ["$scope", "$element", "$http", "$interval", "$mdDialog", "OpsManagerJobService", "OpsManagerDashboardService", "BroadcastService", "$filter", controller]);
+    angular.module(module_name_1.moduleName).controller('DataConfidenceIndicatorController', ["$scope", "$element", "$http", "$interval", "$mdDialog", "OpsManagerJobService", "OpsManagerDashboardService", "BroadcastService", "$filter", controller]);
     angular.module(module_name_1.moduleName)
         .directive('tbaDataConfidenceIndicator', [function () {
             return {

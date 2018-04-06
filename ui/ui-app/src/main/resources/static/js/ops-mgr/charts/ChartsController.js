@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", "../services/OpsManagerFeedService", "../services/OpsManagerJobService", "../services/IconStatusService", "../services/OpsManagerRestUrlService", "../services/AlertsService", "underscore", "moment"], function (require, exports, angular, module_name_1, PivotTableUtil_1, OpsManagerFeedService_1, OpsManagerJobService_1, IconStatusService_1, OpsManagerRestUrlService_1, AlertsService_1, _, moment) {
+define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", "underscore", "moment"], function (require, exports, angular, module_name_1, PivotTableUtil_1, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -210,11 +210,6 @@ define(["require", "exports", "angular", "./module-name", "./PivotTableUtil", ".
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
-        .service("AlertsService", [AlertsService_1.default])
-        .service("IconService", [IconStatusService_1.default])
-        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService_1.default])
-        .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
         .controller('ChartsController', ["$scope", "$element", "$http", "HttpService", "OpsManagerJobService", "OpsManagerFeedService", controller]);
 });
 //# sourceMappingURL=ChartsController.js.map

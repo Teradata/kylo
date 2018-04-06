@@ -90,10 +90,22 @@ export class HqlEditorController {
                 self.allowDatabaseBrowse = false;
             }
             if (self.defaultSchemaName != null && self.defaultTableName != null) {
+                // TODO Change to a deferred to provide the SQL and execute the query when the query text becomes available.
                 if (!self.sql) {
-                    self.sql = "SELECT * FROM " + quote(self.defaultSchemaName) + "." + quote(self.defaultTableName) + " LIMIT 20";
-                }if (self.allowExecuteQuery) {
-                    self.query();
+                    if (self.datasource.isHive) {
+                        self.sql = "SELECT * FROM " + quote(self.defaultSchemaName) + "." + quote(self.defaultTableName) + " LIMIT 20";
+                        if (self.allowExecuteQuery) {
+                            self.query();
+                        }
+                    } else {
+                        DatasourcesService.getPreviewSql(self.datasourceId, self.defaultSchemaName, self.defaultTableName, 20)
+                            .then(function(response:string) {
+                                self.sql = response;
+                                if (self.allowExecuteQuery) {
+                                    self.query();
+                                }
+                            });
+                    }
                 }
             }
             self.editor.setValue(self.sql);

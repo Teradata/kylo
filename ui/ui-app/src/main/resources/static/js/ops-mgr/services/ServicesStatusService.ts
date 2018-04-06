@@ -10,7 +10,6 @@ export default class ServicesStatusData{
                 private $http: any,
                 private $interval: any,
                 private $timeout: any,
-                private AlertsService: any,
                 private IconService: any,
                 private OpsManagerRestUrlService: OpsManagerRestUrlService){       
                 this.ServicesStatusData = {};
@@ -105,6 +104,6 @@ export default class ServicesStatusData{
 
 angular.module(moduleName)
         .factory('ServicesStatusData',
-                ["$q", '$http', '$interval', '$timeout', 'AlertsService', 'IconService', 
+                ["$q", '$http', '$interval', '$timeout', 'IconService',
                 'OpsManagerRestUrlService',
                 ServicesStatusData]);

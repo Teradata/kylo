@@ -675,21 +675,22 @@ public class JcrPropertyUtil {
             Set<Value> values = null;
 
             if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues()).map(v -> {
-                    if (PropertyType.REFERENCE == v.getType() && weakReference) {
-                        try {
-                            Node n = JcrPropertyUtil.asValue(v, node.getSession());
-                            return n.getSession().getValueFactory().createValue(n, true);
-                        } catch (AccessDeniedException e) {
-            log.debug("Access denied", e);
-            throw new AccessControlException(e.getMessage());
-        } catch (RepositoryException e) {
-                            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+                values = Arrays.stream(node.getProperty(name).getValues())
+                    .map(v -> {
+                        if (PropertyType.REFERENCE == v.getType() && weakReference) {
+                            try {
+                                Node n = JcrPropertyUtil.asValue(v, node.getSession());
+                                return n.getSession().getValueFactory().createValue(n, true);
+                            } catch (AccessDeniedException e) {
+                                log.debug("Access denied", e);
+                                throw new AccessControlException(e.getMessage());
+                            } catch (RepositoryException e) {
+                                throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+                            }
+                        } else {
+                            return v;
                         }
-                    } else {
-                        return v;
-                    }
-                }).collect(Collectors.toSet());
+                    }).collect(Collectors.toSet());
             } else {
                 values = new HashSet<>();
             }

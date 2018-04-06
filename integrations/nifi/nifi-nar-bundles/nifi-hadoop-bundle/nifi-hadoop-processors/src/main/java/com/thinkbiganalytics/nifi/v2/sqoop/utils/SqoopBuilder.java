@@ -29,6 +29,7 @@ import com.thinkbiganalytics.nifi.v2.sqoop.enums.SqoopLoadStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.enums.TargetHdfsDirExistsStrategy;
 import com.thinkbiganalytics.nifi.v2.sqoop.security.DecryptPassword;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.logging.ComponentLog;
 
 import java.util.Arrays;
@@ -125,6 +126,9 @@ public class SqoopBuilder {
     private String sqoopCodeGenDirectory;
     private Boolean sourceSpecificOptions = false;
     private String sourceSpecificSqlServerSchema;
+
+    private String systemProperties;
+    private String additionalArguments;
     private ComponentLog logger = null;
 
     /**
@@ -503,6 +507,24 @@ public class SqoopBuilder {
         return this;
     }
 
+
+
+    public SqoopBuilder setSystemProperties(String systemProperties) {
+        this.systemProperties = systemProperties;
+        if (logger != null) {
+            logMessage("info","System Properties",this.systemProperties);
+        }
+        return this;
+    }
+
+    public SqoopBuilder setAdditionalArguments(String additionalArguments) {
+        this.additionalArguments = additionalArguments;
+        if (logger != null) {
+            logMessage("info","Additional Arguments",this.additionalArguments);
+        }
+        return this;
+    }
+
     /*
      * Get the compression codec class
      */
@@ -546,41 +568,42 @@ public class SqoopBuilder {
     /*
      * Log message as per level
      */
-    private void logMessage(@Nonnull String level, @Nonnull String property, @Nonnull Object value) {
+    private void logMessage(@Nonnull String level, @Nonnull String property, Object value) {
+        Object logValue = value == null? "null" : value;
         switch (level) {
             case "debug":
                 if (logger != null) {
-                    logger.debug("{} set to: {}", new Object[]{property, value});
+                    logger.debug("{} set to: {}", new Object[]{property, logValue});
                 }
                 break;
 
             case "info":
                 if (logger != null) {
-                    logger.info("{} set to: {}", new Object[]{property, value});
+                    logger.info("{} set to: {}", new Object[]{property, logValue});
                 }
                 break;
 
             case "trace":
                 if (logger != null) {
-                    logger.trace("{} set to: {}", new Object[]{property, value});
+                    logger.trace("{} set to: {}", new Object[]{property, logValue});
                 }
                 break;
 
             case "warn":
                 if (logger != null) {
-                    logger.warn("{} set to: {}", new Object[]{property, value});
+                    logger.warn("{} set to: {}", new Object[]{property, logValue});
                 }
                 break;
 
             case "error":
                 if (logger != null) {
-                    logger.error("{} set to: {}", new Object[]{property, value});
+                    logger.error("{} set to: {}", new Object[]{property, logValue});
                 }
                 break;
 
             default:
                 if (logger != null) {
-                    logger.info("{} set to: {}", new Object[]{property, value});
+                    logger.info("{} set to: {}", new Object[]{property, logValue});
                 }
         }
     }
@@ -605,6 +628,11 @@ public class SqoopBuilder {
             .append(SPACE_STRING)
             .append(operationType)                                                              //import
             .append(SPACE_STRING);
+
+        if (StringUtils.isNotBlank(systemProperties)) {
+            commandStringBuffer.append(systemProperties) //"-Dsqoop.export.records.per.statement=1 ");
+                .append(SPACE_STRING);
+        }
 
         /* Handle encrypted password file */
         if (passwordMode == PasswordMode.ENCRYPTED_ON_HDFS_FILE) {
@@ -865,7 +893,7 @@ public class SqoopBuilder {
                 .append(clusterUIJobNameLabel)                                                  //--mapreduce-job-name
                 .append(START_SPACE_QUOTE)
                 .append(clusterUIJobName)                                                       //"user-provided-value"
-                .append(QUOTE);
+                .append(END_QUOTE_SPACE);
         }
 
         /* Handle source specific options */
@@ -882,6 +910,11 @@ public class SqoopBuilder {
                     .append(sourceSpecificSqlServerSchema)                                      //"user-provided-value"
                     .append(END_QUOTE_SPACE);
             }
+        }
+
+        if (StringUtils.isNotBlank(additionalArguments)) {
+            commandStringBuffer.append(SPACE_STRING).append(additionalArguments)
+                .append(SPACE_STRING);
         }
 
         return commandStringBuffer.toString();

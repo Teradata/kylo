@@ -31,6 +31,7 @@ import com.thinkbiganalytics.feedmgr.rest.Model;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.feedmgr.service.security.SecurityService;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceDefinitionProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -52,14 +53,17 @@ import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.CannotGetJdbcConnectionException;
 import org.springframework.stereotype.Component;
 
 import java.security.AccessControlException;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -199,6 +203,37 @@ public class DatasourceController {
         });
     }
 
+    @POST
+    @Path("test")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Tests datasource connection")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Connection was tested, test failure will appear in message, successful connections return no message", response = RestResponseStatus.class),
+                      @ApiResponse(code = 400, message = "UserDatasource is not a JdbcDatasource", response = RestResponseStatus.class)
+                  })
+    public Response testConnection(@Nonnull final UserDatasource datasource) {
+        return metadata.commit(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.EDIT_DATASOURCES);
+
+            if (datasource instanceof JdbcDatasource) {
+                JdbcDatasource jdbcDatasource = (JdbcDatasource) datasource;
+                DatabaseType databaseType = DatabaseType.fromJdbcConnectionString(jdbcDatasource.getDatabaseConnectionUrl());
+                String query = databaseType.getValidationQuery();
+                try {
+                    dbcpConnectionPoolTableInfo.testConnectionForDatasource(jdbcDatasource, query);
+                    return Response.ok().build();
+                } catch (CannotGetJdbcConnectionException e) {
+                    Map<String, String> message = new HashMap<>(1);
+                    message.put("message", e.getRootCause().toString());
+                    return Response.ok(message).build();
+                }
+            } else {
+                return Response.status(Response.Status.BAD_REQUEST).build();
+            }
+        });
+    }
+
     /**
      * Gets the datasource with the id provided.
      *
@@ -332,6 +367,88 @@ public class DatasourceController {
                 .map(JdbcDatasource.class::cast)
                 .map(datasource -> dbcpConnectionPoolTableInfo.executeQueryForDatasource(datasource, query))
                 .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(result).build();
+        }, MetadataAccess.SERVICE);
+    }
+    
+    /**
+     * Executes a query on the specified datasource.
+     *
+     * @param idStr the datasource id
+     * @param query the SQL query
+     * @return the SQL result
+     */
+    @GET
+    @Path("{id}/preview/{schema}/{table}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Generates a preview query appropriate for the type of datasource and returns the result.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+        @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+        @ApiResponse(code = 400, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+    })
+    public Response generatePreviewQuery(@PathParam("id") final String idStr, 
+                                         @PathParam("schema") final String schema,
+                                         @PathParam("table") final String tableName,
+                                         @QueryParam("limit") @DefaultValue("10") final int limit) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+            
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+        
+        // Execute query
+        return metadata.read(() -> {
+            final String result = id.map(datasetProvider::getDatasource)
+                            .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                            .filter(JdbcDatasource.class::isInstance)
+                            .map(JdbcDatasource.class::cast)
+                            .map(datasource -> dbcpConnectionPoolTableInfo.generatePreviewQueryForDatasource(datasource, schema, tableName, limit))
+                            .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
+            return Response.ok(result).build();
+        }, MetadataAccess.SERVICE);
+    }
+    
+    /**
+     * Executes a query on the specified datasource.
+     *
+     * @param idStr the datasource id
+     * @param query the SQL query
+     * @return the SQL result
+     */
+    @POST
+    @Path("{id}/preview/{schema}/{table}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Executes a preview query appropriate for the type of datasource and returns the result.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the result.", response = QueryResult.class),
+        @ApiResponse(code = 403, message = "Access denied.", response = RestResponseStatus.class),
+        @ApiResponse(code = 400, message = "A JDBC data source with that id does not exist.", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "NiFi or the database are unavailable.", response = RestResponseStatus.class)
+    })
+    public Response previewQuery(@PathParam("id") final String idStr, 
+                                 @PathParam("schema") final String schema,
+                                 @PathParam("table") final String tableName,
+                                 @QueryParam("limit") @DefaultValue("10") final int limit) {
+        // Verify user has access to data source
+        final Optional<com.thinkbiganalytics.metadata.api.datasource.Datasource.ID> id = metadata.read(() -> {
+            accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_DATASOURCES);
+            
+            final com.thinkbiganalytics.metadata.api.datasource.Datasource datasource = datasetProvider.getDatasource(datasetProvider.resolve(idStr));
+            return Optional.ofNullable(datasource).map(com.thinkbiganalytics.metadata.api.datasource.Datasource::getId);
+        });
+        
+        // Execute query
+        return metadata.read(() -> {
+            final QueryResult result = id.map(datasetProvider::getDatasource)
+                            .map(ds -> datasourceTransform.toDatasource(ds, DatasourceModelTransform.Level.ADMIN))
+                            .filter(JdbcDatasource.class::isInstance)
+                            .map(JdbcDatasource.class::cast)
+                            .map(datasource -> dbcpConnectionPoolTableInfo.executePreviewQueryForDatasource(datasource, schema, tableName, limit))
+                            .orElseThrow(() -> new NotFoundException("No JDBC datasource exists with the given ID: " + idStr));
             return Response.ok(result).build();
         }, MetadataAccess.SERVICE);
     }

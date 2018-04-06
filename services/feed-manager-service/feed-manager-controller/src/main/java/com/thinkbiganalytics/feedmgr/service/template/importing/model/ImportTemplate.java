@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.service.template.importing.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.util.UniqueIdentifier;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -41,6 +42,7 @@ public class ImportTemplate {
         XML, REUSABLE_TEMPLATE, ARCHIVE
     }
 
+    public static final String REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE = "nifiRemoteInputPorts.json";
     public static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate";
     public static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
     public static final String TEMPLATE_JSON_FILE = "template.json";
@@ -63,7 +65,13 @@ public class ImportTemplate {
     private boolean verificationToReplaceConnectingResuableTemplateNeeded;
     private ImportTemplateOptions importOptions;
     private boolean reusableFlowOutputPortConnectionsNeeded;
+    private boolean remoteProcessGroupInputPortsNeeded;
     private List<ReusableTemplateConnectionInfo> reusableTemplateConnections;
+
+    /**
+     *
+     */
+    private List<RemoteProcessGroupInputPort> remoteProcessGroupInputPortNames;
 
     @JsonIgnore
     private RegisteredTemplate templateToImport;
@@ -196,6 +204,20 @@ public class ImportTemplate {
         this.reusableTemplateConnections = reusableTemplateConnectionInfos;
     }
 
+    public void addRemoteProcessGroupInputPort(RemoteProcessGroupInputPort remoteProcessGroupInputPort) {
+        if(remoteProcessGroupInputPortNames == null){
+            remoteProcessGroupInputPortNames=new ArrayList<>();
+        }
+        this.remoteProcessGroupInputPortNames.add(remoteProcessGroupInputPort);
+    }
+
+    public void addRemoteProcessGroupInputPorts(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts) {
+        if(remoteProcessGroupInputPortNames == null){
+            remoteProcessGroupInputPortNames=new ArrayList<>();
+        }
+        this.remoteProcessGroupInputPortNames.addAll(remoteProcessGroupInputPorts);
+    }
+
     public boolean hasConnectingReusableTemplate() {
         return !nifiConnectingReusableTemplateXmls.isEmpty();
     }
@@ -255,5 +277,22 @@ public class ImportTemplate {
 
     public String getVersionIdentifier() {
         return versionIdentifier;
+    }
+
+
+    public List<RemoteProcessGroupInputPort> getRemoteProcessGroupInputPortNames() {
+        return remoteProcessGroupInputPortNames;
+    }
+
+    public void setRemoteProcessGroupInputPortNames(List<RemoteProcessGroupInputPort> remoteProcessGroupInputPortNames) {
+        this.remoteProcessGroupInputPortNames = remoteProcessGroupInputPortNames;
+    }
+
+    public boolean isRemoteProcessGroupInputPortsNeeded() {
+        return remoteProcessGroupInputPortsNeeded;
+    }
+
+    public void setRemoteProcessGroupInputPortsNeeded(boolean remoteProcessGroupInputPortsNeeded) {
+        this.remoteProcessGroupInputPortsNeeded = remoteProcessGroupInputPortsNeeded;
     }
 }

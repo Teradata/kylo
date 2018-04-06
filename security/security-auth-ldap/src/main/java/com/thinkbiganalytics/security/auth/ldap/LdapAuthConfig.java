@@ -57,6 +57,9 @@ public class LdapAuthConfig {
     
     @Value("${security.auth.ldap.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
     private int loginOrder;
+    
+    @Value("${security.auth.ldap.authenticator.userDnPatterns}")
+    private String userDnPatterns;
 
     @Bean(name = "ldapLoginConfiguration")
     public LoginConfiguration servicesLdapLoginConfiguration(LdapAuthenticator authenticator,
@@ -91,9 +94,8 @@ public class LdapAuthConfig {
     }
 
     @Bean
-    @ConfigurationProperties("security.auth.ldap.authenticator")
     public LdapAuthenticatorFactory ldapAuthenticator(LdapContextSource context) {
-        return new LdapAuthenticatorFactory(context);
+        return new LdapAuthenticatorFactory(context, this.userDnPatterns);
     }
 
     @Bean
@@ -146,9 +148,11 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String[] userDnPatterns;
 
-        public LdapAuthenticatorFactory(LdapContextSource contextSource) {
+        public LdapAuthenticatorFactory(LdapContextSource contextSource, String userDnPatternsStr) {
             super();
             this.contextSource = contextSource;
+            
+            setUserDnPatterns(userDnPatternsStr);
         }
 
         public void setUserDnPatterns(String userDnPatterns) {

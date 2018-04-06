@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsTableController = /** @class */ (function () {
@@ -337,8 +337,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "../ser
     }());
     exports.AlertsController = AlertsController;
     angular.module(module_name_1.moduleName).controller("AlertsController", ["$transition$", AlertsController]);
-    angular.module(module_name_1.moduleName)
-        .controller("AlertsTableController", ["$scope", "$http", "$q", "TableOptionsService", "PaginationDataService", "StateService",
+    angular.module(module_name_1.moduleName).controller("AlertsTableController", ["$scope", "$http", "$q", "TableOptionsService", "PaginationDataService", "StateService",
         "TabService", "OpsManagerRestUrlService", AlertsTableController]);
     angular.module(module_name_1.moduleName).directive("tbaAlertsTable", [
         function () {

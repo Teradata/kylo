@@ -23,13 +23,14 @@ var directive = function () {
 }
 
 
+
 export class FeedScheduleController implements ng.IComponentController {
 // define(['angular','feed-mgr/feeds/edit-feed/module-name','pascalprecht.translate'], function (angular,moduleName) {
 
 
     // var self = this;
     
-    versions:any = this.$scope.versions;
+    versions:boolean =false;
     /**
      * Indicates if the feed schedule may be edited.
      * @type {boolean}
@@ -94,11 +95,37 @@ export class FeedScheduleController implements ng.IComponentController {
     allScheduleStrategies:any = [{label: this.$filter('translate')('views.feed-schedule.Cron'), value: "CRON_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.Timer'), value: "TIMER_DRIVEN"}, {label: this.$filter('translate')('views.feed-schedule.T/E'), value: "TRIGGER_DRIVEN"},
     {label: "On primary node", value: "PRIMARY_NODE_ONLY"}];
 
-    
+
+    /**
+     * Array of strategies filtered for this feed
+     * @type {any[]}
+     */
+    scheduleStrategies:any[] =[];
+
+    static $inject =["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService","$filter"];
+
+    constructor (private $scope:any, private $http:angular.IHttpService, private $mdDialog:angular.material.IDialogService, private $q:angular.IQService,private AccessControlService:any
+        , private EntityAccessControlService:any,private FeedService:any, private RestUrlService:any, private $filter:angular.IFilterService) {
+
+            this.versions = this.$scope.versions;
+    }
+
+    /**
+     * The model stores the timerAmount and timerUnits together as 1 string.
+     * This will parse that string and set each component in the controller
+     */
+    parseTimer() {
+        this.timerAmount = parseInt(this.editModel.schedule.schedulingPeriod);
+        var startIndex = this.editModel.schedule.schedulingPeriod.indexOf(" ");
+        if (startIndex != -1) {
+            this.timerUnits = this.editModel.schedule.schedulingPeriod.substring(startIndex + 1);
+        }
+    }
+
     /**
      * When the timer changes show warning if its < 3 seconds indicating to the user this is a "Rapid Fire" feed
      */
-    timerChanged = function () {
+    timerChanged() {
         if (this.timerAmount < 0) {
             this.timerAmount = null;
         }
@@ -109,7 +136,7 @@ export class FeedScheduleController implements ng.IComponentController {
         this.validate();
     }
 
-    showTimerAlert = function (ev:any) {
+    showTimerAlert(ev?:any) {
         this.$mdDialog.show(
             this.$mdDialog.alert()
                 .parent(angular.element(document.body))
@@ -125,7 +152,7 @@ export class FeedScheduleController implements ng.IComponentController {
         /**
      * When the strategy changes ensure the defaults are set
      */
-    onScheduleStrategyChange = function() {
+    onScheduleStrategyChange() {
         if(this.editModel.schedule.schedulingStrategy == "CRON_DRIVEN") {
             if (this.editModel.schedule.schedulingPeriod != this.FeedService.DEFAULT_CRON) {
                 this.setCronDriven();
@@ -141,7 +168,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * Different templates have different schedule strategies.
      * Filter out those that are not needed based upon the template
      */
-    updateScheduleStrategies = function() {
+    updateScheduleStrategies() {
         // Filter schedule strategies
         this.scheduleStrategies = _.filter(this.allScheduleStrategies, (strategy:any) => {
             if (this.model.registeredTemplate.allowPreconditions) {
@@ -158,7 +185,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * Called when editing this section
      * copy the model to the {@code editModel} object
      */
-    onEdit = function(){
+    onEdit(){
         //copy the model
         this.editModel.category = {systemName: this.FeedService.editFeedModel.category.systemName};
         this.editModel.systemFeedName = this.FeedService.editFeedModel.systemFeedName;
@@ -179,14 +206,14 @@ export class FeedScheduleController implements ng.IComponentController {
         this.validate();
     };
 
-    onCancel = function() {
+    onCancel() {
         
     }
     /**
      * When saving copy the editModel and save it
      * @param ev
      */
-    onSave = function (ev:any) {
+    onSave(ev:any) {
         var isValid = this.validate();
         if (isValid) {
             //save changes to the model
@@ -217,7 +244,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * Remove the precondition from the schedule
      * @param $index
      */
-    deletePrecondition = ($index:any) => {
+    deletePrecondition($index:number)  {
         if (this.editModel.schedule.preconditions != null) {
             this.editModel.schedule.preconditions.splice($index, 1);
         }
@@ -227,7 +254,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * show the dialog allowing users to modify/add preconditions
      * @param index
      */
-    showPreconditionDialog = (index:any) => {
+    showPreconditionDialog(index:any) {
         this.$mdDialog.show({
             controller: 'FeedPreconditionsDialogController',
             templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
@@ -250,7 +277,7 @@ export class FeedScheduleController implements ng.IComponentController {
      * Validates the inputs are good
      * @returns {*}
      */
-     validate = function() {
+     validate() {
             //cron expression validation is handled via the cron-expression validator
             var valid = (this.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
                         (this.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' && this.timerAmount != undefined && this.timerAmount != null) ||
@@ -260,118 +287,102 @@ export class FeedScheduleController implements ng.IComponentController {
             return this.isValid;
         }
 
+    /**
+     * Force the model and timer to be set to Timer with the defaults
+     */
+     setTimerDriven() {
+        this.editModel.schedule.schedulingStrategy = 'TIMER_DRIVEN';
+        this.timerAmount = 5;
+        this.timerUnits = "min";
+        this.editModel.schedule.schedulingPeriod = "5 min";
+    }
 
+    /**
+     * Force the model to be set to Cron
+     */
+    setCronDriven() {
+        this.editModel.schedule.schedulingStrategy = 'CRON_DRIVEN'
+        this.editModel.schedule.schedulingPeriod = this.FeedService.DEFAULT_CRON;
+    }
+
+    /**
+     * Force the model to be set to Triggger
+     */
+    setTriggerDriven() {
+        this.editModel.schedule.schedulingStrategy = 'TRIGGER_DRIVEN'
+    }
+
+    /**
+     * Set the scheduling strategy to 'On primary node'.
+     */
+    setPrimaryNodeOnly() {
+        this.editModel.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
+        this.timerAmount = 5;
+        this.timerUnits = "min";
+        this.editModel.schedule.schedulingPeriod = "5 min";
+    }
+
+    /**
+     * Force the model to be set to the Default strategy
+     */
+    setDefaultScheduleStrategy() {
+        if (this.editModel.inputProcessorType != '' && (this.editModel.schedule.schedulingStrategy.touched == false || this.editModel.schedule.schedulingStrategy.touched == undefined)) {
+            if (this.editModel.inputProcessorType.indexOf("GetFile") >= 0) {
+                this.setTimerDriven();
+            }
+            else if (this.editModel.inputProcessorType.indexOf("GetTableData") >= 0) {
+                this.setCronDriven();
+            }
+            else if (this.editModel.inputProcessorType.indexOf("TriggerFeed") >= 0) {
+                this.setTriggerDriven();
+            }
+        }
+    }
         
-    constructor (private $scope:any, private $http:any, private $mdDialog:any, private $q:any,private AccessControlService:any
-        , private EntityAccessControlService:any,private FeedService:any, private RestUrlService:any, private $filter:any) {
-    
-            /**
-             * Watch the model and update it if not set.
-             */
-            $scope.$watch(() => {
-                return FeedService.editFeedModel;
-            },(newVal:any) => {
-                //only update the model if it is not set yet
-                if(this.model == null) {
-                    this.model = FeedService.editFeedModel;
-                }
-            });
+
+
+    $onInit() {
+        /**
+         * update the default strategies in the list
+         */
+        this.updateScheduleStrategies();
+
+        this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT,this.model,this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) =>{
+            this.allowEdit = !this.versions && access && !this.model.view.schedule.disabled;
+        });
+
+        // Detect if NiFi is clustered
+        this.$http.get(this.RestUrlService.NIFI_STATUS).then((response:any) => {
+            this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+            this.supportsExecutionNode = (this.isClustered && angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
+            this.updateScheduleStrategies();
+        });
+
+        /**
+         * Watch the model and update it if not set.
+         */
+        this.$scope.$watch(() => {
+            return this.FeedService.editFeedModel;
+        },(newVal:any) => {
+            //only update the model if it is not set yet
+            if(this.model == null) {
+                this.model = this.FeedService.editFeedModel;
+            }
+        });
 
         if (this.versions) {
-            $scope.$watch(()=>{
+            this.$scope.$watch(()=>{
                 return this.FeedService.versionFeedModel;
             },(newVal:any) => {
                 this.versionFeedModel = this.FeedService.versionFeedModel;
             });
-            $scope.$watch(()=>{
+            this.$scope.$watch(()=>{
                 return this.FeedService.versionFeedModelDiff;
             },(newVal:any) => {
                 this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
             });
         }
 
-        /**
-         * The model stores the timerAmount and timerUnits together as 1 string.
-         * This will parse that string and set each component in the controller
-         */
-        function parseTimer() {
-            this.timerAmount = parseInt(this.editModel.schedule.schedulingPeriod);
-            var startIndex = this.editModel.schedule.schedulingPeriod.indexOf(" ");
-            if (startIndex != -1) {
-                this.timerUnits = this.editModel.schedule.schedulingPeriod.substring(startIndex + 1);
-            }
-        }
-
-        /**
-         * Force the model and timer to be set to Timer with the defaults
-         */
-        function setTimerDriven() {
-            this.editModel.schedule.schedulingStrategy = 'TIMER_DRIVEN';
-            this.timerAmount = 5;
-            this.timerUnits = "min";
-            this.editModel.schedule.schedulingPeriod = "5 min";
-        }
-
-        /**
-         * Force the model to be set to Cron
-         */
-        function setCronDriven() {
-            this.editModel.schedule.schedulingStrategy = 'CRON_DRIVEN'
-            this.editModel.schedule.schedulingPeriod = FeedService.DEFAULT_CRON;
-        }
-
-        /**
-         * Force the model to be set to Triggger
-         */
-        function setTriggerDriven() {
-            this.editModel.schedule.schedulingStrategy = 'TRIGGER_DRIVEN'
-        }
-
-        /**
-         * Set the scheduling strategy to 'On primary node'.
-         */
-        function setPrimaryNodeOnly() {
-            this.editModel.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
-            this.timerAmount = 5;
-            this.timerUnits = "min";
-            this.editModel.schedule.schedulingPeriod = "5 min";
-        }
-
-        /**
-         * Force the model to be set to the Default strategy
-         */
-        function setDefaultScheduleStrategy() {
-            if (this.editModel.inputProcessorType != '' && (this.editModel.schedule.schedulingStrategy.touched == false || this.editModel.schedule.schedulingStrategy.touched == undefined)) {
-                if (this.editModel.inputProcessorType.indexOf("GetFile") >= 0) {
-                    setTimerDriven();
-                }
-                else if (this.editModel.inputProcessorType.indexOf("GetTableData") >= 0) {
-                    setCronDriven();
-                }
-                else if (this.editModel.inputProcessorType.indexOf("TriggerFeed") >= 0) {
-                    setTriggerDriven();
-                }
-            }
-        }
-
-
-        /**
-         * update the default strategies in the list
-         */
-        this.updateScheduleStrategies();
-        
-        $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) =>{
-            this.allowEdit = !this.versions && access && !this.model.view.schedule.disabled;
-        });
-
-        // Detect if NiFi is clustered
-        $http.get(RestUrlService.NIFI_STATUS).then((response:any) => {
-            this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
-            this.supportsExecutionNode = (this.isClustered && angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
-            this.updateScheduleStrategies();
-        });
-
-            
     }
 
         diff(path:any) {
@@ -381,9 +392,11 @@ export class FeedScheduleController implements ng.IComponentController {
         diffCollection(path:any) {
             return this.FeedService.diffCollectionOperation(path);
         }
+
+
 }
 
-    angular.module(moduleName).controller('FeedScheduleController', ["$scope","$http","$mdDialog","$q","AccessControlService","EntityAccessControlService","FeedService","RestUrlService","$filter",FeedScheduleController]);
+    angular.module(moduleName).controller('FeedScheduleController', FeedScheduleController);
 
     angular.module(moduleName)
         .directive('thinkbigFeedSchedule', directive);

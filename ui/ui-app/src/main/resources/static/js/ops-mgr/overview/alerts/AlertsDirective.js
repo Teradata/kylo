@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "../../services/AlertsServiceV2", "../../services/OpsManagerDashboardService"], function (require, exports, angular, module_name_1, AlertsServiceV2_1, OpsManagerDashboardService_1) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -65,8 +65,6 @@ define(["require", "exports", "angular", "../module-name", "../../services/Alert
     }());
     exports.default = controller;
     angular.module(module_name_1.moduleName)
-        .service('AlertsServiceV2', ["$q", "$http", "$interval", "OpsManagerRestUrlService", AlertsServiceV2_1.default])
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
         .controller('AlertsOverviewController', ["$scope", "$element", "$interval", "AlertsServiceV2", "StateService", "OpsManagerDashboardService",
         "BroadcastService", controller]);
     angular.module(module_name_1.moduleName)

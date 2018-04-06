@@ -10,7 +10,7 @@ export default class ProvenanceEventStatsService{
          let data: any = {
             getTimeFrameOptions: function () {
 
-                var promise = $http.get(this.OpsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS);
+                var promise = $http.get(OpsManagerRestUrlService.PROVENANCE_EVENT_TIME_FRAME_OPTIONS);
                 return promise;
             },
 

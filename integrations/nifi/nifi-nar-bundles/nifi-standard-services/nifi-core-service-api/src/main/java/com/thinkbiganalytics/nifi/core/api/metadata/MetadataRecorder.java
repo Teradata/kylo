@@ -73,7 +73,7 @@ public interface MetadataRecorder {
 
     InitializationStatus completeFeedInitialization(String feedId);
 
-    InitializationStatus failFeedInitialization(String feedId);
+    InitializationStatus failFeedInitialization(String feedId, boolean isReinitialize);
 
 
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
@@ -85,5 +85,12 @@ public interface MetadataRecorder {
      * @returns {@link FeedDataHistoryReindexParams} updated status of feed and columns to index
      */
     FeedDataHistoryReindexParams updateFeedHistoryReindexing(String feedId, HistoryReindexingStatus historyReindexingStatus);
+
+    /**
+     * Notifies a change in a feed's initialization status
+     * @param feedId the feed's ID
+     * @param status the new status
+     */
+    void initializationStatusChanged(String feedId, InitializationStatus status);
 
 }

@@ -205,9 +205,6 @@ feedNames: any[];
 }
 
 angular.module(moduleName)
- .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
- .service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
- .service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
 .controller('OpsManagerFeedDetailsController',
 ['$scope', '$timeout','$q', '$interval','$transition$','$http','OpsManagerFeedService',
 'OpsManagerRestUrlService','StateService', 'OpsManagerJobService', 'BroadcastService', controller]);

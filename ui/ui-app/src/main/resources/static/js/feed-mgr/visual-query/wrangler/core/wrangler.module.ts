@@ -9,7 +9,7 @@ import {MatInputModule} from "@angular/material/input";
 import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSelectModule} from "@angular/material/select";
 import {MatToolbarModule} from "@angular/material/toolbar";
-import {CovalentDialogsModule} from "@covalent/core";
+import {CovalentDialogsModule} from "@covalent/core/dialogs";
 
 import {DIALOG_SERVICE, INJECTOR} from "../api/index";
 import {DateFormatDialog} from "./columns/date-format.component";

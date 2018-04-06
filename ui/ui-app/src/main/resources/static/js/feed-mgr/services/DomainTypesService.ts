@@ -18,6 +18,67 @@ const moduleName = require('feed-mgr/module-name');
 import * as angular from 'angular';
 import * as _ from "underscore";
 
+/**
+ * Defines the domain type (zip, phone, credit card) of a column.
+ */
+export interface DomainType {
+
+    /**
+     * The unique identifier.
+     */
+    id?: string;
+
+    /**
+     * A human-readable description.
+     */
+    description: string;
+
+    /**
+     * The field.
+     */
+    field: any;
+
+    /**
+     * Regular expression flags for matching field names.
+     */
+    fieldNameFlags: string;
+
+    /**
+     * Regular expression pattern for matching field names.
+     */
+    fieldNamePattern: string;
+
+    /**
+     * The field policy.
+     */
+    fieldPolicy: any;
+
+    /**
+     * The name of the icon.
+     */
+    icon: string;
+
+    /**
+     * The icon color.
+     */
+    iconColor: string;
+
+    /**
+     * Regular expression flags for matching sample values.
+     */
+    regexFlags: string;
+
+    /**
+     * Regular expression pattern for matching sample values.
+     */
+    regexPattern: string;
+
+    /**
+     * A human-readable title.
+     */
+    title: string;
+}
+
      /**
          * Gets the specified RegExp.
          */
@@ -54,7 +115,7 @@ import * as _ from "underscore";
             return (result !== null && result.index === 0 && result[0].length === value.length);
         }
 
-export default class DomainTypesService{
+export class DomainTypesService{
         /**
          * Interacts with the Domain Types REST API.
          * @constructor

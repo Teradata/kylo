@@ -172,8 +172,6 @@ constructor(private $scope: any,
 }
 
 angular.module(moduleName)
-.service('OpsManagerRestUrlService',[OpsManagerRestUrlService])
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
 .controller("OverviewController", 
             ["$scope","$mdDialog","$interval","$timeout",
             "AccessControlService","HttpService","OpsManagerDashboardService",OverviewController]);

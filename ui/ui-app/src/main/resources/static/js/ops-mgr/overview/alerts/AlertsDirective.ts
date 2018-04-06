@@ -1,11 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import ServicesStatusData from "../../services/ServicesStatusService";
-import AlertsServiceV2 from "../../services/AlertsServiceV2";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
 
 export default class controller implements ng.IComponentController{
-alertsService: any;
 alerts: any[];
 feedRefresh: any;
 refreshIntervalTime: any;
@@ -13,7 +9,7 @@ feedName: any;
 constructor(private $scope: any,
             private $element: any,
             private $interval: any,
-            private AlertsServiceV2: AlertsServiceV2,
+            private AlertsServiceV2: any,
             private StateService: any,
             private OpsManagerDashboardService: any,
             private BroadcastService: any){
@@ -75,8 +71,6 @@ constructor(private $scope: any,
 }
 
  angular.module(moduleName)
-.service('AlertsServiceV2',["$q","$http","$interval","OpsManagerRestUrlService",AlertsServiceV2])
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
 .controller('AlertsOverviewController', 
                 ["$scope","$element","$interval","AlertsServiceV2","StateService","OpsManagerDashboardService",
                 "BroadcastService",controller]);

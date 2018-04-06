@@ -2,7 +2,7 @@ import 'angular';
 import "kylo-feedmgr";
 import "kylo-common";
 import "ment-io";
-import "../services/RegisterTemplateService";
+import "../services/RegisterTemplateServiceFactory";
 import "./RegisteredTemplatesController";
 import "./RegisterNewTemplateController";
 import "./template-order/template-order";

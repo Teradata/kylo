@@ -48,6 +48,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.isValid = true;
             this.feedSecurityGroups = this.FeedSecurityGroups;
             this.securityGroupsEnabled = false;
+            this.userProperties = [];
             this.transformChip = function (chip) {
                 // If it is an object, it's already a known chip
                 if (angular.isObject(chip)) {
@@ -58,35 +59,34 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             };
             this.onEdit = function () {
                 // Determine tags value
-                var tags = angular.copy(this.FeedService.editFeedModel.tags);
+                var tags = angular.copy(_this.FeedService.editFeedModel.tags);
                 if (tags == undefined || tags == null) {
                     tags = [];
                 }
                 // Copy model for editing
-                this.editModel = {};
-                this.editModel.dataOwner = this.model.dataOwner;
-                this.editModel.tags = tags;
-                this.editModel.userProperties = angular.copy(this.model.userProperties);
-                this.editModel.securityGroups = angular.copy(this.FeedService.editFeedModel.securityGroups);
-                if (this.editModel.securityGroups == undefined) {
-                    this.editModel.securityGroups = [];
+                _this.editModel = {};
+                _this.editModel.dataOwner = _this.model.dataOwner;
+                _this.editModel.tags = tags;
+                _this.editModel.userProperties = angular.copy(_this.model.userProperties);
+                _this.editModel.securityGroups = angular.copy(_this.FeedService.editFeedModel.securityGroups);
+                if (_this.editModel.securityGroups == undefined) {
+                    _this.editModel.securityGroups = [];
                 }
             };
             this.onCancel = function () {
                 // do nothing
             };
             this.onSave = function (ev) {
-                var _this = this;
                 //save changes to the model
-                this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-additional-properties.Saving'), this.model.feedName);
-                var copy = angular.copy(this.FeedService.editFeedModel);
-                copy.tags = this.editModel.tags;
-                copy.dataOwner = this.editModel.dataOwner;
-                copy.userProperties = this.editModel.userProperties;
-                copy.securityGroups = this.editModel.securityGroups;
+                _this.FeedService.showFeedSavingDialog(ev, _this.$filter('translate')('views.feed-additional-properties.Saving'), _this.model.feedName);
+                var copy = angular.copy(_this.FeedService.editFeedModel);
+                copy.tags = _this.editModel.tags;
+                copy.dataOwner = _this.editModel.dataOwner;
+                copy.userProperties = _this.editModel.userProperties;
+                copy.securityGroups = _this.editModel.securityGroups;
                 //Server may have updated value. Don't send via UI.
                 copy.historyReindexingStatus = undefined;
-                this.FeedService.saveFeedModel(copy).then(function (response) {
+                _this.FeedService.saveFeedModel(copy).then(function (response) {
                     _this.FeedService.hideFeedSavingDialog();
                     _this.editableSection = false;
                     //save the changes back to the model
@@ -130,6 +130,68 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                     return _this.FeedService.versionFeedModelDiff;
                 }, function (newVal) {
                     _this.versionFeedModelDiff = _this.FeedService.versionFeedModelDiff;
+                    _this.userProperties = [];
+                    _.each(_this.versionFeedModel.userProperties, function (versionedProp) {
+                        var property = {};
+                        property.versioned = angular.copy(versionedProp);
+                        property.op = 'no-op';
+                        property.systemName = property.versioned.systemName;
+                        property.displayName = property.versioned.displayName;
+                        property.description = property.versioned.description;
+                        property.current = angular.copy(property.versioned);
+                        _this.userProperties.push(property);
+                    });
+                    _.each(_.values(_this.versionFeedModelDiff), function (diff) {
+                        if (diff.path.startsWith("/userProperties")) {
+                            if (diff.path.startsWith("/userProperties/")) {
+                                //individual versioned indexed action
+                                var remainder = diff.path.substring("/userProperties/".length, diff.path.length);
+                                var indexOfSlash = remainder.indexOf("/");
+                                var versionedPropIdx = remainder.substring(0, indexOfSlash > 0 ? indexOfSlash : remainder.length);
+                                if ("replace" === diff.op) {
+                                    var property = _this.userProperties[versionedPropIdx];
+                                    property.op = diff.op;
+                                    var replacedPropertyName = remainder.substring(remainder.indexOf("/") + 1, remainder.length);
+                                    property.current[replacedPropertyName] = diff.value;
+                                    property[replacedPropertyName] = diff.value;
+                                }
+                                else if ("add" === diff.op) {
+                                    if (_.isArray(diff.value)) {
+                                        _.each(diff.value, function (prop) {
+                                            _this.userProperties.push(_this.createProperty(prop, diff.op));
+                                        });
+                                    }
+                                    else {
+                                        _this.userProperties.unshift(_this.createProperty(diff.value, diff.op));
+                                    }
+                                }
+                                else if ("remove" === diff.op) {
+                                    var property = _this.userProperties[versionedPropIdx];
+                                    property.op = diff.op;
+                                    property.current = {};
+                                }
+                            }
+                            else {
+                                //group versioned action, can be either "add" or "remove"
+                                if ("add" === diff.op) {
+                                    if (_.isArray(diff.value)) {
+                                        _.each(diff.value, function (prop) {
+                                            _this.userProperties.push(_this.createProperty(prop, diff.op));
+                                        });
+                                    }
+                                    else {
+                                        _this.userProperties.push(_this.createProperty(diff.value, diff.op));
+                                    }
+                                }
+                                else if ("remove" === diff.op) {
+                                    _.each(_this.userProperties, function (prop) {
+                                        prop.op = diff.op;
+                                        prop.current = {};
+                                    });
+                                }
+                            }
+                        }
+                    });
                 });
             }
             //Apply the entity access permissions
@@ -137,6 +199,17 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 _this.allowEdit = !_this.versions && access && !_this.model.view.properties.disabled;
             });
         }
+        FeedAdditionalPropertiesController.prototype.createProperty = function (original, operation) {
+            var property = {};
+            property.versioned = {};
+            property.current = angular.copy(original);
+            property.systemName = property.current.systemName;
+            property.displayName = property.current.displayName;
+            property.description = property.current.description;
+            property.op = operation;
+            return property;
+        };
+        ;
         FeedAdditionalPropertiesController.prototype.findVersionedUserProperty = function (property) {
             var versionedProperty = _.find(this.versionFeedModel.userProperties, function (p) {
                 return p.systemName === property.systemName;

@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OpsManagerDashboardService = /** @class */ (function () {
-        function OpsManagerDashboardService($q, $http, $interval, $timeout, HttpService, IconService, AlertsService, OpsManagerRestUrlService, BroadcastService, OpsManagerFeedService) {
+        function OpsManagerDashboardService($q, $http, $interval, $timeout, HttpService, IconService, OpsManagerRestUrlService, BroadcastService, OpsManagerFeedService) {
             var _this = this;
             this.$q = $q;
             this.$http = $http;
@@ -10,7 +10,6 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
             this.$timeout = $timeout;
             this.HttpService = HttpService;
             this.IconService = IconService;
-            this.AlertsService = AlertsService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.BroadcastService = BroadcastService;
             this.OpsManagerFeedService = OpsManagerFeedService;
@@ -209,7 +208,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
     exports.default = OpsManagerDashboardService;
     angular.module(module_name_1.moduleName)
         .factory('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService',
-        'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService',
+        'OpsManagerRestUrlService', 'BroadcastService',
         'OpsManagerFeedService', OpsManagerDashboardService]);
 });
 //# sourceMappingURL=OpsManagerDashboardService.js.map

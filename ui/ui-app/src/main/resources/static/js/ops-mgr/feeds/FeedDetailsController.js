@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "../services/OpsManagerFeedService", "../services/OpsManagerJobService", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, _, OpsManagerFeedService_1, OpsManagerJobService_1, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "./module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -163,9 +163,6 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
     }());
     exports.controller = controller;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
-        .service('OpsManagerJobService', ['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService_1.default])
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
         .controller('OpsManagerFeedDetailsController', ['$scope', '$timeout', '$q', '$interval', '$transition$', '$http', 'OpsManagerFeedService',
         'OpsManagerRestUrlService', 'StateService', 'OpsManagerJobService', 'BroadcastService', controller]);
 });

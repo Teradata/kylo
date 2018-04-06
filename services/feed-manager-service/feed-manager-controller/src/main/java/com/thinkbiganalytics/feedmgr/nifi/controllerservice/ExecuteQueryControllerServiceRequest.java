@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.feedmgr.nifi.controllerservice;
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
+
 /*-
  * #%L
  * kylo-feed-manager-controller
@@ -49,6 +51,11 @@ public class ExecuteQueryControllerServiceRequest extends AbstractControllerServ
 
         public ExecuteQueryControllerServiceRequestBuilder query(String query) {
             this.query = query;
+            return this;
+        }
+        
+        public ExecuteQueryControllerServiceRequestBuilder previewQuery(DatabaseType dbType, String schema, String table, int limit) {
+            this.query = dbType.asLimitQuery(schema, table, limit);
             return this;
         }
 

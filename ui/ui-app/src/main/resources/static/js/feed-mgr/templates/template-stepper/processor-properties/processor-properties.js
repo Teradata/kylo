@@ -82,6 +82,14 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             this.onShowOnlySelected = function () {
                 transformPropertiesToArray();
             };
+            this.changedPropertyInput = function (property) {
+                property.changed = true;
+            };
+            this.keydownPropertyInput = function (property) {
+                if (!property.changed && property.sensitive) {
+                    property.value = "";
+                }
+            };
             this.onRenderTypeChange = function (property) {
                 if (property.renderType == 'select' && (property.propertyDescriptor.allowableValues == undefined || property.propertyDescriptor.allowableValues == null || property.propertyDescriptor.allowableValues.length == 0)) {
                     if (property.selectOptions == undefined) {

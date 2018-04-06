@@ -120,6 +120,7 @@
     <slf4j.log4j12.version>1.7.10</slf4j.log4j12.version>
     <io.swagger.version>1.5.9</io.swagger.version>
     <commons-beanutils.version>1.9.2</commons-beanutils.version>
+    <commons-propertyutils.version>1.9.2</commons-propertyutils.version>
     <commons.dbcp>1.4</commons.dbcp>
     <commons.dbcp2>2.1.1</commons.dbcp2>
     <commons-exec.version>1.3</commons-exec.version>
@@ -528,10 +529,10 @@
         <optional>true</optional>
       </dependency>
 
-     <dependency>
-       <groupId>org.springframework.cloud</groupId>
-       <artifactId>spring-cloud-context</artifactId>
-       <version>${spring.cloud.version}</version>
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-context</artifactId>
+        <version>${spring.cloud.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
@@ -726,6 +727,12 @@
         <groupId>commons-beanutils</groupId>
         <artifactId>commons-beanutils</artifactId>
         <version>${commons-beanutils.version}</version>
+      </dependency>
+
+      <dependency>
+        <groupId>commons-propertyutils</groupId>
+        <artifactId>commons-propertyutils</artifactId>
+        <version>${commons-propertyutils.version}</version>
       </dependency>
 
       <dependency>
@@ -1172,122 +1179,122 @@
         </plugins>
       </build>
     </profile>
-      <profile>
-        <id>maven-repo-promotion</id>
-        <activation>
-          <property>
-            <name>maven-repo-promotion</name>
-            <value>true</value>
-          </property>
-        </activation>
+    <profile>
+      <id>maven-repo-promotion</id>
+      <activation>
+        <property>
+          <name>maven-repo-promotion</name>
+          <value>true</value>
+        </property>
+      </activation>
 
-        <build>
-          <plugins>
-            <plugin>
-              <!-- Customize JAR manifest settings -->
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-jar-plugin</artifactId>
-              <version>${maven-jar-plugin.version}</version>
-              <configuration>
-                <archive>
-                  <manifest>
-                    <!-- Write Implementation-* entries to manifest -->
-                    <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                    <!-- Write Specification-* entries to manifest -->
-                    <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                  </manifest>
-                </archive>
-              </configuration>
-            </plugin>
-
-
-            <plugin>
-              <!-- Build Source JAR -->
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-source-plugin</artifactId>
-              <version>${maven-source-plugin.version}</version>
-              <executions>
-                <execution>
-                  <id>attach-sources</id>
-                  <goals>
-                    <goal>jar</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
-
-            <plugin>
-              <!-- Build JavaDoc JAR -->
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-javadoc-plugin</artifactId>
-              <version>${maven-javadoc-plugin.version}</version>
-              <executions>
-                <execution>
-                  <id>attach-javadocs</id>
-                  <goals>
-                    <goal>jar</goal>
-                  </goals>
-                  <configuration> <!-- add this to disable checking -->
-                    <additionalparam>-Xdoclint:none</additionalparam>
-                  </configuration>
-                </execution>
-              </executions>
-            </plugin>
+      <build>
+        <plugins>
+          <plugin>
+            <!-- Customize JAR manifest settings -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-jar-plugin</artifactId>
+            <version>${maven-jar-plugin.version}</version>
+            <configuration>
+              <archive>
+                <manifest>
+                  <!-- Write Implementation-* entries to manifest -->
+                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                  <!-- Write Specification-* entries to manifest -->
+                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                </manifest>
+              </archive>
+            </configuration>
+          </plugin>
 
 
-            <plugin>
-              <!--
-              Sign all the artifacts with GPG.
-              Important: GPG key must be present on the system, otherwise fails.
-              -->
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-gpg-plugin</artifactId>
-              <version>${maven-gpg-plugin.version}</version>
-              <executions>
-                <execution>
-                  <id>sign-artifacts</id>
-                  <phase>verify</phase>
-                  <goals>
-                    <goal>sign</goal>
-                  </goals>
-                </execution>
-              </executions>
-            </plugin>
+          <plugin>
+            <!-- Build Source JAR -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>${maven-source-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
 
-            <plugin>
-              <groupId>org.sonatype.plugins</groupId>
-              <artifactId>nexus-staging-maven-plugin</artifactId>
-              <version>${nexus-staging-maven-plugin.version}</version>
-              <extensions>true</extensions>
-              <configuration>
-                <serverId>ossrh</serverId>
-                <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                <autoReleaseAfterClose>${automatic-release-repo-promotion}</autoReleaseAfterClose>
-              </configuration>
-            </plugin>
-          </plugins>
-        </build>
+          <plugin>
+            <!-- Build JavaDoc JAR -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+                <configuration> <!-- add this to disable checking -->
+                  <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 
-        <distributionManagement>
-          <snapshotRepository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-          </snapshotRepository>
-          <repository>
-            <id>ossrh</id>
-            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-          </repository>
-        </distributionManagement>
-        <reporting>
-          <plugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-javadoc-plugin</artifactId>
-              <version>${maven-javadoc-plugin.version}</version>
-            </plugin>
-          </plugins>
-        </reporting>
-      </profile>
+
+          <plugin>
+            <!--
+            Sign all the artifacts with GPG.
+            Important: GPG key must be present on the system, otherwise fails.
+            -->
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>${maven-gpg-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>${nexus-staging-maven-plugin.version}</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>${automatic-release-repo-promotion}</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+
+      <distributionManagement>
+        <snapshotRepository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+          <id>ossrh</id>
+          <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+        </repository>
+      </distributionManagement>
+      <reporting>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>${maven-javadoc-plugin.version}</version>
+          </plugin>
+        </plugins>
+      </reporting>
+    </profile>
     <profile>
       <id>nifi.version.override</id>
       <activation>

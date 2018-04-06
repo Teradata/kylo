@@ -102,9 +102,7 @@ var MatIconButtonCssMatStyler = /** @class */ (function () {
  * \@docs-private
  */
 var MatFab = /** @class */ (function () {
-    function MatFab(button, anchor) {
-        // Set the default color palette for the mat-fab components.
-        (button || anchor).color = DEFAULT_ROUND_BUTTON_COLOR;
+    function MatFab() {
     }
     MatFab.decorators = [
         { type: _angular_core.Directive, args: [{
@@ -113,21 +111,15 @@ var MatFab = /** @class */ (function () {
                 },] },
     ];
     /** @nocollapse */
-    MatFab.ctorParameters = function () { return [
-        { type: MatButton, decorators: [{ type: _angular_core.Self }, { type: _angular_core.Optional }, { type: _angular_core.Inject, args: [_angular_core.forwardRef(function () { return MatButton; }),] },] },
-        { type: MatAnchor, decorators: [{ type: _angular_core.Self }, { type: _angular_core.Optional }, { type: _angular_core.Inject, args: [_angular_core.forwardRef(function () { return MatAnchor; }),] },] },
-    ]; };
+    MatFab.ctorParameters = function () { return []; };
     return MatFab;
 }());
 /**
- * Directive that targets mini-fab buttons and anchors. It's used to apply the `mat-` class
- * to all mini-fab buttons and also is responsible for setting the default color palette.
+ * Directive whose purpose is to add the mat- CSS styling to this selector.
  * \@docs-private
  */
 var MatMiniFab = /** @class */ (function () {
-    function MatMiniFab(button, anchor) {
-        // Set the default color palette for the mat-mini-fab components.
-        (button || anchor).color = DEFAULT_ROUND_BUTTON_COLOR;
+    function MatMiniFab() {
     }
     MatMiniFab.decorators = [
         { type: _angular_core.Directive, args: [{
@@ -136,10 +128,7 @@ var MatMiniFab = /** @class */ (function () {
                 },] },
     ];
     /** @nocollapse */
-    MatMiniFab.ctorParameters = function () { return [
-        { type: MatButton, decorators: [{ type: _angular_core.Self }, { type: _angular_core.Optional }, { type: _angular_core.Inject, args: [_angular_core.forwardRef(function () { return MatButton; }),] },] },
-        { type: MatAnchor, decorators: [{ type: _angular_core.Self }, { type: _angular_core.Optional }, { type: _angular_core.Inject, args: [_angular_core.forwardRef(function () { return MatAnchor; }),] },] },
-    ]; };
+    MatMiniFab.ctorParameters = function () { return []; };
     return MatMiniFab;
 }());
 /**
@@ -170,6 +159,9 @@ var MatButton = /** @class */ (function (_super) {
          */
         _this._isIconButton = _this._hasHostAttributes('mat-icon-button');
         _this._focusMonitor.monitor(_this._elementRef.nativeElement, true);
+        if (_this._isRoundButton) {
+            _this.color = DEFAULT_ROUND_BUTTON_COLOR;
+        }
         return _this;
     }
     /**

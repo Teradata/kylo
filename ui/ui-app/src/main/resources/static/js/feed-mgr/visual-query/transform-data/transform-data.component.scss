@@ -207,7 +207,7 @@ md-menu-item > .md-menu > .md-button span {
 .visual-query-column-menu {
   max-height: 352px;
 
-  .material-icons {
+.material-icons {
     font-size: 20px;
     vertical-align: sub;
 
@@ -217,6 +217,11 @@ md-menu-item > .md-menu > .md-button span {
       vertical-align: super;
     }
   }
+}
+
+.visual-query-filter-menu {
+  padding-top:10px;
+  padding-bottom:10px;
 }
 
 /** Column menu text inputs */

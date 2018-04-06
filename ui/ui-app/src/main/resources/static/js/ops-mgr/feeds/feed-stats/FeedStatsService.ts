@@ -1,46 +1,56 @@
+///<reference path="../../../common/utils/ArrayUtils.ts"/>
 import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import "pascalprecht.translate";
 import ProvenanceEventStatsService from "../../services/ProvenanceEventStatsService";
 import * as _ from "underscore";
-const d3 = require('../../bower_components/d3');
+const d3 = require('d3');
 
-export default class FeedStatsService{
-    DEFAULT_CHART_FUNCTION: any;
+export class FeedStatsService {
+
+    DEFAULT_CHART_FUNCTION: string = 'Average Duration';
     processorStatsFunctionMap: any;
     fromMillis: any;
     toMillis: any;
-    feedName: any;
+    feedName: string = '';
     processorStatistics: any;       
     summaryStatistics: any;
     nullVar: any | null;
+    loadingFeedTimeSeriesData:boolean = false;
+    loadingProcessorStatistics:boolean = false;
+    feedTimeSeries:any;
+    feedProcessorErrors:any;
+    lastSummaryStats:any[] = [];
+    keepLastSummary:number = 20;
+    flowsStartedPerSecond:any =0;
+
     constructor(private $q: any,
         private ProvenanceEventStatsService: any){
-            this.GetData();
+            this.init();
     }
 
-    GetData=()=>{
-           this.DEFAULT_CHART_FUNCTION = 'Average Duration';
+    init() {
+        this.DEFAULT_CHART_FUNCTION = 'Average Duration';
         this.processorStatsFunctionMap = {
             'Average Duration': {
-                axisLabel: 'Time (sec)', fn: (stats: any)=> {
+                axisLabel: 'Time (sec)', fn: (stats: any) => {
                     return (stats.duration / stats.totalCount) / 1000
                 }
             },
             'Bytes In': {
-                axisLabel: 'Bytes', valueFormatFn: (d: any)=> {
+                axisLabel: 'Bytes', valueFormatFn: (d: any) => {
                     return this.bytesToString(d);
-                }, fn: (stats: any)=> {
+                }, fn: (stats: any) => {
                     return stats.bytesIn
                 }
             },
             'Bytes Out': {
-                axisLabel: 'Bytes', valueFormatFn: (d: any)=> {
+                axisLabel: 'Bytes', valueFormatFn: (d: any) => {
                     return this.bytesToString(d);
                 }, fn: function (stats: any) {
                     return stats.bytesOut
                 }
-            },/*
+            }, /*
             'Flow Files Started': {
                 axisLabel: 'Count', valueFormatFn:function(d){
                     return d3.format(',')(parseInt(d))
@@ -57,118 +67,124 @@ export default class FeedStatsService{
             },
             */
             'Flows Started': {
-                axisLabel: 'Count', valueFormatFn:(d: any)=>{
+                axisLabel: 'Count', valueFormatFn: (d: any) => {
                     return d3.format(',')(parseInt(d))
-                },fn: (stats: any)=> {
+                }, fn: (stats: any) => {
                     return stats.jobsStarted != undefined ? stats.jobsStarted : 0;
                 }
             },
             'Flows Finished': {
-                axisLabel: 'Count',valueFormatFn:(d: any)=>{
+                axisLabel: 'Count', valueFormatFn: (d: any) => {
                     return d3.format(',')(parseInt(d))
-                }, fn: (stats: any)=> {
+                }, fn: (stats: any) => {
                     return stats.jobsFinished != undefined ? stats.jobsFinished : 0;
                 }
             },
             'Total Events': {
-                axisLabel: 'Count',valueFormatFn:(d: any)=>{
+                axisLabel: 'Count', valueFormatFn: (d: any) => {
                     return d3.format(',')(parseInt(d))
-                }, fn: (stats: any)=> {
+                }, fn: (stats: any) => {
                     return stats.totalCount
                 }
             },
             'Failed Events': {
-                axisLabel: 'Count',valueFormatFn:(d: any)=>{
+                axisLabel: 'Count', valueFormatFn: (d: any) => {
                     return d3.format(',')(parseInt(d))
-                }, fn: (stats: any)=> {
+                }, fn: (stats: any) => {
                     return stats.failedCount
                 }
             }
         };
 
-        var keepLastSummary = 20;
-      
-        var dataSet: any[] = [];
-        var data = {
-            feedName: '',
-            loadingProcessorStatistics: false,
-            processorStatistics: {
-                topN: 3,
-                lastRefreshTime: '',
-                raw: {},
-                chartData: {
-                    chartFunction: '',
-                    total: 0,
-                    totalFormatted: '',
-                    data: dataSet
-                },
-                selectedChartFunction: '',
-                topNProcessorDurationData: dataSet
-            },
-            summaryStatistics: {
-                lastRefreshTime: '',
-                time: {startTime: 0, endTime: 0},
-                flowsStartedPerSecond: 0,
-                flowsStarted: 0,
-                flowsFinished: 0,
-                flowDuration: 0,
-                flowsFailed: 0,
-                totalEvents: 0,
-                failedEvents: 0,
-                flowsSuccess: 0,
-                flowsRunning: 0,
-                avgFlowDuration: 0
-            },
-            loadingFeedTimeSeriesData: false,
-            feedTimeSeries: {
-                lastRefreshTime: '',
-                time: {startTime: 0, endTime: 0},
-                minTime: 0,
-                maxTime: 0,
-                raw: dataSet, //[],
-                chartData: dataSet, //[]
-            },
-            feedProcessorErrors: {
-                time: {startTime: 0, endTime: 0},
-                autoRefresh:true,
-                autoRefreshMessage:"enabled",
-                allData: dataSet,//[],
-                visibleData: dataSet, //[],
-                newErrorCount:0,
-                viewAllData:function(){
-                   
-                    var index = this.visibleData.length;
-                    if(this.allData.length > index) {
-                        var rest = _.rest(this.allData,index);
-                        _.each(rest, function (item) {
-                            this.visibleData.push(item);
-                        });
-                        this.newErrorCount = 0;
-                    }
-                }
-            },
-            lastSummaryStats: dataSet, //[],
-            setTimeBoundaries: (from: any, to: any)=> {
-                this.fromMillis = from;
-                this.toMillis = to;
-            },
-            setFeedName: (feedName: any)=> {
-                this.feedName = feedName;
-            },
-            setSelectedChartFunction:  (selectedChartFunction: any)=> {
-                this.processorStatistics.selectedChartFunction = selectedChartFunction
-            },
-            formatBytesToString: this.bytesToString,
-            processorStatsFunctionMap: this.processorStatsFunctionMap,
 
-            processorStatsFunctions: ()=> {
+
+        this.processorStatistics = {
+            topN: 3,
+            lastRefreshTime: '',
+            raw: {},
+            chartData: {
+                chartFunction: '',
+                total: 0,
+                totalFormatted: '',
+                data: []
+            },
+            selectedChartFunction: '',
+            topNProcessorDurationData: []
+        }
+
+        this.summaryStatistics = {
+            lastRefreshTime: '',
+            time: {startTime: 0, endTime: 0},
+            flowsStartedPerSecond: 0,
+            flowsStarted: 0,
+            flowsFinished: 0,
+            flowDuration: 0,
+            flowsFailed: 0,
+            totalEvents: 0,
+            failedEvents: 0,
+            flowsSuccess: 0,
+            flowsRunning: 0,
+            avgFlowDuration: 0
+        }
+
+        this.loadingFeedTimeSeriesData = false;
+
+        this.feedTimeSeries = {
+            lastRefreshTime: '',
+            time: {startTime: 0, endTime: 0},
+            minTime: 0,
+            maxTime: 0,
+            raw: [],
+            chartData: []
+        }
+
+        this.feedProcessorErrors= {
+            time: {startTime: 0, endTime: 0},
+            autoRefresh:true,
+            autoRefreshMessage:"enabled",
+            allData:[],
+            visibleData: [],
+            newErrorCount:0,
+            viewAllData:function(){
+
+                var index = this.visibleData.length;
+                if(this.allData.length > index) {
+                    var rest = _.rest(this.allData,index);
+                    _.each(rest, (item) =>{
+                        this.visibleData.push(item);
+                    });
+                    this.newErrorCount = 0;
+                }
+            }
+        }
+    }
+
+
+
+
+
+    setTimeBoundaries(from:any, to: any) :void {
+        this.fromMillis = from;
+        this.toMillis = to;
+    }
+
+            setFeedName(feedName: any) {
+                this.feedName = feedName;
+            }
+
+            setSelectedChartFunction (selectedChartFunction: any) {
+                this.processorStatistics.selectedChartFunction = selectedChartFunction
+            }
+
+            processorStatsFunctions() {
                 return Object.keys(this.processorStatsFunctionMap);
-            },
-            averageDurationFunction: this.processorStatsFunctionMap[this.DEFAULT_CHART_FUNCTION],
-            isLoading: function () {
+            }
+
+            isLoading(){
                 return this.loadingProcessorStatistics || this.loadingFeedTimeSeriesData;
-            },
-            fetchProcessorStatistics: function(minTime: any, maxTime: any) {
+            }
+
+            fetchProcessorStatistics(minTime: any, maxTime: any) {
                 this.loadingProcessorStatistics = true;
                 var deferred = this.$q.defer();
 
@@ -180,7 +196,7 @@ export default class FeedStatsService{
                 if(angular.isUndefined(maxTime)){
                     maxTime = this.toMillis;
                 }
-                this.$q.when(this.ProvenanceEventStatsService.getFeedProcessorDuration(this.feedName, minTime,maxTime)).then(function (response: any) {
+                this.$q.when(this.ProvenanceEventStatsService.getFeedProcessorDuration(this.feedName, minTime,maxTime)).then((response: any) => {
                     var processorStatsContainer = response.data;
 
                     var processorStats = processorStatsContainer.stats;
@@ -194,10 +210,10 @@ export default class FeedStatsService{
                     var totalEvents = 0;
                     var failedEvents = 0;
                     var flowsSuccess = 0;
-                    var chartData = [];
+                    var chartData = {};
                     var processorDuration: any[] = [];
 
-                    var chartDataCallbackFunction = function(key: any, p: any) {
+                    var chartDataCallbackFunction = (key: any, p: any) =>{
                         flowsStarted += p.jobsStarted;
                         flowsFinished += p.jobsFinished;
                         flowDuration += p.jobDuration;
@@ -244,7 +260,7 @@ export default class FeedStatsService{
                     summary.lastRefreshTime = refreshTime;
 
                     var lastSummaryStats = angular.copy(this.summaryStatistics);
-                    if (this.lastSummaryStats.length >= keepLastSummary) {
+                    if (this.lastSummaryStats.length >= this.keepLastSummary) {
                         this.lastSummaryStats.shift();
                     }
 
@@ -261,13 +277,13 @@ export default class FeedStatsService{
                     deferred.reject(err);
                 });
                 return deferred.promise;
-            },
-            changeProcessorChartDataFunction: (selectedChartFunction: any)=> {
+            }
+            changeProcessorChartDataFunction (selectedChartFunction: any){
                 var chartData = this.getChartData(this.processorStatistics.raw, selectedChartFunction);
                 this.processorStatistics.chartData = chartData;
                 return chartData;
-            },
-            updateBarChartHeight: function(chartOptions: any, chartApi: any, rows: any, chartFunction: any) {
+            }
+            updateBarChartHeight(chartOptions: any, chartApi: any, rows: any, chartFunction: any) {
                 var configMap = this.processorStatsFunctionMap[chartFunction];
 
                 chartOptions.chart.yAxis.axisLabel = configMap.axisLabel
@@ -294,30 +310,30 @@ export default class FeedStatsService{
                         chartApi.refresh();
                     }
                 }
-            },
-            buildProcessorDurationChartData: function() {
+            }
+            buildProcessorDurationChartData() {
                 var chartData = this.processorStatistics.chartData;
                 var values = chartData.data;
                 var data = [{key: "Processor", "color": "#F08C38", values: values}];
                 return data;
 
-            },
-            buildStatusPieChart: function(){
+            }
+            buildStatusPieChart(){
                 var statusPieChartData = [];
                 statusPieChartData.push({key: "Successful Flows", value: this.summaryStatistics.flowsSuccess})
                 statusPieChartData.push({key: "Running Flows", value: this.summaryStatistics.flowsRunning});
                 return statusPieChartData;
-            },
+            }
 
-            buildEventsPieChart: function(){
+            buildEventsPieChart(){
                 var eventsPieChartData = [];
                 var success = this.summaryStatistics.totalEvents - this.summaryStatistics.failedEvents;
                 eventsPieChartData.push({key: "Success", value: success})
                 eventsPieChartData.push({key: "Failed", value: this.summaryStatistics.failedEvents})
                 return eventsPieChartData;
-            },
+            }
             
-            emptyFeedTimeSeriesObject: function(eventTime: any, feedName: any){
+            emptyFeedTimeSeriesObject(eventTime: any, feedName: any){
                 return {
                     "duration": 0,
                     "minEventTime": eventTime,
@@ -347,12 +363,12 @@ export default class FeedStatsService{
                     "jobsFinishedPerSecond": 0,
                     "collectionIntervalSeconds": this.nullVar, // null,
                 }
-            },
+            }
 
-            fetchFeedTimeSeriesData: function() {
+            fetchFeedTimeSeriesData() {
                 var deferred = this.$q.defer();
                 this.loadingFeedTimeSeriesData = true;
-                this.$q.when(this.ProvenanceEventStatsService.getFeedStatisticsOverTime(this.feedName, this.fromMillis, this.toMillis)).then(function (response: any) {
+                this.$q.when(this.ProvenanceEventStatsService.getFeedStatisticsOverTime(this.feedName, this.fromMillis, this.toMillis)).then((response: any) => {
 
                     var statsContainer = response.data;
                     if (statsContainer.stats == null) {
@@ -366,8 +382,8 @@ export default class FeedStatsService{
 
                     this.summaryStatistics.flowsRunning = statsContainer.runningFlows;
 
-                    this.feedTimeSeries.minTime = this.ArrayUtils.min(timeArr);
-                    this.feedTimeSeries.maxTime = this.ArrayUtils.max(timeArr);
+                    this.feedTimeSeries.minTime = ArrayUtils.min(timeArr);
+                    this.feedTimeSeries.maxTime = ArrayUtils.max(timeArr);
 
                     this.feedTimeSeries.time.startTime = statsContainer.startTime;
                     this.feedTimeSeries.time.endTime = statsContainer.endTime;
@@ -376,14 +392,15 @@ export default class FeedStatsService{
                     this.loadingFeedTimeSeriesData = false;
                     this.feedTimeSeries.lastRefreshTime = new Date().getTime();
                     deferred.resolve(this.feedTimeSeries);
-                }, function (err: any) {
+                }, (err: any) => {
                     this.loadingFeedTimeSeriesData = false;
                     this.feedTimeSeries.lastRefreshTime = new Date().getTime();
                     deferred.reject(err)
                 });
                 return deferred.promise;
-            },
-            fetchFeedProcessorErrors: function(resetWindow: any){
+            }
+
+            fetchFeedProcessorErrors(resetWindow: any){
                 var deferred = this.$q.defer();
                 //reset the collection if we are looking for a new window
                 if(resetWindow){
@@ -393,13 +410,13 @@ export default class FeedStatsService{
                     this.feedProcessorErrors.newErrorCount = 0;
 
                 }
-                this.$q.when(this.ProvenanceEventStatsService.getFeedProcessorErrors(this.feedName, this.fromMillis, this.toMillis, this.feedProcessorErrors.time.endTime)).then(function (response: any) {
+                this.$q.when(this.ProvenanceEventStatsService.getFeedProcessorErrors(this.feedName, this.fromMillis, this.toMillis, this.feedProcessorErrors.time.endTime)).then((response: any) =>{
 
 
                     var container = response.data;
                     var addToVisible = this.feedProcessorErrors.autoRefresh || this.feedProcessorErrors.visibleData.length ==0;
                     if (container != null && container.errors != null) {
-                        _.each(container.errors, function (error) {
+                        _.each(container.errors,  (error) => {
                             //append to errors list
                             this.feedProcessorErrors.allData.push(error);
                             if(addToVisible) {
@@ -418,68 +435,72 @@ export default class FeedStatsService{
                 return deferred.promise;
 
             }
-        }
-        
-        return data;
+
+/**
+ * Gets Chart Data using a function from the (processorStatsFunctionMap) above
+ * @param functionName a name of the function
+ * @return {{chartFunction: *, total: number, totalFormatted: number, data: Array}}
+ */
+private getChartData(rawData: any, functionName: any,callbackFn?: any) :any{
+    var processorStats = rawData.stats;
+    var values: any[] = [];
+    var total = 0;
+    var totalFormatted = 0;
+    var chartFunctionData = this.processorStatsFunctionMap[functionName];
+    if(chartFunctionData == null || chartFunctionData == undefined){
+        functionName = this.DEFAULT_CHART_FUNCTION;
+        chartFunctionData = this.processorStatsFunctionMap[functionName];
     }
 
-                     /**
-         * Gets Chart Data using a function from the (processorStatsFunctionMap) above
-         * @param functionName a name of the function
-         * @return {{chartFunction: *, total: number, totalFormatted: number, data: Array}}
-         */
-        getChartData=(rawData: any, functionName: any,callbackFn?: any)=>{
-            var processorStats = rawData.stats;
-            var values: any[] = [];
-            var total = 0;
-            var totalFormatted = 0;
-            var chartFunctionData = this.processorStatsFunctionMap[functionName];
-            if(chartFunctionData == null || chartFunctionData == undefined){
-                functionName = this.DEFAULT_CHART_FUNCTION;
-                chartFunctionData = this.processorStatsFunctionMap[functionName];
-            }
-
-            _.each(processorStats, (p: any)=> {
-                var key = p.processorName;
-                if (key == undefined || key == null) {
-                    key = 'N/A';
-                }
-
-                var v = chartFunctionData.fn(p);
-                values.push({label: key, value: v});
-                total +=v;
-                if(callbackFn != undefined){
-                    callbackFn(key,p);
-                }
-            });
-            totalFormatted = total;
-            if (chartFunctionData && chartFunctionData.valueFormatFn != undefined && angular.isFunction(chartFunctionData.valueFormatFn)) {
-                totalFormatted = chartFunctionData.valueFormatFn(total);
-            }
-            return {
-                chartFunction:functionName,
-                total:total,
-                totalFormatted:totalFormatted,
-                data:values
-            }
+    _.each(processorStats, (p: any)=> {
+        var key = p.processorName;
+        if (key == undefined || key == null) {
+            key = 'N/A';
         }
 
-        bytesToString = function(bytes: any) {
-
-            var fmt = d3.format('.0f');
-            if (bytes < 1024) {
-                return fmt(bytes) + 'B';
-            } else if (bytes < 1024 * 1024) {
-                return fmt(bytes / 1024) + 'kB';
-            } else if (bytes < 1024 * 1024 * 1024) {
-                return fmt(bytes / 1024 / 1024) + 'MB';
-            } else {
-                return fmt(bytes / 1024 / 1024 / 1024) + 'GB';
-            }
-
+        var v = chartFunctionData.fn(p);
+        values.push({label: key, value: v});
+        total +=v;
+        if(callbackFn != undefined){
+            callbackFn(key,p);
         }
+    });
+    totalFormatted = total;
+    if (chartFunctionData && chartFunctionData.valueFormatFn != undefined && angular.isFunction(chartFunctionData.valueFormatFn)) {
+        totalFormatted = chartFunctionData.valueFormatFn(total);
+    }
+    return {
+        chartFunction:functionName,
+        total:total,
+        totalFormatted:totalFormatted,
+        data:values
+    }
 }
 
- angular.module(moduleName)
- .service('ProvenanceEventStatsService',['$http','$q','OpsManagerRestUrlService',ProvenanceEventStatsService])
- .factory('FeedStatsService', ["$q","ProvenanceEventStatsService",FeedStatsService]);
+private bytesToString(bytes: any) {
+
+    var fmt = d3.format('.0f');
+    if (bytes < 1024) {
+        return fmt(bytes) + 'B';
+    } else if (bytes < 1024 * 1024) {
+        return fmt(bytes / 1024) + 'kB';
+    } else if (bytes < 1024 * 1024 * 1024) {
+        return fmt(bytes / 1024 / 1024) + 'MB';
+    } else {
+        return fmt(bytes / 1024 / 1024 / 1024) + 'GB';
+    }
+
+}
+
+
+
+    static factory() {
+        let instance = ($q: angular.IQService, ProvenanceEventStatsService: any) =>
+             new FeedStatsService($q,ProvenanceEventStatsService);
+
+        return instance;
+    }
+
+}
+
+angular.module(moduleName).factory('FeedStatsService', ["$q","ProvenanceEventStatsService",FeedStatsService.factory()]);

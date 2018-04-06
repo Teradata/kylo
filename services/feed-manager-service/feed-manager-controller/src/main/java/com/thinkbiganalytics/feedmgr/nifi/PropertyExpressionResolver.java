@@ -115,14 +115,13 @@ public class PropertyExpressionResolver {
     public List<NifiProperty> resolvePropertyExpressions(List<NifiProperty> properties, @Nullable final FeedMetadata metadata, List<NifiProperty> skip) {
         if (metadata != null && properties != null) {
             return properties.stream()
-                .filter(p -> skip == null || (skip != null && !skip.stream().anyMatch(s -> s.getKey().equalsIgnoreCase(p.getKey()))))
+                .filter(p -> skip == null || (skip != null && !skip.stream().anyMatch(s -> s.getProcessorName().equalsIgnoreCase(p.getProcessorName()) && s.getProcessorType().equalsIgnoreCase(p.getProcessorType()) && s.getKey().equalsIgnoreCase(p.getKey()))))
                 .filter(property -> resolveExpression(metadata, property))
                 .collect(Collectors.toList());
         } else {
             return Collections.emptyList();
         }
     }
-
 
 
     public Map<String, Object> getStaticConfigProperties() {

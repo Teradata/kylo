@@ -2,8 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import "pascalprecht.translate";
 
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerFeedService from "../../services/OpsManagerFeedService";
+
 
 export default class controller implements ng.IComponentController {
     chartApi: any;
@@ -123,8 +122,6 @@ export default class controller implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-   .service('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService])
-   .service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
    .controller('FeedStatusIndicatorController', ["$scope","$element","$http","$interval","$timeout","OpsManagerFeedService","OpsManagerDashboardService","BroadcastService","$filter",controller]);
 
 

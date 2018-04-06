@@ -17,26 +17,43 @@
 .fattable .fattable-header-container .fattable-viewport div {
   padding-left: 15px;
   font-weight: bold;
-  font-size: 12px;
   text-overflow: ellipsis;
   overflow: hidden;
+  background: white;
+  display: flex;
+  justify-content: space-between;
+
 }
 
 .fattable .fattable-body-container .fattable-viewport div {
-  font-weight: 400;
-  font-size: 14px;
+  font-weight: normal;
   text-overflow: ellipsis;
   overflow: hidden;
 }
 
 .fattable .fattable-body-container .fattable-viewport > div {
-  padding-left: 25px;
+  padding-left: 15px;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
-  border-bottom: 1px solid lightgray;
 }
 
 .fattable .fattable-body-container > div > div.even {
   background-color: rgba(0,0,0, 0.01);
 }
 
+.fattable .fattable-header-container .fattable-viewport .header-separator {
+  border-left: 1px solid lightgrey;
+  cursor: col-resize;
+
+  display: block;
+  padding-left: 0;
+
+  width: 1px;
+}
+
+.fattable .fattable-header-container .fattable-viewport .header-value {
+  padding-top: 8px;
+
+  display: block;
+  padding-left: 0;
+}

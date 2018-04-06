@@ -107,7 +107,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsContaining(value: string, column: any) {
-        const formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "')))";
+        const formula = "filter(not(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "')))";
         this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Delete " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
@@ -118,7 +118,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsEqualTo(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " != '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " equal to " + value});
     }
 
@@ -129,7 +129,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsGreaterThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " <= '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "≯", name: "Delete " + this.getColumnDisplayName(column) + " greater than " + value});
     }
 
@@ -140,7 +140,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     deleteRowsLessThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " >= '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "≮", name: "Delete " + this.getColumnDisplayName(column) + " less than " + value});
     }
 
@@ -159,7 +159,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsContaining(value: string, column: any) {
-        const formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.quote(value) + "'))";
+        const formula = "filter(contains(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'))";
         this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Find " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
@@ -170,7 +170,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsEqualTo(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " == '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "=", name: "Find " + this.getColumnDisplayName(column) + " equal to " + value});
     }
 
@@ -181,7 +181,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsGreaterThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " > '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_right", name: "Find " + this.getColumnDisplayName(column) + " greater than " + value});
     }
 
@@ -192,7 +192,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @param column - the column
      */
     findRowsLessThan(value: string, column: any) {
-        const formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.quote(value) + "')";
+        const formula = "filter(" + this.getColumnFieldName(column) + " < '" + StringUtils.singleQuote(value) + "')";
         this.controller.addFunction(formula, {formula: formula, icon: "keyboard_arrow_left", name: "Find " + this.getColumnDisplayName(column) + " less than " + value});
     }
 
@@ -205,12 +205,25 @@ export class ColumnDelegate implements IColumnDelegate {
     hideColumn(column: any, grid: any) {
         column.visible = false;
 
-        const formula = "drop(\"" + StringUtils.quote(column.headerTooltip) + "\")";
+        const formula = "drop(\"" + StringUtils.singleQuote(column.headerTooltip) + "\")";
         this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column)});
         this.controller.fieldPolicies = this.controller.fieldPolicies.filter((value, index) => index == column.index);
 
         grid.onColumnsChange();
         grid.refresh();
+    }
+
+    /**
+     * Clone the specified column.
+     *
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    cloneColumn(column: any, grid: any) {
+        const fieldName = this.getColumnFieldName(column);
+        const script = "clone(" + fieldName + ")";
+        const formula = this.toAppendColumnFormula(script, column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: 'content_copy', name: 'Clone ' + this.getColumnDisplayName(column)});
     }
 
     /**
@@ -258,7 +271,7 @@ export class ColumnDelegate implements IColumnDelegate {
             }
 
             // Add rename function
-            const script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.quote(name) + "\")";
+            const script = self.getColumnFieldName(column) + ".as(\"" + StringUtils.singleQuote(name) + "\")";
             const formula = self.toFormula(script, column, grid);
             self.controller.addFunction(formula, {
                 formula: formula, icon: "mode_edit",
@@ -296,8 +309,8 @@ export class ColumnDelegate implements IColumnDelegate {
     splitOn(value: string, column: any, grid: any) {
         const displayName = this.getColumnDisplayName(column);
         const fieldName = this.getColumnFieldName(column);
-        const pattern = "[" + StringUtils.quote(value).replace(/]/g, "\\]") + "]";
-        const formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.quote(displayName) + "\")", column, grid);
+        const pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
+        const formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.singleQuote(displayName) + "\")", column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value});
     }
 
@@ -310,7 +323,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     transformColumn(transform: any, column: any, grid: any) {
         const fieldName = this.getColumnFieldName(column);
-        const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.quote(fieldName) + "\")";
+        const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
         const formula = this.toFormula(script, column, grid);
         const name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
         this.controller.addFunction(formula, {formula: formula, icon: transform.icon, name: name});
@@ -467,12 +480,64 @@ export class ColumnDelegate implements IColumnDelegate {
         }
         if (dataCategory === DataCategory.STRING) {
             transforms.push({description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower'},
+                {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'},
                 {description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap'},
-                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'},
-                {description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper'});
+                {icon: 'graphic_eq', name: 'Trim', operation: 'trim'});
         }
-
         return transforms;
+    }
+
+    /**
+     * Creates a guaranteed unique field name
+     * @param columns column list
+     * @returns {string} a unique fieldname
+     */
+    protected toAsUniqueColumnName(columns : Array<any>, columnFieldName: any) : string {
+        let prefix = "new_";
+        let idx = 0;
+        let columnSet = new Set();
+        let uniqueName = null;
+        const self = this;
+        columnSet.add(columnFieldName);
+        angular.forEach(columns, function (item) {
+            columnSet.add(self.getColumnFieldName(item));
+        });
+
+        while (uniqueName == null) {
+            let name = prefix+idx;
+            uniqueName = (columnSet.has(name) ? null : name);
+            idx++;
+        }
+        return ".as(\""+uniqueName+"\")"
+    }
+
+    /**
+     * Creates a formula that adds a new column with the specified script. It generates a unique column name.
+     *
+     * @param {string} script the expression for the column
+     * @param {ui.grid.GridColumn} column the column to be replaced
+     * @param {ui.grid.Grid} grid the grid with the column
+     * @returns {string} a formula that replaces the column
+     */
+    protected toAppendColumnFormula(script: string, column: any, grid: any): string {
+        const columnFieldName = this.getColumnFieldName(column);
+        let formula = "";
+        const self = this;
+        let match = false;
+        angular.forEach(grid.columns, function (item, idx) {
+            if (item.visible) {
+                const itemFieldName = self.getColumnFieldName(item);
+                formula += (formula.length == 0) ? "select(" : ", ";
+                if (match) {
+                    formula += script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                }
+                formula += itemFieldName;
+                match = (itemFieldName == columnFieldName);
+            }
+        });
+
+        formula += ")";
+        return formula;
     }
 
     /**
@@ -484,6 +549,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * @returns {string} a formula that replaces the column
      */
     protected toFormula(script: string, column: any, grid: any): string {
+
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
         const self = this;
@@ -499,4 +565,6 @@ export class ColumnDelegate implements IColumnDelegate {
         formula += ")";
         return formula;
     }
+
+
 }

@@ -11,7 +11,6 @@ export default class OpsManagerFeedService{
                 private $timeout: any,
                 private HttpService: any,
                 private IconService: any,
-                private AlertsService: any,
                 private OpsManagerRestUrlService: any){
          this.data= {};
          this.data.FEED_HEALTH_URL = this.OpsManagerRestUrlService.FEED_HEALTH_URL;
@@ -179,4 +178,4 @@ export default class OpsManagerFeedService{
 
 angular.module(moduleName)
         .factory('OpsManagerFeedService',['$q', '$http', '$interval', '$timeout', 'HttpService', 
-                'IconService', 'AlertsService', 'OpsManagerRestUrlService',OpsManagerFeedService]);
+                'IconService', 'OpsManagerRestUrlService',OpsManagerFeedService]);

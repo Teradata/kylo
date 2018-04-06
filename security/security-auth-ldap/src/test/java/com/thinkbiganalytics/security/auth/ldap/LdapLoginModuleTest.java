@@ -71,14 +71,14 @@ public class LdapLoginModuleTest extends AbstractTestNGSpringContextTests {
     private LdapAuthoritiesPopulator authPopulator;
 
 
-//    @Test
+    @Test
     public void testLoginAdmin() throws Exception {
         Subject subject = login("dladmin", "thinkbig");
 
         assertThat(subject.getPrincipals()).hasSize(2).contains(new UsernamePrincipal("dladmin"), new GroupPrincipal("admin"));
     }
 
-//    @Test
+    @Test
     public void testLoginTest() throws Exception {
         Subject subject = login("test", "user");
 
@@ -87,7 +87,7 @@ public class LdapLoginModuleTest extends AbstractTestNGSpringContextTests {
                                                                 new GroupPrincipal("developer"));
     }
 
-//    @Test(expectedExceptions = LoginException.class)
+    @Test(expectedExceptions = LoginException.class)
     public void testLoginBogus() throws Exception {
         login("bogus", "user");
     }

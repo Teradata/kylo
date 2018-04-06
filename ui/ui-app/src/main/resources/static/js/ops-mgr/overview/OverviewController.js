@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name", "../services/OpsManagerDashboardService", "../services/OpsManagerRestUrlService"], function (require, exports, angular, module_name_1, OpsManagerDashboardService_1, OpsManagerRestUrlService_1) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OverviewController = /** @class */ (function () {
@@ -135,8 +135,6 @@ define(["require", "exports", "angular", "./module-name", "../services/OpsManage
     }());
     exports.default = OverviewController;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerRestUrlService', [OpsManagerRestUrlService_1.default])
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
         .controller("OverviewController", ["$scope", "$mdDialog", "$interval", "$timeout",
         "AccessControlService", "HttpService", "OpsManagerDashboardService", OverviewController]);
 });

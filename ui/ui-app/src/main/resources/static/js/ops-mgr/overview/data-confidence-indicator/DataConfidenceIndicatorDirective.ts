@@ -1,7 +1,5 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
 import "pascalprecht.translate";
 import * as _ from 'underscore';
 
@@ -197,10 +195,7 @@ jobs: any[];
 
 
 angular.module(moduleName).controller('DataConfidenceDetailsDialogController', ["$scope","$mdDialog","$interval","StateService","status","allChartData",DataConfidenceDetailsDialogController]);
-angular.module(moduleName)
-.service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService', OpsManagerJobService])
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
-.controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", "$filter", controller]);
+angular.module(moduleName).controller('DataConfidenceIndicatorController',["$scope","$element","$http","$interval","$mdDialog","OpsManagerJobService","OpsManagerDashboardService","BroadcastService", "$filter", controller]);
 angular.module(moduleName)
         .directive('tbaDataConfidenceIndicator',[ ()=> {
                     return {

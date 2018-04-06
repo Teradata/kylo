@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "../module-name", "../../services/OpsManagerFeedService", "../../services/OpsManagerDashboardService", "../../services/TabService", "../../services/AlertsService", "underscore"], function (require, exports, angular, module_name_1, OpsManagerFeedService_1, OpsManagerDashboardService_1, TabService_1, AlertsService_1, _) {
+define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var FeedHealthTableCardController = /** @class */ (function () {
-        function FeedHealthTableCardController($scope, $rootScope, $http, $interval, OpsManagerFeedService, OpsManagerDashboardService, TableOptionsService, PaginationDataService, TabService, AlertsService, StateService, BroadcastService) {
+        function FeedHealthTableCardController($scope, $rootScope, $http, $interval, OpsManagerFeedService, OpsManagerDashboardService, TableOptionsService, PaginationDataService, TabService, StateService, BroadcastService) {
             var _this = this;
             this.$scope = $scope;
             this.$rootScope = $rootScope;
@@ -13,7 +13,6 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
             this.TableOptionsService = TableOptionsService;
             this.PaginationDataService = PaginationDataService;
             this.TabService = TabService;
-            this.AlertsService = AlertsService;
             this.StateService = StateService;
             this.BroadcastService = BroadcastService;
             this.onTabSelected = function (tab) {
@@ -297,14 +296,10 @@ define(["require", "exports", "angular", "../module-name", "../../services/OpsMa
     }());
     exports.default = FeedHealthTableCardController;
     angular.module(module_name_1.moduleName)
-        .service('OpsManagerFeedService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', OpsManagerFeedService_1.default])
-        .service('OpsManagerDashboardService', ['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService', 'BroadcastService', 'OpsManagerFeedService', OpsManagerDashboardService_1.default])
-        .service("AlertsService", [AlertsService_1.default])
-        .service('TabService', ['PaginationDataService', TabService_1.default])
         .controller('FeedHealthTableCardController', ["$scope", "$rootScope", "$http", "$interval",
         "OpsManagerFeedService", "OpsManagerDashboardService",
         "TableOptionsService", "PaginationDataService", "TabService",
-        "AlertsService", "StateService", "BroadcastService", FeedHealthTableCardController]);
+        "StateService", "BroadcastService", FeedHealthTableCardController]);
     angular.module(module_name_1.moduleName)
         .directive('tbaFeedHealthTableCard', [function () {
             return {

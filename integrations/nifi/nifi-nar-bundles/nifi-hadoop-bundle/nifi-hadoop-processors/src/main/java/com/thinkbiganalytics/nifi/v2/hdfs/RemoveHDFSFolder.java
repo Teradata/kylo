@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.v2.hdfs;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -152,4 +153,7 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
         // Return success
         session.transfer(flowFile, REL_SUCCESS);
     }
+
+    @Override
+    protected void modifyConfig(ProcessContext context, Configuration config) {   }
 }

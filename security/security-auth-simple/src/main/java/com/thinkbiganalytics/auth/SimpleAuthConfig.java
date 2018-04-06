@@ -24,6 +24,7 @@ import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,6 +45,12 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 @Profile("auth-simple")
 public class SimpleAuthConfig {
 
+    @Value("${security.auth.simple.login.flag:required}")
+    private String loginFlag;
+    
+    @Value("${security.auth.simple.login.order:#{T(com.thinkbiganalytics.auth.jaas.LoginConfiguration).DEFAULT_ORDER}}")
+    private int loginOrder;
+
     @Bean(name = "authenticationService")
     @ConfigurationProperties("authenticationService")
     public AuthenticationService authenticationService() {
@@ -55,9 +62,10 @@ public class SimpleAuthConfig {
         // @formatter:off
 
         return builder
+                        .order(this.loginOrder)
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(AuthServiceLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .controlFlag(this.loginFlag)
                             .option("authService", authenticationService())
                             .add()
                         .build();
@@ -70,9 +78,10 @@ public class SimpleAuthConfig {
         // @formatter:off
 
         return builder
+                        .order(this.loginOrder)
                         .loginModule(JaasAuthConfig.JAAS_UI)
                             .moduleClass(AuthServiceLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .controlFlag(this.loginFlag)
                             .option("authService", authenticationService())
                             .add()
                         .build();

@@ -1,9 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-const d3 = require('../../bower_components/d3');
-import OpsManagerDashboardService from "../../services/OpsManagerDashboardService";
-import OpsManagerJobService from "../../services/OpsManagerJobService";
+const d3 = require('d3');
 
 export default class controller implements ng.IComponentController{
 refreshInterval: any;
@@ -258,8 +256,6 @@ constructor(private $scope: any,
 }
 
  angular.module(moduleName)
-.service('OpsManagerDashboardService',['$q', '$http', '$interval', '$timeout', 'HttpService', 'IconService', 'AlertsService', 'OpsManagerRestUrlService','BroadcastService','OpsManagerFeedService',OpsManagerDashboardService])
-.service('OpsManagerJobService',['$q', '$http', '$log', 'HttpService', 'NotificationService', 'OpsManagerRestUrlService',OpsManagerJobService])
 .controller('JobStatusIndicatorController', 
                                         ["$scope","$element","$http","$q","$interval","StateService",
                                         "OpsManagerJobService","OpsManagerDashboardService",
