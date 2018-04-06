@@ -5,7 +5,9 @@ import {MatListModule} from "@angular/material/list";
 import {MatMenuModule} from "@angular/material/menu";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
 import {BrowserModule} from "@angular/platform-browser";
-import {CovalentLoadingModule, CovalentMenuModule, CovalentNotificationsModule} from "@covalent/core";
+import {CovalentLoadingModule} from "@covalent/core/loading";
+import {CovalentMenuModule} from "@covalent/core/menu";
+import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {KyloServicesModule} from "../services/services.module";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";

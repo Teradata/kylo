@@ -34,11 +34,11 @@ var DataSource = /** @class */ (function () {
  * Class to be used to power selecting one or more options from a list.
  */
 var SelectionModel = /** @class */ (function () {
-    function SelectionModel(_isMulti, initiallySelectedValues, _emitChanges) {
-        if (_isMulti === void 0) { _isMulti = false; }
+    function SelectionModel(_multiple, initiallySelectedValues, _emitChanges) {
+        if (_multiple === void 0) { _multiple = false; }
         if (_emitChanges === void 0) { _emitChanges = true; }
         var _this = this;
-        this._isMulti = _isMulti;
+        this._multiple = _multiple;
         this._emitChanges = _emitChanges;
         /**
          * Currently-selected values.
@@ -49,15 +49,15 @@ var SelectionModel = /** @class */ (function () {
          */
         this._deselectedToEmit = [];
         /**
-         * Keeps track of the selected option that haven't been emitted by the change event.
+         * Keeps track of the selected options that haven't been emitted by the change event.
          */
         this._selectedToEmit = [];
         /**
          * Event emitted when the value has changed.
          */
         this.onChange = this._emitChanges ? new rxjs_Subject.Subject() : null;
-        if (initiallySelectedValues) {
-            if (_isMulti) {
+        if (initiallySelectedValues && initiallySelectedValues.length) {
+            if (_multiple) {
                 initiallySelectedValues.forEach(function (value) { return _this._markSelected(value); });
             }
             else {
@@ -68,9 +68,9 @@ var SelectionModel = /** @class */ (function () {
         }
     }
     Object.defineProperty(SelectionModel.prototype, "selected", {
-        /** Selected value(s). */
+        /** Selected values. */
         get: /**
-         * Selected value(s).
+         * Selected values.
          * @return {?}
          */
         function () {
@@ -217,7 +217,7 @@ var SelectionModel = /** @class */ (function () {
      * @return {?}
      */
     function (predicate) {
-        if (this._isMulti && this._selected) {
+        if (this._multiple && this._selected) {
             this._selected.sort(predicate);
         }
     };
@@ -253,7 +253,7 @@ var SelectionModel = /** @class */ (function () {
      */
     function (value) {
         if (!this.isSelected(value)) {
-            if (!this._isMulti) {
+            if (!this._multiple) {
                 this._unmarkAll();
             }
             this._selection.add(value);
@@ -307,7 +307,7 @@ var SelectionModel = /** @class */ (function () {
      * @return {?}
      */
     function (values) {
-        if (values.length > 1 && !this._isMulti) {
+        if (values.length > 1 && !this._multiple) {
             throw getMultipleValuesInSingleSelectionError();
         }
     };

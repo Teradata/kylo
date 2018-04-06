@@ -94,6 +94,7 @@ var CdkAccordionItem = /** @class */ (function () {
          * The unique AccordionItem id.
          */
         this.id = "cdk-accordion-child-" + nextId++;
+        this._expanded = false;
         /**
          * Unregister function for _expansionDispatcher.
          */

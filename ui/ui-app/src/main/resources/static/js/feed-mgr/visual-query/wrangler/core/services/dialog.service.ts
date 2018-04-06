@@ -1,5 +1,5 @@
 import {Injectable} from "@angular/core";
-import {TdDialogService} from "@covalent/core";
+import {TdDialogService} from "@covalent/core/dialogs";
 import "rxjs/add/operator/filter";
 import {Observable} from "rxjs/Observable";
 

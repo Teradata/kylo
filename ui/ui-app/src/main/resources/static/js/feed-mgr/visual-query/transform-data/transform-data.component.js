@@ -237,7 +237,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 controller: "VisualQueryProfileStatsController",
                 fullscreen: true,
                 locals: {
-                    profile: self.engine.getProfile()
+                    profile: angular.copy(self.engine.getProfile())
                 },
                 parent: angular.element(document.body),
                 templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"

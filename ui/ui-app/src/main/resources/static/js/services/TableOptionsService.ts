@@ -4,7 +4,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
-import {Sort} from "@angular/material";
+import {Sort} from "@angular/material/sort";
 
 const moduleName = require('services/module-name');
 
