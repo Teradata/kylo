@@ -37,10 +37,10 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                 self.query();
             };
             this.query = function () {
-                console.log('query');
+                // console.log('query');
                 self.loading = true;
                 var successFn = function (tableData) {
-                    console.log('got response', tableData);
+                    // console.log('got response', tableData);
                     var result = self.queryResults = HiveService.transformQueryResultsToUiGridModel(tableData);
                     FattableService.setupTable({
                         tableContainerId: "preview-table",
