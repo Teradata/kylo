@@ -88,7 +88,7 @@ const moduleName = require('feed-mgr/module-name');
         };
 
         self.setupTable = function(options:any) {
-            let topLeftVisibleCell:number[];
+            let scrollXY: number[] = [];
 
             const optionsCopy = _.clone(options);
             const settings = _.defaults(optionsCopy, optionDefaults);
@@ -134,8 +134,6 @@ const moduleName = require('feed-mgr/module-name');
                 const heading = angular.element('<div class="header-value"></div>');
 
                 const headerDiv = angular.element(div);
-                // headerDiv.css('display', 'flex');
-                // headerDiv.css('justify-content', 'space-between');
 
                 headerDiv.append(heading).append(separator);
             };
@@ -198,9 +196,8 @@ const moduleName = require('feed-mgr/module-name');
             };
 
             function onScroll(x: number, y: number) {
-                topLeftVisibleCell = self.table.leftTopCornerFromXY(x, y);
-                //correct fattable's visible column x position
-                topLeftVisibleCell[1] = _.sortedIndex(self.table.columnOffset, x);
+                scrollXY[0] = x;
+                scrollXY[1] = y;
             }
             self.table = fattable(parameters);
             self.table.onScroll = onScroll;
@@ -231,7 +228,7 @@ const moduleName = require('feed-mgr/module-name');
                 const headerElem = headerDiv.get(0);
                 const initialHeaderWidth = headerElem.offsetWidth;
                 document.body.style.cursor = "col-resize";
-                document.body.onmousemove = function (e) {
+                document.body.onmousemove = function (e:any) {
                     e = e || window.event;
                     let end = 0;
                     if (e.pageX) {
@@ -254,8 +251,8 @@ const moduleName = require('feed-mgr/module-name');
             }
 
             function resizeColumn(columnId: number, columnWidth: number) {
-                const scrolledCellX = topLeftVisibleCell[0];
-                const scrolledCellY = topLeftVisibleCell[1];
+                const x = scrollXY[0];
+                const y = scrollXY[1];
                 // console.log('resize to new width', columnWidth);
                 self.table.columnWidths[columnId] = columnWidth;
                 const columnOffset = _.reduce((self.table.columnWidths as number[]), function (memo, width) {
@@ -268,7 +265,7 @@ const moduleName = require('feed-mgr/module-name');
                 self.table.setup();
 
                 // console.log('displaying cells', scrolledCellX, scrolledCellY);
-                self.table.goTo(scrolledCellX, scrolledCellY);
+                self.table.scroll.setScrollXY(x, y); //table.setup() scrolls to 0,0, here we scroll back to were we were while resizing column
             }
 
             const eventId = "resize.fattable." + settings.tableContainerId;

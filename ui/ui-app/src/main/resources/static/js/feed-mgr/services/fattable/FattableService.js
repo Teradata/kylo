@@ -80,7 +80,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }
         };
         self.setupTable = function (options) {
-            var topLeftVisibleCell;
+            var scrollXY = [];
             var optionsCopy = _.clone(options);
             var settings = _.defaults(optionsCopy, optionDefaults);
             var tableData = new fattable.SyncTableModel();
@@ -116,8 +116,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 separator.on("mousedown", function (event) { return mousedown(separator, event); });
                 var heading = angular.element('<div class="header-value"></div>');
                 var headerDiv = angular.element(div);
-                // headerDiv.css('display', 'flex');
-                // headerDiv.css('justify-content', 'space-between');
                 headerDiv.append(heading).append(separator);
             };
             painter.fillCell = function (div, data) {
@@ -171,9 +169,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 "columnWidths": columnWidths
             };
             function onScroll(x, y) {
-                topLeftVisibleCell = self.table.leftTopCornerFromXY(x, y);
-                //correct fattable's visible column x position
-                topLeftVisibleCell[1] = _.sortedIndex(self.table.columnOffset, x);
+                scrollXY[0] = x;
+                scrollXY[1] = y;
             }
             self.table = fattable(parameters);
             self.table.onScroll = onScroll;
@@ -222,8 +219,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
             }
             function resizeColumn(columnId, columnWidth) {
-                var scrolledCellX = topLeftVisibleCell[0];
-                var scrolledCellY = topLeftVisibleCell[1];
+                var x = scrollXY[0];
+                var y = scrollXY[1];
                 // console.log('resize to new width', columnWidth);
                 self.table.columnWidths[columnId] = columnWidth;
                 var columnOffset = _.reduce(self.table.columnWidths, function (memo, width) {
@@ -235,7 +232,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 self.table.W = columnOffset[columnOffset.length - 1];
                 self.table.setup();
                 // console.log('displaying cells', scrolledCellX, scrolledCellY);
-                self.table.goTo(scrolledCellX, scrolledCellY);
+                self.table.scroll.setScrollXY(x, y); //table.setup() scrolls to 0,0, here we scroll back to were we were while resizing column
             }
             var eventId = "resize.fattable." + settings.tableContainerId;
             angular.element($window).unbind(eventId);
