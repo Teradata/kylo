@@ -35,8 +35,8 @@ declare namespace ListTableView {
     export interface SortOption {
         label: string;
         value: string;
-        default:string;
-        direction: string;
+        default?:string;
+        direction?: string;
         reverse: boolean;
         type: string;
         icon?: string;
@@ -148,7 +148,7 @@ declare namespace ListTableView {
 
 export interface TableOptionService {
 
-    newSortOptions(key: string, labelValueMap: Common.Map<string>, defaultValue: string, defaultDirection: string): SortOption[]
+    newSortOptions(key: string, labelValueMap: Common.Map<string>, defaultValue?: string, defaultDirection?: string): SortOption[]
 
     newOption(label: string, type: string, isHeader: boolean, disabled: boolean, icon: string): TableOption
 
