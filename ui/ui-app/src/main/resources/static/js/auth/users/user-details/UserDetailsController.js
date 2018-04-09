@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../../module-name", "../../module", "../../module-require"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../../module-name", "../../../constants/AccessConstants", "../../module", "../../module-require"], function (require, exports, angular, _, module_name_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UserDetailsController = /** @class */ (function () {
@@ -185,7 +185,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
             // Load allowed permissions
             this.AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowAdmin = _this.AccessControlService.hasAction(_this.AccessControlService.USERS_ADMIN, actionSet.actions);
+                _this.allowAdmin = _this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ADMIN, actionSet.actions);
             });
             // Load the user details
             if (angular.isString(this.$transition$.params().userId)) {
