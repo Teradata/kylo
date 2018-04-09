@@ -89,9 +89,11 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 $scope.renderPagination = true;
             });
             //Pagination DAta
-            $scope.paginationData = { rowsPerPage: 50,
+            $scope.paginationData = {
+                rowsPerPage: 50,
                 currentPage: 1,
-                rowsPerPageOptions: ['5', '10', '20', '50', '100'] };
+                rowsPerPageOptions: ['5', '10', '20', '50', '100']
+            };
             $scope.paginationId = 'profile_stats_0';
             $scope.$watch('selectedTabIndex', function (newVal) {
                 $scope.renderPagination = false;
@@ -105,8 +107,6 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
         return FeedProfileItemController;
     }());
     exports.FeedProfileItemController = FeedProfileItemController;
-    // var FeedProfileItemController = function($scope, $mdDialog, $mdToast, $http, StateService,FeedService, BroadcastService, feed,profileRow,currentTab){
-    // };
     var FeedProfileHistoryController = /** @class */ (function () {
         function FeedProfileHistoryController($scope, $http, $mdDialog, $filter, FeedService, RestUrlService, HiveService, StateService, Utils) {
             this.$scope = $scope;
@@ -118,73 +118,78 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.HiveService = HiveService;
             this.StateService = StateService;
             this.Utils = Utils;
-            // define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
             this.model = this.FeedService.editFeedModel;
             this.showSummary = true;
             this.profileSummary = [];
             this.loading = false;
-            var getProfileHistory = (function () {
-                var _this = this;
-                this.loading = true;
-                this.showNoResults = false;
-                var successFn = function (response) {
-                    if (response.data.length == 0) {
-                        _this.showNoResults = true;
-                    }
-                    var dataMap = {};
-                    var dataArr = [];
-                    var columns = HiveService.getColumnNamesForQueryResult(response);
-                    if (columns != null) {
-                        //get the keys into the map for the different columns
-                        var dateColumn = _.find(columns, function (column) {
-                            return Utils.strEndsWith(column, 'processing_dttm');
-                        });
-                        var metricTypeColumn = _.find(columns, function (column) {
-                            return Utils.strEndsWith(column, 'metrictype');
-                        });
-                        var metricValueColumn = _.find(columns, function (column) {
-                            return Utils.strEndsWith(column, 'metricvalue');
-                        });
-                        //group on date column
-                        angular.forEach(response.data, function (row) {
-                            if (dataMap[row[dateColumn]] == undefined) {
-                                var timeInMillis = HiveService.getUTCTime(row[dateColumn]);
-                                var obj = { 'PROCESSING_DTTM': row[dateColumn], 'DATE_TIME': timeInMillis, 'DATE': new Date(timeInMillis) };
-                                dataMap[row[dateColumn]] = obj;
-                                dataArr.push(obj);
-                            }
-                            var newRow = dataMap[row[dateColumn]];
-                            var metricType = row[metricTypeColumn];
-                            var value = row[metricValueColumn];
-                            if (value && metricType == 'MIN_TIMESTAMP' || metricType == 'MAX_TIMESTAMP') {
-                                //first check to see if it is millis
-                                if (!isNaN(value)) {
-                                    var dateStr = _this.$filter('date')(new Date(''), "yyyy-MM-dd"); //tmp was passed as which is not declared anywhere. was returning 'Invalid Date'// replaced by '' here 
-                                    value = dateStr;
-                                }
-                                else {
-                                    value = value.substr(0, 10); //string the time off the string
-                                }
-                            }
-                            newRow[metricType] = value;
-                        });
-                        //sort it desc
-                        // dataArr = _.sortBy(dataArr,dateColumn).reverse();
-                        dataArr = _.sortBy(dataArr, 'DATE_TIME').reverse();
-                        _this.profileSummary = dataArr;
-                    }
-                    _this.loading = false;
-                };
-                var errorFn = function (err) {
-                    console.log('ERROR ', err);
-                    _this.loading = false;
-                };
-                var promise = $http.get(RestUrlService.FEED_PROFILE_SUMMARY_URL(this.model.id));
-                promise.then(successFn, errorFn);
-                return promise;
-            }).bind(this);
-            getProfileHistory();
+            this.showNoResults = false;
         }
+        FeedProfileHistoryController.prototype.getProfileHistory = function () {
+            var _this = this;
+            // console.log('getProfileHistory');
+            this.loading = true;
+            this.showNoResults = false;
+            var successFn = function (response) {
+                if (response.data.length == 0) {
+                    _this.showNoResults = true;
+                }
+                var dataMap = {};
+                var dataArr = [];
+                var columns = _this.HiveService.getColumnNamesForQueryResult(response);
+                if (columns != null) {
+                    //get the keys into the map for the different columns
+                    var dateColumn_1 = _.find(columns, function (column) {
+                        return _this.Utils.strEndsWith(column, 'processing_dttm');
+                    });
+                    var metricTypeColumn_1 = _.find(columns, function (column) {
+                        return _this.Utils.strEndsWith(column, 'metrictype');
+                    });
+                    var metricValueColumn_1 = _.find(columns, function (column) {
+                        return _this.Utils.strEndsWith(column, 'metricvalue');
+                    });
+                    //group on date column
+                    angular.forEach(response.data, function (row) {
+                        var date = row[dateColumn_1];
+                        if (dataMap[date] == undefined) {
+                            var timeInMillis = _this.HiveService.getUTCTime(date);
+                            var obj = { 'PROCESSING_DTTM': date, 'DATE_TIME': timeInMillis, 'DATE': new Date(timeInMillis) };
+                            dataMap[date] = obj;
+                            dataArr.push(obj);
+                        }
+                        var newRow = dataMap[date];
+                        var metricType = row[metricTypeColumn_1];
+                        var value = row[metricValueColumn_1];
+                        if (value && metricType == 'MIN_TIMESTAMP' || metricType == 'MAX_TIMESTAMP') {
+                            //first check to see if it is millis
+                            if (!isNaN(value)) {
+                                var dateStr = _this.$filter('date')(new Date(''), "yyyy-MM-dd"); //tmp was passed as which is not declared anywhere. was returning 'Invalid Date'// replaced by '' here
+                                value = dateStr;
+                            }
+                            else {
+                                value = value.substr(0, 10); //string the time off the string
+                            }
+                        }
+                        newRow[metricType] = value;
+                    });
+                    //sort it desc
+                    // dataArr = _.sortBy(dataArr,dateColumn).reverse();
+                    dataArr = _.sortBy(dataArr, 'DATE_TIME').reverse();
+                    _this.profileSummary = dataArr;
+                }
+                _this.loading = false;
+            };
+            var errorFn = function (err) {
+                console.log('ERROR ', err);
+                _this.loading = false;
+            };
+            var promise = this.$http.get(this.RestUrlService.FEED_PROFILE_SUMMARY_URL(this.model.id));
+            promise.then(successFn, errorFn);
+            return promise;
+        };
+        ;
+        FeedProfileHistoryController.prototype.$onInit = function () {
+            this.getProfileHistory();
+        };
         FeedProfileHistoryController.prototype.onValidCountClick = function (row) {
             this.showProfileDialog('valid', row);
         };
@@ -195,7 +200,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.showProfileDialog('profile-stats', row);
         };
         FeedProfileHistoryController.prototype.showProfileDialog = function (currentTab, profileRow) {
-            // console.log("showProfileDialog currentTag,profileRow", currentTab, profileRow);
+            console.log("showProfileDialog currentTag,profileRow", currentTab, profileRow);
             this.$mdDialog.show({
                 controller: 'FeedProfileItemController',
                 templateUrl: 'js/feed-mgr/feeds/edit-feed/profile-history/profile-history-dialog.html',
