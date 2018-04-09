@@ -2,27 +2,25 @@ import * as angular from 'angular';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
-var directive = function () {
+const directive = function () {
     return {
         restrict: "EA",
         bindToController: {
-            processingdttm:'=',
-            rowsPerPage:'='
+            processingdttm: '=',
+            rowsPerPage: '='
         },
         controllerAs: 'vm',
         scope: {},
         templateUrl: 'js/feed-mgr/feeds/edit-feed/profile-history/profile-valid-results.html',
         controller: "FeedProfileValidResultsController",
-        link: function ($scope:any, element:any, attrs:any, controller:any) {
+        link: function ($scope: any, element: any, attrs: any, controller: any) {
 
         }
-
     };
-}
+};
 
 
 export class FeedProfileValidResultsController implements ng.IComponentController {
-// define(['angular','feed-mgr/feeds/edit-feed/module-name'], function (angular,moduleName) {
 
     model: any = this.FeedService.editFeedModel;
     loading: boolean = false;
@@ -33,53 +31,58 @@ export class FeedProfileValidResultsController implements ng.IComponentControlle
     processingdttm: any;
     queryResults: any = null;
 
-    constructor(private $scope: any, private $http: any, private FeedService: any, private RestUrlService: any, private HiveService: any
-        , private Utils: any, private BroadcastService: any, private FattableService: any) {
-        const self = this;
-
-        //noinspection JSUnusedGlobalSymbols
-        function onLimitChange() {
-            getProfileValidation().then(setupTable);
-        }
-
-        function getProfileValidation() {
-            self.loading = true;
-
-            const successFn = (response: any) => {
-                const result = self.queryResults = HiveService.transformResultsToUiGridModel(response);
-                self.headers = result.columns;
-                self.rows = result.rows;
-                self.loading = false;
-
-                BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'valid');
-            };
-            const errorFn = (err: any) => {
-                self.loading = false;
-            };
-            const promise = $http.get(RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(self.model.id),
-                {
-                    params:
-                        {
-                            'processingdttm': self.processingdttm,
-                            'limit': self.limit
-                        }
-                });
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-
-        function setupTable() {
-            FattableService.setupTable({
-                tableContainerId: "validProfile",
-                headers: self.headers,
-                rows: self.rows
-            });
-        }
-
-        getProfileValidation().then(setupTable);
+    constructor(private $http: any, private FeedService: any, private RestUrlService: any, private HiveService: any,
+                private BroadcastService: any, private FattableService: any) {
     }
 
+    //noinspection JSUnusedGlobalSymbols
+    private onLimitChange() {
+        this.init();
+    }
+
+    private getProfileValidation() {
+        this.loading = true;
+
+        const successFn = (response: any) => {
+            const result = this.queryResults = this.HiveService.transformResultsToUiGridModel(response);
+            this.headers = result.columns;
+            this.rows = result.rows;
+            this.loading = false;
+
+            this.BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'valid');
+        };
+        const errorFn = (err: any) => {
+            this.loading = false;
+        };
+        const promise = this.$http.get(this.RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(this.model.id),
+            {
+                params:
+                    {
+                        'processingdttm': this.processingdttm,
+                        'limit': this.limit
+                    }
+            });
+        promise.then(successFn, errorFn);
+        return promise;
+    }
+
+    private setupTable() {
+        this.FattableService.setupTable({
+            tableContainerId: "validProfile",
+            headers: this.headers,
+            rows: this.rows
+        });
+    }
+
+    $onInit() {
+        this.init();
+    }
+
+    private init() {
+        this.getProfileValidation().then(this.setupTable.bind(this));
+    }
 }
 
-angular.module(moduleName).controller('FeedProfileValidResultsController', ["$scope","$http","FeedService","RestUrlService","HiveService","Utils","BroadcastService","FattableService",FeedProfileValidResultsController]);
+angular.module(moduleName).controller('FeedProfileValidResultsController',
+    ["$http", "FeedService", "RestUrlService", "HiveService", "BroadcastService", "FattableService", FeedProfileValidResultsController]);
 angular.module(moduleName).directive('thinkbigFeedProfileValid', directive);
