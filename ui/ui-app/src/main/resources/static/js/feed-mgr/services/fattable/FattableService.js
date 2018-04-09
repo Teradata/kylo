@@ -31,7 +31,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/module-name');
-    // export class FattableService {
     function FattableService($window) {
         var self = this;
         var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
@@ -80,6 +79,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }
         };
         self.setupTable = function (options) {
+            // console.log('setupTable');
             var scrollXY = [];
             var optionsCopy = _.clone(options);
             var settings = _.defaults(optionsCopy, optionDefaults);
@@ -245,7 +245,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             });
         };
     }
-    // }
     angular.module(moduleName).service('FattableService', ["$window", FattableService]);
 });
 //# sourceMappingURL=FattableService.js.map
