@@ -53,11 +53,11 @@ public class TableMergeApp {
             final TableMergeArguments mergeArgs = new TableMergeArguments(args);
 
             // Initialize Spring context
-            try (final ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark.tablemerge")) {
+            try (final ConfigurableApplicationContext ctx = new AnnotationConfigApplicationContext("com.thinkbiganalytics.spark")) {
                 final TableMerger merger = ctx.getBean(TableMerger.class);
     
                 // Prepare Hive context
-                final HiveContext hiveContext = new HiveContext(sparkContext);
+                final HiveContext hiveContext = getHiveContext(sparkContext);
                 
                 switch (mergeArgs.getStrategy()) {
                     case MERGE:
@@ -81,5 +81,13 @@ public class TableMergeApp {
         } finally {
             sparkContext.stop();
         }
+    }
+
+    private HiveContext getHiveContext(final SparkContext sparkContext) {
+        HiveContext context = new HiveContext(sparkContext);
+        context.setConf("hive.exec.dynamic.partition", "true");
+        context.setConf("hive.exec.dynamic.partition.mode", "nonstrict");
+        context.setConf("hive.optimize.index.filter", "false");
+        return context;
     }
 }

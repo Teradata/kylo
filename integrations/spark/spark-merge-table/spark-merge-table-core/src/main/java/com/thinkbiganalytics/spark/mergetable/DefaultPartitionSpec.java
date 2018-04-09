@@ -9,12 +9,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.Vector;
 
 import javax.annotation.Nonnull;
@@ -22,7 +21,10 @@ import javax.annotation.Nonnull;
 /**
  *
  */
-public class DefaultPartitionSpec implements PartitionSpec {
+public class DefaultPartitionSpec implements PartitionSpec, Serializable {
+    
+    private static final long serialVersionUID = 1L;
+
     private List<PartitionKey> keys;
     
     public DefaultPartitionSpec(PartitionKey... partitionKeys) {
@@ -145,9 +147,11 @@ public class DefaultPartitionSpec implements PartitionSpec {
         for (int idx = 0; idx < keys.size(); idx++) {
             keysWithAliases[idx] = keys.get(idx).getFormulaWithAlias();
         }
-        return "select " + StringUtils.join(keysWithAliases) + ", count(0) as `tb_cnt` from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
+        
+        String columns = StringUtils.join(keysWithAliases, ", ");
+        return "select " + columns + ", count(0) as `tb_cnt` from " + HiveUtils.quoteIdentifier(sourceSchema, sourceTable) +
                " where `processing_dttm` = " + HiveUtils.quoteString(feedPartitionValue) +
-               " group by " + keysWithAliases;
+               " group by " + columns;
     }
 
     public PartitionSpec withAlias(String alias) {

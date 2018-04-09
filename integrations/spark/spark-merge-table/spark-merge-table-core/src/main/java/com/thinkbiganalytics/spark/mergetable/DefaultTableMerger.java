@@ -9,6 +9,7 @@ import com.thinkbiganalytics.spark.SparkContextService;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.spark.api.java.function.Function;
 import org.apache.spark.api.java.function.VoidFunction;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.hive.HiveContext;
@@ -70,7 +71,6 @@ public class DefaultTableMerger implements TableMerger {
         Validate.notEmpty(feedPartitionValue);
         Validate.notEmpty(mergeConfig.getColumnSpecs());
 
-//        final StringBuilder sql = new StringBuilder();
         final List<String> selectFields = getSelectFields(context, mergeConfig);
         final String sql = mergeConfig.getPartionSpec().isNonPartitioned()
                         ? generatePkMergeNonPartionQuery(context, selectFields, mergeConfig, feedPartitionValue, mergeConfig.getColumnSpecs())
@@ -82,7 +82,7 @@ public class DefaultTableMerger implements TableMerger {
      * @see com.thinkbiganalytics.spark.mergetable.TableMerger#synchronize(org.apache.spark.sql.hive.HiveContext, com.thinkbiganalytics.spark.mergetable.TableMergeConfig, java.lang.String, boolean)
      */
     @Override
-    public void synchronize(HiveContext context, TableMergeConfig mergeConfig, String feedPartitionValue, boolean partitionsOnly) {
+    public void synchronize(HiveContext context, TableMergeConfig mergeConfig, String feedPartitionValue, boolean rollingSync) {
         final StringBuilder sql = new StringBuilder();
         final String targetTable = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
         final String srcTable = HiveUtils.quoteIdentifier(mergeConfig.getSourceSchema(), mergeConfig.getSourceTable());
@@ -90,10 +90,10 @@ public class DefaultTableMerger implements TableMerger {
         final String selectCols = StringUtils.join(selectFields, ",");
         final PartitionSpec partitionSpec = mergeConfig.getPartionSpec();
         
-        sql.append("insert overwrite table ").append(targetTable);
+        sql.append("insert overwrite table ").append(targetTable).append(" ");
         
-        if (partitionsOnly) {
-            sql.append(partitionSpec.toDynamicPartitionSpec())
+        if (rollingSync || ! partitionSpec.isNonPartitioned()) {
+            sql.append(partitionSpec.toDynamicPartitionSpec()).append(" ")
                 .append("select ").append(selectCols).append(", ").append(partitionSpec.toDynamicSelectSQLSpec()).append(" ");
         } else {
             sql.append("select ").append(selectCols).append(" ");
@@ -101,6 +101,12 @@ public class DefaultTableMerger implements TableMerger {
         
         sql.append("from ").append(srcTable).append(" ")
             .append("where processing_dttm = ").append(HiveUtils.quoteString(feedPartitionValue)).append(" ");
+        
+        if (rollingSync) {
+            List<PartitionBatch> batches = createPartitionBatches(context, mergeConfig, feedPartitionValue);
+            
+            sql.append(" and (").append(targetPartitionsWhereClause(batches, true)).append(")");
+        }
         
         executeSQL(context, sql.toString());
     }
@@ -155,7 +161,7 @@ public class DefaultTableMerger implements TableMerger {
 
 
         sql.append("insert overwrite table ").append(targetTable).append(" ")
-            .append(partitionSpec.toDynamicPartitionSpec())
+            .append(partitionSpec.toDynamicPartitionSpec()).append(" ")
             .append("select ").append(selectCols).append(",").append(partitionSpec.toPartitionSelectSQL()).append(" from (")
             .append("  select ").append(selectAliasCols).append(",").append(partitionSpecWithAlias.toDynamicSelectSQLSpec())
             .append("  from ").append(srcTable).append(" a")
@@ -178,34 +184,36 @@ public class DefaultTableMerger implements TableMerger {
     private String generateMergeNonPartitionQueryWithDedupe(List<String> selectFields, TableMergeConfig mergeConfig, String feedPartitionValue) {
         final StringBuilder sql = new StringBuilder();
         final String selectCols = StringUtils.join(selectFields, ",");
-        final String table = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String targetTable = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String srcTable = HiveUtils.quoteIdentifier(mergeConfig.getSourceSchema(), mergeConfig.getSourceTable());
         final boolean isProcessingDttm = hasProcessingDttm(selectFields);
         final String partitionVal = HiveUtils.quoteString(feedPartitionValue);
         String aggregateCols;
+        String groupByCols;
         
         if (isProcessingDttm) {
             final List<String> distinctFields = new ArrayList<>(selectFields);
             distinctFields.remove("`processing_dttm`");
-            aggregateCols = StringUtils.join(distinctFields, ",");
+            groupByCols = StringUtils.join(distinctFields, ",");
+            aggregateCols = groupByCols + ", min(processing_dttm) processing_dttm";
         } else {
             aggregateCols = selectCols;
+            groupByCols = selectCols;
         }
         
-        sql.append("insert").append(isProcessingDttm ? " into " : " overwrite ").append("table ").append(table).append(" ")
+        sql.append("insert").append(isProcessingDttm ? " into " : " overwrite ").append("table ").append(targetTable).append(" ")
             .append("select ").append(aggregateCols).append(" ")
             .append("from (")
             .append("select ").append(isProcessingDttm ? "distinct " : "").append(selectCols).append(" ")
-            .append(" from ").append(table)
+            .append(" from ").append(srcTable)
             .append(" where processing_dttm = ").append(partitionVal)
             .append(" union all ")
             .append(" select ").append(selectCols)
-            .append(" from ").append(table);
+            .append(" from ").append(targetTable)
+            .append(") x group by ").append(groupByCols);
         
         if (isProcessingDttm) {
-            sql.append(") x group by ").append(selectCols);
-        } else {
-            sql.append(") x group by ").append(aggregateCols)
-                .append(" having count(processing_dttm) = 1 and min(processing_dttm) = ").append(partitionVal);
+            sql.append(" having count(processing_dttm) = 1 and min(processing_dttm) = ").append(partitionVal);
         }
         
         return sql.toString();
@@ -214,10 +222,11 @@ public class DefaultTableMerger implements TableMerger {
     private String generateMergeNonPartitionQuery(List<String> selectFields, TableMergeConfig mergeConfig, String feedPartitionValue) {
         final StringBuilder sql = new StringBuilder();
         final String selectCols = StringUtils.join(selectFields, ",");
-        final String table = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String targetTable = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String srcTable = HiveUtils.quoteIdentifier(mergeConfig.getSourceSchema(), mergeConfig.getSourceTable());
         
-        sql.append("insert into ").append(table).append(" ")
-            .append("select ").append(selectCols).append(" from ").append(table).append(" ")
+        sql.append("insert into ").append(targetTable).append(" ")
+            .append("select ").append(selectCols).append(" from ").append(srcTable).append(" ")
             .append("where processing_dttm = ").append(HiveUtils.quoteString(feedPartitionValue));
 
         return sql.toString();
@@ -226,7 +235,8 @@ public class DefaultTableMerger implements TableMerger {
     private String generateMergeWithDedupePartitionQuery(HiveContext context, List<String> selectFields, TableMergeConfig mergeConfig, String feedPartitionValue) {
         final StringBuilder sql = new StringBuilder();
         final String selectCols = StringUtils.join(selectFields, ",");
-        final String table = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String targetTable = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String srcTable = HiveUtils.quoteIdentifier(mergeConfig.getSourceSchema(), mergeConfig.getSourceTable());
         final List<PartitionBatch> batches = createPartitionBatches(context, mergeConfig, feedPartitionValue);
         final String targetPartitionWhereClause = targetPartitionsWhereClause(batches, false);
         final PartitionSpec spec = mergeConfig.getPartionSpec();
@@ -237,31 +247,29 @@ public class DefaultTableMerger implements TableMerger {
         distinctFields.remove("`processing_dttm`");
         final String distinctCols = StringUtils.join(distinctFields, ",");
         
-        sql.append("insert overwrite table ").append(table).append(" ")
-            .append(spec.toDynamicPartitionSpec());
+        sql.append("insert overwrite table ").append(targetTable).append(" ")
+            .append(spec.toDynamicPartitionSpec()).append(" ");
         
         if (isProcessingDttm) {
-            String aggregateCols = distinctCols + ", " + mergeConfig.getPartionSpec().toPartitionSelectSQL();
-            sql.append("select ").append(aggregateCols).append(" from (");
+            sql.append("select ").append(distinctCols).append(", min(processing_dttm) processing_dttm, ").append(spec.toPartitionSelectSQL()).append(" from (");
         } else {
             sql.append("select distict ").append(selectCols).append(", ").append(spec.toPartitionSelectSQL()).append(" from (");
         }
         
         sql.append(" select ").append(selectCols).append(", ").append(spec.toDynamicSelectSQLSpec())
-            .append(" from ").append(table).append(" ")
+            .append(" from ").append(srcTable).append(" ")
             .append(" where ")
             .append(" processing_dttm = ").append(partitionVal)
             .append(" union all ")
             .append(" select ").append(selectCols).append(",").append(spec.toPartitionSelectSQL())
-            .append(" from ").append(table).append(" ");
+            .append(" from ").append(targetTable).append(" ");
         
         if (targetPartitionWhereClause != null) {
             sql.append(" where (").append(targetPartitionWhereClause).append(")");
         }
         
         if (isProcessingDttm) {
-            final String groupBySQL = distinctCols + "," + spec.toPartitionSelectSQL();
-            sql.append(") t group by ").append(groupBySQL);
+            sql.append(") t group by ").append(distinctCols).append(", ").append(spec.toPartitionSelectSQL());
         } else {
             sql.append(") t");
         }
@@ -272,12 +280,13 @@ public class DefaultTableMerger implements TableMerger {
     private String generateMergeWithPartitionQuery(List<String> selectFields, TableMergeConfig mergeConfig, String feedPartitionValue) {
         final StringBuilder sql = new StringBuilder();
         final String selectCols = StringUtils.join(selectFields, ",");
-        final String table = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String targetTable = HiveUtils.quoteIdentifier(mergeConfig.getTargetSchema(), mergeConfig.getTargetTable());
+        final String srcTable = HiveUtils.quoteIdentifier(mergeConfig.getSourceSchema(), mergeConfig.getSourceTable());
         final PartitionSpec spec = mergeConfig.getPartionSpec();
         
-        sql.append("insert into ").append(table).append(" ")
+        sql.append("insert into ").append(targetTable).append(" ").append(spec.toDynamicPartitionSpec()).append(" ")
             .append("select ").append(selectCols).append(", ").append(spec.toDynamicSelectSQLSpec())
-            .append(" from ").append(table).append(" ")
+            .append(" from ").append(srcTable).append(" ")
             .append("where processing_dttm = ").append(HiveUtils.quoteString(feedPartitionValue));
 
         return sql.toString();
@@ -345,16 +354,14 @@ public class DefaultTableMerger implements TableMerger {
     private List<PartitionBatch> createPartitionBatches(@Nonnull final HiveContext context,
                                                           @Nonnull final TableMergeConfig config,
                                                           @Nonnull final String feedPartitionValue) {
-        final List<PartitionBatch> batchList = new ArrayList<>();
         final String sql = config.getPartionSpec().toDistinctSelectSQL(config.getSourceSchema(), config.getSourceTable(), feedPartitionValue);
         final DataSet ds = this.scs.sql(context, sql);
+        final ToBatch toBatch = new ToBatch(config);
         
-        ds.javaRDD().foreach(addBatches(config, batchList));
-        return batchList;
+        return ds.javaRDD().map(toBatch).collect();
     }
 
     private List<PartitionBatch> createPkPartitionBatches(HiveContext context, TableMergeConfig config, String feedPartitionValue, String joinOnClause) {
-        final List<PartitionBatch> batchList = new ArrayList<>();
         final StringBuilder sql = new StringBuilder();
         final String targetTable = HiveUtils.quoteIdentifier(config.getTargetSchema(), config.getTargetTable());
         final String srcTable = HiveUtils.quoteIdentifier(config.getSourceSchema(), config.getSourceTable());
@@ -367,28 +374,33 @@ public class DefaultTableMerger implements TableMerger {
             .append("group by ").append(aliasSpecA.toPartitionSelectSQL());
         
         final DataSet ds = this.scs.sql(context, sql.toString());
+        final ToBatch toBatch = new ToBatch(config);
         
-        ds.javaRDD().foreach(addBatches(config, batchList));
-        return batchList;
+        return ds.javaRDD().map(toBatch).collect();
     }
     
-    @SuppressWarnings("serial")
-    private VoidFunction<Row> addBatches(final TableMergeConfig config, final List<PartitionBatch> batchList) {
-        return new VoidFunction<Row>() {
-            @Override
-            public void call(Row row) throws Exception {
-                int colCnt = row.size();
-                List<String> values = new ArrayList<>(colCnt - 1);
-                
-                for (int idx = 0; idx < colCnt; idx++) {
-                    String value = row.isNullAt(idx) ? "" : row.getString(idx);
-                    values.add(value);
-                }
-                
-                long numRecords = row.getLong(colCnt - 1);
-                batchList.add(new PartitionBatch(numRecords, config.getPartionSpec(), values));
+    public static class ToBatch implements Function<Row, PartitionBatch> {
+        private static final long serialVersionUID = 1L;
+        
+        private final TableMergeConfig config;
+        
+        public ToBatch(TableMergeConfig config) {
+            this.config = config;
+        }
+
+        @Override
+        public PartitionBatch call(Row row) throws Exception {
+            int colCnt = row.size();
+            List<String> values = new ArrayList<>(colCnt - 1);
+            
+            for (int idx = 0; idx < colCnt; idx++) {
+                String value = row.isNullAt(idx) ? "" : row.get(idx).toString();
+                values.add(value);
             }
-        };
+            
+            long numRecords = row.getLong(colCnt - 1);
+            return new PartitionBatch(numRecords, config.getPartionSpec(), values);
+        }
     }
 
 }

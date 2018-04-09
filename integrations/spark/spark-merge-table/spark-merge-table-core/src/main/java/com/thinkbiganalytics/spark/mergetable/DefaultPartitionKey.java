@@ -28,11 +28,14 @@ import com.thinkbiganalytics.hive.util.HiveUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
  */
-public class DefaultPartitionKey implements PartitionKey {
+public class DefaultPartitionKey implements PartitionKey, Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private final String alias;
     private final String key;

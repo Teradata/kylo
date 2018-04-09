@@ -30,28 +30,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.io.StringReader;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
-public class DefaultColumnSpec implements ColumnSpec {
+public class DefaultColumnSpec implements ColumnSpec, Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private String name;
-
     private String comment;
-
     private String dataType;
-
     private boolean primaryKey;
-
     private boolean createDate;
-
     private boolean modifiedDate;
-
     private String otherColumnName;
 
     public DefaultColumnSpec(String name, String dataType, String comment) {

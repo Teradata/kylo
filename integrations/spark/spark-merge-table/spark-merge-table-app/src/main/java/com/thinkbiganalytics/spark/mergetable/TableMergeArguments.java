@@ -12,14 +12,17 @@ import com.beust.jcommander.converters.IParameterSplitter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  */
-public class TableMergeArguments implements TableMergeConfig {
+public class TableMergeArguments implements TableMergeConfig, Serializable {
     
+    private static final long serialVersionUID = 1L;
+
     @Parameter(names = {"-t", "--target-table"}, required=true,
                description = "The target table in the form <schema>.<table>", 
                converter = TableConverter.class)
@@ -130,7 +133,10 @@ public class TableMergeArguments implements TableMergeConfig {
     }
     
 
-    public static class Table {
+    public static class Table implements Serializable {
+        
+        private static final long serialVersionUID = 1L;
+
         private final String schema;
         private final String table;
         
@@ -146,6 +152,11 @@ public class TableMergeArguments implements TableMergeConfig {
 
         public String getTable() {
             return table;
+        }
+        
+        @Override
+        public String toString() {
+            return this.schema + "." + this.table;
         }
     }
     

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.spark.mergetable;
 
+import java.io.Serializable;
+
 /*-
  * #%L
  * thinkbig-nifi-core-processors
@@ -30,12 +32,12 @@ import java.util.List;
 /**
  * Stores the identifier of a partition and the record count
  */
-public class PartitionBatch {
+public class PartitionBatch implements Serializable {
+    
+    private static final long serialVersionUID = 1L;
 
     private Long records;
-
     private List<String> partitionValues;
-
     private PartitionSpec partitionSpec;
     
     public PartitionBatch(PartitionBatch orig) {
