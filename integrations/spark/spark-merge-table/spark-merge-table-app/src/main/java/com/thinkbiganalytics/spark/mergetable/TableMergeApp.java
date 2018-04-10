@@ -61,8 +61,8 @@ public class TableMergeApp {
                 
                 switch (mergeArgs.getStrategy()) {
                     case MERGE:
-                    case DEDUPE_MERGE:
-                        merger.merge(hiveContext, mergeArgs, mergeArgs.getPartitionValue(), mergeArgs.getStrategy() == MergeStrategy.DEDUPE_MERGE);
+                    case DEDUPE_AND_MERGE:
+                        merger.merge(hiveContext, mergeArgs, mergeArgs.getPartitionValue(), mergeArgs.getStrategy() == MergeStrategy.DEDUPE_AND_MERGE);
                         break;
                     case SYNC:
                     case ROLLING_SYNC:

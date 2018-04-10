@@ -10,7 +10,7 @@ import java.util.List;
  */
 public interface TableMergeConfig {
     
-    enum MergeStrategy {MERGE, DEDUPE_MERGE, PK_MERGE, SYNC, ROLLING_SYNC}
+    enum MergeStrategy {MERGE, DEDUPE_AND_MERGE, PK_MERGE, SYNC, ROLLING_SYNC}
     
     String getTargetTable();
     

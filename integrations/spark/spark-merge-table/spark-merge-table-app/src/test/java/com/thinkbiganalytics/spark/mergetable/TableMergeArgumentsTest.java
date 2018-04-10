@@ -30,7 +30,7 @@ public class TableMergeArgumentsTest {
                                                "--source-table", "source.table", 
                                                "--target-table", "target.table", 
                                                "--partition-value", "123", 
-                                               "--merge-strategy", "DEDUPE_MERGE"};
+                                               "--merge-strategy", "DEDUPE_AND_MERGE"};
     
     @Test
     public void testLongArgs() {
@@ -39,7 +39,7 @@ public class TableMergeArgumentsTest {
         assertThat(config).extracting("sourceSchema", "sourceTable").containsExactly("source", "table");
         assertThat(config).extracting("targetSchema", "targetTable").containsExactly("target", "table");
         assertThat(config.getPartitionValue()).isEqualTo("123");
-        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_MERGE);
+        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_AND_MERGE);
         assertThat(config.getPartionSpec()).isNotNull();
         assertThat(config.getPartionSpec().getKeys())
             .isNotEmpty()
@@ -60,7 +60,7 @@ public class TableMergeArgumentsTest {
         assertThat(config).extracting("sourceSchema", "sourceTable").containsExactly("source", "table");
         assertThat(config).extracting("targetSchema", "targetTable").containsExactly("target", "table");
         assertThat(config.getPartitionValue()).isEqualTo("123");
-        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_MERGE);
+        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_AND_MERGE);
         assertThat(config.getPartionSpec()).isNotNull();
         assertThat(config.getPartionSpec().getKeys())
             .isNotEmpty()
@@ -115,7 +115,7 @@ public class TableMergeArgumentsTest {
         
         assertThat(config).extracting("sourceSchema", "sourceTable").containsExactly("source", "table");
         assertThat(config).extracting("targetSchema", "targetTable").containsExactly("target", "table");
-        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_MERGE);
+        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_AND_MERGE);
         assertThat(config.getPartionSpec()).isNotNull();
         assertThat(config.getPartionSpec().getKeys()).hasSize(2);
     } 

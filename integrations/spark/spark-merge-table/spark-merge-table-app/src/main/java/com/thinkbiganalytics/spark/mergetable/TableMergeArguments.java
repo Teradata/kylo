@@ -34,18 +34,18 @@ public class TableMergeArguments implements TableMergeConfig, Serializable {
     private Table sourceTable;
     
     @Parameter(names = {"-m", "--merge-strategy"}, required=true,
-               description = "The merge strategy to use - valid values: MERGE, DEDUPE_MERGE, PK_MERGE, SYNC, ROLLING_SYNC",
+               description = "The merge strategy to use - valid values: MERGE, DEDUPE_AND_MERGE, PK_MERGE, SYNC, ROLLING_SYNC",
                converter = StrategyConverter.class)
     private MergeStrategy strategy;
     
     @Parameter(names = {"-c", "--column-specs"}, required=true,
-               description = "The merge strategy to use - valid values: MERGE, DEDUPE_MERGE, PK_MERGE, SYNC, ROLLING_SYNC", 
+               description = "The merge strategy to use - valid values: MERGE, DEDUPE_AND_MERGE, PK_MERGE, SYNC, ROLLING_SYNC", 
                converter = ColumnSpecConverter.class,
                splitter = WhitespaceCommaSplitter.class)
     private List<ColumnSpec> columnSpecs;
     
     @Parameter(names = {"-v", "--partition-value"}, required=true,
-               description = "The merge strategy to use - valid values: MERGE, DEDUPE_MERGE, PK_MERGE, SYNC, ROLLING_SYNC")
+               description = "The merge strategy to use - valid values: MERGE, DEDUPE_AND_MERGE, PK_MERGE, SYNC, ROLLING_SYNC")
     private String partitionValue;
     
     @Parameter(names = {"-p", "--partition-keys"},
