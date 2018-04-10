@@ -8,6 +8,9 @@
   <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selection }}</md-button>
   </md-menu-item>
+  <md-menu-item ng-if="value !== null">
+    <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selection }}</md-button>
+  </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>
   <md-menu-item ng-if="value !== null">
     <md-button ng-click="header.delegate.findRowsEqualTo(value, header)">Find rows equal to {{ displayValue }}</md-button>
@@ -33,4 +36,8 @@
   <md-menu-item ng-if="value === null">
     <md-button ng-click="header.delegate.deleteNullRows(header)">Delete null rows</md-button>
   </md-menu-item>
+  <md-menu-item ng-if="value !== null">
+    <md-button ng-click="header.delegate.clearRowsEquals(value, header, table)">Clear values containing {{displayValue}}</md-button>
+  </md-menu-item>
+
 </md-menu-content>

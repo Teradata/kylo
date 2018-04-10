@@ -92,6 +92,22 @@ export class ColumnDelegate implements IColumnDelegate {
         // not supported
     }
 
+    escapeRegExp(text: string) : string {
+      return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\\\$&');
+    }
+
+    stripValueContaining(value: string, column: any, grid:any) {
+        const fieldName = this.getColumnFieldName(column);
+        const regex = this.escapeRegExp(value);
+        const formula = this.toFormula("regexp_replace("+fieldName+", \""+regex+"\", \"\").as(\""+fieldName+"\")", column, grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value});
+    }
+
+    clearRowsEquals(value: string, column: any, grid:any) {
+        const formula = this.toFormula("when(equal(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise("+ this.getColumnFieldName(column)+")",column,grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
+    }
+
     /**
      * Filters for rows where the specified column is not null.
      */
@@ -227,6 +243,19 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Imputes the values using mean
+     *
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    imputeMeanColumn(self: any, column: any, grid: any) {
+        const fieldName = self.getColumnFieldName(column);
+        const script = "when(or(isnull("+fieldName+"),isnan("+fieldName+")),mean("+fieldName+").over(orderBy(1))).otherwise("+fieldName+").as(\""+fieldName+"\")";
+        const formula = self.toFormula(script, column, grid);
+        self.controller.addFunction(formula, {formula: formula, icon: 'functions', name: 'Impute mean ' + self.getColumnDisplayName(column)});
+    }
+
+    /**
      * Gets the target data types supported for casting this column.
      */
     getAvailableCasts(): DT[] {
@@ -323,10 +352,15 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     transformColumn(transform: any, column: any, grid: any) {
         const fieldName = this.getColumnFieldName(column);
-        const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
-        const formula = this.toFormula(script, column, grid);
-        const name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
-        this.controller.addFunction(formula, {formula: formula, icon: transform.icon, name: name});
+        const self = this;
+        if ($.isFunction(transform.operation)) {
+            transform.operation(self, column, grid);
+        } else {
+            const script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
+            const formula = this.toFormula(script, column, grid);
+            const name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
+            this.controller.addFunction(formula, {formula: formula, icon: transform.icon, name: name});
+        }
     }
 
     /**
@@ -445,6 +479,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     protected getTransforms(dataCategory: DataCategory) {
         const transforms = [];
+        const self = this;
 
         if (dataCategory === DataCategory.ARRAY) {
             transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'},
@@ -472,7 +507,9 @@ export class ColumnDelegate implements IColumnDelegate {
             transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'});
         }
         if (dataCategory === DataCategory.NUMERIC) {
-            transforms.push({description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil'},
+            transforms.push(
+                {description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn},
+                {description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil'},
                 {description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor'},
                 {icon: 'swap_vert', name: 'Round', operation: 'round'},
                 {descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees'},

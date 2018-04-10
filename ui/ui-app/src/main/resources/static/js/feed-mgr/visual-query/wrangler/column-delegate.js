@@ -71,6 +71,19 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         ColumnDelegate.prototype.castTo = function (dataType) {
             // not supported
         };
+        ColumnDelegate.prototype.escapeRegExp = function (text) {
+            return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\\\$&');
+        };
+        ColumnDelegate.prototype.stripValueContaining = function (value, column, grid) {
+            var fieldName = this.getColumnFieldName(column);
+            var regex = this.escapeRegExp(value);
+            var formula = this.toFormula("regexp_replace(" + fieldName + ", \"" + regex + "\", \"\").as(\"" + fieldName + "\")", column, grid);
+            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value });
+        };
+        ColumnDelegate.prototype.clearRowsEquals = function (value, column, grid) {
+            var formula = this.toFormula("when(equal(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise(" + this.getColumnFieldName(column) + ")", column, grid);
+            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value });
+        };
         /**
          * Filters for rows where the specified column is not null.
          */
@@ -192,6 +205,18 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.controller.addFunction(formula, { formula: formula, icon: 'content_copy', name: 'Clone ' + this.getColumnDisplayName(column) });
         };
         /**
+         * Imputes the values using mean
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.imputeMeanColumn = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var script = "when(or(isnull(" + fieldName + "),isnan(" + fieldName + ")),mean(" + fieldName + ").over(orderBy(1))).otherwise(" + fieldName + ").as(\"" + fieldName + "\")";
+            var formula = self.toFormula(script, column, grid);
+            self.controller.addFunction(formula, { formula: formula, icon: 'functions', name: 'Impute mean ' + self.getColumnDisplayName(column) });
+        };
+        /**
          * Gets the target data types supported for casting this column.
          */
         ColumnDelegate.prototype.getAvailableCasts = function () {
@@ -281,10 +306,16 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         ColumnDelegate.prototype.transformColumn = function (transform, column, grid) {
             var fieldName = this.getColumnFieldName(column);
-            var script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
-            var formula = this.toFormula(script, column, grid);
-            var name = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
-            this.controller.addFunction(formula, { formula: formula, icon: transform.icon, name: name });
+            var self = this;
+            if ($.isFunction(transform.operation)) {
+                transform.operation(self, column, grid);
+            }
+            else {
+                var script = transform.operation + "(" + fieldName + ").as(\"" + StringUtils.singleQuote(fieldName) + "\")";
+                var formula = this.toFormula(script, column, grid);
+                var name_2 = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
+                this.controller.addFunction(formula, { formula: formula, icon: transform.icon, name: name_2 });
+            }
         };
         /**
          * Validates the specified filter.
@@ -384,6 +415,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         ColumnDelegate.prototype.getTransforms = function (dataCategory) {
             var transforms = [];
+            var self = this;
             if (dataCategory === DataCategory.ARRAY) {
                 transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array' });
             }
@@ -397,7 +429,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' });
             }
             if (dataCategory === DataCategory.NUMERIC) {
-                transforms.push({ description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
+                transforms.push({ description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn }, { description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
             }
             if (dataCategory === DataCategory.STRING) {
                 transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' });
@@ -420,8 +452,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 columnSet.add(self.getColumnFieldName(item));
             });
             while (uniqueName == null) {
-                var name_2 = prefix + idx;
-                uniqueName = (columnSet.has(name_2) ? null : name_2);
+                var name_3 = prefix + idx;
+                uniqueName = (columnSet.has(name_3) ? null : name_3);
                 idx++;
             }
             return ".as(\"" + uniqueName + "\")";
