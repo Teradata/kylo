@@ -77,10 +77,12 @@ thinkbig-visual-query-transform visual-query-table {
     vertical-align: middle;
     white-space: nowrap;
     font-size: 13px;
-    border-right: 1px solid lightgray;  }
+    border-bottom: 1px solid rgb(230,230,230);
+    border-right: 1px solid rgb(230,230,230);
+  }
 
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
-   background-color:rgb(248, 248, 248);  }
+   background-color:rgb(245, 245, 245);  }
 
     thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
       background-color: #ffcdd2; }
@@ -113,7 +115,7 @@ thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd 
 
 /* Column headers */
 .ui-grid-header-cell-label {
-  color: grey;
+  color: steelblue;
   margin-right: 1em;
   overflow: hidden;
   text-overflow: ellipsis; }
@@ -222,3 +224,12 @@ md-menu-item {
     color: #ffcdd2;
     margin: 0;
     padding-left: 20px; }
+
+/**
+  Override toolbar buttons
+   */
+.md-kylo-powerui .md-button  {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}
