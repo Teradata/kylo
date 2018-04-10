@@ -54,7 +54,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="type in availableCasts">
             <md-button ng-click="header.delegate.castTo(type)">
-              <ng-md-icon ng-if="type.icon" icon="{{type.icon}}"></ng-md-icon>
+              <i class="material-icons" ng-style="{'fill':type.iconColor}">{{type.icon}}</i>
               {{type.name}}
             </md-button>
           </md-menu-item>
@@ -72,7 +72,7 @@
           </md-menu-item>
           <md-menu-item ng-repeat="domainType in availableDomainTypes">
             <md-button ng-click="header.delegate.setDomainType(header, domainType.id)">
-              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon>
+              <i class="material-icons" ng-style="{'fill':domainType.iconColor}">{{domainType.icon}}</i>
               {{domainType.title}}
             </md-button>
           </md-menu-item>

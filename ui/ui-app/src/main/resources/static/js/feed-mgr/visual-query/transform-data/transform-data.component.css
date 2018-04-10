@@ -188,7 +188,8 @@ md-menu-item > .md-menu > .md-button span {
 .visual-query-column-menu {
   max-height: 352px; }
   .visual-query-column-menu .material-icons {
-    font-size: 20px;
+    margin-right: 4px;
+    font-size: 14px;
     vertical-align: sub; }
     .visual-query-column-menu .material-icons.custom-icon {
       font-weight: bold;
