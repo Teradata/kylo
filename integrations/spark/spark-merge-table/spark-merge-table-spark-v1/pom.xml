@@ -15,7 +15,6 @@
   </properties>
 
   <artifactId>kylo-spark-merge-table-spark-v1</artifactId>
-  <version>0.9.1-SNAPSHOT</version>
 
   <dependencies>
 
@@ -39,11 +38,6 @@
     <dependency>
       <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
       <artifactId>kylo-spark-merge-table-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-      <artifactId>kylo-spark-merge-table-model</artifactId>
       <version>${project.version}</version>
     </dependency>
 

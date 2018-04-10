@@ -24,7 +24,6 @@
     <module>spark-merge-table-spark-v1</module>
     <module>spark-merge-table-spark-v2</module>
     <module>spark-merge-table-core</module>
-    <module>spark-merge-table-model</module>
   </modules>
 
   <dependencyManagement>
