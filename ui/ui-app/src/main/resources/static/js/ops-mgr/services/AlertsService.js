@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name", "moment", "underscore"], function (require, exports, angular, module_name_1, moment, _) {
+define(["require", "exports", "angular", "../module-name", "moment", "underscore", "../module"], function (require, exports, angular, module_name_1, moment, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AlertsService = /** @class */ (function () {
