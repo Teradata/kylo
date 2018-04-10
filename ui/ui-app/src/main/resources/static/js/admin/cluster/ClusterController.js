@@ -3,7 +3,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
     Object.defineProperty(exports, "__esModule", { value: true });
     var ClusterController = /** @class */ (function () {
         function ClusterController($scope, $http, $mdDialog, $mdToast, $interval, AccessControlService) {
-            var _this = this;
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
@@ -17,13 +16,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             this.messageCheckerInterval = null;
             this.members = [];
             this.isClustered = false;
-            this.getMembers = function () {
-                _this.$http.get("/proxy/v1/admin/cluster/members").then(function (response) {
-                    if (response.data) {
-                        _this.members = response.data;
-                    }
-                });
-            };
             this.ngOnInit();
         }
         ClusterController.prototype.sendMessage = function () {
@@ -57,6 +49,14 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                         _this.receivedMessages.push(response.data);
                         _this.receivedMessageIds.push(response.data.id);
                     }
+                }
+            });
+        };
+        ClusterController.prototype.getMembers = function () {
+            var _this = this;
+            this.$http.get("/proxy/v1/admin/cluster/members").then(function (response) {
+                if (response.data) {
+                    _this.members = response.data;
                 }
             });
         };

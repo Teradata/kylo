@@ -62,7 +62,7 @@ export class ClusterController implements ng.IComponentController{
             });
         }
 
-        getMembers = ()=> {
+        getMembers(){
             this.$http.get("/proxy/v1/admin/cluster/members").then((response: any)=>{
                 if(response.data){
                    this.members = response.data;
