@@ -246,4 +246,6 @@ public interface NiFiProcessGroupsRestClient {
      * @return the flow for the group
      */
     ProcessGroupFlowDTO flow(@Nonnull final String parentGroupId);
+
+    ProcessGroupStatusDTO flowStatus(@Nonnull final String parentGroupId,boolean recursive);
 }

@@ -22,6 +22,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.google.common.base.Stopwatch;
 import com.google.common.collect.Lists;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
@@ -54,14 +55,19 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupPortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.entity.ControllerEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.rmi.Remote;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -70,6 +76,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Builds/updates a NiFi feed flow based on a NiFi template and a Feed Manager Feed.
@@ -311,8 +318,21 @@ public class CreateFeedBuilder {
                     entity = restClient.getProcessGroup(processGroupId, true, true);
                     input = fetchInputProcessorForProcessGroup(entity);
                     nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
-
+                    RemoteProcessGroupValidation remoteProcessGroupValidation = validateAndFixRemoteProcessGroups(entity);
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
+
+                    if(!remoteProcessGroupValidation.isValid()){
+                        log.error("Invalid Remote Process Group's were found.");
+                        //add the errors
+                            remoteProcessGroupValidation.getAllInvalidConnections().stream().forEach(connectionDTO -> {
+                                String
+                                    errorMsg =
+                                    "Invalid Remote Process Group. Unable set find valid remote input port for "+connectionDTO.getDestination().getName()+ ". Please ensure you have a remote input port matching this name";
+                                newProcessGroup.addError(processGroupId, connectionDTO.getId(), NifiError.SEVERITY.FATAL, errorMsg, "Remote Process Group");
+                                newProcessGroup.setSuccess(false);
+                            });
+                    }
+
                     log.debug("Time to re-fetchInputProcessorForProcessGroup.  ElapsedTime: {} ms", eventTime(eventTime));
                     //Validate and if invalid Delete the process group
                     if (newProcessGroup.hasFatalErrors()) {
@@ -535,148 +555,6 @@ public class CreateFeedBuilder {
     }
 
 
-    private void connectFeedToReusableTemplatexx(ProcessGroupDTO feedProcessGroup, ProcessGroupDTO categoryProcessGroup) throws NifiComponentNotFoundException {
-
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        String categoryProcessGroupId = categoryProcessGroup.getId();
-        String categoryParentGroupId = categoryProcessGroup.getParentGroupId();
-        String categoryProcessGroupName = categoryProcessGroup.getName();
-        String feedProcessGroupId = feedProcessGroup.getId();
-        String feedProcessGroupName = feedProcessGroup.getName();
-
-        ProcessGroupDTO reusableTemplateCategory = niFiObjectCache.getReusableTemplateCategoryProcessGroup();
-
-        if (reusableTemplateCategory == null) {
-            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
-                                                 + " You may need to import the base reusable template for this feed.");
-        }
-        String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
-        stopwatch.stop();
-        log.debug("Time to get reusableTemplateCategory: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        stopwatch.reset();
-
-        Stopwatch totalStopWatch = Stopwatch.createUnstarted();
-        for (InputOutputPort port : inputOutputPorts) {
-            totalStopWatch.start();
-            stopwatch.start();
-            PortDTO reusableTemplatePort = niFiObjectCache.getReusableTemplateInputPort(port.getInputPortName());
-            stopwatch.stop();
-            log.debug("Time to get reusableTemplate inputPort {} : {} ", port.getInputPortName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
-            if (reusableTemplatePort != null) {
-
-                String categoryOutputPortName = categoryProcessGroupName + " to " + port.getInputPortName();
-                stopwatch.start();
-                PortDTO categoryOutputPort = niFiObjectCache.getCategoryOutputPort(categoryProcessGroupId, categoryOutputPortName);
-                stopwatch.stop();
-                log.debug("Time to get categoryOutputPort {} : {} ", categoryOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                stopwatch.reset();
-                if (categoryOutputPort == null) {
-                    stopwatch.start();
-                    //create it
-                    PortDTO portDTO = new PortDTO();
-                    portDTO.setParentGroupId(categoryProcessGroupId);
-                    portDTO.setName(categoryOutputPortName);
-                    categoryOutputPort = restClient.getNiFiRestClient().processGroups().createOutputPort(categoryProcessGroupId, portDTO);
-                    niFiObjectCache.addCategoryOutputPort(categoryProcessGroupId, categoryOutputPort);
-                    stopwatch.stop();
-                    log.debug("Time to create categoryOutputPort {} : {} ", categoryOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-
-                }
-                stopwatch.start();
-                Set<PortDTO> feedOutputPorts = feedProcessGroup.getContents().getOutputPorts();
-                String feedOutputPortName = port.getOutputPortName();
-                if (feedOutputPorts == null || feedOutputPorts.isEmpty()) {
-                    feedOutputPorts = restClient.getNiFiRestClient().processGroups().getOutputPorts(feedProcessGroup.getId());
-                }
-                PortDTO feedOutputPort = NifiConnectionUtil.findPortMatchingName(feedOutputPorts, feedOutputPortName);
-                stopwatch.stop();
-                log.debug("Time to create feedOutputPort {} : {} ", feedOutputPortName, stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                stopwatch.reset();
-                if (feedOutputPort != null) {
-                    stopwatch.start();
-                    //make the connection on the category from feed to category
-                    ConnectionDTO feedOutputToCategoryOutputConnection = niFiObjectCache.getConnection(categoryProcessGroupId, feedOutputPort.getId(), categoryOutputPort.getId());
-                    stopwatch.stop();
-                    log.debug("Time to get feedOutputToCategoryOutputConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-                    if (feedOutputToCategoryOutputConnection == null) {
-                        stopwatch.start();
-                        //CONNECT FEED OUTPUT PORT TO THE Category output port
-                        ConnectableDTO source = new ConnectableDTO();
-                        source.setGroupId(feedProcessGroupId);
-                        source.setId(feedOutputPort.getId());
-                        source.setName(feedProcessGroupName);
-                        source.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-                        ConnectableDTO dest = new ConnectableDTO();
-                        dest.setGroupId(categoryProcessGroupId);
-                        dest.setName(categoryOutputPort.getName());
-                        dest.setId(categoryOutputPort.getId());
-                        dest.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-                        feedOutputToCategoryOutputConnection = restClient.createConnection(categoryProcessGroupId, source, dest);
-                        niFiObjectCache.addConnection(categoryProcessGroupId, feedOutputToCategoryOutputConnection);
-                        nifiFlowCache.addConnectionToCache(feedOutputToCategoryOutputConnection);
-                        stopwatch.stop();
-                        log.debug("Time to create feedOutputToCategoryOutputConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                        stopwatch.reset();
-                    }
-
-                    stopwatch.start();
-                    //connection made on parent (root) to reusable template
-                    ConnectionDTO
-                        categoryToReusableTemplateConnection = niFiObjectCache.getConnection(categoryProcessGroup.getParentGroupId(), categoryOutputPort.getId(), reusableTemplatePort.getId());
-                    stopwatch.stop();
-                    log.debug("Time to get categoryToReusableTemplateConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                    stopwatch.reset();
-                    //Now connect the category ProcessGroup to the global template
-                    if (categoryToReusableTemplateConnection == null) {
-                        stopwatch.start();
-                        ConnectableDTO categorySource = new ConnectableDTO();
-                        categorySource.setGroupId(categoryProcessGroupId);
-                        categorySource.setId(categoryOutputPort.getId());
-                        categorySource.setName(categoryOutputPortName);
-                        categorySource.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
-                        ConnectableDTO categoryToGlobalTemplate = new ConnectableDTO();
-                        categoryToGlobalTemplate.setGroupId(reusableTemplateCategoryGroupId);
-                        categoryToGlobalTemplate.setId(reusableTemplatePort.getId());
-                        categoryToGlobalTemplate.setName(reusableTemplatePort.getName());
-                        categoryToGlobalTemplate.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
-                        categoryToReusableTemplateConnection = restClient.createConnection(categoryParentGroupId, categorySource, categoryToGlobalTemplate);
-                        niFiObjectCache.addConnection(categoryParentGroupId, categoryToReusableTemplateConnection);
-                        nifiFlowCache.addConnectionToCache(categoryToReusableTemplateConnection);
-                        stopwatch.stop();
-                        log.debug("Time to create categoryToReusableTemplateConnection: {} ", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-                        stopwatch.reset();
-                    }
-                }
-
-
-            }
-            totalStopWatch.stop();
-            log.debug("Time to connect feed to {} port. ElapsedTime: {} ", port.getInputPortName(), totalStopWatch.elapsed(TimeUnit.MILLISECONDS));
-            totalStopWatch.reset();
-        }
-
-    }
-
-    private void connectFeedToReusableTemplatexx(String feedGroupId, String feedCategoryId) throws NifiComponentNotFoundException {
-        Stopwatch stopwatch = Stopwatch.createStarted();
-        ProcessGroupDTO reusableTemplateCategory = niFiObjectCache.getReusableTemplateCategoryProcessGroup();
-
-        if (reusableTemplateCategory == null) {
-            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
-                                                 + " You may need to import the base reusable template for this feed.");
-        }
-        String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
-        for (InputOutputPort port : inputOutputPorts) {
-            stopwatch.start();
-            restClient.connectFeedToGlobalTemplate(feedGroupId, port.getOutputPortName(), feedCategoryId, reusableTemplateCategoryGroupId, port.getInputPortName());
-            stopwatch.stop();
-            log.debug("Time to connect feed to {} port. ElapsedTime: {} ", port.getInputPortName(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        }
-    }
-
 
     private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
         ProcessGroupDTO template = restClient.getProcessGroup(feedGroupId, false, false);
@@ -897,6 +775,269 @@ public class CreateFeedBuilder {
             }
         }
     }
+
+private class EnhancedRemoteProcessGroupPortDTO {
+        private RemoteProcessGroupPortDTO port;
+        private RemoteProcessGroupDTO remoteProcessGroup;
+
+    public EnhancedRemoteProcessGroupPortDTO(RemoteProcessGroupPortDTO port, RemoteProcessGroupDTO remoteProcessGroup) {
+        this.port = port;
+        this.remoteProcessGroup = remoteProcessGroup;
+    }
+
+    public RemoteProcessGroupPortDTO getPort() {
+        return port;
+    }
+
+    public RemoteProcessGroupDTO getRemoteProcessGroup() {
+        return remoteProcessGroup;
+    }
+
+    public String getId(){
+        return port.getId();
+    }
+
+    public String getName(){
+        return port.getName();
+    }
+
+    public boolean hasRemoteProcessGroupAuthorizationIssues(){
+        return remoteProcessGroup != null && remoteProcessGroup.getAuthorizationIssues() != null && !remoteProcessGroup.getAuthorizationIssues().isEmpty();
+    }
+
+    public void updateRemoteProcessGroupDTO(RemoteProcessGroupDTO remoteProcessGroupDTO){
+        if(remoteProcessGroupDTO != null){
+            this.remoteProcessGroup = remoteProcessGroupDTO;
+        }
+    }
+}
+
+private class RemoteProcessGroupConnectionDTO {
+        private ConnectionDTO connectionDTO;
+        private EnhancedRemoteProcessGroupPortDTO enhancedRemoteProcessGroupPortDTO;
+
+    public RemoteProcessGroupConnectionDTO(ConnectionDTO connectionDTO, EnhancedRemoteProcessGroupPortDTO enhancedRemoteProcessGroupPortDTO) {
+        this.connectionDTO = connectionDTO;
+        this.enhancedRemoteProcessGroupPortDTO = enhancedRemoteProcessGroupPortDTO;
+    }
+
+    public ConnectionDTO getConnectionDTO() {
+        return connectionDTO;
+    }
+
+    public EnhancedRemoteProcessGroupPortDTO getEnhancedRemoteProcessGroupPortDTO() {
+        return enhancedRemoteProcessGroupPortDTO;
+    }
+
+    public RemoteProcessGroupDTO getRemoteProcessGroup(){
+        return enhancedRemoteProcessGroupPortDTO.getRemoteProcessGroup();
+    }
+
+    public boolean hasRemoteProcessGroupAuthorizationIssues(){
+        return enhancedRemoteProcessGroupPortDTO.hasRemoteProcessGroupAuthorizationIssues();
+    }
+    public void updateRemoteProcessGroupDTO(RemoteProcessGroupDTO remoteProcessGroupDTO){
+        this.enhancedRemoteProcessGroupPortDTO.updateRemoteProcessGroupDTO(remoteProcessGroupDTO);
+    }
+}
+
+    /**
+     *
+     * 1. get the flow for the feed process group
+     * 2. if Connections.component.destination ==  REMOTE_INPUT_PORT
+     *    2a. Match destination id to remoteProcessGroup.component.contents.inputPorts
+     *    2b. if remoteProcessGroup.component.contents.inputPorts.exists == false, attempt to find one in the (remoteProcessGroup.component.contents.inputPorts) with the same name that has 'exists' == true
+     *    2c. if found, make thecd cd  new connection (update the connections.component.destination == the good input port
+     *
+     */
+    private RemoteProcessGroupValidation validateAndFixRemoteProcessGroups(ProcessGroupDTO feedProcessGroup){
+
+        RemoteProcessGroupValidation validation = new RemoteProcessGroupValidation();
+        Map<String,RemoteProcessGroupDTO> remoteProcessGroupMap = new HashMap<>();
+        Map<String,EnhancedRemoteProcessGroupPortDTO> remoteInputPortsById = new HashMap<>();
+        Map<String,EnhancedRemoteProcessGroupPortDTO> remoteInputPortsByName = new HashMap<>();
+
+        feedProcessGroup.getContents().getRemoteProcessGroups().stream().forEach(remoteProcessGroup -> {
+            remoteProcessGroupMap.putIfAbsent(remoteProcessGroup.getId(),remoteProcessGroup);
+            remoteProcessGroup.getContents().getInputPorts().stream().forEach(inputPort -> {
+                remoteInputPortsById.putIfAbsent(inputPort.getId(),new EnhancedRemoteProcessGroupPortDTO(inputPort,remoteProcessGroup));
+                remoteInputPortsByName.putIfAbsent(inputPort.getName(),new EnhancedRemoteProcessGroupPortDTO(inputPort,remoteProcessGroup));
+            });
+        });
+
+
+        List<ConnectionDTO> remoteProcessGroupConnections = feedProcessGroup.getContents().getConnections().stream().filter(connectionDTO -> connectionDTO.getDestination().getType().equalsIgnoreCase(NifiConstants.REMOTE_INPUT_PORT)).collect(
+            Collectors.toList());
+
+        List<RemoteProcessGroupConnectionDTO> updatedConnections = new ArrayList<>();
+        List<ConnectionDTO> unableToFix = new ArrayList<>();
+
+        if(!remoteProcessGroupConnections.isEmpty()) {
+
+            ControllerEntity details = restClient.getNiFiRestClient().siteToSite().details();
+            Map<String, PortDTO> siteToSitePortByIdMap = details.getController().getInputPorts().stream()
+                .collect(Collectors.toMap(port -> port.getId(), port -> port));
+            Map<String, PortDTO> siteToSitePortByNameMap = details.getController().getInputPorts().stream()
+                .collect(Collectors.toMap(port -> port.getName(), port -> port));
+
+            remoteProcessGroupConnections.stream().forEach(connectionDTO -> {
+                String destinationId = connectionDTO.getDestination().getId();
+                String destinationName = connectionDTO.getDestination().getName();
+                EnhancedRemoteProcessGroupPortDTO remoteProcessGroupPortDTO = remoteInputPortsById.get(destinationId);
+
+                if(remoteProcessGroupPortDTO != null) {
+                    RemoteProcessGroupConnectionDTO connection = new RemoteProcessGroupConnectionDTO(connectionDTO,remoteProcessGroupPortDTO);
+
+
+                    if (!siteToSitePortByIdMap.containsKey(remoteProcessGroupPortDTO.getId())) {
+
+                        //find by name
+                        PortDTO siteToSiteNamedPort = siteToSitePortByNameMap.get(destinationName);
+                        if (siteToSiteNamedPort != null) {
+                            //update the connection
+                            connectionDTO.getDestination().setId(siteToSiteNamedPort.getId());
+                            updatedConnections.add(connection);
+                        } else {
+                            validation.addNonExistentConnection(connectionDTO);
+                        }
+                    } else if (remoteProcessGroupPortDTO == null) {
+                        validation.addNonExistentConnection(connectionDTO);
+                    }
+                }
+            });
+
+            updatedConnections.stream().forEach(connectionDTO -> {
+                updateRemoteConnection(connectionDTO,validation,0);
+            });
+        }
+        return validation;
+    }
+
+    /**
+     * When updating the connections to remote process groups the system needs to detect if the RemoteProcessGroup is valid (has no issues connecting to the targetURI prior to making the connection)
+     * This call will try and sleep and retry if the remoteProcessGroup has connection issues
+     * @param remoteProcessGroupConnectionDTO the connection to update
+     * @param validation the holder of validation success/failures
+     * @param retryCount the number of retries already attempted for this connection
+     * @return true if successful, false if not.  The Validation object will also be populated with the validation information
+     */
+    private boolean updateRemoteConnection(RemoteProcessGroupConnectionDTO remoteProcessGroupConnectionDTO, RemoteProcessGroupValidation validation, int retryCount){
+        //ensure we are not attempting to authorize
+        //TDODO pull timeouts to configurable parameters
+        int sleepTimeMillis = 3000;
+        ConnectionDTO connectionDTO = remoteProcessGroupConnectionDTO.getConnectionDTO();
+        if(remoteProcessGroupConnectionDTO.hasRemoteProcessGroupAuthorizationIssues() || remoteProcessGroupConnectionDTO.getRemoteProcessGroup().getInputPortCount() == 0){
+            //wait
+            log.info("Authorizatoin issue found when attempting to update Remote Process Group Port connection for {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(),retryCount);
+            if(retryCount <=10) {
+                Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
+                Optional<RemoteProcessGroupDTO> remoteProcessGroupDTO = restClient.getNiFiRestClient().remoteProcessGroups().findById(remoteProcessGroupConnectionDTO.getRemoteProcessGroup().getId());
+                if (remoteProcessGroupDTO.isPresent()) {
+                    remoteProcessGroupConnectionDTO.updateRemoteProcessGroupDTO(remoteProcessGroupDTO.get());
+                    retryCount++;
+                 return   updateRemoteConnection(remoteProcessGroupConnectionDTO, validation, retryCount);
+                }
+                else {
+                    validation.addInvalidConnection(connectionDTO);
+                    return false;
+                }
+            }
+            else {
+                validation.addInvalidConnection(connectionDTO);
+                return false;
+            }
+        }
+        else {
+            log.info("Updating Remote Process Group Port connection for {} ", connectionDTO.getDestination().getName());
+            try {
+                Optional<ConnectionDTO> updatedConnection = restClient.getNiFiRestClient().connections().update(connectionDTO);
+                if(updatedConnection.isPresent()) {
+                    validation.addUpdatedConnection(updatedConnection.get());
+                    return true;
+                }
+                else {
+                    validation.addInvalidConnection(connectionDTO);
+                    return false;
+                }
+            } catch (Exception e) {
+                validation.addInvalidConnection(connectionDTO);
+                return false;
+            }
+        }
+    }
+
+    private class RemoteProcessGroupValidation {
+
+        /**
+         * Connections successfully updated
+         */
+        private List<ConnectionDTO> updatedConnections;
+        /**
+         * Connections that errored out duing update
+         */
+        private List<ConnectionDTO> invalidConnections;
+        /**
+         * Connections that dont exist and could not find a viable remote input port
+         */
+        private List<ConnectionDTO> nonExistentPortConnections;
+
+        public void addUpdatedConnection(ConnectionDTO connectionDTO){
+            if(updatedConnections == null){
+                updatedConnections = new ArrayList<>();
+            }
+            updatedConnections.add(connectionDTO);
+        }
+
+
+        public void addInvalidConnection(ConnectionDTO connectionDTO){
+            if(invalidConnections == null){
+                invalidConnections = new ArrayList<>();
+            }
+            invalidConnections.add(connectionDTO);
+        }
+
+        public void addNonExistentConnection(ConnectionDTO connectionDTO){
+            if(nonExistentPortConnections == null){
+                nonExistentPortConnections = new ArrayList<>();
+            }
+            nonExistentPortConnections.add(connectionDTO);
+        }
+
+        public boolean isValid(){
+            return isValid(invalidConnections)&& isValid(nonExistentPortConnections);
+        }
+
+        private boolean isValid(List list){
+            return list == null || (list != null && list.isEmpty());
+        }
+
+        @Nullable
+        public List<ConnectionDTO> getUpdatedConnections() {
+            return updatedConnections;
+        }
+        @Nullable
+        public List<ConnectionDTO> getInvalidConnections() {
+            return invalidConnections;
+        }
+        @Nullable
+        public List<ConnectionDTO> getNonExistentPortConnections() {
+            return nonExistentPortConnections;
+        }
+
+        public List<ConnectionDTO> getAllInvalidConnections(){
+            List<ConnectionDTO> all = new ArrayList<>();
+            if(invalidConnections != null){
+                all.addAll(invalidConnections);
+            }
+            if(nonExistentPortConnections != null){
+                all.addAll(nonExistentPortConnections);
+            }
+            return all;
+        }
+
+    }
+
+
 }
 
 

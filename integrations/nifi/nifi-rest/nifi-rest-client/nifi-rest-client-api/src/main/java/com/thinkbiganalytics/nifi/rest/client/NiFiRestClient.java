@@ -169,5 +169,8 @@ public interface NiFiRestClient {
     @Nonnull
     NiFiReportingTaskRestClient reportingTasks();
 
+    @Nonnull
+    NiFiSiteToSiteRestClient siteToSite();
+
 
 }

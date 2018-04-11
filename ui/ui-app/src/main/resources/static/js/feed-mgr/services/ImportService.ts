@@ -72,6 +72,7 @@ export class DefaultImportService implements ImportService{
 
     newRemoteProcessGroupImportOption(): ImportComponentOption {
         let option = this.newImportComponentOption( Import.ImportComponentType.REMOTE_INPUT_PORT);
+        option.shouldImport = false;
         option.userAcknowledged = false;
         return option;
     }

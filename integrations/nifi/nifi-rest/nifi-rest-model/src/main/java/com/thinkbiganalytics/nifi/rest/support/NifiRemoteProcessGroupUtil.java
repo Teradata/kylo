@@ -99,11 +99,40 @@ public class NifiRemoteProcessGroupUtil {
         remoteProcessGroupPropertiesMap =
         REMOTE_PROCESS_GROUP_PROPERTIES.stream().collect(Collectors.toMap(NiFiPropertyDescriptor::getName, Function.identity()));
 
+    /**
+     * Updates the remoteProcessGroupDTO from the list of properties
+     * @param remoteProcessGroupDTO
+     * @param properties
+     * @return
+     */
+    public static boolean updateRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO,List<NifiProperty> properties){
+
+        //if the incoming properties contains 'targetUris' then null out the 'targetUri' value as it will be picked up by Nifi on read
+        boolean containsTargetUris = properties.stream().anyMatch(p-> p.getKey().equalsIgnoreCase("targetUris"));
+        boolean containsTargetUri = properties.stream().anyMatch(p-> p.getKey().equalsIgnoreCase("targetUri"));
+        if(!containsTargetUri && containsTargetUris)
+        {
+            remoteProcessGroupDTO.setTargetUri(null);
+        }
+        properties.stream().forEach( property -> {
+            String key = property.getKey();
+            try {
+                PropertyUtils.setProperty(remoteProcessGroupDTO, key, property.getValue());
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        });
+        return true;
+
+    }
+
     public static NiFiRemoteProcessGroup toRemoteProcessGroup(RemoteProcessGroupDTO groupDTO) {
         NiFiRemoteProcessGroup remoteProcessGroup = new NiFiRemoteProcessGroup();
 
         remoteProcessGroup.setId(groupDTO.getId());
-        remoteProcessGroup.setName(groupDTO.getName());
+        //the TemplateDTO will not have the name set, just the targetURIs
+        //because of this we will not use the name, but rather the uri as the name (by default NiFi does use the targeturi as the name anyway during flow creation)
+        remoteProcessGroup.setName(groupDTO.getTargetUri());
         remoteProcessGroup.setActiveRemoteInputPortCount(groupDTO.getActiveRemoteInputPortCount());
         remoteProcessGroup.setActiveRemoteOutputPortCount(groupDTO.getActiveRemoteOutputPortCount());
         remoteProcessGroup.setInactiveRemoteInputPortCount(groupDTO.getInactiveRemoteInputPortCount());
@@ -147,6 +176,16 @@ public class NifiRemoteProcessGroupUtil {
 
     }
 
+    public static boolean hasRemoteProcessGroups(ProcessGroupDTO groupDTO){
+        if(!groupDTO.getContents().getRemoteProcessGroups().isEmpty()){
+            return true;
+        }
+        else {
+            return   groupDTO.getContents().getProcessGroups().stream().anyMatch(g -> hasRemoteProcessGroups(g));
+        }
+
+    }
+
     public static List<RemoteProcessGroupDTO> remoteProcessGroups(ProcessGroupDTO groupDTO) {
         List<RemoteProcessGroupDTO> remoteProcessGroupDTOS = new ArrayList<>();
         remoteProcessGroupDTOS.addAll(groupDTO.getContents().getRemoteProcessGroups());
@@ -186,10 +225,10 @@ public class NifiRemoteProcessGroupUtil {
                     property =
                     new NifiProperty(remoteProcessGroupDTO.getParentGroupId(), remoteProcessGroupDTO.getId(), propertyDescriptor.getName(),
                                      getPropertyAsString(remoteProcessGroupDTO, propertyDescriptor));
-                property.setProcessorType("RemoteProcessGroup");
-                property.setProcessGroupName(remoteProcessGroupDTO.getParentGroupId());
-                property.setProcessorName(remoteProcessGroupDTO.getName());
-                property.setProcessGroupName("NiFi Flow");
+                property.setProcessorType(NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP.name());
+                property.setProcessGroupId(remoteProcessGroupDTO.getParentGroupId());
+                property.setProcessorName(remoteProcessGroupDTO.getName() != null ? remoteProcessGroupDTO.getName() : remoteProcessGroupDTO.getTargetUri());
+                property.setProcessGroupName(NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP.name());
                 NiFiPropertyDescriptor propertyDescriptorDTO = remoteProcessGroupPropertiesMap.get(propertyDescriptor.getName());
                 property.setPropertyDescriptor(propertyDescriptorDTO);
                 return property;

@@ -52,6 +52,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
         DefaultImportService.prototype.newRemoteProcessGroupImportOption = function () {
             var option = this.newImportComponentOption(4 /* REMOTE_INPUT_PORT */);
+            option.shouldImport = false;
             option.userAcknowledged = false;
             return option;
         };

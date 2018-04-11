@@ -27,12 +27,14 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiAllowableValue;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.NifiPropertyGroup;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 
 import java.util.ArrayList;
@@ -52,6 +54,8 @@ import javax.annotation.Nullable;
  * Uitlity to extract properties and property info from NiFi
  */
 public class NifiPropertyUtil {
+
+
 
     /**
      * map the incoming list of properties to a key,value map
@@ -207,6 +211,11 @@ public class NifiPropertyUtil {
                     properties.addAll(NifiPropertyUtil.getProperties(groupDTO, propertyDescriptorTransform));
                 }
             }
+            if(processGroupDTO.getContents().getRemoteProcessGroups() != null && !processGroupDTO.getContents().getRemoteProcessGroups().isEmpty()){
+                for(RemoteProcessGroupDTO remoteProcessGroupDTO: processGroupDTO.getContents().getRemoteProcessGroups()){
+                    properties.addAll(NifiRemoteProcessGroupUtil.remoteProcessGroupProperties(remoteProcessGroupDTO));
+                }
+            }
         }
         return properties;
     }
@@ -217,7 +226,8 @@ public class NifiPropertyUtil {
      * @param properties the properties to inspect
      * @return a map with the key being the processGroupId and the value being a map of properties with its key being the processorId
      */
-    public static Map<String, Map<String, List<NifiProperty>>> groupPropertiesByProcessGroupAndProcessor(List<NifiProperty> properties) {
+    /*
+    public static Map<String, Map<String, List<NifiProperty>>> groupPropertiesByProcessGroupAndProcessorx(List<NifiProperty> properties) {
         Map<String, Map<String, List<NifiProperty>>> processGroupProperties = new HashMap();
         for (NifiProperty property : properties) {
             String processGroup = property.getProcessGroupId();
@@ -228,6 +238,31 @@ public class NifiPropertyUtil {
             }
             if (!processGroupProperties.get(processGroup).containsKey(processorId)) {
                 processGroupProperties.get(processGroup).put(processorId, new ArrayList<NifiProperty>());
+            }
+
+            processGroupProperties.get(processGroup).get(processorId).add(property);
+        }
+        return processGroupProperties;
+    }
+    */
+
+    /**
+     * Return a map of processGroupId to a map of that groups processors and its respective propeties
+     *
+     * @param properties the properties to inspect
+     * @return a map with the key being the processGroupId and the value being a map of properties with its key being the processorId
+     */
+    public static Map<String, Map<String, NifiPropertyGroup>> groupPropertiesByProcessGroupAndProcessor(List<NifiProperty> properties) {
+        Map<String, Map<String, NifiPropertyGroup>> processGroupProperties = new HashMap();
+        for (NifiProperty property : properties) {
+            String processGroup = property.getProcessGroupId();
+            String processorId = property.getProcessorId();
+
+            if (!processGroupProperties.containsKey(processGroup)) {
+                processGroupProperties.put(processGroup, new HashMap<String, NifiPropertyGroup>());
+            }
+            if (!processGroupProperties.get(processGroup).containsKey(processorId)) {
+                processGroupProperties.get(processGroup).put(processorId, new NifiPropertyGroup(processorId));
             }
 
             processGroupProperties.get(processGroup).get(processorId).add(property);
@@ -288,10 +323,12 @@ public class NifiPropertyUtil {
         final Map<String, NifiProperty> propertyByName = new HashMap<>(destinationProperties.size());
         final Map<String, String> groupIdByName = new HashMap<>(destinationProperties.size());
         final Map<String, String> processorIdByName = new HashMap<>(destinationProperties.size());
+        final Map<String,NifiProperty> propertyByProcessorNameType = new HashMap<>(destinationProperties.size());
 
         for (final NifiProperty property : destinationProperties) {
             propertyById.put(property.getIdKey(), property);
             propertyByName.put(property.getNameKey(), property);
+            propertyByProcessorNameType.put(property.getProcessorNameTypeKey(),property);
             groupIdByName.put(property.getProcessGroupName(), property.getProcessGroupId());
             processorIdByName.put(property.getProcessorName(), property.getProcessorId());
         }
@@ -311,6 +348,10 @@ public class NifiPropertyUtil {
             NifiProperty destinationProperty = propertyById.get(sourceProperty.getIdKey());
             if (destinationProperty == null) {
                 destinationProperty = propertyByName.get(sourceProperty.getNameKey());
+            }
+
+            if(destinationProperty == null && sourceProperty.isRemoteProcessGroupProperty()){
+                destinationProperty = propertyByProcessorNameType.get(sourceProperty.getProcessorNameTypeKey());
             }
 
             if (destinationProperty != null) {

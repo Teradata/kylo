@@ -118,6 +118,45 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
 
     @Nonnull
     @Override
+    public Optional<RemoteProcessGroupDTO> enable(String remoteProcessGroupId) {
+        Optional<RemoteProcessGroupDTO> remoteProcessGroupDTO = findById(remoteProcessGroupId);
+        if(remoteProcessGroupDTO.isPresent()) {
+            if (!remoteProcessGroupDTO.get().isTransmitting()) {
+                RemoteProcessGroupDTO updatedGroup = new RemoteProcessGroupDTO();
+                updatedGroup.setTransmitting(true);
+                updatedGroup.setId(remoteProcessGroupId);
+                return Optional.of(update(updatedGroup));
+            }
+            return remoteProcessGroupDTO;
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
+    @Nonnull
+    @Override
+    public Optional<RemoteProcessGroupDTO> disable(String remoteProcessGroupId) {
+        Optional<RemoteProcessGroupDTO> remoteProcessGroupDTO = findById(remoteProcessGroupId);
+        if(remoteProcessGroupDTO.isPresent()) {
+            if (remoteProcessGroupDTO.get().isTransmitting()) {
+                RemoteProcessGroupDTO updatedGroup = new RemoteProcessGroupDTO();
+                updatedGroup.setTransmitting(false);
+                updatedGroup.setId(remoteProcessGroupId);
+                return Optional.of(update(updatedGroup));
+            }
+            return remoteProcessGroupDTO;
+        }
+        else {
+            return Optional.empty();
+        }
+    }
+
+
+
+
+    @Nonnull
+    @Override
     public RemoteProcessGroupDTO update(@Nonnull final RemoteProcessGroupDTO processGroup) {
         return findEntityById(processGroup.getId())
             .flatMap(current -> {

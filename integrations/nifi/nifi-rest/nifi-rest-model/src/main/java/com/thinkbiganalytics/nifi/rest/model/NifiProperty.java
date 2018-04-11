@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 
 import java.util.List;
 import java.util.Map;
@@ -316,5 +317,9 @@ public final class NifiProperty {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public boolean isRemoteProcessGroupProperty(){
+        return NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP.name().equalsIgnoreCase(getProcessorType());
     }
 }

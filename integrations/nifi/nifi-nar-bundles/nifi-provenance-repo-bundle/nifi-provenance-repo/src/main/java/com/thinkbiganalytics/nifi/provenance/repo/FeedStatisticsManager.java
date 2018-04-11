@@ -100,10 +100,20 @@ public class FeedStatisticsManager {
         try {
             //build up feed flow file map relationships
             boolean isStartingFeedFlow = ProvenanceEventUtil.isStartingFeedFlow(event);
+            RemoteProvenanceEventService.getInstance().checkAndAddRemoteInputPortSendEvent(event,eventId);
+
+
             if (isStartingFeedFlow) {
-                FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(event);
+           FeedEventStatistics.StartingFlowFileResult result = FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(event, eventId);
+           if(result.isRemote() && result.isRegisteredStartingEvent()){
+               //clear the remote maps
+               log.info("Removing Remote Provenance Event maps for {} ",result.getSourceSystemFlowFileIdentifier());
+           }
+
             }
             FeedEventStatistics.getInstance().assignParentsAndChildren(event);
+
+
 
             //generate statistics and process the event
             String feedProcessorId = FeedEventStatistics.getInstance().getFeedProcessorId(event);
@@ -112,6 +122,10 @@ public class FeedStatisticsManager {
                 feedStatisticsMap.computeIfAbsent(key, feedStatisticsKey -> new FeedStatistics(feedProcessorId, event.getComponentId())).addEvent(event, eventId);
             } else {
                 //UNABLE TO FIND data in maps
+                String startingFlowFile = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
+                if(startingFlowFile == null){
+                    RemoteProvenanceEventService.getInstance().checkAndQueueRemoteEvent(event,eventId);
+                }
             }
         } finally {
             lock.unlock();
@@ -165,18 +179,15 @@ public class FeedStatisticsManager {
                     });
                 }
             }
+            boolean runningFlowsChanged = FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged();
 
             if ((eventsToSend != null && !eventsToSend.isEmpty()) || (statsToSend != null && !statsToSend.isEmpty())) {
                 //send it off to jms on a different thread
-                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsForFeed(statsToSend.keySet()));
+                JmsSender jmsSender = new JmsSender(eventsToSend, statsToSend.values(), FeedEventStatistics.getInstance().getRunningFeedFlowsForFeed(statsToSend.keySet()),runningFlowsChanged);
                 this.jmsService.submit(new JmsSenderConsumer(jmsSender));
             } else {
-                //if we are empty but the runningFlows have changed, then send off as well
-                if (FeedEventStatistics.getInstance().isFeedProcessorRunningFeedFlowsChanged()) {
-                    JmsSender jmsSender = new JmsSender(null, null, FeedEventStatistics.getInstance().getRunningFeedFlowsChanged());
+                    JmsSender jmsSender = new JmsSender(null, null, FeedEventStatistics.getInstance().getRunningFeedFlowsChanged(),runningFlowsChanged);
                     this.jmsService.submit(new JmsSenderConsumer(jmsSender));
-                }
-
             }
 
 

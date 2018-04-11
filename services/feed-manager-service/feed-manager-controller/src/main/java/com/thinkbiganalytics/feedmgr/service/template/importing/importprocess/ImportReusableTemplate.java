@@ -61,7 +61,11 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.flow.FlowDTO;
 import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
+import org.apache.nifi.web.api.dto.status.ProcessGroupStatusSnapshotDTO;
+import org.apache.nifi.web.api.dto.status.RemoteProcessGroupStatusSnapshotDTO;
 import org.apache.nifi.web.api.entity.ConnectionStatusEntity;
+import org.apache.nifi.web.api.entity.ProcessGroupStatusSnapshotEntity;
+import org.apache.nifi.web.api.entity.RemoteProcessGroupStatusSnapshotEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +79,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -442,7 +447,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
             if (remoteProcessGroupOption.isShouldImport() && remoteProcessGroupOption.isUserAcknowledged()) {
                 // identify if the user wished to remove any input ports.
-                valid = removeConnectionsAndInputs();
+                valid = removeConnectionsAndInputs(remoteProcessGroupOption);
             }
         }
 
@@ -456,7 +461,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         return templateConnectionUtil.getRemoteInputPortsForReusableTemplate(importTemplate.getTemplateName());
     }
 
-    private boolean removeConnectionsAndInputs(){
+    private boolean removeConnectionsAndInputs( ImportComponentOption remoteProcessGroupOption){
         Optional<TemplateRemoteInputPortConnections> existingRemoteProcessInputPortInformation = getExistingRemoteProcessInputPortInformation();
         if(existingRemoteProcessInputPortInformation.isPresent()) {
 
@@ -469,6 +474,8 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
             //Find the connections that match the input ports that are to be removed
             Set<ConnectionDTO> connectionsToRemove = existingRemoteProcessInputPortInformation.get().getExistingRemoteConnectionsToTemplate().stream().filter(connectionDTO ->inputPortNamesToRemove.contains(connectionDTO.getSource().getName())).collect(
                 Collectors.toSet());
+
+            Set<String> remoteInputPortIdsToRemove = connectionsToRemove.stream().map(connectionDTO -> connectionDTO.getSource().getId()).collect(Collectors.toSet());
             log.info("Removing input ports {}",inputPortNamesToRemove);
 
             Set<ConnectionDTO> connectionsWithQueue = new HashSet<>();
@@ -489,19 +496,55 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
                 return false;
             }
             else {
-                connectionsToRemove.stream().forEach(connection -> {
-                    nifiRestClient.deleteConnection(connection, false);
-                    getItemsCreated().addDeletedRemoteInputPortConnection(connection);
-                    try {
-                       PortDTO deletedPort = nifiRestClient.getNiFiRestClient().ports().deleteInputPort(connection.getSource().getId());
-                       if(deletedPort != null) {
-                           getItemsCreated().addDeletedRemoteInputPort(deletedPort);
-                       }
+                if(!remoteInputPortIdsToRemove.isEmpty()) {
+                    //verify we are allowed to delete this input port
+                    // if there are any remoteprocessgroups connected to this input port then we should not be allowed to delete it
+                    ProcessGroupStatusDTO flow = nifiRestClient.getNiFiRestClient().processGroups().flowStatus("root", true);
+
+
+
+                    boolean remoteProcessGroupsExist = flow.getAggregateSnapshot().getProcessGroupStatusSnapshots()
+                        .stream()
+                        .flatMap(s -> RemoteProcessGroupStatusHelper.flattened(s.getProcessGroupStatusSnapshot()))
+                        .map(remoteProcessGroupStatusSnapshotEntity ->
+                                                                                                                                           nifiRestClient.getNiFiRestClient().remoteProcessGroups()
+                                                                                                                                               .findById(
+                                                                                                                                                   remoteProcessGroupStatusSnapshotEntity.getId()))
+                        .filter(Optional::isPresent).map(Optional::get)
+                        .flatMap(remoteProcessGroupDTO -> remoteProcessGroupDTO.getContents().getInputPorts().stream())
+                        .anyMatch(remoteProcessGroupPortDTO -> remoteInputPortIdsToRemove.contains(remoteProcessGroupPortDTO.getId()));
+                    if (remoteProcessGroupsExist) {
+                        String msg = "Unable to remove inputPort  There are feed flows with RemotProcessGroups that are linked to one or more of the input ports you are trying to remove. Failed to import template: "
+                                     + importTemplate.getTemplateName();
+                        UploadProgressMessage
+                            importStatusMessage =
+                            uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(),
+                                                                  msg, true, false);
+                        importTemplate.setValid(false);
+                        importTemplate.setSuccess(false);
+                        importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN, msg, "");
+                        remoteProcessGroupOption.getErrorMessages().add(msg);
+                        return false;
                     }
-                    catch(NifiComponentNotFoundException e){
-                        //this is ok to catch as its deleted already
+                    else {
+                        connectionsToRemove.stream().forEach(connection -> {
+                            nifiRestClient.deleteConnection(connection, false);
+                            getItemsCreated().addDeletedRemoteInputPortConnection(connection);
+                            try {
+                                PortDTO deletedPort = nifiRestClient.getNiFiRestClient().ports().deleteInputPort(connection.getSource().getId());
+                                if(deletedPort != null) {
+                                    getItemsCreated().addDeletedRemoteInputPort(deletedPort);
+                                }
+                            }
+                            catch(NifiComponentNotFoundException e){
+                                //this is ok to catch as its deleted already
+                            }
+                        });
                     }
-                });
+                }
+
+
+
                 UploadProgressMessage
                     importStatusMessage =
                     uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Removed inputPort and connection for :"+connectionsToRemove.stream().map(c ->c.getSource().getName()).collect(Collectors.joining(","))+" for template: " + importTemplate.getTemplateName(),true,true);
@@ -511,6 +554,18 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
         }
 
         return true;
+    }
+
+    private static class RemoteProcessGroupStatusHelper{
+        public static Stream<RemoteProcessGroupStatusSnapshotEntity> flattened(ProcessGroupStatusSnapshotDTO processGroupStatusSnapshots) {
+
+            Stream<RemoteProcessGroupStatusSnapshotEntity> s = processGroupStatusSnapshots.getRemoteProcessGroupStatusSnapshots().stream();
+
+            return Stream.concat(
+               s,
+                processGroupStatusSnapshots.getProcessGroupStatusSnapshots().stream().flatMap(snap ->flattened(snap.getProcessGroupStatusSnapshot())));
+        }
+
     }
 
     private boolean createRemoteInputPorts( UploadProgressMessage

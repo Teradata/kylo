@@ -50,6 +50,21 @@ public interface NiFiRemoteProcessGroupsRestClient {
     @Nonnull
     Optional<RemoteProcessGroupDTO> findById(@Nonnull String processGroupId);
 
+    /**
+     * Enable (set transmitting = true)
+     * @param remoteProcessGroupId the remote process group id
+     * @return the updated remote process group, if found and updated
+     */
+    Optional<RemoteProcessGroupDTO> enable(String remoteProcessGroupId);
+
+
+    /**
+     * Disable (set transmitting = false)
+     * @param remoteProcessGroupId the remote process group id
+     * @return the updated remote process group, if found and updated
+     */
+    Optional<RemoteProcessGroupDTO> disable(String remoteProcessGroupId);
+
 
     /**
      * Updates a process group.

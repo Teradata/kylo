@@ -147,7 +147,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              * Flag to see if we should check and use remote input ports.
              * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
              */
-            this.remoteInputPortsCheckEnabled = false;
+            this.remoteInputPortsCheckEnabled = true;
             /**
              * Called when a user changes a import option for overwriting
              */
@@ -277,30 +277,32 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                     _this.errorMap = errorMap;
                     _this.errorCount = count;
                 }
-                if (count == 0) {
-                    _this.showReorderList = responseData.zipFile;
-                    _this.importResultIcon = "check_circle";
-                    _this.importResultIconColor = "#009933";
-                    if (responseData.zipFile == true) {
-                        _this.message = "Successfully imported and registered the template " + responseData.templateName;
-                    }
-                    else {
-                        _this.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
-                    }
-                    _this.resetImportOptions();
-                }
-                else {
-                    if (responseData.success) {
-                        _this.resetImportOptions();
+                if (!_this.additionalInputNeeded) {
+                    if (count == 0) {
                         _this.showReorderList = responseData.zipFile;
-                        _this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                        _this.importResultIcon = "warning";
-                        _this.importResultIconColor = "#FF9901";
+                        _this.importResultIcon = "check_circle";
+                        _this.importResultIconColor = "#009933";
+                        if (responseData.zipFile == true) {
+                            _this.message = "Successfully imported and registered the template " + responseData.templateName;
+                        }
+                        else {
+                            _this.message = "Successfully imported the template " + responseData.templateName + " into Nifi";
+                        }
+                        _this.resetImportOptions();
                     }
                     else {
-                        _this.importResultIcon = "error";
-                        _this.importResultIconColor = "#FF0000";
-                        _this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        if (responseData.success) {
+                            _this.resetImportOptions();
+                            _this.showReorderList = responseData.zipFile;
+                            _this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                            _this.importResultIcon = "warning";
+                            _this.importResultIconColor = "#FF9901";
+                        }
+                        else {
+                            _this.importResultIcon = "error";
+                            _this.importResultIconColor = "#FF0000";
+                            _this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        }
                     }
                 }
                 _this.uploadInProgress = false;
@@ -323,6 +325,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 uploadKey: this.uploadKey,
                 importComponents: angular.toJson(importComponentOptions)
             };
+            this.additionalInputNeeded = false;
             this.startUploadStatus();
             this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
@@ -509,7 +512,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 this.nifiTemplateImportOption.continueIfExists = false;
                 this.reusableTemplateImportOption.shouldImport = true;
                 this.reusableTemplateImportOption.userAcknowledged = true;
-                this.remoteProcessGroupImportOption.shouldImport = true;
+                this.remoteProcessGroupImportOption.shouldImport = false;
                 this.remoteProcessGroupImportOption.userAcknowledged = false;
             }
         };
@@ -518,7 +521,6 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
          */
         ImportTemplateController.prototype.setNiFiClustered = function () {
             var _this = this;
-            this.nifiClustered = false;
             if (this.remoteInputPortsCheckEnabled) {
                 this.$http.get(this.RestUrlService.NIFI_STATUS).then(function (response) {
                     if (response.data.clustered) {
