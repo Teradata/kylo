@@ -224,7 +224,9 @@ public class RefreshableDataSource implements DataSource {
             url = url + ";hive.server2.proxy.user=" + convertUsernameCase(principal,getUsernameCaseSetting(prefix));
         }
 
-        log.debug("The JDBC URL for {}, is {} --- User impersonation enabled: {} ",username, url,proxyUser);
+        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
+
+
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }
