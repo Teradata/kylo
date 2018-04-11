@@ -775,7 +775,7 @@ public class FeedEventStatistics implements Serializable {
 
     private void clearEventAndTrackingData(Long eventId, String eventFlowFileId) {
         boolean isTrackingDetails = isTrackingDetails(eventFlowFileId);
-        log.info("Removing FlowFile {}, EventId: {}, isTracking: {}",eventFlowFileId,eventId,isTrackingDetails);
+        log.debug("Removing FlowFile {}, EventId: {}, isTracking: {}",eventFlowFileId,eventId,isTrackingDetails);
         if (!isTrackingDetails) {
             //if we are not tracking ProvenanceEventDTO details then we can just expire all the flowfile data
             clearData(eventId, eventFlowFileId);

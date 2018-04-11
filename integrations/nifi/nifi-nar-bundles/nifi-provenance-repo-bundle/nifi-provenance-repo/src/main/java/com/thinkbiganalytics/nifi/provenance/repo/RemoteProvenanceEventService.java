@@ -100,7 +100,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, Set<String>>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, Set<String>> removalNotification) {
-                    log.info("Removing entry from sourceFlowFileToFlowFileIds {}",removalNotification.getKey());
+                    log.debug("Removing entry from sourceFlowFileToFlowFileIds {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, Set<String>>() {
@@ -115,7 +115,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, Set<ProvenanceEventRecordWithId>>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, Set<ProvenanceEventRecordWithId>> removalNotification) {
-                    log.info("Removing entry from waitingRemoteEvents {}",removalNotification.getKey());
+                    log.debug("Removing entry from waitingRemoteEvents {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, Set<ProvenanceEventRecordWithId>>() {
@@ -130,7 +130,7 @@ public class RemoteProvenanceEventService {
             .removalListener(new RemovalListener<String, RemoteSourceFlowFile>() {
                 @Override
                 public void onRemoval(RemovalNotification<String, RemoteSourceFlowFile> removalNotification) {
-                    log.info("Removing entry from remoteSourceFlowFileInformation {}",removalNotification.getKey());
+                    log.debug("Removing entry from remoteSourceFlowFileInformation {}",removalNotification.getKey());
                 }
             })
             .build(new CacheLoader<String, RemoteSourceFlowFile>() {
@@ -262,7 +262,7 @@ public class RemoteProvenanceEventService {
      * @return
      */
     public List<RemoteEventMessageResponse> processRemoteInputPortSendEvents() {
-        log.info(this.toString());
+        log.debug(this.toString());
         Set<ProvenanceEventRecordWithId>events = new HashSet<>();
         sourceRemoteInputPortEvents.drainTo(events);
         List<RemoteEventMessageResponse> responseMessages = events.stream()
