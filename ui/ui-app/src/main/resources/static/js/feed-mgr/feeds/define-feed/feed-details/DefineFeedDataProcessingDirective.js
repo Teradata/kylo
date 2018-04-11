@@ -1,6 +1,7 @@
-define(["require", "exports", "angular", "underscore", "./DefineFeedDetailsCheckAll"], function (require, exports, angular, _, DefineFeedDetailsCheckAll_1) {
+define(["require", "exports", "angular", "underscore", "../../shared/checkAll"], function (require, exports, angular, _, checkAll_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    // import {CheckAll, IndexCheckAll, ProfileCheckAll } from './DefineFeedDetailsCheckAll';
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     var DefineFeedDataProcessingController = /** @class */ (function () {
         function DefineFeedDataProcessingController($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService, FeedTagService) {
@@ -18,8 +19,6 @@ define(["require", "exports", "angular", "underscore", "./DefineFeedDetailsCheck
             this.FeedTagService = FeedTagService;
             this.isValid = true;
             this.selectedColumn = {};
-            this.profileCheckAll = new DefineFeedDetailsCheckAll_1.ProfileCheckAll();
-            this.indexCheckAll = new DefineFeedDetailsCheckAll_1.IndexCheckAll();
             /**
              * List of available domain types.
              * @type {DomainType[]}
@@ -30,13 +29,11 @@ define(["require", "exports", "angular", "underscore", "./DefineFeedDetailsCheck
             * @type {{}}
             */
             this.dataProcessingForm = {};
-            /**
-            * Metadata for the selected column tag.
-            * @type {{searchText: null, selectedItem: null}}
-            */
             this.tagChips = { searchText: null, selectedItem: null };
             this.compressionOptions = ['NONE'];
             this.model = FeedService.createFeedModel;
+            this.profileCheckAll = new checkAll_1.CheckAll('profile', true);
+            this.indexCheckAll = new checkAll_1.CheckAll('index', false);
             DomainTypesService.findAll().then(function (domainTypes) {
                 this.availableDomainTypes = domainTypes;
             });
@@ -55,8 +52,8 @@ define(["require", "exports", "angular", "underscore", "./DefineFeedDetailsCheck
                         var policy = _this.model.table.fieldPolicies[idx];
                         policy.name = columnDef.name;
                     });
-                    _this.profileCheckAll.setup(_this);
-                    _this.indexCheckAll.setup(_this);
+                    _this.profileCheckAll.setup(_this.model.table);
+                    _this.indexCheckAll.setup(_this.model.table);
                 }
             });
             this.allCompressionOptions = FeedService.compressionOptions;

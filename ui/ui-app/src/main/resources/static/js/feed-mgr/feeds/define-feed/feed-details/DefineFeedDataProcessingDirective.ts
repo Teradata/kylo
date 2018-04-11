@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {CheckAll, IndexCheckAll, ProfileCheckAll } from './DefineFeedDetailsCheckAll';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
+import {CheckAll} from "../../shared/checkAll";
 
 
 
@@ -13,8 +13,6 @@ export class DefineFeedDataProcessingController {
     model: any;
     stepNumber: number;
     selectedColumn: any = {};
-    profileCheckAll: ProfileCheckAll = new ProfileCheckAll();
-    indexCheckAll: IndexCheckAll = new IndexCheckAll();
     mergeStrategies: any;
     /**
      * List of available domain types.
@@ -35,6 +33,19 @@ export class DefineFeedDataProcessingController {
     * Metadata for the selected column tag.
     * @type {{searchText: null, selectedItem: null}}
     */
+     /**
+     * Toggle Check All/None on Profile column
+     * Default it to true
+     * @type {CheckAll}
+     */
+    profileCheckAll: CheckAll;
+
+
+    /**
+     *
+     * @type {CheckAll}
+     */
+    indexCheckAll: CheckAll;    
     tagChips: any = { searchText: null, selectedItem: null };
     defaultMergeStrategy: any;
     allCompressionOptions: any;
@@ -55,6 +66,10 @@ export class DefineFeedDataProcessingController {
         , private BroadcastService: any, private StepperService: any, private Utils: any, private DomainTypesService: any, private FeedTagService: any) {
 
         this.model = FeedService.createFeedModel;
+
+        this.profileCheckAll = new CheckAll('profile', true);
+        this.indexCheckAll = new CheckAll( 'index', false);
+
         DomainTypesService.findAll().then(function (domainTypes: any) {
             this.availableDomainTypes = domainTypes;
         });
@@ -77,10 +92,9 @@ export class DefineFeedDataProcessingController {
                     var policy = this.model.table.fieldPolicies[idx];
                     policy.name = columnDef.name;
                 });
-    
-                this.profileCheckAll.setup(this);
-    
-                this.indexCheckAll.setup(this);
+
+                this.profileCheckAll.setup(this.model.table);
+                this.indexCheckAll.setup(this.model.table);
             }
         })
 

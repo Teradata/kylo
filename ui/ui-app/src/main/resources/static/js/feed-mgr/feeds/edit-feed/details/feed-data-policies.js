@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "pascalprecht.translate"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../shared/checkAll", "pascalprecht.translate"], function (require, exports, angular, _, checkAll_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/edit-feed/module-name');
@@ -19,68 +19,6 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             }
         };
     };
-    var CheckAll = /** @class */ (function () {
-        function CheckAll(fieldName, isChecked) {
-            this.fieldName = fieldName;
-            this.isChecked = isChecked;
-            this.isIndeterminate = false;
-            this.totalChecked = 0;
-        }
-        CheckAll.prototype.setup = function (editModel) {
-            var _this = this;
-            this.editModel = editModel;
-            this.totalChecked = 0;
-            _.each(this.editModel.fieldPolicies, function (field) {
-                if (field["profile"]) {
-                    _this.totalChecked++;
-                }
-            });
-            this.markChecked();
-        };
-        CheckAll.prototype.clicked = function (checked) {
-            if (checked) {
-                this.totalChecked++;
-            }
-            else {
-                this.totalChecked--;
-            }
-        };
-        CheckAll.prototype.markChecked = function () {
-            if (angular.isDefined(this.editModel) && this.totalChecked == this.editModel.fieldPolicies.length) {
-                this.isChecked = true;
-                this.isIndeterminate = false;
-            }
-            else if (this.totalChecked > 0) {
-                this.isChecked = false;
-                this.isIndeterminate = true;
-            }
-            else if (this.totalChecked == 0) {
-                this.isChecked = false;
-                this.isIndeterminate = false;
-            }
-        };
-        CheckAll.prototype.toggleAll = function () {
-            var _this = this;
-            var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-            if (angular.isDefined(this.editModel)) {
-                _.each(this.editModel.fieldPolicies, function (field) {
-                    field[_this.fieldName] = checked;
-                });
-                if (checked) {
-                    this.totalChecked = this.editModel.fieldPolicies.length;
-                }
-                else {
-                    this.totalChecked = 0;
-                }
-            }
-            else {
-                this.totalChecked = 0;
-            }
-            this.markChecked();
-        };
-        return CheckAll;
-    }());
-    exports.CheckAll = CheckAll;
     var Controller = /** @class */ (function () {
         function Controller($scope, $mdDialog, $timeout, $q, $compile, $sce, AccessControlService, EntityAccessControlService, FeedService, StateService, FeedFieldPolicyRuleService, DomainTypesService, $filter) {
             var _this = this;
@@ -141,8 +79,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
              */
             this.editModel = null;
             this.versions = $scope.versions;
-            this.profileCheckAll = new CheckAll('profile', true);
-            this.indexCheckAll = new CheckAll('index', false);
+            this.profileCheckAll = new checkAll_1.CheckAll('profile', true);
+            this.indexCheckAll = new checkAll_1.CheckAll('index', false);
             DomainTypesService.findAll().then(function (domainTypes) {
                 _this.availableDomainTypes = domainTypes;
                 // KYLO-251 Remove data type until schema evolution is supported

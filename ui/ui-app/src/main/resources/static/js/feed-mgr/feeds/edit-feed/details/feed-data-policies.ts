@@ -4,6 +4,7 @@ import * as _ from 'underscore';
 import {FeedServiceTypes} from "../../../services/FeedServiceTypes";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
+import {CheckAll} from "../../shared/checkAll";
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -27,72 +28,6 @@ let directiveConfig = function () {
 
     };
 };
-
-
-export class CheckAll {
-    isIndeterminate: boolean = false;
-    totalChecked: number = 0;
-     editModel: any;
-
-    constructor( private fieldName: string, private isChecked: boolean) {
-
-    }
-
-    setup(editModel:any) {
-        this.editModel = editModel;
-        this.totalChecked = 0;
-        _.each(this.editModel.fieldPolicies, (field) => {
-            if (field["profile"]) {
-                this.totalChecked++;
-            }
-        });
-        this.markChecked();
-    }
-
-    clicked(checked: boolean) {
-        if (checked) {
-            this.totalChecked++;
-        }
-        else {
-            this.totalChecked--;
-        }
-    }
-
-    markChecked() {
-        if (angular.isDefined(this.editModel) && this.totalChecked == this.editModel.fieldPolicies.length) {
-            this.isChecked = true;
-            this.isIndeterminate = false;
-        }
-        else if (this.totalChecked > 0) {
-            this.isChecked = false;
-            this.isIndeterminate = true;
-        }
-        else if (this.totalChecked == 0) {
-            this.isChecked = false;
-            this.isIndeterminate = false;
-        }
-    }
-
-    toggleAll() {
-        var checked = (!this.isChecked || this.isIndeterminate) ? true : false;
-        if(angular.isDefined(this.editModel) ) {
-            _.each(this.editModel.fieldPolicies, (field) => {
-                field[this.fieldName] = checked;
-            });
-            if (checked) {
-                this.totalChecked = this.editModel.fieldPolicies.length;
-            }
-            else {
-                this.totalChecked = 0;
-            }
-        }
-        else {
-            this.totalChecked = 0;
-        }
-        this.markChecked();
-    }
-
-}
 
 export class Controller implements ng.IComponentController {
 
