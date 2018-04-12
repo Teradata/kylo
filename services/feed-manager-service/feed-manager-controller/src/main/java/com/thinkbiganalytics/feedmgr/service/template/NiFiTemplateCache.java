@@ -214,6 +214,10 @@ public class NiFiTemplateCache {
                                                                     NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
             List<NifiProperty>remoteProcessGroupProperties = NifiRemoteProcessGroupUtil.remoteProcessGroupProperties(templateDTO);
+            if(remoteProcessGroupProperties != null){
+                NifiPropertyUtil.matchAndSetPropertyByProcessorName(remoteProcessGroupProperties, registeredTemplate.getProperties(),
+                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+            }
             properties.addAll(remoteProcessGroupProperties);
             cachedProperties.setProperties(properties);
 

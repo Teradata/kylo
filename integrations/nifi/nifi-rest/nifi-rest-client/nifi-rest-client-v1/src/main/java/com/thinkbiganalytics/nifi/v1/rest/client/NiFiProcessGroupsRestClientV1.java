@@ -61,6 +61,7 @@ import org.apache.nifi.web.api.entity.ScheduleComponentsEntity;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -121,10 +122,13 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
         final ConnectionEntity entity = new ConnectionEntity();
 
         final ConnectionDTO connection = new ConnectionDTO();
+        connection.setParentGroupId(processGroupId);
         connection.setDestination(dest);
         connection.setName(source.getName() + "-" + dest.getName());
         connection.setSource(source);
         entity.setComponent(connection);
+        connection.setSelectedRelationships(new HashSet<>());
+        connection.getSelectedRelationships().add("success");
 
         final RevisionDTO revision = new RevisionDTO();
         revision.setVersion(0L);

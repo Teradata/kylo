@@ -75,6 +75,8 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
      */
     private static final String BASE_PATH = "/remote-process-groups/";
 
+    private static final String CREATE_PATH = "/process-groups/%s/remote-process-groups";
+
     /**
      * REST client for communicating with NiFi
      */
@@ -92,8 +94,8 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
 
     /**
      * Finds the remoteProcessGroup by its Id
+     *
      * @param processGroupId the process group id
-     * @return
      */
     public Optional<RemoteProcessGroupDTO> findById(@Nonnull final String processGroupId) {
         return findEntityById(processGroupId).filter(processGroupEntity -> processGroupEntity != null)
@@ -104,7 +106,7 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
     /**
      * Gets a process group entity.
      *
-     * @param processGroupId      the process group id
+     * @param processGroupId the process group id
      * @return the remote process group entity, if found
      */
     @Nonnull
@@ -120,7 +122,7 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
     @Override
     public Optional<RemoteProcessGroupDTO> enable(String remoteProcessGroupId) {
         Optional<RemoteProcessGroupDTO> remoteProcessGroupDTO = findById(remoteProcessGroupId);
-        if(remoteProcessGroupDTO.isPresent()) {
+        if (remoteProcessGroupDTO.isPresent()) {
             if (!remoteProcessGroupDTO.get().isTransmitting()) {
                 RemoteProcessGroupDTO updatedGroup = new RemoteProcessGroupDTO();
                 updatedGroup.setTransmitting(true);
@@ -128,8 +130,7 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
                 return Optional.of(update(updatedGroup));
             }
             return remoteProcessGroupDTO;
-        }
-        else {
+        } else {
             return Optional.empty();
         }
     }
@@ -138,7 +139,7 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
     @Override
     public Optional<RemoteProcessGroupDTO> disable(String remoteProcessGroupId) {
         Optional<RemoteProcessGroupDTO> remoteProcessGroupDTO = findById(remoteProcessGroupId);
-        if(remoteProcessGroupDTO.isPresent()) {
+        if (remoteProcessGroupDTO.isPresent()) {
             if (remoteProcessGroupDTO.get().isTransmitting()) {
                 RemoteProcessGroupDTO updatedGroup = new RemoteProcessGroupDTO();
                 updatedGroup.setTransmitting(false);
@@ -146,13 +147,33 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
                 return Optional.of(update(updatedGroup));
             }
             return remoteProcessGroupDTO;
-        }
-        else {
+        } else {
             return Optional.empty();
         }
     }
 
+    /**
+     * /**
+     * http://localhost:8079/nifi-api/process-groups/{Feed Process GroupId}/remote-process-groups
+     *
+     * @param processGroup the group to create.  the parentGroupId will be used to define where this remote group is created
+     */
+    @Nonnull
+    @Override
+    public Optional<RemoteProcessGroupDTO> create(@Nonnull final RemoteProcessGroupDTO processGroup) {
 
+        final RemoteProcessGroupEntity entity = new RemoteProcessGroupEntity();
+        entity.setComponent(processGroup);
+        final RevisionDTO revision = new RevisionDTO();
+        revision.setVersion(0L);
+        entity.setRevision(revision);
+
+        try {
+            return Optional.of(client.post(String.format(CREATE_PATH, processGroup.getParentGroupId()), entity, RemoteProcessGroupEntity.class).getComponent());
+        } catch (final NotFoundException e) {
+            return Optional.empty();
+        }
+    }
 
 
     @Nonnull
@@ -176,5 +197,20 @@ public class NiFiRemoteProcessGroupsRestClientV1 implements NiFiRemoteProcessGro
             .orElseThrow(() -> new NifiComponentNotFoundException(processGroup.getId(), NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP, null));
     }
 
+
+    //http://localhost:8079/nifi-api/remote-process-groups/b7d8c366-0162-1000-acf0-8e5d03115472?version=1&clientId=b70a6224-0162-1000-ed67-ca12b47912de
+    @Nonnull
+    @Override
+    public Optional<RemoteProcessGroupDTO> delete(@Nonnull final String remoteProcessGroupId) {
+        return findEntityById(remoteProcessGroupId)
+            .flatMap(entity -> {
+                final Long version = entity.getRevision().getVersion();
+                try {
+                    return Optional.of(client.delete(BASE_PATH + remoteProcessGroupId, ImmutableMap.of("version", version), RemoteProcessGroupEntity.class).getComponent());
+                } catch (final NotFoundException e) {
+                    return Optional.empty();
+                }
+            });
+    }
 
 }
