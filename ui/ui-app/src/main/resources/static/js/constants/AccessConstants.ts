@@ -6,219 +6,219 @@ class AccessConstantClass{
          * Allows access to categories.
          * @type {string}
          */
-        CATEGORIES_ACCESS: any = "accessCategories";
+        CATEGORIES_ACCESS: string = "accessCategories";
 
         /**
          * Allows the administration of any category; even those created by others.
          * @type {string}
          */
-        CATEGORIES_ADMIN = "adminCategories";
+        CATEGORIES_ADMIN: string = "adminCategories";
 
         /**
          * Allows creating and editing new categories.
          * @type {string}
          */
-        CATEGORIES_EDIT = "editCategories";
+        CATEGORIES_EDIT: string = "editCategories";
 
         /**
          * Allows access to data sources.
          * @type {string}
          */
-        DATASOURCE_ACCESS = "accessDatasources";
+        DATASOURCE_ACCESS: string = "accessDatasources";
 
         /**
          * Allows creating and editing new data sources.
          * @type {string}
          */
-        DATASOURCE_EDIT = "editDatasources";
+        DATASOURCE_EDIT: string = "editDatasources";
 
         /**
          * Allows access to feeds.
          * @type {string}
          */
-        FEEDS_ACCESS = "accessFeeds";
+        FEEDS_ACCESS: string = "accessFeeds";
 
         /**
          * Allows the administration of any feed; even those created by others.
          * @type {string}
          */
-        FEEDS_ADMIN = "adminFeeds";
+        FEEDS_ADMIN: string = "adminFeeds";
 
         /**
          * Allows creating and editing new feeds.
          * @type {string}
          */
-        FEEDS_EDIT = "editFeeds";
+        FEEDS_EDIT: string = "editFeeds";
 
         /**
          * Allows exporting feeds definitions.
          * @type {string}
          */
-        FEEDS_EXPORT = "exportFeeds";
+        FEEDS_EXPORT: string = "exportFeeds";
 
         /**
          * Allows importing of previously exported feeds.
          * @type {string}
          */
-        FEEDS_IMPORT = "importFeeds";
+        FEEDS_IMPORT: string = "importFeeds";
 
         /**
          * Allows access to feeds and feed-related functions.
          * @type {string}
          */
-        FEED_MANAGER_ACCESS = "accessFeedsSupport";
+        FEED_MANAGER_ACCESS: string = "accessFeedsSupport";
 
         /**
          * Allows the ability to view existing groups.
          * @type {string}
          */
-        GROUP_ACCESS = "accessGroups";
+        GROUP_ACCESS: string = "accessGroups";
 
         /**
          * Allows the ability to create and manage groups.
          * @type {string}
          */
-        GROUP_ADMIN = "adminGroups";
+        GROUP_ADMIN: string = "adminGroups";
 
         /**
          * Allows access to Tables page
          * @type {string}
          */
-        TABLES_ACCESS = "accessTables";
+        TABLES_ACCESS: string = "accessTables";
 
         /**
          * Allows users to access the SLA page
          * @type {string}
          */
-        SLA_ACCESS = "accessServiceLevelAgreements";
+        SLA_ACCESS: string = "accessServiceLevelAgreements";
 
         /**
          * Allows users to create new Service Level agreements
          * @type {string}
          */
-        SLA_EDIT = "editServiceLevelAgreements";
+        SLA_EDIT: string = "editServiceLevelAgreements";
 
         /**
          * Allows users to create new Service Level agreements
          * @type {string}
          */
-        EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE = "editServiceLevelAgreementEmailTemplate";
+        EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE: string = "editServiceLevelAgreementEmailTemplate";
 
         /**
          * Allows access to feed templates.
          * @type {string}
          */
-        TEMPLATES_ACCESS = "accessTemplates";
+        TEMPLATES_ACCESS: string = "accessTemplates";
 
         /**
          * Allows the administration of any feed template; even those created by others.
          * @type {string}
          */
-        TEMPLATES_ADMIN = "adminTemplates";
+        TEMPLATES_ADMIN: string = "adminTemplates";
 
         /**
          * Allows created and editing new feed templates.
          * @type {string}
          */
-        TEMPLATES_EDIT = "editTemplates";
+        TEMPLATES_EDIT: string = "editTemplates";
 
         /**
          * Allows exporting template definitions.
          * @type {string}
          */
-        TEMPLATES_EXPORT = "exportTemplates";
+        TEMPLATES_EXPORT: string = "exportTemplates";
 
         /**
          * Allows importing of previously exported templates.
          * @type {string}
          */
-        TEMPLATES_IMPORT = "importTemplates";
+        TEMPLATES_IMPORT: string = "importTemplates";
 
         /**
          * Allows the ability to view existing users.
          * @type {string}
          */
-        USERS_ACCESS = "accessUsers";
+        USERS_ACCESS: string = "accessUsers";
 
         /**
          * Allows the ability to create and manage users.
          * @type {string}
          */
-        USERS_ADMIN = "adminUsers";
+        USERS_ADMIN: string = "adminUsers";
 
         /**
          * Allows access to user and group-related functions.
          * @type {string}TEMPLATES_IMPORT
          */
-        USERS_GROUPS_ACCESS = "accessUsersGroupsSupport";
+        USERS_GROUPS_ACCESS: string = "accessUsersGroupsSupport";
 
         /**
          * allows access to the visual query link on the left
          * @type {string}
          */
-        VISUAL_QUERY_ACCESS = "accessVisualQuery";
+        VISUAL_QUERY_ACCESS: string = "accessVisualQuery";
 
         /**
          * Access Search
          * @type {string}
          */
-        SEARCH_ACCESS = "searchAccess";
+        SEARCH_ACCESS: string = "searchAccess";
 
         /**
          * Allows administration of operations; such as stopping and abandoning them.
          * @type {string}
          */
-        OPERATIONS_ADMIN = "adminOperations";
+        OPERATIONS_ADMIN: string = "adminOperations";
 
         /**
          * Allows access to operational information like active feeds and execution history; etc.
          * @type {string}
          */
-        OPERATIONS_MANAGER_ACCESS = "accessOperations";
+        OPERATIONS_MANAGER_ACCESS: string = "accessOperations";
 
         /**
          * access to ops manager alerts
          * @type {string}
          */
-        ALERTS_ACCESS = "accessAlerts";
+        ALERTS_ACCESS: string = "accessAlerts";
 
         /**
          * Access to ops manager feed details
          * @type {string}
          */
-        FEED_OPERATIONS_DETAIL_ACCESS = "accessOperationsFeedDetails";
+        FEED_OPERATIONS_DETAIL_ACCESS: string = "accessOperationsFeedDetails";
 
         /**
          * Access to ops manager jobs
          * @type {string}
          */
-        JOBS_ACCESS = "accessJobs";
+        JOBS_ACCESS: string = "accessJobs";
 
         /**
          * Access to ops manager job details
          * @type {string}
          */
-        JOB_DETAILS_ACCESS = "accessJobDetails";
+        JOB_DETAILS_ACCESS: string = "accessJobDetails";
 
         /**
          * Access Services
          * @type {string}
          */
-        SERVICES_ACCESS = "accessServices";
+        SERVICES_ACCESS: string = "accessServices";
 
         /**
          * Access to ops manager charts
          * @type {string}
          */
-        CHARTS_ACCESS = "accessCharts";
+        CHARTS_ACCESS: string = "accessCharts";
 
         /**
          * Allows access to search all indexed columns
          * @type {string}
          */
-        GLOBAL_SEARCH_ACCESS = "accessSearch";
+        GLOBAL_SEARCH_ACCESS: string = "accessSearch";
 
-        ADMIN_METADATA= "adminMetadata";
+        ADMIN_METADATA: string= "adminMetadata";
 
         ENTITY_ACCESS = {
             CATEGORY: {
