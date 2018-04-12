@@ -1,7 +1,6 @@
 define(["require", "exports", "angular", "underscore", "../../shared/checkAll"], function (require, exports, angular, _, checkAll_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    // import {CheckAll, IndexCheckAll, ProfileCheckAll } from './DefineFeedDetailsCheckAll';
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     var DefineFeedDataProcessingController = /** @class */ (function () {
         function DefineFeedDataProcessingController($scope, $http, $mdDialog, $mdExpansionPanel, RestUrlService, FeedService, BroadcastService, StepperService, Utils, DomainTypesService, FeedTagService) {

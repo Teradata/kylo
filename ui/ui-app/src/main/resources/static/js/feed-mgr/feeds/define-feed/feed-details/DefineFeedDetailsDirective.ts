@@ -20,110 +20,64 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
-var directive = function() {
-    return {
-        restrict: "EA",
-        bindToController: {
-            stepIndex: '@'
-        },
-        require: ['thinkbigDefineFeedDetails', '^thinkbigStepper'],
-        scope: {},
-        controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-details.html',
-        controller: "DefineFeedDetailsController",
-        link: function($scope:any, element:any, attrs:any, controllers:any) {
-            var thisController = controllers[0];
-            var stepperController = controllers[1];
-            thisController.stepperController = stepperController;
-            thisController.totalSteps = stepperController.totalSteps;
-        }
-    };
-};
-
 
 export class DefineFeedDetailsController {
-// define(['angular','feed-mgr/feeds/define-feed/module-name'], function (angular,moduleName) {
 
-        /**
-         * The Angular Form for validation
-         * @type {{}}
-         */
-        feedDetailsForm:any = {};
-        
-        stepNumber:number;
-        model:any;
+    /**
+     * The Angular Form for validation
+     * @type {{}}
+     */
+    feedDetailsForm: any = {};
 
-        inputProcessors:any;
+    stepNumber: number;
+    model: any;
 
-        inputProcessorId:any;
+    inputProcessors: any;
 
-        /**
-         * The initial non null input Id selected
-         * @type {null}
-         */
-        initialInputProcessorId:any;
+    inputProcessorId: any = null;
 
-        /**
-         * counter holding the number of times the user changes to a different input
-         * @type {number}
-         */
-        inputChangedCounter:number = 0;
+    /**
+     * The initial non null input Id selected
+     * @type {null}
+     */
+    initialInputProcessorId: any;
 
-        isValid:boolean = false;
+    /**
+     * counter holding the number of times the user changes to a different input
+     * @type {number}
+     */
+    inputChangedCounter: number = 0;
 
-        stepperController:any;
+    isValid: boolean = false;
 
-        /**
-         * flag to indicate if the data is still loading
-         * @type {boolean}
-         */
-        loading:boolean = false;
 
-        codemirrorRenderTypes:any;
-        stepIndex:any;
-        inputProcessor:any;
-        nonInputProcessors:any;
-        
+    /**
+     * flag to indicate if the data is still loading
+     * @type {boolean}
+     */
+    loading: boolean = false;
 
-    constructor(private $scope:any, private $http:any, private RestUrlService:any, private FeedService:any, private RegisterTemplateService:any
-        , private FeedInputProcessorOptionsFactory:any, private BroadcastService:any, private StepperService:any,
-                                         private FeedDetailsProcessorRenderingHelper:any) {
-        var self = this;
+    codemirrorRenderTypes: any;
+    stepIndex: any;
+    stepperController: any = null;
+    totalSteps: number;
+    inputProcessor: any = [];
+    nonInputProcessors: any;
 
-        /**
-         * The Angular Form for validation
-         * @type {{}}
-         */
-        this.feedDetailsForm = {};
-
+    $onInit() {
+        this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
+    }
+
+
+    static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
+        "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
+
+    constructor(private $scope: any, private $http: any, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
+        , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
+        private FeedDetailsProcessorRenderingHelper: any) {
+
         this.model = FeedService.createFeedModel;
-
-        this.inputProcessors = [];
-
-        this.inputProcessorId = null;
-
-        /**
-         * The initial non null input Id selected
-         * @type {null}
-         */
-        this.initialInputProcessorId = null;
-
-        /**
-         * counter holding the number of times the user changes to a different input
-         * @type {number}
-         */
-        this.inputChangedCounter = 0;
-
-        this.isValid = false;
-
-        this.stepperController = null;
-
-        /**
-         * flag to indicate if the data is still loading
-         * @type {boolean}
-         */
-        this.loading = false;
 
         var watchers = [];
 
@@ -131,206 +85,38 @@ export class DefineFeedDetailsController {
 
         var inputDatabaseType = ["com.thinkbiganalytics.nifi.GetTableData"]
 
-        BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
-
-        function onActiveStep(event:any, index:any) {
-            if (index == parseInt(self.stepIndex)) {
-                validate();
+        BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, (event: any, index: any) => {
+            if (index == parseInt(this.stepIndex)) {
+                this.validate();
             }
-        }
+        });
 
-        /**
-         * Finds the allowed controller services for the specified property and sets the allowable values.
-         *
-         * @param {Object} property the property to be updated
-         */
-        function findControllerServicesForProperty(property:any) {
-
-            FeedService.findControllerServicesForProperty(property);
-        }
-
-        function matchInputProcessor(inputProcessor:any, inputProcessors:any){
-
-            if (inputProcessor == null) {
-                //input processor is null when feed is being created
-                return undefined;
+        var inputProcessorIdWatch = $scope.$watch(function () {
+            return this.inputProcessorId;
+        }, function (newVal: any, oldVal: any) {
+            if (newVal != null && this.initialInputProcessorId == null) {
+                this.initialInputProcessorId = newVal;
             }
-
-           var matchingInput = _.find(inputProcessors,function(input:any) {
-                if(input.id == inputProcessor.id){
-                    return true;
-                }
-               return (input.type == inputProcessor.type && input.name == inputProcessor.name);
-            });
-
-           return matchingInput;
-        }
-
-        /**
-         * Prepares the processor properties of the specified template for display.
-         *
-         * @param {Object} template the template with properties
-         */
-        function initializeProperties(template:any) {
-            if(angular.isDefined(self.model.cloned) && self.model.cloned == true) {
-                RegisterTemplateService.setProcessorRenderTemplateUrl(self.model, 'create');
-               var inputProcessors = self.model.inputProcessors;
-                self.inputProcessors = _.sortBy(inputProcessors,'name')
-                // Find controller services
-                _.chain( self.inputProcessors .concat(self.model.nonInputProcessors))
-                    .pluck("properties")
-                    .flatten(true)
-                    .filter(function (property) {
-                        return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-                    })
-                    .each(findControllerServicesForProperty);
-
-            }else {
-                RegisterTemplateService.initializeProperties(template, 'create', self.model.properties);
-                var inputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
-                //sort them by name
-                self.inputProcessors = _.sortBy(inputProcessors, 'name')
-
-                self.model.allowPreconditions = template.allowPreconditions;
-
-                self.model.nonInputProcessors = RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
-            }
-                if (angular.isDefined(self.model.inputProcessor)) {
-                    var match = matchInputProcessor(self.model.inputProcessor, self.inputProcessors);
-                    if (angular.isDefined(match)) {
-                        self.inputProcessor = match;
-                        self.inputProcessorId = match.id;
-                    }
-                }
-
-                if (self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length > 0) {
-                    self.inputProcessorId = self.inputProcessors[0].id;
-                }
-                // Skip this step if it's empty
-                if (self.inputProcessors.length === 0 && !_.some(self.nonInputProcessors, function (processor:any) {
-                        return processor.userEditable
-                    })) {
-                    var step = StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex));
-                    if (step != null) {
-                        step.skip = true;
-                    }
-                }
-
-                // Find controller services
-                _.chain(template.inputProcessors.concat(template.nonInputProcessors))
-                    .pluck("properties")
-                    .flatten(true)
-                    .filter(function (property) {
-                        return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
-                    })
-                    .each(findControllerServicesForProperty);
-
-            self.loading = false;
-            validate();
-        }
-
-        /**
-         * gets the Registered Template
-         * Activates/Deactivates the Table and Data Processing Steps based upon if the template is registered to define the Table or not
-         * @returns {HttpPromise}
-         */
-        function getRegisteredTemplate() {
-            if (self.model.templateId != null && self.model.templateId != '') {
-                var successFn = function(response:any) {
-                    initializeProperties(response.data);
-                };
-                var errorFn = function(err:any) {
-
-                };
-                var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId),{params:{feedEdit:true,allProperties:true}});
-                promise.then(successFn, errorFn);
-                return promise;
-            }
-        }
-
-        /**
-         * Validates the step for enable/disable of the step and continue button
-         */
-        function validate() {
-            self.isValid = self.loading == false && self.model.systemFeedName != '' && self.model.systemFeedName != null && self.model.templateId != null
-                           && (self.inputProcessors.length == 0 || (self.inputProcessors.length > 0 && self.inputProcessorId != null));
-        }
-
-        var inputProcessorIdWatch = $scope.$watch(function() {
-            return self.inputProcessorId;
-        }, function(newVal:any,oldVal:any) {
-            if(newVal != null && self.initialInputProcessorId == null){
-                self.initialInputProcessorId = newVal;
-            }
-            updateInputProcessor(newVal);
+            this.updateInputProcessor(newVal);
             //mark the next step as not visited.. force the user to go to the next step
-            self.stepperController.resetStep(parseInt(self.stepIndex)+1);
-            validate();
+            this.stepperController.resetStep(parseInt(this.stepIndex) + 1);
+            this.validate();
         });
 
-        var systemFeedNameWatch = $scope.$watch(function() {
-            return self.model.systemFeedName;
-        }, function(newVal:any) {
-            validate();
+        var systemFeedNameWatch = $scope.$watch(function () {
+            return this.model.systemFeedName;
+        }, function (newVal: any) {
+            this.validate();
         });
 
-        var templateIdWatch = $scope.$watch(function() {
-            return self.model.templateId;
-        }, function(newVal:any) {
-            self.loading = true;
-            getRegisteredTemplate();
+        var templateIdWatch = $scope.$watch(function () {
+            return this.model.templateId;
+        }, function (newVal: any) {
+            this.loading = true;
+            this.getRegisteredTemplate();
         });
 
-
-
-        /**
-         * Updates the details when the processor is changed.
-         *
-         * @param {string} processorId the processor id
-         */
-        function updateInputProcessor(processorId:any) {
-            // Find the processor object
-            var processor = _.find(self.inputProcessors, function(processor:any) {
-                return (processor.processorId === processorId);
-            });
-            if (angular.isUndefined(processor)) {
-                return;
-            }
-
-            self.inputChangedCounter++;
-
-            var clonedAndInputChanged = function(inputProcessorId:any){
-                return (self.model.cloned == true && self.inputChangedCounter >1);
-            }
-
-            var notCloned = function(){
-                return (angular.isUndefined(self.model.cloned) || self.model.cloned == false);
-            }
-
-            // Determine render type
-            var renderGetTableData = FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, self.model.nonInputProcessors);
-          
-              if (renderGetTableData) {
-
-                  if(self.model.table.method != null && self.model.table.method != 'EXISTING_TABLE'){
-                      //reset the fields
-                      self.model.table.tableSchema.fields = [];
-                  }
-                  self.model.table.method = 'EXISTING_TABLE';
-                  self.model.options.skipHeader = true;
-                  self.model.allowSkipHeaderOption = true;
-
-              } else if(self.model.templateTableOption !="DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId)|| notCloned())){
-                  self.model.table.method = 'SAMPLE_FILE';
-                  self.model.table.tableSchema.fields = [];
-              }
-
-            // Update model
-            self.model.inputProcessor = processor;
-            self.model.inputProcessorType = processor.type;
-        }
-
-        $scope.$on('$destroy', function() {
+        $scope.$on('$destroy', function () {
             systemFeedNameWatch();
             templateIdWatch();
             inputProcessorIdWatch();
@@ -338,6 +124,183 @@ export class DefineFeedDetailsController {
 
     }
 
+    /**
+         * Finds the allowed controller services for the specified property and sets the allowable values.
+         *
+         * @param {Object} property the property to be updated
+         */
+    findControllerServicesForProperty(property: any) {
+
+        this.FeedService.findControllerServicesForProperty(property);
+    }
+
+    matchInputProcessor(inputProcessor: any, inputProcessors: any) {
+
+        if (inputProcessor == null) {
+            //input processor is null when feed is being created
+            return undefined;
+        }
+
+        var matchingInput = _.find(inputProcessors, function (input: any) {
+            if (input.id == inputProcessor.id) {
+                return true;
+            }
+            return (input.type == inputProcessor.type && input.name == inputProcessor.name);
+        });
+
+        return matchingInput;
+    }
+
+    /**
+         * Prepares the processor properties of the specified template for display.
+         *
+         * @param {Object} template the template with properties
+         */
+    initializeProperties(template: any) {
+        if (angular.isDefined(this.model.cloned) && this.model.cloned == true) {
+            this.RegisterTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
+            var inputProcessors = this.model.inputProcessors;
+            this.inputProcessors = _.sortBy(inputProcessors, 'name')
+            // Find controller services
+            _.chain(this.inputProcessors.concat(this.model.nonInputProcessors))
+                .pluck("properties")
+                .flatten(true)
+                .filter(function (property) {
+                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                })
+                .each(this.findControllerServicesForProperty);
+
+        } else {
+            this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
+            var inputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
+            //sort them by name
+            this.inputProcessors = _.sortBy(inputProcessors, 'name')
+
+            this.model.allowPreconditions = template.allowPreconditions;
+
+            this.model.nonInputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+        }
+        if (angular.isDefined(this.model.inputProcessor)) {
+            var match = this.matchInputProcessor(this.model.inputProcessor, this.inputProcessors);
+            if (angular.isDefined(match)) {
+                this.inputProcessor = match;
+                this.inputProcessorId = match.id;
+            }
+        }
+
+        if (this.inputProcessorId == null && this.inputProcessors != null && this.inputProcessors.length > 0) {
+            this.inputProcessorId = this.inputProcessors[0].id;
+        }
+        // Skip this step if it's empty
+        if (this.inputProcessors.length === 0 && !_.some(this.nonInputProcessors, function (processor: any) {
+            return processor.userEditable
+        })) {
+            var step = this.StepperService.getStep("DefineFeedStepper", parseInt(this.stepIndex));
+            if (step != null) {
+                step.skip = true;
+            }
+        }
+
+        // Find controller services
+        _.chain(template.inputProcessors.concat(template.nonInputProcessors))
+            .pluck("properties")
+            .flatten(true)
+            .filter(function (property) {
+                return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+            })
+            .each(this.findControllerServicesForProperty);
+
+        this.loading = false;
+        this.validate();
+    }
+
+    /**
+         * gets the Registered Template
+         * Activates/Deactivates the Table and Data Processing Steps based upon if the template is registered to define the Table or not
+         * @returns {HttpPromise}
+         */
+    getRegisteredTemplate() {
+        if (this.model.templateId != null && this.model.templateId != '') {
+            var successFn = function (response: any) {
+                this.initializeProperties(response.data);
+            };
+            var errorFn = function (err: any) {
+
+            };
+            var promise = this.$http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(this.model.templateId), { params: { feedEdit: true, allProperties: true } });
+            promise.then(successFn, errorFn);
+            return promise;
+        }
+    }
+
+    /**
+         * Validates the step for enable/disable of the step and continue button
+         */
+    validate() {
+        this.isValid = this.loading == false && this.model.systemFeedName != '' && this.model.systemFeedName != null && this.model.templateId != null
+            && (this.inputProcessors.length == 0 || (this.inputProcessors.length > 0 && this.inputProcessorId != null));
+    }
+
+    /**
+         * Updates the details when the processor is changed.
+         *
+         * @param {string} processorId the processor id
+         */
+    updateInputProcessor(processorId: any) {
+        // Find the processor object
+        var processor = _.find(this.inputProcessors, function (processor: any) {
+            return (processor.processorId === processorId);
+        });
+        if (angular.isUndefined(processor)) {
+            return;
+        }
+
+        this.inputChangedCounter++;
+
+        var clonedAndInputChanged = function (inputProcessorId: any) {
+            return (this.model.cloned == true && this.inputChangedCounter > 1);
+        }
+
+        var notCloned = function () {
+            return (angular.isUndefined(this.model.cloned) || this.model.cloned == false);
+        }
+
+        // Determine render type
+        var renderGetTableData = this.FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, this.model.nonInputProcessors);
+
+        if (renderGetTableData) {
+
+            if (this.model.table.method != null && this.model.table.method != 'EXISTING_TABLE') {
+                //reset the fields
+                this.model.table.tableSchema.fields = [];
+            }
+            this.model.table.method = 'EXISTING_TABLE';
+            this.model.options.skipHeader = true;
+            this.model.allowSkipHeaderOption = true;
+
+        } else if (this.model.templateTableOption != "DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId) || notCloned())) {
+            this.model.table.method = 'SAMPLE_FILE';
+            this.model.table.tableSchema.fields = [];
+        }
+
+        // Update model
+        this.model.inputProcessor = processor;
+        this.model.inputProcessorType = processor.type;
+    }
+
 }
-angular.module(moduleName).controller('DefineFeedDetailsController', ["$scope","$http","RestUrlService","FeedService","RegisterTemplateService","FeedInputProcessorOptionsFactory","BroadcastService","StepperService","FeedDetailsProcessorRenderingHelper",DefineFeedDetailsController]);
-angular.module(moduleName).directive('thinkbigDefineFeedDetails', directive);
+
+
+angular.module(moduleName).
+    component("thinkbigDefineFeedDetails", {
+        bindings: {
+            stepIndex: '@'
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedDetailsController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-details.html',
+    });

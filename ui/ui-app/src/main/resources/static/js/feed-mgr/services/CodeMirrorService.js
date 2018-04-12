@@ -5,13 +5,10 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     var CodeMirrorService = /** @class */ (function () {
         function CodeMirrorService($q) {
             this.$q = $q;
-            var data = {
-                transformToCodeMirrorData: function (response) {
-                    return this.populateCodeMirrorTablesAndColumns(response.data);
-                }
-            };
-            return data;
         }
+        CodeMirrorService.prototype.transformToCodeMirrorData = function (response) {
+            return this.populateCodeMirrorTablesAndColumns(response.data);
+        };
         CodeMirrorService.prototype.populateCodeMirrorTablesAndColumns = function (tableColumns) {
             var codeMirrorData = {};
             //store metadata in 3 objects and figure out what to expose to the editor
@@ -19,7 +16,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var databaseGroup = {}; //Group data by {Database: { table: [fields]} }
             var databaseTableGroup = {}; //Group data by {database.Table: [fields] }
             var tablesObj = {}; //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
-            //TODO need to figure out how to expose the database names to the codemirror editor
+            //TODO need to figure out   how to expose the database names to the codemirror editor
             angular.forEach(tableColumns, function (row) {
                 var db = row.databaseName;
                 var dbTable = row.databaseName + "." + row.tableName;
@@ -53,6 +50,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return CodeMirrorService;
     }());
     exports.default = CodeMirrorService;
-    angular.module(moduleName).factory('CodeMirrorService', ["$q", CodeMirrorService]);
+    angular.module(moduleName).factory('CodeMirrorService', ["$q",
+        function ($q) { return new CodeMirrorService($q); }
+    ]);
 });
 //# sourceMappingURL=CodeMirrorService.js.map

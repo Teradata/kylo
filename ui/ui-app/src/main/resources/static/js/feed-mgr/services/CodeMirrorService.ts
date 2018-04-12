@@ -5,14 +5,12 @@ import * as _ from "underscore";
 export default class CodeMirrorService{
 
  constructor (private $q: any){
-        var data: any = {
-            transformToCodeMirrorData: function (response: any) {
-                return this.populateCodeMirrorTablesAndColumns(response.data);
-            }
-        };
-
-        return data;
  }
+ 
+transformToCodeMirrorData(response: any) {
+    return this.populateCodeMirrorTablesAndColumns(response.data);
+}
+ 
 populateCodeMirrorTablesAndColumns(tableColumns: any){
             var codeMirrorData: any = {};
             //store metadata in 3 objects and figure out what to expose to the editor
@@ -20,7 +18,7 @@ populateCodeMirrorTablesAndColumns(tableColumns: any){
             var databaseGroup: any = {};  //Group data by {Database: { table: [fields]} }
             var databaseTableGroup: any = {};  //Group data by {database.Table: [fields] }
             var tablesObj: any = {};  //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
-            //TODO need to figure out how to expose the database names to the codemirror editor
+            //TODO need to figure out   how to expose the database names to the codemirror editor
 
             angular.forEach(tableColumns, function(row: any) {
                 var db = row.databaseName;
@@ -59,5 +57,8 @@ populateCodeMirrorTablesAndColumns(tableColumns: any){
 
      
 }
- angular.module(moduleName).factory('CodeMirrorService', ["$q", CodeMirrorService]);
+
+ angular.module(moduleName).factory('CodeMirrorService', ["$q", 
+            ($q:any) => new CodeMirrorService($q)
+        ]);
  
