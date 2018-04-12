@@ -36,8 +36,7 @@ export class controller implements ng.IComponentController{
         private SideNavService: SideNavService,
         private AccessControlService:AccessControlService)
         { 
-         this.LOADING_DIALOG_WAIT_TIME= 100;
-    
+        // this.LOADING_DIALOG_WAIT_TIME= 100;
          /**
           * Media object to help size the panels on the screen when shrinking/growing the window
           */
@@ -47,7 +46,6 @@ export class controller implements ng.IComponentController{
           */
             $rootScope.previousState;
             $rootScope.currentState;
-
             $transitions.onSuccess({}, (transition: any)=> {
             this.currentState = transition.to();
             if (this.currentState.name != 'search') {
@@ -173,24 +171,21 @@ export class controller implements ng.IComponentController{
             });
         }
 
-               /**
+        /**
          * Show a loading dialog if the load takes longer than xx ms
          */
         loadingTimeout: any = this.$timeout(()=> {
             this.showLoadingDialog();
 
         }, this.LOADING_DIALOG_WAIT_TIME);
-
-
-
 }
 
-//angular.module('kylo')
-  angular.module('kylo').component("indexController", { 
+ /* angular.module('kylo').component("indexController", { 
         controller: controller,
-        controllerAs: "vm",
-        //templateUrl: "js/main/home.html"
-    });
+        controllerAs: "mc",
+        templateUrl: "index.html"
+    });*/
+    angular.module('kylo').controller('IndexController',controller);
 //.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
                                                              //    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
                                                                // controller]);

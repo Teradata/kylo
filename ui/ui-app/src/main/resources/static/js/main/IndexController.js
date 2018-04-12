@@ -95,12 +95,12 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
             };
             this.loading = false;
             /**
-      * Show a loading dialog if the load takes longer than xx ms
-      */
+             * Show a loading dialog if the load takes longer than xx ms
+             */
             this.loadingTimeout = this.$timeout(function () {
                 _this.showLoadingDialog();
             }, this.LOADING_DIALOG_WAIT_TIME);
-            this.LOADING_DIALOG_WAIT_TIME = 100;
+            // this.LOADING_DIALOG_WAIT_TIME= 100;
             /**
              * Media object to help size the panels on the screen when shrinking/growing the window
              */
@@ -158,13 +158,14 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
         return controller;
     }());
     exports.controller = controller;
-    //angular.module('kylo')
-    angular.module('kylo').component("indexController", {
-        controller: controller,
-        controllerAs: "vm",
-    });
+    /* angular.module('kylo').component("indexController", {
+           controller: controller,
+           controllerAs: "mc",
+           templateUrl: "index.html"
+       });*/
+    angular.module('kylo').controller('IndexController', controller);
 });
 //.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
 //    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-// controller]);
+// controller]); 
 //# sourceMappingURL=IndexController.js.map
