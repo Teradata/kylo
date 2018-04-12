@@ -4,7 +4,7 @@ import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 import UserDetailsController from "./users/user-details/UserDetailsController";
 import GroupDetailsController from "./groups/group-details/GroupDetailsController";
 import {moduleName} from "./module-name";
-import {TargetState} from "@uirouter/core";
+import {StateProvider} from "@uirouter/angularjs";
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -12,7 +12,7 @@ class ModuleFactory  {
         this.module = angular.module(moduleName,[]);
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
     }
-    configFn($stateProvider:any) {
+    configFn($stateProvider:StateProvider) {
         $stateProvider.state(AccessConstants.UI_STATES.USERS.state, {
             url: '/users',
             params: {},
