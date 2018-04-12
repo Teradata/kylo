@@ -8,7 +8,7 @@ class LazyLoadUtilClass{
          * @returns {[string,*]}
          */
         lazyLoadController = function lazyLoad(path: any, moduleDependencies: any) {
-            return ['$ocLazyLoad','$rootScope', ($ocLazyLoad: any,$rootScope: any)=> {
+            return ['$ocLazyLoad','$rootScope', ($ocLazyLoad: oc.ILazyLoad,$rootScope: angular.IScope)=> {
                 if (moduleDependencies != null && moduleDependencies != undefined) {
                     if (!_.isArray(path)) {
                         path = [path];
@@ -42,7 +42,7 @@ class LazyLoadUtilClass{
         }
 
         lazyLoad = function lazyLoad(moduleDependencies: any) {
-            return ['$ocLazyLoad','$rootScope', ($ocLazyLoad: any,$rootScope: any)=> {
+            return ['$ocLazyLoad','$rootScope', ($ocLazyLoad: oc.ILazyLoad,$rootScope: angular.IScope)=> {
                 if (moduleDependencies != null && moduleDependencies != undefined) {
                     var dependencies: any[] = null;
                     if(_.isArray(moduleDependencies)){
