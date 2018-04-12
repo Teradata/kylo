@@ -2,8 +2,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, //angular.IScope,
-            $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, //angular.IRootScopeService,
+        function controller($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, //angular.IRootScopeService,
             $transitions, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
             var _this = this;
             this.$scope = $scope;

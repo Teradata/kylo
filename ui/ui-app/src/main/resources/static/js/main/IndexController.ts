@@ -5,31 +5,34 @@ import AccessControlService from "../services/AccessControlService";
 import AccessConstants from "../constants/AccessConstants";
 import SearchService from "../services/SearchService";
 import SideNavService from "../services/SideNavService";
-
+import {TransitionService} from "@uirouter/core";
+export interface IMyScope extends ng.IScope {
+  $mdMedia?: any;
+}
 export class controller implements ng.IComponentController{
     /**
      * Time to wait before initializing the loading dialog
      * @type {number}
      */
-    LOADING_DIALOG_WAIT_TIME:any = 100;
+    LOADING_DIALOG_WAIT_TIME:number = 100;
     static readonly $inject = ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", 
                                 "$mdBottomSheet", "$log", "$q", "$element","$rootScope", "$transitions", 
                                 "$mdDialog", "StateService", "SearchService", "SideNavService", 
                                 "AccessControlService"];
     constructor(
-        private $scope:any,//angular.IScope,
+        private $scope:IMyScope,
         private $http:angular.IHttpService,
         private $location: angular.ILocationService,
         private $timeout: angular.ITimeoutService,
         private $window: angular.IWindowService,
-        private $mdSidenav: any,
-        private $mdMedia: any,
+        private $mdSidenav: angular.material.ISidenavService,
+        private $mdMedia: angular.material.IMedia,
         private $mdBottomSheet: angular.material.IBottomSheetService,
         private $log: angular.ILogService,
         private $q: angular.IQService,
-        private $element: any,
+        private $element: JQuery,
         private $rootScope: any, //angular.IRootScopeService,
-        private $transitions: any,
+        private $transitions: TransitionService,
         private $mdDialog:angular.material.IDialogService,
         private StateService:StateService,  
         private SearchService: SearchService,
