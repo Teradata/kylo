@@ -60,9 +60,10 @@ public interface DataValidator {
                                       @Nonnull Map<String, FieldPolicy> policyMap, @Nonnull HiveContext hiveContext);
 
     /**
-     * Saves the invalid rows to the specified Hive table.
+     * Saves the invalid rows to the specified Hive table for invalid values
      */
-    void saveInvalidToTable(@Nonnull String databaseName, @Nonnull String tableName, @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext);
+    void saveInvalidToTable(@Nonnull String databaseName, @Nonnull String feedTableName, @Nonnull String invalidTableName,
+                            @Nonnull DataValidatorResult result, @Nonnull HiveContext hiveContext);
 
     /**
      * Saves profile data to the specified Hive table.

@@ -86,7 +86,7 @@ public class Validator {
             log.info("Persistence level: {}", params.getStorageLevel());
             results.persist(StorageLevel.fromString(params.getStorageLevel()));
 
-            app.saveInvalidToTable(params.getTargetDatabase(), params.getInvalidTableName(), results, hiveContext);
+            app.saveInvalidToTable(params.getTargetDatabase(), params.getFeedTableName(), params.getInvalidTableName(), results, hiveContext);
             app.saveValidToTable(params.getTargetDatabase(), params.getFeedTableName(), params.getValidTableName(), results, hiveContext);
             app.saveProfileToTable(params.getTargetDatabase(), params.getProfileTableName(), params.getPartition(), results, hiveContext);
             results.unpersist();
