@@ -4,6 +4,7 @@ import lazyLoadUtil from "../kylo-utils/LazyLoadUtil";
 import "../codemirror-require/module";
 import "../services/services.module";
 import {moduleName} from "./module-name";
+import {StateProvider} from "@uirouter/angularjs";
 
 class ModuleFactory  {
     module: ng.IModule;
@@ -12,7 +13,7 @@ class ModuleFactory  {
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
         this.module.run(['$ocLazyLoad', this.runFn.bind(this)]); 
     }
-    configFn($stateProvider:any) {
+    configFn($stateProvider:StateProvider) {
        $stateProvider.state('jcr-query',{
             url:'/admin/jcr-query',
             views: {
@@ -54,7 +55,7 @@ class ModuleFactory  {
         })
     }  
 
-    runFn($ocLazyLoad: any){
+    runFn($ocLazyLoad: oc.ILazyLoad){
         $ocLazyLoad.load({
             name: 'kylo', 
             files: ['bower_components/angular-ui-grid/ui-grid.css', 'assets/ui-grid-material.css'],
