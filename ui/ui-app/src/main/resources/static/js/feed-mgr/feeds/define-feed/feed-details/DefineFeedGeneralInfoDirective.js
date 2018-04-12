@@ -1,45 +1,7 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
 define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
-    var directive = function () {
-        return {
-            restrict: "EA",
-            bindToController: {
-                stepIndex: '@'
-            },
-            require: ['thinkbigDefineFeedGeneralInfo', '^thinkbigStepper'],
-            scope: {},
-            controllerAs: 'vm',
-            templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-general-info.html',
-            controller: "DefineFeedGeneralInfoController",
-            link: function ($scope, element, attrs, controllers) {
-                var thisController = controllers[0];
-                var stepperController = controllers[1];
-                thisController.stepperController = stepperController;
-                thisController.totalSteps = stepperController.totalSteps;
-            }
-        };
-    };
     var DefineFeedGeneralInfoController = /** @class */ (function () {
         function DefineFeedGeneralInfoController($scope, $log, $http, $mdToast, RestUrlService, FeedService, CategoriesService) {
             var _this = this;
@@ -160,7 +122,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     this._validate();
                 }
             };
-            //  getRegisteredTemplates();
             this.validate = function () {
                 var valid = this.isNotEmpty(this.model.category.name) && this.isNotEmpty(this.model.feedName) && this.isNotEmpty(this.model.templateId);
                 this.isValid = valid;
@@ -177,8 +138,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.isNotEmpty = function (item) {
                 return item != null && item != undefined && item != '';
             };
-            this.onTemplateChange = function () {
-            };
             /**
              * Return a list of the Registered Templates in the system
              * @returns {HttpPromise}
@@ -193,7 +152,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 promise.then(successFn, errorFn);
                 return promise;
             };
-            this.stepNumber = parseInt(this.stepIndex) + 1;
             this.populateExistingFeedNames();
             $scope.$watch(function () {
                 return _this.model.id;
@@ -231,12 +189,26 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 _this.model = null;
             });
         }
+        DefineFeedGeneralInfoController.prototype.$onInit = function () {
+            this.totalSteps = this.stepperController.totalSteps;
+            this.stepNumber = parseInt(this.stepIndex) + 1;
+        };
         ;
+        DefineFeedGeneralInfoController.$inject = ["$scope", "$log", "$http", "$mdToast", "RestUrlService", "FeedService", "CategoriesService"];
         return DefineFeedGeneralInfoController;
     }());
     exports.DefineFeedGeneralInfoController = DefineFeedGeneralInfoController;
-    angular.module(moduleName).controller('DefineFeedGeneralInfoController', ["$scope", "$log", "$http", "$mdToast", "RestUrlService", "FeedService", "CategoriesService", DefineFeedGeneralInfoController]);
-    angular.module(moduleName)
-        .directive('thinkbigDefineFeedGeneralInfo', directive);
+    angular.module(moduleName).
+        component("thinkbigDefineFeedGeneralInfao", {
+        bindings: {
+            stepIndex: '@'
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedGeneralInfoController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-general-info.html',
+    });
 });
 //# sourceMappingURL=DefineFeedGeneralInfoDirective.js.map

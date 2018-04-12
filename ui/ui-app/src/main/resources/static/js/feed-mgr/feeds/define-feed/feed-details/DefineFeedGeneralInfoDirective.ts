@@ -1,57 +1,9 @@
-/*-
- * #%L
- * thinkbig-ui-feed-manager
- * %%
- * Copyright (C) 2017 ThinkBig Analytics
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *     http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import * as angular from 'angular';
 import * as _ from "underscore";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
-var directive = function () {
-    return {
-        restrict: "EA",
-        bindToController: {
-            stepIndex: '@'
-        },
-        require:['thinkbigDefineFeedGeneralInfo','^thinkbigStepper'],
-        scope: {},
-        controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-general-info.html',
-        controller: "DefineFeedGeneralInfoController",
-        link: ($scope:any, element:any, attrs:any, controllers:any) => {
-            var thisController = controllers[0];
-            var stepperController = controllers[1];
-            thisController.stepperController = stepperController;
-            thisController.totalSteps = stepperController.totalSteps;
-        }
-
-    };
-}
-
-
-
-
 export class DefineFeedGeneralInfoController {
         stepIndex: any;
-
-
-
-    
         /**
          * The angular form
          * @type {{}}
@@ -75,7 +27,8 @@ export class DefineFeedGeneralInfoController {
          * @type {boolean}
          */
         populatingExsitngFeedNames:boolean = false;
-        
+
+        totalSteps:any;
         
         searchTextChange = function(text:string) {
             //   $log.info('Text changed to ' + text);
@@ -161,8 +114,6 @@ export class DefineFeedGeneralInfoController {
 
         validateUniqueFeedName = function() {
 
-
-
             if (this.model && this.model.id && this.model.id.length > 0) {
                 this.defineFeedGeneralForm['feedName'].$setValidity('notUnique', true);
             } else if (_.isEmpty(this.existingFeedNames)) {
@@ -176,11 +127,7 @@ export class DefineFeedGeneralInfoController {
             }
 
         }
-
-
-   
-         //  getRegisteredTemplates();
-   
+       
         validate = function(){
             var valid = this.isNotEmpty(this.model.category.name) && this.isNotEmpty(this.model.feedName) && this.isNotEmpty(this.model.templateId);
             this.isValid = valid;
@@ -199,12 +146,6 @@ export class DefineFeedGeneralInfoController {
         isNotEmpty = function(item:any){
             return item != null && item != undefined && item != '';
         }
-
-        onTemplateChange = function() {
-
-        }
-   
-
         /**
          * Return a list of the Registered Templates in the system
          * @returns {HttpPromise}
@@ -221,13 +162,13 @@ export class DefineFeedGeneralInfoController {
             return promise;
         };
    
-   
+    $onInit() {
+        this.totalSteps = this.stepperController.totalSteps;
+        this.stepNumber = parseInt(this.stepIndex) + 1;
+    }
+    static readonly $inject = ["$scope","$log","$http","$mdToast","RestUrlService","FeedService","CategoriesService"];
 
     constructor(private $scope:any,private $log:any, private $http:any,private $mdToast:any,private RestUrlService:any, private FeedService:any, private CategoriesService:any) {
-
-
-        this.stepNumber = parseInt(this.stepIndex)+1
-
 
         this.populateExistingFeedNames();
         
@@ -267,19 +208,23 @@ export class DefineFeedGeneralInfoController {
             this.validate();
         });
 
-
         $scope.$on('$destroy',() => {
             feedNameWatch();
             templateIdWatch();
             this.model = null;
         });
-
     };
-
-
-    
 }
-angular.module(moduleName).controller('DefineFeedGeneralInfoController', ["$scope","$log","$http","$mdToast","RestUrlService","FeedService","CategoriesService",DefineFeedGeneralInfoController]);
 
-angular.module(moduleName)
-    .directive('thinkbigDefineFeedGeneralInfo', directive);
+angular.module(moduleName).
+    component("thinkbigDefineFeedGeneralInfao", {
+        bindings: {
+            stepIndex: '@'
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedGeneralInfoController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-general-info.html',
+    });
