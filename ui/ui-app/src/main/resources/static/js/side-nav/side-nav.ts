@@ -5,22 +5,28 @@ import AccessConstants from "../constants/AccessConstants";
 import "./module";
 import "../services/services.module";
 import "pascalprecht.translate";
+import {TransitionService} from "@uirouter/core"; 
+import AccessControlService from "../services/AccessControlService";
+import SideNavService from  "../services/SideNavService";
+import StateService from "../services/StateService";
+import AngularModuleExtensionService from "../services/AngularModuleExtensionService";
+import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuService";
 
 export class directive implements ng.IDirective {
     restrict: any = "E";
     scope: any = {};
     templateUrl: any= 'js/side-nav/side-nav.html';
-    constructor(private $mdSidenav: any,
-            private $mdDialog: any,
-            private $rootScope: any,
-            private $transitions: any,
-            private $timeout: any,
-            private SideNavService: any,
-            private AccessControlService: any,
-            private StateService: any,
-            private AccordionMenuService: any,
+    constructor(private $mdSidenav: angular.material.ISidenavService,
+            private $mdDialog: angular.material.IDialogService,
+            private $rootScope: angular.IScope,
+            private $transitions: TransitionService,
+            private $timeout: angular.ITimeoutService,
+            private SideNavService: SideNavService,
+            private AccessControlService: AccessControlService,
+            private StateService: StateService,
+            private AccordionMenuService: AccordionMenuService,
             private AngularModuleExtensionService: any,
-            private $filter: any
+            private $filter: angular.IFilterService
       ) {
             }// close constructor
 
@@ -102,8 +108,8 @@ export class directive implements ng.IDirective {
            let buildAdminMenu: any=()=>{
                 
                 let links: any[] = [];
-                links.push({sref: "datasources", type: "link", icon: "storage", text: this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: this.AccessControlService.DATASOURCE_ACCESS});
-                links.push({sref: "domain-types", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: this.AccessControlService.FEEDS_ADMIN});
+                links.push({sref: "datasources", type: "link", icon: "storage", text: this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: AccessConstants.DATASOURCE_ACCESS});
+                links.push({sref: "domain-types", type: "link", icon: "local_offer", text: this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessConstants.FEEDS_ADMIN});
                 links.push({sref: "business-metadata", type:'link', icon: "business", text: this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants.CATEGORIES_ADMIN});
                 links.push({sref: "registered-templates",type:'link', icon: "layers", text: this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants.TEMPLATES_ACCESS});
                 links.push({sref: "users",type:'link', icon: "account_box", text: this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants.USERS_ACCESS});

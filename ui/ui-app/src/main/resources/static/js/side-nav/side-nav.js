@@ -74,8 +74,8 @@ define(["require", "exports", "angular", "underscore", "./module-name", "../cons
                   */
                 var buildAdminMenu = function () {
                     var links = [];
-                    links.push({ sref: "datasources", type: "link", icon: "storage", text: _this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: _this.AccessControlService.DATASOURCE_ACCESS });
-                    links.push({ sref: "domain-types", type: "link", icon: "local_offer", text: _this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: _this.AccessControlService.FEEDS_ADMIN });
+                    links.push({ sref: "datasources", type: "link", icon: "storage", text: _this.$filter('translate')('views.main.data-sources'), defaultActive: false, permission: AccessConstants_1.default.DATASOURCE_ACCESS });
+                    links.push({ sref: "domain-types", type: "link", icon: "local_offer", text: _this.$filter('translate')('views.main.domain-types'), defaultActive: false, permission: AccessConstants_1.default.FEEDS_ADMIN });
                     links.push({ sref: "business-metadata", type: 'link', icon: "business", text: _this.$filter('translate')('views.main.properties'), defaultActive: false, permission: AccessConstants_1.default.CATEGORIES_ADMIN });
                     links.push({ sref: "registered-templates", type: 'link', icon: "layers", text: _this.$filter('translate')('views.main.templates'), defaultActive: false, permission: AccessConstants_1.default.TEMPLATES_ACCESS });
                     links.push({ sref: "users", type: 'link', icon: "account_box", text: _this.$filter('translate')('views.main.users'), defaultActive: false, permission: AccessConstants_1.default.USERS_ACCESS });
