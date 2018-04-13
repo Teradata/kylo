@@ -127,8 +127,8 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
         connection.setName(source.getName() + "-" + dest.getName());
         connection.setSource(source);
         entity.setComponent(connection);
-        connection.setSelectedRelationships(new HashSet<>());
-        connection.getSelectedRelationships().add("success");
+       // connection.setSelectedRelationships(new HashSet<>());
+       // connection.getSelectedRelationships().add("success");
 
         final RevisionDTO revision = new RevisionDTO();
         revision.setVersion(0L);
