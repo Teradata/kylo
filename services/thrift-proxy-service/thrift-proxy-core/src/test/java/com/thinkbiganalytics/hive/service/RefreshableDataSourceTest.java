@@ -20,6 +20,7 @@ package com.thinkbiganalytics.hive.service;
  * #L%
  */
 
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
@@ -72,6 +73,8 @@ public class RefreshableDataSourceTest {
     @Mock
     KerberosTicketConfiguration kerberosTicketConfiguration;
 
+    UsernameCaseStrategyUtil usernameCaseStrategyUtil;
+
     private RefreshableDataSource hiveDs;
     private String principal = "AwesomeUser";
 
@@ -84,6 +87,8 @@ public class RefreshableDataSourceTest {
         contextHolder = Mockito.mock(SecurityContextHolder.class);
         kerberosTicketConfiguration = Mockito.mock(KerberosTicketConfiguration.class);
         kerberosUtil = Mockito.mock(KerberosUtil.class);
+        usernameCaseStrategyUtil = new UsernameCaseStrategyUtil();
+        usernameCaseStrategyUtil.setEnvironment(env);
 
         Mockito.when(env.getProperty("hive.userImpersonation.enabled"))
             .thenReturn("true");
@@ -112,7 +117,9 @@ public class RefreshableDataSourceTest {
         Mockito.when(kerberosTicketConfiguration.isKerberosEnabled()).thenReturn(false);
 
         hiveDs = new RefreshableDataSource("hive.datasource");
+
         hiveDs.env = env;
+        hiveDs.usernameCaseStrategyUtil = usernameCaseStrategyUtil;
 
     }
 
