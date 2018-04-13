@@ -20,6 +20,7 @@ package com.thinkbiganalytics.spark.conf;
  * #L%
  */
 
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
@@ -40,6 +41,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.core.env.Environment;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -47,6 +49,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import javax.annotation.Nonnull;
+import javax.inject.Inject;
 
 /**
  * Configures the Spark Shell controller for communicating with the Spark Shell process.
@@ -54,6 +57,9 @@ import javax.annotation.Nonnull;
 @Configuration
 @PropertySource("classpath:spark.properties")
 public class SparkShellConfiguration {
+
+    @Inject
+    private UsernameCaseStrategyUtil usernameCaseStrategyUtil;
 
     /**
      * Listens for cluster events and updates the process manager.
@@ -121,7 +127,6 @@ public class SparkShellConfiguration {
     @ConfigurationProperties("spark.shell")
     public SparkShellProperties sparkShellProperties(@Nonnull final ServerProperties server) {
         final SparkShellProperties properties = new SparkShellProperties();
-
         // Automatically determine registration url
         if (properties.getRegistrationUrl() == null) {
             // Get protocol
@@ -140,6 +145,8 @@ public class SparkShellConfiguration {
                 properties.setRegistrationUrl(protocol + "://" + address + ":8400/proxy/v1/spark/shell/register");
             }
         }
+        UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy =usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();
+        properties.setProxyUserCaseStrategy(usernameCaseStrategy.name());
 
         return properties;
     }

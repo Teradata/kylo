@@ -117,6 +117,12 @@ public class SparkShellProperties {
      */
     private boolean verbose;
 
+    /**
+     * AS_SPECIFIED, LOWER_CASE, UPPER_CASE.
+     * Ths will determine how we treat the 'proxyUser' string when we send it to make the connection
+     */
+    private String proxyUserCaseStrategy = "AS_SPECIFIED";
+
     public String getAppResource() {
         return appResource;
     }
@@ -267,5 +273,13 @@ public class SparkShellProperties {
 
     public void setVerbose(boolean verbose) {
         this.verbose = verbose;
+    }
+
+    public String getProxyUserCaseStrategy() {
+        return proxyUserCaseStrategy;
+    }
+
+    public void setProxyUserCaseStrategy(String proxyUserCaseStrategy) {
+        this.proxyUserCaseStrategy = proxyUserCaseStrategy;
     }
 }
