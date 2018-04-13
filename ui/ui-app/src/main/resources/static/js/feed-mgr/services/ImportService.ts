@@ -49,7 +49,7 @@ export class DefaultImportService implements ImportService{
      * @return {{importComponent: *, overwriteSelectValue: string, overwrite: boolean, userAcknowledged: boolean, shouldImport: boolean, analyzed: boolean, continueIfExists: boolean, properties: Array}}
      */
     newImportComponentOption(component:  Import.ImportComponentType): ImportComponentOption {
-        let nameOfType = ImportComponentType[component];
+        let nameOfType = component;
         let option = {importComponent: nameOfType, overwrite: false, userAcknowledged: true, shouldImport: true, analyzed: false, continueIfExists: false, properties: [] as ImportProperty[]}
         return option;
     }
@@ -139,7 +139,7 @@ export class DefaultImportService implements ImportService{
      * @returns {boolean} true if match, false if not
      */
     isImportOption(importOption: ImportComponentOption, importComponentType:  Import.ImportComponentType): boolean {
-        let nameOfType = ImportComponentType[importComponentType]
+        let nameOfType = importComponentType
         return importOption.importComponent == nameOfType;
     }
 
