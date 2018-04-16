@@ -193,6 +193,15 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             grid.refresh();
         };
         /**
+         * Display the analyze column view
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.showAnalyzeColumn = function (column, grid) {
+            var fieldName = this.getColumnFieldName(column);
+            this.controller.showAnalyzeColumn(fieldName);
+        };
+        /**
          * Clone the specified column.
          *
          * @param {ui.grid.GridColumn} column the column to be hidden

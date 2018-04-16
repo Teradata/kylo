@@ -1,0 +1,68 @@
+<div layout="row">
+
+  <div flex="70">
+
+    <md-table-container class="histo">
+      <table md-table>
+        <thead md-head>
+        <tr md-row>
+          <th md-column class="truncate" name="domain">Value</th>
+          <th md-column name="count">Count</th>
+          <th md-column name="frequency">%</th>
+          <th md-column name="frequency">Cum. %</th>
+        </tr>
+        </thead>
+        <tbody md-body>
+        <tr md-row
+            ng-repeat="row in vm.data | orderBy:'-count'">
+          <td md-cell class="truncate" >{{row.domain}}
+            <span class="bar bar-success" style="width:{{row.width | number: 0}}%"></span>
+          </td>
+          <td md-cell>{{row.count}}</td>
+          <td md-cell>{{row.frequency | number:1}}</td>
+          <td md-cell>{{row.cumm | number:1}}</td>
+        </tr>
+        </tbody>
+      </table>
+    </md-table-container>
+
+  </div>
+  <div flex>&nbsp;</div>
+  <div class="summary-section" flex="25" hide-xs>
+    <div>
+      <strong>Summary</strong>
+      <table>
+        <tbody>
+        <tr><th>Total</th>
+          <td class="numeric ng-binding" ng-bind="vm.totalCount">0</td>
+          <td class="numeric ng-binding">&nbsp;</td>
+        </tr>
+        <tr><th>Unique</th>
+          <td class="numeric ng-binding" ng-bind="vm.unique">0</td>
+          <td class="numeric ng-binding" ng-bind="vm.percUnique + '%'">0.0%</td>
+        </tr>
+        <tr><th>Empty</th>
+          <td class="numeric ng-binding" ng-bind="vm.emptyCount">0</td>
+          <td class="numeric ng-binding" ng-bind="vm.percEmpty + '%'">0.0%</td>
+        </tr>
+        <tr><th>Max Len.</th>
+          <td class="numeric ng-binding" ng-bind="vm.maxLen">0</td>
+          <td class="numeric ng-binding">&nbsp;</td>
+        </tr>
+        <tr><th>Min Len.</th>
+          <td class="numeric ng-binding" ng-bind="vm.minLen">0</td>
+          <td class="numeric ng-binding">&nbsp;</td>
+        </tr>
+
+        </tbody></table>
+    </div>
+
+  </div>
+
+</div>
+
+
+
+
+
+

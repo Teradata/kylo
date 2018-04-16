@@ -23,6 +23,8 @@ export interface ColumnController {
     pushFormula(formula: any, context: any): void;
     pushFormula(formula: any, context: any, doQuery: boolean): void;
 
+    showAnalyzeColumn(fieldName: string) : any;
+
     /**
      * Sets the domain type for the specified field.
      *

@@ -37,6 +37,7 @@ define(['angular',
         'feed-mgr/shared/profile-stats/ProfileStats',
         'feed-mgr/services/UiComponentsService',
         'feed-mgr/services/DomainTypesService',
+        'feed-mgr/visual-query/transform-data/profile-stats/column-analysis',
         'feed-mgr/shared/apply-domain-type/ApplyDomainTypeDialog',
         'feed-mgr/shared/apply-domain-type/apply-table-domain-types.component',
         'feed-mgr/shared/apply-domain-type/domain-type-conflict.component'],function() {

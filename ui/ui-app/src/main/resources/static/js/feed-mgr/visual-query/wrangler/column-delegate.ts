@@ -230,6 +230,16 @@ export class ColumnDelegate implements IColumnDelegate {
     }
 
     /**
+     * Display the analyze column view
+     * @param {ui.grid.GridColumn} column the column to be hidden
+     * @param {ui.grid.Grid} grid the grid with the column
+     */
+    showAnalyzeColumn(column: any, grid:any) {
+        const fieldName = this.getColumnFieldName(column);
+        this.controller.showAnalyzeColumn(fieldName);
+    }
+
+    /**
      * Clone the specified column.
      *
      * @param {ui.grid.GridColumn} column the column to be hidden

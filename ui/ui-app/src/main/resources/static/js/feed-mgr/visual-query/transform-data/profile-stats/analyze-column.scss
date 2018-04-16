@@ -1,0 +1,52 @@
+
+.column-analysis .close {
+  opacity: 0.4;
+}
+
+.column-analysis .md-title {
+  color: rgb(52, 131, 186);
+}
+
+.histo {
+  margin-top: -18px;
+  height: 310px;
+  background-attachment: scroll;
+  overflow: hidden
+}
+
+.histo:hover {
+  overflow-y: auto;
+}
+
+md-table-container.histo > table.md-table tbody.md-body > tr.md-row {
+  height: 40px;
+}
+
+span.bar {
+  display: block;
+  margin: 5px 0 0 0;
+  height: 5px;
+  background: orange;
+}
+
+.summary-section strong {
+  display: block;
+  text-transform: uppercase;
+  color: rgb(52, 131, 186);
+}
+
+.summary-section table {
+  padding: 5px;
+  border-spacing: 9px;
+}
+
+.numeric {
+  text-align: right;
+}
+
+.truncate {
+  max-width: 330px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}

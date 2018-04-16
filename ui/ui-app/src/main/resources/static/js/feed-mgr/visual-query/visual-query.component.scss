@@ -8,6 +8,7 @@ visual-query {
       top: 0;
     }
   }
+
 }
 
 /* Loading elements */
@@ -26,29 +27,112 @@ visual-query {
   }
 }
 
-.autocomplete-hive-table-template li {
-  border-bottom: 1px solid #ccc;
-  height: auto;
-  padding-top: 8px;
-  padding-bottom: 8px;
-  white-space: normal;
+.autocomplete-hive-table-template {
+
+  li {
+    border-bottom: 1px solid #ccc;
+    height: auto;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    white-space: normal;
+  }
+
+  li:last-child {
+    border-bottom-width: 0;
+  }
+
+  .item-title,
+  .item-metadata {
+    display: block;
+    line-height: 2;
+  }
+
+  .item-title ng-md-icon {
+    height: 18px;
+    width: 18px;
+  }
+
+  .item-metadata .highlight, .autocomplete-hive-table-template .item-title .highlight {
+    color: #3483BA;
+  }
 }
 
-.autocomplete-hive-table-template li:last-child {
-  border-bottom-width: 0;
+/* Column sub-menus */
+md-menu-content.visual-query-column-menu {
+
+  overflow: hidden;
+  max-height: 420px;
+
+  md-menu-item {
+    height: 36px;
+  }
+
+  md-menu-item > .md-menu > .md-button:after {
+    display: block;
+    content: '\25BC';
+    position: absolute;
+    top: 7px;
+    speak: none;
+    -webkit-transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+    transform: rotate(270deg) scaleY(0.45) scaleX(0.9);
+    right: 28px
+  }
+
+  md-menu-item > .md-menu {
+    height: 100%;
+    padding: 0;
+    width: 173px;
+  }
+
+  md-menu-item > .md-menu > .md-button {
+    font-weight: normal;
+    border-radius: 0;
+    font-size: 14px;
+    margin: auto 0;
+    text-transform: none;
+    font-weight: 400;
+    text-align: left;
+    text-align: start;
+    height: 100%;
+    padding-left: 16px;
+    padding-right: 16px;
+    display: inline-block;
+    -webkit-align-items: baseline;
+    -ms-flex-align: baseline;
+    align-items: baseline;
+    -webkit-align-content: flex-start;
+    -ms-flex-line-pack: start;
+    align-content: flex-start;
+    width: 100%;
+  }
+
+  md-menu-item > .md-button {
+    font-size: 14px;
+  }
+
+  .material-icons {
+    margin-right: 4px;
+    font-size: 14px;
+    vertical-align: sub;
+  }
+
+  md-menu-item {
+    min-height: 36px;
+  }
+
 }
 
-.autocomplete-hive-table-template .item-title,
-.autocomplete-hive-table-template .item-metadata {
-  display: block;
-  line-height: 2;
+/*
+Override spacing for context menu
+*/
+
+md-menu-item {
+  font-size: 14px;
+  height: 36px;
+  min-height: 36px;
 }
 
-.autocomplete-hive-table-template .item-title ng-md-icon {
-  height: 18px;
-  width: 18px;
+md-menu-item > .md-button {
+  font-size: 14px;
 }
 
-.autocomplete-hive-table-template .item-metadata .highlight, .autocomplete-hive-table-template .item-title .highlight {
-  color: #3483BA;
-}
