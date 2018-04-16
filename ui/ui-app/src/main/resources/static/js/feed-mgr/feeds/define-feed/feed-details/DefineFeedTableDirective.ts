@@ -206,13 +206,15 @@ export class DefineFeedTableController {
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
 
         function onDataTransformSchemaLoaded() {
-            // console.log("onDataTransformSchemaLoaded");
+            console.log("onDataTransformSchemaLoaded");
             self.syncFeedsColumns();
             validate(undefined);
+            self.calcTableState();
+            self.expandSchemaPanel();
         }
 
         this.calcTableState = function() {
-            // console.log("calcTableState");
+            console.log("calcTableState");
             self.tableLocked = angular.isDefined(self.tableLocked) && (self.tableLocked === true || self.tableLocked === "true");
             self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
             self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
