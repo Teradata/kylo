@@ -62,7 +62,7 @@ public class TestLoadBackup {
             .build();
         FeedEventStatistics.getInstance().setDeleteBackupAfterLoad(false);
 
-        FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(eventRecord);
+        FeedEventStatistics.getInstance().checkAndAssignStartingFlowFile(eventRecord, eventRecord.getEventId());
         URL r = getClass().getClassLoader().getResource("feed-event-statistics.gz");
         String path = r.getPath();
 

@@ -209,6 +209,8 @@ export class DefineFeedTableController {
             // console.log("onDataTransformSchemaLoaded");
             self.syncFeedsColumns();
             validate(undefined);
+            self.calcTableState();
+            self.expandSchemaPanel();
         }
 
         this.calcTableState = function() {

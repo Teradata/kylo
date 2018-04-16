@@ -45,12 +45,15 @@ public class ConfigurationProperties {
     public static final Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD = 15;
     public static final Integer DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS = 1000;
 
+    public static final Integer DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS = 20*1000*60; //20 min
+
     public static final String DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS = "{\"CLONE\":[\"ConvertCSVToAvro\"]}";
 
     public static final String BACKUP_LOCATION_KEY = "backupLocation";
     public static final String MAX_FEED_EVENTS_KEY = "maxFeedEvents";
     public static final String RUN_INTERVAL_KEY = "runInterval";
     public static final String ORPHAN_CHILD_FLOW_FILE_PROCESSORS_KEY="orphanChildFlowFileProcessors";
+    public static final String REMOTE_EVENT_EXPIRE_TIME_KEY="remoteEventExpireTime";
 
     private Properties properties = new Properties();
 
@@ -59,6 +62,8 @@ public class ConfigurationProperties {
     private String backupLocation = DEFAULT_BACKUP_LOCATION;
     private Integer throttleStartingFeedFlowsThreshold = DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD;
     private Integer throttleStartingFeedFlowsTimePeriodMillis = DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS;
+
+    private Integer remoteInputPortExpireTimeSeconds = DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS;
 
     //JSON MAP of eventType to processors that create children that are removed without provenance.
     private String orphanChildFlowFileProcessorsString;
@@ -113,6 +118,7 @@ public class ConfigurationProperties {
         this.throttleStartingFeedFlowsThreshold = new Integer(properties.getProperty("kylo.provenance.event.count.throttle.threshold", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_THRESHOLD + ""));
         this.throttleStartingFeedFlowsTimePeriodMillis = new Integer(properties.getProperty("kylo.provenance.event.throttle.threshold.time.millis", DEFAULT_THROTTLE_STARTING_FEED_FLOWS_TIME_PERIOD_MILLIS + ""));
         orphanChildFlowFileProcessorsString = properties.getProperty("kylo.provenance.orphan.child.flowfile.processors", DEFAULT_ORPHAN_CHILD_FLOW_FILE_PROCESSORS);
+        this.remoteInputPortExpireTimeSeconds = new Integer(properties.getProperty("kylo.provenance.remote.event.expire.time.seconds",DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS+""));
         //only update this on the initial run.  Any changes will be detected and updated with the ConfigurationPropertiesRefresher
         if(lastModified == null) {
             FeedEventStatistics.getInstance().updateEventTypeProcessorTypeSkipChildren(orphanChildFlowFileProcessorsString);
@@ -142,7 +148,9 @@ public class ConfigurationProperties {
         return runInterval == null ? DEFAULT_RUN_INTERVAL_MILLIS : runInterval;
     }
 
-
+    public Integer getRemoteInputPortExpireTimeSeconds() {
+        return remoteInputPortExpireTimeSeconds == null ? DEFAULT_REMOTE_INPUT_PORT_EXPIRE_TIME_SECONDS : remoteInputPortExpireTimeSeconds;
+    }
 
     public void populateChanges(Map<String, PropertyChange> changes, boolean old) {
         changes.computeIfAbsent(BACKUP_LOCATION_KEY, key -> new PropertyChange(key)).setValue(backupLocation, old);

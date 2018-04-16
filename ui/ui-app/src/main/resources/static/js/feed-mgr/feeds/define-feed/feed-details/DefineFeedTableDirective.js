@@ -125,6 +125,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // console.log("onDataTransformSchemaLoaded");
                 self.syncFeedsColumns();
                 validate(undefined);
+                self.calcTableState();
+                self.expandSchemaPanel();
             }
             this.calcTableState = function () {
                 // console.log("calcTableState");

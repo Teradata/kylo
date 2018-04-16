@@ -124,6 +124,9 @@ public class ProvenanceEventFeedUtil {
         if (StringUtils.isBlank(processorName)) {
             processorName = event.getComponentName();
         }
+        if(StringUtils.isBlank(processorName) && "Remote Input Port".equalsIgnoreCase(event.getComponentType())){
+            processorName = event.getComponentType();
+        }
         event.setFeedName(feedName);
         event.setFeedProcessGroupId(processGroupId);
         event.setComponentName(processorName);

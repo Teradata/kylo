@@ -34,6 +34,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRemoteProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiReportingTaskRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiSiteToSiteRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
@@ -114,6 +115,8 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
 
 
     protected NiFiRemoteProcessGroupsRestClientV1 remoteProcessGroups;
+
+    protected NiFiSiteToSiteRestClientV1 siteToSite;
 
     /**
      * Constructs a {@code NiFiRestClientV1} with the specified NiFi REST client configuration.
@@ -278,6 +281,15 @@ public class NiFiRestClientV1 extends JerseyRestClient implements NiFiRestClient
         return remoteProcessGroups;
     }
 
+
+    @Nonnull
+    @Override
+    public NiFiSiteToSiteRestClient siteToSite() {
+        if (siteToSite == null) {
+            siteToSite = new NiFiSiteToSiteRestClientV1(this);
+        }
+        return siteToSite;
+    }
 
     @Override
     protected WebTarget getBaseTarget() {

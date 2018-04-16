@@ -21,7 +21,9 @@ package com.thinkbiganalytics.nifi.provenance;
  */
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
 
@@ -45,6 +47,11 @@ public class ProvenanceEventRecordConverter implements Serializable {
         return dto;
     }
 
+    private static void addAttributeIfNotBlank(ProvenanceEventRecordDTO dto, String key, String value){
+        if(StringUtils.isNotBlank(value)) {
+            dto.getUpdatedAttributes().put(key,value);
+        }
+    }
 
     public static void populateEvent(ProvenanceEventRecordDTO dto, ProvenanceEventRecord event) {
 
@@ -64,6 +71,10 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setRelationship(event.getRelationship());
 
         dto.setUpdatedAttributes(updatedAttrs);
+        //add in the other attribues
+        addAttributeIfNotBlank(dto,"transitUri",event.getTransitUri());
+        addAttributeIfNotBlank(dto,"sourceSystemFlowFileIdentifier",ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event));
+
         dto.setPreviousAttributes(previousAttrs);
         dto.setAttributeMap(event.getAttributes());
 

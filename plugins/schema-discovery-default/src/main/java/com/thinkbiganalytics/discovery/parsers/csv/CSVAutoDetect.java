@@ -52,11 +52,6 @@ class CSVAutoDetect {
 
     private static final Logger LOG = LoggerFactory.getLogger(CSVAutoDetect.class);
 
-    /**
-     * Size of buffer for reading first 100 lines.
-     */
-    private int bufferSize = 32765;
-
     private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
         return map.entrySet()
             .stream()
@@ -95,26 +90,15 @@ class CSVAutoDetect {
         return format;
     }
 
-    /**
-     * Sets the internal buffer size for reading the first 100 lines of the file.
-     *
-     * @param bufferSize minimum number of characters
-     */
-    public void setBufferSize(final int bufferSize) {
-        this.bufferSize = bufferSize;
-    }
-
     private List<LineStats> generateStats(BufferedReader br, Character separatorChar) throws IOException {
         List<LineStats> lineStats = new Vector<>();
         String line;
         int rows = 0;
-        br.mark(bufferSize);
         while ((line = br.readLine()) != null && rows < 100) {
             LineStats stats = new LineStats(line, separatorChar);
             rows++;
             lineStats.add(stats);
         }
-        br.reset();
         return lineStats;
     }
 
