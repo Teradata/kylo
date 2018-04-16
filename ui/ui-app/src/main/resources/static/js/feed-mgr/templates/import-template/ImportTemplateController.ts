@@ -307,6 +307,9 @@ export class ImportTemplateController implements ng.IController, OnInit {
             if (!responseData.valid || !responseData.success) {
                 //Validation Error.  Additional Input is needed by the end user
                 this.additionalInputNeeded = true;
+                this.importResultIcon = "error";
+                this.importResultIconColor = "#FF0000";
+                this.message = "Unable to import the template";
                 if (responseData.reusableFlowOutputPortConnectionsNeeded) {
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";

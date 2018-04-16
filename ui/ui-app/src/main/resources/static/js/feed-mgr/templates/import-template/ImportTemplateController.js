@@ -225,6 +225,9 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                 if (!responseData.valid || !responseData.success) {
                     //Validation Error.  Additional Input is needed by the end user
                     _this.additionalInputNeeded = true;
+                    _this.importResultIcon = "error";
+                    _this.importResultIconColor = "#FF0000";
+                    _this.message = "Unable to import the template";
                     if (responseData.reusableFlowOutputPortConnectionsNeeded) {
                         _this.importResultIcon = "warning";
                         _this.importResultIconColor = "#FF9901";
