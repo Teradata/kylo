@@ -63,6 +63,33 @@
       <artifactId>hadoop-common</artifactId>
     </dependency>
 
+    <!-- Unit test -->
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-mockito-release-full</artifactId>
+      <scope>test</scope>
+      <type>pom</type>
+      <exclusions>
+        <exclusion>
+          <!-- use JUnit and exclude TestNG -->
+          <groupId>org.testng</groupId>
+          <artifactId>testng</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+
   </dependencies>
 
 </project>

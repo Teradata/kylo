@@ -300,7 +300,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
                 .password(passw)
                 .driverClassLoader(getDriverClassLoader(urlString, drv))
                 .validationQuery(validationQuery)
-                .validationQueryTimeout(validationQueryTimeout)
+                .validationQueryTimeout((validationQueryTimeout != null) ? validationQueryTimeout.intValue() : null)
+                .maxActive(maxTotal)
+                .maxWait(maxWaitMillis)
                 .build();
         getLogger().info("Created new ThirftConnectionPool with Refreshable Datasource for " + urlString);
     }
