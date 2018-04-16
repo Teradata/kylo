@@ -226,7 +226,7 @@ public class RefreshableDataSource implements DataSource {
         String username = userName;
         if (proxyUser && propertyPrefix.equals(UsernameCaseStrategyUtil.hiveDatasourcePrefix)) {
             UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy = usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();
-            String proxyUsername = UsernameCaseStrategyUtil.convertUsernameCase(username,usernameCaseStrategy);
+            String proxyUsername = UsernameCaseStrategyUtil.convertUsernameCase(principal,usernameCaseStrategy);
             url = url + ";hive.server2.proxy.user=" + proxyUsername;
         }
 
