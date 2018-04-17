@@ -78,18 +78,19 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var fieldName = this.getColumnFieldName(column);
             var regex = this.escapeRegExp(value);
             var formula = this.toFormula("regexp_replace(" + fieldName + ", \"" + regex + "\", \"\").as(\"" + fieldName + "\")", column, grid);
-            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value });
+            this.controller.addFunction(formula, { formula: formula, icon: "content_cut", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value });
         };
         ColumnDelegate.prototype.clearRowsEquals = function (value, column, grid) {
-            var formula = this.toFormula("when(equal(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise(" + this.getColumnFieldName(column) + ")", column, grid);
-            this.controller.addFunction(formula, { formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value });
+            var fieldName = this.getColumnFieldName(column);
+            var formula = this.toFormula("when(equal(" + fieldName + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise(" + fieldName + ").as(\"" + fieldName + "\")", column, grid);
+            this.controller.addFunction(formula, { formula: formula, icon: "remove_circle", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value });
         };
         /**
          * Filters for rows where the specified column is not null.
          */
         ColumnDelegate.prototype.deleteNullRows = function (column) {
             var formula = "filter(not(isnull(" + this.getColumnFieldName(column) + ")))";
-            this.controller.addFunction(formula, { formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " if null" });
+            this.controller.addFunction(formula, { formula: formula, icon: "remove_circle_containing", name: "Delete " + this.getColumnDisplayName(column) + " if null" });
         };
         /**
          * Filters for rows where the specified column does not contain the specified value.

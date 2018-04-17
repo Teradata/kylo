@@ -27,9 +27,8 @@
     </md-table-container>
 
   </div>
-  <div flex>&nbsp;</div>
-  <div class="summary-section" flex="25" hide-xs>
-    <div>
+  <div class="summary-section" flex="30" hide-xs>
+    <div style="padding-left:10px">
       <strong>Summary</strong>
       <table>
         <tbody>
@@ -41,21 +40,38 @@
           <td class="numeric ng-binding" ng-bind="vm.unique">0</td>
           <td class="numeric ng-binding" ng-bind="vm.percUnique + '%'">0.0%</td>
         </tr>
-        <tr><th>Empty</th>
+        <tr ng-show="vm.emptyCount != null"><th>Empty</th>
           <td class="numeric ng-binding" ng-bind="vm.emptyCount">0</td>
           <td class="numeric ng-binding" ng-bind="vm.percEmpty + '%'">0.0%</td>
         </tr>
-        <tr><th>Max Len.</th>
-          <td class="numeric ng-binding" ng-bind="vm.maxLen">0</td>
-          <td class="numeric ng-binding">&nbsp;</td>
+        <tr><th>Null</th>
+          <td class="numeric ng-binding" ng-bind="vm.nullCount">0</td>
+          <td class="numeric ng-binding" ng-bind="vm.percNull + '%'">0.0%</td>
         </tr>
-        <tr><th>Min Len.</th>
-          <td class="numeric ng-binding" ng-bind="vm.minLen">0</td>
-          <td class="numeric ng-binding">&nbsp;</td>
+        <tr ng-show="vm.maxLen != null" ><th>Max Len.</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.maxLen">0</td>
         </tr>
-
+        <tr ng-show="vm.minLen != null"><th>Min Len.</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.minLen">0</td>
+        </tr>
+        <tr ng-show="vm.max != null"><th>Max</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.max">0</td>
+        </tr>
+        <tr ng-show="vm.min != null"><th>Min</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.min">0</td>
+        </tr>
+        <tr ng-show="vm.sum != null"><th>Sum</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.sum | number:4">0</td>
+        </tr>
+        <tr ng-show="vm.mean != null"><th>Mean</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.mean | number:4">0</td>
+        </tr>
+        <tr ng-show="vm.variance != null"><th>Variance</th>
+          <td colspan="2" class="numeric ng-binding" ng-bind="vm.variance | number:4">0</td>
+        </tr>
         </tbody></table>
     </div>
+
 
   </div>
 

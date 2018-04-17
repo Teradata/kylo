@@ -100,12 +100,13 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = this.getColumnFieldName(column);
         const regex = this.escapeRegExp(value);
         const formula = this.toFormula("regexp_replace("+fieldName+", \""+regex+"\", \"\").as(\""+fieldName+"\")", column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
     clearRowsEquals(value: string, column: any, grid:any) {
-        const formula = this.toFormula("when(equal(" + this.getColumnFieldName(column) + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise("+ this.getColumnFieldName(column)+")",column,grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "search", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
+        const fieldName = this.getColumnFieldName(column);
+        const formula = this.toFormula("when(equal(" + fieldName + ", '" + StringUtils.singleQuote(value) + "'),null).otherwise("+ fieldName+").as(\""+fieldName+"\")",column,grid);
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle", name: "Clear " + this.getColumnDisplayName(column) + " equals " + value});
     }
 
     /**
@@ -113,7 +114,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     deleteNullRows(column: any) {
         const formula = "filter(not(isnull(" + this.getColumnFieldName(column) + ")))";
-        this.controller.addFunction(formula, {formula: formula, icon: "≠", name: "Delete " + this.getColumnDisplayName(column) + " if null"});
+        this.controller.addFunction(formula, {formula: formula, icon: "remove_circle_containing", name: "Delete " + this.getColumnDisplayName(column) + " if null"});
     }
 
     /**

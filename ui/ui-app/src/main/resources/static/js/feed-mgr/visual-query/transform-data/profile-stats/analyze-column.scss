@@ -9,7 +9,7 @@
 
 .histo {
   margin-top: -18px;
-  height: 310px;
+  height: 300px;
   background-attachment: scroll;
   overflow: hidden
 }
@@ -26,13 +26,18 @@ span.bar {
   display: block;
   margin: 5px 0 0 0;
   height: 5px;
-  background: orange;
+  background: rgb(52, 131, 186);
 }
 
 .summary-section strong {
   display: block;
   text-transform: uppercase;
   color: rgb(52, 131, 186);
+  padding-left: 14px;
+}
+
+.summary-section th {
+  text-align: left;
 }
 
 .summary-section table {
@@ -42,6 +47,10 @@ span.bar {
 
 .numeric {
   text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 110px;
 }
 
 .truncate {
