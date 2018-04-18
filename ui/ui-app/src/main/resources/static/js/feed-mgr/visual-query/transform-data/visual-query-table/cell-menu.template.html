@@ -37,7 +37,7 @@
     <md-button ng-click="header.delegate.deleteNullRows(header)">Delete null rows</md-button>
   </md-menu-item>
   <md-menu-item ng-if="value !== null">
-    <md-button ng-click="header.delegate.clearRowsEquals(value, header, table)">Clear values containing {{displayValue}}</md-button>
+    <md-button ng-click="header.delegate.clearRowsEquals(value, header, table)">Clear values equal to {{displayValue}}</md-button>
   </md-menu-item>
 
 </md-menu-content>

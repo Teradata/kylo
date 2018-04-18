@@ -100,7 +100,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = this.getColumnFieldName(column);
         const regex = this.escapeRegExp(value);
         const formula = this.toFormula("regexp_replace("+fieldName+", \""+regex+"\", \"\").as(\""+fieldName+"\")", column, grid);
-        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Clear " + this.getColumnDisplayName(column) + " containing " + value});
+        this.controller.addFunction(formula, {formula: formula, icon: "content_cut", name: "Strip " + this.getColumnDisplayName(column) + " containing " + value});
     }
 
     clearRowsEquals(value: string, column: any, grid:any) {
