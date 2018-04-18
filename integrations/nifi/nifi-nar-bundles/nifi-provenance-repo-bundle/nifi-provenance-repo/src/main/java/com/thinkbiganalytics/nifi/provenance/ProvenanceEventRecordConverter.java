@@ -28,6 +28,7 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
 
 import java.io.Serializable;
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

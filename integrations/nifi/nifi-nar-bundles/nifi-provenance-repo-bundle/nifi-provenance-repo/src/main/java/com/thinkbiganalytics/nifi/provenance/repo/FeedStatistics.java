@@ -164,7 +164,7 @@ public class FeedStatistics {
     }
 
 
-    public void addEvent(ProvenanceEventRecord event, Long eventId) {
+    public ProvenanceEventRecordDTO addEvent(ProvenanceEventRecord event, Long eventId) {
 
         FeedEventStatistics.getInstance().calculateTimes(event, eventId);
 
@@ -222,7 +222,7 @@ public class FeedStatistics {
 
         FeedEventStatistics.getInstance().cleanup(event, eventId);
 
-
+       return eventRecordDTO;
     }
 
     public boolean hasStats() {

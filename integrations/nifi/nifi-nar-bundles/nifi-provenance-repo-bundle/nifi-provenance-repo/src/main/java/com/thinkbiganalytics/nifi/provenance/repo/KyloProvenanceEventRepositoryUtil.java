@@ -24,6 +24,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 
+import java.net.InetSocketAddress;
+
 /**
  * Created by sr186054 on 6/21/17.
  */
@@ -31,6 +33,8 @@ public class KyloProvenanceEventRepositoryUtil {
 
     private static final Logger log = LoggerFactory.getLogger(KyloProvenanceEventRepositoryUtil.class);
 
+    private static InetSocketAddress nodeIdAddress;
+    private static boolean isClustered;
 
     public final void persistFeedEventStatisticsToDisk() {
         log.info("onShutdown: Attempting to persist any active flow files to disk");
@@ -60,7 +64,9 @@ public class KyloProvenanceEventRepositoryUtil {
         }
     }
 
-    public void init() {
+    public void init(InetSocketAddress nodeIdAddress, boolean isClustered) {
+        this.nodeIdAddress = nodeIdAddress;
+        this.isClustered = isClustered;
         loadSpring();
         initializeFeedEventStatistics();
 
@@ -74,5 +80,16 @@ public class KyloProvenanceEventRepositoryUtil {
         }
     }
 
+    public static InetSocketAddress getNodeIdAddress(){
+        return nodeIdAddress;
+    }
+
+    public static String getNodeIdAddressString(){
+        return nodeIdAddress != null ? nodeIdAddress.toString() : null;
+    }
+
+    public static boolean isClustered(){
+        return isClustered;
+    }
 
 }

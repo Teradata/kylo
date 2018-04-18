@@ -33,6 +33,7 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.InetAddress;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -119,7 +120,12 @@ public class FeedStatisticsManager {
             String feedProcessorId = FeedEventStatistics.getInstance().getFeedProcessorId(event);
             if (feedProcessorId != null) {
                 String key = feedProcessorId + event.getComponentId();
-                feedStatisticsMap.computeIfAbsent(key, feedStatisticsKey -> new FeedStatistics(feedProcessorId, event.getComponentId())).addEvent(event, eventId);
+               ProvenanceEventRecordDTO dto = feedStatisticsMap.computeIfAbsent(key, feedStatisticsKey -> new FeedStatistics(feedProcessorId, event.getComponentId())).addEvent(event, eventId);
+               String host = KyloProvenanceEventRepositoryUtil.getNodeIdAddressString();
+               boolean isClustered = KyloProvenanceEventRepositoryUtil.isClustered();
+               if(dto != null && host != null && isClustered) {
+                   dto.setClusterNodeAddress(host);
+               }
             } else {
                 //UNABLE TO FIND data in maps
                 String startingFlowFile = FeedEventStatistics.getInstance().getFeedFlowFileId(event);
