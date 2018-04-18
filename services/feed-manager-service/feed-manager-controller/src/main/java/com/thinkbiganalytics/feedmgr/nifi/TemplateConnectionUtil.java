@@ -316,6 +316,23 @@ public class TemplateConnectionUtil {
         return getRemoteInputPortsForReusableTemplate(reusableTemplateProcessGroup,templateName);
     }
 
+    /**
+     * Gets all the input ports at the Root level
+     * @return
+     */
+    public Set<PortDTO> getRootProcessGroupInputPorts(){
+        Set<PortDTO> ports = new HashSet<>();
+        String rootProcessGroupId = this.getRootProcessGroup().getId();
+        Optional<ProcessGroupDTO> root = restClient.getNiFiRestClient().processGroups().findById(rootProcessGroupId,false,true);
+        if(root.isPresent() && root.get().getContents() != null){
+          Set<PortDTO>  set = root.get().getContents().getInputPorts();
+          if(set != null) {
+              ports.addAll(set);
+          }
+        }
+        return ports;
+    }
+
     public Optional<TemplateRemoteInputPortConnections> getAllReusableTemplateRemoteInputPorts(){
         ProcessGroupDTO reusableTemplateProcessGroup = getReusableTemplateCategoryProcessGroup(true);
         String reusableTemplateProcessGroupId = reusableTemplateProcessGroup.getId();
