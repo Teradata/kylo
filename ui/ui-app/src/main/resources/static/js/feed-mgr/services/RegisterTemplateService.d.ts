@@ -68,6 +68,12 @@ export interface RegisteredTemplateService {
      */
     fetchRegisteredReusableFeedInputPorts(): angular.IPromise<angular.IHttpResponse<any>>;
 
+    /**
+     * Fetch the input PortDTO objects on the Root process group
+     * @return {angular.IPromise<angular.IHttpResponse<any>>}
+     */
+    fetchRootInputPorts() : angular.IPromise<angular.IHttpResponse<any>>;
+
 
     replaceAll(str: string, find: string, replace: string): string;
 

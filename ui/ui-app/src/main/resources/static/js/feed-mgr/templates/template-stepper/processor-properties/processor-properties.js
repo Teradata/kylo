@@ -56,7 +56,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             function transformPropertiesToArray() {
                 var propertiesKey = self.processorPropertiesFieldName + "Properties";
                 var processorsKey = self.processorPropertiesFieldName + "Processors";
-                self.allProperties = self.model[propertiesKey];
+                self.allProperties = _.filter(self.model[propertiesKey], function (prop) { return prop.hidden == undefined || prop.hidden == false; });
                 // Find controller services
                 _.chain(self.allProperties).filter(function (property) {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
