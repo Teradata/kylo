@@ -25,6 +25,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -54,9 +55,11 @@ public class RemoteProcessGroupValidator {
     private List<NifiProperty> modifiedProperties;
     private LegacyNifiRestClient restClient;
     private RemoteProcessGroupValidation validation;
+    private TemplateConnectionUtil templateConnectionUtil;
 
-    public RemoteProcessGroupValidator(LegacyNifiRestClient restClient, List<NifiProperty> modifiedProperties){
+    public RemoteProcessGroupValidator(LegacyNifiRestClient restClient, TemplateConnectionUtil templateConnectionUtil,List<NifiProperty> modifiedProperties){
         this.restClient = restClient;
+        this.templateConnectionUtil = templateConnectionUtil;
         this.modifiedProperties = modifiedProperties;
         validation = new RemoteProcessGroupValidation();
     }
@@ -257,17 +260,25 @@ public class RemoteProcessGroupValidator {
      */
     private boolean updateRemoteConnection(RemoteProcessGroupConnectionDTO remoteProcessGroupConnectionDTO, RemoteProcessGroupValidation validation, int retryCount) {
         //ensure we are not attempting to authorize
-        //TDODO pull timeouts to configurable parameters
+        //TODO pull timeouts to configurable parameters
         boolean success = false;
-        int sleepTimeMillis = 3000;
+        final int sleepTimeMillis = templateConnectionUtil.getRemoteProcessGroupSleepTime();
+        final int maxAttempts = templateConnectionUtil.getRemoteProcessGroupMaxAttempts();
         ConnectionDTO connectionDTO = remoteProcessGroupConnectionDTO.getUpdatedConnection().getNewConnection();
         if(connectionDTO.getId() == null){
             try {
                 ConnectionDTO
-                    newConnection =
-                    restClient.getNiFiRestClient().processGroups().createConnection(connectionDTO.getParentGroupId(), connectionDTO.getSource(), connectionDTO.getDestination());
-                if (newConnection != null) {
-                    remoteProcessGroupConnectionDTO.getUpdatedConnection().setNewConnection(newConnection);
+                    connection = new ConnectionDTO();
+                    connection.setSource(connectionDTO.getSource());
+                    connection.setDestination(connectionDTO.getDestination());
+                    connection.setParentGroupId(connectionDTO.getParentGroupId());
+
+                connection.setSelectedRelationships(new HashSet<>());
+                 connection.getSelectedRelationships().add("success");
+                 connection.setName(StringUtils.isNotBlank(connectionDTO.getName())? connectionDTO.getName() : (connectionDTO.getSource().getName() +" - "+connectionDTO.getDestination().getName()));
+                 connection = restClient.getNiFiRestClient().processGroups().createConnection(connection);
+                if (connection != null) {
+                    remoteProcessGroupConnectionDTO.getUpdatedConnection().setNewConnection(connection);
                     remoteProcessGroupConnectionDTO.getUpdatedConnection().setUpdated(true);
                     success = true;
                 }
@@ -277,7 +288,7 @@ public class RemoteProcessGroupValidator {
             }catch (Exception e) {
                 log.info("Error found attempting to create the new connection to the Remote Process Group for {} in Parent Process Group: {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(), connectionDTO.getParentGroupId(), retryCount);
 
-                if (retryCount <= 10) {
+                if (retryCount <= maxAttempts) {
                     Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
                     retryCount++;
                     return  updateRemoteConnection(remoteProcessGroupConnectionDTO,validation,retryCount);
@@ -293,7 +304,7 @@ public class RemoteProcessGroupValidator {
             if (remoteProcessGroupConnectionDTO.hasRemoteProcessGroupAuthorizationIssues() || remoteProcessGroupConnectionDTO.getRemoteProcessGroup().getInputPortCount() == 0) {
                 //wait
                 log.info("Authorization issue found when attempting to update Remote Process Group Port connection for {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(), retryCount);
-                if (retryCount <= 10) {
+                if (retryCount <= maxAttempts) {
                     Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
                     Optional<RemoteProcessGroupDTO>
                         remoteProcessGroupDTO =

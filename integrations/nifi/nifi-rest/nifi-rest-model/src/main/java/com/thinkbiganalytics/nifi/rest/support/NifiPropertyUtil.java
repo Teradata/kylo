@@ -113,6 +113,9 @@ public class NifiPropertyUtil {
                 }
                 properties.addAll(propertyList);
             }
+            List<NifiProperty>remoteProcessGroupProperties = NifiRemoteProcessGroupUtil.remoteProcessGroupProperties(dto);
+            properties.addAll(remoteProcessGroupProperties);
+
         }
         return properties;
     }

@@ -598,6 +598,15 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
             } else {
                 connectedStr.append("Created ");
             }
+
+
+            //enable the input port
+            try {
+                newInputPort.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                nifiRestClient.getNiFiRestClient().ports().updateInputPort(newInputPort.getParentGroupId(), newInputPort);
+            }catch (Exception e) {
+
+            }
             connectedStr.append(r.getInputPortName());
 
             remoteInputPortsMessage.update(connectedStr.toString());

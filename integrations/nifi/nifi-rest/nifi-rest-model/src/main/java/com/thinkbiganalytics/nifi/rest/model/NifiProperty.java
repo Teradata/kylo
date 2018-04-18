@@ -100,6 +100,11 @@ public final class NifiProperty {
      **/
     private NifiProperty templateProperty;
 
+    /**
+     * Not rendered on the screen
+     */
+    private boolean hidden;
+
     public NifiProperty() {
 
     }
@@ -122,6 +127,7 @@ public final class NifiProperty {
         this.containsConfigurationVariables = property.isContainsConfigurationVariables();
         this.sensitive = property.isSensitive();
         this.required = property.isRequired();
+        this.hidden = property.isHidden();
     }
 
     public NifiProperty(String processGroupId, String processorId, String key, String value) {
@@ -321,5 +327,13 @@ public final class NifiProperty {
 
     public boolean isRemoteProcessGroupProperty(){
         return NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP.name().equalsIgnoreCase(getProcessorType());
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 }

@@ -319,7 +319,7 @@ public class CreateFeedBuilder {
                     entity = restClient.getProcessGroup(processGroupId, true, true);
                     input = fetchInputProcessorForProcessGroup(entity);
                     nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
-                    RemoteProcessGroupValidator remoteProcessGroupValidator = new RemoteProcessGroupValidator(restClient,modifiedProperties);
+                    RemoteProcessGroupValidator remoteProcessGroupValidator = new RemoteProcessGroupValidator(restClient,templateConnectionUtil,modifiedProperties);
                     RemoteProcessGroupValidator.RemoteProcessGroupValidation remoteProcessGroupValidation = remoteProcessGroupValidator.validateAndFixRemoteProcessGroups(entity);
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 

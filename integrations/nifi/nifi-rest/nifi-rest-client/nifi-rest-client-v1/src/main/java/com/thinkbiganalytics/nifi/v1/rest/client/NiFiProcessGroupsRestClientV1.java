@@ -119,25 +119,29 @@ public class NiFiProcessGroupsRestClientV1 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     @Override
     public ConnectionDTO createConnection(@Nonnull final String processGroupId, @Nonnull final ConnectableDTO source, @Nonnull final ConnectableDTO dest) {
-        final ConnectionEntity entity = new ConnectionEntity();
-
         final ConnectionDTO connection = new ConnectionDTO();
         connection.setParentGroupId(processGroupId);
         connection.setDestination(dest);
         connection.setName(source.getName() + "-" + dest.getName());
         connection.setSource(source);
-        entity.setComponent(connection);
-       // connection.setSelectedRelationships(new HashSet<>());
-       // connection.getSelectedRelationships().add("success");
 
+        return createConnection(connection);
+    }
+
+    @Nonnull
+    @Override
+    public ConnectionDTO createConnection(@Nonnull final ConnectionDTO connection) {
+        final ConnectionEntity entity = new ConnectionEntity();
+
+        entity.setComponent(connection);
         final RevisionDTO revision = new RevisionDTO();
         revision.setVersion(0L);
         entity.setRevision(revision);
 
         try {
-            return getClient().post(BASE_PATH + processGroupId + "/connections", entity, ConnectionEntity.class).getComponent();
+            return getClient().post(BASE_PATH + connection.getParentGroupId() + "/connections", entity, ConnectionEntity.class).getComponent();
         } catch (final NotFoundException e) {
-            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+            throw new NifiComponentNotFoundException(connection.getParentGroupId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
     }
 

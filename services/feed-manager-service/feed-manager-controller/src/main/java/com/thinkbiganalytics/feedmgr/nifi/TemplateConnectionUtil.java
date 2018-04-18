@@ -41,6 +41,7 @@ import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -72,6 +73,14 @@ public class TemplateConnectionUtil {
 
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
+
+
+    @Value("${nifi.create.remote-process-group.retry.sleep-time.millis:4000}")
+    private Integer remoteProcessGroupSleepTime;
+
+    @Value("${nifi.create.remote-process-group.retry.max-attempts:10}")
+    private Integer remoteProcessGroupMaxAttempts;
+
 
 
     public ProcessGroupDTO getRootProcessGroup() {
@@ -444,5 +453,13 @@ public class TemplateConnectionUtil {
         String rootProcessGroupId = this.getRootProcessGroup().getId();
         Set<ConnectionDTO> rootConnections = restClient.getNiFiRestClient().processGroups().getConnections(rootProcessGroupId);
         return rootConnections;
+    }
+
+    public Integer getRemoteProcessGroupSleepTime() {
+        return remoteProcessGroupSleepTime != null && remoteProcessGroupSleepTime >=0 ? remoteProcessGroupSleepTime : 4000;
+    }
+
+    public Integer getRemoteProcessGroupMaxAttempts() {
+        return remoteProcessGroupMaxAttempts != null && remoteProcessGroupMaxAttempts >=0 ? remoteProcessGroupMaxAttempts : 10 ;
     }
 }
