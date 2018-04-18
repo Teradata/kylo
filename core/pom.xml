@@ -14,10 +14,10 @@
 
   <modules>
     <module>ui-annotation</module>
+    <module>nifi-provenance</module>
     <module>sla</module>
     <module>alerts</module>
     <module>schema-discovery</module>
-
     <module>field-policy</module>
     <module>precondition</module>
     <module>job-repository</module>

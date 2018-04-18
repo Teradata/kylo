@@ -2,22 +2,19 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
-    <artifactId>kylo-integrations</artifactId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <artifactId>kylo-core</artifactId>
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
-  <artifactId>kylo-nifi</artifactId>
+  <artifactId>kylo-nifi-provenance</artifactId>
   <packaging>pom</packaging>
 
   <modules>
-    <module>nifi-savepoint</module>
-    <module>nifi-rest</module>
-    <module>nifi-nar-bundles</module>
-    <module>nifi-security</module>
-    <module>nifi-framework</module>
+    <module>nifi-provenance-constants</module>
+    <module>nifi-provenance-model</module>
   </modules>
 
   <build>

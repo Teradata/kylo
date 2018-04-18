@@ -36,7 +36,7 @@
     <!-- Kylo Dependencies -->
 
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-nifi-provenance-model</artifactId>
       <version>0.9.1-SNAPSHOT</version>
     </dependency>

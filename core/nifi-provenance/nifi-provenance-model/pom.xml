@@ -6,8 +6,8 @@
   <artifactId>kylo-nifi-provenance-model</artifactId>
 
   <parent>
-    <artifactId>kylo-nifi</artifactId>
-    <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+    <artifactId>kylo-nifi-provenance</artifactId>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
     <version>0.9.1-SNAPSHOT</version>
   </parent>
   <properties>
@@ -18,7 +18,7 @@
   <dependencies>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.kylo.integrations</groupId>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
       <artifactId>kylo-nifi-provenance-constants</artifactId>
       <version>${project.version}</version>
     </dependency>
