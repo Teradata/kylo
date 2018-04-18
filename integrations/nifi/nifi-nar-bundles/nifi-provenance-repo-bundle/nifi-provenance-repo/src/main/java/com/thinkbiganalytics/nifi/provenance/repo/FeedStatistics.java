@@ -28,7 +28,6 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
-import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,36 +98,36 @@ public class FeedStatistics {
         String key = event.getComponentId() + ":" + event.getEventType().name();
 
         if (isStartingFeedFlow) {
-            if(startingFeedFlowQueue == null){
-                startingFeedFlowQueue =EvictingQueue.create(throttleStartingFeedFlowsThreshold);
+            if (startingFeedFlowQueue == null) {
+                startingFeedFlowQueue = EvictingQueue.create(throttleStartingFeedFlowsThreshold);
             }
 
             startingFeedFlowQueue.add(event.getEventTime());
-            if(startingFeedFlowQueue.size() >= throttleStartingFeedFlowsThreshold) {
+            if (startingFeedFlowQueue.size() >= throttleStartingFeedFlowsThreshold) {
                 Long diff = event.getEventTime() - startingFeedFlowQueue.peek();
                 if (diff < throttleStartingFeedFlowsTimePeriod) {
                     //we got more than x events within the threshold... throttle
                     key += eventTimeNearestSecond(event);
-                    if(isThrottled.compareAndSet(false,true)) {
-                        log.debug("Detected over {} flows starting within the given window of {} ms for key {}.  Throttling back starting events (for batch job processing) to only 1 per second until it slows down. ", throttleStartingFeedFlowsThreshold,throttleStartingFeedFlowsTimePeriod, key );
+                    if (isThrottled.compareAndSet(false, true)) {
+                        log.debug(
+                            "Detected over {} flows starting within the given window of {} ms for key {}.  Throttling back starting events (for batch job processing) to only 1 per second until it slows down. ",
+                            throttleStartingFeedFlowsThreshold, throttleStartingFeedFlowsTimePeriod, key);
                     }
                 } else {
-                    key +=":" + feedFlowFileId;
+                    key += ":" + feedFlowFileId;
                     startingFeedFlowQueue.clear();
-                    if(isThrottled.compareAndSet(true,false)) {
-                        log.debug("Resetting the batch job processing throttle flow rate.  Fewer than {} flows within the given window of {} ms for key {} were detected.", throttleStartingFeedFlowsThreshold, throttleStartingFeedFlowsTimePeriod, key);
+                    if (isThrottled.compareAndSet(true, false)) {
+                        log.debug("Resetting the batch job processing throttle flow rate.  Fewer than {} flows within the given window of {} ms for key {} were detected.",
+                                  throttleStartingFeedFlowsThreshold, throttleStartingFeedFlowsTimePeriod, key);
                     }
                 }
 
-            }
-            else {
+            } else {
                 key = key + ":" + feedFlowFileId;
             }
+        } else {
+            key += ":" + feedFlowFileId;
         }
-        else {
-            key +=":" + feedFlowFileId;
-        }
-
 
         return key;
 
@@ -143,7 +142,6 @@ public class FeedStatistics {
     private Long nowToNearestSecond(ProvenanceEventRecord event) {
         return DateTime.now().withMillis(0).getMillis();
     }
-
 
 
     public FeedStatistics(String feedProcessorId, String processorId) {
@@ -222,7 +220,7 @@ public class FeedStatistics {
 
         FeedEventStatistics.getInstance().cleanup(event, eventId);
 
-       return eventRecordDTO;
+        return eventRecordDTO;
     }
 
     public boolean hasStats() {

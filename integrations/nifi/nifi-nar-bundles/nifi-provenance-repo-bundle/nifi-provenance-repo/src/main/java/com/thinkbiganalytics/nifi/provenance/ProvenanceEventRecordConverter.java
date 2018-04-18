@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.provenance;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -28,7 +28,6 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
 
 import java.io.Serializable;
-import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -48,9 +47,9 @@ public class ProvenanceEventRecordConverter implements Serializable {
         return dto;
     }
 
-    private static void addAttributeIfNotBlank(ProvenanceEventRecordDTO dto, String key, String value){
-        if(StringUtils.isNotBlank(value)) {
-            dto.getUpdatedAttributes().put(key,value);
+    private static void addAttributeIfNotBlank(ProvenanceEventRecordDTO dto, String key, String value) {
+        if (StringUtils.isNotBlank(value)) {
+            dto.getUpdatedAttributes().put(key, value);
         }
     }
 
@@ -73,8 +72,8 @@ public class ProvenanceEventRecordConverter implements Serializable {
 
         dto.setUpdatedAttributes(updatedAttrs);
         //add in the other attribues
-        addAttributeIfNotBlank(dto,"transitUri",event.getTransitUri());
-        addAttributeIfNotBlank(dto,"sourceSystemFlowFileIdentifier",ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event));
+        addAttributeIfNotBlank(dto, "transitUri", event.getTransitUri());
+        addAttributeIfNotBlank(dto, "sourceSystemFlowFileIdentifier", ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event));
 
         dto.setPreviousAttributes(previousAttrs);
         dto.setAttributeMap(event.getAttributes());
