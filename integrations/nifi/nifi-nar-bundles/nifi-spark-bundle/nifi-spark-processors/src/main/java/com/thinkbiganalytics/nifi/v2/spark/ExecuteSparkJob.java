@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
+import com.thinkbiganalytics.nifi.processor.BaseProcessor;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.KerberosProperties;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
@@ -76,7 +76,7 @@ import javax.annotation.Nonnull;
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"spark", "thinkbig"})
 @CapabilityDescription("Execute a Spark job.")
-public class ExecuteSparkJob extends AbstractNiFiProcessor {
+public class ExecuteSparkJob extends BaseProcessor {
 
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
     public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
@@ -254,7 +254,7 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
         .addValidator(createUuidListValidator())
         .expressionLanguageSupported(true)
         .build();
-    private final Set<Relationship> relationships;
+
     /**
      * Kerberos service keytab
      */
@@ -263,17 +263,6 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
      * Kerberos service principal
      */
     private PropertyDescriptor kerberosPrincipal;
-    /**
-     * List of properties
-     */
-    private List<PropertyDescriptor> propDescriptors;
-
-    public ExecuteSparkJob() {
-        final Set<Relationship> r = new HashSet<>();
-        r.add(REL_SUCCESS);
-        r.add(REL_FAILURE);
-        relationships = Collections.unmodifiableSet(r);
-    }
 
     public static Boolean validPath(String path) {
         try {
@@ -330,49 +319,56 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
 
     @Override
     protected void init(@Nonnull final ProcessorInitializationContext context) {
-        super.init(context);
-
         // Create Kerberos properties
         final SpringSecurityContextLoader securityContextLoader = SpringSecurityContextLoader.create(context);
         final KerberosProperties kerberosProperties = securityContextLoader.getKerberosProperties();
         kerberosKeyTab = kerberosProperties.createKerberosKeytabProperty();
         kerberosPrincipal = kerberosProperties.createKerberosPrincipalProperty();
 
-        // Create list of properties
-        final List<PropertyDescriptor> pds = new ArrayList<>();
-        pds.add(APPLICATION_JAR);
-        pds.add(EXTRA_JARS);
-        pds.add(MAIN_CLASS);
-        pds.add(MAIN_ARGS);
-        pds.add(SPARK_MASTER);
-        pds.add(SPARK_YARN_DEPLOY_MODE);
-        pds.add(SPARK_HOME);
-        pds.add(PROCESS_TIMEOUT);
-        pds.add(DRIVER_MEMORY);
-        pds.add(EXECUTOR_MEMORY);
-        pds.add(NUMBER_EXECUTORS);
-        pds.add(SPARK_APPLICATION_NAME);
-        pds.add(EXECUTOR_CORES);
-        pds.add(NETWORK_TIMEOUT);
-        pds.add(HADOOP_CONFIGURATION_RESOURCES);
-        pds.add(kerberosPrincipal);
-        pds.add(kerberosKeyTab);
-        pds.add(YARN_QUEUE);
-        pds.add(SPARK_CONFS);
-        pds.add(EXTRA_SPARK_FILES);
-        pds.add(DATASOURCES);
-        pds.add(METADATA_SERVICE);
-        propDescriptors = Collections.unmodifiableList(pds);
+        // Call the superclass init(), which builds the property list.
+        super.init(context);
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addProperties(java.util.List)
+     */
     @Override
-    public Set<Relationship> getRelationships() {
-        return relationships;
+    protected void addProperties(Set<PropertyDescriptor> list) {
+        super.addProperties(list);
+
+        list.add(APPLICATION_JAR);
+        list.add(EXTRA_JARS);
+        list.add(MAIN_CLASS);
+        list.add(MAIN_ARGS);
+        list.add(SPARK_MASTER);
+        list.add(SPARK_YARN_DEPLOY_MODE);
+        list.add(SPARK_HOME);
+        list.add(PROCESS_TIMEOUT);
+        list.add(DRIVER_MEMORY);
+        list.add(EXECUTOR_MEMORY);
+        list.add(NUMBER_EXECUTORS);
+        list.add(SPARK_APPLICATION_NAME);
+        list.add(EXECUTOR_CORES);
+        list.add(NETWORK_TIMEOUT);
+        list.add(HADOOP_CONFIGURATION_RESOURCES);
+        list.add(kerberosPrincipal);
+        list.add(kerberosKeyTab);
+        list.add(YARN_QUEUE);
+        list.add(SPARK_CONFS);
+        list.add(EXTRA_SPARK_FILES);
+        list.add(DATASOURCES);
+        list.add(METADATA_SERVICE);
     }
-
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#addRelationships(java.util.Set)
+     */
     @Override
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return propDescriptors;
+    protected void addRelationships(Set<Relationship> set) {
+        super.addRelationships(set);
+        
+        set.add(REL_SUCCESS);
+        set.add(REL_FAILURE);
     }
 
     @Override
@@ -391,13 +387,13 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             PROVENANCE_SPARK_EXIT_CODE_KEY = context.getName() + " Spark Exit Code";
 
             /* Configuration parameters for spark launcher */
-            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+            String appJar = getApplicationJar(context, flowFile);
+            String mainClass = getMainClass(context, flowFile);
+            String appArgs = getMainArgs(context, flowFile);
             String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
             String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
-            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkYarnDeployMode = context.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions(flowFile).getValue();
-            String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String driverMemory = context.getProperty(DRIVER_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
             String executorMemory = context.getProperty(EXECUTOR_MEMORY).evaluateAttributeExpressions(flowFile).getValue();
             String numberOfExecutors = context.getProperty(NUMBER_EXECUTORS).evaluateAttributeExpressions(flowFile).getValue();
@@ -520,6 +516,18 @@ public class ExecuteSparkJob extends AbstractNiFiProcessor {
             flowFile = session.putAttribute(flowFile, "Spark Exception:", e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         }
+    }
+
+    protected String getMainArgs(final ProcessContext context, FlowFile flowFile) {
+        return context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
+    }
+
+    protected String getMainClass(final ProcessContext context, FlowFile flowFile) {
+        return context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
+    }
+
+    protected String getApplicationJar(final ProcessContext context, FlowFile flowFile) {
+        return context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
     }
 
     private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService,

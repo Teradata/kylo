@@ -24,6 +24,7 @@
     <module>spark-merge-table</module>
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
+    <module>spark-multi-exec</module>
   </modules>
 
 </project>

@@ -19,4 +19,4 @@
 com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkJob
 com.thinkbiganalytics.nifi.pyspark.core.ExecutePySpark
 com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkContextJob
-com.thinkbiganalytics.nifi.v2.spark.ExecuteMultiSparkJobs
+com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkApps

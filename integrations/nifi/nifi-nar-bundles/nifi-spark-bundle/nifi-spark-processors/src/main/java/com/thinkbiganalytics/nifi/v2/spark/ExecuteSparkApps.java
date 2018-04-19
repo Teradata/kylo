@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.nifi.v2.spark;
 
-import com.thinkbiganalytics.nifi.processor.AbstractNiFiProcessor;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.DynamicProperty;
 import org.apache.nifi.annotation.behavior.DynamicRelationship;
@@ -25,7 +23,6 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -49,10 +46,10 @@ import jersey.repackaged.com.google.common.base.Objects;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"spark", "thinkbig"})
-@CapabilityDescription("Execute one or more Spark jobs sharing a single context.")
-@DynamicProperty(name = "Spark app-specific property", value = "Spark job argument", supportsExpressionLanguage = true, description = "Specifies Spark application arguments in the form 'app.class', app.arg.<n>, app.arg.<name>,...")
+@CapabilityDescription("Execute one or more Spark apps sharing a single context.")
+@DynamicProperty(name = "Spark app-specific property", value = "Spark app argument", supportsExpressionLanguage = true, description = "Specifies Spark application arguments in the form '<appname>.class', <appname>.arg.<n>, <appname>.arg.<name>,...")
 @DynamicRelationship(name = "Name from Dynamic Property", description = "FlowFiles that match the Dynamic Property's Attribute Expression Language")
-public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
+public class ExecuteSparkApps extends ExecuteSparkJob {
     
     protected static final Pattern APP_JARS_PATTERN = Pattern.compile("^\\s*(\\w+)\\.jars");
     protected static final Pattern APP_CLASS_PATTERN = Pattern.compile("^\\s*(\\w+)\\.class");
@@ -72,43 +69,84 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
         .description("Failure of at least one app within the spark job")
         .build();
 
-    
-    private static final List<PropertyDescriptor> STATIC_PROP_DESCR = Collections.unmodifiableList(Arrays.asList(
-                     ExecuteSparkJob.DRIVER_MEMORY,
-                     ExecuteSparkJob.EXECUTOR_MEMORY,
-                     ExecuteSparkJob.NUMBER_EXECUTORS,
-                     ExecuteSparkJob.EXECUTOR_CORES,
-                     ExecuteSparkJob.NETWORK_TIMEOUT,
-                     ExecuteSparkJob.HADOOP_CONFIGURATION_RESOURCES,
-                     ExecuteSparkJob.SPARK_CONFS,
-                     ExecuteSparkJob.SPARK_CONFS,
-                     ExecuteSparkJob.EXTRA_JARS,
-                     ExecuteSparkJob.EXTRA_SPARK_FILES,
-                     ExecuteSparkJob.PROCESS_TIMEOUT,
-                     ExecuteSparkJob.METADATA_SERVICE,
-                     ExecuteSparkJob.DATASOURCES));
+    // These property descriptors replace the ones installed in the superclass.
+    public static final PropertyDescriptor APPLICATION_JAR = new PropertyDescriptor.Builder()
+        .name("ApplicationJAR")
+        .description("Path to the JAR file containing the multi-app executing Spark job application - normally not changed.")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    public static final PropertyDescriptor MAIN_CLASS = new PropertyDescriptor.Builder()
+        .name("MainClass")
+        .description("Qualified classname of the multi-app executing Spark job application class - normally not changed.")
+        .defaultValue("com.thinkbiganalytics.spark.multiexec.MultiSparkExecApp")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    public static final PropertyDescriptor MAIN_ARGS = new PropertyDescriptor.Builder()
+        .name("MainArgs")
+        .description("Comma separated arguments to be passed into the Spark job application main method - normally not changed.")
+        .required(false)
+//        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+//    private static final List<PropertyDescriptor> STATIC_PROP_DESCRS = Collections.unmodifiableList(Arrays.asList(
+//                     ExecuteSparkJob.DRIVER_MEMORY,
+//                     ExecuteSparkJob.EXECUTOR_MEMORY,
+//                     ExecuteSparkJob.NUMBER_EXECUTORS,
+//                     ExecuteSparkJob.EXECUTOR_CORES,
+//                     ExecuteSparkJob.NETWORK_TIMEOUT,
+//                     ExecuteSparkJob.HADOOP_CONFIGURATION_RESOURCES,
+//                     ExecuteSparkJob.SPARK_CONFS,
+//                     ExecuteSparkJob.SPARK_CONFS,
+//                     ExecuteSparkJob.EXTRA_JARS,
+//                     ExecuteSparkJob.EXTRA_SPARK_FILES,
+//                     ExecuteSparkJob.PROCESS_TIMEOUT,
+//                     ExecuteSparkJob.METADATA_SERVICE,
+//                     ExecuteSparkJob.DATASOURCES));
 
     
-    private List<PropertyDescriptor> propDescriptors;
+//    private List<PropertyDescriptor> propDescriptors;
+    
     private PropertyDescriptor appNamesPropDescriptor;
-    private final AtomicReference<Set<Relationship>> relationships = new AtomicReference<>(Collections.emptySet());
+    private final AtomicReference<Set<Relationship>> dynamicRelationships = new AtomicReference<>(Collections.emptySet());
     private final AtomicReference<Set<String>> appNames = new AtomicReference<>(Collections.emptySet());
     private final Map<String, AppCommand> appCommands = new ConcurrentHashMap<>();
-
-    /**
-     * 
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkJob#addProperties(java.util.Set)
      */
-    public ExecuteMultiSparkJobs() {
-        final Set<Relationship> r = new HashSet<>();
-        r.add(JOB_SUCCESS);
-        r.add(JOB_FAILURE);
-        relationships.set(Collections.unmodifiableSet(r));
+    @Override
+    protected void addProperties(Set<PropertyDescriptor> set) {
+        set.add(this.appNamesPropDescriptor);
+        
+        super.addProperties(set);
+        
+        set.remove(ExecuteSparkJob.APPLICATION_JAR);
+        set.remove(ExecuteSparkJob.MAIN_CLASS);
+        set.remove(ExecuteSparkJob.MAIN_ARGS);
+        
+        set.add(ExecuteSparkApps.APPLICATION_JAR);
+        set.add(ExecuteSparkApps.MAIN_CLASS);
+        set.add(ExecuteSparkApps.MAIN_ARGS);
     }
     
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkJob#addRelationships(java.util.Set)
+     */
     @Override
-    public Set<Relationship> getRelationships() {
-        return relationships.get();
+    protected void addRelationships(Set<Relationship> set) {
+        super.addRelationships(set);
+        
+        set.remove(ExecuteSparkJob.REL_SUCCESS);
+        set.remove(ExecuteSparkJob.REL_FAILURE);
+        set.add(JOB_SUCCESS);
+        set.add(JOB_FAILURE);
     }
+    
     
     /* (non-Javadoc)
      * @see org.apache.nifi.processor.AbstractProcessor#onTrigger(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
@@ -141,18 +179,23 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
                 return;
             });
             
+            parseAppArgs(descriptor.getName()).ifPresent(arg -> {
+                appArgsModified(arg, oldValue, newValue);
+                return;
+            });
+            
             parseNamedArg(descriptor.getName()).ifPresent(arg -> {
                 namedArgModified(arg, oldValue, newValue);
                 return;
             });
             
-            parseAppRelationshipArg(descriptor.getName()).ifPresent(arg -> {
-                appRelationshipModified(arg, oldValue, newValue);
+            parsePositionalArg(descriptor.getName()).ifPresent(arg -> {
+                positionalArgModified(arg, oldValue, newValue);
                 return;
             });
             
-            parsePositionalArg(descriptor.getName()).ifPresent(arg -> {
-                positionalArgModified(arg, oldValue, newValue);
+            parseAppRelationshipArg(descriptor.getName()).ifPresent(arg -> {
+                appRelationshipModified(arg, oldValue, newValue);
             });
         }
     }
@@ -165,21 +208,18 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
      */
     @Override
     protected void init(ProcessorInitializationContext context) {
-        super.init(context);
-        
         this.appNamesPropDescriptor = createAppNamesProperty();
-        List<PropertyDescriptor> list = Stream.concat(Stream.of(this.appNamesPropDescriptor), 
-                                                      STATIC_PROP_DESCR.stream())
-                      .collect(Collectors.toList());
-        this.propDescriptors = Collections.unmodifiableList(list);
-    }
 
+        super.init(context);
+    }
+    
     /* (non-Javadoc)
-     * @see org.apache.nifi.components.AbstractConfigurableComponent#getSupportedPropertyDescriptors()
+     * @see com.thinkbiganalytics.nifi.processor.BaseProcessor#getRelationships()
      */
     @Override
-    protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return this.propDescriptors;
+    public Set<Relationship> getRelationships() {
+        return Stream.concat(super.getRelationships().stream(), this.dynamicRelationships.get().stream())
+                        .collect(Collectors.toSet());
     }
 
     /* (non-Javadoc)
@@ -195,6 +235,7 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
     private Optional<AppArgument> parseAppArg(final String propName) {
         return Stream.<Supplier<Optional<? extends AppArgument>>>of(() -> parseAppClassArg(propName), 
                                                                     () -> parseAppJarsArg(propName), 
+                                                                    () -> parseAppArgs(propName), 
                                                                     () -> parseAppRelationshipArg(propName), 
                                                                     () -> parseNamedArg(propName), 
                                                                     () -> parsePositionalArg(propName))
@@ -233,6 +274,14 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
             ensureAppCommand(arg.appName).appJars = newValue;
         }
     }
+    
+    private void appArgsModified(AppArgument arg, String oldValue, String newValue) {
+        if (StringUtils.isBlank(newValue)) {
+            ensureAppCommand(arg.appName).args = null;
+        } else {
+            ensureAppCommand(arg.appName).args = newValue;
+        }
+    }
 
     private void appClassModified(AppArgument arg, String oldValue, String newValue) {
         if (StringUtils.isBlank(newValue)) {
@@ -259,7 +308,7 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
                         .build();
         
         if (rel != null) {
-            this.relationships.getAndUpdate(set -> {
+            this.dynamicRelationships.getAndUpdate(set -> {
                 Set<Relationship> newSet = new HashSet<>(set);
                 newSet.add(rel);
                 return Collections.unmodifiableSet(newSet);
@@ -279,7 +328,7 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
         final Relationship rel = arg.successful ? command.successeRelationship : command.failureRelationship;
         
         if (rel != null) {
-            this.relationships.getAndUpdate(set -> {
+            this.dynamicRelationships.getAndUpdate(set -> {
                 Set<Relationship> newSet = new HashSet<>(set);
                 newSet.remove(rel);
                 return Collections.unmodifiableSet(newSet);
@@ -360,6 +409,10 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
         return getMatched(propName, APP_JARS_PATTERN, 1).map(appName -> new AppArgument(appName, "jars"));
     }
     
+    protected Optional<AppArgument> parseAppArgs(String propName) {
+        return getMatched(propName, APP_ARGS_PATTERN, 1).map(appName -> new AppArgument(appName, "args"));
+    }
+    
     protected Optional<String> getMatched(String value, Pattern pattern, int groupIdx) {
         Matcher matcher = pattern.matcher(value);
         if (matcher.matches()) {
@@ -369,7 +422,7 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
         }
     }
 
-    private List<String> parseAppNames(String listValue) {
+    protected List<String> parseAppNames(String listValue) {
         return Arrays.stream(listValue.split("\\s*,\\s*")).collect(Collectors.toList());
     }
 
@@ -493,10 +546,11 @@ public class ExecuteMultiSparkJobs extends AbstractNiFiProcessor {
         private volatile String appJars;
         private volatile String successValue;
         private volatile String failureValue;
-        private volatile Relationship successeRelationship;
-        private volatile Relationship failureRelationship;
+        private volatile String args;
         private Map<PositionalArgument, String> positionalArgs = new ConcurrentHashMap<>();
         private Map<NamedArgument, String> namedArgs = new ConcurrentHashMap<>();
+        private volatile Relationship successeRelationship;
+        private volatile Relationship failureRelationship;
         
         public AppCommand(String appName) {
             this.name = appName;

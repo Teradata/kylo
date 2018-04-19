@@ -727,6 +727,20 @@
       <outputDirectory>setup/nifi</outputDirectory>
       <fileMode>755</fileMode>
     </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-multi-exec/spark-multi-exec-spark-v1/target/kylo-spark-multi-exec-spark-v1-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-multi-exec/spark-multi-exec-spark-v2/target/kylo-spark-multi-exec-spark-v2-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
 
     <file>
       <source>${project.parent.basedir}/scripts/post-install.sh</source>
