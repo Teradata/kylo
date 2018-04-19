@@ -199,7 +199,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     }());
     exports.DefineFeedGeneralInfoController = DefineFeedGeneralInfoController;
     angular.module(moduleName).
-        component("thinkbigDefineFeedGeneralInfao", {
+        component("thinkbigDefineFeedGeneralInfo", {
         bindings: {
             stepIndex: '@'
         },

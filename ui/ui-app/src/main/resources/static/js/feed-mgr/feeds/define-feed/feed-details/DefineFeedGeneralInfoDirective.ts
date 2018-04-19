@@ -217,7 +217,7 @@ export class DefineFeedGeneralInfoController {
 }
 
 angular.module(moduleName).
-    component("thinkbigDefineFeedGeneralInfao", {
+    component("thinkbigDefineFeedGeneralInfo", {
         bindings: {
             stepIndex: '@'
         },

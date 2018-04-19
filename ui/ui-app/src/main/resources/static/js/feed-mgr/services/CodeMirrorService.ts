@@ -20,7 +20,7 @@ populateCodeMirrorTablesAndColumns(tableColumns: any){
             var tablesObj: any = {};  //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
             //TODO need to figure out   how to expose the database names to the codemirror editor
 
-            angular.forEach(tableColumns, function(row: any) {
+            tableColumns.forEach((row: any) => {
                 var db = row.databaseName;
                 var dbTable = row.databaseName + "." + row.tableName;
                 if (databaseGroup[db] === undefined) {

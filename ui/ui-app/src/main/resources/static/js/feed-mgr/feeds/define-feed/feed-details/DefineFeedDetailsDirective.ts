@@ -76,7 +76,7 @@ export class DefineFeedDetailsController {
     constructor(private $scope: any, private $http: any, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
         , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
-
+        var self = this;
         this.model = FeedService.createFeedModel;
 
         var watchers = [];
@@ -90,10 +90,10 @@ export class DefineFeedDetailsController {
                 this.validate();
             }
         });
-
-        var inputProcessorIdWatch = $scope.$watch(function () {
+        
+        var inputProcessorIdWatch = $scope.$watch(() =>{
             return this.inputProcessorId;
-        }, function (newVal: any, oldVal: any) {
+        },(newVal: any, oldVal: any) =>{
             if (newVal != null && this.initialInputProcessorId == null) {
                 this.initialInputProcessorId = newVal;
             }
@@ -103,20 +103,20 @@ export class DefineFeedDetailsController {
             this.validate();
         });
 
-        var systemFeedNameWatch = $scope.$watch(function () {
+        var systemFeedNameWatch = $scope.$watch(() => {
             return this.model.systemFeedName;
-        }, function (newVal: any) {
+        }, (newVal: any) => {
             this.validate();
         });
 
-        var templateIdWatch = $scope.$watch(function () {
+        var templateIdWatch = $scope.$watch(() => {
             return this.model.templateId;
-        }, function (newVal: any) {
+        }, (newVal: any) => {
             this.loading = true;
             this.getRegisteredTemplate();
         });
 
-        $scope.$on('$destroy', function () {
+        $scope.$on('$destroy', () => {
             systemFeedNameWatch();
             templateIdWatch();
             inputProcessorIdWatch();
@@ -129,10 +129,10 @@ export class DefineFeedDetailsController {
          *
          * @param {Object} property the property to be updated
          */
-    findControllerServicesForProperty(property: any) {
+    // findControllerServicesForProperty(property: any) {
 
-        this.FeedService.findControllerServicesForProperty(property);
-    }
+    //     this.FeedService.findControllerServicesForProperty(property);
+    // }
 
     matchInputProcessor(inputProcessor: any, inputProcessors: any) {
 
@@ -141,7 +141,7 @@ export class DefineFeedDetailsController {
             return undefined;
         }
 
-        var matchingInput = _.find(inputProcessors, function (input: any) {
+        var matchingInput = _.find(inputProcessors, (input: any) => {
             if (input.id == inputProcessor.id) {
                 return true;
             }
@@ -165,10 +165,10 @@ export class DefineFeedDetailsController {
             _.chain(this.inputProcessors.concat(this.model.nonInputProcessors))
                 .pluck("properties")
                 .flatten(true)
-                .filter(function (property) {
+                .filter((property) => {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
-                .each(this.findControllerServicesForProperty);
+                .each(this.FeedService.findControllerServicesForProperty);
 
         } else {
             this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
@@ -192,7 +192,7 @@ export class DefineFeedDetailsController {
             this.inputProcessorId = this.inputProcessors[0].id;
         }
         // Skip this step if it's empty
-        if (this.inputProcessors.length === 0 && !_.some(this.nonInputProcessors, function (processor: any) {
+        if (this.inputProcessors.length === 0 && !_.some(this.nonInputProcessors, (processor: any) => {
             return processor.userEditable
         })) {
             var step = this.StepperService.getStep("DefineFeedStepper", parseInt(this.stepIndex));
@@ -205,10 +205,10 @@ export class DefineFeedDetailsController {
         _.chain(template.inputProcessors.concat(template.nonInputProcessors))
             .pluck("properties")
             .flatten(true)
-            .filter(function (property) {
+            .filter((property) => {
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
-            .each(this.findControllerServicesForProperty);
+            .each(this.FeedService.findControllerServicesForProperty);
 
         this.loading = false;
         this.validate();
@@ -221,14 +221,10 @@ export class DefineFeedDetailsController {
          */
     getRegisteredTemplate() {
         if (this.model.templateId != null && this.model.templateId != '') {
-            var successFn = function (response: any) {
-                this.initializeProperties(response.data);
-            };
-            var errorFn = function (err: any) {
-
-            };
             var promise = this.$http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(this.model.templateId), { params: { feedEdit: true, allProperties: true } });
-            promise.then(successFn, errorFn);
+            promise.then( (response: any) => {
+                this.initializeProperties(response.data);
+            }, (err: any) =>{});
             return promise;
         }
     }
@@ -241,6 +237,12 @@ export class DefineFeedDetailsController {
             && (this.inputProcessors.length == 0 || (this.inputProcessors.length > 0 && this.inputProcessorId != null));
     }
 
+    clonedAndInputChanged(inputProcessorId:any) {
+        return (this.model.cloned == true && this.inputChangedCounter > 1);
+    }
+    notCloned() {
+        return (angular.isUndefined(this.model.cloned) || this.model.cloned == false);
+    }
     /**
          * Updates the details when the processor is changed.
          *
@@ -248,7 +250,7 @@ export class DefineFeedDetailsController {
          */
     updateInputProcessor(processorId: any) {
         // Find the processor object
-        var processor = _.find(this.inputProcessors, function (processor: any) {
+        var processor = _.find(this.inputProcessors, (processor: any) => {
             return (processor.processorId === processorId);
         });
         if (angular.isUndefined(processor)) {
@@ -257,13 +259,7 @@ export class DefineFeedDetailsController {
 
         this.inputChangedCounter++;
 
-        var clonedAndInputChanged = function (inputProcessorId: any) {
-            return (this.model.cloned == true && this.inputChangedCounter > 1);
-        }
-
-        var notCloned = function () {
-            return (angular.isUndefined(this.model.cloned) || this.model.cloned == false);
-        }
+        
 
         // Determine render type
         var renderGetTableData = this.FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, this.model.nonInputProcessors);
@@ -278,7 +274,7 @@ export class DefineFeedDetailsController {
             this.model.options.skipHeader = true;
             this.model.allowSkipHeaderOption = true;
 
-        } else if (this.model.templateTableOption != "DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId) || notCloned())) {
+        } else if (this.model.templateTableOption != "DATA_TRANSFORMATION" && (this.clonedAndInputChanged(processorId) || this.notCloned())) {
             this.model.table.method = 'SAMPLE_FILE';
             this.model.table.tableSchema.fields = [];
         }

@@ -33,6 +33,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.loading = false;
             this.stepperController = null;
             this.inputProcessor = [];
+            var self = this;
             this.model = FeedService.createFeedModel;
             var watchers = [];
             this.codemirrorRenderTypes = RegisterTemplateService.codemirrorRenderTypes;
@@ -43,26 +44,26 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }
             });
             var inputProcessorIdWatch = $scope.$watch(function () {
-                return this.inputProcessorId;
+                return _this.inputProcessorId;
             }, function (newVal, oldVal) {
-                if (newVal != null && this.initialInputProcessorId == null) {
-                    this.initialInputProcessorId = newVal;
+                if (newVal != null && _this.initialInputProcessorId == null) {
+                    _this.initialInputProcessorId = newVal;
                 }
-                this.updateInputProcessor(newVal);
+                _this.updateInputProcessor(newVal);
                 //mark the next step as not visited.. force the user to go to the next step
-                this.stepperController.resetStep(parseInt(this.stepIndex) + 1);
-                this.validate();
+                _this.stepperController.resetStep(parseInt(_this.stepIndex) + 1);
+                _this.validate();
             });
             var systemFeedNameWatch = $scope.$watch(function () {
-                return this.model.systemFeedName;
+                return _this.model.systemFeedName;
             }, function (newVal) {
-                this.validate();
+                _this.validate();
             });
             var templateIdWatch = $scope.$watch(function () {
-                return this.model.templateId;
+                return _this.model.templateId;
             }, function (newVal) {
-                this.loading = true;
-                this.getRegisteredTemplate();
+                _this.loading = true;
+                _this.getRegisteredTemplate();
             });
             $scope.$on('$destroy', function () {
                 systemFeedNameWatch();
@@ -79,9 +80,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              *
              * @param {Object} property the property to be updated
              */
-        DefineFeedDetailsController.prototype.findControllerServicesForProperty = function (property) {
-            this.FeedService.findControllerServicesForProperty(property);
-        };
+        // findControllerServicesForProperty(property: any) {
+        //     this.FeedService.findControllerServicesForProperty(property);
+        // }
         DefineFeedDetailsController.prototype.matchInputProcessor = function (inputProcessor, inputProcessors) {
             if (inputProcessor == null) {
                 //input processor is null when feed is being created
@@ -112,7 +113,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     .filter(function (property) {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
-                    .each(this.findControllerServicesForProperty);
+                    .each(this.FeedService.findControllerServicesForProperty);
             }
             else {
                 this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
@@ -148,7 +149,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 .filter(function (property) {
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
-                .each(this.findControllerServicesForProperty);
+                .each(this.FeedService.findControllerServicesForProperty);
             this.loading = false;
             this.validate();
         };
@@ -158,14 +159,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {HttpPromise}
              */
         DefineFeedDetailsController.prototype.getRegisteredTemplate = function () {
+            var _this = this;
             if (this.model.templateId != null && this.model.templateId != '') {
-                var successFn = function (response) {
-                    this.initializeProperties(response.data);
-                };
-                var errorFn = function (err) {
-                };
                 var promise = this.$http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(this.model.templateId), { params: { feedEdit: true, allProperties: true } });
-                promise.then(successFn, errorFn);
+                promise.then(function (response) {
+                    _this.initializeProperties(response.data);
+                }, function (err) { });
                 return promise;
             }
         };
@@ -175,6 +174,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         DefineFeedDetailsController.prototype.validate = function () {
             this.isValid = this.loading == false && this.model.systemFeedName != '' && this.model.systemFeedName != null && this.model.templateId != null
                 && (this.inputProcessors.length == 0 || (this.inputProcessors.length > 0 && this.inputProcessorId != null));
+        };
+        DefineFeedDetailsController.prototype.clonedAndInputChanged = function (inputProcessorId) {
+            return (this.model.cloned == true && this.inputChangedCounter > 1);
+        };
+        DefineFeedDetailsController.prototype.notCloned = function () {
+            return (angular.isUndefined(this.model.cloned) || this.model.cloned == false);
         };
         /**
              * Updates the details when the processor is changed.
@@ -190,12 +195,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return;
             }
             this.inputChangedCounter++;
-            var clonedAndInputChanged = function (inputProcessorId) {
-                return (this.model.cloned == true && this.inputChangedCounter > 1);
-            };
-            var notCloned = function () {
-                return (angular.isUndefined(this.model.cloned) || this.model.cloned == false);
-            };
             // Determine render type
             var renderGetTableData = this.FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(processor, this.model.nonInputProcessors);
             if (renderGetTableData) {
@@ -207,7 +206,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 this.model.options.skipHeader = true;
                 this.model.allowSkipHeaderOption = true;
             }
-            else if (this.model.templateTableOption != "DATA_TRANSFORMATION" && (clonedAndInputChanged(processorId) || notCloned())) {
+            else if (this.model.templateTableOption != "DATA_TRANSFORMATION" && (this.clonedAndInputChanged(processorId) || this.notCloned())) {
                 this.model.table.method = 'SAMPLE_FILE';
                 this.model.table.tableSchema.fields = [];
             }
