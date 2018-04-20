@@ -33,7 +33,7 @@ public class ProfilerConfiguration implements Serializable {
     private Integer decimalDigitsToDisplayConsoleOutput = 4;
     private String inputAndOutputTablePartitionKey = "partitionKey";
     private String inputTablePartitionColumnName = "processing_dttm";
-    private Integer numberOfTopNValues = 3;
+    private Integer numberOfTopNValues = 5;
     private String outputDbName = "default";
     private String outputTableName = "profilestats";
     private String outputTablePartitionColumnName = "processing_dttm";

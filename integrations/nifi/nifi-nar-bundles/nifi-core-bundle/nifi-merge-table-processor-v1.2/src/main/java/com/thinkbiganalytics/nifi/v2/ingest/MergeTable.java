@@ -52,7 +52,7 @@ public class MergeTable extends AbstractMergeTable {
 
 
     public MergeTable() {
-      super();
+        super();
     }
 
     @Override
@@ -67,8 +67,7 @@ public class MergeTable extends AbstractMergeTable {
         if(hiveConnectionPool != null){
             getLogger().info("Returning Connection from HiveConnectionPool");
             return hiveConnectionPool.getConnection();
-        }
-        else {
+        } else {
             getLogger().info("Returning Connection from ThriftConnectionPool");
             return thriftService.getConnection();
         }

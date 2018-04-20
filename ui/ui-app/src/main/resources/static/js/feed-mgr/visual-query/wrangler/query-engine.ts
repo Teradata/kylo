@@ -307,6 +307,15 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     }
 
     /**
+     * Gets the cols
+     *
+     * @returns the rows or {@code null} if the transformation has not been applied
+     */
+    getCols(): QueryResultColumn[] | null {
+        return this.getState().columns;
+    }
+
+    /**
      * Gets the Spark script.
      *
      * @param start - the index of the first transformation

@@ -34,6 +34,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to Ops Manager
@@ -41,6 +42,9 @@ import java.io.IOException;
 public class KyloPersistentProvenanceEventRepository extends PersistentProvenanceRepository implements ProvenanceRepository {
 
     private static final Logger log = LoggerFactory.getLogger(KyloPersistentProvenanceEventRepository.class);
+
+    private InetSocketAddress nodeIdAddress;
+    private boolean isClustered = false;
 
 private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new KyloProvenanceEventRepositoryUtil();
 
@@ -51,6 +55,8 @@ private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new Ky
 
     public KyloPersistentProvenanceEventRepository(NiFiProperties nifiProperties) throws IOException {
         super(nifiProperties);
+        nodeIdAddress =nifiProperties.getNodeApiAddress();
+        isClustered  = nifiProperties.isClustered();
         init();
     }
 
@@ -61,7 +67,7 @@ private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new Ky
 
 
     private void init() {
-        provenanceEventRepositoryUtil.init();
+        provenanceEventRepositoryUtil.init(nodeIdAddress,isClustered);
         //initialize the manager to gather and send the statistics
         FeedStatisticsManager.getInstance();
     }

@@ -9,6 +9,7 @@ import {DomainType, DomainTypesService} from "../../services/DomainTypesService"
 import {DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
+import {IPromise} from "angular";
 
 declare const CodeMirror: any;
 
@@ -294,7 +295,8 @@ export class TransformDataComponent implements OnInit {
             controller: "VisualQueryProfileStatsController",
             fullscreen: true,
             locals: {
-                profile: self.engine.getProfile()
+                profile: angular.copy( self.engine.getProfile() ),
+                transformController: self
             },
             parent: angular.element(document.body),
             templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
@@ -451,11 +453,61 @@ export class TransformDataComponent implements OnInit {
     };
 
     /**
+     * Display error dialog
+     */
+    showError(message: string) : void {
+        let self = this;
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
+
+                /**
+                 * Additional details about the error.
+                 */
+                detailMessage = message;
+
+                /**
+                 * Indicates that the detail message should be shown.
+                 */
+                showDetail = false;
+
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
+
+                /**
+                 * Hides this dialog.
+                 */
+                hide() {
+                    this.$mdDialog.hide();
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
+                  <md-dialog arial-label="error executing the query" style="max-width: 640px;">
+                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
+                      <h2 class="md-title">Error executing the query</h2>
+                      <p>There was a problem executing the query.</p>
+                      <md-button ng-if="!dialog.showDetail" ng-click="dialog.showDetail = true" style="margin: 0; padding: 0;">Show more</md-button>
+                      <p ng-if="dialog.showDetail">{{ dialog.detailMessage }}</p>
+                    </md-dialog-content>
+                    <md-dialog-actions>
+                      <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
+                    </md-dialog-actions>
+                  </md-dialog>
+                `
+        });
+
+    }
+
+    /**
      * Query Hive using the query from the previous step. Set the Grids rows and columns.
      *
      * @return {Promise} a promise for when the query completes
      */
-    query() {
+    query(refresh : boolean = true) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
 
@@ -480,60 +532,18 @@ export class TransformDataComponent implements OnInit {
             self.isValid = true;
 
             //store the result for use in the commands
-            self.updateGrid();
+            if (refresh) self.updateGrid();
 
             deferred.resolve();
         };
         const errorCallback = function (message: string) {
-            // Display error message
-            self.$mdDialog.show({
-                clickOutsideToClose: true,
-                controller: class {
-
-                    /**
-                     * Additional details about the error.
-                     */
-                    detailMessage = message;
-
-                    /**
-                     * Indicates that the detail message should be shown.
-                     */
-                    showDetail = false;
-
-                    static readonly $inject = ["$mdDialog"];
-
-                    constructor(private $mdDialog: angular.material.IDialogService) {
-                    }
-
-                    /**
-                     * Hides this dialog.
-                     */
-                    hide() {
-                        this.$mdDialog.hide();
-                    }
-                },
-                controllerAs: "dialog",
-                parent: angular.element("body"),
-                template: `
-                  <md-dialog arial-label="error executing the query" style="max-width: 640px;">
-                    <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Error executing the query</h2>
-                      <p>There was a problem executing the query.</p>
-                      <md-button ng-if="!dialog.showDetail" ng-click="dialog.showDetail = true" style="margin: 0; padding: 0;">Show more</md-button>
-                      <p ng-if="dialog.showDetail">{{ dialog.detailMessage }}</p>
-                    </md-dialog-content>
-                    <md-dialog-actions>
-                      <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
-                    </md-dialog-actions>
-                  </md-dialog>
-                `
-            });
+            self.showError(message);
 
             // Reset state
             self.executingQuery = false;
             self.engine.pop();
             self.functionHistory.pop();
-            self.refreshGrid();
+            if (refresh) self.refreshGrid();
 
             deferred.reject(message);
         };
@@ -541,7 +551,7 @@ export class TransformDataComponent implements OnInit {
             self.queryProgress = progress * 100;
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
-                self.updateGrid();
+                if (refresh) self.updateGrid();
             }
         };
 
@@ -647,19 +657,19 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula the formula
      * @param {TransformContext} context the UI context for the transformation
      */
-    addFunction(formula: any, context: any) {
+    addFunction(formula: any, context: any) : IPromise<any> {
         this.addFilters();
-        this.pushFormula(formula, context, true);
+        return this.pushFormula(formula, context, true);
     };
+
 
     /**
      * Appends the specified formula to the current script.
      *
      * @param {string} formula - the formula
-     * @param {TransformContext} context - the UI context for the transformation
-     * @param {boolean} doQuery - true to immediately execute the query
      */
-    pushFormula(formula: any, context: any, doQuery: boolean = false) {
+    pushFormulaToEngine(formula: any, context: any) : boolean {
+
         // Covert to a syntax tree
         this.ternServer.server.addFile("[doc]", formula);
         let file = this.ternServer.server.findFile("[doc]");
@@ -667,6 +677,7 @@ export class TransformDataComponent implements OnInit {
         // Add to the Spark script
         try {
             this.engine.push(file.ast, context);
+            return true;
         } catch (e) {
             let alert = this.$mdDialog.alert()
                 .parent($('body'))
@@ -677,15 +688,82 @@ export class TransformDataComponent implements OnInit {
                 .ok("Got it!");
             this.$mdDialog.show(alert);
             console.log(e);
-            return;
+            return false;
         }
+    };
 
-        // Add to function history
-        this.functionHistory.push(context);
+    /**
+     * Appends the specified formula to the current script.
+     *
+     * @param {string} formula - the formula
+     * @param {TransformContext} context - the UI context for the transformation
+     * @param {boolean} doQuery - true to immediately execute the query
+     * @param {boolean} refreshGrid - true to refresh grid
+     */
+    pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
+        const self = this;
+        const deferred = this.$q.defer();
 
-        if (doQuery || this.engine.getRows() === null) {
-            this.query();
-        }
+        setTimeout(function () {
+            if (self.pushFormulaToEngine(formula, context)) {
+                // Add to function history
+                self.functionHistory.push(context);
+
+                if (doQuery || self.engine.getRows() === null) {
+                    return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                }
+            }
+            return deferred.reject();
+        },10);
+
+        return deferred.promise;
+    };
+
+    /**
+     * Generates and displays a categorical histogram
+     *
+     * @return {Promise} a promise for when the query completes
+     */
+    showAnalyzeColumn(fieldName: string) : any {
+
+        const self = this;
+
+        let profileStats = this.engine.getProfile();
+
+        const deferred = this.$q.defer();
+
+        self.$mdDialog.show({
+
+            controller: class {
+
+                /**
+                 * Additional details about the error.
+                 */
+                profile = profileStats;
+                fieldName = fieldName;
+
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+
+                }
+
+                /**
+                 * Hides this dialog.
+                 */
+                hide() {
+                    this.$mdDialog.hide();
+                }
+            },
+            controllerAs: "dialog",
+            templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+            parent: angular.element(document.body),
+            clickOutsideToClose: false,
+            fullscreen: false,
+            locals: {
+            }
+        });
+
     };
 
     /**

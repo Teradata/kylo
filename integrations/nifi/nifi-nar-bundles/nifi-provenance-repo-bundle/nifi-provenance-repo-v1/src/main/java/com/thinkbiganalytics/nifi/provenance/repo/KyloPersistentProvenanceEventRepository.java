@@ -33,6 +33,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 
 /**
  * Kylo Provenance Event Repository This will intercept NiFi Provenance Events via the KyloRecordWriterDelegate and send them to Ops Manager
@@ -43,6 +44,9 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
 
     private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new KyloProvenanceEventRepositoryUtil();
+
+    private InetSocketAddress nodeIdAddress;
+    private boolean isClustered = false;
 
 
 
@@ -64,7 +68,7 @@ public class KyloPersistentProvenanceEventRepository extends PersistentProvenanc
 
 
     private void init() {
-        provenanceEventRepositoryUtil.init();
+        provenanceEventRepositoryUtil.init(nodeIdAddress,isClustered);
         //initialize the manager to gather and send the statistics
         FeedStatisticsManager.getInstance();
     }

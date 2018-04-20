@@ -89,7 +89,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.selectedColumn = null;
             this.fieldNamesUniqueRetryAmount = 0;
             this.showMethodPanel = true;
-            this.showTablePanel = true;
             this.uploadBtnDisabled = false;
             this.partitionFormulas = [];
             this.feedFormat = '';
@@ -125,6 +124,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // console.log("onDataTransformSchemaLoaded");
                 self.syncFeedsColumns();
                 validate(undefined);
+                self.calcTableState();
+                self.expandSchemaPanel();
             }
             this.calcTableState = function () {
                 // console.log("calcTableState");
@@ -132,9 +133,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
                 self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
                 self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
-                self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
             };
-            this.calcTableState();
             /*
             Create columns for tracking changes between original source and the target table schema
              */

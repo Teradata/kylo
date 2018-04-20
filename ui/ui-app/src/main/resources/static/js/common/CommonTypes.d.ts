@@ -10,6 +10,7 @@ declare namespace Common {
     export interface LabelValue {
         label:string;
         value:string;
+        description?:string;
     }
 
 }

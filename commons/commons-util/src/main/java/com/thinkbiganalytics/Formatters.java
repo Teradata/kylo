@@ -36,7 +36,7 @@ import java.util.List;
 /**
  * Defines common time-related formatter's and parsing functionality.
  */
-public interface Formatters {
+public class Formatters {
 
     static final PeriodFormatter PERIOD_FORMATTER = PeriodFormat.getDefault();
     static final DateTimeFormatter ISO_DATE_TIME_FORMATTER = ISODateTimeFormat.dateTimeParser();
@@ -52,7 +52,7 @@ public interface Formatters {
     /**
      * A list of date/time-related formatters in order of most specific to least specific
      */
-    static final DateTimeFormatter[] DATE_TIME_FORMATTERS
+   public static final DateTimeFormatter[] DATE_TIME_FORMATTERS
         = new DateTimeFormatter[]{
         ISO_DATE_TIME_FORMATTER_NO_MILLIS,
         ISO_DATE_TIME_FORMATTER,
@@ -65,7 +65,7 @@ public interface Formatters {
     /**
      * convert the String to a DateTime field using the defined formatters
      */
-    static DateTime parseDateTime(String timeStr) {
+    public static DateTime parseDateTime(String timeStr) {
         for (DateTimeFormatter formatter : DATE_TIME_FORMATTERS) {
             try {
                 return formatter.parseDateTime(timeStr);
@@ -81,7 +81,7 @@ public interface Formatters {
      *
      * @return the string format as "yyyy-MM-dd'T'HH:mm:ssZZ" of the DateTime object passed in
      */
-    static String print(DateTime time) {
+    public static String print(DateTime time) {
         return ISO_DATE_TIME_FORMATTER_NO_MILLIS.print(time);
     }
 
@@ -90,7 +90,7 @@ public interface Formatters {
      *
      * @return a list of strings with various formatting
      */
-    static Collection<String> getDateTimeExamples() {
+    public static Collection<String> getDateTimeExamples() {
         DateTime time = DateTime.now();
         List<String> examples = new ArrayList<>();
         examples.add(ISO_DATE_TIME_FORMATTER_NO_MILLIS.print(time));
@@ -102,7 +102,7 @@ public interface Formatters {
     }
 
 
-    class MillisDateTimeFormat extends DateTimeFormatter {
+    public static class MillisDateTimeFormat extends DateTimeFormatter {
 
         public MillisDateTimeFormat() {
             super(null, null);

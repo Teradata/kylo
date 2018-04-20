@@ -37,6 +37,15 @@ import javax.ws.rs.WebApplicationException;
  */
 public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcessGroupsRestClient {
 
+    /**
+     * REST client for communicating with NiFi
+     */
+    protected final NiFiRestClient client;
+
+    public AbstractNiFiProcessGroupsRestClient(NiFiRestClient client) {
+        this.client = client;
+    }
+
     @Nonnull
     @Override
     public Optional<ProcessGroupDTO> delete(@Nonnull final ProcessGroupDTO processGroup) {
@@ -74,7 +83,6 @@ public abstract class AbstractNiFiProcessGroupsRestClient implements NiFiProcess
     protected Optional<ProcessGroupDTO> deleteWithRetries(@Nonnull final ProcessGroupDTO processGroup, final int retries, final int timeout, @Nonnull final TimeUnit timeUnit) {
         // Stop the process group
         schedule(processGroup.getId(), processGroup.getParentGroupId(), NiFiComponentState.STOPPED);
-
         // Try to delete the process group
         Exception lastError = null;
 

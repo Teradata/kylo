@@ -47,7 +47,7 @@ export class QueryEngineFactory {
     /**
      * Constructs a {@code QueryEngineFactory}.
      */
-    constructor($$angularInjector: Injector, private $ocLazyLoad: ocLazyLoad) {
+    constructor($$angularInjector: Injector, private $ocLazyLoad: oc.ILazyLoad) {
         this.wrangler = Observable.fromPromise($$angularInjector.get(Compiler).compileModuleAndAllComponentsAsync(WranglerModule))
             .map(factories => factories.ngModuleFactory.create($$angularInjector))
             .do(wrangler => $$wranglerInjector = wrangler.injector)

@@ -22,6 +22,11 @@ const PIXELS = "px";
 export class VisualQueryPainterService extends fattable.Painter {
 
     /**
+     * Maximum display length for column context functions before they are ellipses (asthetics)
+     */
+    static readonly MAX_DISPLAY_LENGTH = 25;
+
+    /**
      * Left and right padding for normal columns.
      */
     static readonly COLUMN_PADDING = 5;
@@ -195,7 +200,6 @@ export class VisualQueryPainterService extends fattable.Painter {
         } else {
             cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
             cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            cell.i
         }
 
         // Set style
@@ -209,8 +213,6 @@ export class VisualQueryPainterService extends fattable.Painter {
             cellDiv.className = "";
         }
 
-        cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
-
         // Set contents
         if (cell === null) {
             cellDiv.textContent = "";
@@ -221,6 +223,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
 
         if (cell !== null) {
+            cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
+
             angular.element(cellDiv)
                 .data("column", cell.column)
                 .data("validation", cell.validation);
@@ -388,7 +392,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : cellDiv.innerText;
-        $scope.displayValue = ($scope.value.length > 25 ? $scope.value.substring(0,25) + "...": $scope.value)
+        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
 
         // Update position
         this.menuPanel.updatePosition(

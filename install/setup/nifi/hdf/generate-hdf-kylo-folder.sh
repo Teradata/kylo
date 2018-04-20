@@ -30,6 +30,8 @@ mkdir ./nifi-kylo/feed_flowfile_cache
 cp $KYLO_SETUP_FOLDER/nifi/hdf/install-kylo-hdf-components.sh ./nifi-kylo
 cp $KYLO_SETUP_FOLDER/nifi/hdf/upgrade-nars-jars.sh ./nifi-kylo
 
+cp $KYLO_SETUP_FOLDER/nifi/hdf/upgrade-nars-jars.sh ./nifi-kylo
+
 tar -cvf nifi-kylo.tar ./nifi-kylo
 
 rm -rf ./nifi-kylo

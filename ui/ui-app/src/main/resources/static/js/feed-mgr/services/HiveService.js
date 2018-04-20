@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "moment"], function (require, exports, angular, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/module-name');
@@ -150,7 +150,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }
                 else {
                     //string is timestamp in millis UTC format
-                    // return new moment(parseInt(dateStr)).toDate();// TODO GREG
+                    return moment(parseInt(dateStr)).toDate(); // TODO GREG
                 }
             },
             getColumnNamesForQueryResult: function (queryResult) {

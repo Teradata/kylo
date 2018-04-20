@@ -126,6 +126,15 @@ var Dir = /** @class */ (function () {
     function () {
         this._isInitialized = true;
     };
+    /**
+     * @return {?}
+     */
+    Dir.prototype.ngOnDestroy = /**
+     * @return {?}
+     */
+    function () {
+        this.change.complete();
+    };
     Dir.decorators = [
         { type: _angular_core.Directive, args: [{
                     selector: '[dir]',

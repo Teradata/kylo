@@ -60,6 +60,7 @@ fi
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-validate-cleanse-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-validate-cleanse-jar-with-dependencies.jar
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-job-profiler-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
 ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-interpreter-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
+ln -f -s $NIFI_KYLO_FOLDER/lib/app/kylo-spark-merge-table-spark-v2-*-jar-with-dependencies.jar $HDF_NIFI_HOME_FOLDER/lib/app/kylo-spark-merge-table-jar-with-dependencies.jar
 
 
 echo "Updating permissions for the nifi sym links"
@@ -68,3 +69,4 @@ chown -h nifi:nifi $HDF_NIFI_HOME_FOLDER/lib/app/kylo*.jar
 
 
 echo "Update complete"
+

@@ -26,7 +26,9 @@ import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.nifi.CleanupStaleFeedRevisions;
 import com.thinkbiganalytics.feedmgr.nifi.NifiConnectionService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.TemplateConnectionUtil;
 import com.thinkbiganalytics.feedmgr.nifi.controllerservice.DBCPConnectionPoolService;
+import com.thinkbiganalytics.feedmgr.rest.model.TemplateRemoteInputPortConnections;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -135,6 +137,9 @@ public class NifiIntegrationRestController {
 
     @Inject
     private DatasourceService datasourceService;
+
+    @Inject
+    private TemplateConnectionUtil templateConnectionUtil;
 
     @GET
     @Path("/auto-align/{processGroupId}")
@@ -552,6 +557,16 @@ public class NifiIntegrationRestController {
     public Response getRunning() {
         boolean isRunning = nifiConnectionService.isNiFiRunning();
         return Response.ok(isRunning).build();
+    }
+
+
+    @GET
+    @Path("/root-input-ports")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the remote input ports")
+    public Response getRemoteInputPorts(){
+        Set<PortDTO> ports = templateConnectionUtil.getRootProcessGroupInputPorts();
+        return Response.ok(ports).build();
     }
 
 

@@ -647,9 +647,11 @@
     "views.query-table-header.sort-descending": "Sort Descending",
     "views.query-table-header.remove-sort": "Remove Sort",
     "views.query-table-header.hide-column": "Hide Column",
+    "views.query-table-header.clone-column": "Clone Column",
     "views.query-table-header.rename-column": "Rename Column",
     "views.query-table-header.filter": "Filter",
     "views.query-table-header.transform": "Transform",
+    "views.query-table-header.analyze": "Analyze...",
     "view.FeedService.Fss": "Feed successfully saved",
 
     "view.feed-stats-charts.Time": "Time",

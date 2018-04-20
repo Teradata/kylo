@@ -61,4 +61,12 @@ public interface NiFiConnectionsRestClient {
     Optional<ConnectionStatusEntity> getConnectionStatus(@Nonnull final String connectionId);
 
 
+    /**
+     * Update a Connection
+     * @param connectionDTO
+     * @return
+     */
+    Optional<ConnectionDTO> update(@Nonnull ConnectionDTO connectionDTO);
+
+
 }

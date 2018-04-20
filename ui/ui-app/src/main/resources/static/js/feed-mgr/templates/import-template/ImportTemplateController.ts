@@ -204,7 +204,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Flag to see if we should check and use remote input ports.
      * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
      */
-    remoteInputPortsCheckEnabled :boolean = false;
+    remoteInputPortsCheckEnabled :boolean = true;
 
     static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
 
@@ -307,6 +307,9 @@ export class ImportTemplateController implements ng.IController, OnInit {
             if (!responseData.valid || !responseData.success) {
                 //Validation Error.  Additional Input is needed by the end user
                 this.additionalInputNeeded = true;
+                this.importResultIcon = "error";
+                this.importResultIconColor = "#FF0000";
+                this.message = "Unable to import the template";
                 if (responseData.reusableFlowOutputPortConnectionsNeeded) {
                     this.importResultIcon = "warning";
                     this.importResultIconColor = "#FF9901";
@@ -367,31 +370,32 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     this.errorMap = errorMap;
                     this.errorCount = count;
                 }
-
-                if (count == 0) {
-                    this.showReorderList = responseData.zipFile;
-                    this.importResultIcon = "check_circle";
-                    this.importResultIconColor = "#009933";
-                    if (responseData.zipFile == true) {
-                        this.message = "Successfully imported and registered the template " + responseData.templateName;
-                    }
-                    else {
-                        this.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
-                    }
-                    this.resetImportOptions();
-                }
-                else {
-                    if (responseData.success) {
-                        this.resetImportOptions();
+                if(!this.additionalInputNeeded) {
+                    if (count == 0) {
                         this.showReorderList = responseData.zipFile;
-                        this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                        this.importResultIcon = "warning";
-                        this.importResultIconColor = "#FF9901";
+                        this.importResultIcon = "check_circle";
+                        this.importResultIconColor = "#009933";
+                        if (responseData.zipFile == true) {
+                            this.message = "Successfully imported and registered the template " + responseData.templateName;
+                        }
+                        else {
+                            this.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
+                        }
+                        this.resetImportOptions();
                     }
                     else {
-                        this.importResultIcon = "error";
-                        this.importResultIconColor = "#FF0000";
-                        this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        if (responseData.success) {
+                            this.resetImportOptions();
+                            this.showReorderList = responseData.zipFile;
+                            this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                            this.importResultIcon = "warning";
+                            this.importResultIconColor = "#FF9901";
+                        }
+                        else {
+                            this.importResultIcon = "error";
+                            this.importResultIconColor = "#FF0000";
+                            this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                        }
                     }
                 }
 
@@ -423,7 +427,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
             importComponents: angular.toJson(importComponentOptions)
         };
 
-
+        this.additionalInputNeeded = false;
         this.startUploadStatus();
 
         this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
@@ -632,7 +636,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
             this.nifiTemplateImportOption.continueIfExists = false;
             this.reusableTemplateImportOption.shouldImport = true;
             this.reusableTemplateImportOption.userAcknowledged = true;
-            this.remoteProcessGroupImportOption.shouldImport = true;
+            this.remoteProcessGroupImportOption.shouldImport = false;
             this.remoteProcessGroupImportOption.userAcknowledged = false;
         }
 
@@ -643,7 +647,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
     setNiFiClustered(): void {
-        this.nifiClustered = false;
         if(this.remoteInputPortsCheckEnabled) {
             this.$http.get(this.RestUrlService.NIFI_STATUS).then((response: angular.IHttpResponse<any>) => {
                 if (response.data.clustered) {
