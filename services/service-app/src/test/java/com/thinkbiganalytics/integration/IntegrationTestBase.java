@@ -346,8 +346,13 @@ public class IntegrationTestBase {
     protected final void runCommandOnRemoteSystem(final String command, String application) {
         String testInfrastructureType = System.getenv("TestInfrastructureType");
         if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
-            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", application);
-            String kubeCommand = String.format("kubectl exec $KUBECTL_POD_NAME -c %s %s", application, command);
+            String hadoopPodName = System.getenv("HadoopPodName");
+            String podAndApplicationName = application;
+            if(application.equals(APP_HADOOP)) {
+                podAndApplicationName = hadoopPodName;
+            }
+            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", podAndApplicationName);
+            String kubeCommand = String.format("kubectl exec $KUBECTL_POD_NAME -c %s %s", podAndApplicationName, command);
 
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
         }
