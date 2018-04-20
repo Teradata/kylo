@@ -29,7 +29,6 @@ import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import org.apache.spark.sql.sources.DataSourceRegister;
 import org.springframework.context.ApplicationContext;
 
-import java.util.Arrays;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -103,7 +102,4 @@ public class SparkUtilityController {
         return Response.ok(ImmutableMap.of("tables", tableSources, "downloads", downloadSources)).build();
     }
 
-    public void printBeans() {
-        System.out.println(Arrays.asList(ctx.getBeanDefinitionNames()));
-    }
 }
