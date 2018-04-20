@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.metadata;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import com.google.common.base.Supplier;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.model.TransformResult;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
 
 import org.apache.spark.storage.StorageLevel;
 
@@ -43,17 +44,24 @@ public class ShellTransformStage implements Supplier<TransformResult> {
     private final DataSet dataSet;
 
     /**
+     * Data set converter service
+     */
+    @Nonnull
+    private final DataSetConverterService converterService;
+
+    /**
      * Constructs a {@code ShellTransformStage}.
      */
-    public ShellTransformStage(@Nonnull final DataSet dataSet) {
+    public ShellTransformStage(@Nonnull final DataSet dataSet, @Nonnull final DataSetConverterService converterService) {
         this.dataSet = dataSet;
+        this.converterService = converterService;
     }
 
     @Override
     public TransformResult get() {
         final TransformResult result = new TransformResult();
         result.setDataSet(dataSet.persist(StorageLevel.MEMORY_ONLY()));
-        result.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(result.getDataSet().schema(), "").columns()));
+        result.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(result.getDataSet().schema(), "", converterService).columns()));
         return result;
     }
 }

@@ -26,11 +26,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.JobTrackerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
@@ -38,6 +40,7 @@ import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
@@ -344,12 +347,31 @@ public class SparkShellApp {
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
                                              final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem) {
-        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
+                                             final FileSystem fileSystem, final DataSetConverterService converterService) {
+        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
         service.setValidator(validator);
         return service;
     }
+
+    @Bean(name = "downloadsDatasourceExcludes")
+    public List<String> getDownloadsDatasourceExcludes(@Value("${spark.shell.datasources.exclude.downloads}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
+    @Bean(name = "tablesDatasourceExcludes")
+    public List<String> getTablesDatasourceExcludes(@Value("${spark.shell.datasources.exclude.tables}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
 }

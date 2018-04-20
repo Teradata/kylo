@@ -434,14 +434,14 @@ public class IntegrationTestBase {
     }
 
     protected void cleanup() {
-/*
+
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
-        */
+
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
 
     }
