@@ -32,7 +32,10 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.spark.sql.Column;
 import org.apache.spark.sql.DataFrameWriter;
+import org.apache.spark.sql.Row;
 import org.apache.spark.sql.types.StructType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Properties;
 import java.util.UUID;
@@ -44,6 +47,9 @@ import javax.annotation.Nullable;
  * Saves a transformation result.
  */
 public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
+
+    private static final Logger log = LoggerFactory.getLogger(SaveDataSetStage.class);
+
 
     /**
      * Hadoop FileSystem
@@ -94,7 +100,17 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
 
             writer.jdbc(request.getJdbc().getDatabaseConnectionUrl(), request.getTableName(), properties);
         } else if (request.getTableName() != null) {
-            writer.saveAsTable(request.getTableName());
+            if( request.getFormat().equalsIgnoreCase("csv")) {
+                log.info("Save Format = CSV");
+                transform.getDataSet().javaRDD().filter(new org.apache.spark.api.java.function.Function<Row, Boolean>() {
+                    @Override
+                    public Boolean call(Row row) throws Exception {
+                        String x = row.mkString();
+                        return ! x.isEmpty();
+                    }
+                });
+            }
+            writer.saveAsTable(request.getTableName()); // hmm..  is this efficient? (does it need to be? ) see top answer here -> https://stackoverflow.com/questions/30664008/how-to-save-dataframe-directly-to-hive
         } else {
             final String hadoopTmpDir = fs.getConf().get("hadoop.tmp.dir", "/tmp");
             final Path absolutePath = new Path(hadoopTmpDir, UUID.randomUUID().toString());
@@ -131,4 +147,5 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
 
         return dataset;
     }
+
 }

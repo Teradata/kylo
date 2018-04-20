@@ -47,7 +47,12 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
     /**
      * Spark data source names
      */
-    formats: string[];
+    downloadFormats: string[];
+
+    /**
+     * Spark table source names
+     */
+    tableFormats: string[];
 
     /**
      * HTML form
@@ -150,7 +155,8 @@ export class VisualQueryStoreComponent implements OnDestroy, OnInit {
         // Get list of Spark data sources
         const sparkSourcesPromise = this.$http.get<string[]>(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources")
             .then(response => {
-                this.formats = response.data.sort();
+                this.downloadFormats = response.data["downloads"].sort();
+                this.tableFormats = response.data["tables"].sort();
             });
 
         // Wait for completion

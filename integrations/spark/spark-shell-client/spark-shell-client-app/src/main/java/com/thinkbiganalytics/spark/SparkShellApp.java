@@ -26,6 +26,7 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.security.core.SecurityCoreConfig;
 import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
@@ -38,6 +39,7 @@ import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.spark.SparkConf;
@@ -352,4 +354,23 @@ public class SparkShellApp {
         service.setValidator(validator);
         return service;
     }
+
+    @Bean(name = "downloadsDatasourceExcludes")
+    public List<String> getDownloadsDatasourceExcludes(@Value("${spark.shell.datasources.exclude.downloads}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
+    @Bean(name = "tablesDatasourceExcludes")
+    public List<String> getTablesDatasourceExcludes(@Value("${spark.shell.datasources.exclude.tables}") String excludesStr) {
+        List<String> excludes = Lists.newArrayList();
+        if (StringUtils.isNotEmpty(excludesStr)) {
+            excludes.addAll(Arrays.asList(excludesStr.split(",")));
+        }
+        return excludes;
+    }
+
 }
