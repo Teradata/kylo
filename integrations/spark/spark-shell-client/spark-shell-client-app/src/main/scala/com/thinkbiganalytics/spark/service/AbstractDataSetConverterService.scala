@@ -1,39 +1,23 @@
-package com.thinkbiganalytics.spark.util
+package com.thinkbiganalytics.spark.service
 
 import org.apache.hadoop.hive.common.`type`.HiveDecimal
-import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters.Converter
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorConverters, ObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo
-import org.apache.spark.mllib.linalg.{Vector, VectorUDT}
 import org.apache.spark.sql.types._
 
 import scala.collection.{JavaConversions, mutable}
 
-/** Utility methods for `DataType`s. */
-object DataTypeUtils {
+abstract class AbstractDataSetConverterService extends DataSetConverterService {
 
-    /** Gets a converter for transforming objects from the specified Spark SQL type to a Hive type.
-      *
-      * @param dataType the Spark SQL type
-      * @return the converter to a Hive object
-      */
-    def getHiveObjectConverter(dataType: DataType): ObjectInspectorConverters.Converter = dataType match {
-        case ArrayType(_, _) => new Converter {
+    override def getHiveObjectConverter(dataType: DataType): ObjectInspectorConverters.Converter = dataType match {
+        case ArrayType(_, _) => new ObjectInspectorConverters.Converter {
             override def convert(o: Object): Object = o.asInstanceOf[mutable.WrappedArray[Object]].toArray
         }
-        case vectorType: VectorUDT => new Converter {
-            override def convert(o: Object): Object = o.asInstanceOf[Vector].toArray
-        }
-        case _ => new ObjectInspectorConverters.IdentityConverter
+        case _ => findHiveObjectConverter(dataType).getOrElse(new ObjectInspectorConverters.IdentityConverter)
     }
 
-    /** Converts the specified Spark SQL type to a Hive ObjectInspector.
-      *
-      * @param dataType the Spark SQL type
-      * @return the Hive ObjectInspector
-      */
-    def getHiveObjectInspector(dataType: DataType): ObjectInspector = dataType match {
+    override def getHiveObjectInspector(dataType: DataType): ObjectInspector = dataType match {
         // Primitive types
         case BinaryType => PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
         case BooleanType => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
@@ -60,10 +44,21 @@ object DataTypeUtils {
             val fieldInspectors = JavaConversions.seqAsJavaList(fields.map(f => getHiveObjectInspector(f.dataType)))
             ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldInspectors)
 
-        // User-defined type
-        case vectorType: VectorUDT => ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaDoubleObjectInspector)
-
-        // Unsupported types
-        case _ => throw new IllegalArgumentException("Unsupported data type: " + dataType)
+        // User-defined types
+        case _ => findHiveObjectInspector(dataType).getOrElse(throw new IllegalArgumentException("Unsupported data type: " + dataType))
     }
+
+    /** Finds a converter for the specified Spark SQL type.
+      *
+      * @param dataType the Spark SQL type
+      * @return the converter to a Hive object
+      */
+    protected def findHiveObjectConverter(dataType: DataType): Option[ObjectInspectorConverters.Converter]
+
+    /** Finds a Hive ObjectInspector for the specified Spark SQL type.
+      *
+      * @param dataType the Spark SQL type
+      * @return the Hive ObjectInspector
+      */
+    protected def findHiveObjectInspector(dataType: DataType): Option[ObjectInspector]
 }

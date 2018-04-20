@@ -27,6 +27,7 @@ import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
 
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -52,6 +53,12 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
 
 
     /**
+     * Data set converter service
+     */
+    @Nonnull
+    private final DataSetConverterService converterService;
+
+    /**
      * Hadoop FileSystem
      */
     @Nonnull
@@ -66,9 +73,10 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
     /**
      * Constructs a {@code SaveDataSetStage} with the specified configuration.
      */
-    public SaveDataSetStage(@Nonnull final SaveRequest request, @Nonnull final FileSystem fs) {
+    public SaveDataSetStage(@Nonnull final SaveRequest request, @Nonnull final FileSystem fs, @Nonnull final DataSetConverterService converterService) {
         this.request = request;
         this.fs = fs;
+        this.converterService = converterService;
     }
 
     @Nonnull
@@ -132,7 +140,7 @@ public class SaveDataSetStage implements Function<TransformResult, SaveResult> {
             // Ensure that column names comply with ORC standards
             final StructType schema = dataset.schema();
             final Column[] columns = new Column[schema.size()];
-            final DefaultQueryResultColumn[] queryColumns = new QueryResultRowTransform(schema, "orc").columns();
+            final DefaultQueryResultColumn[] queryColumns = new QueryResultRowTransform(schema, "orc", converterService).columns();
 
             for (int i = 0; i < schema.size(); ++i) {
                 if (!queryColumns[i].getField().equals(schema.apply(i).name())) {

@@ -32,6 +32,7 @@ import com.thinkbiganalytics.spark.dataprofiler.Profiler;
 import com.thinkbiganalytics.spark.datavalidator.DataValidator;
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
 import com.thinkbiganalytics.spark.service.IdleMonitorService;
 import com.thinkbiganalytics.spark.service.JobTrackerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
@@ -346,8 +347,8 @@ public class SparkShellApp {
     @Bean
     public TransformService transformService(final Class<? extends TransformScript> transformScriptClass, final SparkScriptEngine engine, final SparkContextService sparkContextService,
                                              final JobTrackerService tracker, final DatasourceProviderFactory datasourceProviderFactory, final Profiler profiler, final DataValidator validator,
-                                             final FileSystem fileSystem) {
-        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker);
+                                             final FileSystem fileSystem, final DataSetConverterService converterService) {
+        final TransformService service = new TransformService(transformScriptClass, engine, sparkContextService, tracker, converterService);
         service.setDatasourceProviderFactory(datasourceProviderFactory);
         service.setFileSystem(fileSystem);
         service.setProfiler(profiler);
