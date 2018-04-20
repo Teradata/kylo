@@ -220,6 +220,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Value("${nifi.auto.align:true}")
     private boolean nifiAutoFeedsAlignAfterSave;
 
+    /**
+     * Should we sync the Kylo metadata column descriptions over to Hive, if Hive is the target
+     */
+    @Value("${kylo.feed.mgr.hive.target.syncColumnDescriptions:true}")
+    private boolean hiveTargetSyncColumnDescriptions;
+
     @Inject
     private NiFiObjectCache niFiObjectCache;
 
@@ -780,22 +786,24 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
 
             // Update Hive metastore
-            stopwatch.start();
-            final boolean hasHiveDestination = domainFeed.getDestinations().stream()
-                .map(FeedDestination::getDatasource)
-                .filter(DerivedDatasource.class::isInstance)
-                .map(DerivedDatasource.class::cast)
-                .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
-            if (hasHiveDestination) {
-                try {
-                    feedHiveTableService.updateColumnDescriptions(feed);
-                } catch (final DataAccessException e) {
-                    log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+            if(hiveTargetSyncColumnDescriptions) {
+                stopwatch.start();
+                final boolean hasHiveDestination = domainFeed.getDestinations().stream()
+                    .map(FeedDestination::getDatasource)
+                    .filter(DerivedDatasource.class::isInstance)
+                    .map(DerivedDatasource.class::cast)
+                    .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
+                if (hasHiveDestination) {
+                    try {
+                        feedHiveTableService.updateColumnDescriptions(feed);
+                    } catch (final DataAccessException e) {
+                        log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+                    }
                 }
+                stopwatch.stop();
+                log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
             }
-            stopwatch.stop();
-            log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
 
             // Update Kylo metastore
             stopwatch.start();
