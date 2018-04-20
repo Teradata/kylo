@@ -424,7 +424,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          *
          * @return {Promise} a promise for when the query completes
          */
-        TransformDataComponent.prototype.query = function () {
+        TransformDataComponent.prototype.query = function (refresh) {
+            if (refresh === void 0) { refresh = true; }
             var self = this;
             var deferred = this.$q.defer();
             //flag to indicate query is running
@@ -443,7 +444,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 self.hiveDataLoaded = true;
                 self.isValid = true;
                 //store the result for use in the commands
-                self.updateGrid();
+                if (refresh)
+                    self.updateGrid();
                 deferred.resolve();
             };
             var errorCallback = function (message) {
@@ -452,14 +454,16 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 self.executingQuery = false;
                 self.engine.pop();
                 self.functionHistory.pop();
-                self.refreshGrid();
+                if (refresh)
+                    self.refreshGrid();
                 deferred.reject(message);
             };
             var notifyCallback = function (progress) {
                 self.queryProgress = progress * 100;
                 if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                     didUpdateColumns = true;
-                    self.updateGrid();
+                    if (refresh)
+                        self.updateGrid();
                 }
             };
             self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
@@ -554,7 +558,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          */
         TransformDataComponent.prototype.addFunction = function (formula, context) {
             this.addFilters();
-            this.pushFormula(formula, context, true);
+            return this.pushFormula(formula, context, true);
         };
         ;
         /**
@@ -569,6 +573,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             // Add to the Spark script
             try {
                 this.engine.push(file.ast, context);
+                return true;
             }
             catch (e) {
                 var alert_1 = this.$mdDialog.alert()
@@ -580,7 +585,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     .ok("Got it!");
                 this.$mdDialog.show(alert_1);
                 console.log(e);
-                return;
+                return false;
             }
         };
         ;
@@ -590,15 +595,24 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @param {string} formula - the formula
          * @param {TransformContext} context - the UI context for the transformation
          * @param {boolean} doQuery - true to immediately execute the query
+         * @param {boolean} refreshGrid - true to refresh grid
          */
-        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery) {
+        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery, refreshGrid) {
             if (doQuery === void 0) { doQuery = false; }
-            this.pushFormulaToEngine(formula, context);
-            // Add to function history
-            this.functionHistory.push(context);
-            if (doQuery || this.engine.getRows() === null) {
-                this.query();
-            }
+            if (refreshGrid === void 0) { refreshGrid = true; }
+            var self = this;
+            var deferred = this.$q.defer();
+            setTimeout(function () {
+                if (self.pushFormulaToEngine(formula, context)) {
+                    // Add to function history
+                    self.functionHistory.push(context);
+                    if (doQuery || self.engine.getRows() === null) {
+                        return self.query(refreshGrid).catch(function (reason) { return deferred.reject(reason); }).then(function (value) { return deferred.resolve(); });
+                    }
+                }
+                return deferred.reject();
+            }, 10);
+            return deferred.promise;
         };
         ;
         /**

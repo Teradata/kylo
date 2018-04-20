@@ -14,16 +14,19 @@ import {CovalentDialogsModule} from "@covalent/core/dialogs";
 import {DIALOG_SERVICE, INJECTOR} from "../api/index";
 import {DateFormatDialog} from "./columns/date-format.component";
 import {WranglerDialogService} from "./services/dialog.service";
+import {ImputeMissingDialog} from "./columns/impute-missing.component";
 
 /**
  *
  */
 @NgModule({
     declarations: [
-        DateFormatDialog
+        DateFormatDialog,
+        ImputeMissingDialog
     ],
     entryComponents: [
-        DateFormatDialog
+        DateFormatDialog,
+        ImputeMissingDialog
     ],
     imports: [
         CommonModule,

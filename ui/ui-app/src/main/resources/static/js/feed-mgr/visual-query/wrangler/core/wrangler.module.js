@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define(["require", "exports", "@angular/common", "@angular/common/http", "@angular/core", "@angular/forms", "@angular/material/button", "@angular/material/form-field", "@angular/material/icon", "@angular/material/input", "@angular/material/progress-bar", "@angular/material/select", "@angular/material/toolbar", "@covalent/core/dialogs", "../api/index", "./columns/date-format.component", "./services/dialog.service"], function (require, exports, common_1, http_1, core_1, forms_1, button_1, form_field_1, icon_1, input_1, progress_bar_1, select_1, toolbar_1, dialogs_1, index_1, date_format_component_1, dialog_service_1) {
+define(["require", "exports", "@angular/common", "@angular/common/http", "@angular/core", "@angular/forms", "@angular/material/button", "@angular/material/form-field", "@angular/material/icon", "@angular/material/input", "@angular/material/progress-bar", "@angular/material/select", "@angular/material/toolbar", "@covalent/core/dialogs", "../api/index", "./columns/date-format.component", "./services/dialog.service", "./columns/impute-missing.component"], function (require, exports, common_1, http_1, core_1, forms_1, button_1, form_field_1, icon_1, input_1, progress_bar_1, select_1, toolbar_1, dialogs_1, index_1, date_format_component_1, dialog_service_1, impute_missing_component_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -16,10 +16,12 @@ define(["require", "exports", "@angular/common", "@angular/common/http", "@angul
         WranglerModule = __decorate([
             core_1.NgModule({
                 declarations: [
-                    date_format_component_1.DateFormatDialog
+                    date_format_component_1.DateFormatDialog,
+                    impute_missing_component_1.ImputeMissingDialog
                 ],
                 entryComponents: [
-                    date_format_component_1.DateFormatDialog
+                    date_format_component_1.DateFormatDialog,
+                    impute_missing_component_1.ImputeMissingDialog
                 ],
                 imports: [
                     common_1.CommonModule,

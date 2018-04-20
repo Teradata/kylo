@@ -9,6 +9,7 @@ import {DomainType, DomainTypesService} from "../../services/DomainTypesService"
 import {DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
+import {IPromise} from "angular";
 
 declare const CodeMirror: any;
 
@@ -506,7 +507,7 @@ export class TransformDataComponent implements OnInit {
      *
      * @return {Promise} a promise for when the query completes
      */
-    query() {
+    query(refresh : boolean = true) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
 
@@ -531,7 +532,7 @@ export class TransformDataComponent implements OnInit {
             self.isValid = true;
 
             //store the result for use in the commands
-            self.updateGrid();
+            if (refresh) self.updateGrid();
 
             deferred.resolve();
         };
@@ -542,7 +543,7 @@ export class TransformDataComponent implements OnInit {
             self.executingQuery = false;
             self.engine.pop();
             self.functionHistory.pop();
-            self.refreshGrid();
+            if (refresh) self.refreshGrid();
 
             deferred.reject(message);
         };
@@ -550,7 +551,7 @@ export class TransformDataComponent implements OnInit {
             self.queryProgress = progress * 100;
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
-                self.updateGrid();
+                if (refresh) self.updateGrid();
             }
         };
 
@@ -656,9 +657,9 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula the formula
      * @param {TransformContext} context the UI context for the transformation
      */
-    addFunction(formula: any, context: any) {
+    addFunction(formula: any, context: any) : IPromise<any> {
         this.addFilters();
-        this.pushFormula(formula, context, true);
+        return this.pushFormula(formula, context, true);
     };
 
 
@@ -667,7 +668,7 @@ export class TransformDataComponent implements OnInit {
      *
      * @param {string} formula - the formula
      */
-    pushFormulaToEngine(formula: any, context: any) {
+    pushFormulaToEngine(formula: any, context: any) : boolean {
 
         // Covert to a syntax tree
         this.ternServer.server.addFile("[doc]", formula);
@@ -676,6 +677,7 @@ export class TransformDataComponent implements OnInit {
         // Add to the Spark script
         try {
             this.engine.push(file.ast, context);
+            return true;
         } catch (e) {
             let alert = this.$mdDialog.alert()
                 .parent($('body'))
@@ -686,7 +688,7 @@ export class TransformDataComponent implements OnInit {
                 .ok("Got it!");
             this.$mdDialog.show(alert);
             console.log(e);
-            return;
+            return false;
         }
     };
 
@@ -696,17 +698,25 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula - the formula
      * @param {TransformContext} context - the UI context for the transformation
      * @param {boolean} doQuery - true to immediately execute the query
+     * @param {boolean} refreshGrid - true to refresh grid
      */
-    pushFormula(formula: any, context: any, doQuery: boolean = false) {
+    pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
+        const self = this;
+        const deferred = this.$q.defer();
 
-        this.pushFormulaToEngine(formula, context);
+        setTimeout(function () {
+            if (self.pushFormulaToEngine(formula, context)) {
+                // Add to function history
+                self.functionHistory.push(context);
 
-        // Add to function history
-        this.functionHistory.push(context);
+                if (doQuery || self.engine.getRows() === null) {
+                    return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                }
+            }
+            return deferred.reject();
+        },10);
 
-        if (doQuery || this.engine.getRows() === null) {
-            this.query();
-        }
+        return deferred.promise;
     };
 
     /**

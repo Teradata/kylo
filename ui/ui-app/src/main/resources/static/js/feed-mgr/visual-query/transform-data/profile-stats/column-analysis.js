@@ -49,6 +49,12 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                         case 'PERC_EMPTY_VALUES':
                             self.percEmpty = value.metricValue;
                             break;
+                        case 'NULL_COUNT':
+                            self.nullCount = value.metricValue;
+                            break;
+                        case 'PERC_NULL_VALUES':
+                            self.percNull = value.metricValue;
+                            break;
                         case 'COLUMN_DATATYPE':
                             self.columnDataType = value.metricValue;
                             break;
@@ -58,8 +64,23 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                         case 'MIN_LENGTH':
                             self.minLen = value.metricValue;
                             break;
-                        case 'PERC_UNIQUE_VALUES':
-                            self.percUnique = value.metricValue;
+                        case 'MAX':
+                            self.max = value.metricValue;
+                            break;
+                        case 'MIN':
+                            self.min = value.metricValue;
+                            break;
+                        case 'SUM':
+                            self.sum = value.metricValue;
+                            break;
+                        case 'MEAN':
+                            self.mean = value.metricValue;
+                            break;
+                        case 'STDDEV':
+                            self.stddev = value.metricValue;
+                            break;
+                        case 'VARIANCE':
+                            self.variance = value.metricValue;
                             break;
                     }
                 }

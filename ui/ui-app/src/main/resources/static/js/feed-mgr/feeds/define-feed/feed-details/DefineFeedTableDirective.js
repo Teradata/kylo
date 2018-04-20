@@ -134,7 +134,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
                 self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
             };
-            this.calcTableState();
             /*
             Create columns for tracking changes between original source and the target table schema
              */
