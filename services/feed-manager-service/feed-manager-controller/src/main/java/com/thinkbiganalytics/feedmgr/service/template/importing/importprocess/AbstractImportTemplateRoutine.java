@@ -36,6 +36,7 @@ import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -206,20 +207,23 @@ public abstract class AbstractImportTemplateRoutine implements ImportTemplateRou
         String processGroupName = importTemplate.getTemplateResults().getProcessGroupEntity().getName();
         String processGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getId();
         String parentProcessGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getParentGroupId();
-        log.info("About to cleanup the temporary process group {} ({})", processGroupName, processGroupId);
-        try {
-            nifiRestClient.removeProcessGroup(processGroupId, parentProcessGroupId);
+        if(StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(parentProcessGroupId)) {
+            log.info("About to cleanup the temporary process group {} ({})", processGroupName, processGroupId);
+            try {
+                nifiRestClient.removeProcessGroup(processGroupId, parentProcessGroupId);
 
-            log.info("Successfully cleaned up Nifi and deleted the process group {} ", importTemplate.getTemplateResults().getProcessGroupEntity().getName());
-            statusMessage.update("Removed the temporary process group " + processGroupName + " in NiFi", true);
-        } catch (NifiClientRuntimeException e) {
-            log.error("error attempting to cleanup and remove the temporary process group (" + processGroupId + " during the import of template " + importTemplate.getTemplateName());
-            importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN,
-                                                         "Issues found in cleaning up the template import: " + importTemplate.getTemplateName() + ".  The Process Group : " + processGroupName + " ("
-                                                         + processGroupId + ")"
-                                                         + " may need to be manually cleaned up in NiFi ", "");
-            statusMessage.update("Error cleaning up NiFi. The Process Group : " + processGroupName + " ("
-                                 + processGroupId + ")", false);
+                log.info("Successfully cleaned up Nifi and deleted the process group {} ", importTemplate.getTemplateResults().getProcessGroupEntity().getName());
+                statusMessage.update("Removed the temporary process group " + processGroupName + " in NiFi", true);
+            } catch (NifiClientRuntimeException e) {
+                log.error("error attempting to cleanup and remove the temporary process group (" + processGroupId + " during the import of template " + importTemplate.getTemplateName());
+                importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN,
+                                                             "Issues found in cleaning up the template import: " + importTemplate.getTemplateName() + ".  The Process Group : " + processGroupName
+                                                             + " ("
+                                                             + processGroupId + ")"
+                                                             + " may need to be manually cleaned up in NiFi ", "");
+                statusMessage.update("Error cleaning up NiFi. The Process Group : " + processGroupName + " ("
+                                     + processGroupId + ")", false);
+            }
         }
     }
 
