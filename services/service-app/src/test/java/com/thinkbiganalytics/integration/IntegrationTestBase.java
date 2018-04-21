@@ -322,6 +322,7 @@ public class IntegrationTestBase {
 
     protected final void copyFileLocalToRemote(final String localFile, final String remoteDir, String application) {
         String testInfrastructureType = System.getenv("TestInfrastructureType");
+        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
         if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
             String namespace = System.getenv("kubernetesNamespace");
             String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", application);
@@ -345,6 +346,7 @@ public class IntegrationTestBase {
 
     protected final void runCommandOnRemoteSystem(final String command, String application) {
         String testInfrastructureType = System.getenv("TestInfrastructureType");
+        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
         if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
             String hadoopPodName = System.getenv("HadoopPodName");
             String podAndApplicationName = application;
