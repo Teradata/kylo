@@ -89,8 +89,9 @@
           <md-button class="md-primary md-raised" ng-click="$td.isShowSampleMenu = false; $td.resample();">Update</md-button>
         </div>
       </div>
-      <md-progress-linear md-mode="indeterminate" ng-show="$td.executingQuery && $td.queryProgress == 0" style="top: 0;height:5px"></md-progress-linear>
-      <md-progress-linear md-mode="determinate" ng-value="$td.queryProgress" ng-show="$td.executingQuery && $td.queryProgress > 0" style="top: 0;"></md-progress-linear>
+      <md-progress-linear class="wrangler-determinate-theme" md-mode="determinate" ng-value="$td.queryProgress" ng-show="$td.executingQuery && $td.queryProgress > 0"
+                          style="top: 0;height:2px"></md-progress-linear>
+      <md-progress-linear md-mode="indeterminate" class="wrangler-indeterminate-theme" ng-show="$td.executingQuery" style="top: -2px;height:2px"></md-progress-linear>
       <visual-query-table table-columns="$td.tableColumns" table-domain-types="$td.domainTypes" table-rows="$td.tableRows" table-options="$td.tableOptions" table-validation="$td.tableValidation"
                           style="width: 100%; height: 500px;" browser-height browser-height-scroll-y="false" browser-height-offset="{{$td.getBrowserHeightOffset(64)}}"></visual-query-table>
     </div>

@@ -169,3 +169,7 @@ thinkbig-visual-query-transform md-menu-content.md-kylo-theme md-menu-item {
   font-size: 14px;
   height: 36px;
 }
+thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
+  background-color: transparent !important;
+  opacity: 1;
+}

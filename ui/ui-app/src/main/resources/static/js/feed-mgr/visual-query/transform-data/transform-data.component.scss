@@ -189,4 +189,9 @@ Override spacing for context menu
     height: 36px;
   }
 
+  md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
+    background-color: transparent !important;
+    opacity:1.0;
+  }
+
 }
