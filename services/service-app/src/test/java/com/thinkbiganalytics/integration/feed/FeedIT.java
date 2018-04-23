@@ -360,13 +360,13 @@ public class FeedIT extends IntegrationTestBase {
     protected void failJobs(String categoryAndFeedName) {
         LOG.info("Failing jobs");
 
-        DefaultExecutedJob[] jobs = getJobs("jobInstance.feed.name%3D%3D" + categoryAndFeedName + "&limit=5&sort=-startTime&start=0");
+        DefaultExecutedJob[] jobs = getJobs(0,50,"-startTime","jobInstance.feed.name%3D%3D" + categoryAndFeedName);
         Arrays.stream(jobs).map(this::failJob).forEach(job -> Assert.assertEquals(ExecutionStatus.FAILED, job.getStatus()));
     }
 
     public void assertExecutedJobs(String feedName, String feedId) throws IOException {
         LOG.info("Asserting there are 2 completed jobs: userdata ingest job, index text service system jobs");
-        DefaultExecutedJob[] jobs = getJobs();
+        DefaultExecutedJob[] jobs = getJobs(0,50,null,null);
 
         //TODO assert all executed jobs are successful
         DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feedName.toLowerCase()).equals(job.getFeedName())).findFirst().get();
