@@ -17,7 +17,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var databaseTableGroup = {}; //Group data by {database.Table: [fields] }
             var tablesObj = {}; //Group data by {table:[fields] } /// could loose data if tablename matches the same table name in a different database;
             //TODO need to figure out   how to expose the database names to the codemirror editor
-            angular.forEach(tableColumns, function (row) {
+            tableColumns.forEach(function (row) {
                 var db = row.databaseName;
                 var dbTable = row.databaseName + "." + row.tableName;
                 if (databaseGroup[db] === undefined) {
