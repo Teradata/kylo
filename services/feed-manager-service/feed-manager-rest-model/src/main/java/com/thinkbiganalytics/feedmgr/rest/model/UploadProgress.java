@@ -139,8 +139,10 @@ public class UploadProgress {
     }
 
     public void setSections(Set<String> sections) {
-        this.sections = sections;
-        this.totalParts = sections.size();
+        if(this.sections.isEmpty()) {
+            this.sections = sections;
+            this.totalParts = sections.size();
+        }
     }
 
     public Integer getPercentComplete() {

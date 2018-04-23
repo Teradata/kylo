@@ -33,7 +33,7 @@ var DELETE = 46;
 var A = 65;
 var Z = 90;
 var ZERO = 48;
-var NINE = 91;
+var NINE = 57;
 var COMMA = 188;
 
 exports.UP_ARROW = UP_ARROW;

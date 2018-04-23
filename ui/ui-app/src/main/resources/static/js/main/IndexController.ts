@@ -22,13 +22,13 @@ export class controller implements ng.IComponentController{
         private $rootScope: any,
         private $transitions: any,
         private $mdDialog:any,
-        private StateService:any,  
+        private StateService:any,
         private SearchService: any,
         private SideNavService: any,
         private AccessControlService:any)
-        { 
+        {
          this.LOADING_DIALOG_WAIT_TIME= 100;
-    
+
          /**
           * Media object to help size the panels on the screen when shrinking/growing the window
           */
@@ -38,12 +38,19 @@ export class controller implements ng.IComponentController{
           */
             this.$rootScope.previousState;
             this.$rootScope.currentState;
-  
+
+
+            // to focus on input element after it appears
+            $scope.$watch(function() {
+                return document.querySelector('#search-bar:not(.ng-hide)');
+            }, function(){
+                document.getElementById('search-input').focus();
+            });
 
             this.$transitions.onSuccess({}, (transition: any)=> {
             this.currentState = transition.to();
             if (this.currentState.name != 'search') {
-                this.searchQuery = '';
+                this.searchQuery = null;
             }
             else {
                 this.searchQuery = this.SearchService.searchQuery;
@@ -68,7 +75,7 @@ export class controller implements ng.IComponentController{
             this.AccessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
                     this.allowSearch = this.AccessControlService
-                                            .hasAction(this.AccessControlService.GLOBAL_SEARCH_ACCESS, 
+                                            .hasAction(this.AccessControlService.GLOBAL_SEARCH_ACCESS,
                                                         actionSet.actions);
                 });
 
@@ -107,7 +114,7 @@ export class controller implements ng.IComponentController{
          * The Query string for the Global Search
          * @type {string}
          */
-        searchQuery: any = '';
+        searchQuery: any = null;
 
         /**
          * Indicates that global searches are allowed.
@@ -133,13 +140,32 @@ export class controller implements ng.IComponentController{
             this.$mdSidenav('left').close();
         }
 
+
+        showPreSearchBar() : boolean {
+            return this.searchQuery == null;
+        };
+
+        initiateSearch() : void {
+            this.searchQuery = '';
+        };
+
+        showSearchBar() : boolean {
+            return this.searchQuery != null
+        };
+
+        endSearch() : void {
+            return this.searchQuery = null;
+        };
+
         /**
          * Search for something
          */
         search = () =>{
-            this.SearchService.searchQuery = this.searchQuery;
-            if (this.currentState.name != 'search') {
-                this.StateService.Search().navigateToSearch(true);
+            if (this.searchQuery != null && this.searchQuery.length > 0) {
+                this.SearchService.searchQuery = this.searchQuery;
+                if (this.currentState.name != 'search') {
+                    this.StateService.Search().navigateToSearch(true);
+                }
             }
         };
 
@@ -177,6 +203,8 @@ export class controller implements ng.IComponentController{
 
 
 }
+
+
 
 angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
                                                                  "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",

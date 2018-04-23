@@ -29,7 +29,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.jayway.restassured.RestAssured;
-import com.jayway.restassured.http.ContentType;
 import com.jayway.restassured.internal.mapping.Jackson2Mapper;
 import com.jayway.restassured.mapper.factory.Jackson2ObjectMapperFactory;
 import com.jayway.restassured.path.json.JsonPath;
@@ -110,7 +109,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.time.LocalDateTime;
@@ -150,6 +154,9 @@ public class IntegrationTestBase {
     protected static final String FILTER_BY_SUCCESS = "result%3D%3DSUCCESS";
     protected static final String FILTER_BY_FAILURE = "result%3D%3DFAILURE";
     protected static final String FILTER_BY_SLA_ID = "slaId%3D%3D";
+
+    protected static final String APP_NIFI = "NIFI";
+    protected static final String APP_HADOOP = "HADOOP";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
@@ -246,8 +253,8 @@ public class IntegrationTestBase {
     }
 
     protected void copyDataToDropzone(String testFileName) {
-        ssh("sudo touch /var/dropzone/" + testFileName);
-        ssh("sudo chown -R nifi:nifi /var/dropzone");
+        runCommandOnRemoteSystem("sudo touch /var/dropzone/" + testFileName, APP_NIFI);
+        runCommandOnRemoteSystem("sudo chown -R nifi:nifi /var/dropzone", APP_NIFI);
     }
 
     protected void waitForFeedToComplete() {
@@ -296,31 +303,97 @@ public class IntegrationTestBase {
             .contentType(JSON);
     }
 
-    protected final void scp(final String localFile, final String remoteDir) {
-        Scp scp = new Scp() {
-            @Override
-            public String toString() {
-                return String.format("scp -P%s %s %s@%s:%s", sshConfig.getPort(), localFile, sshConfig.getUsername(), sshConfig.getHost(), remoteDir);
-            }
-        };
-        setupSshConnection(scp);
-        scp.setLocalFile(localFile);
-        scp.setTodir(String.format("%s@%s:%s", sshConfig.getUsername(), sshConfig.getHost(), remoteDir));
-        scp.execute();
+    private void runLocalShellCommand(String command) {
+        ProcessBuilder pb = new ProcessBuilder().command("bash", "-c", command);
+        try
+        {
+            System.out.println("RUNNING...");
+            Process p = pb.start();
+            StreamGobbler pOut = new StreamGobbler(p.getInputStream(), new PrintStream(System.out));
+            StreamGobbler pErr = new StreamGobbler(p.getErrorStream(), new PrintStream(System.out));
+            pOut.start();
+            pErr.start();
+        }
+        catch(IOException ioe)
+        {
+            throw new RuntimeException("Error running command on remote system", ioe);
+        }
     }
 
-    protected final String ssh(final String command) {
-        SSHExec ssh = new SSHExec() {
-            @Override
-            public String toString() {
-                return String.format("ssh -p %s %s@%s %s", sshConfig.getPort(), sshConfig.getUsername(), sshConfig.getHost(), command);
+    protected final void copyFileLocalToRemote(final String localFile, final String remoteDir, String application) {
+        String testInfrastructureType = System.getenv("TestInfrastructureType");
+        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
+        if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
+            String namespace = System.getenv("kubernetesNamespace");
+            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", application);
+            String kubeCommand = String.format("kubectl cp %s %s/$KUBECTL_POD_NAME:%s", localFile, namespace, remoteDir);
+
+            runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
+        }
+        else {
+            Scp scp = new Scp() {
+                @Override
+                public String toString() {
+                    return String.format("copyFileLocalToRemote -P%s %s %s@%s:%s", sshConfig.getPort(), localFile, sshConfig.getUsername(), sshConfig.getHost(), remoteDir);
+                }
+            };
+            setupSshConnection(scp);
+            scp.setLocalFile(localFile);
+            scp.setTodir(String.format("%s@%s:%s", sshConfig.getUsername(), sshConfig.getHost(), remoteDir));
+            scp.execute();
+        }
+    }
+
+    protected final void runCommandOnRemoteSystem(final String command, String application) {
+        String testInfrastructureType = System.getenv("TestInfrastructureType");
+        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
+        if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
+            String hadoopPodName = System.getenv("HadoopPodName");
+            String podAndApplicationName = application;
+            if(application.equals(APP_HADOOP)) {
+                podAndApplicationName = hadoopPodName;
             }
-        };
-        setupSshConnection(ssh);
-        ssh.setOutputproperty("output");
-        ssh.setCommand(command);
-        ssh.execute();
-        return ssh.getProject().getProperty("output");
+            String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", podAndApplicationName);
+            String kubeCommand = String.format("kubectl exec $KUBECTL_POD_NAME -c %s %s", podAndApplicationName, command);
+
+            runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
+        }
+        else {
+            SSHExec ssh = new SSHExec() {
+                @Override
+                public String toString() {
+                    return String.format("runCommandOnRemoteSystem -p %s %s@%s %s", sshConfig.getPort(), sshConfig.getUsername(), sshConfig.getHost(), command);
+                }
+            };
+            setupSshConnection(ssh);
+            ssh.setOutputproperty("output");
+            ssh.setCommand(command);
+            ssh.execute();
+        }
+    }
+
+    private String executeLocalCommand(String command) {
+
+        StringBuffer output = new StringBuffer();
+
+        Process p;
+        try {
+            p = Runtime.getRuntime().exec(command);
+            p.waitFor();
+            BufferedReader reader =
+                new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+            String line = "";
+            while ((line = reader.readLine())!= null) {
+                output.append(line + "\n");
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error running local command", e);
+        }
+
+        return output.toString();
+
     }
 
     private void setupSshConnection(SSHBase ssh) {
@@ -368,14 +441,14 @@ public class IntegrationTestBase {
     }
 
     protected void cleanup() {
-/*
+
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
         deleteExistingReusableVersionedFlows();
         deleteExistingTemplates();
         deleteExistingCategories();
-        */
+
         //TODO clean up Nifi too, i.e. templates, controller services, all of canvas
 
     }
@@ -1159,5 +1232,26 @@ public class IntegrationTestBase {
         return false;
     }
 
+    private class StreamGobbler extends Thread {
+        private InputStream in;
+        private PrintStream out;
+
+        private StreamGobbler(InputStream in, PrintStream out) {
+            this.in = in;
+            this.out = out;
+        }
+
+        @Override
+        public void run() {
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(in));
+                String line = null;
+                while ((line = input.readLine()) != null)
+                    out.println(line);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
 }

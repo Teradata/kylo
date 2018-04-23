@@ -25,6 +25,8 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.ActiveWaterMarksCancelledException;
@@ -33,7 +35,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.reindex.HistoryReindexingS
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 
-import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -41,8 +42,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -50,13 +49,18 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.ExecutionException;
 
 import javax.annotation.Nonnull;
 
-public class MetadataClientRecorder extends AbstractControllerService implements MetadataRecorder {
+public class MetadataClientRecorder implements MetadataRecorder {
+
 
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
 
+//    private static final int FEED_INIT_STATUS_EXPIRE_SEC = 60;
+    private static final int FEED_INIT_STATUS_CACHE_SIZE = 1024;
+    
     private static final String CURRENT_WATER_MARKS_ATTR = "activeWaterMarks";
     private static final TypeReference<NavigableMap<String, WaterMarkParam>> WM_MAP_TYPE = new TypeReference<NavigableMap<String, WaterMarkParam>>() { };
     private static final ObjectReader WATER_MARKS_READER = new ObjectMapper().reader().forType(WM_MAP_TYPE);
@@ -64,7 +68,8 @@ public class MetadataClientRecorder extends AbstractControllerService implements
 
     private MetadataClient client;
     private NavigableMap<String, Long> activeWaterMarks = new ConcurrentSkipListMap<>();
-    private Map<String, InitializationStatus> activeInitStatuses = Collections.synchronizedMap(new HashMap<>());
+    
+    private volatile Cache<String, Optional<InitializationStatus>> initStatusCache;
 
     /**
      * constructor creates a MetadataClientRecorder with the default URI constant
@@ -89,9 +94,9 @@ public class MetadataClientRecorder extends AbstractControllerService implements
      */
     public MetadataClientRecorder(MetadataClient client) {
         this.client = client;
+        getInitStatusCache();
     }
-
-
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#loadWaterMark(org.apache.nifi.processor.ProcessSession, org.apache.nifi.flowfile.FlowFile, java.lang.String, java.lang.String)
      */
@@ -254,9 +259,12 @@ public class MetadataClientRecorder extends AbstractControllerService implements
      */
     @Override
     public Optional<InitializationStatus> getInitializationStatus(String feedId) {
-        // Defer to the local active state first
-        Optional<InitializationStatus> option = Optional.ofNullable(this.activeInitStatuses.get(feedId));
-        return option.isPresent() ? option : Optional.ofNullable(this.client.getCurrentInitStatus(feedId));
+        try {
+            return getInitStatusCache().get(feedId, () -> getFeedInitStatus(feedId));
+        } catch (ExecutionException e) {
+            log.error("Failed to obtain initialization status feed: {}", feedId, e);
+            throw new ProcessException("Failed to obtain initialization status feed: " + feedId, e.getCause());
+        }
     }
 
     /* (non-Javadoc)
@@ -265,8 +273,15 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     @Override
     public InitializationStatus startFeedInitialization(String feedId) {
         InitializationStatus status = new InitializationStatus(InitializationStatus.State.IN_PROGRESS);
-        this.activeInitStatuses.put(feedId, status);
-        return status;
+        try {
+            this.client.updateCurrentInitStatus(feedId, status);
+            getInitStatusCache().put(feedId, Optional.of(status));
+            return status;
+        } catch (Exception e) {
+            log.error("Failed to update metadata with feed initialization in-progress status: {},  feed: {}", status.getState(), feedId, e);
+            getInitStatusCache().invalidate(feedId);
+            throw new ProcessException("Failed to update metadata with feed initialization in-progress status: " + status + ",  feed: " + feedId, e);
+        }
     }
 
     /* (non-Javadoc)
@@ -277,10 +292,11 @@ public class MetadataClientRecorder extends AbstractControllerService implements
         InitializationStatus status = new InitializationStatus(InitializationStatus.State.SUCCESS);
         try {
             this.client.updateCurrentInitStatus(feedId, status);
-            this.activeInitStatuses.remove(feedId);
+            getInitStatusCache().put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
             log.error("Failed to update metadata with feed initialization completion status: {},  feed: {}", status.getState(), feedId, e);
+            getInitStatusCache().invalidate(feedId);
             throw new ProcessException("Failed to update metadata with feed initialization completion status: " + status + ",  feed: " + feedId, e);
         }
     }
@@ -289,17 +305,26 @@ public class MetadataClientRecorder extends AbstractControllerService implements
      * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#failFeedInitialization(java.lang.String)
      */
     @Override
-    public InitializationStatus failFeedInitialization(String feedId) {
-        InitializationStatus status = new InitializationStatus(InitializationStatus.State.FAILED);
+    public InitializationStatus failFeedInitialization(String feedId, boolean isReinitialize) {
+        InitializationStatus.State state = isReinitialize ? InitializationStatus.State.REINITIALIZE_FAILED : InitializationStatus.State.FAILED;
+        InitializationStatus status = new InitializationStatus(state);
         try {
             this.client.updateCurrentInitStatus(feedId, status);
-            this.activeInitStatuses.remove(feedId);
+            getInitStatusCache().put(feedId, Optional.of(status));
             return status;
         } catch (Exception e) {
-            log.error("Failed to update feed initialization completion status: {},  feed: {}", status.getState(), feedId);
-            this.activeInitStatuses.put(feedId, status);
+            log.error("Failed to update feed initialization failed status: {},  feed: {}", status.getState(), feedId);
+            getInitStatusCache().invalidate(feedId);
             return status;
         }
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder#initializationStatusChanged(java.lang.String, com.thinkbiganalytics.metadata.rest.model.feed.InitializationStatus)
+     */
+    @Override
+    public void initializationStatusChanged(String feedId, InitializationStatus status) {
+        getInitStatusCache().invalidate(feedId);
     }
 
     @Override
@@ -311,6 +336,27 @@ public class MetadataClientRecorder extends AbstractControllerService implements
     @Override
     public FeedDataHistoryReindexParams updateFeedHistoryReindexing(@Nonnull String feedId, @Nonnull HistoryReindexingStatus historyReindexingStatus) {
             return (this.client.updateFeedHistoryReindexing(feedId, historyReindexingStatus));
+    }
+
+    private Optional<InitializationStatus> getFeedInitStatus(String feedId) {
+        return Optional.ofNullable(this.client.getCurrentInitStatus(feedId));
+    }
+
+    private Cache<String, Optional<InitializationStatus>> getInitStatusCache() {
+        Cache<String, Optional<InitializationStatus>> cache = this.initStatusCache;
+        if (cache == null) {
+            synchronized (this) {
+                cache = this.initStatusCache;
+                if (cache == null) {
+                    this.initStatusCache = cache = CacheBuilder.newBuilder()
+//                                    .expireAfterWrite(FEED_INIT_STATUS_EXPIRE_SEC, TimeUnit.SECONDS)
+                                    .maximumSize(FEED_INIT_STATUS_CACHE_SIZE)
+                                    .build();
+                }
+            }
+        }
+        
+        return cache;
     }
 
     private String toWaterMarksKey(String feedId) {

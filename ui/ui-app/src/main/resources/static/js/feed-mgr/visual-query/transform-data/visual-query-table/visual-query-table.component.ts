@@ -34,7 +34,7 @@ const COLUMN_WIDTH_MAX = 300;
 /**
  * Minimum width of a column including padding.
  */
-const COLUMN_WIDTH_MIN = 150;
+const COLUMN_WIDTH_MIN = 100;
 
 /**
  * Width of the domain type icon.
@@ -353,7 +353,7 @@ export class VisualQueryTable {
         const self = this;
 
         // Add index column
-        if (this.rows.length > 0 && this.rows[0].length === this.columns.length) {
+        if (this.rows && this.rows.length > 0 && this.rows[0].length === this.columns.length) {
             this.rows.forEach((row, index) => row.push(index));
         }
 

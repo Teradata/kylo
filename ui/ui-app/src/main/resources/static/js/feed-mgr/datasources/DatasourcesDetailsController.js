@@ -84,6 +84,11 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             self.model = DatasourcesService.newJdbcDatasource();
             /**
+             * Result which is returned from server when user tests datasource connection
+             * @type {Object}
+             */
+            self.testConnectionResult = {};
+            /**
              * Shows the icon picker dialog.
              */
             self.showIconPicker = function () {
@@ -249,6 +254,17 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (angular.isDefined(self.datasourceDetailsForm["datasourceName"])) {
                     self.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]));
                 }
+            };
+            self.testConnection = function () {
+                self.testConnectionResult = {};
+                DatasourcesService.testConnection(self.editModel).then(function (response) {
+                    var isConnectionOk = response.message === undefined;
+                    var msg = isConnectionOk ? "" : response.message;
+                    self.testConnectionResult = {
+                        msg: msg,
+                        status: isConnectionOk
+                    };
+                });
             };
             // Load the data source
             if (angular.isString($transition$.params().datasourceId)) {

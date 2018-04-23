@@ -72,6 +72,14 @@ export default class FeedsTableController implements ng.IComponentController {
             this.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
         });
 
+        //rebind this controller to the onOrderChange function
+        //https://github.com/daniel-nagy/md-data-table/issues/616
+        this.onOrderChange = this.onOrderChange.bind(this);
+
+        this.selectedTableOption = this.selectedTableOption.bind(this);
+
+        this.onDataTablePaginationChange = this.onDataTablePaginationChange.bind(this)
+
     }
 
     onViewTypeChange(viewType:any) {

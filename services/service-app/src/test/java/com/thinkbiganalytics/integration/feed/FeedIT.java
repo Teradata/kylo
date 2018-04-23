@@ -346,9 +346,9 @@ public class FeedIT extends IntegrationTestBase {
         LOG.info("Copying data to dropzone");
 
         //drop files in dropzone to run the feed
-        ssh(String.format("sudo chmod a+w %s", VAR_DROPZONE));
-        scp(usersDataPath + USERDATA1_CSV, VAR_DROPZONE);
-        ssh(String.format("sudo chown -R nifi:nifi %s", VAR_DROPZONE));
+        runCommandOnRemoteSystem(String.format("sudo chmod a+w %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
+        copyFileLocalToRemote(usersDataPath + USERDATA1_CSV, VAR_DROPZONE, IntegrationTestBase.APP_NIFI);
+        runCommandOnRemoteSystem(String.format("sudo chown -R nifi:nifi %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
     }
 
 

@@ -89,6 +89,12 @@ public class TransformService {
     private static final XLogger log = XLoggerFactory.getXLogger(TransformService.class);
 
     /**
+     * Data set converter service
+     */
+    @Nonnull
+    private final DataSetConverterService converterService;
+
+    /**
      * Data source provider factory
      */
     @Nullable
@@ -158,13 +164,15 @@ public class TransformService {
      * @param engine               the script engine
      * @param sparkContextService  the Spark context service
      * @param tracker              job tracker for transformations
+     * @param converterService     data set converter service
      */
     public TransformService(@Nonnull final Class<? extends TransformScript> transformScriptClass, @Nonnull final SparkScriptEngine engine, @Nonnull final SparkContextService sparkContextService,
-                            @Nonnull final JobTrackerService tracker) {
+                            @Nonnull final JobTrackerService tracker, @Nonnull final DataSetConverterService converterService) {
         this.transformScriptClass = transformScriptClass;
         this.engine = engine;
         this.sparkContextService = sparkContextService;
         this.tracker = tracker;
+        this.converterService = converterService;
     }
 
     /**
@@ -207,13 +215,13 @@ public class TransformService {
         // Execute script
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet), getPolicies(request));
+        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), getPolicies(request));
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
             final String table = response.getTable();
             final TransformQueryResult partialResult = new TransformQueryResult();
-            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table).columns()));
+            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table, converterService).columns()));
 
             response = new TransformResponse();
             response.setProgress(0.0);
@@ -333,7 +341,7 @@ public class TransformService {
         log.entry(id, save);
 
         final DataSet dataSet = createShellTask(getTransformRequest(id));
-        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet)));
+        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet, converterService)));
         return log.exit(response);
     }
 
@@ -430,7 +438,7 @@ public class TransformService {
     @Nonnull
     private Supplier<SaveResult> createSaveTask(@Nonnull final SaveRequest request, @Nonnull final Supplier<TransformResult> transform) {
         Preconditions.checkState(hadoopFileSystem != null, "Saving is not enabled.");
-        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem), transform);
+        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem, converterService), transform);
     }
 
     /**
@@ -566,7 +574,7 @@ public class TransformService {
 
         // Execute script
         final String table = newTableName();
-        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table), result), engine.getSparkContext());
+        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table, converterService), result), engine.getSparkContext());
         tracker.submitJob(job);
 
         // Build response

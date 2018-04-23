@@ -183,7 +183,9 @@ public class DateTimeUtil {
             period.addHours(0);
             period.addMinutes(0);
             period.addSeconds(0);
-            Arrays.asList(parts).stream().forEach(part -> addToPeriod(period, part));
+            for(String part:parts){
+                addToPeriod(period, part);
+            }
             return periodStr.length();
         }
 

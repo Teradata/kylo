@@ -6,10 +6,10 @@
  * found in the LICENSE file at https://angular.io/license
  */
 (function (global, factory) {
-	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('@angular/cdk/coercion'), require('@angular/animations'), require('@angular/cdk/table'), require('rxjs/observable/merge'), require('@angular/material/core'), require('rxjs/Subject'), require('@angular/common')) :
-	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', '@angular/cdk/coercion', '@angular/animations', '@angular/cdk/table', 'rxjs/observable/merge', '@angular/material/core', 'rxjs/Subject', '@angular/common'], factory) :
-	(factory((global.ng = global.ng || {}, global.ng.material = global.ng.material || {}, global.ng.material.sort = global.ng.material.sort || {}),global.ng.core,global.ng.cdk.coercion,global.ng.animations,global.ng.cdk.table,global.Rx.Observable,global.ng.material.core,global.Rx,global.ng.common));
-}(this, (function (exports,_angular_core,_angular_cdk_coercion,_angular_animations,_angular_cdk_table,rxjs_observable_merge,_angular_material_core,rxjs_Subject,_angular_common) { 'use strict';
+	typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('@angular/core'), require('@angular/cdk/coercion'), require('@angular/cdk/table'), require('rxjs/observable/merge'), require('@angular/material/core'), require('rxjs/Subject'), require('@angular/animations'), require('@angular/common')) :
+	typeof define === 'function' && define.amd ? define(['exports', '@angular/core', '@angular/cdk/coercion', '@angular/cdk/table', 'rxjs/observable/merge', '@angular/material/core', 'rxjs/Subject', '@angular/animations', '@angular/common'], factory) :
+	(factory((global.ng = global.ng || {}, global.ng.material = global.ng.material || {}, global.ng.material.sort = global.ng.material.sort || {}),global.ng.core,global.ng.cdk.coercion,global.ng.cdk.table,global.Rx.Observable,global.ng.material.core,global.Rx,global.ng.animations,global.ng.common));
+}(this, (function (exports,_angular_core,_angular_cdk_coercion,_angular_cdk_table,rxjs_observable_merge,_angular_material_core,rxjs_Subject,_angular_animations,_angular_common) { 'use strict';
 
 /*! *****************************************************************************
 Copyright (c) Microsoft Corporation. All rights reserved.
@@ -360,7 +360,57 @@ var MAT_SORT_HEADER_INTL_PROVIDER = {
  * @suppress {checkTypes} checked by tsc
  */
 
-var SORT_ANIMATION_TRANSITION = _angular_material_core.AnimationDurations.ENTERING + ' ' + _angular_material_core.AnimationCurves.STANDARD_CURVE;
+var SORT_ANIMATION_TRANSITION = _angular_material_core.AnimationDurations.ENTERING + ' ' +
+    _angular_material_core.AnimationCurves.STANDARD_CURVE;
+/**
+ * Animations used by MatSort.
+ */
+var matSortAnimations = {
+    /** Animation that moves the sort indicator. */
+    indicator: _angular_animations.trigger('indicator', [
+        _angular_animations.state('asc', _angular_animations.style({ transform: 'translateY(0px)' })),
+        // 10px is the height of the sort indicator, minus the width of the pointers
+        _angular_animations.state('desc', _angular_animations.style({ transform: 'translateY(10px)' })),
+        _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
+    ]),
+    /** Animation that rotates the left pointer of the indicator based on the sorting direction. */
+    leftPointer: _angular_animations.trigger('leftPointer', [
+        _angular_animations.state('asc', _angular_animations.style({ transform: 'rotate(-45deg)' })),
+        _angular_animations.state('desc', _angular_animations.style({ transform: 'rotate(45deg)' })),
+        _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
+    ]),
+    /** Animation that rotates the right pointer of the indicator based on the sorting direction. */
+    rightPointer: _angular_animations.trigger('rightPointer', [
+        _angular_animations.state('asc', _angular_animations.style({ transform: 'rotate(45deg)' })),
+        _angular_animations.state('desc', _angular_animations.style({ transform: 'rotate(-45deg)' })),
+        _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
+    ]),
+    /** Animation that moves the indicator in and out of view when sorting is enabled/disabled. */
+    indicatorToggle: _angular_animations.trigger('indicatorToggle', [
+        _angular_animations.transition('void => asc', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
+            _angular_animations.style({ transform: 'translateY(25%)', opacity: 0 }),
+            _angular_animations.style({ transform: 'none', opacity: 1 })
+        ]))),
+        _angular_animations.transition('asc => void', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
+            _angular_animations.style({ transform: 'none', opacity: 1 }),
+            _angular_animations.style({ transform: 'translateY(-25%)', opacity: 0 })
+        ]))),
+        _angular_animations.transition('void => desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
+            _angular_animations.style({ transform: 'translateY(-25%)', opacity: 0 }),
+            _angular_animations.style({ transform: 'none', opacity: 1 })
+        ]))),
+        _angular_animations.transition('desc => void', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
+            _angular_animations.style({ transform: 'none', opacity: 1 }),
+            _angular_animations.style({ transform: 'translateY(25%)', opacity: 0 })
+        ]))),
+    ])
+};
+
+/**
+ * @fileoverview added by tsickle
+ * @suppress {checkTypes} checked by tsc
+ */
+
 /**
  * \@docs-private
  */
@@ -484,40 +534,10 @@ var MatSortHeader = /** @class */ (function (_super) {
                     changeDetection: _angular_core.ChangeDetectionStrategy.OnPush,
                     inputs: ['disabled'],
                     animations: [
-                        _angular_animations.trigger('indicator', [
-                            _angular_animations.state('asc', _angular_animations.style({ transform: 'translateY(0px)' })),
-                            // 10px is the height of the sort indicator, minus the width of the pointers
-                            _angular_animations.state('desc', _angular_animations.style({ transform: 'translateY(10px)' })),
-                            _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
-                        ]),
-                        _angular_animations.trigger('leftPointer', [
-                            _angular_animations.state('asc', _angular_animations.style({ transform: 'rotate(-45deg)' })),
-                            _angular_animations.state('desc', _angular_animations.style({ transform: 'rotate(45deg)' })),
-                            _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
-                        ]),
-                        _angular_animations.trigger('rightPointer', [
-                            _angular_animations.state('asc', _angular_animations.style({ transform: 'rotate(45deg)' })),
-                            _angular_animations.state('desc', _angular_animations.style({ transform: 'rotate(-45deg)' })),
-                            _angular_animations.transition('asc <=> desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION))
-                        ]),
-                        _angular_animations.trigger('indicatorToggle', [
-                            _angular_animations.transition('void => asc', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
-                                _angular_animations.style({ transform: 'translateY(25%)', opacity: 0 }),
-                                _angular_animations.style({ transform: 'none', opacity: 1 })
-                            ]))),
-                            _angular_animations.transition('asc => void', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
-                                _angular_animations.style({ transform: 'none', opacity: 1 }),
-                                _angular_animations.style({ transform: 'translateY(-25%)', opacity: 0 })
-                            ]))),
-                            _angular_animations.transition('void => desc', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
-                                _angular_animations.style({ transform: 'translateY(-25%)', opacity: 0 }),
-                                _angular_animations.style({ transform: 'none', opacity: 1 })
-                            ]))),
-                            _angular_animations.transition('desc => void', _angular_animations.animate(SORT_ANIMATION_TRANSITION, _angular_animations.keyframes([
-                                _angular_animations.style({ transform: 'none', opacity: 1 }),
-                                _angular_animations.style({ transform: 'translateY(25%)', opacity: 0 })
-                            ]))),
-                        ])
+                        matSortAnimations.indicator,
+                        matSortAnimations.leftPointer,
+                        matSortAnimations.rightPointer,
+                        matSortAnimations.indicatorToggle
                     ]
                 },] },
     ];
@@ -568,6 +588,7 @@ exports.MAT_SORT_HEADER_INTL_PROVIDER = MAT_SORT_HEADER_INTL_PROVIDER;
 exports.MatSortBase = MatSortBase;
 exports._MatSortMixinBase = _MatSortMixinBase;
 exports.MatSort = MatSort;
+exports.matSortAnimations = matSortAnimations;
 
 Object.defineProperty(exports, '__esModule', { value: true });
 

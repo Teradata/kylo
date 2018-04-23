@@ -264,6 +264,13 @@ export class DatasourcesService {
                     .then(function (response:any) {
                         return response.data;
                     });
+            },
+
+            testConnection: function(datasource: any) {
+                return $http.post(RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+                    .then(function (response:any) {
+                        return response.data;
+                    });
             }
         });
 

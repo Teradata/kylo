@@ -22,6 +22,8 @@ package com.thinkbiganalytics.spark.config;
 
 import com.thinkbiganalytics.spark.metadata.TransformScript;
 import com.thinkbiganalytics.spark.metadata.TransformScript16;
+import com.thinkbiganalytics.spark.service.DataSetConverterService;
+import com.thinkbiganalytics.spark.service.DataSetConverterServiceV1;
 import com.thinkbiganalytics.spark.service.SparkListenerService;
 import com.thinkbiganalytics.spark.service.SparkListenerService16;
 
@@ -36,6 +38,11 @@ import javax.annotation.Nonnull;
  */
 @Configuration
 public class SparkShellConfig16 {
+
+    @Bean
+    public DataSetConverterService converterService() {
+        return new DataSetConverterServiceV1();
+    }
 
     /**
      * Creates a Spark listener service.

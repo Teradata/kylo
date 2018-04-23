@@ -102,6 +102,39 @@ export interface DateFormatResponse {
     unit?: DateFormatUnit;
 }
 
+
+/**
+ * Configuration for the impute missing dialog.
+ */
+export interface ImputeMissingConfig extends DialogConfig {
+
+    /**
+     * List of valid fields for group and order dropdowns
+     */
+    fields: string[];
+}
+
+/**
+ * Result of the impute dialog.
+ */
+export interface ImputeMissingResponse {
+
+    /**
+     * Type of operation
+     */
+    type: string;
+
+    /**
+     * GroupBy field
+     */
+    groupBy: string;
+
+    /**
+     * OrderBy field
+     */
+    orderBy: string;
+}
+
 /**
  * Opens modal dialogs for alerting the user or receiving user input.
  */
@@ -114,4 +147,12 @@ export interface DialogService {
      * @returns the date format string
      */
     openDateFormat(config: DateFormatConfig): Observable<DateFormatResponse>;
+
+    /**
+     * Opens a modal dialog for the user to input impute options on a categorical column
+     *
+     * @param config - dialog configuration
+     * @returns the date format string
+     */
+    openImputeMissing(config: ImputeMissingConfig): Observable<ImputeMissingResponse>;
 }

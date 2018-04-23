@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "@covalent/core", "../columns/date-format.component", "rxjs/add/operator/filter"], function (require, exports, core_1, core_2, date_format_component_1) {
+define(["require", "exports", "@angular/core", "@covalent/core/dialogs", "../columns/date-format.component", "../columns/impute-missing.component", "rxjs/add/operator/filter"], function (require, exports, core_1, dialogs_1, date_format_component_1, impute_missing_component_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -28,9 +28,20 @@ define(["require", "exports", "@angular/core", "@covalent/core", "../columns/dat
                 .afterClosed()
                 .filter(function (value) { return typeof value !== "undefined"; });
         };
+        /**
+         * Opens a modal dialog for the user to input a impute method
+         *
+         * @param config - dialog configuration
+         * @returns the options selected
+         */
+        WranglerDialogService.prototype.openImputeMissing = function (config) {
+            return this.dialog.open(impute_missing_component_1.ImputeMissingDialog, { data: config, panelClass: "full-screen-dialog" })
+                .afterClosed()
+                .filter(function (value) { return typeof value !== "undefined"; });
+        };
         WranglerDialogService = __decorate([
             core_1.Injectable(),
-            __metadata("design:paramtypes", [core_2.TdDialogService])
+            __metadata("design:paramtypes", [dialogs_1.TdDialogService])
         ], WranglerDialogService);
         return WranglerDialogService;
     }());

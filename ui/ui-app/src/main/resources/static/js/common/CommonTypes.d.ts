@@ -7,5 +7,11 @@ declare namespace Common {
         [K: string]: T;
     }
 
+    export interface LabelValue {
+        label:string;
+        value:string;
+        description?:string;
+    }
+
 }
 

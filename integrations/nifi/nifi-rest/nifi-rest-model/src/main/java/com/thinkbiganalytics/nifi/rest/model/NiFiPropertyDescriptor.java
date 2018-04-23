@@ -37,6 +37,10 @@ public class NiFiPropertyDescriptor {
     private Boolean dynamic;
     private Boolean supportsEl;
     private String identifiesControllerService;
+    /**
+     * Not rendered for user to see
+     */
+    private boolean hidden = false;
 
     /**
      * @return set of allowable values for this property
@@ -146,5 +150,13 @@ public class NiFiPropertyDescriptor {
 
     public void setIdentifiesControllerService(String identifiesControllerService) {
         this.identifiesControllerService = identifiesControllerService;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 }

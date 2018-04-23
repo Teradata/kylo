@@ -7,7 +7,7 @@ import {DataCategory} from "../../wrangler/column-delegate";
 /**
  * Default font.
  */
-const DEFAULT_FONT = "10px sans-serif";
+const DEFAULT_FONT = "10px ''SourceSansPro'";
 
 /**
  * HTML template for header cells.
@@ -22,9 +22,14 @@ const PIXELS = "px";
 export class VisualQueryPainterService extends fattable.Painter {
 
     /**
+     * Maximum display length for column context functions before they are ellipses (asthetics)
+     */
+    static readonly MAX_DISPLAY_LENGTH = 25;
+
+    /**
      * Left and right padding for normal columns.
      */
-    static readonly COLUMN_PADDING = 28;
+    static readonly COLUMN_PADDING = 5;
 
     /**
      * Left padding for the first column.
@@ -39,7 +44,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     /**
      * Height of data rows.
      */
-    static readonly ROW_HEIGHT = 48;
+    static readonly ROW_HEIGHT = 27;
 
     /**
      * Class for selected cells.
@@ -186,6 +191,8 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param {VisualQueryTableCell|null} cell the cell object
      */
     fillCell(cellDiv: HTMLElement, cell: any) {
+
+
         // Adjust padding based on column number
         if (cell !== null && cell.column === 0) {
             cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
@@ -216,6 +223,8 @@ export class VisualQueryPainterService extends fattable.Painter {
         }
 
         if (cell !== null) {
+            cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
+
             angular.element(cellDiv)
                 .data("column", cell.column)
                 .data("validation", cell.validation);
@@ -383,6 +392,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         $scope.selection = (header.delegate.dataCategory === DataCategory.STRING) ? selection.toString() : null;
         $scope.table = this.delegate;
         $scope.value = isNull ? null : cellDiv.innerText;
+        $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "...": $scope.value)
 
         // Update position
         this.menuPanel.updatePosition(

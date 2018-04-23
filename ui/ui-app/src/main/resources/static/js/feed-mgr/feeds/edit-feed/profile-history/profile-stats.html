@@ -4,24 +4,4 @@
     <span flex>Loading...</span>
   </div>
   <profile-stats model="vm.data" hide-columns="vm.hideColumns"></profile-stats>
-  <div ng-if="tabular-enabled" flex="initial">
-    <table class="hive-table" style="width:100%">
-      <thead>
-      <tr>
-        <th>Column</th>
-        <th>Metric</th>
-        <th>Value</th>
-      </tr>
-      </thead>
-      <tbody>
-      <tr dir-paginate="row in vm.data.rows |filter:vm.profileFilter  |orderBy:['columnname','metrictype']|itemsPerPage:vm.rowsPerPage" pagination-id="profile_stats_0">
-        <td>{{::row['columnname']}}</td>
-        <td>{{::row['metrictype']}}</td>
-        <td>
-          <span style="white-space:pre-wrap;">{{::row['metricvalue']}}</span>
-        </td>
-      </tr>
-      </tbody>
-    </table>
-  </div>
 </div>

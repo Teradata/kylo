@@ -41,8 +41,7 @@ git commit -a -m "Begin $RELEASE_VERSION.$NEXT_NUMBER-SNAPSHOT"
 
 git checkout release/$RELEASE_VERSION
 git merge point-$RELEASE_VERSION
-git push origin head:release/$RELEASE_VERSION
-git push origin --tags
+git push --follow-tags origin head:release/$RELEASE_VERSION
 git branch -d point-$RELEASE_VERSION
 
 exit 0

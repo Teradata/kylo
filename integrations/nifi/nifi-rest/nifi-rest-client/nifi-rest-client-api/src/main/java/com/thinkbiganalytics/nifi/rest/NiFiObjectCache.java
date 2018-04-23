@@ -43,7 +43,6 @@ import javax.inject.Inject;
 
 /**
  * Cache used to help speed up creating the feed.
- *
  */
 public class NiFiObjectCache {
 
@@ -63,7 +62,7 @@ public class NiFiObjectCache {
 
     private ProcessGroupDTO reusableTemplateCategory;
 
-    private Map<String,ProcessGroupDTO> categoryProcessGroup = new ConcurrentHashMap<>();
+    private Map<String, ProcessGroupDTO> categoryProcessGroup = new ConcurrentHashMap<>();
 
     private ProcessGroupDTO temporaryTemplateInspectionGroup;
     private String reusableTemplateCategoryName = TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME;
@@ -95,29 +94,35 @@ public class NiFiObjectCache {
         return rootProcessGroup;
     }
 
+    public void resetReusableProcessGroup() {
+        reusableTemplateCategory = null;
+        reusableTemplateProcessGroupId = null;
+        getReusableTemplateCategoryProcessGroup();
+    }
+
 
     /**
      * returns the 'reusable_templates' process group
      */
     public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
         if (reusableTemplateCategory == null) {
-            if(reusableTemplateProcessGroupId != null) {
-                reusableTemplateCategory =  restClient.getNiFiRestClient().processGroups().findById(reusableTemplateProcessGroupId, false, false).orElse(null);
+            if (reusableTemplateProcessGroupId != null) {
+                reusableTemplateCategory = restClient.getNiFiRestClient().processGroups().findById(reusableTemplateProcessGroupId, false, false).orElse(null);
             }
-            if(reusableTemplateCategory == null) {
+            if (reusableTemplateCategory == null) {
                 reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
-                if(reusableTemplateCategory != null) {
+                if (reusableTemplateCategory != null) {
                     reusableTemplateProcessGroupId = reusableTemplateCategory.getId();
                 }
             }
         }
 
-        if(reusableTemplateCategory == null){
+        if (reusableTemplateCategory == null) {
             //create it
             reusableTemplateCategory = restClient.createProcessGroup("root", reusableTemplateCategoryName);
         }
 
-        if(reusableTemplateCategory != null && reusableTemplateProcessGroupId == null) {
+        if (reusableTemplateCategory != null && reusableTemplateProcessGroupId == null) {
             reusableTemplateProcessGroupId = reusableTemplateCategory.getId();
         }
         return reusableTemplateCategory;
@@ -127,7 +132,7 @@ public class NiFiObjectCache {
      * returns the 'reusable_templates' process group
      */
     public ProcessGroupDTO getOrCreateTemporaryTemplateInspectionGroup() {
-        if(temporaryTemplateInspectionGroup == null) {
+        if (temporaryTemplateInspectionGroup == null) {
 
             Optional<ProcessGroupDTO> group = restClient.getNiFiRestClient().processGroups().findByName("root", temporaryInspectionGroupName, false, false);
             if (!group.isPresent()) {
@@ -139,6 +144,9 @@ public class NiFiObjectCache {
         return temporaryTemplateInspectionGroup;
     }
 
+    public void resetTemporaryTemplateInspectionGroup() {
+        temporaryTemplateInspectionGroup = null;
+    }
 
 
     public void setRestClient(LegacyNifiRestClient restClient) {
@@ -155,7 +163,7 @@ public class NiFiObjectCache {
             ProcessGroupDTO reusableTemplateCategoryGroupId = getReusableTemplateCategoryProcessGroup();
             Set<PortDTO> inputPortsEntity = restClient.getNiFiRestClient().processGroups().getInputPorts(reusableTemplateCategoryGroupId.getId());
             if (inputPortsEntity != null) {
-                inputPortsEntity.stream().forEach(inputPort -> reusableTemplateCategoryInputPortsByName.put(inputPort.getName(),inputPort)
+                inputPortsEntity.stream().forEach(inputPort -> reusableTemplateCategoryInputPortsByName.put(inputPort.getName(), inputPort)
                 );
                 PortDTO inputPort = NifiConnectionUtil.findPortMatchingName(inputPortsEntity, inputPortName);
                 return inputPort;
@@ -188,20 +196,20 @@ public class NiFiObjectCache {
     }
 
     public void addCategoryOutputPort(String categoryProcessGroupId, PortDTO portDTO) {
-        if(!categoryProcessGroupIdToOutputPortByName.containsKey(categoryProcessGroupId)) {
+        if (!categoryProcessGroupIdToOutputPortByName.containsKey(categoryProcessGroupId)) {
             categoryProcessGroupIdToOutputPortByName.put(categoryProcessGroupId, new ConcurrentHashMap<>());
         }
         categoryProcessGroupIdToOutputPortByName.get(categoryProcessGroupId).put(portDTO.getName(), portDTO);
     }
 
-    public Set<ConnectionDTO> getConnections(String processGroupId){
+    public Set<ConnectionDTO> getConnections(String processGroupId) {
         return processGroupConnections.get(processGroupId);
     }
 
-    public void removeConnections(String processGroupId, Set<String> connectionIds){
+    public void removeConnections(String processGroupId, Set<String> connectionIds) {
         Set<ConnectionDTO> connections = getConnections(processGroupId);
-        if(connections != null && connectionIds != null && !connectionIds.isEmpty()){
-            connections.removeIf(c ->connectionIds.contains(c.getId()));
+        if (connections != null && connectionIds != null && !connectionIds.isEmpty()) {
+            connections.removeIf(c -> connectionIds.contains(c.getId()));
         }
     }
 
@@ -221,7 +229,7 @@ public class NiFiObjectCache {
             //find all connections in the category
             Set<ConnectionDTO> connectionsEntity = restClient.getNiFiRestClient().processGroups().getConnections(processGroupId);
             if (connectionsEntity != null) {
-                if(cacheConnections) {
+                if (cacheConnections) {
                     processGroupConnections.put(processGroupId, connectionsEntity);
                 }
                 connectionDTOS = connectionsEntity;
@@ -239,10 +247,10 @@ public class NiFiObjectCache {
     }
 
     public void addConnection(String processGroupId, ConnectionDTO connectionDTO) {
-        if(!processGroupConnections.containsKey(processGroupId)){
+        if (!processGroupConnections.containsKey(processGroupId)) {
             processGroupConnections.put(processGroupId, new HashSet<>());
         }
-            processGroupConnections.get(processGroupId).add(connectionDTO);
+        processGroupConnections.get(processGroupId).add(connectionDTO);
 
     }
 
@@ -255,10 +263,10 @@ public class NiFiObjectCache {
         return cacheConnections;
     }
 
-    public ProcessGroupDTO getCategoryProcessGroup(String name){
-        if(!cacheCategoryGroups){
-           return restClient.getProcessGroupByName("root", name);
-        }else {
+    public ProcessGroupDTO getCategoryProcessGroup(String name) {
+        if (!cacheCategoryGroups) {
+            return restClient.getProcessGroupByName("root", name);
+        } else {
             if (categoryProcessGroup.containsKey(name)) {
                 return categoryProcessGroup.get(name);
             } else {
@@ -270,14 +278,14 @@ public class NiFiObjectCache {
         }
     }
 
-    public void addCategoryProcessGroup(ProcessGroupDTO processGroupDTO){
-        if(cacheCategoryGroups){
-           categoryProcessGroup.put(processGroupDTO.getName(),processGroupDTO);
+    public void addCategoryProcessGroup(ProcessGroupDTO processGroupDTO) {
+        if (cacheCategoryGroups) {
+            categoryProcessGroup.put(processGroupDTO.getName(), processGroupDTO);
         }
     }
 
     public String getReusableTemplateProcessGroupId() {
-        if(reusableTemplateProcessGroupId == null){
+        if (reusableTemplateProcessGroupId == null) {
             getReusableTemplateCategoryProcessGroup();
         }
         return reusableTemplateProcessGroupId;

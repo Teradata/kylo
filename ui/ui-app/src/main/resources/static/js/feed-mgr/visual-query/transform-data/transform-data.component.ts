@@ -7,8 +7,10 @@ import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {DataCategory} from "../wrangler/column-delegate";
+import {ChainedOperation} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
+import {IPromise} from "angular";
 
 declare const CodeMirror: any;
 
@@ -74,8 +76,8 @@ export class TransformDataComponent implements OnInit {
      * @type {Object}
      */
     tableOptions = {
-        headerFont: "700 12px Roboto, 'Helvetica Neue', sans-serif",
-        rowFont: "400 14px Roboto, 'Helvetica Neue', sans-serif"
+        headerFont: "500 13px Roboto, 'Helvetica Neue', sans-serif",
+        rowFont: "regular 13px Roboto, 'Helvetica Neue', sans-serif"
     };
 
     //noinspection JSUnusedGlobalSymbols
@@ -84,8 +86,6 @@ export class TransformDataComponent implements OnInit {
      * @type {Array.<Object>}
      */
     tableRows: object[] = [];
-
-    executingQuery: boolean = false;
     //Code Mirror options.  Tern Server requires it be in javascript mode
     codeMirrorConfig: object = {
         onLoad: this.codemirrorLoaded.bind(this)
@@ -102,6 +102,13 @@ export class TransformDataComponent implements OnInit {
 
     // Progress of transformation from 0 to 100
     queryProgress: number = 0;
+
+    executingQuery: boolean = false;
+
+    /*
+    Active query will be followed by an immediate query
+     */
+    chainedOperation : ChainedOperation = new ChainedOperation();
 
     gridApi: any;
 
@@ -294,7 +301,8 @@ export class TransformDataComponent implements OnInit {
             controller: "VisualQueryProfileStatsController",
             fullscreen: true,
             locals: {
-                profile: self.engine.getProfile()
+                profile: angular.copy( self.engine.getProfile() ),
+                transformController: self
             },
             parent: angular.element(document.body),
             templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
@@ -451,70 +459,39 @@ export class TransformDataComponent implements OnInit {
     };
 
     /**
-     * Query Hive using the query from the previous step. Set the Grids rows and columns.
-     *
-     * @return {Promise} a promise for when the query completes
+     * Display error dialog
      */
-    query() {
-        const self = this;
-        const deferred = this.$q.defer();
+    showError(message: string) : void {
+        let self = this;
+        self.$mdDialog.show({
+            clickOutsideToClose: true,
+            controller: class {
 
-        //flag to indicate query is running
-        this.executingQuery = true;
-        this.queryProgress = 0;
+                /**
+                 * Additional details about the error.
+                 */
+                detailMessage = message;
 
-        // Query Spark shell service
-        let didUpdateColumns = false;
+                /**
+                 * Indicates that the detail message should be shown.
+                 */
+                showDetail = false;
 
-        const successCallback = function () {
-            //mark the query as finished
-            self.executingQuery = false;
+                static readonly $inject = ["$mdDialog"];
 
-            // Clear previous filters
-            if (typeof(self.gridApi) !== "undefined") {
-                self.gridApi.core.clearAllFilters();
-            }
+                constructor(private $mdDialog: angular.material.IDialogService) {
+                }
 
-            //mark the flag to indicate Hive is loaded
-            self.hiveDataLoaded = true;
-            self.isValid = true;
-
-            //store the result for use in the commands
-            self.updateGrid();
-
-            deferred.resolve();
-        };
-        const errorCallback = function (message: string) {
-            // Display error message
-            self.$mdDialog.show({
-                clickOutsideToClose: true,
-                controller: class {
-
-                    /**
-                     * Additional details about the error.
-                     */
-                    detailMessage = message;
-
-                    /**
-                     * Indicates that the detail message should be shown.
-                     */
-                    showDetail = false;
-
-                    static readonly $inject = ["$mdDialog"];
-
-                    constructor(private $mdDialog: angular.material.IDialogService) {
-                    }
-
-                    /**
-                     * Hides this dialog.
-                     */
-                    hide() {
-                        this.$mdDialog.hide();
-                    }
-                },
-                controllerAs: "dialog",
-                parent: angular.element("body"),
-                template: `
+                /**
+                 * Hides this dialog.
+                 */
+                hide() {
+                    this.$mdDialog.hide();
+                }
+            },
+            controllerAs: "dialog",
+            parent: angular.element("body"),
+            template: `
                   <md-dialog arial-label="error executing the query" style="max-width: 640px;">
                     <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
                       <h2 class="md-title">Error executing the query</h2>
@@ -527,21 +504,61 @@ export class TransformDataComponent implements OnInit {
                     </md-dialog-actions>
                   </md-dialog>
                 `
-            });
+        });
+
+    }
+
+    /**
+     * Query Hive using the query from the previous step. Set the Grids rows and columns.
+     *
+     * @return {Promise} a promise for when the query completes
+     */
+    query(refresh : boolean = true) : IPromise<any> {
+        const self = this;
+        const deferred = this.$q.defer();
+
+        //flag to indicate query is running
+        this.setExecutingQuery(true);
+        this.setQueryProgress(50);
+
+        // Query Spark shell service
+        let didUpdateColumns = false;
+
+        const successCallback = function () {
+            //mark the query as finished
+            self.setQueryProgress(85);
+            self.setExecutingQuery(false);
+
+            //mark the flag to indicate Hive is loaded
+            self.hiveDataLoaded = true;
+            self.isValid = true;
+
+            //store the result for use in the commands
+            if (refresh) {
+                // Clear previous filters
+                if (typeof(self.gridApi) !== "undefined") {
+                    self.gridApi.core.clearAllFilters();
+                }
+                self.updateGrid();
+            }
+            deferred.resolve();
+        };
+        const errorCallback = function (message: string) {
+            self.setExecutingQuery(false);
+            self.resetAllProgress();
+            self.showError(message);
 
             // Reset state
-            self.executingQuery = false;
             self.engine.pop();
             self.functionHistory.pop();
             self.refreshGrid();
-
             deferred.reject(message);
         };
         const notifyCallback = function (progress: number) {
-            self.queryProgress = progress * 100;
+            //self.setQueryProgress(progress * 100);
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
-                self.updateGrid();
+                if (refresh) self.updateGrid();
             }
         };
 
@@ -647,9 +664,39 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula the formula
      * @param {TransformContext} context the UI context for the transformation
      */
-    addFunction(formula: any, context: any) {
+    addFunction(formula: any, context: any) : IPromise<any> {
         this.addFilters();
-        this.pushFormula(formula, context, true);
+        return this.pushFormula(formula, context, true);
+    };
+
+
+    /**
+     * Appends the specified formula to the current script.
+     *
+     * @param {string} formula - the formula
+     */
+    pushFormulaToEngine(formula: any, context: any) : boolean {
+
+        // Covert to a syntax tree
+        this.ternServer.server.addFile("[doc]", formula);
+        let file = this.ternServer.server.findFile("[doc]");
+
+        // Add to the Spark script
+        try {
+            this.engine.push(file.ast, context);
+            return true;
+        } catch (e) {
+            let alert = this.$mdDialog.alert()
+                .parent($('body'))
+                .clickOutsideToClose(true)
+                .title("Error executing the query")
+                .textContent(e.message)
+                .ariaLabel("Error executing the query")
+                .ok("Ok");
+            this.$mdDialog.show(alert);
+            console.log(e);
+            return false;
+        }
     };
 
     /**
@@ -658,34 +705,74 @@ export class TransformDataComponent implements OnInit {
      * @param {string} formula - the formula
      * @param {TransformContext} context - the UI context for the transformation
      * @param {boolean} doQuery - true to immediately execute the query
+     * @param {boolean} refreshGrid - true to refresh grid
      */
-    pushFormula(formula: any, context: any, doQuery: boolean = false) {
-        // Covert to a syntax tree
-        this.ternServer.server.addFile("[doc]", formula);
-        let file = this.ternServer.server.findFile("[doc]");
+    pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
+        const self = this;
+        const deferred = this.$q.defer();
 
-        // Add to the Spark script
-        try {
-            this.engine.push(file.ast, context);
-        } catch (e) {
-            let alert = this.$mdDialog.alert()
-                .parent($('body'))
-                .clickOutsideToClose(true)
-                .title("Error executing the query")
-                .textContent(e.message)
-                .ariaLabel("error executing the query")
-                .ok("Got it!");
-            this.$mdDialog.show(alert);
-            console.log(e);
-            return;
-        }
+        setTimeout(function () {
+            if (self.pushFormulaToEngine(formula, context)) {
+                // Add to function history
+                self.functionHistory.push(context);
 
-        // Add to function history
-        this.functionHistory.push(context);
+                if (doQuery || self.engine.getRows() === null) {
+                    return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                }
+            }
+            // Formula couldn't parse
+            self.resetAllProgress();
+            return deferred.reject();
+        },10);
 
-        if (doQuery || this.engine.getRows() === null) {
-            this.query();
-        }
+        return deferred.promise;
+    };
+
+    /**
+     * Generates and displays a categorical histogram
+     *
+     * @return {Promise} a promise for when the query completes
+     */
+    showAnalyzeColumn(fieldName: string) : any {
+
+        const self = this;
+
+        let profileStats = this.engine.getProfile();
+
+        const deferred = this.$q.defer();
+
+        self.$mdDialog.show({
+
+            controller: class {
+
+                /**
+                 * Additional details about the error.
+                 */
+                profile = profileStats;
+                fieldName = fieldName;
+
+                static readonly $inject = ["$mdDialog"];
+
+                constructor(private $mdDialog: angular.material.IDialogService) {
+
+                }
+
+                /**
+                 * Hides this dialog.
+                 */
+                hide() {
+                    this.$mdDialog.hide();
+                }
+            },
+            controllerAs: "dialog",
+            templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+            parent: angular.element(document.body),
+            clickOutsideToClose: false,
+            fullscreen: false,
+            locals: {
+            }
+        });
+
     };
 
     /**
@@ -864,6 +951,50 @@ export class TransformDataComponent implements OnInit {
                 return fieldPolicy;
             });
         }
+    }
+
+    /**
+     * Set the query progress
+     * @param {number} progress
+     */
+    setQueryProgress(progress : number) {
+        if (!this.chainedOperation) {
+            this.queryProgress = progress;
+        } else {
+            this.queryProgress = this.chainedOperation.fracComplete(progress);
+        }
+        console.log('progress',this.queryProgress);
+    }
+
+    /**
+     * Set whether the query is actively running
+     * @param {boolean} query
+     */
+    setExecutingQuery(query : boolean) {
+        if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
+            this.executingQuery = query;
+        }
+        // Reset chained operation to default
+        if (this.executingQuery == false) {
+            this.resetAllProgress();
+        }
+    }
+
+    /**
+     * Indicates the active query will be followed by another in quick succession
+     * @param {ChainedOperation} chainedOperation
+     */
+    setChainedQuery(chainedOp : ChainedOperation) {
+        this.chainedOperation = chainedOp;
+    }
+
+    /**
+     * Resets all progress to non-running
+     */
+    resetAllProgress() {
+        this.chainedOperation = new ChainedOperation();
+        this.queryProgress = 0;
+        this.executingQuery = false;
     }
 }
 

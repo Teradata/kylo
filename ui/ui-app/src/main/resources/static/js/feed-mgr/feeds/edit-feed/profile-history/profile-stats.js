@@ -16,24 +16,17 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         };
     };
     var FeedProfileStatsController = /** @class */ (function () {
-        function FeedProfileStatsController($scope, $http, $sce, PaginationDataService, FeedService, RestUrlService, HiveService, Utils, BroadcastService) {
-            this.$scope = $scope;
+        function FeedProfileStatsController($http, FeedService, RestUrlService, HiveService, BroadcastService) {
             this.$http = $http;
-            this.$sce = $sce;
-            this.PaginationDataService = PaginationDataService;
             this.FeedService = FeedService;
             this.RestUrlService = RestUrlService;
             this.HiveService = HiveService;
-            this.Utils = Utils;
             this.BroadcastService = BroadcastService;
             this.data = [];
             this.loading = true;
             this.processingDate = null;
             this.model = this.FeedService.editFeedModel;
             this.hideColumns = ["processing_dttm"];
-            var self = this;
-            this.processingDate = new Date(this.HiveService.getUTCTime(this.processingdttm));
-            this.getProfileStats();
         }
         FeedProfileStatsController.prototype.getProfileStats = function () {
             var _this = this;
@@ -51,11 +44,14 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             return promise;
         };
         ;
+        FeedProfileStatsController.prototype.$onInit = function () {
+            this.processingDate = new Date(this.HiveService.getUTCTime(this.processingdttm));
+            this.getProfileStats();
+        };
         return FeedProfileStatsController;
     }());
     exports.FeedProfileStatsController = FeedProfileStatsController;
-    angular.module(moduleName).controller('FeedProfileStatsController', ["$scope", "$http", "$sce", "PaginationDataService", "FeedService", "RestUrlService", "HiveService", "Utils",
-        "BroadcastService", FeedProfileStatsController]);
+    angular.module(moduleName).controller('FeedProfileStatsController', ["$http", "FeedService", "RestUrlService", "HiveService", "BroadcastService", FeedProfileStatsController]);
     angular.module(moduleName).directive('thinkbigFeedProfileStats', directive);
 });
 //# sourceMappingURL=profile-stats.js.map

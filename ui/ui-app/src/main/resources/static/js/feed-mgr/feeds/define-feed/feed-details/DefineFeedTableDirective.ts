@@ -65,7 +65,6 @@ export class DefineFeedTableController {
     fieldNamesUniqueRetryAmount:any;
 
     showMethodPanel:boolean;
-    showTablePanel:boolean;
     uploadBtnDisabled:boolean;
     partitionFormulas:any;
 
@@ -166,7 +165,6 @@ export class DefineFeedTableController {
         this.fieldNamesUniqueRetryAmount = 0;
 
         this.showMethodPanel = true;
-        this.showTablePanel = true;
         this.uploadBtnDisabled = false;
         this.partitionFormulas = [];
 
@@ -209,6 +207,8 @@ export class DefineFeedTableController {
             // console.log("onDataTransformSchemaLoaded");
             self.syncFeedsColumns();
             validate(undefined);
+            self.calcTableState();
+            self.expandSchemaPanel();
         }
 
         this.calcTableState = function() {
@@ -217,9 +217,7 @@ export class DefineFeedTableController {
             self.dataTypeLocked = angular.isDefined(self.dataTypeLocked) && (self.typeLocked === true || self.typeLocked === "true");
             self.canRemoveFields = angular.isUndefined(self.canRemoveFields) || self.canRemoveFields === true || self.canRemoveFields === "true";
             self.showMethodPanel = (self.model.table.method != 'EXISTING_TABLE');
-            self.showTablePanel = (self.model.table.tableSchema.fields.length > 0);
         };
-        this.calcTableState();
 
         /*
         Create columns for tracking changes between original source and the target table schema

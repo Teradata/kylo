@@ -11,7 +11,7 @@ class PivotTableUtilClass{
     /**
      *
      * @param tableData Array of Objects
-     * @param hidColumns // Array of Field Names in the array of objects below that you dont want on the pivot
+     * @param hideColumns // Array of Field Names in the array of objects below that you dont want on the pivot
      * @param pivotNameMap // a map of field name to an object {name:'',fn:function(val){}} that allows you to transform the current data to something else
      *  pivotNameMap = {"startTime":{name:"Start Time", fn:function(val){
             return new Date(val);

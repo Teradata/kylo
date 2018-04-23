@@ -34,12 +34,14 @@ import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptor;
 import com.thinkbiganalytics.nifi.rest.model.NiFiPropertyDescriptorTransform;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.NifiPropertyGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitorCache;
 
 import org.apache.commons.lang3.StringUtils;
@@ -960,18 +962,37 @@ public class LegacyNifiRestClient implements NiFiFlowVisitorClient {
      */
     public void updateProcessGroupProperties(List<NifiProperty> properties) {
 
-        Map<String, Map<String, List<NifiProperty>>>
+        Map<String, Map<String, NifiPropertyGroup>>
             processGroupProperties =
             NifiPropertyUtil.groupPropertiesByProcessGroupAndProcessor(properties);
 
-        for (Map.Entry<String, Map<String, List<NifiProperty>>> processGroupEntry : processGroupProperties.entrySet()) {
+        for (Map.Entry<String, Map<String, NifiPropertyGroup>> processGroupEntry : processGroupProperties.entrySet()) {
 
             String processGroupId = processGroupEntry.getKey();
-            for (Map.Entry<String, List<NifiProperty>> propertyEntry : processGroupEntry.getValue().entrySet()) {
+            for (Map.Entry<String, NifiPropertyGroup> propertyEntry : processGroupEntry.getValue().entrySet()) {
                 String processorId = propertyEntry.getKey();
                 updateProcessorProperties(processGroupId, processorId, propertyEntry.getValue());
             }
 
+        }
+    }
+
+    public void updateProcessorProperties(String processGroupId, String processorId, NifiPropertyGroup propertyGroup) {
+        Map<String, NifiProperty> propertyMap = NifiPropertyUtil.propertiesAsMap(propertyGroup.getPropertyList());
+        if(propertyGroup.isRemoteProcessGroup()) {
+           RemoteProcessGroupDTO remoteProcessGroupDTO = client.remoteProcessGroups().findById(propertyGroup.getId())
+            .orElseThrow(() -> new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.REMOTE_PROCESS_GROUP, null));
+           NifiRemoteProcessGroupUtil.updateRemoteProcessGroup(remoteProcessGroupDTO,propertyGroup.getPropertyList());
+           client.remoteProcessGroups().update(remoteProcessGroupDTO);
+        }
+        else {
+            // fetch the processor
+            ProcessorDTO processor = getProcessor(processGroupId, processorId);
+            //iterate through and update the properties
+            for (Map.Entry<String, NifiProperty> property : propertyMap.entrySet()) {
+                processor.getConfig().getProperties().put(property.getKey(), property.getValue().getValue());
+            }
+            updateProcessor(processor);
         }
     }
 

@@ -292,6 +292,13 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             promise.then(successFn, errorFn);
             return promise;
         };
+        /**
+         * Fetch the input PortDTO objects on the Root process group
+         * @return {angular.IPromise<angular.IHttpResponse<any>>}
+         */
+        RegisterTemplateServiceFactory.prototype.fetchRootInputPorts = function () {
+            return this.$http.get(this.RestUrlService.ROOT_INPUT_PORTS);
+        };
         RegisterTemplateServiceFactory.prototype.replaceAll = function (str, find, replace) {
             return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);
         };

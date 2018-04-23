@@ -11,159 +11,185 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
+
 const moduleName = require('feed-mgr/module-name');
 
 
-// export class UiComponentsService {
-    function ServiceController ($http:any, $q:any, $templateRequest:any, RestUrlService:any) {
+export class UiComponentsService {
 
-        /**
-         * Manages the pluggable UI components.
-         */
-        var UiComponentsService:any = {
-            /**
-             * Cache of template table options.
-             * @private
-             * @type {(Array.<TemplateTableOption>|null)}
-             */
-            TEMPLATE_TABLE_OPTIONS: null,
+    /**
+     * Cache of template table options.
+     * @private
+     * @type {(Array.<TemplateTableOption>|null)}
+     */
+    TEMPLATE_TABLE_OPTIONS: any = null;
 
-            /**
-             * Cache of the processor templates
-             */
-            PROCESSOR_TEMPLATES: null,
+    /**
+     * Cache of the processor templates
+     */
+    PROCESSOR_TEMPLATES: any = null;
 
-            /**
-             * Map of the type, {progress}
-             */
-            stepperTemplateRenderProgress : {},
+    /**
+     * Map of the type, {progress}
+     */
+    stepperTemplateRenderProgress: any = {};
 
-            /**
-             * Start rendering a giben
-             * @param type
-             * @param requests
-             */
-            startStepperTemplateRender:function(tableOption:any, callback:any){
-                var type = tableOption.type;
-                var requests = tableOption.totalSteps == tableOption.totalPreSteps ? 1 : (tableOption.totalPreSteps >0 ? 2 : 1);
-              UiComponentsService.stepperTemplateRenderProgress[type] = {total:requests,complete:0, callback:callback};
-            },
 
-            completeStepperTemplateRender:function(type:any){
-                var complete = true;
-                if(angular.isDefined(UiComponentsService.stepperTemplateRenderProgress[type])){
-                    var progress = UiComponentsService.stepperTemplateRenderProgress[type];
-                    progress.complete +=1;
-                    complete = progress.complete == progress.total;
-                    if(complete && angular.isDefined(progress.callback) && angular.isFunction(progress.callback)) {
-                        progress.callback(type);
-                    }
-                }
+    /**
+     * Flag to indicate if we are already fetching
+     */
+    initialProcesorTemplatePromise: angular.IPromise<any> = null;
 
-                return complete;
-            },
 
-            /**
-             * Gets the template table option with the specified type.
-             * @param {string} type - the unique identifier for the table option
-             * @returns {Promise} resolves to the TemplateTableOption
-             */
-            getTemplateTableOption: function (type:any) {
-                return UiComponentsService.getTemplateTableOptions()
-                    .then(function (tableOptions:any) {
-                        var selected = _.find(tableOptions, function (tableOption:any) {
-                            return tableOption.type === type;
-                        });
+    /**
+     * Flag to indicate we are already fetching the table options
+     * @type {null}
+     */
+    initialTemplateTableOptionsPromise: angular.IPromise<any> = null;
 
-                        var result = $q.defer();
-                        if (angular.isDefined(selected)) {
-                            result.resolve(selected);
-                        } else {
-                            result.reject();
-                        }
-                        return result.promise;
-                    });
-            },
-            getTableOptionAndCacheTemplates : function(type:any) {
-                var defer = $q.defer();
-                // Loads the table option template
-                UiComponentsService.getTemplateTableOption(type)
-                    .then(function (tableOption:any) {
 
-                        var requests = {};
-                        if(angular.isDefined(tableOption.stepperTemplateUrl)&& tableOption.stepperTemplateUrl){
-                            requests['stepperTemplateUrl'] = $templateRequest(tableOption.stepperTemplateUrl);
-                        }
-                        if(angular.isDefined(tableOption.preStepperTemplateUrl) && tableOption.preStepperTemplateUrl != null ){
-                            requests['preStepperTemplateUrl'] = $templateRequest(tableOption.preStepperTemplateUrl);
-                        }
+    static $inject = ["$http", "$q", "$templateRequest", "RestUrlService"];
 
-                        $q.when(requests).then(function(response:any){
-                            defer.resolve(tableOption);
-                        });
-                    })
+    constructor(private $http: angular.IHttpService, private  $q: angular.IQService, private $templateRequest: any, private RestUrlService: any) {
 
-                return defer.promise;
-            },
-
-            /**
-             * Gets the metadata properties for the specified table option.
-             *
-             * @param {string} type - the unique identifier for the table option
-             * @returns {Promise} resolves to the list of metadata properties
-             */
-            getTemplateTableOptionMetadataProperties: function (type:any) {
-                return UiComponentsService.getTemplateTableOption(type)
-                    .then(function (tableOption:any) {
-                        return tableOption.metadataProperties.map(function (property:any) {
-                            return {
-                                key: "metadata.tableOption." + property.name,
-                                value: "",
-                                dataType: property.dataType,
-                                description: property.description,
-                                type: "metadata"
-                            };
-                        })
-                    });
-            },
-
-            /**
-             * Gets the list of template table option plugins.
-             * @returns {Promise} resolves to the list of TemplateTableOption objects
-             */
-            getTemplateTableOptions: function () {
-                if (UiComponentsService.TEMPLATE_TABLE_OPTIONS === null) {
-                    return $http.get(RestUrlService.UI_TEMPLATE_TABLE_OPTIONS)
-                        .then(function (response:any) {
-                            UiComponentsService.TEMPLATE_TABLE_OPTIONS = response.data;
-                            return UiComponentsService.TEMPLATE_TABLE_OPTIONS;
-                        });
-                } else {
-                    var result = $q.defer();
-                    result.resolve(UiComponentsService.TEMPLATE_TABLE_OPTIONS);
-                    return result.promise;
-                }
-            },
-            /**
-             * Gets the list of template table option plugins.
-             * @returns {Promise} resolves to the list of TemplateTableOption objects
-             */
-            getProcessorTemplates: function () {
-                if (UiComponentsService.PROCESSOR_TEMPLATES === null) {
-                    return $http.get(RestUrlService.UI_PROCESSOR_TEMPLATES)
-                        .then(function (response:any) {
-                            UiComponentsService.PROCESSOR_TEMPLATES = response.data;
-                            return UiComponentsService.PROCESSOR_TEMPLATES;
-                        });
-                } else {
-                    var result = $q.defer();
-                    result.resolve(UiComponentsService.PROCESSOR_TEMPLATES);
-                    return result.promise;
-                }
-            }
-        };
-
-        return UiComponentsService;
     }
-// }
-angular.module(moduleName).service("UiComponentsService", ["$http", "$q", "$templateRequest","RestUrlService",ServiceController]);
+
+    startStepperTemplateRender(tableOption: any, callback: any) {
+        var type = tableOption.type;
+        var requests = tableOption.totalSteps == tableOption.totalPreSteps ? 1 : (tableOption.totalPreSteps > 0 ? 2 : 1);
+        this.stepperTemplateRenderProgress[type] = {total: requests, complete: 0, callback: callback};
+    }
+
+    completeStepperTemplateRender(type: any) {
+        var complete = true;
+        if (angular.isDefined(this.stepperTemplateRenderProgress[type])) {
+            var progress = this.stepperTemplateRenderProgress[type];
+            progress.complete += 1;
+            complete = progress.complete == progress.total;
+            if (complete && angular.isDefined(progress.callback) && angular.isFunction(progress.callback)) {
+                progress.callback(type);
+            }
+        }
+
+        return complete;
+    }
+
+    /**
+     * Gets the template table option with the specified type.
+     * @param {string} type - the unique identifier for the table option
+     * @returns {Promise} resolves to the TemplateTableOption
+     */
+    getTemplateTableOption(type: any) {
+        return this.getTemplateTableOptions()
+            .then((tableOptions: any) => {
+                var selected = _.find(tableOptions, (tableOption: any) => {
+                    return tableOption.type === type;
+                });
+
+                var result = this.$q.defer();
+                if (angular.isDefined(selected)) {
+                    result.resolve(selected);
+                } else {
+                    result.reject();
+                }
+                return result.promise;
+            });
+    }
+
+    getTableOptionAndCacheTemplates(type: any) {
+        var defer = this.$q.defer();
+        // Loads the table option template
+        this.getTemplateTableOption(type)
+            .then((tableOption: any) => {
+
+                var requests = {};
+                if (angular.isDefined(tableOption.stepperTemplateUrl) && tableOption.stepperTemplateUrl) {
+                    requests['stepperTemplateUrl'] = this.$templateRequest(tableOption.stepperTemplateUrl);
+                }
+                if (angular.isDefined(tableOption.preStepperTemplateUrl) && tableOption.preStepperTemplateUrl != null) {
+                    requests['preStepperTemplateUrl'] = this.$templateRequest(tableOption.preStepperTemplateUrl);
+                }
+
+                this.$q.when(requests).then((response: any) => {
+                    defer.resolve(tableOption);
+                });
+            })
+
+        return defer.promise;
+    }
+
+    /**
+     * Gets the metadata properties for the specified table option.
+     *
+     * @param {string} type - the unique identifier for the table option
+     * @returns {Promise} resolves to the list of metadata properties
+     */
+    getTemplateTableOptionMetadataProperties(type: any) {
+        return this.getTemplateTableOption(type)
+            .then((tableOption: any) => {
+                return tableOption.metadataProperties.map((property: any) => {
+                    return {
+                        key: "metadata.tableOption." + property.name,
+                        value: "",
+                        dataType: property.dataType,
+                        description: property.description,
+                        type: "metadata"
+                    };
+                })
+            });
+    }
+
+    /**
+     * Gets the list of template table option plugins.
+     * @returns {Promise} resolves to the list of TemplateTableOption objects
+     */
+    getTemplateTableOptions() {
+        var result: angular.IDeferred<any> = null;
+        if (this.TEMPLATE_TABLE_OPTIONS === null) {
+            if (this.initialTemplateTableOptionsPromise == null) {
+                result = this.$q.defer();
+                this.initialTemplateTableOptionsPromise = result.promise;
+                this.$http.get(this.RestUrlService.UI_TEMPLATE_TABLE_OPTIONS)
+                    .then((response: angular.IHttpResponse<any>) => {
+                        this.TEMPLATE_TABLE_OPTIONS = response.data;
+                        result.resolve(this.TEMPLATE_TABLE_OPTIONS);
+                    });
+            }
+            return this.initialTemplateTableOptionsPromise;
+
+        } else {
+            result = this.$q.defer();
+            result.resolve(this.TEMPLATE_TABLE_OPTIONS);
+            return result.promise;
+        }
+    }
+
+    /**
+     * Gets the list of template table option plugins.
+     * @returns {Promise} resolves to the list of TemplateTableOption objects
+     */
+    getProcessorTemplates(): angular.IPromise<any> {
+        var result: angular.IDeferred<any> = null;
+        if (this.PROCESSOR_TEMPLATES === null) {
+            if (this.initialProcesorTemplatePromise == null) {
+                result = this.$q.defer();
+                this.initialProcesorTemplatePromise = result.promise;
+                this.$http.get(this.RestUrlService.UI_PROCESSOR_TEMPLATES)
+                    .then((response: angular.IHttpResponse<any>) => {
+                        this.PROCESSOR_TEMPLATES = response.data;
+                        result.resolve(this.PROCESSOR_TEMPLATES);
+                    });
+            }
+            return this.initialProcesorTemplatePromise;
+
+        } else {
+            result = this.$q.defer();
+            result.resolve(this.PROCESSOR_TEMPLATES);
+            return result.promise;
+        }
+
+    }
+
+}
+
+angular.module(moduleName).service("UiComponentsService", UiComponentsService);

@@ -20,6 +20,7 @@ package com.thinkbiganalytics.hive.service;
  * #L%
  */
 
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosUtil;
 
@@ -50,6 +51,10 @@ public class RefreshableDataSource implements DataSource {
 
     private static final org.slf4j.Logger log = LoggerFactory.getLogger(RefreshableDataSource.class);
 
+    public static enum UsernameCase {
+        AS_SPECIFIED,LOWER_CASE,UPPER_CASE;
+    }
+
     private static final String DEFAULT_DATASOURCE_NAME = "DEFAULT";
     String propertyPrefix;
     @Autowired
@@ -59,6 +64,9 @@ public class RefreshableDataSource implements DataSource {
     @Inject
     @Qualifier("kerberosHiveConfiguration")
     private KerberosTicketConfiguration kerberosTicketConfiguration;
+
+    @Inject
+    protected UsernameCaseStrategyUtil usernameCaseStrategyUtil;
 
     public RefreshableDataSource(String propertyPrefix) {
         this.propertyPrefix = propertyPrefix;
@@ -207,6 +215,7 @@ public class RefreshableDataSource implements DataSource {
         return prefix;
     }
 
+
     private DataSource create(boolean proxyUser, String principal) {
         String prefix = getPrefixWithTrailingDot();
 
@@ -214,16 +223,21 @@ public class RefreshableDataSource implements DataSource {
         String url = env.getProperty(prefix + "url");
         String password = env.getProperty(prefix + "password");
         String userName = env.getProperty(prefix + "username");
-
-        if (proxyUser && propertyPrefix.equals("hive.datasource")) {
-            userName = principal;
-            url = url + ";hive.server2.proxy.user=" + principal;
-        }
-        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
         String username = userName;
+        if (proxyUser && propertyPrefix.equals(UsernameCaseStrategyUtil.hiveDatasourcePrefix)) {
+            UsernameCaseStrategyUtil.UsernameCaseStrategy usernameCaseStrategy = usernameCaseStrategyUtil.getHiveUsernameCaseStrategy();
+            String proxyUsername = UsernameCaseStrategyUtil.convertUsernameCase(principal,usernameCaseStrategy);
+            url = url + ";hive.server2.proxy.user=" + proxyUsername;
+        }
+
+        log.debug("The JDBC URL is " + url + " --- User impersonation enabled: " + proxyUser);
+
 
         DataSource ds = DataSourceBuilder.create().driverClassName(driverClassName).url(url).username(username).password(password).build();
         return ds;
     }
+
+
+
 
 }

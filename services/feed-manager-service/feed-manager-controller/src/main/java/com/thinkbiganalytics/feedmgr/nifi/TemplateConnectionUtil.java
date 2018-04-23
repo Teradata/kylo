@@ -41,7 +41,9 @@ import org.apache.nifi.web.api.dto.flow.ProcessGroupFlowDTO;
 import org.apache.nifi.web.api.dto.status.ProcessGroupStatusDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -72,8 +74,23 @@ public class TemplateConnectionUtil {
     @Inject
     private NiFiPropertyDescriptorTransform propertyDescriptorTransform;
 
+
+    @Value("${nifi.create.remote-process-group.retry.sleep-time.millis:4000}")
+    private Integer remoteProcessGroupSleepTime;
+
+    @Value("${nifi.create.remote-process-group.retry.max-attempts:10}")
+    private Integer remoteProcessGroupMaxAttempts;
+
+
+
     public ProcessGroupDTO getRootProcessGroup() {
         return niFiObjectCache.getRootProcessGroup();
+    }
+
+
+    @Nullable
+    public ProcessGroupDTO getReusableTemplateCategoryProcessGroup() {
+        return niFiObjectCache.getReusableTemplateCategoryProcessGroup();
     }
 
     @Nullable
@@ -105,6 +122,11 @@ public class TemplateConnectionUtil {
             return reusableTemplateFlow;
         }
         return null;
+    }
+
+
+    public void resetReusableTemplateProcessGroupCache(){
+        niFiObjectCache.resetReusableProcessGroup();
     }
 
 
@@ -292,7 +314,53 @@ public class TemplateConnectionUtil {
     public Optional<TemplateRemoteInputPortConnections> getRemoteInputPortsForReusableTemplate(String templateName){
     ProcessGroupDTO reusableTemplateProcessGroup = getReusableTemplateCategoryProcessGroup(true);
         return getRemoteInputPortsForReusableTemplate(reusableTemplateProcessGroup,templateName);
-}
+    }
+
+    /**
+     * Gets all the input ports at the Root level
+     * @return
+     */
+    public Set<PortDTO> getRootProcessGroupInputPorts(){
+        Set<PortDTO> ports = new HashSet<>();
+        String rootProcessGroupId = this.getRootProcessGroup().getId();
+        Optional<ProcessGroupDTO> root = restClient.getNiFiRestClient().processGroups().findById(rootProcessGroupId,false,true);
+        if(root.isPresent() && root.get().getContents() != null){
+          Set<PortDTO>  set = root.get().getContents().getInputPorts();
+          if(set != null) {
+              ports.addAll(set);
+          }
+        }
+        return ports;
+    }
+
+    public Optional<TemplateRemoteInputPortConnections> getAllReusableTemplateRemoteInputPorts(){
+        ProcessGroupDTO reusableTemplateProcessGroup = getReusableTemplateCategoryProcessGroup(true);
+        String reusableTemplateProcessGroupId = reusableTemplateProcessGroup.getId();
+        String rootProcessGroupId = this.getRootProcessGroup().getId();
+
+        List<String> reusableTemplateGroupIds =reusableTemplateProcessGroup.getContents().getProcessGroups().stream().map(groupDTO ->groupDTO.getId()).collect(Collectors.toList());
+        if(reusableTemplateGroupIds != null && !reusableTemplateGroupIds.isEmpty()) {
+            List<String>
+                reusableTemplateInputPortIds =
+                reusableTemplateProcessGroup.getContents().getConnections().stream().filter(conn -> reusableTemplateGroupIds.contains(conn.getDestination().getGroupId()))
+                    .map(connectionDTO -> connectionDTO.getSource().getId()).collect(Collectors.toList());
+            List<ConnectionDTO>
+                remoteConnectionsToTemplate =
+                getRootProcessGroupConnections().stream().filter(conn -> conn.getDestination().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                         && conn.getDestination().getGroupId().equalsIgnoreCase(reusableTemplateProcessGroupId)
+                                                                         && conn.getSource().getGroupId().equalsIgnoreCase(rootProcessGroupId)
+                                                                         && conn.getSource().getType().equalsIgnoreCase(NifiConstants.INPUT_PORT)
+                                                                         && reusableTemplateInputPortIds.contains(conn.getDestination().getId()))
+                    .collect(Collectors.toList());
+
+            Set<String> remoteInputPorts = remoteConnectionsToTemplate.stream().map(conn -> conn.getSource().getName()).collect(Collectors.toSet());
+            return Optional.of(new TemplateRemoteInputPortConnections(remoteConnectionsToTemplate, remoteInputPorts));
+
+        }
+        return Optional.empty();
+    }
+
+
 
     public Optional<TemplateRemoteInputPortConnections> getRemoteInputPortsForReusableTemplate(ProcessGroupDTO reusableTemplateProcessGroup, String templateName){
         String
@@ -402,5 +470,13 @@ public class TemplateConnectionUtil {
         String rootProcessGroupId = this.getRootProcessGroup().getId();
         Set<ConnectionDTO> rootConnections = restClient.getNiFiRestClient().processGroups().getConnections(rootProcessGroupId);
         return rootConnections;
+    }
+
+    public Integer getRemoteProcessGroupSleepTime() {
+        return remoteProcessGroupSleepTime != null && remoteProcessGroupSleepTime >=0 ? remoteProcessGroupSleepTime : 4000;
+    }
+
+    public Integer getRemoteProcessGroupMaxAttempts() {
+        return remoteProcessGroupMaxAttempts != null && remoteProcessGroupMaxAttempts >=0 ? remoteProcessGroupMaxAttempts : 10 ;
     }
 }

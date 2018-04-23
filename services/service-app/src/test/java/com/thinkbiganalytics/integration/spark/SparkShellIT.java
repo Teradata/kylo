@@ -136,7 +136,7 @@ public class SparkShellIT extends IntegrationTestBase {
                 ImmutableMap.of("id", 3, "value", "c")
             ), table);
         } finally {
-            ssh("hive -e \"drop table " + tableName + "\"");
+            runCommandOnRemoteSystem("hive -e \"drop table " + tableName + "\"", IntegrationTestBase.APP_HADOOP);
         }
     }
 

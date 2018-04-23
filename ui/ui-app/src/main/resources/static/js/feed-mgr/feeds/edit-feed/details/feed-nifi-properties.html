@@ -59,7 +59,8 @@
                     <span flex="25" class="property-name">{{property.key}}</span>
 
                     <div flex>
-                        {{property.value}}
+                        <span>{{property.displayValue}}</span>
+                        <span ng-if="vm.versions && property.propertyDescriptor && property.propertyDescriptor.identifiesControllerService">{{(property.value)}})</span>
                     </div>
                     <div flex ng-if="vm.versions">
                         {{vm.versionFeedModel.properties[vm.model.inputProcessor.properties.length + $index].value}}

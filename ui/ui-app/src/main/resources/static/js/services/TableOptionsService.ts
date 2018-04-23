@@ -4,7 +4,7 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import TableOption = ListTableView.TableOption;
 import SortOption = ListTableView.SortOption;
-import {Sort} from "@angular/material";
+import {Sort} from "@angular/material/sort";
 
 const moduleName = require('services/module-name');
 
@@ -23,9 +23,9 @@ export class DefaultTableOptionsService implements ListTableView.TableOptionServ
 
         var sortOptions = Object.keys(labelValueMap).map((mapKey:string) => {
             var value = labelValueMap[mapKey];
-            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort',default:'asc'}
+            var sortOption = {label: mapKey, value: value, direction: '', reverse: false, type: 'sort'}
             if (defaultValue && value == defaultValue) {
-                sortOption['default'] = defaultDirection || 'asc';
+                sortOption['default'] = defaultValue;
                 sortOption['direction'] = defaultDirection || 'asc';
                 sortOption['reverse'] = sortOption['direction'] == 'asc' ? false : true;
                 sortOption['icon'] = sortOption['direction'] == 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';
