@@ -76,7 +76,6 @@ export class DefineFeedDetailsController {
     constructor(private $scope: any, private $http: any, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
         , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
-        var self = this;
         this.model = FeedService.createFeedModel;
 
         var watchers = [];
@@ -91,9 +90,9 @@ export class DefineFeedDetailsController {
             }
         });
         
-        var inputProcessorIdWatch = $scope.$watch(() =>{
+        var inputProcessorIdWatch = $scope.$watch(() => {
             return this.inputProcessorId;
-        },(newVal: any, oldVal: any) =>{
+        },(newVal: any, oldVal: any) => {
             if (newVal != null && this.initialInputProcessorId == null) {
                 this.initialInputProcessorId = newVal;
             }
@@ -123,16 +122,6 @@ export class DefineFeedDetailsController {
         })
 
     }
-
-    /**
-         * Finds the allowed controller services for the specified property and sets the allowable values.
-         *
-         * @param {Object} property the property to be updated
-         */
-    // findControllerServicesForProperty(property: any) {
-
-    //     this.FeedService.findControllerServicesForProperty(property);
-    // }
 
     matchInputProcessor(inputProcessor: any, inputProcessors: any) {
 

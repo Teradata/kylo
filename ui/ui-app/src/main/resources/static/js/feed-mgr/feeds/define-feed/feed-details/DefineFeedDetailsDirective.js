@@ -33,7 +33,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.loading = false;
             this.stepperController = null;
             this.inputProcessor = [];
-            var self = this;
             this.model = FeedService.createFeedModel;
             var watchers = [];
             this.codemirrorRenderTypes = RegisterTemplateService.codemirrorRenderTypes;
@@ -75,14 +74,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };
-        /**
-             * Finds the allowed controller services for the specified property and sets the allowable values.
-             *
-             * @param {Object} property the property to be updated
-             */
-        // findControllerServicesForProperty(property: any) {
-        //     this.FeedService.findControllerServicesForProperty(property);
-        // }
         DefineFeedDetailsController.prototype.matchInputProcessor = function (inputProcessor, inputProcessors) {
             if (inputProcessor == null) {
                 //input processor is null when feed is being created
