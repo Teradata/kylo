@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -55,10 +56,13 @@ public class UserFieldDescriptors extends JcrObject {
     }
     
     public void setFields(Set<UserFieldDescriptor> fieldDescrs) {
-        setFieldDesriptors(getNode(), fieldDescrs);;
+        setFieldDescriptors(getNode(), fieldDescrs);;
     }
 
-    private void setFieldDesriptors(Node fieldsNode, Set<UserFieldDescriptor> fieldDescrs) {
+    private void setFieldDescriptors(Node fieldsNode, Set<UserFieldDescriptor> fieldDescrs) {
+        //Remove any existing descriptors first before setting the new ones
+        JcrUtil.getNodesOfType(fieldsNode, FIELD_DESCR_TYPE).forEach(node -> JcrUtil.removeNode(node));
+        //add the new ones
         fieldDescrs.forEach(fieldDescr -> {
             Node descrNode = JcrUtil.getOrCreateNode(fieldsNode, fieldDescr.getSystemName(), FIELD_DESCR_TYPE);
             JcrPropertyUtil.setProperty(descrNode, TITLE, fieldDescr.getDisplayName());
