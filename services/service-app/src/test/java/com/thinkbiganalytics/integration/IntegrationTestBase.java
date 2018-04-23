@@ -592,10 +592,33 @@ public class IntegrationTestBase {
     }
 
     protected DefaultExecutedJob[] getJobs() {
-        //http://localhost:8400/proxy/v1/jobs
+        return getJobs(0,10,null,null);
+    }
+
+    protected DefaultExecutedJob[] getJobs(Integer start, Integer limit,String sort,String filter) {
+
+        StringBuffer sb = new StringBuffer();
+        if(start == null) {
+            start = 0;
+        }
+        if(limit == null){
+            limit = 10;
+        }
+        if(StringUtils.isBlank(sort)){
+            sort = "-startTime";
+        }
+
+        sb.append("?limit=").append(limit)
+            .append("&sort=").append(sort)
+            .append("&start=").append(start);
+        if(StringUtils.isNotBlank(filter)){
+            sb.append("&filter=").append(filter);
+        }
+
         Response response = given(JobsRestController.BASE)
+            .urlEncodingEnabled(false) //url encoding enabled false to avoid replacing percent symbols in url query part
             .when()
-            .get();
+            .get(sb.toString());
 
         response.then().statusCode(HTTP_OK);
 
