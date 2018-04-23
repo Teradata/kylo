@@ -155,8 +155,8 @@ public class IntegrationTestBase {
     protected static final String FILTER_BY_FAILURE = "result%3D%3DFAILURE";
     protected static final String FILTER_BY_SLA_ID = "slaId%3D%3D";
 
-    protected static final String APP_NIFI = "NIFI";
-    protected static final String APP_HADOOP = "HADOOP";
+    protected static final String APP_NIFI = "nifi";
+    protected static final String APP_HADOOP = "hadoop";
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
