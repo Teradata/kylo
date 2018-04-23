@@ -41,8 +41,10 @@ import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.support.AnnotationConfigContextLoader;
 import org.testng.Assert;
 
 import java.util.HashSet;
@@ -52,8 +54,9 @@ import java.util.Set;
 import javax.inject.Inject;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class},loader=AnnotationConfigContextLoader.class,inheritInitializers = false)
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 public class FeedManagerFeedTest {
 
     private static final Logger log = LoggerFactory.getLogger(FeedManagerFeedTest.class);
@@ -68,7 +71,7 @@ public class FeedManagerFeedTest {
     private DatasourceProvider datasourceProvider;
 
     @Inject
-    private JcrMetadataAccess metadata;
+    private MetadataAccess metadata;
 
     @Inject
     private FeedTestUtil feedTestUtil;
