@@ -94,14 +94,13 @@ export class DefineFeedPropertiesController {
         if(angular.isUndefined(this.model.tags)){
             this.model.tags = []
         }
-        var self = this;
         // Update user fields when category changes
         $scope.$watch(
-                function() {return self.model.category.id},
-                function(categoryId:any) {
+                ()=> {return this.model.category.id},
+                (categoryId:any) => {
                     if (categoryId !== null) {
                         FeedService.getUserFields(categoryId)
-                                .then(self.setUserProperties);
+                                .then(this.setUserProperties);
                     }
                 }
         );

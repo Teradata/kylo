@@ -21,27 +21,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
-    var directive = function () {
-        return {
-            restrict: "EA",
-            bindToController: {
-                stepIndex: '@'
-            },
-            controllerAs: 'vm',
-            require: ['thinkbigDefineFeedSchedule', '^thinkbigStepper'],
-            scope: {},
-            templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-schedule.html',
-            controller: "DefineFeedScheduleController",
-            link: function ($scope, element, attrs, controllers) {
-                var thisController = controllers[0];
-                var stepperController = controllers[1];
-                thisController.stepperController = stepperController;
-                thisController.totalSteps = stepperController.totalSteps;
-            }
-        };
-    };
     var DefineFeedScheduleController = /** @class */ (function () {
         function DefineFeedScheduleController($scope, $http, $mdDialog, $timeout, RestUrlService, FeedService, StateService, StepperService, CategoriesService, BroadcastService, $filter, FeedCreationErrorService) {
+            var _this = this;
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
@@ -54,360 +36,354 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.BroadcastService = BroadcastService;
             this.$filter = $filter;
             this.FeedCreationErrorService = FeedCreationErrorService;
-            var self = this;
+            /**
+                 * The stepperController will be accessible shortly after this controller is created.
+                 * This indicates the amount of time it should wait in an attempt to wire itself with the controller
+                 * @type {number}
+                 */
+            this.waitForStepperControllerRetryAmount = 0;
+            /**
+                 * The Timer amount with default
+                 * @type {number}
+                 */
+            this.timerAmount = 5;
+            /**
+                 * the timer units with default
+                 * @type {string}
+                 */
+            this.timerUnits = "min";
+            /**
+                 * flag indicates the data is valid
+                 * @type {boolean}
+                 */
+            this.isValid = false;
+            /**
+                 * The object that is populated after the Feed is created and returned from the server
+                 * @type {null}
+                 */
+            this.createdFeed = null;
+            /**
+                 * Indicates if any errors exist from the server  upon saving
+                 * @type {Array}
+                 */
+            this.feedErrorsData = [];
+            /**
+                 * reference to error count so the UI can show it
+                 * @type {number}
+                 */
+            this.feedErrorsCount = 0;
+            /**
+                 * Indicates that NiFi is clustered.
+                 *
+                 * @type {boolean}
+                 */
+            this.isClustered = true;
+            this.savingFeed = false;
+            /**
+                 * Indicates that NiFi supports the execution node property.
+                 * @type {boolean}
+                 */
+            this.supportsExecutionNode = true;
             /**
              * Get notified when a step is changed/becomes active
              */
-            BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep);
+            BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, function (event, index) {
+                if (index == parseInt(_this.stepIndex)) {
+                    _this.updateScheduleStrategies();
+                    //make sure the selected strategy is valid
+                    _this.setDefaultScheduleStrategy();
+                }
+            });
             /**
              * get notified when any step changes its state (becomes enabled/disabled)
              * This is needed to block out the save button if a step is invalid/disabled
              */
-            BroadcastService.subscribe($scope, StepperService.STEP_STATE_CHANGED_EVENT, onStepStateChange);
-            /**
-             * reference to the parent stepper controller
-             * @type {null}
-             */
-            this.stepperController = null;
-            /**
-             * The stepperController will be accessible shortly after this controller is created.
-             * This indicates the amount of time it should wait in an attempt to wire itself with the controller
-             * @type {number}
-             */
-            this.waitForStepperControllerRetryAmount = 0;
-            /**
-             * Reference to this step number
-             * @type {number}
-             */
-            this.stepNumber = parseInt(this.stepIndex) + 1;
+            BroadcastService.subscribe($scope, StepperService.STEP_STATE_CHANGED_EVENT, function (event, index) { return _this.validate(); });
             /**
              * The model
              */
             this.model = FeedService.createFeedModel;
             /**
-             * The Timer amount with default
-             * @type {number}
+             * update the default strategies in the list
              */
-            this.timerAmount = 5;
+            this.updateScheduleStrategies();
             /**
-             * the timer units with default
-             * @type {string}
+             * Validate the form
              */
-            this.timerUnits = "min";
-            /**
-             * flag indicates the data is valid
-             * @type {boolean}
+            this.validate();
+            // Detect if NiFi is clustered
+            $http.get(RestUrlService.NIFI_STATUS).then(function (response) {
+                this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+                this.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
+                this.updateScheduleStrategies();
+            });
+        }
+        DefineFeedScheduleController.prototype.$onInit = function () {
+            this.totalSteps = this.stepperController.totalSteps;
+            this.stepNumber = parseInt(this.stepIndex) + 1;
+        };
+        /**
+             * When the timer changes show warning if its < 3 seconds indicating to the user this is a "Rapid Fire" feed
              */
-            this.isValid = false;
-            /**
-             * the angular form
-             * @type {{}}
+        DefineFeedScheduleController.prototype.timerChanged = function () {
+            if (this.timerAmount < 0) {
+                this.timerAmount = null;
+            }
+            if (this.timerAmount != null && (this.timerAmount == 0 || (this.timerAmount < 3 && this.timerUnits == 'sec'))) {
+                this.showTimerAlert();
+            }
+            this.model.schedule.schedulingPeriod = this.timerAmount + " " + this.timerUnits;
+            this.validate();
+        };
+        ;
+        DefineFeedScheduleController.prototype.showTimerAlert = function () {
+            this.$mdDialog.show(this.$mdDialog.alert()
+                .parent(angular.element(document.body))
+                .clickOutsideToClose(false)
+                .title('Warning. Rapid Timer')
+                .textContent('Warning.  You have this feed scheduled for a very fast timer.  Please ensure you want this feed scheduled this fast before you proceed.')
+                .ariaLabel('Warning Fast Timer')
+                .ok('Got it!')
+            // .targetEvent(ev)   %%%% Need To discuss this with greg %%%%%
+            );
+        };
+        ;
+        /**
+         * When the strategy changes ensure the defaults are set
+         */
+        DefineFeedScheduleController.prototype.onScheduleStrategyChange = function () {
+            this.model.schedule.schedulingStrategyTouched = true;
+            if (this.model.schedule.schedulingStrategy == "CRON_DRIVEN") {
+                if (this.model.schedule.schedulingPeriod != this.FeedService.DEFAULT_CRON) {
+                    this.setCronDriven();
+                }
+            }
+            else if (this.model.schedule.schedulingStrategy == "TIMER_DRIVEN") {
+                this.setTimerDriven();
+            }
+            else if (this.model.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
+                if (this.supportsExecutionNode) {
+                    this.setTimerDriven();
+                    this.model.schedule.schedulingStrategy = "PRIMARY";
+                }
+                else {
+                    this.setPrimaryNodeOnly();
+                }
+            }
+            this.validate();
+        };
+        ;
+        DefineFeedScheduleController.prototype.deletePrecondition = function ($index) {
+            if (this.model.schedule.preconditions != null) {
+                this.model.schedule.preconditions.splice($index, 1);
+            }
+        };
+        ;
+        DefineFeedScheduleController.prototype.showPreconditionDialog = function (index) {
+            if (index == undefined) {
+                index = null;
+            }
+            this.$mdDialog.show({
+                controller: 'FeedPreconditionsDialogController',
+                templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {
+                    feed: this.model,
+                    index: index
+                }
+            }).then(function () {
+                this.validate();
+            });
+        };
+        ;
+        /**
+        * attempt to wire the stepper controller references
+        * @param callback
+        */
+        DefineFeedScheduleController.prototype.waitForStepperController = function (model, callback) {
+            if (model.stepperController) {
+                model.waitForStepperControllerRetryAmount = 0;
+                callback();
+            }
+            else {
+                if (model.waitForStepperControllerRetryAmount < 20) {
+                    model.waitForStepperControllerRetryAmount++;
+                    model.$timeout(function () {
+                        model.waitForStepperController(model, callback);
+                    }, 10);
+                }
+            }
+        };
+        /**
+        * validate the inputs and model data
+        */
+        DefineFeedScheduleController.prototype.validate = function () {
+            var _this = this;
+            //cron expression validation is handled via the cron-expression validator
+            var valid = (this.model.schedule.schedulingStrategy == "CRON_DRIVEN") ||
+                (this.model.schedule.schedulingStrategy == "TIMER_DRIVEN" && this.timerAmount != undefined && this.timerAmount != null) ||
+                (this.model.schedule.schedulingStrategy == "TRIGGER_DRIVEN" && this.model.schedule.preconditions != null && this.model.schedule.preconditions.length > 0) ||
+                (this.model.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY" && this.timerAmount != undefined && this.timerAmount != null);
+            if (valid) {
+                this.waitForStepperController(this, function () {
+                    //since the access control step can be disabled, we care about everything before that step, so we will check the step prior to this step
+                    _this.isValid = _this.stepperController.arePreviousStepsComplete(_this.stepIndex - 1);
+                });
+            }
+            else {
+                this.isValid = valid;
+            }
+        };
+        /**
+           * Show activity
+           */
+        DefineFeedScheduleController.prototype.showProgress = function () {
+            if (this.stepperController) {
+                this.stepperController.showProgress = true;
+            }
+        };
+        /**
+         * hide progress activity
+         */
+        DefineFeedScheduleController.prototype.hideProgress = function () {
+            if (this.stepperController) {
+                this.stepperController.showProgress = false;
+            }
+        };
+        /**
+             * Create the feed, save it to the server, populate the {@code createdFeed} object upon save
              */
-            this.defineFeedScheduleForm = {};
-            /**
-             * The object that is populated after the Feed is created and returned from the server
-             * @type {null}
+        DefineFeedScheduleController.prototype.createFeed = function () {
+            if (this.defineFeedScheduleForm.$valid) {
+                this.savingFeed = true;
+                this.showProgress();
+                this.createdFeed = null;
+                this.FeedService.saveFeedModel(this.model).then(function (response) {
+                    this.createdFeed = response.data;
+                    this.savingFeed = false;
+                    this.StateService.FeedManager().Feed().navigateToDefineFeedComplete(this.createdFeed, null);
+                    //  this.showCompleteDialog();
+                }, function (response) {
+                    this.savingFeed = false;
+                    this.createdFeed = response.data;
+                    this.FeedCreationErrorService.buildErrorData(this.model.feedName, response);
+                    this.hideProgress();
+                    this.FeedCreationErrorService.showErrorDialog();
+                });
+            }
+        };
+        ;
+        /**
+             * Different templates have different schedule strategies.
+             * Filter out those that are not needed based upon the template
              */
-            this.createdFeed = null;
-            /**
-             * Indicates if any errors exist from the server  upon saving
-             * @type {Array}
-             */
-            this.feedErrorsData = [];
-            /**
-             * reference to error count so the UI can show it
-             * @type {number}
-             */
-            this.feedErrorsCount = 0;
-            /**
-             * Indicates that NiFi is clustered.
-             *
-             * @type {boolean}
-             */
-            this.isClustered = true;
-            this.savingFeed = false;
-            /**
-             * Indicates that NiFi supports the execution node property.
-             * @type {boolean}
-             */
-            this.supportsExecutionNode = true;
+        DefineFeedScheduleController.prototype.updateScheduleStrategies = function () {
+            var _this = this;
+            // Filter schedule strategies
+            var allowPreconditions = (this.model.allowPreconditions && this.model.inputProcessorType.indexOf("TriggerFeed") >= 0);
             /**
              * All possible schedule strategies
              * @type {*[]}
              */
-            var allScheduleStrategies = [{ label: $filter('translate')('views.DefineFeedScheduleDirective.Cron'), value: "CRON_DRIVEN" }, { label: $filter('translate')('views.DefineFeedScheduleDirective.Timer'), value: "TIMER_DRIVEN" }, { label: $filter('translate')('views.DefineFeedScheduleDirective.T/E'), value: "TRIGGER_DRIVEN" },
+            var allScheduleStrategies = [{ label: this.$filter('translate')('views.DefineFeedScheduleDirective.Cron'), value: "CRON_DRIVEN" }, { label: this.$filter('translate')('views.DefineFeedScheduleDirective.Timer'), value: "TIMER_DRIVEN" }, { label: this.$filter('translate')('views.DefineFeedScheduleDirective.T/E'), value: "TRIGGER_DRIVEN" },
                 { label: "On primary node", value: "PRIMARY_NODE_ONLY" }];
-            /**
-             * Different templates have different schedule strategies.
-             * Filter out those that are not needed based upon the template
-             */
-            function updateScheduleStrategies() {
-                // Filter schedule strategies
-                var allowPreconditions = (self.model.allowPreconditions && self.model.inputProcessorType.indexOf("TriggerFeed") >= 0);
-                self.scheduleStrategies = _.filter(allScheduleStrategies, function (strategy) {
-                    if (allowPreconditions) {
-                        return (strategy.value === "TRIGGER_DRIVEN");
-                    }
-                    else if (strategy.value === "PRIMARY_NODE_ONLY") {
-                        return self.isClustered && !self.supportsExecutionNode;
-                    }
-                    else {
-                        return (strategy.value !== "TRIGGER_DRIVEN");
-                    }
-                });
-                // Check if last strategy is valid
-                if (self.model.schedule.schedulingStrategy) {
-                    var validStrategy = _.some(self.scheduleStrategies, function (strategy) {
-                        return strategy.value == self.model.schedule.schedulingStrategy;
-                    });
-                    if (!validStrategy) {
-                        self.model.schedule.schedulingStrategyTouched = false;
-                    }
+            this.scheduleStrategies = _.filter(allScheduleStrategies, function (strategy) {
+                if (allowPreconditions) {
+                    return (strategy.value === "TRIGGER_DRIVEN");
                 }
-            }
-            /**
-             * Force the model and timer to be set to Timer with the defaults
-             */
-            function setTimerDriven() {
-                self.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
-                self.timerAmount = 5;
-                self.timerUnits = "min";
-                self.model.schedule.schedulingPeriod = "5 min";
-            }
-            /**
-             * Force the model to be set to Cron
-             */
-            function setCronDriven() {
-                self.model.schedule.schedulingStrategy = 'CRON_DRIVEN';
-                self.model.schedule.schedulingPeriod = FeedService.DEFAULT_CRON;
-            }
-            /**
-             * Force the model to be set to Triggger
-             */
-            function setTriggerDriven() {
-                self.model.schedule.schedulingStrategy = 'TRIGGER_DRIVEN';
-            }
-            /**
-             * Set the scheduling strategy to 'On primary node'.
-             */
-            function setPrimaryNodeOnly() {
-                self.model.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
-                self.timerAmount = 5;
-                self.timerUnits = "min";
-                self.model.schedule.schedulingPeriod = "5 min";
-            }
-            function setDefaultScheduleStrategy() {
-                if (angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
-                    if (self.model.inputProcessorType != '' && (self.model.schedule.schedulingStrategyTouched == false || self.model.schedule.schedulingStrategyTouched == undefined)) {
-                        if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
-                            setTimerDriven();
-                        }
-                        else if (self.model.inputProcessorType.indexOf("GetTableData") >= 0) {
-                            setCronDriven();
-                        }
-                        else if (self.model.inputProcessorType.indexOf("TriggerFeed") >= 0) {
-                            setTriggerDriven();
-                        }
-                        self.model.schedule.schedulingStrategyTouched = true;
-                    }
-                    else if (self.model.schedule.schedulingPeriod != '') {
-                        var split = self.model.schedule.schedulingPeriod.split(' ');
-                        self.timerAmount = split[0];
-                        self.timerUnits = split[1];
-                    }
+                else if (strategy.value === "PRIMARY_NODE_ONLY") {
+                    return _this.isClustered && !_this.supportsExecutionNode;
                 }
                 else {
-                    var split = self.model.schedule.schedulingPeriod.split(' ');
-                    self.timerAmount = split[0];
-                    self.timerUnits = split[1];
+                    return (strategy.value !== "TRIGGER_DRIVEN");
                 }
-            }
-            /**
-             * update the default strategies in the list
-             */
-            updateScheduleStrategies();
-            /**
-             * Called when any step is active.
-             *
-             * @param event
-             * @param index
-             */
-            function onActiveStep(event, index) {
-                if (index == parseInt(self.stepIndex)) {
-                    updateScheduleStrategies();
-                    //make sure the selected strategy is valid
-                    setDefaultScheduleStrategy();
-                }
-            }
-            /**
-             * get notified of the step state (enabled/disabled) changed
-             * Validate the form
-             * @param event
-             * @param index
-             */
-            function onStepStateChange(event, index) {
-                validate();
-            }
-            /**
-             * When the timer changes show warning if its < 3 seconds indicating to the user this is a "Rapid Fire" feed
-             */
-            this.timerChanged = function () {
-                if (self.timerAmount < 0) {
-                    self.timerAmount = null;
-                }
-                if (self.timerAmount != null && (self.timerAmount == 0 || (self.timerAmount < 3 && self.timerUnits == 'sec'))) {
-                    self.showTimerAlert();
-                }
-                self.model.schedule.schedulingPeriod = self.timerAmount + " " + self.timerUnits;
-                validate();
-            };
-            self.showTimerAlert = function (ev) {
-                $mdDialog.show($mdDialog.alert()
-                    .parent(angular.element(document.body))
-                    .clickOutsideToClose(false)
-                    .title('Warning. Rapid Timer')
-                    .textContent('Warning.  You have this feed scheduled for a very fast timer.  Please ensure you want this feed scheduled this fast before you proceed.')
-                    .ariaLabel('Warning Fast Timer')
-                    .ok('Got it!')
-                    .targetEvent(ev));
-            };
-            /**
-             * When the strategy changes ensure the defaults are set
-             */
-            this.onScheduleStrategyChange = function () {
-                self.model.schedule.schedulingStrategyTouched = true;
-                if (self.model.schedule.schedulingStrategy == "CRON_DRIVEN") {
-                    if (self.model.schedule.schedulingPeriod != FeedService.DEFAULT_CRON) {
-                        setCronDriven();
-                    }
-                }
-                else if (self.model.schedule.schedulingStrategy == "TIMER_DRIVEN") {
-                    setTimerDriven();
-                }
-                else if (self.model.schedule.schedulingStrategy === "PRIMARY_NODE_ONLY") {
-                    if (self.supportsExecutionNode) {
-                        setTimerDriven();
-                        self.model.schedule.schedulingStrategy = "PRIMARY";
-                    }
-                    else {
-                        setPrimaryNodeOnly();
-                    }
-                }
-                validate();
-            };
-            /**
-             * Show activity
-             */
-            function showProgress() {
-                if (self.stepperController) {
-                    self.stepperController.showProgress = true;
-                }
-            }
-            /**
-             * hide progress activity
-             */
-            function hideProgress() {
-                if (self.stepperController) {
-                    self.stepperController.showProgress = false;
-                }
-            }
-            /**
-             * validate the inputs and model data
-             */
-            function validate() {
-                //cron expression validation is handled via the cron-expression validator
-                var valid = (self.model.schedule.schedulingStrategy == "CRON_DRIVEN") ||
-                    (self.model.schedule.schedulingStrategy == "TIMER_DRIVEN" && self.timerAmount != undefined && self.timerAmount != null) ||
-                    (self.model.schedule.schedulingStrategy == "TRIGGER_DRIVEN" && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0) ||
-                    (self.model.schedule.schedulingStrategy == "PRIMARY_NODE_ONLY" && self.timerAmount != undefined && self.timerAmount != null);
-                if (valid) {
-                    waitForStepperController(function () {
-                        //since the access control step can be disabled, we care about everything before that step, so we will check the step prior to this step
-                        self.isValid = self.stepperController.arePreviousStepsComplete(self.stepIndex - 1);
-                    });
-                }
-                else {
-                    self.isValid = valid;
-                }
-            }
-            /**
-             * attempt to wire the stepper controller references
-             * @param callback
-             */
-            function waitForStepperController(callback) {
-                if (self.stepperController) {
-                    self.waitForStepperControllerRetryAmount = 0;
-                    callback();
-                }
-                else {
-                    if (self.waitForStepperControllerRetryAmount < 20) {
-                        self.waitForStepperControllerRetryAmount++;
-                        $timeout(function () {
-                            waitForStepperController(callback);
-                        }, 10);
-                    }
-                }
-            }
-            this.deletePrecondition = function ($index) {
-                if (self.model.schedule.preconditions != null) {
-                    self.model.schedule.preconditions.splice($index, 1);
-                }
-            };
-            this.showPreconditionDialog = function (index) {
-                if (index == undefined) {
-                    index = null;
-                }
-                $mdDialog.show({
-                    controller: 'FeedPreconditionsDialogController',
-                    templateUrl: 'js/feed-mgr/feeds/shared/define-feed-preconditions-dialog.html',
-                    parent: angular.element(document.body),
-                    clickOutsideToClose: false,
-                    fullscreen: true,
-                    locals: {
-                        feed: self.model,
-                        index: index
-                    }
-                }).then(function () {
-                    validate();
-                });
-            };
-            /**
-             * Validate the form
-             */
-            validate();
-            /**
-             * Create the feed, save it to the server, populate the {@code createdFeed} object upon save
-             */
-            this.createFeed = function () {
-                if (self.defineFeedScheduleForm.$valid) {
-                    self.savingFeed = true;
-                    showProgress();
-                    self.createdFeed = null;
-                    FeedService.saveFeedModel(self.model).then(function (response) {
-                        self.createdFeed = response.data;
-                        self.savingFeed = false;
-                        StateService.FeedManager().Feed().navigateToDefineFeedComplete(self.createdFeed, null);
-                        //  self.showCompleteDialog();
-                    }, function (response) {
-                        self.savingFeed = false;
-                        self.createdFeed = response.data;
-                        FeedCreationErrorService.buildErrorData(self.model.feedName, response);
-                        hideProgress();
-                        FeedCreationErrorService.showErrorDialog();
-                    });
-                }
-            };
-            // Detect if NiFi is clustered
-            $http.get(RestUrlService.NIFI_STATUS).then(function (response) {
-                self.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
-                self.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
-                updateScheduleStrategies();
             });
-        }
+            var self = this;
+            // Check if last strategy is valid
+            if (this.model.schedule.schedulingStrategy) {
+                var validStrategy = _.some(this.scheduleStrategies, function (strategy) {
+                    return strategy.value == self.model.schedule.schedulingStrategy;
+                });
+                if (!validStrategy) {
+                    self.model.schedule.schedulingStrategyTouched = false;
+                }
+            }
+        };
+        /**
+         * Force the model and timer to be set to Timer with the defaults
+         */
+        DefineFeedScheduleController.prototype.setTimerDriven = function () {
+            this.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
+            this.timerAmount = 5;
+            this.timerUnits = "min";
+            this.model.schedule.schedulingPeriod = "5 min";
+        };
+        /**
+         * Force the model to be set to Cron
+         */
+        DefineFeedScheduleController.prototype.setCronDriven = function () {
+            this.model.schedule.schedulingStrategy = 'CRON_DRIVEN';
+            this.model.schedule.schedulingPeriod = this.FeedService.DEFAULT_CRON;
+        };
+        /**
+         * Force the model to be set to Triggger
+         */
+        DefineFeedScheduleController.prototype.setTriggerDriven = function () {
+            this.model.schedule.schedulingStrategy = 'TRIGGER_DRIVEN';
+        };
+        /**
+         * Set the scheduling strategy to 'On primary node'.
+         */
+        DefineFeedScheduleController.prototype.setPrimaryNodeOnly = function () {
+            this.model.schedule.schedulingStrategy = "PRIMARY_NODE_ONLY";
+            this.timerAmount = 5;
+            this.timerUnits = "min";
+            this.model.schedule.schedulingPeriod = "5 min";
+        };
+        DefineFeedScheduleController.prototype.setDefaultScheduleStrategy = function () {
+            if (angular.isUndefined(this.model.cloned) || this.model.cloned == false) {
+                if (this.model.inputProcessorType != '' && (this.model.schedule.schedulingStrategyTouched == false || this.model.schedule.schedulingStrategyTouched == undefined)) {
+                    if (this.model.inputProcessorType.indexOf("GetFile") >= 0) {
+                        this.setTimerDriven();
+                    }
+                    else if (this.model.inputProcessorType.indexOf("GetTableData") >= 0) {
+                        this.setCronDriven();
+                    }
+                    else if (this.model.inputProcessorType.indexOf("TriggerFeed") >= 0) {
+                        this.setTriggerDriven();
+                    }
+                    this.model.schedule.schedulingStrategyTouched = true;
+                }
+                else if (this.model.schedule.schedulingPeriod != '') {
+                    var split = this.model.schedule.schedulingPeriod.split(' ');
+                    this.timerAmount = split[0];
+                    this.timerUnits = split[1];
+                }
+            }
+            else {
+                var split = this.model.schedule.schedulingPeriod.split(' ');
+                this.timerAmount = split[0];
+                this.timerUnits = split[1];
+            }
+        };
+        DefineFeedScheduleController.$inject = ["$scope", "$http", "$mdDialog", "$timeout", "RestUrlService", "FeedService", "StateService",
+            "StepperService", "CategoriesService", "BroadcastService", "$filter", "FeedCreationErrorService"];
         return DefineFeedScheduleController;
     }());
     exports.DefineFeedScheduleController = DefineFeedScheduleController;
-    angular.module(moduleName).controller("DefineFeedScheduleController", DefineFeedScheduleController);
-    angular.module(moduleName).directive("thinkbigDefineFeedSchedule", directive);
+    angular.module(moduleName).
+        component("thinkbigDefineFeedSchedule", {
+        bindings: {
+            stepIndex: '@'
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedScheduleController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-schedule.html',
+    });
 });
 //# sourceMappingURL=DefineFeedScheduleDirective.js.map

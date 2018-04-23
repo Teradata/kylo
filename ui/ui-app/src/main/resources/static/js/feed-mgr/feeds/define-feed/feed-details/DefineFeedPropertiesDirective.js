@@ -21,25 +21,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
-    var directive = function () {
-        return {
-            restrict: "EA",
-            bindToController: {
-                stepIndex: '@'
-            },
-            controllerAs: 'vm',
-            require: ['thinkbigDefineFeedProperties', '^thinkbigStepper'],
-            scope: {},
-            templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-properties.html',
-            controller: "DefineFeedPropertiesController",
-            link: function ($scope, element, attrs, controllers) {
-                var thisController = controllers[0];
-                var stepperController = controllers[1];
-                thisController.stepperController = stepperController;
-                thisController.totalSteps = stepperController.totalSteps;
-            }
-        };
-    };
     var DefineFeedPropertiesController = /** @class */ (function () {
         function DefineFeedPropertiesController($scope, $http, $mdToast, RestUrlService, FeedTagService, FeedService) {
             var _this = this;
@@ -49,64 +30,79 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.RestUrlService = RestUrlService;
             this.FeedTagService = FeedTagService;
             this.FeedService = FeedService;
-            /**
-             * Sets the user fields for this feed.
-             *
-             * @param {Array} userProperties the user fields
-             */
-            this.setUserProperties = function (userProperties) {
-                // Convert old user properties to map
-                var oldProperties = {};
-                angular.forEach(_this.model.userProperties, function (property) {
-                    if (angular.isString(property.value) && property.value.length > 0) {
-                        oldProperties[property.systemName] = property.value;
-                    }
-                });
-                // Set new user properties and copy values
-                _this.model.userProperties = angular.copy(userProperties);
-                angular.forEach(_this.model.userProperties, function (property) {
-                    if (angular.isDefined(oldProperties[property.systemName])) {
-                        property.value = oldProperties[property.systemName];
-                        delete oldProperties[property.systemName];
-                    }
-                });
-                // Copy remaining old properties
-                angular.forEach(oldProperties, function (value, key) {
-                    _this.model.userProperties.push({ locked: false, systemName: key, value: value });
-                });
-            };
-            this.transformChip = function (chip) {
-                // If it is an object, it's already a known chip
-                if (angular.isObject(chip)) {
-                    return chip;
-                }
-                // Otherwise, create a new one
-                return { name: chip };
-            };
-            var self = this;
-            self.stepNumber = parseInt(this.stepIndex) + 1;
-            self.model = FeedService.createFeedModel;
-            self.feedTagService = FeedTagService;
-            self.tagChips = {};
-            self.tagChips.selectedItem = null;
-            self.tagChips.searchText = null;
-            self.isValid = true;
-            if (angular.isUndefined(self.model.tags)) {
-                self.model.tags = [];
+            this.tagChips = {};
+            this.isValid = true;
+            this.model = FeedService.createFeedModel;
+            this.feedTagService = FeedTagService;
+            this.tagChips.selectedItem = null;
+            this.tagChips.searchText = null;
+            if (angular.isUndefined(this.model.tags)) {
+                this.model.tags = [];
             }
             // Update user fields when category changes
-            $scope.$watch(function () { return self.model.category.id; }, function (categoryId) {
+            $scope.$watch(function () { return _this.model.category.id; }, function (categoryId) {
                 if (categoryId !== null) {
                     FeedService.getUserFields(categoryId)
-                        .then(self.setUserProperties);
+                        .then(_this.setUserProperties);
                 }
             });
         }
+        /**
+         * Sets the user fields for this feed.
+         *
+         * @param {Array} userProperties the user fields
+         */
+        DefineFeedPropertiesController.prototype.setUserProperties = function (userProperties) {
+            var _this = this;
+            // Convert old user properties to map
+            var oldProperties = null;
+            this.model.userProperties.forEach(function (property) {
+                if (angular.isString(property.value) && property.value.length > 0) {
+                    oldProperties[property.systemName] = property.value;
+                }
+            });
+            // Set new user properties and copy values
+            this.model.userProperties = angular.copy(userProperties);
+            this.model.userProperties.forEach(function (property) {
+                if (angular.isDefined(oldProperties[property.systemName])) {
+                    property.value = oldProperties[property.systemName];
+                    delete oldProperties[property.systemName];
+                }
+            });
+            // Copy remaining old properties
+            oldProperties.forEach(function (value, key) {
+                _this.model.userProperties.push({ locked: false, systemName: key, value: value });
+            });
+        };
+        DefineFeedPropertiesController.prototype.transformChip = function (chip) {
+            // If it is an object, it's already a known chip
+            if (angular.isObject(chip)) {
+                return chip;
+            }
+            // Otherwise, create a new one
+            return { name: chip };
+        };
         ;
+        DefineFeedPropertiesController.prototype.$onInit = function () {
+            this.totalSteps = this.stepperController.totalSteps;
+            this.stepNumber = parseInt(this.stepIndex) + 1;
+        };
+        ;
+        DefineFeedPropertiesController.$inject = ["$scope", "$http", "$mdToast", "RestUrlService", "FeedTagService", "FeedService"];
         return DefineFeedPropertiesController;
     }());
     exports.DefineFeedPropertiesController = DefineFeedPropertiesController;
-    angular.module(moduleName).controller('DefineFeedPropertiesController', ["$scope", "$http", "$mdToast", "RestUrlService", "FeedTagService", "FeedService", DefineFeedPropertiesController]);
-    angular.module(moduleName).directive('thinkbigDefineFeedProperties', directive);
+    angular.module(moduleName).
+        component("thinkbigDefineFeedProperties", {
+        bindings: {
+            stepIndex: '@'
+        },
+        require: {
+            stepperController: "^thinkbigStepper"
+        },
+        controllerAs: 'vm',
+        controller: DefineFeedPropertiesController,
+        templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-properties.html',
+    });
 });
 //# sourceMappingURL=DefineFeedPropertiesDirective.js.map
