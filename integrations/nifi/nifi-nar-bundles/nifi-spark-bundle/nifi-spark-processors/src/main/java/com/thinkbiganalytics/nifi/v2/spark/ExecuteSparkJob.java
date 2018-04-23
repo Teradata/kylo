@@ -40,6 +40,7 @@ import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
@@ -389,8 +390,8 @@ public class ExecuteSparkJob extends BaseProcessor {
             /* Configuration parameters for spark launcher */
             String appJar = getApplicationJar(context, flowFile);
             String mainClass = getMainClass(context, flowFile);
-            String appArgs = getMainArgs(context, flowFile);
-            String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
+            String[] appArgs = getMainArgs(context, flowFile);
+            String extraJars = getExtraJars(context, flowFile);
             String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkYarnDeployMode = context.getProperty(SPARK_YARN_DEPLOY_MODE).evaluateAttributeExpressions(flowFile).getValue();
@@ -476,7 +477,7 @@ public class ExecuteSparkJob extends BaseProcessor {
                 .setExtraFiles(extraFiles);
 
             Process spark = optionalSparkConf.getLaucnher().launch();
-
+//
             /* Read/clear the process input stream */
             InputStreamReaderRunnable inputStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.INFO, logger, spark.getInputStream());
             Thread inputThread = new Thread(inputStreamReaderRunnable, "stream input");
@@ -518,8 +519,14 @@ public class ExecuteSparkJob extends BaseProcessor {
         }
     }
 
-    protected String getMainArgs(final ProcessContext context, FlowFile flowFile) {
-        return context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
+    protected String[] getMainArgs(final ProcessContext context, FlowFile flowFile) {
+        PropertyValue prop = context.getProperty(MAIN_ARGS);
+        if (prop != null) {
+            String csv = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
+            return csv.split(",");
+        } else {
+            return new String[0];
+        }
     }
 
     protected String getMainClass(final ProcessContext context, FlowFile flowFile) {
@@ -528,6 +535,11 @@ public class ExecuteSparkJob extends BaseProcessor {
 
     protected String getApplicationJar(final ProcessContext context, FlowFile flowFile) {
         return context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+    }
+
+    protected String getExtraJars(final ProcessContext context, FlowFile flowFile) {
+        PropertyValue prop = context.getProperty(EXTRA_JARS);
+        return prop.isSet() && StringUtils.isNoneBlank(prop.getValue()) ? prop.evaluateAttributeExpressions(flowFile).getValue() : "";
     }
 
     private Map<String, String> getDatasources(ProcessSession session, FlowFile flowFile, String PROVENANCE_JOB_STATUS_KEY, String datasourceIds, MetadataProviderService metadataService,
@@ -645,9 +657,9 @@ public class ExecuteSparkJob extends BaseProcessor {
             return this;
         }
 
-        private OptionalSparkConfigurator addAppArgs(String appArgs) {
-            if (!StringUtils.isEmpty(appArgs)) {
-                launcher.addAppArgs(appArgs.split(","));
+        private OptionalSparkConfigurator addAppArgs(String... appArgs) {
+            if (appArgs != null) {
+                launcher.addAppArgs(appArgs);
             }
             return this;
         }

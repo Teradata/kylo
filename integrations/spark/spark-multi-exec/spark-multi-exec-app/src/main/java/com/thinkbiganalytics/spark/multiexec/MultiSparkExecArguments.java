@@ -31,6 +31,7 @@ import com.beust.jcommander.converters.IParameterSplitter;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -45,6 +46,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.NavigableMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  *
@@ -55,27 +58,28 @@ public class MultiSparkExecArguments implements Serializable {
     
     public static final String APPS_SWITCH = "--apps";
     
+    private static final Pattern QUOTED = Pattern.compile("'(.*)'");
+    
     private static final ObjectWriter APP_CMD_WRITER;
     private static final ObjectReader APP_CMD_READER;
     private static final TypeReference<List<SparkApplicationCommand>> SPEC_LIST_TYPE = new TypeReference<List<SparkApplicationCommand>>() { };
 
     static {
         ObjectMapper mapper = new ObjectMapper().setSerializationInclusion(Include.NON_NULL);
-//        APP_CMD_READER = mapper.reader().forType(SPEC_LIST_TYPE);
-//        APP_CMD_WRITER = mapper.writer().forType(SPEC_LIST_TYPE);
         APP_CMD_READER = mapper.reader().withType(SPEC_LIST_TYPE);
         APP_CMD_WRITER = mapper.writer().withType(SPEC_LIST_TYPE);
     }
 
     
     @Parameter(names = APPS_SWITCH, required=true, converter = AppCommandConverter.class, listConverter = AppCommandConverter.class)
-//    @Parameter(names = APPS_SWITCH, required=true, converter = AppCommandConverter.class, splitter=NonSplitter.class)
-//    @Parameter(names = APPS_SWITCH, required=true, converter = AppCommandConverter.class, listConverter=NonSplitter.class)
     private List<SparkApplicationCommand> commands;
     
     public static String[] createCommandLine(List<SparkApplicationCommand> specs) {
         try {
-            return new String[] { APPS_SWITCH, APP_CMD_WRITER.writeValueAsString(specs) };
+            String json = APP_CMD_WRITER.writeValueAsString(specs);
+            String escaped = json.replaceAll("\\\\n", "\\\\\\\\n");;
+            
+            return new String[] { APPS_SWITCH, "'" + escaped + "'" };
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Unable to serialize Spark application commands", e);
         }
@@ -126,9 +130,16 @@ public class MultiSparkExecArguments implements Serializable {
 
     public static class AppCommandConverter implements IStringConverter<List<SparkApplicationCommand>> {
         @Override
-        public List<SparkApplicationCommand> convert(String value) {
+        public List<SparkApplicationCommand> convert(String string) {
             try {
-                return APP_CMD_READER.readValue(value);
+                String value = string.trim();
+                Matcher matcher = QUOTED.matcher(value);
+                
+                if (matcher.matches()) {
+                    return APP_CMD_READER.readValue(matcher.group(1));
+                } else {
+                    return APP_CMD_READER.readValue(value);
+                }
             } catch (IOException e) {
                 throw new ParameterException("Unable to deserialize Spark application commands", e);
             }
