@@ -42,6 +42,7 @@
         <property name="host" value="${kylo_host}"/>
         <property name="port" value="${kylo_port}"/>
         <property name="basePath" value="${kylo_basePath}"/>
+        <property name="testInfrastructureType" value="${test_infrastructure_type}"/>
     </bean>
 
     <bean class="com.thinkbiganalytics.integration.SshConfig">
@@ -51,6 +52,11 @@
         <property name="password" value="${ssh_password}"/>
         <property name="keyfile" value="${ssh_keyfile}"/>
         <property name="knownHosts" value="${ssh_known-hosts}"/>
+    </bean>
+
+    <bean class="com.thinkbiganalytics.integration.KubernetesConfig">
+        <property name="kubernetesNamespace" value="${kubernetes_namespace}"/>
+        <property name="hadoopPodName" value="${hadoop_pod_name}"/>
     </bean>
 
 </beans>

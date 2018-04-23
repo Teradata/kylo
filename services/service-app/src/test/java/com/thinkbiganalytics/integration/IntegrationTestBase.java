@@ -166,6 +166,10 @@ public class IntegrationTestBase {
     @Inject
     private SshConfig sshConfig;
 
+    @SuppressWarnings("SpringJavaAutowiringInspection")
+    @Inject
+    private KubernetesConfig kubernetesConfig;
+
     protected void runAs(UserContext.User user) {
         UserContext.setUser(user);
     }
@@ -321,12 +325,10 @@ public class IntegrationTestBase {
     }
 
     protected final void copyFileLocalToRemote(final String localFile, final String remoteDir, String application) {
-        String testInfrastructureType = System.getenv("TestInfrastructureType");
-        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
-        if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
-            String namespace = System.getenv("kubernetesNamespace");
+        LOG.info("Test Infrastructure type is: " + kyloConfig.getTestInfrastructureType());
+        if(kyloConfig.getTestInfrastructureType() != null && KyloConfig.TEST_INFRASTRUCTURE_TYPE_KUBERNETES.equals(kyloConfig.getTestInfrastructureType())) {
             String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", application);
-            String kubeCommand = String.format("kubectl cp %s %s/$KUBECTL_POD_NAME:%s", localFile, namespace, remoteDir);
+            String kubeCommand = String.format("kubectl cp %s %s/$KUBECTL_POD_NAME:%s", localFile, kubernetesConfig.getKubernetesNamespace(), remoteDir);
 
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
         }
@@ -345,17 +347,15 @@ public class IntegrationTestBase {
     }
 
     protected final void runCommandOnRemoteSystem(final String command, String application) {
-        String testInfrastructureType = System.getenv("TestInfrastructureType");
-        LOG.info("Test Infrastructure type is: " + testInfrastructureType);
-        if(testInfrastructureType != null && "kubernetes".equals(testInfrastructureType)) {
-            String hadoopPodName = System.getenv("HadoopPodName");
+        LOG.info("Test Infrastructure type is: " + kyloConfig.getTestInfrastructureType());
+        if(kyloConfig.getTestInfrastructureType() != null && KyloConfig.TEST_INFRASTRUCTURE_TYPE_KUBERNETES.equals(kyloConfig.getTestInfrastructureType())) {
             String podAndApplicationName = application;
             if(application.equals(APP_HADOOP)) {
-                podAndApplicationName = hadoopPodName;
+                podAndApplicationName = kubernetesConfig.getHadoopPodName();
             }
             String getPodNameCommand = String.format("export KUBECTL_POD_NAME=$(kubectl get po -o jsonpath=\"{range .items[*]}{@.metadata.name}{end}\" -l app=%s)", podAndApplicationName);
-            String kubeCommand = String.format("kubectl exec $KUBECTL_POD_NAME -c %s %s", podAndApplicationName, command);
-
+            String kubeCommand = String.format("kubectl exec $KUBECTL_POD_NAME -c %s -- %s ", podAndApplicationName, command);
+            LOG.info("The kube commands is: " + kubeCommand);
             runLocalShellCommand(getPodNameCommand + ";" + kubeCommand);
         }
         else {

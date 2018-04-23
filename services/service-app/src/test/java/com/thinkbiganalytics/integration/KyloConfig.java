@@ -35,10 +35,15 @@ public class KyloConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(KyloConfig.class);
 
+    public static final String TEST_INFRASTRUCTURE_TYPE_EC2 = "EC2";
+    public static final String TEST_INFRASTRUCTURE_TYPE_KUBERNETES = "KUBERNETES";
+
     private String host;
     private int port;
     private String basePath;
     private String protocol;
+
+    private String testInfrastructureType;
 
     @PostConstruct
     public void initIt() throws Exception {
@@ -47,6 +52,7 @@ public class KyloConfig {
                      .append("host", host)
                      .append("port", port)
                      .append("basePath", basePath)
+                     .append("testInfrastructureType", testInfrastructureType)
                      .toString());
     }
     public String getProtocol() {
@@ -79,5 +85,13 @@ public class KyloConfig {
 
     public void setBasePath(String basePath) {
         this.basePath = basePath;
+    }
+
+    public String getTestInfrastructureType() {
+        return testInfrastructureType;
+    }
+
+    public void setTestInfrastructureType(String testInfrastructureType) {
+        this.testInfrastructureType = testInfrastructureType;
     }
 }
