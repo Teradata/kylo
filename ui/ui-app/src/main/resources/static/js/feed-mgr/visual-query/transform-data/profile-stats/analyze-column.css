@@ -58,3 +58,8 @@ span.bar {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+
+md-progress-linear.wrangler-theme .md-container {
+  opacity: 1;
+  background-color: transparent !important;
+}

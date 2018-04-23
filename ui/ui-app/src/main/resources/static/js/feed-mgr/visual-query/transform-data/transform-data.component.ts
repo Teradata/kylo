@@ -7,6 +7,7 @@ import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {DataCategory} from "../wrangler/column-delegate";
+import {ChainedOperation} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
 import {IPromise} from "angular";
@@ -85,8 +86,6 @@ export class TransformDataComponent implements OnInit {
      * @type {Array.<Object>}
      */
     tableRows: object[] = [];
-
-    executingQuery: boolean = false;
     //Code Mirror options.  Tern Server requires it be in javascript mode
     codeMirrorConfig: object = {
         onLoad: this.codemirrorLoaded.bind(this)
@@ -103,6 +102,13 @@ export class TransformDataComponent implements OnInit {
 
     // Progress of transformation from 0 to 100
     queryProgress: number = 0;
+
+    executingQuery: boolean = false;
+
+    /*
+    Active query will be followed by an immediate query
+     */
+    chainedOperation : ChainedOperation = new ChainedOperation();
 
     gridApi: any;
 
@@ -512,43 +518,44 @@ export class TransformDataComponent implements OnInit {
         const deferred = this.$q.defer();
 
         //flag to indicate query is running
-        this.executingQuery = true;
-        this.queryProgress = 0;
+        this.setExecutingQuery(true);
+        this.setQueryProgress(50);
 
         // Query Spark shell service
         let didUpdateColumns = false;
 
         const successCallback = function () {
             //mark the query as finished
-            self.executingQuery = false;
-
-            // Clear previous filters
-            if (typeof(self.gridApi) !== "undefined") {
-                self.gridApi.core.clearAllFilters();
-            }
+            self.setQueryProgress(85);
+            self.setExecutingQuery(false);
 
             //mark the flag to indicate Hive is loaded
             self.hiveDataLoaded = true;
             self.isValid = true;
 
             //store the result for use in the commands
-            if (refresh) self.updateGrid();
-
+            if (refresh) {
+                // Clear previous filters
+                if (typeof(self.gridApi) !== "undefined") {
+                    self.gridApi.core.clearAllFilters();
+                }
+                self.updateGrid();
+            }
             deferred.resolve();
         };
         const errorCallback = function (message: string) {
+            self.setExecutingQuery(false);
+            self.resetAllProgress();
             self.showError(message);
 
             // Reset state
-            self.executingQuery = false;
             self.engine.pop();
             self.functionHistory.pop();
-            if (refresh) self.refreshGrid();
-
+            self.refreshGrid();
             deferred.reject(message);
         };
         const notifyCallback = function (progress: number) {
-            self.queryProgress = progress * 100;
+            //self.setQueryProgress(progress * 100);
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
                 if (refresh) self.updateGrid();
@@ -684,8 +691,8 @@ export class TransformDataComponent implements OnInit {
                 .clickOutsideToClose(true)
                 .title("Error executing the query")
                 .textContent(e.message)
-                .ariaLabel("error executing the query")
-                .ok("Got it!");
+                .ariaLabel("Error executing the query")
+                .ok("Ok");
             this.$mdDialog.show(alert);
             console.log(e);
             return false;
@@ -713,6 +720,8 @@ export class TransformDataComponent implements OnInit {
                     return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
                 }
             }
+            // Formula couldn't parse
+            self.resetAllProgress();
             return deferred.reject();
         },10);
 
@@ -942,6 +951,50 @@ export class TransformDataComponent implements OnInit {
                 return fieldPolicy;
             });
         }
+    }
+
+    /**
+     * Set the query progress
+     * @param {number} progress
+     */
+    setQueryProgress(progress : number) {
+        if (!this.chainedOperation) {
+            this.queryProgress = progress;
+        } else {
+            this.queryProgress = this.chainedOperation.fracComplete(progress);
+        }
+        console.log('progress',this.queryProgress);
+    }
+
+    /**
+     * Set whether the query is actively running
+     * @param {boolean} query
+     */
+    setExecutingQuery(query : boolean) {
+        if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
+            this.executingQuery = query;
+        }
+        // Reset chained operation to default
+        if (this.executingQuery == false) {
+            this.resetAllProgress();
+        }
+    }
+
+    /**
+     * Indicates the active query will be followed by another in quick succession
+     * @param {ChainedOperation} chainedOperation
+     */
+    setChainedQuery(chainedOp : ChainedOperation) {
+        this.chainedOperation = chainedOp;
+    }
+
+    /**
+     * Resets all progress to non-running
+     */
+    resetAllProgress() {
+        this.chainedOperation = new ChainedOperation();
+        this.queryProgress = 0;
+        this.executingQuery = false;
     }
 }
 

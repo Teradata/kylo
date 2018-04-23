@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, column_delegate_2, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -66,7 +66,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              * @type {Array.<Object>}
              */
             this.tableRows = [];
-            this.executingQuery = false;
             //Code Mirror options.  Tern Server requires it be in javascript mode
             this.codeMirrorConfig = {
                 onLoad: this.codemirrorLoaded.bind(this)
@@ -82,6 +81,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             // Progress of transformation from 0 to 100
             this.queryProgress = 0;
+            this.executingQuery = false;
+            /*
+            Active query will be followed by an immediate query
+             */
+            this.chainedOperation = new column_delegate_2.ChainedOperation();
             /**
              * Method for limiting the number of results.
              */
@@ -429,37 +433,39 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var self = this;
             var deferred = this.$q.defer();
             //flag to indicate query is running
-            this.executingQuery = true;
-            this.queryProgress = 0;
+            this.setExecutingQuery(true);
+            this.setQueryProgress(50);
             // Query Spark shell service
             var didUpdateColumns = false;
             var successCallback = function () {
                 //mark the query as finished
-                self.executingQuery = false;
-                // Clear previous filters
-                if (typeof (self.gridApi) !== "undefined") {
-                    self.gridApi.core.clearAllFilters();
-                }
+                self.setQueryProgress(85);
+                self.setExecutingQuery(false);
                 //mark the flag to indicate Hive is loaded
                 self.hiveDataLoaded = true;
                 self.isValid = true;
                 //store the result for use in the commands
-                if (refresh)
+                if (refresh) {
+                    // Clear previous filters
+                    if (typeof (self.gridApi) !== "undefined") {
+                        self.gridApi.core.clearAllFilters();
+                    }
                     self.updateGrid();
+                }
                 deferred.resolve();
             };
             var errorCallback = function (message) {
+                self.setExecutingQuery(false);
+                self.resetAllProgress();
                 self.showError(message);
                 // Reset state
-                self.executingQuery = false;
                 self.engine.pop();
                 self.functionHistory.pop();
-                if (refresh)
-                    self.refreshGrid();
+                self.refreshGrid();
                 deferred.reject(message);
             };
             var notifyCallback = function (progress) {
-                self.queryProgress = progress * 100;
+                //self.setQueryProgress(progress * 100);
                 if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                     didUpdateColumns = true;
                     if (refresh)
@@ -581,8 +587,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     .clickOutsideToClose(true)
                     .title("Error executing the query")
                     .textContent(e.message)
-                    .ariaLabel("error executing the query")
-                    .ok("Got it!");
+                    .ariaLabel("Error executing the query")
+                    .ok("Ok");
                 this.$mdDialog.show(alert_1);
                 console.log(e);
                 return false;
@@ -610,6 +616,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                         return self.query(refreshGrid).catch(function (reason) { return deferred.reject(reason); }).then(function (value) { return deferred.resolve(); });
                     }
                 }
+                // Formula couldn't parse
+                self.resetAllProgress();
                 return deferred.reject();
             }, 10);
             return deferred.promise;
@@ -818,6 +826,47 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     return fieldPolicy;
                 });
             }
+        };
+        /**
+         * Set the query progress
+         * @param {number} progress
+         */
+        TransformDataComponent.prototype.setQueryProgress = function (progress) {
+            if (!this.chainedOperation) {
+                this.queryProgress = progress;
+            }
+            else {
+                this.queryProgress = this.chainedOperation.fracComplete(progress);
+            }
+            console.log('progress', this.queryProgress);
+        };
+        /**
+         * Set whether the query is actively running
+         * @param {boolean} query
+         */
+        TransformDataComponent.prototype.setExecutingQuery = function (query) {
+            if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
+                this.executingQuery = query;
+            }
+            // Reset chained operation to default
+            if (this.executingQuery == false) {
+                this.resetAllProgress();
+            }
+        };
+        /**
+         * Indicates the active query will be followed by another in quick succession
+         * @param {ChainedOperation} chainedOperation
+         */
+        TransformDataComponent.prototype.setChainedQuery = function (chainedOp) {
+            this.chainedOperation = chainedOp;
+        };
+        /**
+         * Resets all progress to non-running
+         */
+        TransformDataComponent.prototype.resetAllProgress = function () {
+            this.chainedOperation = new column_delegate_2.ChainedOperation();
+            this.queryProgress = 0;
+            this.executingQuery = false;
         };
         __decorate([
             core_1.Input(),

@@ -51,6 +51,37 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         UNION: 'uniontype'
     };
     /**
+     * Represents a sequence of query operations
+     */
+    var ChainedOperation = /** @class */ (function () {
+        function ChainedOperation(totalSteps) {
+            if (totalSteps === void 0) { totalSteps = 1; }
+            this.step = 1;
+            this.totalSteps = totalSteps;
+        }
+        ChainedOperation.prototype.nextStep = function () {
+            this.step += 1;
+        };
+        /**
+         * Fractional of overall progress complete
+         * @param {number} stepProgress the progress between 0 and 100
+         * @returns {number} overall progress between 0 and 100
+         */
+        ChainedOperation.prototype.fracComplete = function (stepProgress) {
+            var min = ((this.step - 1) / this.totalSteps);
+            var max = this.step / this.totalSteps;
+            console.log('--stepProgress', stepProgress);
+            console.log('min', min);
+            console.log('max', max);
+            return (Math.ceil((min * 100) + (max - min) * stepProgress));
+        };
+        ChainedOperation.prototype.isLastStep = function () {
+            return this.step == this.totalSteps;
+        };
+        return ChainedOperation;
+    }());
+    exports.ChainedOperation = ChainedOperation;
+    /**
      * Handles operations on columns.
      */
     var ColumnDelegate = /** @class */ (function () {
@@ -250,6 +281,49 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             return renameScript;
         };
         /**
+         * Generates a script to move the column B directly to the right of column A
+         * @returns {string}
+         */
+        ColumnDelegate.prototype.generateMoveScript = function (fieldNameA, fieldNameB, grid) {
+            var self = this;
+            var cols = [];
+            var found = false;
+            angular.forEach(grid.columns, function (col) {
+                var colName = self.getColumnFieldName(col);
+                if (found) {
+                    cols.push(fieldNameB);
+                }
+                else if (colName == fieldNameA) {
+                    found = true;
+                }
+                if (colName != fieldNameB) {
+                    cols.push(colName);
+                }
+            });
+            var selectCols = cols.join();
+            return "select(" + selectCols + ")";
+        };
+        /**
+         * Adds string labels to indexes
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.indexColumn = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var newFieldName = fieldName + "_indexed";
+            var formula = "StringIndexer().setInputCol(\"" + fieldName + "\").setOutputCol(\"" + newFieldName + "\").run(select(" + fieldName + "))";
+            var moveFormula = self.generateMoveScript(fieldName, newFieldName, grid);
+            // Two part conversion
+            var chainedOp = new ChainedOperation(2);
+            self.controller.setChainedQuery(chainedOp);
+            self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Index ' + self.getColumnDisplayName(column) }, true, false)
+                .then(function () {
+                chainedOp.nextStep();
+                self.controller.addFunction(moveFormula, { formula: formula, icon: 'functions', name: 'Move new column next to ' + fieldName });
+            });
+        };
+        /**
          * Vectorize a numeric column as a double array
          *
          * @param {ui.grid.GridColumn} column the column to be hidden
@@ -261,10 +335,11 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var formula = "vectorAssembler([\"" + fieldName + "\"], \"" + tempField + "\")";
             var renameScript = self.generateRenameScript(fieldName, tempField, grid);
             // Two part conversion
-            var result = self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Vectorize ' + self.getColumnDisplayName(column) }, true, false);
-            result.catch(function (reason) {
-                return;
-            }).then(function (value) {
+            var chainedOp = new ChainedOperation(2);
+            self.controller.setChainedQuery(chainedOp);
+            self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Vectorize ' + self.getColumnDisplayName(column) }, true, false)
+                .then(function result() {
+                chainedOp.nextStep();
                 self.controller.addFunction(renameScript, { formula: formula, icon: 'functions', name: 'Remap temp vector column to ' + fieldName });
             });
         };
@@ -282,10 +357,31 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var formula = "StandardScaler().setInputCol(\"" + fieldName + "\").setOutputCol(\"" + tempField + "\").setWithMean(" + mean + ").setWithStd(" + stdDev + ").run(select(" + fieldName + "))";
             var renameScript = self.generateRenameScript(fieldName, tempField, grid);
             // Two part conversion
-            var result = self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Std Dev. rescale ' + self.getColumnDisplayName(column) }, true, false);
-            result.catch(function (reason) {
-                return;
-            }).then(function (value) {
+            var chainedOp = new ChainedOperation(2);
+            self.controller.setChainedQuery(chainedOp);
+            self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Std Dev. rescale ' + self.getColumnDisplayName(column) }, true, false)
+                .then(function () {
+                chainedOp.nextStep();
+                self.controller.addFunction(renameScript, { formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName });
+            });
+        };
+        /**
+         * Rescale the vector column between min/max
+         * @param self
+         * @param column
+         * @param grid
+         */
+        ColumnDelegate.prototype.rescaleMinMax = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var tempField = self.createTempField();
+            var formula = "MinMaxScaler().setInputCol(\"" + fieldName + "\").setOutputCol(\"" + tempField + "\").run(select(" + fieldName + "))";
+            var renameScript = self.generateRenameScript(fieldName, tempField, grid);
+            // Two part conversion
+            var chainedOp = new ChainedOperation(2);
+            self.controller.setChainedQuery(chainedOp);
+            self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'MinMax rescale ' + self.getColumnDisplayName(column) }, true, false)
+                .then(function () {
+                chainedOp.nextStep();
                 self.controller.addFunction(renameScript, { formula: formula, icon: 'functions', name: 'Remap temp rescaled column to ' + fieldName });
             });
         };
@@ -334,7 +430,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             }).subscribe(function (response) {
                 var script = "coalesce(" + fieldName + ", last(" + fieldName + ", true).over(partitionBy(" + response.groupBy + ").orderBy(" + response.orderBy + "))).as(\"" + fieldName + "\")";
                 var formula = self.toFormula(script, column, grid);
-                self.controller.addFunction(formula, { formula: formula, icon: "functions", name: "Impute missing values " + fieldName }).then();
+                self.controller.addFunction(formula, { formula: formula, icon: "functions", name: "Impute missing values " + fieldName });
             });
         };
         /**
@@ -359,18 +455,20 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          */
         ColumnDelegate.prototype.oneHotEncodeColumn = function (self, column, grid) {
             var fieldName = self.getColumnFieldName(column);
-            // Chain two calls: 1) clean values as valid column names 2) execute pivot 3) replace null with empty (due to spark2 pivot behavior)
+            // Chain three calls: 1) clean values as valid column names 2) execute pivot 3) replace null with empty (due to spark2 pivot behavior)
             var tempField = self.createTempField();
             var cleanFormula = self.createCleanFieldFormula(fieldName, tempField);
             // Generate group by and pivot formula from all the columns
             var cols = self.toColumnArray(grid.columns);
             var colString = cols.join();
             var formula = "groupBy(" + colString + ").pivot(\"" + tempField + "\").agg(when(count(" + tempField + ")>0,1).otherwise(0))";
-            var result = self.controller.pushFormula(cleanFormula, { formula: cleanFormula, icon: 'functions', name: 'Clean one hot field ' + fieldName }, true, false);
-            result.catch(function (reason) {
-                return;
-            }).then(function (value) {
-                self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'One hot encode ' + fieldName }, true, false).then(function (result) {
+            var chainedOp = new ChainedOperation(3);
+            self.controller.setChainedQuery(chainedOp);
+            self.controller.pushFormula(cleanFormula, { formula: cleanFormula, icon: 'functions', name: 'Clean one hot field ' + fieldName }, true, false)
+                .then(function () {
+                chainedOp.nextStep();
+                self.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'One hot encode ' + fieldName }, true, false)
+                    .then(function () {
                     // Now we need to fill in the null values with zero for our new cols
                     var allcols = self.toColumnArray(self.controller.engine.getCols());
                     var select = angular.copy(cols);
@@ -382,6 +480,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     });
                     var selectString = select.join();
                     var fillNAFormula = "select(" + selectString + ")";
+                    chainedOp.nextStep();
                     self.controller.addFunction(fillNAFormula, { formula: fillNAFormula, icon: 'functions', name: 'Fill NA' }, true, false);
                 });
             });
@@ -598,10 +697,10 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 transforms.push({ description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn }, { description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn }, { description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
             }
             else if (dataCategory === DataCategory.STRING) {
-                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn }, { description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn });
+                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn }, { description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn }, { description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn });
             }
             else if (dataCategory == DataCategory.ARRAY_DOUBLE) {
-                transforms.push({ description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std. dev.', operation: self.rescaleStdDevColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean.', operation: self.rescaleMeanColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean and std dev.', operation: self.rescaleBothMethodsColumn });
+                transforms.push({ description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std dev', operation: self.rescaleStdDevColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean', operation: self.rescaleMeanColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn }, { description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax });
             }
             else if (dataCategory === DataCategory.ARRAY) {
                 transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array' });

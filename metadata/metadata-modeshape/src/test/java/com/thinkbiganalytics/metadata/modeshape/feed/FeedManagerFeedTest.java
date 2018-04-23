@@ -159,9 +159,9 @@ public class FeedManagerFeedTest {
 
     @Test
     public void testFeedDatasource() {
-        String categorySystemName = "my_category";
-        String feedName = "my_feed";
-        String templateName = "my_template";
+        String categorySystemName = "my_category2";
+        String feedName = "my_feed2";
+        String templateName = "my_template2";
         String description = " my feed description";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
 //        boolean isDefineTable = true;
@@ -208,9 +208,9 @@ public class FeedManagerFeedTest {
 
     @Test
     public void testFeedTemplates() {
-        String categorySystemName = "my_category";
-        String feedName = "my_feed";
-        String templateName = "my_template";
+        String categorySystemName = "my_category1";
+        String feedName = "my_feed1";
+        String templateName = "my_template1";
         setupFeedAndTemplate(categorySystemName, feedName, templateName);
 
         //try to delete the template.  This should fail since there are feeds attached to it

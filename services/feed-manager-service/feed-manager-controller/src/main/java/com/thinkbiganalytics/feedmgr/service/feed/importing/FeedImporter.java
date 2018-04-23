@@ -140,6 +140,16 @@ public class FeedImporter {
         this.fileName = fileName;
         this.file = file;
         this.importFeedOptions = importFeedOptions;
+
+        //Set the ContinueIfExists flag on the Template components
+        final ImportComponentOption templateImportOption = importFeedOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+        if(templateImportOption != null && !templateImportOption.isOverwrite()){
+            templateImportOption.setContinueIfExists(true);
+        }
+        final ImportComponentOption reusableTemplateOption = importFeedOptions.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE);
+        if(reusableTemplateOption != null && !reusableTemplateOption.isOverwrite()){
+            reusableTemplateOption.setContinueIfExists(true);
+        }
     }
 
 
@@ -181,24 +191,27 @@ public class FeedImporter {
             if (!validateUserDatasources()) {
                 return importFeed;
             }
-
-            //UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating the template data");
-            TemplateImporter templateImporter = templateImporterFactory.apply(importFeed.getFileName(), file, importFeedOptions);
-            ImportTemplate importTemplate = templateImporter.validate();
-            // need to set the importOptions back to the feed options
-            //find importOptions for the Template and add them back to the set of options
-            //importFeed.getImportOptions().updateOptions(importTemplate.getImportOptions().getImportComponentOptions());
-            importFeed.setTemplate(importTemplate);
-            // statusMessage.update("Validated the template data",importTemplate.isValid());
-            if (!importTemplate.isValid()) {
-                importFeed.setValid(false);
-                List<String> errorMessages = importTemplate.getTemplateResults().getAllErrors().stream().map(nifiError -> nifiError.getMessage()).collect(Collectors.toList());
-                if (!errorMessages.isEmpty()) {
-                    for (String msg : errorMessages) {
-                        importFeed.addErrorMessage(metadata, msg);
+          //  final ImportComponentOption templateImportOption = importFeedOptions.findImportComponentOption(ImportComponent.TEMPLATE_DATA);
+          //  if(templateImportOption.isShouldImport() && templateImportOption.isOverwrite()) {
+                //UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validating the template data");
+                TemplateImporter templateImporter = templateImporterFactory.apply(importFeed.getFileName(), file, importFeedOptions);
+                ImportTemplate importTemplate = templateImporter.validate();
+                // need to set the importOptions back to the feed options
+                //find importOptions for the Template and add them back to the set of options
+                //importFeed.getImportOptions().updateOptions(importTemplate.getImportOptions().getImportComponentOptions());
+                importFeed.setTemplate(importTemplate);
+                // statusMessage.update("Validated the template data",importTemplate.isValid());
+                if (!importTemplate.isValid()) {
+                    importFeed.setValid(false);
+                    List<String> errorMessages = importTemplate.getTemplateResults().getAllErrors().stream().map(nifiError -> nifiError.getMessage()).collect(Collectors.toList());
+                    if (!errorMessages.isEmpty()) {
+                        for (String msg : errorMessages) {
+                            importFeed.addErrorMessage(metadata, msg);
+                        }
                     }
+                    return importFeed;
                 }
-            }
+       //     }
             //  statusMessage = uploadProgressService.addUploadStatus(options.getUploadKey(),"Validation complete: the feed is "+(importFeed.isValid() ? "valid" : "invalid"),true,importFeed.isValid());
 
         } catch (Exception e) {
