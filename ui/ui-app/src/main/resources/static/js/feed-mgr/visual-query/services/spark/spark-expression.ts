@@ -243,11 +243,19 @@ export class SparkExpression {
             return expression.source as string;
         }
         if (SparkExpressionType.LITERAL.equals(expression.type)) {
-            let literal;
+            let literal : string;
             if ((expression.source as string).charAt(0) === "\"" || (expression.source as string).charAt(0) === "'") {
                 literal = SparkExpression.toString(expression);
             } else {
-                literal = expression.source;
+                literal = expression.source as string;
+                let nLiteral : number  = parseInt(expression.source as string);
+                if( !isNaN(nLiteral) ) {
+                    let SCALA_MIN_INT: number = (-1) * Math.pow(2, 31);
+                    let SCALA_MAX_INT: number = Math.pow(2, 31) - 1;
+                    if (nLiteral < SCALA_MIN_INT || nLiteral > SCALA_MAX_INT) {
+                        literal = literal + "L";
+                    }
+                }
             }
             return "functions.lit(" + literal + ")";
         }

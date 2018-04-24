@@ -206,6 +206,14 @@ define(["require", "exports", "../../wrangler/parse-exception", "./spark-constan
                 }
                 else {
                     literal = expression.source;
+                    var nLiteral = parseInt(expression.source);
+                    if (!isNaN(nLiteral)) {
+                        var SCALA_MIN_INT = (-1) * Math.pow(2, 31);
+                        var SCALA_MAX_INT = Math.pow(2, 31) - 1;
+                        if (nLiteral < SCALA_MIN_INT || nLiteral > SCALA_MAX_INT) {
+                            literal = literal + "L";
+                        }
+                    }
                 }
                 return "functions.lit(" + literal + ")";
             }
