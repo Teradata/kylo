@@ -342,9 +342,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         Create columns for tracking changes between original source and the target table schema
          */
         DefineFeedTableController.prototype.syncFeedsColumns = function () {
+            var _this = this;
             // console.log("syncFeedsColumns");
             _.each(this.model.table.tableSchema.fields, function (columnDef) {
-                this.initFeedColumn(columnDef);
+                _this.initFeedColumn(columnDef);
             });
         };
         DefineFeedTableController.prototype.initFeedColumn = function (columnDef) {
@@ -517,6 +518,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param index
          */
         DefineFeedTableController.prototype.removeColumn = function (index) {
+            var _this = this;
             // console.log("removeColumn");
             var columnDef = this.model.table.tableSchema.fields[index];
             columnDef.deleted = true;
@@ -530,11 +532,11 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return partition._id;
             })
                 .forEach(function (id) {
-                var index = this.model.table.partitions.findIndex(function (partition) {
+                var index = _this.model.table.partitions.findIndex(function (partition) {
                     return partition._id === id;
                 });
                 if (index > -1) {
-                    this.removePartitionField(index);
+                    _this.removePartitionField(index);
                 }
             });
             //ensure the field names on the columns are unique again as removing a column might fix a "notUnique" error
@@ -899,23 +901,29 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         return DefineFeedTableController;
     }());
     exports.DefineFeedTableController = DefineFeedTableController;
-    // angular.module(moduleName).controller('DefineFeedTableController', ["$rootScope","$scope","$http","$timeout","$mdToast","$filter","$mdDialog","$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService","Utils", "FeedTagService", "DomainTypesService", DefineFeedTableController]);
-    // angular.module(moduleName).directive('thinkbigDefineFeedTable', directive);
+    var FilterPartitionFormulaPipe = /** @class */ (function () {
+        function FilterPartitionFormulaPipe(FeedService) {
+            this.FeedService = FeedService;
+        }
+        FilterPartitionFormulaPipe.prototype.transform = function (formulas, partition) {
+            // Find column definition
+            var columnDef = (partition && partition.sourceField) ? this.FeedService.getColumnDefinitionByName(partition.sourceField) : null;
+            if (columnDef == null) {
+                return formulas;
+            }
+            // Filter formulas based on column type
+            if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
+                return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
+            }
+            else {
+                return formulas;
+            }
+        };
+        return FilterPartitionFormulaPipe;
+    }());
     angular.module(moduleName).filter("filterPartitionFormula", ["FeedService", function (FeedService) {
-            return function (formulas, partition) {
-                // Find column definition
-                var columnDef = (partition && partition.sourceField) ? FeedService.getColumnDefinitionByName(partition.sourceField) : null;
-                if (columnDef == null) {
-                    return formulas;
-                }
-                // Filter formulas based on column type
-                if (columnDef.derivedDataType !== "date" && columnDef.derivedDataType !== "timestamp") {
-                    return _.without(formulas, "to_date", "year", "month", "day", "hour", "minute");
-                }
-                else {
-                    return formulas;
-                }
-            };
+            var pipe = new FilterPartitionFormulaPipe(FeedService);
+            return pipe.transform.bind(pipe);
         }]);
     angular.module(moduleName).
         component("thinkbigDefineFeedTable", {
