@@ -34,11 +34,13 @@ import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,9 +58,14 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  */
 public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgreementProvider, PostMetadataConfigAction {
+
+    private static final Logger log = LoggerFactory.getLogger(JcrFeedServiceLevelAgreementProvider.class);
 
     @Inject
     FeedProvider feedProvider;
@@ -86,7 +93,12 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     @Override
     public void run() {
-        createType();
+        try {
+            createType();
+        }catch(TypeAlreadyExistsException e){
+            //this is ok.
+            log.info(" unable to create the {} type.  It already exists.",JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
+        }
     }
 
     private List<FeedServiceLevelAgreement> queryToList(String query, Map<String, String> params) {
