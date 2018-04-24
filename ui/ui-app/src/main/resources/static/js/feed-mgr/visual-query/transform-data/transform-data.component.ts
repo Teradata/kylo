@@ -963,7 +963,6 @@ export class TransformDataComponent implements OnInit {
         } else {
             this.queryProgress = this.chainedOperation.fracComplete(progress);
         }
-        console.log('progress',this.queryProgress);
     }
 
     /**

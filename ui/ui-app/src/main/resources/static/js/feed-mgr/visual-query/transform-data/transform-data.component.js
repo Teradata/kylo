@@ -838,7 +838,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             else {
                 this.queryProgress = this.chainedOperation.fracComplete(progress);
             }
-            console.log('progress', this.queryProgress);
         };
         /**
          * Set whether the query is actively running

@@ -1,4 +1,39 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = y[op[0] & 2 ? "return" : op[0] ? "throw" : "next"]) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [0, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+define(["require", "exports", "angular", "jquery"], function (require, exports, angular, $) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -70,9 +105,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         ChainedOperation.prototype.fracComplete = function (stepProgress) {
             var min = ((this.step - 1) / this.totalSteps);
             var max = this.step / this.totalSteps;
-            console.log('--stepProgress', stepProgress);
-            console.log('min', min);
-            console.log('max', max);
             return (Math.ceil((min * 100) + (max - min) * stepProgress));
         };
         ChainedOperation.prototype.isLastStep = function () {
@@ -260,6 +292,53 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             self.controller.addFunction(formula, { formula: formula, icon: 'functions', name: 'Impute mean ' + self.getColumnDisplayName(column) });
         };
         /**
+         * Crosstab against another column
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.crosstabColumn = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var cols = self.controller.engine.getCols();
+            self.$mdDialog.show({
+                clickOutsideToClose: true,
+                controller: (_a = /** @class */ (function () {
+                        function class_1($mdDialog) {
+                            this.$mdDialog = $mdDialog;
+                            this.columns = cols;
+                            this.crossColumn = "";
+                        }
+                        class_1.prototype.valid = function () {
+                            return (this.crossColumn != "");
+                        };
+                        class_1.prototype.cancel = function () {
+                            this.$mdDialog.hide();
+                        };
+                        class_1.prototype.apply = function () {
+                            this.$mdDialog.hide();
+                            var crossColumnTemp = (this.crossColumn == fieldName ? this.crossColumn + "_0" : this.crossColumn);
+                            var clean2 = self.createCleanFieldFormula(this.crossColumn, crossColumnTemp);
+                            var cleanFormula = "select(" + fieldName + ", " + clean2 + ")";
+                            var chainedOp = new ChainedOperation(2);
+                            var crossColumnName = this.crossColumn;
+                            self.controller.setChainedQuery(chainedOp);
+                            self.controller.pushFormula(cleanFormula, { formula: cleanFormula, icon: 'spellcheck', name: "Clean " + fieldName + " and " + this.crossColumn }, true, false).then(function () {
+                                chainedOp.nextStep();
+                                var formula = "crosstab(\"" + fieldName + "\",\"" + crossColumnTemp + "\")";
+                                self.controller.addFunction(formula, { formula: formula, icon: 'poll', name: "Crosstab " + fieldName + " and " + crossColumnName });
+                            });
+                        };
+                        return class_1;
+                    }()),
+                    _a.$inject = ["$mdDialog"],
+                    _a),
+                controllerAs: "dialog",
+                parent: angular.element("body"),
+                template: "\n                  <md-dialog arial-label=\"error executing the query\" style=\"max-width: 640px;\">\n                    <md-dialog-content class=\"md-dialog-content\" role=\"document\" tabIndex=\"-1\">\n                      <h2 class=\"md-title\">Select crosstab field:</h2>\n\n                      <md-input-container>\n                        <label>Cross column:</label>\n                        <md-select ng-model=\"dialog.crossColumn\" >\n                            <md-option ng-repeat=\"x in dialog.columns\" value=\"{{x.field}}\">\n                                {{x.field}}\n                            </md-option>\n                        </md-select>\n                      </md-input-container>\n                    </md-dialog-content>\n                    <md-dialog-actions>\n                      <md-button ng-click=\"dialog.cancel()\" class=\"md-cancel-button\" md-autofocus=\"false\">Cancel</md-button>\n                      <md-button ng-click=\"dialog.apply()\" ng-disabled=\"!dialog.valid()\" class=\"md-primary md-confirm-button\" md-autofocus=\"true\">Ok</md-button>\n                    </md-dialog-actions>\n                  </md-dialog>\n                "
+            });
+            var _a;
+        };
+        /**
          * Generates a script to use a temp column with the desired result and replace the existing column and ordering for
          * which the temp column was derived. This is used by some of the machine
          * learning functions that don't return column types
@@ -284,24 +363,84 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * Generates a script to move the column B directly to the right of column A
          * @returns {string}
          */
-        ColumnDelegate.prototype.generateMoveScript = function (fieldNameA, fieldNameB, grid) {
+        ColumnDelegate.prototype.generateMoveScript = function (fieldNameA, fieldNameB, columnSource) {
             var self = this;
             var cols = [];
-            var found = false;
-            angular.forEach(grid.columns, function (col) {
+            var sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
+            angular.forEach(sourceColumns, function (col) {
                 var colName = self.getColumnFieldName(col);
-                if (found) {
+                if (colName == fieldNameA) {
+                    cols.push(colName);
                     cols.push(fieldNameB);
                 }
-                else if (colName == fieldNameA) {
-                    found = true;
-                }
-                if (colName != fieldNameB) {
+                else if (colName != fieldNameB) {
                     cols.push(colName);
                 }
             });
             var selectCols = cols.join();
             return "select(" + selectCols + ")";
+        };
+        /**
+         * Attempt to determine number of elements in array
+         * @param {string} text
+         * @returns {string}
+         */
+        ColumnDelegate.prototype.arrayItems = function (text) {
+            return (text && text.length > 0 ? text.split(",").length : 1);
+        };
+        /**
+         * Extract array items into columns
+         * @param column
+         * @param grid
+         */
+        ColumnDelegate.prototype.extractArrayItems = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var count = 0;
+            // Sample a row and determine how many elements
+            if (grid.rows != null && grid.rows.length > 0) {
+                var idx_1 = 0;
+                angular.forEach(grid.columns, function (col, key) {
+                    if (col.name == fieldName)
+                        idx_1 = key;
+                });
+                angular.forEach(grid.rows, function (row) {
+                    count = (row[idx_1] != null && row[idx_1].length > count ? row[idx_1].length : count);
+                });
+            }
+            var chainedOp = new ChainedOperation(count * 2);
+            self.controller.setChainedQuery(chainedOp);
+            (function loop() {
+                return __awaiter(this, void 0, void 0, function () {
+                    var i, newFieldName, formula, cols, moveFormula, doRefresh;
+                    return __generator(this, function (_a) {
+                        switch (_a.label) {
+                            case 0:
+                                i = count;
+                                _a.label = 1;
+                            case 1:
+                                if (!(i > 0)) return [3 /*break*/, 5];
+                                newFieldName = fieldName + "_" + i;
+                                formula = "getItem(" + fieldName + ", " + (i - 1) + ").as(\"" + newFieldName + "\")";
+                                return [4 /*yield*/, self.controller.pushFormula(formula, { formula: formula, icon: "functions", name: "Extract array item  " + i }, true, false)];
+                            case 2:
+                                _a.sent();
+                                chainedOp.nextStep();
+                                cols = self.controller.engine.getCols();
+                                moveFormula = self.generateMoveScript(fieldName, newFieldName, cols);
+                                doRefresh = (i == 1);
+                                return [4 /*yield*/, self.controller.pushFormula(moveFormula, { formula: formula, icon: "functions", name: "Move column " + newFieldName }, true, doRefresh)];
+                            case 3:
+                                _a.sent();
+                                chainedOp.nextStep();
+                                _a.label = 4;
+                            case 4:
+                                i--;
+                                return [3 /*break*/, 1];
+                            case 5: return [2 /*return*/];
+                        }
+                    });
+                });
+            })();
         };
         /**
          * Adds string labels to indexes
@@ -445,7 +584,37 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @returns {string} a formula for cleaning row values as fieldnames
          */
         ColumnDelegate.prototype.createCleanFieldFormula = function (fieldName, tempField) {
-            return "when(startsWith(regexp_replace(substring(" + fieldName + ",0,1),\"[0-9]\",\"***\"),\"***\"),concat(\"oh_\",lower(regexp_replace(" + fieldName + ",\"[^a-zA-Z0-9_]+\",\"_\")))).otherwise(lower(regexp_replace(" + fieldName + ",\"[^a-zA-Z0-9_]+\",\"_\"))).as(\"" + tempField + "\")";
+            return "when(startsWith(regexp_replace(substring(" + fieldName + ",0,1),\"[0-9]\",\"***\"),\"***\"),concat(\"c_\",lower(regexp_replace(" + fieldName + ",\"[^a-zA-Z0-9_]+\",\"_\")))).otherwise(lower(regexp_replace(" + fieldName + ",\"[^a-zA-Z0-9_]+\",\"_\"))).as(\"" + tempField + "\")";
+        };
+        /**
+         * Extract numerical values from string
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.extractNumeric = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var script = "regexp_replace(" + fieldName + ", \"[^0-9\\\\.]+\",\"\").as('" + fieldName + "')";
+            var formula = self.toFormula(script, column, grid);
+            self.controller.addFunction(formula, {
+                formula: formula, icon: "filter_2",
+                name: "Extract numeric from " + self.getColumnDisplayName(column)
+            });
+        };
+        /**
+         * Negate a boolean
+         *
+         * @param {ui.grid.GridColumn} column the column to be hidden
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.negateBoolean = function (self, column, grid) {
+            var fieldName = self.getColumnFieldName(column);
+            var script = "not(" + fieldName + ").as(\"" + fieldName + "\")";
+            var formula = self.toFormula(script, column, grid);
+            self.controller.addFunction(formula, {
+                formula: formula, icon: "exposure",
+                name: "Negate boolean from " + self.getColumnDisplayName(column)
+            });
         };
         /**
          * One hot encode categorical values
@@ -481,7 +650,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     var selectString = select.join();
                     var fillNAFormula = "select(" + selectString + ")";
                     chainedOp.nextStep();
-                    self.controller.addFunction(fillNAFormula, { formula: fillNAFormula, icon: 'functions', name: 'Fill NA' }, true, false);
+                    self.controller.addFunction(fillNAFormula, { formula: fillNAFormula, icon: 'functions', name: 'Fill NA' });
                 });
             });
         };
@@ -585,6 +754,62 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 var name_2 = (transform.description ? transform.description : transform.name) + " " + this.getColumnDisplayName(column);
                 this.controller.addFunction(formula, { formula: formula, icon: transform.icon, name: name_2 });
             }
+        };
+        /**
+         * Displays a dialog prompt to prompt for value to replace
+         *
+         * @param {ui.grid.GridColumn} column the column to be renamed
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.replaceEmptyWithValue = function (self, column, grid) {
+            var prompt = self.$mdDialog.prompt({
+                title: "Replace Empty",
+                textContent: "Enter replace value:",
+                placeholder: "0",
+                ok: "OK",
+                cancel: "Cancel"
+            });
+            self.$mdDialog.show(prompt).then(function (value) {
+                var fieldName = self.getColumnFieldName(column);
+                var script = "when((" + fieldName + " == \"\" || isnull(" + fieldName + ") ),\"" + value + "\").otherwise(" + fieldName + ").as(\"" + fieldName + "\")";
+                var formula = self.toFormula(script, column, grid);
+                self.controller.addFunction(formula, {
+                    formula: formula, icon: "find_replace",
+                    name: "Fill empty with " + value
+                });
+            });
+        };
+        /**
+         * Round numeric to specified digits
+         *
+         * @param {ui.grid.GridColumn} column the column to be renamed
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        ColumnDelegate.prototype.roundNumeric = function (self, column, grid) {
+            var prompt = self.$mdDialog.prompt({
+                title: "Round Numeric",
+                textContent: "Enter scale decimal:",
+                placeholder: "0",
+                initialValue: "0",
+                ok: "OK",
+                cancel: "Cancel"
+            });
+            self.$mdDialog.show(prompt).then(function (value) {
+                if (value != null && !isNaN(value) && (parseInt(value) >= 0)) {
+                    var fieldName = self.getColumnFieldName(column);
+                    var script = "round(" + fieldName + ", " + value + ").as(\"" + fieldName + "\")";
+                    var formula = self.toFormula(script, column, grid);
+                    self.controller.addFunction(formula, {
+                        formula: formula, icon: "exposure_zero",
+                        name: "Round " + fieldName + " to " + value + " digits"
+                    });
+                    return;
+                }
+                else {
+                    alert("Enter 0 or a positive numeric integer");
+                    self.roundNumeric(self, column, grid);
+                }
+            });
         };
         /**
          * Validates the specified filter.
@@ -694,16 +919,16 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var transforms = [];
             var self = this;
             if (dataCategory === DataCategory.NUMERIC) {
-                transforms.push({ description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn }, { description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn }, { description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'swap_vert', name: 'Round', operation: 'round' }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
+                transforms.push({ description: 'Impute missing with mean', icon: 'functions', name: 'Impute', operation: self.imputeMeanColumn }, { description: 'Replace null/nan with a specified value', icon: 'find_replace', name: 'Replace null/nan...', operation: self.replaceEmptyWithValue }, { description: 'Convert to a numerical array for ML', icon: 'functions', name: 'Vectorize', operation: self.vectorizeColumn }, { description: 'Ceiling of', icon: 'arrow_upward', name: 'Ceiling', operation: 'ceil' }, { description: 'Floor of', icon: 'arrow_downward', name: 'Floor', operation: 'floor' }, { icon: 'exposure_zero', name: 'Round...', operation: self.roundNumeric }, { descriptions: 'Degrees of', icon: '°', name: 'To Degrees', operation: 'toDegrees' }, { descriptions: 'Radians of', icon: '㎭', name: 'To Radians', operation: 'toRadians' });
             }
             else if (dataCategory === DataCategory.STRING) {
-                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn }, { description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn }, { description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn });
+                transforms.push({ description: 'Lowercase', icon: 'arrow_downward', name: 'Lower Case', operation: 'lower' }, { description: 'Uppercase', icon: 'arrow_upward', name: 'Upper Case', operation: 'upper' }, { description: 'Title case', icon: 'format_color_text', name: 'Title Case', operation: 'initcap' }, { description: 'Extract numeric', icon: 'filter_2', name: 'Extract numeric', operation: self.extractNumeric }, { icon: 'graphic_eq', name: 'Trim', operation: 'trim' }, { description: 'One hot encode (or pivot) categorical values', icon: 'functions', name: 'One hot encode', operation: self.oneHotEncodeColumn }, { description: 'Replace empty with a specified value', icon: 'find_replace', name: 'Replace empty...', operation: self.replaceEmptyWithValue }, { description: 'Impute missing values by fill-forward', icon: 'functions', name: 'Impute missing values...', operation: self.imputeMissingColumn }, { description: 'Index labels', icon: 'functions', name: 'Index labels', operation: self.indexColumn }, { description: 'Crosstab', icon: 'poll', name: 'Crosstab', operation: self.crosstabColumn });
             }
             else if (dataCategory == DataCategory.ARRAY_DOUBLE) {
                 transforms.push({ description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std dev', operation: self.rescaleStdDevColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean', operation: self.rescaleMeanColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn }, { description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax });
             }
             else if (dataCategory === DataCategory.ARRAY) {
-                transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array' });
+                transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array' }, { description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems });
             }
             else if (dataCategory === DataCategory.BINARY) {
                 transforms.push({ icon: '#', name: 'CRC32', operation: 'crc32' }, { icon: '#', name: 'MD5', operation: 'md5' }, { icon: '#', name: 'SHA1', operation: 'sha1' }, { icon: '#', name: 'SHA2', operation: 'sha2' });
@@ -713,6 +938,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             }
             else if (dataCategory === DataCategory.MAP) {
                 transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' });
+            }
+            else if (dataCategory === DataCategory.BOOLEAN) {
+                transforms.push({ icon: 'exposure', name: 'Negate boolean', operation: self.negateBoolean });
             }
             return transforms;
         };
