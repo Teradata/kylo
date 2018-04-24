@@ -22,20 +22,19 @@ import {moduleName} from './module-name';
 import CommonRestUrlService from "./CommonRestUrlService";
 
 export default class SearchService{
-data: any = {
-searchQuery: '',
-search: function (query: any, rows: any, start: any) {
+searchQuery: string="";
+search= function (query: any, rows: any, start: any) {
     return this.performSearch(query, rows, start);
     }
-};
+
 constructor (private $q: any,
             private $http: any,
             private CommonRestUrlService: any) {
           
-        return this.data;
+      // return this.data;
 
 }
- performSearch=(query: any, rowsPerPage: any, start: any)=>{
+ performSearch=function(query: any, rowsPerPage: any, start: any){
             return this.$http.get(this.CommonRestUrlService.SEARCH_URL, {params: {q: query, rows: rowsPerPage, start: start}}).then(function (response: any) {
                 return response.data;
 
@@ -43,6 +42,6 @@ constructor (private $q: any,
         }
 }
  angular.module(moduleName)
- .service('CommonRestUrlService',CommonRestUrlService)
- .factory('SearchService',["$q", "$http", "CommonRestUrlService",SearchService]);
+// .service('CommonRestUrlService',CommonRestUrlService)
+ .service('SearchService',["$q", "$http", "CommonRestUrlService",SearchService]);
   

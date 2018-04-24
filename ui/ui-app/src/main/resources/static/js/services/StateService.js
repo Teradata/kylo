@@ -3,7 +3,6 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
     Object.defineProperty(exports, "__esModule", { value: true });
     var StateService = /** @class */ (function () {
         function StateService($state) {
-            var _this = this;
             this.$state = $state;
             var AuthStates = function () {
                 var data = {};
@@ -261,7 +260,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             var States = function () {
                 var data = {};
                 data.Auth = AuthStates;
-                _this.Auth = AuthStates;
+                // this.Auth = AuthStates;
                 data.Search = SearchStates;
                 data.FeedManager = FeedManagerStates;
                 data.OpsManager = OpsManagerStates;
@@ -282,6 +281,8 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             this.FeedManager = FeedManagerStates;
             this.OpsManager = OpsManagerStates;
             this.Search = SearchStates;
+            this.Tables = TableStates;
+            this.Categories = CategoryStates;
             return new States;
         }
         return StateService;

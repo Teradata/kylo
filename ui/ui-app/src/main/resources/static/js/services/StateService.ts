@@ -29,6 +29,8 @@ export default class StateService{
     FeedManager: any;
     OpsManager: any;
     Search: any;
+    Tables: any;
+    Categories: any;
     constructor (private $state: any){
         var AuthStates = function(){
             var data: any = {}
@@ -319,7 +321,7 @@ export default class StateService{
         var States: any = ()=> {
             var data: any = {};
             data.Auth = AuthStates;
-            this.Auth = AuthStates;
+           // this.Auth = AuthStates;
             data.Search = SearchStates;
             data.FeedManager = FeedManagerStates;
             data.OpsManager = OpsManagerStates;
@@ -340,7 +342,8 @@ export default class StateService{
         this.FeedManager = FeedManagerStates;
         this.OpsManager = OpsManagerStates;
         this.Search = SearchStates;
-
+        this.Tables = TableStates;
+        this.Categories = CategoryStates;
         return new States;
 } 
 }
