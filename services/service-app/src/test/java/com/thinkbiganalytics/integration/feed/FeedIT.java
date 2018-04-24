@@ -348,7 +348,7 @@ public class FeedIT extends IntegrationTestBase {
         //drop files in dropzone to run the feed
         //runCommandOnRemoteSystem(String.format("sudo chmod a+w %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
         copyFileLocalToRemote(usersDataPath + USERDATA1_CSV, VAR_DROPZONE, IntegrationTestBase.APP_NIFI);
-        runCommandOnRemoteSystem(String.format("chown -R nifi:nifi %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
+        runCommandOnRemoteSystem(String.format("chown -R nifi:users %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
     }
 
 
