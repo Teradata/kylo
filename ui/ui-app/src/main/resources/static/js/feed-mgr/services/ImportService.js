@@ -11,8 +11,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         ImportComponentType["REMOTE_INPUT_PORT"] = "REMOTE_INPUT_PORT";
         ImportComponentType["USER_DATASOURCES"] = "USER_DATASOURCES";
         ImportComponentType["TEMPLATE_CONNECTION_INFORMATION"] = "TEMPLATE_CONNECTION_INFORMATION";
-        ImportComponentType[ImportComponentType["FEED_CATEGORY_USER_FIELDS"] = ImportComponentOptionTypes_1.Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS] = "FEED_CATEGORY_USER_FIELDS";
-        ImportComponentType[ImportComponentType["FEED_USER_FIELDS"] = ImportComponentOptionTypes_1.Import.ImportComponentType.FEED_USER_FIELDS] = "FEED_USER_FIELDS";
+        ImportComponentType["FEED_CATEGORY_USER_FIELDS"] = "FEED_CATEGORY_USER_FIELDS";
+        ImportComponentType["FEED_USER_FIELDS"] = "FEED_USER_FIELDS";
     })(ImportComponentType = exports.ImportComponentType || (exports.ImportComponentType = {}));
     var DefaultImportService = /** @class */ (function () {
         function DefaultImportService() {
@@ -65,10 +65,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             return this.newImportComponentOption("USER_DATASOURCES" /* USER_DATASOURCES */);
         };
         DefaultImportService.prototype.newFeedCategoryUserFieldsImportOption = function () {
-            return this.newImportComponentOption(ImportComponentOptionTypes_1.Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS);
+            return this.newImportComponentOption("FEED_CATEGORY_USER_FIELDS" /* FEED_CATEGORY_USER_FIELDS */);
         };
         DefaultImportService.prototype.newFeedUserFieldsImportOption = function () {
-            return this.newImportComponentOption(ImportComponentOptionTypes_1.Import.ImportComponentType.FEED_USER_FIELDS);
+            return this.newImportComponentOption("FEED_USER_FIELDS" /* FEED_USER_FIELDS */);
         };
         DefaultImportService.prototype.newUploadKey = function () {
             return _.uniqueId("upload_") + new Date().getTime() + this.guid();
