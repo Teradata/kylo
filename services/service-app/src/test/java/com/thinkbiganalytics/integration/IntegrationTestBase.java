@@ -257,8 +257,8 @@ public class IntegrationTestBase {
     }
 
     protected void copyDataToDropzone(String testFileName) {
-        runCommandOnRemoteSystem("sudo touch /var/dropzone/" + testFileName, APP_NIFI);
-        runCommandOnRemoteSystem("sudo chown -R nifi:nifi /var/dropzone", APP_NIFI);
+        runCommandOnRemoteSystem("touch /var/dropzone/" + testFileName, APP_NIFI);
+        runCommandOnRemoteSystem("chown -R nifi:nifi /var/dropzone", APP_NIFI);
     }
 
     protected void waitForFeedToComplete() {
