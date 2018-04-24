@@ -55,7 +55,7 @@ export class controller implements ng.IComponentController{
                 this.searchQuery = '';
             }
             else {
-                this.searchQuery = SearchService.data.searchQuery;
+                this.searchQuery = SearchService.searchQuery;
             }
             $rootScope.previousState = transition.from().name;
             $rootScope.currentState = transition.to().name;
@@ -145,7 +145,7 @@ export class controller implements ng.IComponentController{
          * Search for something
          */
         search = () =>{
-            this.SearchService.data.searchQuery = this.searchQuery;
+            this.SearchService.searchQuery = this.searchQuery;
             if (this.currentState.name != 'search') {
                 this.StateService.Search().navigateToSearch(true);
             }

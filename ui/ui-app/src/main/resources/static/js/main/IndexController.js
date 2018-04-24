@@ -78,7 +78,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
              * Search for something
              */
             this.search = function () {
-                _this.SearchService.data.searchQuery = _this.searchQuery;
+                _this.SearchService.searchQuery = _this.searchQuery;
                 if (_this.currentState.name != 'search') {
                     _this.StateService.Search().navigateToSearch(true);
                 }
@@ -115,7 +115,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
                     _this.searchQuery = '';
                 }
                 else {
-                    _this.searchQuery = SearchService.data.searchQuery;
+                    _this.searchQuery = SearchService.searchQuery;
                 }
                 $rootScope.previousState = transition.from().name;
                 $rootScope.currentState = transition.to().name;
