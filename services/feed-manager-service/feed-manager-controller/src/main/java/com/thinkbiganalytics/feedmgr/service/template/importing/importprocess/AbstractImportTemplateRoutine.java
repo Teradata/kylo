@@ -207,7 +207,7 @@ public abstract class AbstractImportTemplateRoutine implements ImportTemplateRou
         String processGroupName = importTemplate.getTemplateResults().getProcessGroupEntity().getName();
         String processGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getId();
         String parentProcessGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getParentGroupId();
-        if(StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(parentProcessGroupId)) {
+        if (StringUtils.isNotBlank(processGroupId) && StringUtils.isNotBlank(parentProcessGroupId)) {
             log.info("About to cleanup the temporary process group {} ({})", processGroupName, processGroupId);
             try {
                 nifiRestClient.removeProcessGroup(processGroupId, parentProcessGroupId);
@@ -224,6 +224,8 @@ public abstract class AbstractImportTemplateRoutine implements ImportTemplateRou
                 statusMessage.update("Error cleaning up NiFi. The Process Group : " + processGroupName + " ("
                                      + processGroupId + ")", false);
             }
+        } else {
+            statusMessage.complete(true);
         }
     }
 

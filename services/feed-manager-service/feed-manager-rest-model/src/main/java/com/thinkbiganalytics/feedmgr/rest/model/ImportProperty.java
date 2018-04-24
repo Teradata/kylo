@@ -29,6 +29,9 @@ public class ImportProperty {
     private String propertyKey;
     private String propertyValue;
 
+    private String displayName;
+    private String description;
+
     public ImportProperty() {
 
     }
@@ -83,5 +86,21 @@ public class ImportProperty {
 
     public String getProcessorNameTypeKey() {
         return this.getProcessorName() + "-" + this.getProcessorType() + "-" + this.getPropertyKey();
+    }
+
+    public String getDisplayName() {
+        return displayName == null ? getPropertyKey() : displayName;
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
