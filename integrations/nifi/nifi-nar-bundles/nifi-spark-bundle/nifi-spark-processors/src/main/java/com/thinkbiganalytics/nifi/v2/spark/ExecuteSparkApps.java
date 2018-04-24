@@ -3,6 +3,26 @@
  */
 package com.thinkbiganalytics.nifi.v2.spark;
 
+/*-
+ * #%L
+ * kylo-nifi-spark-processors
+ * %%
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import com.thinkbiganalytics.spark.multiexec.MultiSparkExecArguments;
 import com.thinkbiganalytics.spark.multiexec.SparkApplicationCommand;
 import com.thinkbiganalytics.spark.multiexec.SparkApplicationCommandsBuilder;
@@ -23,10 +43,8 @@ import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.components.Validator;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
-import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
-import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
 import java.util.ArrayList;
@@ -99,24 +117,6 @@ public class ExecuteSparkApps extends ExecuteSparkJob {
         .required(false)
         .expressionLanguageSupported(true)
         .build();
-
-//    private static final List<PropertyDescriptor> STATIC_PROP_DESCRS = Collections.unmodifiableList(Arrays.asList(
-//                     ExecuteSparkJob.DRIVER_MEMORY,
-//                     ExecuteSparkJob.EXECUTOR_MEMORY,
-//                     ExecuteSparkJob.NUMBER_EXECUTORS,
-//                     ExecuteSparkJob.EXECUTOR_CORES,
-//                     ExecuteSparkJob.NETWORK_TIMEOUT,
-//                     ExecuteSparkJob.HADOOP_CONFIGURATION_RESOURCES,
-//                     ExecuteSparkJob.SPARK_CONFS,
-//                     ExecuteSparkJob.SPARK_CONFS,
-//                     ExecuteSparkJob.EXTRA_JARS,
-//                     ExecuteSparkJob.EXTRA_SPARK_FILES,
-//                     ExecuteSparkJob.PROCESS_TIMEOUT,
-//                     ExecuteSparkJob.METADATA_SERVICE,
-//                     ExecuteSparkJob.DATASOURCES));
-
-    
-//    private List<PropertyDescriptor> propDescriptors;
     
     private PropertyDescriptor appNamesPropDescriptor;
     private final AtomicReference<Set<Relationship>> dynamicRelationships = new AtomicReference<>(Collections.emptySet());
@@ -139,19 +139,6 @@ public class ExecuteSparkApps extends ExecuteSparkJob {
         set.add(ExecuteSparkApps.APPLICATION_JAR);
         set.add(ExecuteSparkApps.MAIN_CLASS);
         set.add(ExecuteSparkApps.MAIN_ARGS);
-    }
-    
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.nifi.v2.spark.ExecuteSparkJob#addRelationships(java.util.Set)
-     */
-    @Override
-    protected void addRelationships(Set<Relationship> set) {
-        super.addRelationships(set);
-        
-//        set.remove(ExecuteSparkJob.REL_SUCCESS);
-//        set.remove(ExecuteSparkJob.REL_FAILURE);
-//        set.add(JOB_SUCCESS);
-//        set.add(JOB_FAILURE);
     }
     
     

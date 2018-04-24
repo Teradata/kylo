@@ -24,14 +24,11 @@ package com.thinkbiganalytics.spark.multiexec;
  */
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.tuple;
 
-import com.beust.jcommander.ParameterException;
 import com.thinkbiganalytics.spark.multiexec.MultiSparkExecArguments;
 
 import org.junit.Test;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -76,27 +73,9 @@ public class MultiSparkExecArgumentsTest {
                         .build();
         
         String[] commandLine = MultiSparkExecArguments.createCommandLine(commands);
-        System.out.printf("%s '%s'", commandLine[0], commandLine[1]);
+//        System.out.printf("%s '%s'", commandLine[0], commandLine[1]);
         
         assertThat(commandLine).isNotEmpty();
-        
-//        MultiSparkExecArguments config = new MultiSparkExecArguments(SPARK_APP_LONG_ARGS);
-        
-//        assertThat(config).extracting("sourceSchema", "sourceTable").containsExactly("source", "table");
-//        assertThat(config).extracting("targetSchema", "targetTable").containsExactly("target", "table");
-//        assertThat(config.getPartitionValue()).isEqualTo("123");
-//        assertThat(config.getStrategy()).isEqualTo(MergeStrategy.DEDUPE_AND_MERGE);
-//        assertThat(config.getPartionSpec()).isNotNull();
-//        assertThat(config.getPartionSpec().getKeys())
-//            .isNotEmpty()
-//            .extracting("key", "type", "formula")
-//            .contains(tuple("field1", "type1", "formula(column1)"),
-//                      tuple("field2", "type2", "formula(column2)"));  
-//        assertThat(config.getColumnSpecs()).isNotNull();
-//        assertThat(config.getColumnSpecs())
-//            .isNotEmpty()
-//            .extracting("name", "comment", "dataType", "primaryKey", "createDate", "modifiedDate")
-//            .contains(tuple("column1", "comment", "type1", true, true, false));
     }
     
 }
