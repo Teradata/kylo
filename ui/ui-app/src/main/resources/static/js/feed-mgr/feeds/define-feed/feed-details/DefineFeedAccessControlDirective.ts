@@ -30,15 +30,16 @@ export class DefineFeedAccessControlController {
     totalSteps:number;
     
     $onInit(){
+        this.ngOnInit();
+    }
+    ngOnInit(){
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex)+1;
     }
 
-    
-
     static readonly $inject = ["$scope","FeedService","FeedSecurityGroups"];
 
-    constructor($scope:any,FeedService:any, FeedSecurityGroups:any) {
+    constructor($scope:IScope,FeedService:any, FeedSecurityGroups:any) {
 
         this.model = FeedService.createFeedModel;
         
@@ -51,7 +52,6 @@ export class DefineFeedAccessControlController {
             this.securityGroupsEnabled = isValid;
         });
     }
-    
     transformChip(chip:any){
         // If it is an object, it's already a known chip
         if (angular.isObject(chip)) {
@@ -61,8 +61,6 @@ export class DefineFeedAccessControlController {
         return {name: chip}
     }
 }
-
-
 angular.module(moduleName).
     component("thinkbigDefineFeedAccessControl", {
         bindings: {

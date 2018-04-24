@@ -29,6 +29,9 @@ export class DefineFeedGeneralInfoController {
         populatingExsitngFeedNames:boolean = false;
 
         totalSteps:any;
+
+        feedNameWatch:any;
+        templateIdWatch:any;
         
         searchTextChange = function(text:string) {
             //   $log.info('Text changed to ' + text);
@@ -161,8 +164,18 @@ export class DefineFeedGeneralInfoController {
             promise.then(successFn, errorFn);
             return promise;
         };
-   
+    $onDestroy(){
+        this.ngOnDestroy(); 
+    }
+    ngOnDestroy(){
+        this.feedNameWatch();
+        this.templateIdWatch();
+        this.model = null;
+    }
     $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }
@@ -183,7 +196,7 @@ export class DefineFeedGeneralInfoController {
             }
         })
 
-       var feedNameWatch = $scope.$watch(() => {
+       this.feedNameWatch = $scope.$watch(() => {
             return this.model.feedName;
         },(newVal:any) => {
            FeedService.getSystemName(newVal).then((response:any) => {
@@ -202,16 +215,10 @@ export class DefineFeedGeneralInfoController {
             this.validate();
         })
 
-        var templateIdWatch =  $scope.$watch(() =>{
+        this.templateIdWatch =  $scope.$watch(() =>{
             return this.model.templateId;
         },(newVal:any) => {
             this.validate();
-        });
-
-        $scope.$on('$destroy',() => {
-            feedNameWatch();
-            templateIdWatch();
-            this.model = null;
         });
     };
 }

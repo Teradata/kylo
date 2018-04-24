@@ -12,14 +12,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.RestUrlService = RestUrlService;
             this.FeedService = FeedService;
             this.StateService = StateService;
-            /**
-                 * Navigate to the Feed Details SLA tab
-            */
-            this.onAddServiceLevelAgreement = function () {
-                //navigate to Feed Details and move to the 3 tab (SLA)
-                var feedId = this.getFeedId(this.FeedService);
-                this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
-            };
             this.model = $transition$.params().feedModel;
             this.error = $transition$.params().error;
             this.isValid = this.error == null;
@@ -55,6 +47,14 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         DefineFeedCompleteController.prototype.onViewFeedsList = function () {
             this.FeedService.resetFeed();
             this.StateService.FeedManager().Feed().navigateToFeeds();
+        };
+        /**
+             * Navigate to the Feed Details SLA tab
+        */
+        DefineFeedCompleteController.prototype.onAddServiceLevelAgreement = function () {
+            //navigate to Feed Details and move to the 3 tab (SLA)
+            var feedId = this.getFeedId();
+            this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
         };
         DefineFeedCompleteController.$inject = ["$scope", "$q", "$http", "$mdToast", "$transition$", "RestUrlService", "FeedService", "StateService"];
         return DefineFeedCompleteController;

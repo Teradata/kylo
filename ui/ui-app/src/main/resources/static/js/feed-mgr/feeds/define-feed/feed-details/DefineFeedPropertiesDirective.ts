@@ -78,6 +78,9 @@ export class DefineFeedPropertiesController {
     };
 
     $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }

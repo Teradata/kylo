@@ -84,6 +84,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         };
         ;
         DefineFeedPropertiesController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedPropertiesController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };

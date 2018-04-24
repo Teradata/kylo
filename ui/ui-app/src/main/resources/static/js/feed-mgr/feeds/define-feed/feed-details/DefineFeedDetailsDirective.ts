@@ -64,11 +64,26 @@ export class DefineFeedDetailsController {
     inputProcessor: any = [];
     nonInputProcessors: any;
 
+    inputProcessorIdWatch:any;
+    systemFeedNameWatch:any;
+    templateIdWatch:any;
+
     $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }
 
+    $onDestroy(){
+        this.ngOnDestroy(); 
+    }
+    ngOnDestroy(){
+        this.systemFeedNameWatch();
+        this.templateIdWatch();
+        this.inputProcessorIdWatch();
+    }
 
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
         "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
@@ -90,7 +105,7 @@ export class DefineFeedDetailsController {
             }
         });
         
-        var inputProcessorIdWatch = $scope.$watch(() => {
+        this.inputProcessorIdWatch = $scope.$watch(() => {
             return this.inputProcessorId;
         },(newVal: any, oldVal: any) => {
             if (newVal != null && this.initialInputProcessorId == null) {
@@ -101,26 +116,17 @@ export class DefineFeedDetailsController {
             this.stepperController.resetStep(parseInt(this.stepIndex) + 1);
             this.validate();
         });
-
-        var systemFeedNameWatch = $scope.$watch(() => {
+        this.systemFeedNameWatch = $scope.$watch(() => {
             return this.model.systemFeedName;
         }, (newVal: any) => {
             this.validate();
         });
-
-        var templateIdWatch = $scope.$watch(() => {
+        this.templateIdWatch = $scope.$watch(() => {
             return this.model.templateId;
         }, (newVal: any) => {
             this.loading = true;
             this.getRegisteredTemplate();
         });
-
-        $scope.$on('$destroy', () => {
-            systemFeedNameWatch();
-            templateIdWatch();
-            inputProcessorIdWatch();
-        })
-
     }
 
     matchInputProcessor(inputProcessor: any, inputProcessors: any) {

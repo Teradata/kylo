@@ -88,6 +88,10 @@ export class DefineFeedScheduleController {
     totalSteps: number;
 
     $onInit() {
+        this.ngOnInit();
+    }
+    
+    ngOnInit() {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
     }

@@ -87,6 +87,12 @@ export class DefineFeedTableController {
     MAX_COLUMN_LENGTH:number = 767;
 
     $onInit() {
+        this.ngOnInit();
+    }
+    $onDestroy(){
+        this.ngOnDestroy(); 
+    }
+    ngOnInit() {
         this.totalSteps = this.stepperController.totalSteps;
         this.stepNumber = parseInt(this.stepIndex) + 1;
         // choose to expand the choose method initially if no fields have been defined yet
@@ -97,13 +103,14 @@ export class DefineFeedTableController {
             this.expandSchemaPanel();
         }
     }
-    $onDestroy(){
-            this.systemFeedNameWatch();
-            this.invalidColumnsWatch();
-            this.formValidWatch();
-            this.tableMethodWatch();
-            this.sampleFileWatch();
+    ngOnDestroy(){
+        this.systemFeedNameWatch();
+        this.invalidColumnsWatch();
+        this.formValidWatch();
+        this.tableMethodWatch();
+        this.sampleFileWatch();
     }
+
 
     static readonly $inject = ["$rootScope","$scope","$http","$timeout","$mdToast","$filter","$mdDialog",
             "$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService",

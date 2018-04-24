@@ -119,6 +119,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             });
         }
         DefineFeedScheduleController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedScheduleController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };

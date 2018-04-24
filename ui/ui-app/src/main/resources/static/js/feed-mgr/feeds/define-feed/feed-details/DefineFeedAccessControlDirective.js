@@ -24,6 +24,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             });
         }
         DefineFeedAccessControlController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedAccessControlController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };

@@ -63,6 +63,9 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll"],
             this.onTableFormatChange();
         }
         DefineFeedDataProcessingController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedDataProcessingController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };

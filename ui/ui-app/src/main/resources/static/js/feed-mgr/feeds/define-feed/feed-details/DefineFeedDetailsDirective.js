@@ -42,7 +42,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     _this.validate();
                 }
             });
-            var inputProcessorIdWatch = $scope.$watch(function () {
+            this.inputProcessorIdWatch = $scope.$watch(function () {
                 return _this.inputProcessorId;
             }, function (newVal, oldVal) {
                 if (newVal != null && _this.initialInputProcessorId == null) {
@@ -53,26 +53,32 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 _this.stepperController.resetStep(parseInt(_this.stepIndex) + 1);
                 _this.validate();
             });
-            var systemFeedNameWatch = $scope.$watch(function () {
+            this.systemFeedNameWatch = $scope.$watch(function () {
                 return _this.model.systemFeedName;
             }, function (newVal) {
                 _this.validate();
             });
-            var templateIdWatch = $scope.$watch(function () {
+            this.templateIdWatch = $scope.$watch(function () {
                 return _this.model.templateId;
             }, function (newVal) {
                 _this.loading = true;
                 _this.getRegisteredTemplate();
             });
-            $scope.$on('$destroy', function () {
-                systemFeedNameWatch();
-                templateIdWatch();
-                inputProcessorIdWatch();
-            });
         }
         DefineFeedDetailsController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedDetailsController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
+        };
+        DefineFeedDetailsController.prototype.$onDestroy = function () {
+            this.ngOnDestroy();
+        };
+        DefineFeedDetailsController.prototype.ngOnDestroy = function () {
+            this.systemFeedNameWatch();
+            this.templateIdWatch();
+            this.inputProcessorIdWatch();
         };
         DefineFeedDetailsController.prototype.matchInputProcessor = function (inputProcessor, inputProcessors) {
             if (inputProcessor == null) {

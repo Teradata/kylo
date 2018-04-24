@@ -151,6 +151,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.calcTableState();
         }
         DefineFeedTableController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedTableController.prototype.$onDestroy = function () {
+            this.ngOnDestroy();
+        };
+        DefineFeedTableController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
             // choose to expand the choose method initially if no fields have been defined yet
@@ -161,7 +167,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 this.expandSchemaPanel();
             }
         };
-        DefineFeedTableController.prototype.$onDestroy = function () {
+        DefineFeedTableController.prototype.ngOnDestroy = function () {
             this.systemFeedNameWatch();
             this.invalidColumnsWatch();
             this.formValidWatch();

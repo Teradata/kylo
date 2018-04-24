@@ -163,7 +163,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     _this.category = _this.model.category;
                 }
             });
-            var feedNameWatch = $scope.$watch(function () {
+            this.feedNameWatch = $scope.$watch(function () {
                 return _this.model.feedName;
             }, function (newVal) {
                 FeedService.getSystemName(newVal).then(function (response) {
@@ -178,18 +178,24 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }, function (newVal) {
                 _this.validate();
             });
-            var templateIdWatch = $scope.$watch(function () {
+            this.templateIdWatch = $scope.$watch(function () {
                 return _this.model.templateId;
             }, function (newVal) {
                 _this.validate();
             });
-            $scope.$on('$destroy', function () {
-                feedNameWatch();
-                templateIdWatch();
-                _this.model = null;
-            });
         }
+        DefineFeedGeneralInfoController.prototype.$onDestroy = function () {
+            this.ngOnDestroy();
+        };
+        DefineFeedGeneralInfoController.prototype.ngOnDestroy = function () {
+            this.feedNameWatch();
+            this.templateIdWatch();
+            this.model = null;
+        };
         DefineFeedGeneralInfoController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        DefineFeedGeneralInfoController.prototype.ngOnInit = function () {
             this.totalSteps = this.stepperController.totalSteps;
             this.stepNumber = parseInt(this.stepIndex) + 1;
         };

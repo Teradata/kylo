@@ -11,7 +11,7 @@ export default class DefineFeedCompleteController {
 
     static readonly $inject = ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService"];
 
-    constructor(private $scope: any, private $q: any, private $http: any, private $mdToast: any, private $transition$: any, private RestUrlService: any, private FeedService: any, private StateService: any) {
+    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: any, private $transition$: any, private RestUrlService: any, private FeedService: any, private StateService: any) {
 
         this.model = $transition$.params().feedModel;
         this.error = $transition$.params().error;
@@ -56,9 +56,9 @@ export default class DefineFeedCompleteController {
     /**
          * Navigate to the Feed Details SLA tab
     */
-    onAddServiceLevelAgreement = function () {
+    onAddServiceLevelAgreement() {
         //navigate to Feed Details and move to the 3 tab (SLA)
-        var feedId = this.getFeedId(this.FeedService);
+        var feedId = this.getFeedId();
         this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
     }
 }
