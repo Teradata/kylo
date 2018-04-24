@@ -22,73 +22,73 @@ const moduleName = require('feed-mgr/module-name');
  * @constructor
  */
 
-export class DatasourcesService {
-    
-}
+//export class DatasourcesService {
+    // DatasourcesServiceClass();
+//}
 
 // export class DatasourcesService {
-    function DatasourcesServiceClass ($http:any, $q:any, RestUrlService:any, EntityAccessControlService:any) {
-
-        /**
+ export  class DatasourcesService {
+       /**
          * Type name for JDBC data sources.
          * @type {string}
          */
-        var JDBC_TYPE = "JdbcDatasource";
+        JDBC_TYPE = "JdbcDatasource";
 
         /**
          * Type name for user data sources.
          * @type {string}
          */
-        var USER_TYPE = "UserDatasource";
+        USER_TYPE = "UserDatasource";
 
-        var ICON = "grid_on";
-        var ICON_COLOR = "orange";
-        var HIVE_DATASOURCE = {id: 'HIVE', name: "Hive", isHive: true, icon: ICON, iconColor: ICON_COLOR};
+        ICON = "grid_on";
+        ICON_COLOR = "orange";
+        HIVE_DATASOURCE = {id: 'HIVE', name: "Hive", isHive: true, icon: this.ICON, iconColor: this.ICON_COLOR};
 
-        function ensureDefaultIcon(datasource:any) {
+        getHiveDatasource() {
+                return this.HIVE_DATASOURCE;
+            }
+        ensureDefaultIcon(datasource:any) {
             if (datasource.icon === undefined) {
-                datasource.icon = ICON;
-                datasource.iconColor = ICON_COLOR;
+                datasource.icon = this.ICON;
+                datasource.iconColor = this.ICON_COLOR;
             }
         }
+        constructor($http:any, $q:any, RestUrlService:any, EntityAccessControlService:any) {
+      //  angular.extend(DatasourcesService.prototype, {
+            
+        }//);
+        //return new DatasourcesService();
+        
 
-
-
-        angular.extend(DatasourcesService.prototype, {
-
-            getHiveDatasource: function() {
-                return HIVE_DATASOURCE;
-            },
-
-            /**
+        /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons
              * @returns {string} default icon name
              */
-            defaultIconName: function() {
-                return ICON;
-            },
+            defaultIconName= function() {
+                return this.ICON;
+            }
 
             /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons
              * @returns {string} default icon color
              */
-            defaultIconColor: function() {
-                return ICON_COLOR;
-            },
+            defaultIconColor= function() {
+                return this.ICON_COLOR;
+            }
 
             /**
              * Deletes the data source with the specified id.
              * @param {string} id the data source id
              * @returns {Promise} for when the data source is deleted
              */
-            deleteById: function (id:any) {
-                return $http({
+            deleteById= function(id:any) {
+                return this.$http({
                     method: "DELETE",
-                    url: RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
+                    url: this.RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
                 });
-            },
+            }
 
             /**
              * Filters the specified array of data sources by matching ids.
@@ -97,47 +97,47 @@ export class DatasourcesService {
              * @param {Array.<JdbcDatasource>} array the data sources to filter
              * @return {Array.<JdbcDatasource>} the array of matching data sources
              */
-            filterArrayByIds: function (ids:any, array:any) {
+            filterArrayByIds= function(ids:any, array:any) {
                 var idList = angular.isArray(ids) ? ids : [ids];
                 return array.filter(function (datasource:any) {
                     return (idList.indexOf(datasource.id) > -1);
                 });
-            },
+            }
 
             /**
              * Finds all user data sources.
              * @returns {Promise} with the list of data sources
              */
-            findAll: function () {
-                return $http.get(RestUrlService.GET_DATASOURCES_URL, {params: {type: USER_TYPE}})
+            findAll= function() {
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL, {params: {type: this.USER_TYPE}})
                     .then(function (response:any) {
-                        _.each(response.data, ensureDefaultIcon);
+                        _.each(response.data, this.ensureDefaultIcon);
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Finds the data source with the specified id.
              * @param {string} id the data source id
              * @returns {Promise} with the data source
              */
-            findById: function (id:any) {
-                if (HIVE_DATASOURCE.id === id) {
-                    return Promise.resolve(HIVE_DATASOURCE);
+            findById= function(id:any) {
+                if (this.HIVE_DATASOURCE.id === id) {
+                    return Promise.resolve(this.HIVE_DATASOURCE);
                 }
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id)
                     .then(function (response:any) {
-                        ensureDefaultIcon(response.data);
+                        this.ensureDefaultIcon(response.data);
                         return response.data;
                     });
-            },
+            }
 
-            findControllerServiceReferences:function(controllerServiceId:any){
-                return $http.get(RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
+            findControllerServiceReferences= function(controllerServiceId:any){
+                return this.$http.get(this.RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
                     .then(function (response:any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets the schema for the specified table.
@@ -145,30 +145,30 @@ export class DatasourcesService {
              * @param {string} table the table name
              * @param {string} [opt_schema] the schema name
              */
-            getTableSchema: function (id:any, table:any, opt_schema:any) {
+            getTableSchema= function(id:any, table:any, opt_schema:any) {
                 var options:any = {params: {}};
                 if (angular.isString(opt_schema)) {
                     options.params.schema = opt_schema;
                 }
 
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
                     .then(function (response:any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Lists the tables for the specified data source.
              * @param {string} id the data source id
              * @param {string} [opt_query] the table name query
              */
-            listTables: function (id:any, opt_query:any) {
+            listTables= function(id:any, opt_query:any) {
                 var options:any = {params: {}};
                 if (angular.isString(opt_query) && opt_query.length > 0) {
                     options.params.tableName = "%" + opt_query + "%";
                 }
 
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
                     .then(function (response:any) {
                         // Get the list of tables
                         var tables = [];
@@ -192,47 +192,47 @@ export class DatasourcesService {
                     }).catch(function(e:any){
                             throw e;
                        });
-            },
+            }
 
-            query: function(datasourceId:any, sql:any) {
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
+            query= function(datasourceId:any, sql:any) {
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
                     .then(function (response:any) {
                         return response;
                     }).catch(function(e:any){
                         throw e;
                     });
-            },
+            }
 
-            preview: function(datasourceId:any, schema:string, table:string, limit:number) {
-                return $http.post(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+            preview= function(datasourceId:any, schema:string, table:string, limit:number) {
+                return this.$http.post(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then(function (response:any) {
                         return response;
                     }).catch(function(e:any){
                         throw e;
                     });
-            },
+            }
 
-            getPreviewSql: function(datasourceId:any, schema:string, table:string, limit:number) {
-                return $http.get(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+           getPreviewSql= function(datasourceId:any, schema:string, table:string, limit:number) {
+                return this.$http.get(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then(function (response:any) {
                         return response.data;
                     }).catch(function(e:any){
                         throw e;
                     });
-            },
+            }
 
-            getTablesAndColumns: function(datasourceId:any, schema:any) {
+            getTablesAndColumns= function(datasourceId:any, schema:any) {
                 var params = {schema: schema};
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
-            },
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", {params: params});
+            }
 
             /**
              * Creates a new JDBC data source.
              * @returns {JdbcDatasource} the JDBC data source
              */
-            newJdbcDatasource: function () {
+            newJdbcDatasource= function() {
                 let d:any = {
-                    "@type": JDBC_TYPE,
+                    "@type": this.JDBC_TYPE,
                     name: "",
                     description: "",
                     owner: null,
@@ -246,38 +246,34 @@ export class DatasourcesService {
                     password: ""
                 };
                 return d;
-            },
+            }
 
-            saveRoles:function(datasource:any){
+            saveRoles= function(datasource:any){
 
-               return EntityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
+               return this.EntityAccessControlService.saveRoleMemberships('datasource',datasource.id,datasource.roleMemberships);
 
-            },
+            }
 
             /**
              * Saves the specified data source.
              * @param {JdbcDatasource} datasource the data source to be saved
              * @returns {Promise} with the updated data source
              */
-            save: function (datasource:any) {
-                return $http.post(RestUrlService.GET_DATASOURCES_URL, datasource)
-                    .then(function (response:any) {
-                        return response.data;
-                    });
-            },
-
-            testConnection: function(datasource: any) {
-                return $http.post(RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+            save= function(datasource:any) {
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL, datasource)
                     .then(function (response:any) {
                         return response.data;
                     });
             }
-        });
 
-        
+           testConnection= function(datasource: any) {
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+                    .then(function (response:any) {
+                        return response.data;
+                    });
+            }
+    //}
+}
 
-        return new DatasourcesService();
-    }
-// }
-
-angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService","EntityAccessControlService", DatasourcesServiceClass]);
+angular.module(moduleName).service("DatasourcesService", 
+["$http", "$q", "RestUrlService","EntityAccessControlService", DatasourcesService]);

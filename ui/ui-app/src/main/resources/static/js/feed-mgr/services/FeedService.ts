@@ -2,38 +2,20 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService.d";
 
-function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToast: angular.material.IToastService, $mdDialog: angular.material.IDialogService, RestUrlService: any,
-                     VisualQueryService: any, FeedCreationErrorService: any, FeedPropertyService: any, AccessControlService: any, EntityAccessControlService: any, StateService: any) {
-
-    function trim(str: string) {
-        return str.replace(/^\s+|\s+$/g, "");
-    }
-
-    function toCamel(str: string) {
-        return str.replace(/(\-[a-z])/g, function ($1) {
-            return $1.toUpperCase().replace('-', '');
-        });
-    }
-
-    function toDash(str: string) {
-        return str.replace(/([A-Z])/g, function ($1) {
-            return "-" + $1.toLowerCase();
-        });
-    }
-
-    function spacesToUnderscore(str: string) {
-        return str.replace(/\s+/g, '_');
-    }
-
-    function toUnderscore(str: string) {
-        return str.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
-            return "_" + y.toLowerCase()
-        }).replace(/^_/, "")
-        //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
-    }
-
-    const data = {
-
+export class FeedService{
+    data: any;
+    constructor(private $http: angular.IHttpService,
+                private $q: angular.IQService, 
+                private $mdToast: angular.material.IToastService, 
+                private $mdDialog: angular.material.IDialogService, 
+                private RestUrlService: any,
+                private VisualQueryService: any, 
+                private FeedCreationErrorService: any, 
+                private FeedPropertyService: any, 
+                private AccessControlService: any, 
+                private EntityAccessControlService: any, 
+                private StateService: any) {
+   this.data = {
         /**
          * The Feed model in the Create Feed Stepper
          */
@@ -125,7 +107,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 nonInputProcessors: [],
                 properties: [],
                 securityGroups: [],
-                schedule: {schedulingPeriod: data.DEFAULT_CRON, schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1},
+                schedule: {schedulingPeriod: this.DEFAULT_CRON, schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1},
                 defineTable: false,
                 allowPreconditions: false,
                 dataTransformationFeed: false,
@@ -193,20 +175,20 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         },
         cloneFeed: function () {
             //copy the feed
-            data.createFeedModel = angular.copy(data.editFeedModel);
-            data.createFeedModel.id = null;
-            data.createFeedModel.cloned = true;
-            data.createFeedModel.clonedFrom = data.createFeedModel.feedName;
-            data.createFeedModel.feedName += "_copy";
-            data.createFeedModel.systemFeedName += "_copy";
-            data.createFeedModel.owner = undefined;
-            _.each(data.createFeedModel.table.tableSchema.fields, function(field: any) {
+            this.data.createFeedModel = angular.copy(this.data.editFeedModel);
+            this.data.createFeedModel.id = null;
+            this.data.createFeedModel.cloned = true;
+            this.data.createFeedModel.clonedFrom = this.data.createFeedModel.feedName;
+            this.data.createFeedModel.feedName += "_copy";
+            this.data.createFeedModel.systemFeedName += "_copy";
+            this.data.createFeedModel.owner = undefined;
+            _.each(this.data.createFeedModel.table.tableSchema.fields, function(field: any) {
                 field._id = _.uniqueId();
             });
-            _.each(data.createFeedModel.table.partitions, function(partition: any) {
+            _.each(this.data.createFeedModel.table.partitions, function(partition: any) {
                 partition._id = _.uniqueId();
             });
-            return data.createFeedModel;
+            return this.data.createFeedModel;
         },
         /**
          * Called when starting a new feed.
@@ -598,7 +580,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     feedName: feedName
                 }
             })
-                .then(function (answer) {
+                .then((answer: any)=> {
                     //do something with result
                 }, function () {
                     //cancelled the dialog
@@ -764,7 +746,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         getUserFields: function (categoryId: string): angular.IPromise<any> {
             return $http.get(RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
-                .then(function (response) {
+                .then(function (response: any) {
                     return response.data;
                 });
         },
@@ -777,7 +759,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         getAvailableControllerServices: function (type: string): angular.IPromise<any> {
             return $http.get(RestUrlService.LIST_SERVICES_URL("root"), {params: {type: type}})
-                .then(function (response) {
+                .then(function (response: any) {
                     return response.data;
                 });
         },
@@ -791,7 +773,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             property.isLoading = true;
 
             // Fetch the list of controller services
-            data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
+            this.data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
                 .then(function (services: any) {
                     // Update the allowable values
                     property.isLoading = false;
@@ -807,7 +789,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         getFeedByName: function (feedName: string) {
             var deferred = $q.defer();
             $http.get(RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
-                .then(function (response) {
+                .then(function (response: any) {
                     var feedResponse = response.data;
                     return deferred.resolve(feedResponse);
                 });
@@ -821,7 +803,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         getPartitionFunctions: function () {
             return $http.get(RestUrlService.PARTITION_FUNCTIONS_URL)
-                .then(function (response) {
+                .then(function (response: any) {
                     return response.data;
                 });
         },
@@ -866,7 +848,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         hasEntityAccess: function (permissionsToCheck: any, entity: any) {
             if (entity == undefined) {
-                entity = data.model;
+                entity = this.data.model;
             }
             return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
         },
@@ -890,7 +872,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
                     field.derivedDataType = domainType.field.derivedDataType;
                     field.precisionScale = domainType.field.precisionScale;
-                    field.dataTypeDisplay = data.getDataTypeDisplay(field);
+                    field.dataTypeDisplay = this.data.getDataTypeDisplay(field);
                 }
             }
 
@@ -939,29 +921,60 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             this.versionFeedModelDiff = {};
         }
 
-    } as any;
+   
+    };
+    this.data.init();
     
-    data.init();
-    
-    return data;
+    return this.data;
+}// constructor terminating here
+    trim(str: string) {
+        return str.replace(/^\s+|\s+$/g, "");
+    }
+
+    toCamel(str: string) {
+        return str.replace(/(\-[a-z])/g, function ($1) {
+            return $1.toUpperCase().replace('-', '');
+        });
+    }
+
+    toDash(str: string) {
+        return str.replace(/([A-Z])/g, function ($1) {
+            return "-" + $1.toLowerCase();
+        });
+    }
+
+    spacesToUnderscore(str: string) {
+        return str.replace(/\s+/g, '_');
+    }
+
+    toUnderscore(str: string) {
+        return str.replace(/(?:^|\.?)([A-Z])/g, function (x, y) {
+            return "_" + y.toLowerCase()
+        }).replace(/^_/, "")
+        //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
+    }    
 }
 
 /**
  * The Controller used for the Feed Saving Dialog
  */
-export function FeedSavingDialogController($scope: any, $mdDialog: angular.material.IDialogService, message: string, feedName: string) {
-    $scope.feedName = feedName;
-    $scope.message = message;
+export class FeedSavingDialogController{
+constructor(private $scope: any,
+            private $mdDialog: angular.material.IDialogService,
+            private message: string, 
+            private feedName: string) {
+            $scope.feedName = feedName;
+            $scope.message = message;
 
-    $scope.hide = function () {
-        $mdDialog.hide();
-    };
+            $scope.hide = function () {
+                $mdDialog.hide();
+            };
 
-    $scope.cancel = function () {
-        $mdDialog.cancel();
-    };
+            $scope.cancel = function () {
+                $mdDialog.cancel();
+            };
+        }
 }
-
 angular.module(require("feed-mgr/module-name"))
     .factory('FeedService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "VisualQueryService", "FeedCreationErrorService", "FeedPropertyService", "AccessControlService",
         "EntityAccessControlService", "StateService", FeedService])

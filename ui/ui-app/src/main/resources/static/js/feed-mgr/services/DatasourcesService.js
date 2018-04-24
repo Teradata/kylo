@@ -6,64 +6,54 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
      * Interacts with the Data Sources REST API.
      * @constructor
      */
-    var DatasourcesService = /** @class */ (function () {
-        function DatasourcesService() {
-        }
-        return DatasourcesService;
-    }());
-    exports.DatasourcesService = DatasourcesService;
+    //export class DatasourcesService {
+    // DatasourcesServiceClass();
+    //}
     // export class DatasourcesService {
-    function DatasourcesServiceClass($http, $q, RestUrlService, EntityAccessControlService) {
-        /**
-         * Type name for JDBC data sources.
-         * @type {string}
-         */
-        var JDBC_TYPE = "JdbcDatasource";
-        /**
-         * Type name for user data sources.
-         * @type {string}
-         */
-        var USER_TYPE = "UserDatasource";
-        var ICON = "grid_on";
-        var ICON_COLOR = "orange";
-        var HIVE_DATASOURCE = { id: 'HIVE', name: "Hive", isHive: true, icon: ICON, iconColor: ICON_COLOR };
-        function ensureDefaultIcon(datasource) {
-            if (datasource.icon === undefined) {
-                datasource.icon = ICON;
-                datasource.iconColor = ICON_COLOR;
-            }
-        }
-        angular.extend(DatasourcesService.prototype, {
-            getHiveDatasource: function () {
-                return HIVE_DATASOURCE;
-            },
+    var DatasourcesService = /** @class */ (function () {
+        function DatasourcesService($http, $q, RestUrlService, EntityAccessControlService) {
+            //  angular.extend(DatasourcesService.prototype, {
             /**
-             * Default icon name and color is used for data sources which  were created prior to
-             * data sources supporting icons
-             * @returns {string} default icon name
+              * Type name for JDBC data sources.
+              * @type {string}
+              */
+            this.JDBC_TYPE = "JdbcDatasource";
+            /**
+             * Type name for user data sources.
+             * @type {string}
              */
-            defaultIconName: function () {
-                return ICON;
-            },
+            this.USER_TYPE = "UserDatasource";
+            this.ICON = "grid_on";
+            this.ICON_COLOR = "orange";
+            this.HIVE_DATASOURCE = { id: 'HIVE', name: "Hive", isHive: true, icon: this.ICON, iconColor: this.ICON_COLOR };
+            //return new DatasourcesService();
+            /**
+                 * Default icon name and color is used for data sources which  were created prior to
+                 * data sources supporting icons
+                 * @returns {string} default icon name
+                 */
+            this.defaultIconName = function () {
+                return this.ICON;
+            };
             /**
              * Default icon name and color is used for data sources which  were created prior to
              * data sources supporting icons
              * @returns {string} default icon color
              */
-            defaultIconColor: function () {
-                return ICON_COLOR;
-            },
+            this.defaultIconColor = function () {
+                return this.ICON_COLOR;
+            };
             /**
              * Deletes the data source with the specified id.
              * @param {string} id the data source id
              * @returns {Promise} for when the data source is deleted
              */
-            deleteById: function (id) {
-                return $http({
+            this.deleteById = function (id) {
+                return this.$http({
                     method: "DELETE",
-                    url: RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
+                    url: this.RestUrlService.GET_DATASOURCES_URL + "/" + encodeURIComponent(id)
                 });
-            },
+            };
             /**
              * Filters the specified array of data sources by matching ids.
              *
@@ -71,71 +61,71 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @param {Array.<JdbcDatasource>} array the data sources to filter
              * @return {Array.<JdbcDatasource>} the array of matching data sources
              */
-            filterArrayByIds: function (ids, array) {
+            this.filterArrayByIds = function (ids, array) {
                 var idList = angular.isArray(ids) ? ids : [ids];
                 return array.filter(function (datasource) {
                     return (idList.indexOf(datasource.id) > -1);
                 });
-            },
+            };
             /**
              * Finds all user data sources.
              * @returns {Promise} with the list of data sources
              */
-            findAll: function () {
-                return $http.get(RestUrlService.GET_DATASOURCES_URL, { params: { type: USER_TYPE } })
+            this.findAll = function () {
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL, { params: { type: this.USER_TYPE } })
                     .then(function (response) {
-                    _.each(response.data, ensureDefaultIcon);
+                    _.each(response.data, this.ensureDefaultIcon);
                     return response.data;
                 });
-            },
+            };
             /**
              * Finds the data source with the specified id.
              * @param {string} id the data source id
              * @returns {Promise} with the data source
              */
-            findById: function (id) {
-                if (HIVE_DATASOURCE.id === id) {
-                    return Promise.resolve(HIVE_DATASOURCE);
+            this.findById = function (id) {
+                if (this.HIVE_DATASOURCE.id === id) {
+                    return Promise.resolve(this.HIVE_DATASOURCE);
                 }
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id)
                     .then(function (response) {
-                    ensureDefaultIcon(response.data);
+                    this.ensureDefaultIcon(response.data);
                     return response.data;
                 });
-            },
-            findControllerServiceReferences: function (controllerServiceId) {
-                return $http.get(RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
+            };
+            this.findControllerServiceReferences = function (controllerServiceId) {
+                return this.$http.get(this.RestUrlService.GET_NIFI_CONTROLLER_SERVICE_REFERENCES_URL(controllerServiceId))
                     .then(function (response) {
                     return response.data;
                 });
-            },
+            };
             /**
              * Gets the schema for the specified table.
              * @param {string} id the data source id
              * @param {string} table the table name
              * @param {string} [opt_schema] the schema name
              */
-            getTableSchema: function (id, table, opt_schema) {
+            this.getTableSchema = function (id, table, opt_schema) {
                 var options = { params: {} };
                 if (angular.isString(opt_schema)) {
                     options.params.schema = opt_schema;
                 }
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables/" + table, options)
                     .then(function (response) {
                     return response.data;
                 });
-            },
+            };
             /**
              * Lists the tables for the specified data source.
              * @param {string} id the data source id
              * @param {string} [opt_query] the table name query
              */
-            listTables: function (id, opt_query) {
+            this.listTables = function (id, opt_query) {
                 var options = { params: {} };
                 if (angular.isString(opt_query) && opt_query.length > 0) {
                     options.params.tableName = "%" + opt_query + "%";
                 }
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + id + "/tables", options)
                     .then(function (response) {
                     // Get the list of tables
                     var tables = [];
@@ -159,42 +149,42 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }).catch(function (e) {
                     throw e;
                 });
-            },
-            query: function (datasourceId, sql) {
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
+            };
+            this.query = function (datasourceId, sql) {
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/query?query=" + sql)
                     .then(function (response) {
                     return response;
                 }).catch(function (e) {
                     throw e;
                 });
-            },
-            preview: function (datasourceId, schema, table, limit) {
-                return $http.post(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+            };
+            this.preview = function (datasourceId, schema, table, limit) {
+                return this.$http.post(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then(function (response) {
                     return response;
                 }).catch(function (e) {
                     throw e;
                 });
-            },
-            getPreviewSql: function (datasourceId, schema, table, limit) {
-                return $http.get(RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
+            };
+            this.getPreviewSql = function (datasourceId, schema, table, limit) {
+                return this.$http.get(this.RestUrlService.PREVIEW_DATASOURCE_URL(datasourceId, schema, table, limit))
                     .then(function (response) {
                     return response.data;
                 }).catch(function (e) {
                     throw e;
                 });
-            },
-            getTablesAndColumns: function (datasourceId, schema) {
+            };
+            this.getTablesAndColumns = function (datasourceId, schema) {
                 var params = { schema: schema };
-                return $http.get(RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", { params: params });
-            },
+                return this.$http.get(this.RestUrlService.GET_DATASOURCES_URL + "/" + datasourceId + "/table-columns", { params: params });
+            };
             /**
              * Creates a new JDBC data source.
              * @returns {JdbcDatasource} the JDBC data source
              */
-            newJdbcDatasource: function () {
+            this.newJdbcDatasource = function () {
                 var d = {
-                    "@type": JDBC_TYPE,
+                    "@type": this.JDBC_TYPE,
                     name: "",
                     description: "",
                     owner: null,
@@ -208,31 +198,40 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     password: ""
                 };
                 return d;
-            },
-            saveRoles: function (datasource) {
-                return EntityAccessControlService.saveRoleMemberships('datasource', datasource.id, datasource.roleMemberships);
-            },
+            };
+            this.saveRoles = function (datasource) {
+                return this.EntityAccessControlService.saveRoleMemberships('datasource', datasource.id, datasource.roleMemberships);
+            };
             /**
              * Saves the specified data source.
              * @param {JdbcDatasource} datasource the data source to be saved
              * @returns {Promise} with the updated data source
              */
-            save: function (datasource) {
-                return $http.post(RestUrlService.GET_DATASOURCES_URL, datasource)
+            this.save = function (datasource) {
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL, datasource)
                     .then(function (response) {
                     return response.data;
                 });
-            },
-            testConnection: function (datasource) {
-                return $http.post(RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
+            };
+            this.testConnection = function (datasource) {
+                return this.$http.post(this.RestUrlService.GET_DATASOURCES_URL + "/test", datasource)
                     .then(function (response) {
                     return response.data;
                 });
+            };
+        } //);
+        DatasourcesService.prototype.getHiveDatasource = function () {
+            return this.HIVE_DATASOURCE;
+        };
+        DatasourcesService.prototype.ensureDefaultIcon = function (datasource) {
+            if (datasource.icon === undefined) {
+                datasource.icon = this.ICON;
+                datasource.iconColor = this.ICON_COLOR;
             }
-        });
-        return new DatasourcesService();
-    }
-    // }
-    angular.module(moduleName).factory("DatasourcesService", ["$http", "$q", "RestUrlService", "EntityAccessControlService", DatasourcesServiceClass]);
+        };
+        return DatasourcesService;
+    }());
+    exports.DatasourcesService = DatasourcesService;
+    angular.module(moduleName).service("DatasourcesService", ["$http", "$q", "RestUrlService", "EntityAccessControlService", DatasourcesService]);
 });
 //# sourceMappingURL=DatasourcesService.js.map
