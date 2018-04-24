@@ -1,15 +1,16 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "../module", "../module-require"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $sce, $http, $mdToast, $mdDialog, $transition$, SearchService, Utils, CategoriesService, StateService, FeedService, PaginationDataService, DatasourcesService) {
+        function controller($scope, $sce, $http, $mdToast, $mdDialog, 
+            //private $transition$: any,
+            SearchService, Utils, CategoriesService, StateService, FeedService, PaginationDataService, DatasourcesService) {
             var _this = this;
             this.$scope = $scope;
             this.$sce = $sce;
             this.$http = $http;
             this.$mdToast = $mdToast;
             this.$mdDialog = $mdDialog;
-            this.$transition$ = $transition$;
             this.SearchService = SearchService;
             this.Utils = Utils;
             this.CategoriesService = CategoriesService;
@@ -28,19 +29,13 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
              */
             this.searching = false;
             this.resetPaging = this.$transition$.params().bcExclude_globalSearchResetPaging || false;
-            //Pagination Data
+            //Page Name
             this.pageName = "search";
             /**
              * Pagination data
              * @type {{rowsPerPage: number, currentPage: number, rowsPerPageOptions: [*]}}
              */
             this.paginationData = this.PaginationDataService.paginationData(this.pageName, this.pageName, 10);
-            //this.getPaginatedData();
-            /*    getPaginatedData () {
-                    this.PaginationDataService.paginationData(this.pageName, this.pageName,10);
-                    this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
-                }*/
-            //  this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
             this.hiveDatasource = this.DatasourcesService.getHiveDatasource();
             this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
             this.categoryForIndex = function (indexName) {
@@ -120,7 +115,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                     this.CategoriesService.getCategoryById(this.cleanValue(result.feedCategoryId))
                         .then(function (category1) {
                         category = category1;
-                        _this.FeedService.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
+                        _this.FeedService.data.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
                             .then(function (feed1) {
                             feed = feed1;
                             _this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
@@ -144,22 +139,33 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             return this.$sce.trustAsHtml(htmlCode);
         };
         ;
+        controller.$inject = ["$scope", "$sce", "$http", "$mdToast", "$mdDialog", "SearchService", "Utils", "CategoriesService", "StateService", "FeedService", "PaginationDataService", "DatasourcesService"];
         return controller;
     }());
     exports.controller = controller;
-    angular.module(module_name_1.moduleName).controller('SearchController', ["$scope",
-        "$sce",
-        "$http",
-        "$mdToast",
-        "$mdDialog",
-        "$transition$",
-        "SearchService",
-        "Utils",
-        "CategoriesService",
-        "StateService",
-        "FeedService",
-        "PaginationDataService",
-        "DatasourcesService",
-        controller]);
+    angular.module(module_name_1.moduleName)
+        .component("searchController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: controller,
+        controllerAs: "vm",
+        templateUrl: "js/search/common/search.html"
+    });
 });
+/*angular.module(moduleName).controller('SearchController',
+                        ["$scope",
+                        "$sce",
+                        "$http",
+                        "$mdToast",
+                        "$mdDialog",
+                        "$transition$",
+                        "SearchService",
+                        "Utils",
+                        "CategoriesService",
+                        "StateService",
+                        "FeedService",
+                        "PaginationDataService",
+                        "DatasourcesService",
+                        controller]);*/ 
 //# sourceMappingURL=SearchController.js.map
