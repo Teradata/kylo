@@ -296,7 +296,7 @@ export class VisualQueryTable {
 
         const headerWidths = this.dataService.columns_.map((column: any, index) => {
             const textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
-            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 2;
+            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 3;
             const menuWidth = (this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
             return Math.ceil(textWidth + padding + menuWidth);
         });
@@ -306,7 +306,7 @@ export class VisualQueryTable {
 
         const rowWidths = _.map(this.dataService.columns_, function (column: any, index) {
             const textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
-            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 2;
+            const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 3;
             return Math.ceil(textWidth + padding);
         });
 

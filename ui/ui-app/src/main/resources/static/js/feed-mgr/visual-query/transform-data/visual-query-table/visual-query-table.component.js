@@ -201,7 +201,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             context.font = this.painter.headerFont;
             var headerWidths = this.dataService.columns_.map(function (column, index) {
                 var textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
-                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 2;
+                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 3;
                 var menuWidth = (_this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
                 return Math.ceil(textWidth + padding + menuWidth);
             });
@@ -209,7 +209,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             context.font = this.painter.rowFont;
             var rowWidths = _.map(this.dataService.columns_, function (column, index) {
                 var textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
-                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 2;
+                var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 3;
                 return Math.ceil(textWidth + padding);
             });
             // Calculate total width
