@@ -193,7 +193,7 @@ public class FeedIT extends IntegrationTestBase {
 
         FieldPolicy creditCard = policies.get(7);
         FieldStandardizationRule base64EncodeBinary = creditCard.getStandardization().get(0);
-        base64EncodeBinary.getProperties().get(0).setValue("STRING"); //change existing standardiser property
+        //base64EncodeBinary.getProperties().get(0).setValue("STRING"); //change existing standardiser property
 
         feed.getOptions().setSkipHeader(false);
 
@@ -231,7 +231,7 @@ public class FeedIT extends IntegrationTestBase {
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/profile", "true")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/index", "true")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/validation/0/properties/0/value", "new value")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/7/standardization/0/properties/0/value", "STRING")));
+       // Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/7/standardization/0/properties/0/value", "STRING")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/8/standardization/0/properties/0/value", "STRING")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/targetMergeStrategy", "ROLLING_SYNC")));
         Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldIndexString", "first_name,gender")));
