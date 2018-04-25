@@ -27,37 +27,32 @@ import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-import com.beust.jcommander.converters.IParameterSplitter;
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.io.JsonStringEncoder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.NavigableMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
+ * Represents the arguments used by MultiSparkExeApp.
  */
+@SuppressWarnings("deprecation")
 public class MultiSparkExecArguments implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
     
     public static final String APPS_SWITCH = "--apps";
     
+    private static final long serialVersionUID = 1L;
+    private static final Logger log = LoggerFactory.getLogger(MultiSparkExecArguments.class);
     private static final Pattern QUOTED = Pattern.compile("'(.*)'");
     
     private static final ObjectWriter APP_CMD_WRITER;
@@ -77,55 +72,24 @@ public class MultiSparkExecArguments implements Serializable {
     public static String[] createCommandLine(List<SparkApplicationCommand> specs) {
         try {
             String json = APP_CMD_WRITER.writeValueAsString(specs);
-            String escaped = json.replaceAll("\\\\n", "\\\\\\\\n");;
+            String escaped = json.replaceAll("\\\\n", "\\\\\\\\n");
             
-            return new String[] { APPS_SWITCH, "'" + escaped + "'" };
+            String[] args = new String[] { APPS_SWITCH, "'" + escaped + "'" };
+            log.debug("MultiSparkExeApp args: {} {}", args[0], args[1]);
+            return args;
         } catch (JsonProcessingException e) {
             throw new IllegalArgumentException("Unable to serialize Spark application commands", e);
         }
     }
     
-    /**
-     * 
-     */
     public MultiSparkExecArguments(String... args) {
         super();
         
         new JCommander(this).parse(args);
     }
     
-    /**
-     * @return the commands
-     */
     public List<SparkApplicationCommand> getCommands() {
         return commands;
-    }
-    
-    /**
-     * Supports separating values by commas and/or whitespace.
-     */
-    public static class WhitespaceCommaSplitter implements IParameterSplitter {
-        public List<String> split(String value) {
-            List<String> values = new ArrayList<>();
-            String cleaned = value.replaceAll("\\s+", ",");
-            cleaned = cleaned.replaceAll(",+", ",");
-            String[] tokens = cleaned.split(",");
-            
-            for (String token : tokens) {
-                if (StringUtils.isNotBlank(token)) {
-                    values.add(token);
-                }
-            }
-            
-            return values;
-        }
-    }
-    
-    public static class NonSplitter implements IParameterSplitter {
-        @Override
-        public List<String> split(String value) {
-            return Collections.singletonList(value);
-        }
     }
 
     public static class AppCommandConverter implements IStringConverter<List<SparkApplicationCommand>> {

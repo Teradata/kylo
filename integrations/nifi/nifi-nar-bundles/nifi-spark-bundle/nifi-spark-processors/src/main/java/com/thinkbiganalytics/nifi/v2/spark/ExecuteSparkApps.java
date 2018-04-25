@@ -160,7 +160,9 @@ public class ExecuteSparkApps extends ExecuteSparkJob {
      */
     @Override
     protected String getApplicationJar(ProcessContext context, FlowFile flowFile) {
-        return context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+        String jar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+        getLog().info("Spark app jar: {}", new Object[] { jar });
+        return jar;
     }
     
     /* (non-Javadoc)
@@ -168,7 +170,9 @@ public class ExecuteSparkApps extends ExecuteSparkJob {
      */
     @Override
     protected String getMainClass(ProcessContext context, FlowFile flowFile) {
-        return context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
+        String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
+        getLog().info("Spark app class: {}", new Object[] { mainClass });
+        return mainClass;
     }
     
     /* (non-Javadoc)
@@ -200,7 +204,9 @@ public class ExecuteSparkApps extends ExecuteSparkJob {
         
         List<SparkApplicationCommand> commands = listBldr.build();
         
-        return MultiSparkExecArguments.createCommandLine(commands);
+        String[] args = MultiSparkExecArguments.createCommandLine(commands);
+        getLog().info("Spark main args: {} {}", args);
+        return args;
     }
     
     /* (non-Javadoc)
