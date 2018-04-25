@@ -56,7 +56,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "initialize", "initialization", "thinkbig"})
-@CapabilityDescription("Controls setup of a feed by routing to an initialization flow.")
+@CapabilityDescription("Controls setup of a feed by routing to an initialization or re-initialization flow.")
 public class InitializeFeed extends FeedProcessor {
     
     public static final String REINITIALIZING_FLAG = "reinitializing";
@@ -96,23 +96,10 @@ public class InitializeFeed extends FeedProcessor {
     
     protected static final PropertyDescriptor CLONE_INIT_FLOWFILE = new PropertyDescriptor.Builder()
         .name("Clone initialization flowfile")
-        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. including all content.")
+        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. includes all content.")
         .required(false)
         .allowableValues(CommonProperties.BOOLEANS)
         .defaultValue("true")
-//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//        .expressionLanguageSupported(true)
-        .build();
-    
-    protected static final PropertyDescriptor USE_REINIT_RELATIONSHIP = new PropertyDescriptor.Builder()
-        .name("Use re-initialization flow")
-        .description("Indicates whether a separate re-initialization relationship should be followed when the feed must be re-initialized.  If false (default) then the "
-                        + "regular Initialize relationship is followd.  If true then the 'Re-Initialize' relationship is followed; which must be connected to the alternate flow.")
-        .required(false)
-        .allowableValues(CommonProperties.BOOLEANS)
-        .defaultValue("false")
-//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//        .expressionLanguageSupported(true)
         .build();
 
     Relationship REL_INITIALIZE = new Relationship.Builder()
@@ -174,7 +161,6 @@ public class InitializeFeed extends FeedProcessor {
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
         list.add(CLONE_INIT_FLOWFILE);
-        list.add(USE_REINIT_RELATIONSHIP);
     }
 
     @Override
@@ -242,7 +228,7 @@ public class InitializeFeed extends FeedProcessor {
         }
         
         if (reinitializing) {
-            boolean useReinit = context.getProperty(USE_REINIT_RELATIONSHIP).asBoolean();
+            boolean useReinit = context.hasConnection(REL_REINITIALIZE);
             initRelationship = useReinit ? REL_REINITIALIZE : REL_INITIALIZE;
         } else {
             initRelationship = REL_INITIALIZE;
