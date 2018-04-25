@@ -1,6 +1,6 @@
 #!/bin/bash
 
-NIFI_VERSION=1.5.0
+NIFI_VERSION=1.4.0
 
 cd /opt/kylo/setup
 
