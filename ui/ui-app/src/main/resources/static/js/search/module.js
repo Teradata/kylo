@@ -15,9 +15,8 @@ define(["require", "exports", "angular", "./module-name", "../kylo-utils/LazyLoa
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/search/common/search.html',
-                        controller: "SearchController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/search/common/search.html',
+                        component: "searchController",
                     }
                 },
                 resolve: {
