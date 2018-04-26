@@ -136,10 +136,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
                             + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                             + ' STORED AS TEXTFILE',
-                        targetFormat: null,
+                        targetFormat: 'STORED AS ORC',
                         fieldPolicies: [],
                         partitions: [],
-                        options: { compress: false, compressionFormat: null, auditLogging: true, encrypt: false, trackHistory: false },
+                        options: { compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false },
                         sourceTableIncrementalDateField: null
                     },
                     category: { id: null, name: null },
