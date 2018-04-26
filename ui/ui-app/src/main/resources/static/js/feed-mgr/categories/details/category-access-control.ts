@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 var directive = function () {
@@ -52,7 +53,7 @@ export class CategoryAccessControlController  {
 
 
     constructor(private $scope:any, private $q:any, private $mdToast:any, private CategoriesService:any
-        , private AccessControlService:any, private EntityAccessControlService:any, private $mdDialog:any) {
+        , private accessControlService:AccessControlService, private EntityAccessControlService:any, private $mdDialog:any) {
 
         /**
          * ref back to this controller
@@ -156,7 +157,7 @@ export class CategoryAccessControlController  {
         };
 
         //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function(access:any) {
+        $q.when(accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT,self.model,AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function(access:any) {
             self.allowEdit = access;
         });
 

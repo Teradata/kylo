@@ -891,8 +891,8 @@ define(["require", "exports", "angular", "underscore", "../../services/AccessCon
             return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
         };
         RegisterTemplateServiceFactory.factory = function () {
-            var instance = function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, accessControlService, EntityAccessControlService, $filter) {
-                return new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService_1.default, EntityAccessControlService, $filter);
+            var instance = function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter) {
+                return new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
             };
             return instance;
         };

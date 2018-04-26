@@ -1034,7 +1034,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     static factory() {
         let instance = ($http: angular.IHttpService, $q: angular.IQService, $mdDialog: angular.material.IDialogService, RestUrlService: any
             , FeedInputProcessorOptionsFactory: any, FeedDetailsProcessorRenderingHelper: any
-            , FeedPropertyService: FeedPropertyService, accessControlService: AccessControlService
+            , FeedPropertyService: FeedPropertyService, AccessControlService: any
             , EntityAccessControlService: any, $filter: angular.IFilterService) =>
              new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
 
