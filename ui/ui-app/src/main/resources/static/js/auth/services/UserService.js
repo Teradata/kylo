@@ -17,6 +17,15 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             return Promise.reject(error.message || error);
         };
         /**
+         * Deletes the group with the specified system name.
+         *
+         * @param {string} groupId the system name
+         * @returns {Promise} for when the group is deleted
+         */
+        UserService.prototype.deleteGroup = function (groupId) {
+            return this.http.delete(this.CommonRestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId));
+        };
+        /**
          * Deletes the user with the specified system name.
          *
          * @param {string} userId the system name
@@ -63,9 +72,10 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             return this.UserGroupService.getUsers();
             /*return  this.http.get(this.CommonRestUrlService.SECURITY_USERS_URL)
                      .toPromise().then(this.extractData)*/
-        }; /*{
-return this.UserGroupService.getUsers();
-}*/
+        };
+        /*{
+                   return this.UserGroupService.getUsers();
+               }*/
         /**
          * Gets metadata for all users in the specified group.
          *
@@ -93,23 +103,11 @@ return this.UserGroupService.getUsers();
         UserService.prototype.saveUser = function (user) {
             return this.http.post(this.CommonRestUrlService.SECURITY_USERS_URL, angular.toJson(user) /*,this.options*/);
         };
+        UserService.$inject = ['$http', 'CommonRestUrlService', 'UserGroupService'];
         return UserService;
     }());
     exports.UserService = UserService;
-    /*angular.module(moduleName)
-           .service('UserService',
-                    [
-                        //'$http',
-                    // 'CommonRestUrlService',
-                    // 'UserGroupService',
-                     ()=>{return new UserService('$http',
-                                                'CommonRestUrlService',
-                                                'UserGroupService');}
-                    ]
-                );*/
     angular.module(module_name_1.moduleName)
-        .service('UserService', ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService]);
+        .service('UserService', UserService);
 });
 //# sourceMappingURL=UserService.js.map

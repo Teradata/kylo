@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../../services/UserService", "../../module-name"], function (require, exports, angular, _, UserService_1, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var GroupDetailsController = /** @class */ (function () {
@@ -109,7 +109,7 @@ define(["require", "exports", "angular", "underscore", "../../services/UserServi
         GroupDetailsController.prototype.onDelete = function () {
             var _this = this;
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
-            this.UserService.deleteGroup(encodeURIComponent(this.$transition$.params().groupId))
+            this.UserService.deleteGroup(this.$transition$.params().groupId)
                 .then(function () {
                 _this.$mdToast.show(_this.$mdToast.simple()
                     .textContent("Successfully deleted the group " + name)
@@ -209,9 +209,6 @@ define(["require", "exports", "angular", "underscore", "../../services/UserServi
     }());
     exports.default = GroupDetailsController;
     angular.module(module_name_1.moduleName)
-        .service("UserService", ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService_1.UserService])
         .controller('GroupDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", GroupDetailsController]);
 });
 //# sourceMappingURL=GroupDetailsController.js.map

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../services/UserService", "../module-name"], function (require, exports, angular, _, UserService_1, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PAGE_NAME = "users";
@@ -165,9 +165,6 @@ define(["require", "exports", "angular", "underscore", "../services/UserService"
     }());
     exports.default = UsersTableController;
     angular.module(module_name_1.moduleName)
-        .service("UserService", ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService_1.UserService])
         .controller("UsersTableController", ["$scope",
         "AddButtonService",
         "PaginationDataService",

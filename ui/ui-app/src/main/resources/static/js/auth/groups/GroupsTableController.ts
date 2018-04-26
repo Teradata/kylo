@@ -171,8 +171,5 @@ export default class GroupsTableController implements ng.IComponentController {
     }
 }
 angular.module(moduleName)
- .service("UserService",['$http',
-                          'CommonRestUrlService',
-                          'UserGroupService', UserService])
-.controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
+    .controller("GroupsTableController", ["$scope","AddButtonService","PaginationDataService","StateService","TableOptionsService","UserService",GroupsTableController]);
 

@@ -299,8 +299,5 @@ export default class UserDetailsController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-        .service("UserService",['$http',
-                          'CommonRestUrlService',
-                          'UserGroupService', UserService])
 .controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
 

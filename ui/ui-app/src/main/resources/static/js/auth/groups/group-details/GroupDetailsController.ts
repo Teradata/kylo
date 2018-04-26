@@ -120,7 +120,7 @@ export default class GroupDetailsController implements ng.IComponentController {
          */
         onDelete() {
             var name = (angular.isString(this.model.title) && this.model.title.length > 0) ? this.model.title : this.model.systemName;
-             this.UserService.deleteGroup(encodeURIComponent(this.$transition$.params().groupId))
+             this.UserService.deleteGroup(this.$transition$.params().groupId)
                     .then(() => {
                         this.$mdToast.show(
                                 this.$mdToast.simple()
@@ -229,8 +229,5 @@ export default class GroupDetailsController implements ng.IComponentController {
 }
 
 angular.module(moduleName)
-.service("UserService",['$http',
-                          'CommonRestUrlService',
-                          'UserGroupService', UserService])
 .controller('GroupDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",GroupDetailsController]);
 
