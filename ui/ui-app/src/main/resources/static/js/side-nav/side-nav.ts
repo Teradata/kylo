@@ -15,7 +15,7 @@ import {AccordionMenuService} from "../common/accordion-menu/AccordionMenuServic
 export class directive implements ng.IDirective {
     restrict: any = "E";
     scope: any = {};
-    templateUrl: any= 'js/side-nav/side-nav.html';
+    templateUrl: string= 'js/side-nav/side-nav.html';
     constructor(private $mdSidenav: angular.material.ISidenavService,
             private $mdDialog: angular.material.IDialogService,
             private $rootScope: angular.IScope,
@@ -31,23 +31,23 @@ export class directive implements ng.IDirective {
             }// close constructor
 
     static factory() {
-      var sidedirective = ($mdSidenav: any,
-                            $mdDialog: any,
-                            $rootScope: any,
-                            $transitions: any,
-                            $timeout: any,
-                            SideNavService: any,
-                            AccessControlService: any,
-                            StateService: any,
-                            AccordionMenuService: any,
+      var sidedirective = ($mdSidenav: angular.material.ISidenavService,
+                            $mdDialog: angular.material.IDialogService,
+                            $rootScope: angular.IScope,
+                            $transitions: TransitionService,
+                            $timeout: angular.ITimeoutService,
+                            SideNavService: SideNavService,
+                            AccessControlService: AccessControlService,
+                            StateService: StateService,
+                            AccordionMenuService: AccordionMenuService,
                             AngularModuleExtensionService: any,
-                            $filter: any) => {
+                            $filter: angular.IFilterService) => {
         return new directive($mdSidenav, $mdDialog,$rootScope,$transitions,$timeout, SideNavService, AccessControlService, StateService,AccordionMenuService, AngularModuleExtensionService, $filter);
       }
       return sidedirective;
     }
     
-    link=($scope: any, $element: any)=>{             
+    link=($scope: any, $element: JQuery)=>{             
               /**
              * Build the Feed Manager Left Nav
              * @param allowed
