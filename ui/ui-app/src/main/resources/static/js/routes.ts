@@ -9,6 +9,7 @@ import 'kylo-services';
 import './main/IndexController';
 import './main/HomeController';
 import './main/AccessDeniedController';
+import AccessControlService from './services/AccessControlService';
 'use strict';
 class Route{
    // app: ng.IModule;
@@ -773,9 +774,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
     }
 
 runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: any, $q: any,
-                    $uiRouter: any, AccessControlService: any,AngularModuleExtensionService: any) {
+                    $uiRouter: any, accessControlService: AccessControlService,AngularModuleExtensionService: any) {
              //initialize the access control
-             AccessControlService.init();
+             accessControlService.init();
 
              $rootScope.$state = $state;
              $rootScope.$location = $location;
@@ -786,13 +787,13 @@ runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: 
 
              var onStartOfTransition =  (trans: any) => {
                  
-                 if (!AccessControlService.isFutureState(trans.to().name)) {
+                 if (!accessControlService.isFutureState(trans.to().name)) {
                      //if we havent initialized the user yet, init and defer the transition
-                     if (!AccessControlService.initialized) {
+                     if (!accessControlService.initialized) {
                          var defer = $q.defer();
-                         $q.when(AccessControlService.init(), ()=> {
+                         $q.when(accessControlService.init(), ()=> {
                              //if not allowed, go to access-denied
-                             if (!AccessControlService.hasAccess(trans)) {
+                             if (!accessControlService.hasAccess(trans)) {
                                  if (trans.to().name != 'access-denied') {
                                      defer.resolve($state.target("access-denied", {attemptedState: trans.to()}));
                                  }
@@ -804,7 +805,7 @@ runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: 
                          return defer.promise;
                      }
                      else {
-                         if (!AccessControlService.hasAccess(trans)) {
+                         if (!accessControlService.hasAccess(trans)) {
                              if (trans.to().name != 'access-denied') {
                                  return $state.target("access-denied", {attemptedState: trans.to()});
                              }

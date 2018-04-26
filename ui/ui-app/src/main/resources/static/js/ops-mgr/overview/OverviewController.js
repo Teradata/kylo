@@ -1,14 +1,14 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "./module-name", "../../services/AccessControlService"], function (require, exports, angular, module_name_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var OverviewController = /** @class */ (function () {
-        function OverviewController($scope, $mdDialog, $interval, $timeout, AccessControlService, HttpService, OpsManagerDashboardService) {
+        function OverviewController($scope, $mdDialog, $interval, $timeout, accessControlService, HttpService, OpsManagerDashboardService) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$interval = $interval;
             this.$timeout = $timeout;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.HttpService = HttpService;
             this.OpsManagerDashboardService = OpsManagerDashboardService;
             /**
@@ -86,9 +86,9 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                 }
             });
             // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                if (AccessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
                     _this.allowed = true;
                 }
                 else {

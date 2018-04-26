@@ -20,12 +20,12 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
         };
     };
     var FeedScheduleController = /** @class */ (function () {
-        function FeedScheduleController($scope, $http, $mdDialog, $q, AccessControlService, EntityAccessControlService, FeedService, RestUrlService, $filter) {
+        function FeedScheduleController($scope, $http, $mdDialog, $q, accessControlService, EntityAccessControlService, FeedService, RestUrlService, $filter) {
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
             this.$q = $q;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.FeedService = FeedService;
             this.RestUrlService = RestUrlService;
@@ -322,7 +322,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
              * update the default strategies in the list
              */
             this.updateScheduleStrategies();
-            this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+            this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
                 _this.allowEdit = !_this.versions && access && !_this.model.view.schedule.disabled;
             });
             // Detect if NiFi is clustered

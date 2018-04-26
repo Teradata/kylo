@@ -1,15 +1,15 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../../services/AccessControlService"], function (require, exports, angular, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     var DefineFeedController = /** @class */ (function () {
-        function DefineFeedController($scope, $http, $mdDialog, $q, $transition$, AccessControlService, FeedService, FeedSecurityGroups, RestUrlService, StateService, UiComponentsService) {
+        function DefineFeedController($scope, $http, $mdDialog, $q, $transition$, accessControlService, FeedService, FeedSecurityGroups, RestUrlService, StateService, UiComponentsService) {
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
             this.$q = $q;
             this.$transition$ = $transition$;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.FeedService = FeedService;
             this.FeedSecurityGroups = FeedSecurityGroups;
             this.RestUrlService = RestUrlService;
@@ -49,9 +49,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             this.onStepperInitialized = (function (stepper) {
                 var _this = this;
-                var accessChecks = { entityAccess: this.AccessControlService.checkEntityAccessControlled(), securityGroups: this.FeedSecurityGroups.isEnabled() };
+                var accessChecks = { entityAccess: this.accessControlService.checkEntityAccessControlled(), securityGroups: this.FeedSecurityGroups.isEnabled() };
                 this.$q.all(accessChecks).then(function (response) {
-                    var entityAccess = _this.AccessControlService.isEntityAccessControlled();
+                    var entityAccess = _this.accessControlService.isEntityAccessControlled();
                     var securityGroupsAccess = response.securityGroups;
                     //disable the access control step
                     if (!entityAccess && !securityGroupsAccess) {
@@ -241,9 +241,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 this.showCloningDialog(cloneFeedName);
             }
             // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowImport = _this.AccessControlService.hasAction(_this.AccessControlService.FEEDS_IMPORT, actionSet.actions);
+                _this.allowImport = _this.accessControlService.hasAction(AccessControlService_1.default.FEEDS_IMPORT, actionSet.actions);
             });
         };
         /**

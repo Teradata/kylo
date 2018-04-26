@@ -4,6 +4,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     var DefineFeedAccessControlController = /** @class */ (function () {
         function DefineFeedAccessControlController($scope, FeedService, FeedSecurityGroups) {
+            var _this = this;
             /**
                  * Flag to indicate if hadoop groups are enabled or not
                  * @type {boolean}
@@ -20,7 +21,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.securityGroupChips.selectedItem = null;
             this.securityGroupChips.searchText = null;
             FeedSecurityGroups.isEnabled().then(function (isValid) {
-                this.securityGroupsEnabled = isValid;
+                _this.securityGroupsEnabled = isValid;
             });
         }
         DefineFeedAccessControlController.prototype.$onInit = function () {

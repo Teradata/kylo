@@ -35,6 +35,7 @@ import PropertyAndProcessors = Templates.PropertyAndProcessors;
 import Processor = Templates.Processor;
 import MetadataProperty = Templates.MetadataProperty;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import AccessControlService from '../../services/AccessControlService';
 
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
@@ -45,7 +46,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     constructor(private $http: angular.IHttpService, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
         , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any
-        , private FeedPropertyService: FeedPropertyService, private AccessControlService: any
+        , private FeedPropertyService: FeedPropertyService, private accessControlService: AccessControlService
         , private EntityAccessControlService: any, private $filter: angular.IFilterService) {
         this.init();
 
@@ -730,18 +731,18 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         }
         model.errorMessage = '';
 
-        var entityAccessControlled = model.id != null && this.AccessControlService.isEntityAccessControlled();
+        var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
         var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>> this.$q.defer();
         var requests = {
             entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
-            entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(this.AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
-            functionalAccess: this.AccessControlService.getUserAllowedActions()
+            entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
+            functionalAccess: this.accessControlService.getUserAllowedActions()
         }
 
         this.$q.all(requests).then((response: any) => {
 
-            let allowEditAccess = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
-            let allowAdminAccess = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+            let allowEditAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
+            let allowAdminAccess = this.accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
 
             let allowEdit = response.entityEditAccess && allowEditAccess
             let allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
@@ -1027,13 +1028,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         if (entity == undefined) {
             entity = this.model;
         }
-        return this.AccessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
+        return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
     }
 
     static factory() {
         let instance = ($http: angular.IHttpService, $q: angular.IQService, $mdDialog: angular.material.IDialogService, RestUrlService: any
             , FeedInputProcessorOptionsFactory: any, FeedDetailsProcessorRenderingHelper: any
-            , FeedPropertyService: FeedPropertyService, AccessControlService: any
+            , FeedPropertyService: FeedPropertyService, accessControlService: AccessControlService
             , EntityAccessControlService: any, $filter: angular.IFilterService) =>
              new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
 

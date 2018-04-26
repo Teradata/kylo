@@ -4,12 +4,12 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
     var GroupDetailsController = /** @class */ (function () {
         function GroupDetailsController($scope, $mdDialog, $mdToast, 
             //private $transition$: Transition,
-            AccessControlService, UserService, StateService) {
+            accessControlService, UserService, StateService) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.UserService = UserService;
             this.StateService = StateService;
             this.$error = { duplicateName: false, missingName: false };
@@ -79,10 +79,10 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
              */
             this.onLoad = function () {
                 // Load allowed permissions
-                _this.AccessControlService.getUserAllowedActions()
+                _this.accessControlService.getUserAllowedActions()
                     .then(function (actionSet) {
-                    _this.allowAdmin = _this.AccessControlService.hasAction(AccessConstants_1.default.GROUP_ADMIN, actionSet.actions);
-                    _this.allowUsers = _this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actionSet.actions);
+                    _this.allowAdmin = _this.accessControlService.hasAction(AccessConstants_1.default.GROUP_ADMIN, actionSet.actions);
+                    _this.allowUsers = _this.accessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actionSet.actions);
                 });
                 // Fetch group details
                 if (angular.isString(_this.$transition$.params().groupId)) {
@@ -95,7 +95,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
                         .then(function (users) {
                         _this.users = users;
                     });
-                    _this.AccessControlService.getAllowedActions(null, null, _this.$transition$.params().groupId)
+                    _this.accessControlService.getAllowedActions(null, null, _this.$transition$.params().groupId)
                         .then(function (actionSet) {
                         _this.actions = actionSet.actions;
                     });
@@ -216,7 +216,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
         GroupDetailsController.prototype.onSavePermissions = function () {
             var _this = this;
             var actions = angular.copy(this.editActions);
-            this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
+            this.accessControlService.setAllowedActions(null, null, this.model.systemName, actions)
                 .then(function (actionSet) {
                 _this.actions = actionSet.actions;
             });

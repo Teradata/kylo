@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService.d";
+import AccessControlService from "../../services/AccessControlService";
 
 export class FeedService{
     data: any;
@@ -12,7 +13,7 @@ export class FeedService{
                 private VisualQueryService: any, 
                 private FeedCreationErrorService: any, 
                 private FeedPropertyService: any, 
-                private AccessControlService: any, 
+                private accessControlService: AccessControlService, 
                 private EntityAccessControlService: any, 
                 private StateService: any) {
    this.data = {
@@ -850,7 +851,7 @@ export class FeedService{
             if (entity == undefined) {
                 entity = this.data.model;
             }
-            return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
+            return accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
         },
 
         /**

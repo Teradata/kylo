@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../../services/AccessControlService"], function (require, exports, angular, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
@@ -17,14 +17,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
     }
     var CategoryDefinitionController = /** @class */ (function () {
-        function CategoryDefinitionController($scope, $mdDialog, $mdToast, $q, $timeout, $window, AccessControlService, EntityAccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
+        function CategoryDefinitionController($scope, $mdDialog, $mdToast, $q, $timeout, $window, accessControlService, EntityAccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
             this.$q = $q;
             this.$timeout = $timeout;
             this.$window = $window;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.CategoriesService = CategoriesService;
             this.StateService = StateService;
@@ -325,10 +325,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             };
             function checkAccessPermissions() {
                 //Apply the entity access permissions
-                $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access) {
+                $q.when(accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_EDIT, self.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access) {
                     self.allowEdit = access;
                 });
-                $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function (access) {
+                $q.when(accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_EDIT, self.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function (access) {
                     self.allowDelete = access;
                 });
             }

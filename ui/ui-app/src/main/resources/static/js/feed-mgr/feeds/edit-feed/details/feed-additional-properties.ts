@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
+import AccessControlService from '../../../../services/AccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 var directive = function() {
     return {
@@ -110,7 +111,7 @@ export class FeedAdditionalPropertiesController {
         };
 
 
-    constructor (private $scope:any,private $q:any, private AccessControlService:any, private EntityAccessControlService:any,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
+    constructor (private $scope:any,private $q:any, private accessControlService:AccessControlService, private EntityAccessControlService:any,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
        // var self = this;
         this.tagChips.selectedItem = null;
         this.tagChips.searchText = null;
@@ -201,7 +202,7 @@ export class FeedAdditionalPropertiesController {
         }
 
         //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
+        $q.when(accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT,this.model,EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
             this.allowEdit = !this.versions && access && !this.model.view.properties.disabled;
         });
     }

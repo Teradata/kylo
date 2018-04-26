@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "./module-name", "underscore", "../../services/AccessControlService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobsCardController = /** @class */ (function () {
-        function JobsCardController($scope, $http, $mdDialog, $timeout, $mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, AccessControlService, BroadcastService, OpsManagerRestUrlService) {
+        function JobsCardController($scope, $http, $mdDialog, $timeout, $mdMenu, $q, $mdToast, $mdPanel, OpsManagerJobService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, accessControlService, BroadcastService, OpsManagerRestUrlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -18,7 +18,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
             this.StateService = StateService;
             this.IconService = IconService;
             this.TabService = TabService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.BroadcastService = BroadcastService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.updateJobs = function () {
@@ -487,9 +487,9 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
                 _this.clearAllTimeouts();
             });
             // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                _this.allowAdmin = accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
             if (this.tab != '') {
                 var index = _.indexOf(tabNames, this.tab);

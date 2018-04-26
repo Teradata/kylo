@@ -26,14 +26,14 @@ export default class PermissionsTableController implements ng.IComponentControll
     roots: any  = [];
     static readonly $inject = ["$scope", "AccessControlService"];     
     constructor (private $scope:IMyScope,
-                 private AccessControlService:AccessControlService) {
+                 private accessControlService:AccessControlService) {
         // Watch for changes to the model
         $scope.$watch(() => { return $scope.model;},
                       () => { this.refresh();}
                       );
           // Fetch the list of available actions
       // this.getAvailableActions();
-       AccessControlService.getAvailableActions().then((actionSet:any)=> {
+       accessControlService.getAvailableActions().then((actionSet:any)=> {
                             angular.forEach(actionSet.actions, (action:any)=> 
                                                     {var state = this.addAction(action, 0, null);
                                                      this.roots.push(state);

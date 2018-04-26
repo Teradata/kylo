@@ -23,15 +23,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
     };
     var EntityAccessControlController = /** @class */ (function () {
-        function EntityAccessControlController($q, $http, UserGroupService, EntityAccessControlService, AccessControlService) {
+        function EntityAccessControlController($q, $http, UserGroupService, EntityAccessControlService, accessControlService) {
             var self = this;
             /**
              * are we using Entity access control
              * @type {boolean}
              */
             this.enabled = false;
-            $q.when(AccessControlService.checkEntityAccessControlled()).then(function () {
-                self.enabled = AccessControlService.isEntityAccessControlled();
+            $q.when(accessControlService.checkEntityAccessControlled()).then(function () {
+                self.enabled = accessControlService.isEntityAccessControlled();
             });
             if (angular.isUndefined(this.readOnly)) {
                 this.readOnly = false;

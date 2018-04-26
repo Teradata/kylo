@@ -1,24 +1,40 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "./CommonRestUrlService", "./UserGroupService", "kylo-services-module"], function (require, exports, angular, module_name_1, _, CommonRestUrlService_1, UserGroupService_1) {
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = Object.setPrototypeOf ||
+        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+define(["require", "exports", "angular", "./module-name", "../constants/AccessConstants", "underscore", "./CommonRestUrlService", "./UserGroupService", "kylo-services-module"], function (require, exports, angular, module_name_1, AccessConstants_1, _, CommonRestUrlService_1, UserGroupService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var AccessControlService = /** @class */ (function () {
+    var AccessControlService = /** @class */ (function (_super) {
+        __extends(AccessControlService, _super);
         //AccessControlService(){}
         function AccessControlService($http, $q, $timeout, CommonRestUrlService, UserGroupService) {
-            var _this = this;
-            this.$http = $http;
-            this.$q = $q;
-            this.$timeout = $timeout;
-            this.CommonRestUrlService = CommonRestUrlService;
-            this.UserGroupService = UserGroupService;
+            var _this = 
+            /**
+             * Time allowed before the getAllowedActions refreshes from the server
+             * Default to refresh the cache every 3 minutes
+             */
+            _super.call(this) || this;
+            _this.$http = $http;
+            _this.$q = $q;
+            _this.$timeout = $timeout;
+            _this.CommonRestUrlService = CommonRestUrlService;
+            _this.UserGroupService = UserGroupService;
             /**
             * Interacts with the Access Control REST API.
             * @constructor
             */
-            this.DEFAULT_MODULE = "services";
-            this.currentUser = null;
-            this.cacheUserAllowedActionsTime = 3000 * 60;
-            this.lastUserAllowedCacheAccess = {};
-            this.ROLE_CACHE = {};
+            _this.DEFAULT_MODULE = "services";
+            _this.currentUser = null;
+            _this.cacheUserAllowedActionsTime = 3000 * 60;
+            _this.lastUserAllowedCacheAccess = {};
+            _this.ROLE_CACHE = {};
             // svc: any= angular.extend(AccessControlService.prototype, AccessConstants.default); // 
             // return angular.extend(svc, {
             /**
@@ -26,17 +42,17 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @private
              * @type {Promise|null}
              */
-            this.AVAILABLE_ACTIONS_ = null;
-            this.executingAllowedActions = {};
-            this.cachedUserAllowedActions = {};
-            this.initialized = false;
-            this.ACCESS_MODULES = {
+            _this.AVAILABLE_ACTIONS_ = null;
+            _this.executingAllowedActions = {};
+            _this.cachedUserAllowedActions = {};
+            _this.initialized = false;
+            _this.ACCESS_MODULES = {
                 SERVICES: "services"
             };
             /**
              * Initialize the service
              */
-            this.init = function () {
+            _this.init = function () {
                 //build the user access and role/permission cache//  roles:this.getRoles()
                 var requests = { userActions: _this.getUserAllowedActions(_this.DEFAULT_MODULE, true),
                     roles: _this.getRoles(),
@@ -50,7 +66,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
                 });
                 return defer.promise;
             };
-            this.hasEntityAccess = function (requiredPermissions, entity, entityType) {
+            _this.hasEntityAccess = function (requiredPermissions, entity, entityType) {
                 //all entities should have the object .allowedActions and .owner
                 if (entity == undefined) {
                     return false;
@@ -64,17 +80,17 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
                 }
                 return _this.hasAnyAction(requiredPermissions, entity.allowedActions);
             };
-            this.isFutureState = function (state) {
+            _this.isFutureState = function (state) {
                 return state.endsWith(".**");
             };
             /**
              * Check to see if we are using entity access control or not
              * @returns {*}
              */
-            this.isEntityAccessControlled = function () {
+            _this.isEntityAccessControlled = function () {
                 return _this.entityAccessControlled;
             };
-            this.checkEntityAccessControlled = function () {
+            _this.checkEntityAccessControlled = function () {
                 if (angular.isDefined(_this.entityAccessControlled)) {
                     return _this.entityAccessControlled;
                 }
@@ -90,7 +106,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param transition a ui-router state transition.
              * @returns {boolean} true if has access, false if access deined
              */
-            this.hasAccess = function (transition) {
+            _this.hasAccess = function (transition) {
                 var valid = false;
                 if (transition) {
                     var toState = transition.to();
@@ -125,7 +141,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * Gets the current user from the server
              * @returns {*}
              */
-            this.getCurrentUser = function () {
+            _this.getCurrentUser = function () {
                 return _this.UserGroupService.getCurrentUser();
             };
             /**
@@ -136,7 +152,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param {string|Array.<string>|null} [opt_groups] group name or list of group names or {@code null}
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            this.getAllowedActions = function (opt_module, opt_users, opt_groups) {
+            _this.getAllowedActions = function (opt_module, opt_users, opt_groups) {
                 // Prepare query parameters
                 var params = {};
                 if (angular.isArray(opt_users) || angular.isString(opt_users)) {
@@ -165,7 +181,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param {boolean|null} true to save the data in a cache, false or underfined to not.  default is false
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            this.getUserAllowedActions = function (opt_module, cache) {
+            _this.getUserAllowedActions = function (opt_module, cache) {
                 var defer = null;
                 var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : _this.DEFAULT_MODULE;
                 if (angular.isUndefined(cache)) {
@@ -204,7 +220,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param {string|null} [opt_module] name of the access module, or {@code null}
              * @returns {Promise} containing an {@link ActionSet} with the allowed actions
              */
-            this.getAvailableActions = function (opt_module) {
+            _this.getAvailableActions = function (opt_module) {
                 // Send request
                 if (_this.AVAILABLE_ACTIONS_ === null) {
                     var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : _this.DEFAULT_MODULE;
@@ -222,7 +238,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param actions An array of allowed actions
              * @returns {boolean}
              */
-            this.hasAnyAction = function (names, actions) {
+            _this.hasAnyAction = function (names, actions) {
                 if (names == "" || names == null || names == undefined || (angular.isArray(names) && names.length == 0)) {
                     return true;
                 }
@@ -235,7 +251,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * returns a promise with a value of true/false if the user has any of the required permissions
              * @param requiredPermissions array of required permission strings
              */
-            this.doesUserHavePermission = function (requiredPermissions) {
+            _this.doesUserHavePermission = function (requiredPermissions) {
                 var d = _this.$q.defer();
                 if (requiredPermissions == null || requiredPermissions == undefined || (angular.isArray(requiredPermissions) && requiredPermissions.length == 0)) {
                     d.resolve(true);
@@ -256,7 +272,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param {Array.<Action>} actions the list of allowed actions
              * @returns {boolean} {@code true} if the action is allowed, or {@code false} if denied
              */
-            this.hasAction = function (name, actions) {
+            _this.hasAction = function (name, actions) {
                 if (name == null) {
                     return true;
                 }
@@ -282,7 +298,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param {Array.<Action>} actions list of actions to allow
              * @returns {Promise} containing an {@link ActionSet} with the saved actions
              */
-            this.setAllowedActions = function (module, users, groups, actions) {
+            _this.setAllowedActions = function (module, users, groups, actions) {
                 // Build the request body
                 var safeModule = angular.isString(module) ? module : _this.DEFAULT_MODULE;
                 var data = { actionSet: { name: safeModule, actions: actions }, change: "REPLACE" };
@@ -314,7 +330,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * Gets all roles abd populates the ROLE_CACHE
              * @returns {*|Request}
              */
-            this.getRoles = function () {
+            _this.getRoles = function () {
                 return _this.$http.get(_this.CommonRestUrlService.SECURITY_ROLES_URL).then(function (response) {
                     _.each(response.data, function (roles, entityType) {
                         _this.ROLE_CACHE[entityType] = roles;
@@ -325,7 +341,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * For a given entity type (i.e. FEED) return the roles/permissions
              * @param entityType the type of entity
              */
-            this.getEntityRoles = function (entityType) {
+            _this.getEntityRoles = function (entityType) {
                 var df = _this.$q.defer();
                 var useCache = false; // disable the cache for now
                 if (useCache && _this.ROLE_CACHE[entityType] != undefined) {
@@ -364,7 +380,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
              * @param entityPermissions  a string or an array of entity permissions to check against the user and supplied entity
              * @return a promise with a boolean value as the response
              */
-            this.hasPermission = function (functionalPermission, entity, entityPermissions) {
+            _this.hasPermission = function (functionalPermission, entity, entityPermissions) {
                 var entityAccessControlled = entity != null && entityPermissions != null && _this.isEntityAccessControlled();
                 var defer = _this.$q.defer();
                 var requests = {
@@ -376,11 +392,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
                 });
                 return defer.promise;
             };
-            /**
-             * Time allowed before the getAllowedActions refreshes from the server
-             * Default to refresh the cache every 3 minutes
-             */
-            this.userAllowedActionsNeedsRefresh = function (module) {
+            _this.userAllowedActionsNeedsRefresh = function (module) {
                 if (angular.isUndefined(_this.lastUserAllowedCacheAccess[module])) {
                     return true;
                 }
@@ -394,6 +406,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
                     }
                 }
             };
+            return _this;
             /**
              * Key: Entity Type, Value: [{systemName:'ROLE1',permissions:['perm1','perm2']},...]
              * @type {{}}
@@ -401,7 +414,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "./Commo
             //return new AccessControlService(); // constructor returning two things;
         }
         return AccessControlService;
-    }());
+    }(AccessConstants_1.default));
     exports.default = AccessControlService;
     angular.module(module_name_1.moduleName)
         .service('CommonRestUrlService', CommonRestUrlService_1.default)

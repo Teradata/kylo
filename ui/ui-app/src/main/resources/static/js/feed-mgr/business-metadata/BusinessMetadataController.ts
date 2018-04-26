@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "./module-name";
+import AccessControlService from '../../services/AccessControlService';
 
 export class BusinessMetadataController implements ng.IComponentController{
     allowCategoryEdit: boolean;
@@ -23,7 +24,7 @@ export class BusinessMetadataController implements ng.IComponentController{
  */
    constructor(private $scope: any,
                 private $http:any, 
-                private AccessControlService:any, 
+                private accessControlService:AccessControlService, 
                 private RestUrlService:any) {
        /**
          * Indicates if the category fields may be edited.
@@ -86,10 +87,10 @@ export class BusinessMetadataController implements ng.IComponentController{
         });
 
         // Load the permissions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
                 .then((actionSet:any)=> {
-                    this.allowCategoryEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
-                    this.allowFeedEdit = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                    this.allowCategoryEdit = accessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
+                    this.allowFeedEdit = accessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
                 });
     }
      /**

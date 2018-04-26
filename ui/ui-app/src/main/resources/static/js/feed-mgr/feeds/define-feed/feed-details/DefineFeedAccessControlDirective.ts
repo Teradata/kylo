@@ -48,7 +48,7 @@ export class DefineFeedAccessControlController {
         this.securityGroupChips.selectedItem = null;
         this.securityGroupChips.searchText = null;
 
-        FeedSecurityGroups.isEnabled().then(function(isValid:any) {
+        FeedSecurityGroups.isEnabled().then((isValid:any) =>{
             this.securityGroupsEnabled = isValid;
         });
     }

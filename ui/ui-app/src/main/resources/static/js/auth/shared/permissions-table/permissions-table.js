@@ -2,10 +2,10 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PermissionsTableController = /** @class */ (function () {
-        function PermissionsTableController($scope, AccessControlService) {
+        function PermissionsTableController($scope, accessControlService) {
             var _this = this;
             this.$scope = $scope;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             /**
              * List of available actions to be displayed.
              * @type {Array.<ActionState>}
@@ -75,7 +75,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             $scope.$watch(function () { return $scope.model; }, function () { _this.refresh(); });
             // Fetch the list of available actions
             // this.getAvailableActions();
-            AccessControlService.getAvailableActions().then(function (actionSet) {
+            accessControlService.getAvailableActions().then(function (actionSet) {
                 angular.forEach(actionSet.actions, function (action) {
                     var state = _this.addAction(action, 0, null);
                     _this.roots.push(state);

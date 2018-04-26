@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
+import AccessControlService from '../../services/AccessControlService';
 
 export class controller implements ng.IComponentController{
        /**
@@ -79,7 +80,7 @@ export class controller implements ng.IComponentController{
                 private $location: any,
                 private HttpService: any,
                 private Utils: any,
-                private AccessControlService: any){
+                private accessControlService: AccessControlService){
                     this.init();
 
                     $scope.$on('$destroy', ()=> {
@@ -405,9 +406,9 @@ var jobMap: any = {};
         init=()=>{
 
             // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=>{
-                    this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                    this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                 });
 
 

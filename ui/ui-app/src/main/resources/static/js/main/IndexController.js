@@ -3,7 +3,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
         function controller($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, //angular.IRootScopeService,
-            $transitions, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
+            $transitions, $mdDialog, StateService, SearchService, SideNavService, accessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -22,7 +22,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
             this.StateService = StateService;
             this.SearchService = SearchService;
             this.SideNavService = SideNavService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             /**
              * Time to wait before initializing the loading dialog
              * @type {number}
@@ -120,7 +120,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
                 $rootScope.previousState = transition.from().name;
                 $rootScope.currentState = transition.to().name;
                 //hide the loading dialog
-                if (!AccessControlService.isFutureState(_this.currentState.name)) {
+                if (!accessControlService.isFutureState(_this.currentState.name)) {
                     if (_this.loadingTimeout != null) {
                         $timeout.cancel(_this.loadingTimeout);
                         _this.loadingTimeout = null;
@@ -132,9 +132,9 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
                 }
             });
             // Fetch the allowed actions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowSearch = AccessControlService
+                _this.allowSearch = accessControlService
                     .hasAction(AccessConstants_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
             });
         }

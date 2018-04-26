@@ -83,7 +83,7 @@ export default class GroupDetailsController implements ng.IComponentController {
         private $mdDialog:angular.material.IDialogService,
         private $mdToast:angular.material.IToastService,
         //private $transition$: Transition,
-        private AccessControlService:AccessControlService,
+        private accessControlService:AccessControlService,
         private UserService:UserService,
         private StateService:StateService){
          // Update isValid when $error is updated
@@ -176,10 +176,10 @@ export default class GroupDetailsController implements ng.IComponentController {
          */
         onLoad=()=>{
             // Load allowed permissions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                     .then((actionSet:any)=>{
-                       this.allowAdmin = this.AccessControlService.hasAction(AccessConstants.GROUP_ADMIN, actionSet.actions);
-                       this.allowUsers = this.AccessControlService.hasAction(AccessConstants.USERS_ACCESS, actionSet.actions);
+                       this.allowAdmin = this.accessControlService.hasAction(AccessConstants.GROUP_ADMIN, actionSet.actions);
+                       this.allowUsers = this.accessControlService.hasAction(AccessConstants.USERS_ACCESS, actionSet.actions);
                   });
 
           // Fetch group details
@@ -193,7 +193,7 @@ export default class GroupDetailsController implements ng.IComponentController {
                             .then((users: any)=> {
                                 this.users = users;
                             });
-                    this.AccessControlService.getAllowedActions(null, null, this.$transition$.params().groupId)
+                    this.accessControlService.getAllowedActions(null, null, this.$transition$.params().groupId)
                             .then((actionSet: any)=> {
                                 this.actions = actionSet.actions;
                             });
@@ -226,7 +226,7 @@ export default class GroupDetailsController implements ng.IComponentController {
      */
     onSavePermissions() {
             var actions = angular.copy(this.editActions);
-            this.AccessControlService.setAllowedActions(null, null, this.model.systemName, actions)
+            this.accessControlService.setAllowedActions(null, null, this.model.systemName, actions)
                     .then((actionSet: any) =>{
                         this.actions = actionSet.actions;
                     });

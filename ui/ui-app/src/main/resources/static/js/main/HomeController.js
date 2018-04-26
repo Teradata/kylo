@@ -2,11 +2,11 @@ define(["require", "exports", "angular", "../constants/AccessConstants"], functi
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var HomeController = /** @class */ (function () {
-        function HomeController($scope, $mdDialog, AccessControlService, StateService) {
+        function HomeController($scope, $mdDialog, accessControlService, StateService) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.StateService = StateService;
             /**
              * Indicates that the page is currently being loaded.
@@ -14,7 +14,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants"], functi
              */
             this.loading = true;
             // Fetch the list of allowed actions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                 _this.onLoad(actionSet.actions);
             });
@@ -26,22 +26,22 @@ define(["require", "exports", "angular", "../constants/AccessConstants"], functi
          */
         HomeController.prototype.onLoad = function (actions) {
             // Determine the home page
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.FEEDS_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.FEEDS_ACCESS, actions)) {
                 return this.StateService.FeedManager().Feed().navigateToFeeds();
             }
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.OPERATIONS_MANAGER_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.OPERATIONS_MANAGER_ACCESS, actions)) {
                 return this.StateService.OpsManager().dashboard();
             }
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.CATEGORIES_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.CATEGORIES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Category().navigateToCategories();
             }
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.TEMPLATES_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.TEMPLATES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.USERS_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToUsers();
             }
-            if (this.AccessControlService.hasAction(AccessConstants_1.default.GROUP_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants_1.default.GROUP_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToGroups();
             }
             /*

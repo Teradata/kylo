@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 /**
@@ -94,7 +95,7 @@ export class CategoryDefinitionController {
         getIconColorStyle:any;
 
      constructor(private $scope:any, private $mdDialog:any, private $mdToast:any, private $q:any, private $timeout:any
-        , private $window:any, private AccessControlService:any, private EntityAccessControlService:any
+        , private $window:any, private accessControlService:AccessControlService, private EntityAccessControlService:any
         , private CategoriesService:any, private StateService:any, private FeedSecurityGroups:any, private FeedService:any) {
         var self = this;
 
@@ -441,11 +442,11 @@ export class CategoryDefinitionController {
 
         function checkAccessPermissions() {
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access:any) {
+            $q.when(accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access:any) {
                 self.allowEdit = access;
             });
 
-            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function (access:any) {
+            $q.when(accessControlService.hasPermission(AccessControlService.CATEGORIES_EDIT, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.DELETE_CATEGORY)).then(function (access:any) {
                 self.allowDelete = access;
             });
         }

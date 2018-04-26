@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/feeds/module-name');
 
 
@@ -19,7 +20,7 @@ export class EditFeedController {
      */
     constructor(private $scope:any, private $http:any, private $q:any, private $mdDialog:any, private $transition$:any
         , private FeedService:any, private RestUrlService:any, private StateService:any, private VisualQueryService:any
-        , private AccessControlService:any, private FeedSecurityGroups:any, private StepperService:any
+        , private accessControlService:AccessControlService, private FeedSecurityGroups:any, private StepperService:any
         , private EntityAccessControlService:any, private UiComponentsService:any) {
         var self = this;
 
@@ -121,7 +122,7 @@ export class EditFeedController {
          */
         self.onStepperInitialized = function () {
             if (self.model.loaded && self.model.totalSteps > 2 && StepperService.getStep("EditFeedStepper", self.model.totalSteps - 2) !== null) {
-                var entityAccess = AccessControlService.checkEntityAccessControlled();
+                var entityAccess = accessControlService.checkEntityAccessControlled();
                 var accessChecks = {
                     changeFeedPermissions: entityAccess && FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
                     securityGroups: FeedSecurityGroups.isEnabled()

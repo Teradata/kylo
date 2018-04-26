@@ -4,6 +4,7 @@ import * as _ from 'underscore';
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import IconService from "../services/IconStatusService";
 import TabService from "../services/TabService";
+import AccessControlService from "../../services/AccessControlService";
 
 export class controller implements ng.IComponentController{
 pageName: any = angular.isDefined(this.pageName) ? this.pageName : 'service-level-assessments';
@@ -41,7 +42,7 @@ constructor(private $scope: angular.IScope,
             private StateService: any,
             private IconService: any,
             private TabService: any,
-            private AccessControlService: any,
+            private accessControlService: AccessControlService,
             private BroadcastService: any){
 
             this.filter = angular.isUndefined(this.filter) ? '' : this.filter;
@@ -83,9 +84,9 @@ constructor(private $scope: angular.IScope,
                 this.loading = true;
                 this.showProgress= true;
                         // Fetch allowed permissions
-                AccessControlService.getUserAllowedActions()
+                accessControlService.getUserAllowedActions()
                         .then((actionSet: any)=>{
-                            this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                            this.allowAdmin = accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
                         });
 
         

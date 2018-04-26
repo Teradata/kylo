@@ -20,12 +20,12 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
     constructor(private $scope: angular.IScope,
                 private $http: angular.IHttpService,
                 private $mdDialog: angular.material.IDialogService ,
-                private AccessControlService: AccessControlService,
+                private accessControlService: AccessControlService,
                 private OpsManagerRestUrlService: OpsManagerRestUrlService){
                 this.loadAlert(this.alertId); // Fetch alert details
-                AccessControlService.getUserAllowedActions() // Fetch allowed permissions
+                accessControlService.getUserAllowedActions() // Fetch allowed permissions
                         .then((actionSet: any) =>{
-                            this.allowAdmin = AccessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
+                            this.allowAdmin = accessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
                         });
     }// end of constructor
          /**

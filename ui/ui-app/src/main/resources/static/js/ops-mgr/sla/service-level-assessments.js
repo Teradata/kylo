@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "../services/OpsManagerRestUrlService", "../services/IconStatusService", "../services/TabService"], function (require, exports, angular, module_name_1, _, OpsManagerRestUrlService_1, IconStatusService_1, TabService_1) {
+define(["require", "exports", "angular", "./module-name", "underscore", "../services/OpsManagerRestUrlService", "../services/IconStatusService", "../services/TabService", "../../services/AccessControlService"], function (require, exports, angular, module_name_1, _, OpsManagerRestUrlService_1, IconStatusService_1, TabService_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $http, $timeout, $q, $mdToast, $mdPanel, OpsManagerRestUrlService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, AccessControlService, BroadcastService) {
+        function controller($scope, $http, $timeout, $q, $mdToast, $mdPanel, OpsManagerRestUrlService, TableOptionsService, PaginationDataService, StateService, IconService, TabService, accessControlService, BroadcastService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -16,7 +16,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
             this.StateService = StateService;
             this.IconService = IconService;
             this.TabService = TabService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.BroadcastService = BroadcastService;
             this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'service-level-assessments';
             this.loaded = false;
@@ -160,9 +160,9 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../serv
             this.loading = true;
             this.showProgress = true;
             // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                _this.allowAdmin = accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
         } // end of constructor
         /**

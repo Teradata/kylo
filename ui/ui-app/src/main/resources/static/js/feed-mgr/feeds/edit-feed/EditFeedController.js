@@ -8,7 +8,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          *
          * @constructor
          */
-        function EditFeedController($scope, $http, $q, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService, AccessControlService, FeedSecurityGroups, StepperService, EntityAccessControlService, UiComponentsService) {
+        function EditFeedController($scope, $http, $q, $mdDialog, $transition$, FeedService, RestUrlService, StateService, VisualQueryService, accessControlService, FeedSecurityGroups, StepperService, EntityAccessControlService, UiComponentsService) {
             this.$scope = $scope;
             this.$http = $http;
             this.$q = $q;
@@ -18,7 +18,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             this.RestUrlService = RestUrlService;
             this.StateService = StateService;
             this.VisualQueryService = VisualQueryService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.FeedSecurityGroups = FeedSecurityGroups;
             this.StepperService = StepperService;
             this.EntityAccessControlService = EntityAccessControlService;
@@ -112,7 +112,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
              */
             self.onStepperInitialized = function () {
                 if (self.model.loaded && self.model.totalSteps > 2 && StepperService.getStep("EditFeedStepper", self.model.totalSteps - 2) !== null) {
-                    var entityAccess = AccessControlService.checkEntityAccessControlled();
+                    var entityAccess = accessControlService.checkEntityAccessControlled();
                     var accessChecks = {
                         changeFeedPermissions: entityAccess && FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
                         securityGroups: FeedSecurityGroups.isEnabled()

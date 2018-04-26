@@ -10,12 +10,12 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
       * @param OpsManagerRestUrlService the REST URL service
       */
     var AlertDetailsDirectiveController = /** @class */ (function () {
-        function AlertDetailsDirectiveController($scope, $http, $mdDialog, AccessControlService, OpsManagerRestUrlService) {
+        function AlertDetailsDirectiveController($scope, $http, $mdDialog, accessControlService, OpsManagerRestUrlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.allowAdmin = false; //Indicates that admin operations are allowed. {boolean}
             /**
@@ -157,9 +157,9 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
                 });
             };
             this.loadAlert(this.alertId); // Fetch alert details
-            AccessControlService.getUserAllowedActions() // Fetch allowed permissions
+            accessControlService.getUserAllowedActions() // Fetch allowed permissions
                 .then(function (actionSet) {
-                _this.allowAdmin = AccessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
+                _this.allowAdmin = accessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
         } // end of constructor
         return AlertDetailsDirectiveController;

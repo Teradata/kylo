@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "../module-name", "underscore", "./SlaEmailTemplateService"], function (require, exports, angular, module_name_1, _, SlaEmailTemplateService_1) {
+define(["require", "exports", "angular", "../module-name", "underscore", "./SlaEmailTemplateService", "../../../services/AccessControlService"], function (require, exports, angular, module_name_1, _, SlaEmailTemplateService_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService, AccessControlService) {
+        function controller($transition$, $mdDialog, $mdToast, $http, SlaEmailTemplateService, StateService, accessControlService) {
             var _this = this;
             this.$transition$ = $transition$;
             this.$mdDialog = $mdDialog;
@@ -10,7 +10,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
             this.$http = $http;
             this.SlaEmailTemplateService = SlaEmailTemplateService;
             this.StateService = StateService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.allowEdit = false;
             /**
              * The current template we are editing
@@ -174,9 +174,9 @@ define(["require", "exports", "angular", "../module-name", "underscore", "./SlaE
             this.getAvailableActionItems();
             this.getRelatedSlas();
             // Fetch the allowed actions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+                _this.allowEdit = accessControlService.hasAction(AccessControlService_1.default.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
         }
         return controller;

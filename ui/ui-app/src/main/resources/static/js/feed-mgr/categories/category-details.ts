@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 
@@ -20,7 +21,7 @@ export class CategoryDetailsController {
      * @constructor
      */
     constructor(private $scope:any, private $transition$:any, private $q:any
-        ,private CategoriesService:any, private AccessControlService:any) {
+        ,private CategoriesService:any, private accessControlService:AccessControlService) {
         var self = this;
 
         /**
@@ -28,7 +29,6 @@ export class CategoryDetailsController {
          * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
          */
         self.loadingCategory = true;
-
 
         self.showAccessControl = false;
 
@@ -86,9 +86,9 @@ export class CategoryDetailsController {
 
 
         function checkAccessControl(){
-            if(AccessControlService.isEntityAccessControlled()) {
+            if(accessControlService.isEntityAccessControlled()) {
                 //Apply the entity access permissions... only showAccessControl if the user can change permissions
-                $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
+                $q.when(accessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(
                     function (access:any) {
                         self.showAccessControl = access;
                     });

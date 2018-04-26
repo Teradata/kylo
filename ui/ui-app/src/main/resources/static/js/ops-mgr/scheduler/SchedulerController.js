@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "moment"], function (require, exports, angular, module_name_1, _, moment) {
+define(["require", "exports", "angular", "./module-name", "underscore", "moment", "../../services/AccessControlService"], function (require, exports, angular, module_name_1, _, moment, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $interval, $timeout, $http, $location, HttpService, Utils, AccessControlService) {
+        function controller($scope, $interval, $timeout, $http, $location, HttpService, Utils, accessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$interval = $interval;
@@ -11,7 +11,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
             this.$location = $location;
             this.HttpService = HttpService;
             this.Utils = Utils;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             /**
               * Time to query for the jobs
               * @type {number}
@@ -354,9 +354,9 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
             };
             this.init = function () {
                 // Fetch the allowed actions
-                _this.AccessControlService.getUserAllowedActions()
+                _this.accessControlService.getUserAllowedActions()
                     .then(function (actionSet) {
-                    _this.allowAdmin = _this.AccessControlService.hasAction(_this.AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                    _this.allowAdmin = _this.accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
                 });
                 _this.clearSchedulerDetails();
                 _this.fetchJobs();

@@ -2,7 +2,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var FeedService = /** @class */ (function () {
-        function FeedService($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService, FeedPropertyService, AccessControlService, EntityAccessControlService, StateService) {
+        function FeedService($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService, FeedPropertyService, accessControlService, EntityAccessControlService, StateService) {
             this.$http = $http;
             this.$q = $q;
             this.$mdToast = $mdToast;
@@ -11,7 +11,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.VisualQueryService = VisualQueryService;
             this.FeedCreationErrorService = FeedCreationErrorService;
             this.FeedPropertyService = FeedPropertyService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.StateService = StateService;
             this.data = {
@@ -787,7 +787,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     if (entity == undefined) {
                         entity = this.data.model;
                     }
-                    return AccessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
+                    return accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
                 },
                 /**
                  * Applies the specified domain type to the specified field.

@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
 
@@ -105,7 +106,7 @@ export class controller {
      * @param StateService
      */
     constructor (private $scope:any, private $q:any, private $transition$:any, private $mdDialog:any, private $mdToast:any
-        , private $http:any, private $state:any, private AccessControlService:any, private RestUrlService:any
+        , private $http:any, private $state:any, private accessControlService:AccessControlService, private RestUrlService:any
         , private FeedService:any, private RegisterTemplateService:any, private StateService:any
         , private SideNavService:any, private FileUpload:any, private ConfigurationService:any
         , private EntityAccessControlDialogService:any, private EntityAccessControlService:any, private UiComponentsService:any
@@ -439,9 +440,9 @@ export class controller {
          * An error is displayed if the user does not have permissions to access categories.
          */
         this.onCategoryClick = function() {
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                     .then(function(actionSet:any) {
-                        if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
+                        if (accessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
                             StateService.FeedManager().Category().navigateToCategoryDetails(self.model.category.id);
                         } else {
                             $mdDialog.show(
@@ -537,21 +538,21 @@ export class controller {
                                 self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                                 FeedService.updateEditModelStateIcon();
 
-                                var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+                                var entityAccessControlled = accessControlService.isEntityAccessControlled();
                                 //Apply the entity access permissions
                                 var requests = {
                                     entityEditAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model),
                                     entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
                                     entityStartAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START, self.model),
                                     entityPermissionAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
-                                    functionalAccess: AccessControlService.getUserAllowedActions()
+                                    functionalAccess: accessControlService.getUserAllowedActions()
                                 };
                                 $q.all(requests).then(function (response:any) {
-                                    var allowEditAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
-                                    var allowAdminAccess =  AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
-                                    var slaAccess =  AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
-                                    var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
-                                    var allowStart = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowEditAccess =  accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowAdminAccess =  accessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
+                                    var slaAccess =  accessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                                    var allowExport = accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
+                                    var allowStart = accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
 
                                     self.allowEdit = response.entityEditAccess && allowEditAccess;
                                     self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;

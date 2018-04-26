@@ -2,6 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import 'kylo-common-module';
 import 'kylo-services';
+import AccessControlService from "../../services/AccessControlService";
 
 
 var getBlockNodes = function (nodes: any) {
@@ -32,7 +33,7 @@ var getBlockNodes = function (nodes: any) {
     };
 
 angular.module(moduleName).directive("ngIfPermission",
-  ['$animate', '$compile','$q', 'AccessControlService', ($animate: any, $compile: any, $q,AccessControlService: any) => {
+  ['$animate', '$compile','$q', 'AccessControlService', ($animate: any, $compile: any, $q,accessControlService: AccessControlService) => {
           return {
                scope: {entity:'=?', entityType:'=?'},
             multiElement: true,
@@ -65,12 +66,12 @@ angular.module(moduleName).directive("ngIfPermission",
                 function check(permissions: any, entity: any, entityType: any) {
 
                     if (angular.isDefined(entity) && angular.isDefined(entityType)) {
-                        validate(AccessControlService.hasEntityAccess(permissions, entity,entityType));
+                        validate(accessControlService.hasEntityAccess(permissions, entity,entityType));
                     }
                     else {
-                        AccessControlService.getUserAllowedActions(AccessControlService.ACCESS_MODULES.SERVICES, true)
+                        accessControlService.getUserAllowedActions(accessControlService.ACCESS_MODULES.SERVICES, true)
                             .then(function (actionSet: any) {
-                                var valid = AccessControlService.hasAnyAction(permissions, actionSet.actions);
+                                var valid = accessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
                             }, true);
                     }

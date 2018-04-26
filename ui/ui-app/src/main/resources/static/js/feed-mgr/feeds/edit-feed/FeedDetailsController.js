@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../../services/AccessControlService"], function (require, exports, angular, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/edit-feed/module-name');
@@ -49,7 +49,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param RegisterTemplateService
          * @param StateService
          */
-        function controller($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload, ConfigurationService, EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, DatasourcesService) {
+        function controller($scope, $q, $transition$, $mdDialog, $mdToast, $http, $state, accessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService, SideNavService, FileUpload, ConfigurationService, EntityAccessControlDialogService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, DatasourcesService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$transition$ = $transition$;
@@ -57,7 +57,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.$mdToast = $mdToast;
             this.$http = $http;
             this.$state = $state;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.RestUrlService = RestUrlService;
             this.FeedService = FeedService;
             this.RegisterTemplateService = RegisterTemplateService;
@@ -334,9 +334,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * An error is displayed if the user does not have permissions to access categories.
              */
             this.onCategoryClick = function () {
-                AccessControlService.getUserAllowedActions()
+                accessControlService.getUserAllowedActions()
                     .then(function (actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
+                    if (accessControlService.hasAction(AccessControlService_1.default.CATEGORIES_ACCESS, actionSet.actions)) {
                         StateService.FeedManager().Category().navigateToCategoryDetails(self.model.category.id);
                     }
                     else {
@@ -418,21 +418,21 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                                 self.loadingFeedData = false;
                                 self.model.isStream = updatedFeedResponse.data.registeredTemplate.stream;
                                 FeedService.updateEditModelStateIcon();
-                                var entityAccessControlled = AccessControlService.isEntityAccessControlled();
+                                var entityAccessControlled = accessControlService.isEntityAccessControlled();
                                 //Apply the entity access permissions
                                 var requests = {
                                     entityEditAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, self.model),
                                     entityExportAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, self.model),
                                     entityStartAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.START, self.model),
                                     entityPermissionAccess: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.CHANGE_FEED_PERMISSIONS, self.model),
-                                    functionalAccess: AccessControlService.getUserAllowedActions()
+                                    functionalAccess: accessControlService.getUserAllowedActions()
                                 };
                                 $q.all(requests).then(function (response) {
-                                    var allowEditAccess = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
-                                    var allowAdminAccess = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, response.functionalAccess.actions);
-                                    var slaAccess = AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
-                                    var allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, response.functionalAccess.actions);
-                                    var allowStart = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowEditAccess = accessControlService.hasAction(AccessControlService_1.default.FEEDS_EDIT, response.functionalAccess.actions);
+                                    var allowAdminAccess = accessControlService.hasAction(AccessControlService_1.default.FEEDS_ADMIN, response.functionalAccess.actions);
+                                    var slaAccess = accessControlService.hasAction(AccessControlService_1.default.SLA_ACCESS, response.functionalAccess.actions);
+                                    var allowExport = accessControlService.hasAction(AccessControlService_1.default.FEEDS_EXPORT, response.functionalAccess.actions);
+                                    var allowStart = accessControlService.hasAction(AccessControlService_1.default.FEEDS_EDIT, response.functionalAccess.actions);
                                     self.allowEdit = response.entityEditAccess && allowEditAccess;
                                     self.allowChangePermissions = entityAccessControlled && response.entityPermissionAccess && allowEditAccess;
                                     self.allowAdmin = allowAdminAccess;

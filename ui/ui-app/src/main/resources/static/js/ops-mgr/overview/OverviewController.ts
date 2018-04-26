@@ -2,6 +2,7 @@ import * as angular from "angular";
 import {moduleName} from "./module-name";
 import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import AccessControlService from "../../services/AccessControlService";
 
 export default class OverviewController implements ng.IComponentController{
 allowed: boolean;
@@ -24,7 +25,7 @@ constructor(private $scope: any,
         private $mdDialog: any,
         private $interval: any,
         private $timeout: any,
-        private AccessControlService: any,
+        private accessControlService: AccessControlService,
         private HttpService: any,
         private OpsManagerDashboardService: any){
             /**
@@ -56,9 +57,9 @@ constructor(private $scope: any,
             });
 
             // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                     .then((actionSet: any)=> {
-                        if (AccessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
+                        if (accessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
                             this.allowed = true;
                         } else {
                             $mdDialog.show(

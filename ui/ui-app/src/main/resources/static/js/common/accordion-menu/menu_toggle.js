@@ -17,7 +17,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 + ' </div>'
                 + '</div>');
         }])
-        .directive('menuToggle', ['$timeout', 'AccessControlService', function ($timeout, AccessControlService) {
+        .directive('menuToggle', ['$timeout', 'AccessControlService', function ($timeout, accessControlService) {
             return {
                 scope: {
                     section: '='
@@ -45,7 +45,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                         }
                     });
                     var checkPermissions = function () {
-                        AccessControlService.doesUserHavePermission(getTogglePermissions()).then(function (allowed) {
+                        accessControlService.doesUserHavePermission(getTogglePermissions()).then(function (allowed) {
                             //if not allowed, remove the links;
                             if (!allowed) {
                                 scope.section.links = [];

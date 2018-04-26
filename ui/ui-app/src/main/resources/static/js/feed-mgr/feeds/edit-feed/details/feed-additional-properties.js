@@ -20,11 +20,11 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
         };
     };
     var FeedAdditionalPropertiesController = /** @class */ (function () {
-        function FeedAdditionalPropertiesController($scope, $q, AccessControlService, EntityAccessControlService, FeedService, FeedTagService, FeedSecurityGroups, $filter) {
+        function FeedAdditionalPropertiesController($scope, $q, accessControlService, EntityAccessControlService, FeedService, FeedTagService, FeedSecurityGroups, $filter) {
             var _this = this;
             this.$scope = $scope;
             this.$q = $q;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.FeedService = FeedService;
             this.FeedTagService = FeedTagService;
@@ -195,7 +195,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 });
             }
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, this.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+            $q.when(accessControlService.hasPermission(EntityAccessControlService.FEEDS_EDIT, this.model, EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
                 _this.allowEdit = !_this.versions && access && !_this.model.view.properties.disabled;
             });
         }

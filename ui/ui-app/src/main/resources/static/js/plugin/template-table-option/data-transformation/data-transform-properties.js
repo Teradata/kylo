@@ -7,15 +7,15 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "angular", "@angular/core"], function (require, exports, angular, core_1) {
+define(["require", "exports", "angular", "@angular/core", "../../../services/AccessControlService"], function (require, exports, angular, core_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var DataTransformPropertiesController = /** @class */ (function () {
-        function DataTransformPropertiesController($scope, $q, AccessControlService, FeedService, StateService, VisualQueryService) {
+        function DataTransformPropertiesController($scope, $q, accessControlService, FeedService, StateService, VisualQueryService) {
             var _this = this;
             this.$scope = $scope;
             this.$q = $q;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.FeedService = FeedService;
             this.StateService = StateService;
             this.VisualQueryService = VisualQueryService;
@@ -58,7 +58,7 @@ define(["require", "exports", "angular", "@angular/core"], function (require, ex
                 });
             }
             //Apply the entity access permissions
-            this.$q.when(this.AccessControlService.hasPermission(this.AccessControlService.FEEDS_EDIT, this.model, this.AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
+            this.$q.when(this.accessControlService.hasPermission(AccessControlService_1.default.FEEDS_EDIT, this.model, AccessControlService_1.default.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS))
                 .then(function (access) {
                 _this.allowEdit = !_this.versions && access;
             });

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../services/AccessControlService"], function (require, exports, angular, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
@@ -11,12 +11,12 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param CategoriesService the category service
          * @constructor
          */
-        function CategoryDetailsController($scope, $transition$, $q, CategoriesService, AccessControlService) {
+        function CategoryDetailsController($scope, $transition$, $q, CategoriesService, accessControlService) {
             this.$scope = $scope;
             this.$transition$ = $transition$;
             this.$q = $q;
             this.CategoriesService = CategoriesService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             var self = this;
             /**
              * Indicates if the category is currently being loaded.
@@ -71,9 +71,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 self.onLoad();
             }
             function checkAccessControl() {
-                if (AccessControlService.isEntityAccessControlled()) {
+                if (accessControlService.isEntityAccessControlled()) {
                     //Apply the entity access permissions... only showAccessControl if the user can change permissions
-                    $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ACCESS, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function (access) {
+                    $q.when(accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_ACCESS, self.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function (access) {
                         self.showAccessControl = access;
                     });
                 }

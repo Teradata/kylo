@@ -66,7 +66,7 @@ export class DefineFeedDataProcessingController {
     static readonly $inject = ["$scope", "$http", "$mdDialog", "$mdExpansionPanel", "RestUrlService", "FeedService",
         "BroadcastService", "StepperService", "Utils", "DomainTypesService", "FeedTagService"];
 
-    constructor(private $scope: any, private $http: any, private $mdDialog: any, private $mdExpansionPanel: any, private RestUrlService: any, private FeedService: any
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: any, private $mdExpansionPanel: any, private RestUrlService: any, private FeedService: any
         , private BroadcastService: any, private StepperService: any, private Utils: any, private DomainTypesService: any, private FeedTagService: any) {
 
         this.model = FeedService.createFeedModel;
@@ -74,7 +74,7 @@ export class DefineFeedDataProcessingController {
         this.profileCheckAll = new CheckAll('profile', true);
         this.indexCheckAll = new CheckAll( 'index', false);
 
-        DomainTypesService.findAll().then(function (domainTypes: any) {
+        DomainTypesService.findAll().then((domainTypes: any) => {
             this.availableDomainTypes = domainTypes;
         });
 
@@ -114,7 +114,7 @@ export class DefineFeedDataProcessingController {
     };
 
     expandFieldPoliciesPanel() {
-        this.$mdExpansionPanel().waitFor('panelFieldPolicies').then(function (instance: any) {
+        this.$mdExpansionPanel().waitFor('panelFieldPolicies').then((instance: any) =>{
             instance.expand();
         });
     };
@@ -143,7 +143,7 @@ export class DefineFeedDataProcessingController {
 
         if (firstSelection) {
             //trigger scroll to stick the selection to the screen
-            this.Utils.waitForDomElementReady('#selectedColumnPanel2', function () {
+            this.Utils.waitForDomElementReady('#selectedColumnPanel2', () => {
                 angular.element('#selectedColumnPanel2').triggerHandler('stickIt');
             })
         }
@@ -167,7 +167,7 @@ export class DefineFeedDataProcessingController {
         }
     };
     findProperty(key: any) {
-        return _.find(this.model.inputProcessor.properties, function (property: any) {
+        return _.find(this.model.inputProcessor.properties, (property: any) =>{
             //return property.key = 'Source Database Connection';
             return property.key == key;
         });
@@ -184,7 +184,7 @@ export class DefineFeedDataProcessingController {
                 field: field
             }
         })
-            .then(function () {
+            .then(() => {
                 if (angular.isObject(field.$currentDomainType)) {
                     var domainStandardization = _.map(field.$currentDomainType.fieldPolicy.standardization, _.property("name"));
                     var domainValidation = _.map(field.$currentDomainType.fieldPolicy.validation, _.property("name"));
@@ -210,7 +210,7 @@ export class DefineFeedDataProcessingController {
         }
 
         // Find domain type from id
-        var domainType = _.find(this.availableDomainTypes, function (domainType: any) {
+        var domainType = _.find(this.availableDomainTypes, (domainType: any) => {
             return (domainType.id === policy.domainTypeId);
         });
 
@@ -235,14 +235,14 @@ export class DefineFeedDataProcessingController {
         } else {
             promise = Promise.resolve();
         }
-        promise.then(function () {
+        promise.then(() =>{
             // Set domain type
             this.FeedService.setDomainTypeForField(policy.field, policy, domainType);
             // Update field properties
             delete policy.field.$allowDomainTypeConflict;
             policy.field.dataTypeDisplay = this.FeedService.getDataTypeDisplay(policy.field);
             policy.name = policy.field.name;
-        }, function () {
+        }, () => {
             // Revert domain type
             policy.domainTypeId = angular.isDefined(policy.$currentDomainType) ? policy.$currentDomainType.id : null;
         });

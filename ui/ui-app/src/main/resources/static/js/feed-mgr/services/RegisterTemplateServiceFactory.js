@@ -17,12 +17,12 @@
  * limitations under the License.
  * #L%
  */
-define(["require", "exports", "angular", "underscore", "pascalprecht.translate"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../services/AccessControlService", "pascalprecht.translate"], function (require, exports, angular, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/module-name');
     var RegisterTemplateServiceFactory = /** @class */ (function () {
-        function RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter) {
+        function RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, accessControlService, EntityAccessControlService, $filter) {
             this.$http = $http;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
@@ -30,7 +30,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.FeedInputProcessorOptionsFactory = FeedInputProcessorOptionsFactory;
             this.FeedDetailsProcessorRenderingHelper = FeedDetailsProcessorRenderingHelper;
             this.FeedPropertyService = FeedPropertyService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.$filter = $filter;
             /**
@@ -620,16 +620,16 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 model = this.model;
             }
             model.errorMessage = '';
-            var entityAccessControlled = model.id != null && this.AccessControlService.isEntityAccessControlled();
+            var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
             var deferred = this.$q.defer();
             var requests = {
                 entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
-                entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(this.AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
-                functionalAccess: this.AccessControlService.getUserAllowedActions()
+                entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService_1.default.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
+                functionalAccess: this.accessControlService.getUserAllowedActions()
             };
             this.$q.all(requests).then(function (response) {
-                var allowEditAccess = _this.AccessControlService.hasAction(_this.AccessControlService.TEMPLATES_EDIT, response.functionalAccess.actions);
-                var allowAdminAccess = _this.AccessControlService.hasAction(_this.AccessControlService.TEMPLATES_ADMIN, response.functionalAccess.actions);
+                var allowEditAccess = _this.accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_EDIT, response.functionalAccess.actions);
+                var allowAdminAccess = _this.accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_ADMIN, response.functionalAccess.actions);
                 var allowEdit = response.entityEditAccess && allowEditAccess;
                 var allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
                 var allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
@@ -888,11 +888,11 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             if (entity == undefined) {
                 entity = this.model;
             }
-            return this.AccessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
+            return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
         };
         RegisterTemplateServiceFactory.factory = function () {
-            var instance = function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter) {
-                return new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
+            var instance = function ($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, accessControlService, EntityAccessControlService, $filter) {
+                return new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService_1.default, EntityAccessControlService, $filter);
             };
             return instance;
         };

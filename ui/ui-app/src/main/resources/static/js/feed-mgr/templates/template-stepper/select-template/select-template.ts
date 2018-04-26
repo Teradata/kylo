@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";
+import AccessControlService from '../../../../services/AccessControlService';
 
 
 var directive = function () {
@@ -63,7 +64,7 @@ export class RegisterSelectTemplateController {
 
     constructor(private $scope:any, private $http:any, private $mdDialog:any, private $mdToast:any, private $timeout:any
         , private $q:any, private $state:any, private RestUrlService:any, private RegisterTemplateService:any, private StateService:any
-        , private AccessControlService:any, private EntityAccessControlService:any, private UiComponentsService:any
+        , private accessControlService:AccessControlService, private EntityAccessControlService:any, private UiComponentsService:any
         , private AngularModuleExtensionService:any, private BroadcastService:any) {
 
         var self = this;
@@ -368,11 +369,11 @@ export class RegisterSelectTemplateController {
 
         this.getTemplates();
 
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
             .then(function (actionSet:any) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                self.allowAdmin = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
-                self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                self.allowEdit = accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
+                self.allowAdmin = accessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
+                self.allowExport = accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
 

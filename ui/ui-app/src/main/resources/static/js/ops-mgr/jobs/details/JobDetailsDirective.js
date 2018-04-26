@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "underscore", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "./module-name", "underscore", "../../../services/AccessControlService", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var JobDetailsDirectiveController = /** @class */ (function () {
-        function JobDetailsDirectiveController($scope, $http, $state, $interval, $timeout, $q, $mdToast, OpsManagerRestUrlService, OpsManagerJobService, IconService, AccessControlService, AngularModuleExtensionService, $filter) {
+        function JobDetailsDirectiveController($scope, $http, $state, $interval, $timeout, $q, $mdToast, OpsManagerRestUrlService, OpsManagerJobService, IconService, accessControlService, AngularModuleExtensionService, $filter) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -14,7 +14,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.OpsManagerJobService = OpsManagerJobService;
             this.IconService = IconService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.AngularModuleExtensionService = AngularModuleExtensionService;
             this.$filter = $filter;
             this.init = function () {
@@ -441,9 +441,9 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
                 _this.cancelLoadJobDataTimeout();
             });
             // Fetch allowed permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                _this.allowAdmin = accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
         }
         JobDetailsDirectiveController.prototype.triggerSavepointRetry = function () {

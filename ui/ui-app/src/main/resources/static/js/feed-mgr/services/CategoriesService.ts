@@ -1,6 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/module-name');
 
 // export class CategoriesService {
@@ -16,8 +17,8 @@ const moduleName = require('feed-mgr/module-name');
                         category.createFeed = false;
                         //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                         //if the user doesnt have this permission they cannot create feeds under this category
-                        if (this.AccessControlService.isEntityAccessControlled()) {
-                            if (this.AccessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
+                        if (this.accessControlService.isEntityAccessControlled()) {
+                            if (this.accessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
                                 category.createFeed = true;
                             }
                         }
@@ -79,8 +80,8 @@ const moduleName = require('feed-mgr/module-name');
                         savedCategory.createFeed = false;
                         //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                         //if the user doesnt have this permission they cannot create feeds under this category
-                        if (this.AccessControlService.isEntityAccessControlled()) {
-                            if (this.AccessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
+                        if (this.accessControlService.isEntityAccessControlled()) {
+                            if (this.accessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
                                 savedCategory.createFeed = true;
                             }
                         }
@@ -257,7 +258,7 @@ const moduleName = require('feed-mgr/module-name');
                     if (entity == undefined) {
                         entity = this.data.model;
                     }
-                    return this.AccessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.CATEGORY);
+                    return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.CATEGORY);
                 }
            // };
 
@@ -318,7 +319,7 @@ const moduleName = require('feed-mgr/module-name');
         constructor(private $q:any, 
                     private $http:any, 
                     private RestUrlService:any,
-                    private AccessControlService:any, 
+                    private accessControlService:AccessControlService, 
                     private EntityAccessControlService:any) {
 
             //EntityAccessControlService.ENTITY_ACCESS.CHANGE_CATEGORY_PERMISSIONS

@@ -34,7 +34,7 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll"],
             this.profileCheckAll = new checkAll_1.CheckAll('profile', true);
             this.indexCheckAll = new checkAll_1.CheckAll('index', false);
             DomainTypesService.findAll().then(function (domainTypes) {
-                this.availableDomainTypes = domainTypes;
+                _this.availableDomainTypes = domainTypes;
             });
             this.feedTagService = FeedTagService;
             this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
@@ -158,6 +158,7 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll"],
              * @param {FieldPolicy} policy the field policy
         */
         DefineFeedDataProcessingController.prototype.onDomainTypeChange = function (policy) {
+            var _this = this;
             // Check if removing domain type
             if (!angular.isString(policy.domainTypeId) || policy.domainTypeId === "") {
                 delete policy.$currentDomainType;
@@ -190,10 +191,10 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll"],
             }
             promise.then(function () {
                 // Set domain type
-                this.FeedService.setDomainTypeForField(policy.field, policy, domainType);
+                _this.FeedService.setDomainTypeForField(policy.field, policy, domainType);
                 // Update field properties
                 delete policy.field.$allowDomainTypeConflict;
-                policy.field.dataTypeDisplay = this.FeedService.getDataTypeDisplay(policy.field);
+                policy.field.dataTypeDisplay = _this.FeedService.getDataTypeDisplay(policy.field);
                 policy.name = policy.field.name;
             }, function () {
                 // Revert domain type

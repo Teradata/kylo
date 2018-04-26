@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/datasources/module-name');
 
     /**
@@ -37,7 +38,7 @@ export class DatasourcesListController{
      * @param StateService the page state service
      * @param TableOptionsService the table options service
      */
-    constructor (private $scope:any, private AccessControlService:any, private AddButtonService:any
+    constructor (private $scope:any, private accessControlService:AccessControlService, private AddButtonService:any
         , private DatasourcesService:any, private PaginationDataService:any, private StateService:any
         , private TableOptionsService:any) {
         var self = this;
@@ -167,9 +168,9 @@ export class DatasourcesListController{
         });
 
         // Register Add button
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
             .then(function (actionSet:any) {
-                if (AccessControlService.hasAction(AccessControlService.DATASOURCE_EDIT, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService.DATASOURCE_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton("datasources", function () {
                         StateService.FeedManager().Datasource().navigateToDatasourceDetails(null);
                     });

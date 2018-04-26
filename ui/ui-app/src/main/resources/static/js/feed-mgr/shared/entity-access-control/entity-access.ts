@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../../services/AccessControlService';
 const moduleName = require('feed-mgr/module-name');
 
 
@@ -41,7 +42,7 @@ export class EntityAccessControlController {
     onRemovedMember:any;
     queryUsersAndGroups:any;
 
-    constructor($q:any,$http:any, UserGroupService:any,EntityAccessControlService:any, AccessControlService:any){
+    constructor($q:any,$http:any, UserGroupService:any,EntityAccessControlService:any, accessControlService:AccessControlService){
 
         var self = this;
 
@@ -51,8 +52,8 @@ export class EntityAccessControlController {
          */
         this.enabled = false;
 
-        $q.when(AccessControlService.checkEntityAccessControlled()).then(function(){
-            self.enabled = AccessControlService.isEntityAccessControlled();
+        $q.when(accessControlService.checkEntityAccessControlled()).then(function(){
+            self.enabled = accessControlService.isEntityAccessControlled();
         });
 
 

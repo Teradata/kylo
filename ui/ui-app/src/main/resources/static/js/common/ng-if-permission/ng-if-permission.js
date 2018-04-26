@@ -21,7 +21,7 @@ define(["require", "exports", "angular", "../module-name", "kylo-common-module",
         } while (element !== endNode);
         return angular.element(elements);
     };
-    angular.module(module_name_1.moduleName).directive("ngIfPermission", ['$animate', '$compile', '$q', 'AccessControlService', function ($animate, $compile, $q, AccessControlService) {
+    angular.module(module_name_1.moduleName).directive("ngIfPermission", ['$animate', '$compile', '$q', 'AccessControlService', function ($animate, $compile, $q, accessControlService) {
             return {
                 scope: { entity: '=?', entityType: '=?' },
                 multiElement: true,
@@ -49,12 +49,12 @@ define(["require", "exports", "angular", "../module-name", "kylo-common-module",
                      */
                     function check(permissions, entity, entityType) {
                         if (angular.isDefined(entity) && angular.isDefined(entityType)) {
-                            validate(AccessControlService.hasEntityAccess(permissions, entity, entityType));
+                            validate(accessControlService.hasEntityAccess(permissions, entity, entityType));
                         }
                         else {
-                            AccessControlService.getUserAllowedActions(AccessControlService.ACCESS_MODULES.SERVICES, true)
+                            accessControlService.getUserAllowedActions(accessControlService.ACCESS_MODULES.SERVICES, true)
                                 .then(function (actionSet) {
-                                var valid = AccessControlService.hasAnyAction(permissions, actionSet.actions);
+                                var valid = accessControlService.hasAnyAction(permissions, actionSet.actions);
                                 validate(valid);
                             }, true);
                         }

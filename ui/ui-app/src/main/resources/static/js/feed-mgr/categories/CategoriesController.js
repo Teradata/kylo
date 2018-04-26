@@ -1,4 +1,4 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../services/AccessControlService"], function (require, exports, angular, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
@@ -13,9 +13,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param CategoriesService the categories service
          * @param StateService the page state service
          */
-        function CategoriesController($scope, AccessControlService, AddButtonService, CategoriesService, StateService) {
+        function CategoriesController($scope, accessControlService, AddButtonService, CategoriesService, StateService) {
             this.$scope = $scope;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.AddButtonService = AddButtonService;
             this.CategoriesService = CategoriesService;
             this.StateService = StateService;
@@ -48,9 +48,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
             };
             // Register Add button
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                if (AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService_1.default.CATEGORIES_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton('categories', function () {
                         StateService.FeedManager().Category().navigateToCategoryDetails(null);
                     });

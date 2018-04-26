@@ -20,7 +20,7 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll", 
         };
     };
     var Controller = /** @class */ (function () {
-        function Controller($scope, $mdDialog, $timeout, $q, $compile, $sce, AccessControlService, EntityAccessControlService, FeedService, StateService, FeedFieldPolicyRuleService, DomainTypesService, $filter) {
+        function Controller($scope, $mdDialog, $timeout, $q, $compile, $sce, accessControlService, EntityAccessControlService, FeedService, StateService, FeedFieldPolicyRuleService, DomainTypesService, $filter) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
@@ -28,7 +28,7 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll", 
             this.$q = $q;
             this.$compile = $compile;
             this.$sce = $sce;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.FeedService = FeedService;
             this.StateService = StateService;
@@ -125,7 +125,7 @@ define(["require", "exports", "angular", "underscore", "../../shared/checkAll", 
                 });
             }
             //Apply the entity access permissions
-            this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+            this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
                 _this.allowEdit = !_this.versions && access && !_this.model.view.dataPolicies.disabled;
             });
         };

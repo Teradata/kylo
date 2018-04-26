@@ -20,12 +20,12 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
         };
     };
     var FeedNIFIController = /** @class */ (function () {
-        function FeedNIFIController($scope, $http, $q, RestUrlService, AccessControlService, EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService, FeedPropertyService, $filter) {
+        function FeedNIFIController($scope, $http, $q, RestUrlService, accessControlService, EntityAccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, BroadcastService, FeedPropertyService, $filter) {
             this.$scope = $scope;
             this.$http = $http;
             this.$q = $q;
             this.RestUrlService = RestUrlService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.FeedService = FeedService;
             this.EditFeedNifiPropertiesService = EditFeedNifiPropertiesService;
@@ -89,7 +89,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 _this.updateInputProcessor(newVal);
             });
             //Apply the entity access permissions
-            this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+            this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
                 _this.allowEdit = !_this.versions && access && !_this.model.view.feedDetails.disabled;
             });
         };

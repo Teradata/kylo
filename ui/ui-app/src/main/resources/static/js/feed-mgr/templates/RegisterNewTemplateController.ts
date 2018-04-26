@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "./module-name";
+import AccessControlService from '../../services/AccessControlService';
 
 
 export class RegisterNewTemplateController {
@@ -16,7 +17,7 @@ export class RegisterNewTemplateController {
      * @param {AccessControlService} AccessControlService the access control service
      * @param StateService
      */
-    constructor(private $scope:any, private AccessControlService:any, private StateService:any, private RegisterTemplateService:any) {
+    constructor(private $scope:any, private accessControlService:AccessControlService, private StateService:any, private RegisterTemplateService:any) {
         var self = this;
 
         /**
@@ -43,9 +44,9 @@ export class RegisterNewTemplateController {
         };
 
         // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
 		        .then(function(actionSet:any) {
-		        	if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+		        	if (accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
 		        		self.registrationMethods.push({
 		        			name: "Import from NiFi", description: "Import a NiFi template directly from the current environment", icon: "near_me", 
 		        			iconColor: "#3483BA", onClick: self.createFromNifi
@@ -54,9 +55,9 @@ export class RegisterNewTemplateController {
 		        });
 
         // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
                 .then(function(actionSet:any) {
-                    if (AccessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                    if (accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                         self.registrationMethods.push({
                             name: "Import from a file", description: "Import from a Kylo archive or NiFi template file", icon: "file_upload",
                             iconColor: "#F08C38", onClick: self.importFromFile

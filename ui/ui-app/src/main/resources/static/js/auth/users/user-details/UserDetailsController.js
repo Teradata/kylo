@@ -4,12 +4,12 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
     var UserDetailsController = /** @class */ (function () {
         function UserDetailsController($scope, $mdDialog, $mdToast, 
             //private $transition$: any,
-            AccessControlService, UserService, StateService) {
+            accessControlService, UserService, StateService) {
             var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.UserService = UserService;
             this.StateService = StateService;
             this.$error = { duplicateUser: false, missingGroup: false, missingUser: false };
@@ -183,9 +183,9 @@ define(["require", "exports", "angular", "underscore", "../../module-name", "../
                 });
             });
             // Load allowed permissions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowAdmin = _this.AccessControlService.hasAction(AccessConstants_1.default.USERS_ADMIN, actionSet.actions);
+                _this.allowAdmin = _this.accessControlService.hasAction(AccessConstants_1.default.USERS_ADMIN, actionSet.actions);
             });
             // Load the user details
             if (angular.isString(this.$transition$.params().userId)) {

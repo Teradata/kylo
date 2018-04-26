@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 
@@ -23,7 +24,7 @@ export class CategoriesController {
      * @param CategoriesService the categories service
      * @param StateService the page state service
      */
-    constructor(private $scope:any, private AccessControlService:any, private AddButtonService:any
+    constructor(private $scope:any, private accessControlService:AccessControlService, private AddButtonService:any
         , private CategoriesService:any, private StateService:any) {
         var self = this;
 
@@ -63,9 +64,9 @@ export class CategoriesController {
         };
 
         // Register Add button
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
                 .then(function(actionSet:any) {
-                    if (AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
+                    if (accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
                         AddButtonService.registerAddButton('categories', function() {
                             StateService.FeedManager().Category().navigateToCategoryDetails(null);
                         });

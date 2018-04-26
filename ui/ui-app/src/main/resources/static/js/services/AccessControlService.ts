@@ -1,12 +1,12 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
-import AccessConstants from '../constants/AccessConstants';
+import  AccessConstants from '../constants/AccessConstants';
 import 'kylo-services-module';
 import * as _ from "underscore";
 import CommonRestUrlService from "./CommonRestUrlService";
 import UserGroupService from "./UserGroupService";
 
-export default class AccessControlService{
+export default class AccessControlService extends AccessConstants {
  /**
  * Interacts with the Access Control REST API.
  * @constructor
@@ -27,6 +27,7 @@ export default class AccessControlService{
          * Time allowed before the getAllowedActions refreshes from the server
          * Default to refresh the cache every 3 minutes
          */
+        super();
         this.userAllowedActionsNeedsRefresh = (module: any)=>{
             if(angular.isUndefined(this.lastUserAllowedCacheAccess[module])) {
                 return true;

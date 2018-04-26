@@ -1,13 +1,13 @@
-define(["require", "exports", "angular", "pascalprecht.translate"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../services/AccessControlService", "pascalprecht.translate"], function (require, exports, angular, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('./module-name');
     var FeedsTableController = /** @class */ (function () {
-        function FeedsTableController($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService, $filter, EntityAccessControlService) {
+        function FeedsTableController($scope, $http, accessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService, $filter, EntityAccessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.RestUrlService = RestUrlService;
             this.PaginationDataService = PaginationDataService;
             this.TableOptionsService = TableOptionsService;
@@ -35,9 +35,9 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
                 }
             };
             // Register Add button
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService_1.default.FEEDS_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton("feeds", function () {
                         FeedService.resetFeed();
                         StateService.FeedManager().Feed().navigateToDefineFeed();
@@ -61,9 +61,9 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
                 }
             });
             // Fetch the allowed actions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
+                _this.allowExport = accessControlService.hasAction(AccessControlService_1.default.FEEDS_EXPORT, actionSet.actions);
             });
         }
         FeedsTableController.prototype.onViewTypeChange = function (viewType) {
@@ -145,7 +145,7 @@ define(["require", "exports", "angular", "pascalprecht.translate"], function (re
         };
         FeedsTableController.prototype.populateFeeds = function (feeds) {
             var _this = this;
-            var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+            var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
             var simpleFeedData = [];
             angular.forEach(feeds, function (feed) {
                 if (feed.state == 'ENABLED') {

@@ -1,8 +1,8 @@
-define(["require", "exports", "angular", "./module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
+define(["require", "exports", "angular", "./module-name", "underscore", "../../services/AccessControlService"], function (require, exports, angular, module_name_1, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var ServiceLevelAgreementController = /** @class */ (function () {
-        function ServiceLevelAgreementController($scope, $mdDialog, $mdToast, $http, $rootScope, $q, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService, AddButtonService, AccessControlService, EntityAccessControlService) {
+        function ServiceLevelAgreementController($scope, $mdDialog, $mdToast, $http, $rootScope, $q, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService, AddButtonService, accessControlService, EntityAccessControlService) {
             //if the newSLA flag is tripped then show the new SLA form and then reset it
             var _this = this;
             this.$scope = $scope;
@@ -18,7 +18,7 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
             this.PaginationDataService = PaginationDataService;
             this.TableOptionsService = TableOptionsService;
             this.AddButtonService = AddButtonService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             //Pagination DAta
             this.pageName = "service-level-agreements";
@@ -466,16 +466,16 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
             };
             this.applyEditPermissionsToSLA = function (sla) {
                 var _this = this;
-                var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
-                var functionalAccess = this.AccessControlService.getUserAllowedActions();
+                var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
+                var functionalAccess = this.accessControlService.getUserAllowedActions();
                 this.$q.when(functionalAccess).then(function (response) {
                     if (entityAccessControlled) {
                         sla.editable = sla.canEdit;
                         _this.allowEdit = sla.canEdit;
                     }
                     else {
-                        var allowFeedEdit = _this.feed != null ? _this.AccessControlService.hasAction(_this.AccessControlService.FEEDS_EDIT, response.actions) : true;
-                        _this.allowEdit = allowFeedEdit && _this.AccessControlService.hasAction(_this.AccessControlService.SLA_EDIT, response.actions);
+                        var allowFeedEdit = _this.feed != null ? _this.accessControlService.hasAction(AccessControlService_1.default.FEEDS_EDIT, response.actions) : true;
+                        _this.allowEdit = allowFeedEdit && _this.accessControlService.hasAction(AccessControlService_1.default.SLA_EDIT, response.actions);
                         sla.editable = _this.allowEdit;
                     }
                 });
@@ -612,12 +612,12 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
                     //Apply the entity access permissions
                     var requests = {
                         entityEditAccess: entityAccessControlled == true ? this.FeedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
-                        functionalAccess: this.AccessControlService.getUserAllowedActions()
+                        functionalAccess: this.accessControlService.getUserAllowedActions()
                     };
                     this.$q.all(requests).then(function (response) {
-                        var allowEditAccess = _this.AccessControlService.hasAction(_this.AccessControlService.SLA_EDIT, response.functionalAccess.actions);
-                        var slaAccess = _this.AccessControlService.hasAction(_this.AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
-                        var allowFeedEdit = _this.feed != null ? _this.AccessControlService.hasAction(_this.AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
+                        var allowEditAccess = _this.accessControlService.hasAction(AccessControlService_1.default.SLA_EDIT, response.functionalAccess.actions);
+                        var slaAccess = _this.AccessControlService.hasAction(AccessControlService_1.default.SLA_ACCESS, response.functionalAccess.actions);
+                        var allowFeedEdit = _this.feed != null ? _this.accessControlService.hasAction(AccessControlService_1.default.FEEDS_EDIT, response.functionalAccess.actions) : true;
                         _this.allowEdit = response.entityEditAccess && allowEditAccess && slaAccess && allowFeedEdit;
                     });
                 }
@@ -635,9 +635,9 @@ define(["require", "exports", "angular", "./module-name", "underscore"], functio
                 }
             });
             // Register Add button
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService_1.default.SLA_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton("service-level-agreements", function () {
                         _this.onNewSla();
                     });

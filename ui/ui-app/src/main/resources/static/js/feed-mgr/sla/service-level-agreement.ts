@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import {moduleName} from './module-name';
 import * as _ from 'underscore';
+import AccessControlService from '../../services/AccessControlService';
 
 export default class ServiceLevelAgreementController implements ng.IComponentController{
     newSla: any;
@@ -35,7 +36,7 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
                 private PaginationDataService: any,
                 private TableOptionsService: any,
                 private AddButtonService: any,
-                private AccessControlService: any,
+                private accessControlService: AccessControlService,
                 private EntityAccessControlService: any){
                     //if the newSLA flag is tripped then show the new SLA form and then reset it
 
@@ -54,9 +55,9 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
                     });
 
         // Register Add button
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                if (AccessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
+                if (accessControlService.hasAction(AccessControlService.SLA_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton("service-level-agreements", () => {
                         this.onNewSla();
                     });
@@ -608,17 +609,17 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
 
     applyEditPermissionsToSLA= function(sla: any){
 
-        var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+        var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
 
-        var functionalAccess = this.AccessControlService.getUserAllowedActions()
+        var functionalAccess = this.accessControlService.getUserAllowedActions()
         this.$q.when(functionalAccess).then((response: any) =>{
             if(entityAccessControlled) {
                 sla.editable = sla.canEdit;
                 this.allowEdit = sla.canEdit;
             }
             else {
-                var allowFeedEdit = this.feed != null ? this.AccessControlService.hasAction(this.AccessControlService.FEEDS_EDIT, response.actions) : true;
-                this.allowEdit =  allowFeedEdit && this.AccessControlService.hasAction(this.AccessControlService.SLA_EDIT, response.actions);
+                var allowFeedEdit = this.feed != null ? this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.actions) : true;
+                this.allowEdit =  allowFeedEdit && this.accessControlService.hasAction(AccessControlService.SLA_EDIT, response.actions);
                 sla.editable = this.allowEdit;
             }
         });
@@ -774,12 +775,12 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
             //Apply the entity access permissions
             var requests = {
                 entityEditAccess: entityAccessControlled == true ? this.FeedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,
-                functionalAccess: this.AccessControlService.getUserAllowedActions()
+                functionalAccess: this.accessControlService.getUserAllowedActions()
             }
             this.$q.all(requests).then( (response: any)=> {
-                var allowEditAccess = this.AccessControlService.hasAction(this.AccessControlService.SLA_EDIT, response.functionalAccess.actions);
-                var slaAccess = this.AccessControlService.hasAction(this.AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
-                var allowFeedEdit = this.feed != null ? this.AccessControlService.hasAction(this.AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
+                var allowEditAccess = this.accessControlService.hasAction(AccessControlService.SLA_EDIT, response.functionalAccess.actions);
+                var slaAccess = this.AccessControlService.hasAction(AccessControlService.SLA_ACCESS, response.functionalAccess.actions);
+                var allowFeedEdit = this.feed != null ? this.accessControlService.hasAction(AccessControlService.FEEDS_EDIT, response.functionalAccess.actions) : true;
                 this.allowEdit = response.entityEditAccess && allowEditAccess && slaAccess && allowFeedEdit;
             });
 

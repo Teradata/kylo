@@ -5,6 +5,7 @@ import * as _ from 'underscore';
 import OpsManagerJobService from "../../services/OpsManagerJobService";
 import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
+import AccessControlService from "../../../services/AccessControlService";
 
 export class JobDetailsDirectiveController implements ng.IComponentController{
         allowAdmin: boolean;
@@ -55,7 +56,7 @@ constructor(private $scope: any,
             private OpsManagerRestUrlService: any,
             private OpsManagerJobService: any,
             private IconService: any,
-            private AccessControlService: any,
+            private accessControlService: AccessControlService,
             private AngularModuleExtensionService: any,
             private $filter: any){
                      /**
@@ -129,9 +130,9 @@ constructor(private $scope: any,
         })
 
         // Fetch allowed permissions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
-                    this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                    this.allowAdmin = accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
         });
     }
 

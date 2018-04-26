@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../../module-name", "../../../../services/AccessControlService"], function (require, exports, angular, _, module_name_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var directive = function () {
@@ -25,7 +25,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
         };
     };
     var RegisterSelectTemplateController = /** @class */ (function () {
-        function RegisterSelectTemplateController($scope, $http, $mdDialog, $mdToast, $timeout, $q, $state, RestUrlService, RegisterTemplateService, StateService, AccessControlService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, BroadcastService) {
+        function RegisterSelectTemplateController($scope, $http, $mdDialog, $mdToast, $timeout, $q, $state, RestUrlService, RegisterTemplateService, StateService, accessControlService, EntityAccessControlService, UiComponentsService, AngularModuleExtensionService, BroadcastService) {
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
@@ -36,7 +36,7 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
             this.RestUrlService = RestUrlService;
             this.RegisterTemplateService = RegisterTemplateService;
             this.StateService = StateService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.UiComponentsService = UiComponentsService;
             this.AngularModuleExtensionService = AngularModuleExtensionService;
@@ -301,11 +301,11 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
                 }
             });
             this.getTemplates();
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                self.allowAdmin = AccessControlService.hasAction(AccessControlService.TEMPLATES_ADMIN, actionSet.actions);
-                self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                self.allowEdit = accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_EDIT, actionSet.actions);
+                self.allowAdmin = accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_ADMIN, actionSet.actions);
+                self.allowExport = accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_EXPORT, actionSet.actions);
             });
         }
         ;

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "../../../services/AccessControlService"], function (require, exports, angular, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
@@ -26,11 +26,11 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param {AccessControlService} AccessControlService the access control service
          * @param CategoriesService the category service
          */
-        function CategoryFeedPropertiesController($scope, $mdToast, $q, AccessControlService, EntityAccessControlService, CategoriesService, $mdDialog) {
+        function CategoryFeedPropertiesController($scope, $mdToast, $q, accessControlService, EntityAccessControlService, CategoriesService, $mdDialog) {
             this.$scope = $scope;
             this.$mdToast = $mdToast;
             this.$q = $q;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.CategoriesService = CategoriesService;
             this.$mdDialog = $mdDialog;
@@ -99,7 +99,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                 });
             };
             //Apply the entity access permissions
-            $q.when(AccessControlService.hasPermission(AccessControlService.CATEGORIES_ADMIN, self.model, AccessControlService.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access) {
+            $q.when(accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_ADMIN, self.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.EDIT_CATEGORY_DETAILS)).then(function (access) {
                 self.allowEdit = access;
             });
             /*

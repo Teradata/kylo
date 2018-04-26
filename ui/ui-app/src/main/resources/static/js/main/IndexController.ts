@@ -37,7 +37,7 @@ export class controller implements ng.IComponentController{
         private StateService:StateService,  
         private SearchService: SearchService,
         private SideNavService: SideNavService,
-        private AccessControlService:AccessControlService)
+        private accessControlService:AccessControlService)
         { 
         // this.LOADING_DIALOG_WAIT_TIME= 100;
          /**
@@ -61,7 +61,7 @@ export class controller implements ng.IComponentController{
             $rootScope.currentState = transition.to().name;
 
             //hide the loading dialog
-            if (!AccessControlService.isFutureState(this.currentState.name)) {
+            if (!accessControlService.isFutureState(this.currentState.name)) {
                 if (this.loadingTimeout != null) {
                     $timeout.cancel(this.loadingTimeout);
                     this.loadingTimeout = null;
@@ -73,9 +73,9 @@ export class controller implements ng.IComponentController{
             }
         });
          // Fetch the allowed actions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
-                    this.allowSearch = AccessControlService
+                    this.allowSearch = accessControlService
                                             .hasAction(AccessConstants.GLOBAL_SEARCH_ACCESS, 
                                                         actionSet.actions);
                 });

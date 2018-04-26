@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('./module-name');
 export default class FeedsTableController implements ng.IComponentController {
 
@@ -25,7 +26,7 @@ export default class FeedsTableController implements ng.IComponentController {
     constructor(
         private $scope: angular.IScope,
         private $http: any,
-        private AccessControlService: any,
+        private accessControlService: AccessControlService,
         private RestUrlService:any,
         private PaginationDataService: any,
         private TableOptionsService: any,
@@ -37,9 +38,9 @@ export default class FeedsTableController implements ng.IComponentController {
     ){
 
         // Register Add button
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
         .then((actionSet:any) => {
-            if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+            if (accessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
                 AddButtonService.registerAddButton("feeds", () => {
                     FeedService.resetFeed();
                     StateService.FeedManager().Feed().navigateToDefineFeed()
@@ -67,9 +68,9 @@ export default class FeedsTableController implements ng.IComponentController {
 
 
         // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
         .then((actionSet:any) => {
-            this.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
+            this.allowExport = accessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
         });
 
     }
@@ -169,7 +170,7 @@ export default class FeedsTableController implements ng.IComponentController {
     }
 
     populateFeeds(feeds:any) {
-        var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+        var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
         var simpleFeedData:any = [];
         
         angular.forEach(feeds, (feed)=> {

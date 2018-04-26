@@ -5,7 +5,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     // export class CategoriesService {
     var CategoriesService = /** @class */ (function () {
         //return this.data;
-        function CategoriesService($q, $http, RestUrlService, AccessControlService, EntityAccessControlService) {
+        function CategoriesService($q, $http, RestUrlService, accessControlService, EntityAccessControlService) {
             //EntityAccessControlService.ENTITY_ACCESS.CHANGE_CATEGORY_PERMISSIONS
             /**
              * Utility functions for managing categories.
@@ -27,7 +27,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.$q = $q;
             this.$http = $http;
             this.RestUrlService = RestUrlService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.loadAll = function () {
                 var _this = this;
@@ -41,8 +41,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                             category.createFeed = false;
                             //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                             //if the user doesnt have this permission they cannot create feeds under this category
-                            if (_this.AccessControlService.isEntityAccessControlled()) {
-                                if (_this.AccessControlService.hasEntityAccess(_this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
+                            if (_this.accessControlService.isEntityAccessControlled()) {
+                                if (_this.accessControlService.hasEntityAccess(_this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
                                     category.createFeed = true;
                                 }
                             }
@@ -104,8 +104,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     savedCategory.createFeed = false;
                     //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                     //if the user doesnt have this permission they cannot create feeds under this category
-                    if (this.AccessControlService.isEntityAccessControlled()) {
-                        if (this.AccessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
+                    if (this.accessControlService.isEntityAccessControlled()) {
+                        if (this.accessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
                             savedCategory.createFeed = true;
                         }
                     }
@@ -280,7 +280,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (entity == undefined) {
                     entity = this.data.model;
                 }
-                return this.AccessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.CATEGORY);
+                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.CATEGORY);
             };
             // };
             /**

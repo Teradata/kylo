@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+define(["require", "exports", "angular", "underscore", "../../services/AccessControlService"], function (require, exports, angular, _, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/datasources/module-name');
@@ -22,13 +22,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
          * @param {EntityAccessControlService} EntityAccessControlService the entity access control service
          * @param {StateService} StateService the page state service
          */
-        function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $q, $transition$, AccessControlService, DatasourcesService, EntityAccessControlService, StateService) {
+        function DatasourcesDetailsController($scope, $mdDialog, $mdToast, $q, $transition$, accessControlService, DatasourcesService, EntityAccessControlService, StateService) {
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
             this.$q = $q;
             this.$transition$ = $transition$;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.DatasourcesService = DatasourcesService;
             this.EntityAccessControlService = EntityAccessControlService;
             this.StateService = StateService;
@@ -278,15 +278,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                             self.model.references = references;
                         });
                     }
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
+                    $q.when(accessControlService.hasPermission(AccessControlService_1.default.DATASOURCE_EDIT, self.model, AccessControlService_1.default.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
                         .then(function (access) {
                         self.allowEdit = access;
                     });
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.DELETE_DATASOURCE))
+                    $q.when(accessControlService.hasPermission(AccessControlService_1.default.DATASOURCE_EDIT, self.model, AccessControlService_1.default.ENTITY_ACCESS.DATASOURCE.DELETE_DATASOURCE))
                         .then(function (access) {
                         self.allowDelete = access;
                     });
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS))
+                    $q.when(accessControlService.hasPermission(AccessControlService_1.default.DATASOURCE_EDIT, self.model, AccessControlService_1.default.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS))
                         .then(function (access) {
                         self.allowChangePermissions = access;
                     });

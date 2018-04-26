@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {Transition} from "@uirouter/core";
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 
@@ -11,7 +12,7 @@ export default class DefineFeedCompleteController {
 
     static readonly $inject = ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService"];
 
-    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: any, private $transition$: any, private RestUrlService: any, private FeedService: any, private StateService: any) {
+    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $transition$: Transition, private RestUrlService: any, private FeedService: any, private StateService: any) {
 
         this.model = $transition$.params().feedModel;
         this.error = $transition$.params().error;
@@ -19,7 +20,7 @@ export default class DefineFeedCompleteController {
         this.isValid = this.error == null;
              
     };
-
+ 
     /**
          * Gets the feed id from the FeedService
          * @returns {*}

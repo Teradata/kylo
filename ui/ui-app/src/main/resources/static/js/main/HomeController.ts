@@ -7,11 +7,11 @@ export class HomeController implements ng.IComponentController{
     constructor(
         private $scope:angular.IScope,
         private $mdDialog:angular.material.IDialogService,
-        private AccessControlService:AccessControlService,
+        private accessControlService:AccessControlService,
         private StateService:StateService
         ){
         // Fetch the list of allowed actions
-       AccessControlService.getUserAllowedActions()
+       accessControlService.getUserAllowedActions()
                                 .then((actionSet: any)=>{
                                     this.onLoad(actionSet.actions);
                                 });
@@ -29,22 +29,22 @@ export class HomeController implements ng.IComponentController{
          */
         onLoad(actions: any) {
             // Determine the home page
-            if (this.AccessControlService.hasAction(AccessConstants.FEEDS_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.FEEDS_ACCESS, actions)) {
                 return this.StateService.FeedManager().Feed().navigateToFeeds();
             }
-            if (this.AccessControlService.hasAction(AccessConstants.OPERATIONS_MANAGER_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.OPERATIONS_MANAGER_ACCESS, actions)) {
                 return this.StateService.OpsManager().dashboard();
             }
-            if (this.AccessControlService.hasAction(AccessConstants.CATEGORIES_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.CATEGORIES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Category().navigateToCategories();
             }
-            if (this.AccessControlService.hasAction(AccessConstants.TEMPLATES_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.TEMPLATES_ACCESS, actions)) {
                 return this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
             }
-            if (this.AccessControlService.hasAction(AccessConstants.USERS_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.USERS_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToUsers();
             }
-            if (this.AccessControlService.hasAction(AccessConstants.GROUP_ACCESS, actions)) {
+            if (this.accessControlService.hasAction(AccessConstants.GROUP_ACCESS, actions)) {
                 return this.StateService.Auth().navigateToGroups();
             }
 

@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import 'pascalprecht.translate';
 import * as _ from "underscore";
+import AccessControlService from '../../../../services/AccessControlService';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -65,7 +66,7 @@ export class FeedNIFIController implements ng.IComponentController {
 
     static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
 
-    constructor(private $scope: any, private $http: angular.IHttpService, private $q: angular.IQService, private RestUrlService: any, private AccessControlService: any
+    constructor(private $scope: any, private $http: angular.IHttpService, private $q: angular.IQService, private RestUrlService: any, private accessControlService: AccessControlService
         , private EntityAccessControlService: any, private FeedService: any, private EditFeedNifiPropertiesService: any
         , private FeedInputProcessorOptionsFactory: any, private FeedDetailsProcessorRenderingHelper: any,
                 private BroadcastService: any, private FeedPropertyService: any, private $filter: angular.IFilterService) {
@@ -112,7 +113,7 @@ export class FeedNIFIController implements ng.IComponentController {
         });
 
         //Apply the entity access permissions
-         this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT,this.model,this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
+         this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT,this.model,this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
             this.allowEdit = !this.versions && access && !this.model.view.feedDetails.disabled
         });
     }

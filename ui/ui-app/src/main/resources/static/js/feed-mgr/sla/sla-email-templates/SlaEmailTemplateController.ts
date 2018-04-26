@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import {moduleName} from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
+import AccessControlService from '../../../services/AccessControlService';
 
 export class controller implements ng.IComponentController{
    templateId: any;
@@ -29,7 +30,7 @@ export class controller implements ng.IComponentController{
                 private $http: any,
                 private SlaEmailTemplateService: any,
                 private StateService: any,
-                private AccessControlService: any){
+                private accessControlService: AccessControlService){
         this.templateId = this.$transition$.params().emailTemplateId;
         if(angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))){
             this.queriedTemplate = null;
@@ -58,9 +59,9 @@ export class controller implements ng.IComponentController{
         this.getRelatedSlas();
 
         // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
+        accessControlService.getUserAllowedActions()
             .then((actionSet: any) =>{
-                this.allowEdit = AccessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
+                this.allowEdit = accessControlService.hasAction(AccessControlService.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE, actionSet.actions);
             });
     }
 

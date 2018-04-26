@@ -721,22 +721,22 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                 }
             });
         };
-        Route.prototype.runFn = function ($rootScope, $state, $location, $transitions, $timeout, $q, $uiRouter, AccessControlService, AngularModuleExtensionService) {
+        Route.prototype.runFn = function ($rootScope, $state, $location, $transitions, $timeout, $q, $uiRouter, accessControlService, AngularModuleExtensionService) {
             //initialize the access control
-            AccessControlService.init();
+            accessControlService.init();
             $rootScope.$state = $state;
             $rootScope.$location = $location;
             $rootScope.typeOf = function (value) {
                 return typeof value;
             };
             var onStartOfTransition = function (trans) {
-                if (!AccessControlService.isFutureState(trans.to().name)) {
+                if (!accessControlService.isFutureState(trans.to().name)) {
                     //if we havent initialized the user yet, init and defer the transition
-                    if (!AccessControlService.initialized) {
+                    if (!accessControlService.initialized) {
                         var defer = $q.defer();
-                        $q.when(AccessControlService.init(), function () {
+                        $q.when(accessControlService.init(), function () {
                             //if not allowed, go to access-denied
-                            if (!AccessControlService.hasAccess(trans)) {
+                            if (!accessControlService.hasAccess(trans)) {
                                 if (trans.to().name != 'access-denied') {
                                     defer.resolve($state.target("access-denied", { attemptedState: trans.to() }));
                                 }
@@ -748,7 +748,7 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                         return defer.promise;
                     }
                     else {
-                        if (!AccessControlService.hasAccess(trans)) {
+                        if (!accessControlService.hasAccess(trans)) {
                             if (trans.to().name != 'access-denied') {
                                 return $state.target("access-denied", { attemptedState: trans.to() });
                             }

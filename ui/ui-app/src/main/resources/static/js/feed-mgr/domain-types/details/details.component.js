@@ -7,18 +7,18 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "../module-name"], function (require, exports, core_1, angular, module_name_1) {
+define(["require", "exports", "@angular/core", "angular", "../module-name", "../../../services/AccessControlService"], function (require, exports, core_1, angular, module_name_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
      * Adds or updates domain types.
      */
     var DomainTypeDetailsComponent = /** @class */ (function () {
-        function DomainTypeDetailsComponent($mdDialog, $mdToast, AccessControlService, DomainTypeDetailService, DomainTypesService, StateService) {
+        function DomainTypeDetailsComponent($mdDialog, $mdToast, accessControlService, DomainTypeDetailService, DomainTypesService, StateService) {
             var _this = this;
             this.$mdDialog = $mdDialog;
             this.$mdToast = $mdToast;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.DomainTypeDetailService = DomainTypeDetailService;
             this.DomainTypesService = DomainTypesService;
             this.StateService = StateService;
@@ -54,9 +54,9 @@ define(["require", "exports", "@angular/core", "angular", "../module-name"], fun
         DomainTypeDetailsComponent.prototype.ngOnInit = function () {
             var _this = this;
             // Check for edit access
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowEdit = _this.AccessControlService.hasAction(_this.AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                _this.allowEdit = _this.accessControlService.hasAction(AccessControlService_1.default.FEEDS_ADMIN, actionSet.actions);
             });
         };
         /**

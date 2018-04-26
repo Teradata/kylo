@@ -20,7 +20,7 @@ export default class UserDetailsController implements ng.IComponentController {
         private $mdDialog:angular.material.IDialogService,
         private $mdToast:angular.material.IToastService,
         //private $transition$: any,
-        private AccessControlService:AccessControlService,
+        private accessControlService:AccessControlService,
         private UserService:UserService,
         private StateService:StateService,
     ){
@@ -220,9 +220,9 @@ export default class UserDetailsController implements ng.IComponentController {
                     });
 
             // Load allowed permissions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                     .then((actionSet:any) => {
-                        this.allowAdmin = this.AccessControlService.hasAction(AccessConstants.USERS_ADMIN, actionSet.actions);
+                        this.allowAdmin = this.accessControlService.hasAction(AccessConstants.USERS_ADMIN, actionSet.actions);
                     });
 
             // Load the user details

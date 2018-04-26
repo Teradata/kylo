@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "./module-name", "../../services/AccessControlService"], function (require, exports, angular, module_name_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var BusinessMetadataController = /** @class */ (function () {
@@ -11,11 +11,11 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
          * @param {AccessControlService} AccessControlService the access control service
          * @param RestUrlService the Rest URL service
          */
-        function BusinessMetadataController($scope, $http, AccessControlService, RestUrlService) {
+        function BusinessMetadataController($scope, $http, accessControlService, RestUrlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.RestUrlService = RestUrlService;
             /**
                 * Creates a copy of the category model for editing.
@@ -110,10 +110,10 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
                 _this.loading = false;
             });
             // Load the permissions
-            AccessControlService.getUserAllowedActions()
+            accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowCategoryEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
-                _this.allowFeedEdit = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                _this.allowCategoryEdit = accessControlService.hasAction(AccessControlService_1.default.CATEGORIES_ADMIN, actionSet.actions);
+                _this.allowFeedEdit = accessControlService.hasAction(AccessControlService_1.default.FEEDS_ADMIN, actionSet.actions);
             });
         }
         return BusinessMetadataController;

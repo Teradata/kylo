@@ -1,16 +1,16 @@
-define(["require", "exports", "angular", "underscore", "./module-name"], function (require, exports, angular, _, module_name_1) {
+define(["require", "exports", "angular", "underscore", "./module-name", "../../services/AccessControlService"], function (require, exports, angular, _, module_name_1, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var CatalogController = /** @class */ (function () {
         /**
          * Displays a list of datasources.
          */
-        function CatalogController($scope, $q, DatasourcesService, StateService, AccessControlService) {
+        function CatalogController($scope, $q, DatasourcesService, StateService, accessControlService) {
             this.$scope = $scope;
             this.$q = $q;
             this.DatasourcesService = DatasourcesService;
             this.StateService = StateService;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             var self = this;
             this.datasources = [DatasourcesService.getHiveDatasource()];
             self.loading = true;
@@ -32,7 +32,7 @@ define(["require", "exports", "angular", "underscore", "./module-name"], functio
                 promise.then(successFn, errorFn);
                 return promise;
             }
-            $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_ACCESS))
+            $q.when(accessControlService.hasPermission(AccessControlService_1.default.DATASOURCE_ACCESS))
                 .then(function (access) {
                 if (access) {
                     getDataSources();

@@ -5,6 +5,7 @@ import {FeedServiceTypes} from "../../../services/FeedServiceTypes";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
 import {CheckAll} from "../../shared/checkAll";
+import AccessControlService from '../../../../services/AccessControlService';
 
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 
@@ -121,7 +122,7 @@ export class Controller implements ng.IComponentController {
     static $inject = ["$scope", "$mdDialog", "$timeout", "$q", "$compile", "$sce", "AccessControlService", "EntityAccessControlService", "FeedService", "StateService",
         "FeedFieldPolicyRuleService", "DomainTypesService", "$filter"];
 
-    constructor(private $scope: any, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $compile: angular.ICompileService, private $sce: angular.ISCEService, private AccessControlService: any, private EntityAccessControlService: any, private FeedService: any, private StateService: any, private FeedFieldPolicyRuleService: any,
+    constructor(private $scope: any, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService, private $q: angular.IQService, private $compile: angular.ICompileService, private $sce: angular.ISCEService, private accessControlService: AccessControlService, private EntityAccessControlService: any, private FeedService: any, private StateService: any, private FeedFieldPolicyRuleService: any,
                 DomainTypesService: DomainTypesService, private $filter: angular.IFilterService) {
 
         this.versions = $scope.versions;
@@ -181,7 +182,7 @@ export class Controller implements ng.IComponentController {
         }
 
         //Apply the entity access permissions
-        this.$q.when(this.AccessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any)=> {
+        this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT, this.model, this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any)=> {
             this.allowEdit = !this.versions && access && !this.model.view.dataPolicies.disabled
         });
 

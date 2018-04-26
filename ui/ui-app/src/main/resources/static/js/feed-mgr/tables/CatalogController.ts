@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "./module-name";
+import AccessControlService from '../../services/AccessControlService';
 
 export class CatalogController {
 
@@ -11,7 +12,7 @@ export class CatalogController {
     /**
      * Displays a list of datasources.
      */
-    constructor(private $scope:any, private $q:any, private DatasourcesService:any, private StateService:any, private AccessControlService:any) {
+    constructor(private $scope:any, private $q:any, private DatasourcesService:any, private StateService:any, private accessControlService:any) {
         var self = this;
         this.datasources = [DatasourcesService.getHiveDatasource()];
 
@@ -38,7 +39,7 @@ export class CatalogController {
             return promise;
         }
 
-        $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_ACCESS))
+        $q.when(accessControlService.hasPermission(AccessControlService.DATASOURCE_ACCESS))
             .then(function (access:any) {
                 if (access) {
                     getDataSources();

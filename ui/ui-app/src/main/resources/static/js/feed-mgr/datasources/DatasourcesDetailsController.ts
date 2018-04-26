@@ -1,6 +1,7 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
+import AccessControlService from '../../services/AccessControlService';
 const moduleName = require('feed-mgr/datasources/module-name');
 
 
@@ -52,7 +53,7 @@ export class DatasourcesDetailsController {
      * @param {StateService} StateService the page state service
      */
     constructor(private $scope:any, private $mdDialog:any, private $mdToast:any, private $q:any, private $transition$:any
-        , private AccessControlService:any, private DatasourcesService:any, private EntityAccessControlService:any
+        , private accessControlService:AccessControlService, private DatasourcesService:any, private EntityAccessControlService:any
         , private StateService:any) {
         var self = this;
 
@@ -337,15 +338,15 @@ export class DatasourcesDetailsController {
                         });
                     }
 
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
+                    $q.when(accessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.EDIT_DETAILS))
                         .then(function (access:any) {
                             self.allowEdit = access;
                         });
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.DELETE_DATASOURCE))
+                    $q.when(accessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.DELETE_DATASOURCE))
                         .then(function (access:any) {
                             self.allowDelete = access;
                         });
-                    $q.when(AccessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS))
+                    $q.when(accessControlService.hasPermission(AccessControlService.DATASOURCE_EDIT, self.model, AccessControlService.ENTITY_ACCESS.DATASOURCE.CHANGE_DATASOURCE_PERMISSIONS))
                         .then(function (access:any) {
                             self.allowChangePermissions = access;
                         });
