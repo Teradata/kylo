@@ -158,7 +158,7 @@ export class controller implements ng.IComponentController {
      * Pause the entire scheduler
      */
     pauseScheduler() {
-        this.$http.post(this.API_URL_BASE + "/pause").then((response: any) =>{
+        this.$http.post(this.API_URL_BASE + "/pause",null).then((response: any) =>{
             this.fetchSchedulerDetails();
         }, (reason: any) => {
             console.log("failed to standby the scheduler  ",reason)
@@ -169,7 +169,7 @@ export class controller implements ng.IComponentController {
      * Resume the entire scheduler
      */
     resumeScheduler() {
-        this.$http.post(this.API_URL_BASE + "/resume").then((response: any) =>{
+        this.$http.post(this.API_URL_BASE + "/resume",null).then((response: any) =>{
             this.fetchSchedulerDetails();
         }, (reason: any) =>{
             console.log("failed to shutdown the scheduler  ",reason)

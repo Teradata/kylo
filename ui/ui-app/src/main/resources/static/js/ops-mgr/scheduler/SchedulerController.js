@@ -68,6 +68,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
              * @type {boolean}
              */
             this.allowAdmin = false;
+            $scope.$on("$destroy", this.ngOnDestroy.bind(this));
         }
         controller.prototype.$onInit = function () {
             this.ngOnInit();
@@ -135,7 +136,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
          */
         controller.prototype.pauseScheduler = function () {
             var _this = this;
-            this.$http.post(this.API_URL_BASE + "/pause").then(function (response) {
+            this.$http.post(this.API_URL_BASE + "/pause", null).then(function (response) {
                 _this.fetchSchedulerDetails();
             }, function (reason) {
                 console.log("failed to standby the scheduler  ", reason);
@@ -146,7 +147,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
          */
         controller.prototype.resumeScheduler = function () {
             var _this = this;
-            this.$http.post(this.API_URL_BASE + "/resume").then(function (response) {
+            this.$http.post(this.API_URL_BASE + "/resume", null).then(function (response) {
                 _this.fetchSchedulerDetails();
             }, function (reason) {
                 console.log("failed to shutdown the scheduler  ", reason);
