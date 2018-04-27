@@ -8,12 +8,11 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "angular", "./module-name", "../constants/AccessConstants", "underscore", "./CommonRestUrlService", "./UserGroupService", "kylo-services-module"], function (require, exports, angular, module_name_1, AccessConstants_1, _, CommonRestUrlService_1, UserGroupService_1) {
+define(["require", "exports", "angular", "./module-name", "../constants/AccessConstants", "underscore", "kylo-services-module"], function (require, exports, angular, module_name_1, AccessConstants_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var AccessControlService = /** @class */ (function (_super) {
         __extends(AccessControlService, _super);
-        //AccessControlService(){}
         function AccessControlService($http, $q, $timeout, CommonRestUrlService, UserGroupService) {
             var _this = 
             /**
@@ -413,16 +412,11 @@ define(["require", "exports", "angular", "./module-name", "../constants/AccessCo
              */
             //return new AccessControlService(); // constructor returning two things;
         }
+        //AccessControlService(){}
+        AccessControlService.$inject = ["$http", "$q", "$timeout", "CommonRestUrlService", "UserGroupService"];
         return AccessControlService;
     }(AccessConstants_1.default));
     exports.default = AccessControlService;
-    angular.module(module_name_1.moduleName)
-        .service('CommonRestUrlService', CommonRestUrlService_1.default)
-        .service("UserGroupService", ['$http', '$q', 'CommonRestUrlService', UserGroupService_1.default])
-        .factory("AccessControlService", ["$http", "$q", "$timeout", "CommonRestUrlService", "UserGroupService",
-        function ($http, $q, $timeout, CommonRestUrlService, UserGroupService) {
-            return new AccessControlService($http, $q, $timeout, CommonRestUrlService, UserGroupService);
-        }
-    ]);
+    angular.module(module_name_1.moduleName).service("AccessControlService", AccessControlService);
 });
 //# sourceMappingURL=AccessControlService.js.map

@@ -18,11 +18,14 @@ export default class AccessControlService extends AccessConstants {
  lastUserAllowedCacheAccess: any = {};
  userAllowedActionsNeedsRefresh: any;
 //AccessControlService(){}
- constructor(private $http: any,
-            private $q: any,
-            private $timeout: any,
-            private CommonRestUrlService: any,
-            private UserGroupService: any){        
+
+
+static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserGroupService"];
+ constructor(private $http: angular.IHttpService,
+            private $q: angular.IQService,
+            private $timeout: angular.ITimeoutService,
+            private CommonRestUrlService: CommonRestUrlService,
+            private UserGroupService: UserGroupService){        
         /**
          * Time allowed before the getAllowedActions refreshes from the server
          * Default to refresh the cache every 3 minutes
@@ -427,15 +430,4 @@ export default class AccessControlService extends AccessConstants {
 
         //});
 }
-angular.module(moduleName)
-.service('CommonRestUrlService',CommonRestUrlService)
-.service("UserGroupService", ['$http','$q', 'CommonRestUrlService', UserGroupService])
-.factory("AccessControlService",["$http", "$q","$timeout", "CommonRestUrlService", "UserGroupService", 
-function($http: any,
-         $q: any,
-         $timeout: any,
-         CommonRestUrlService: any,
-         UserGroupService: any){
-    return new AccessControlService($http, $q,$timeout, CommonRestUrlService, UserGroupService);
-}
-]);
+angular.module(moduleName).service("AccessControlService",AccessControlService );

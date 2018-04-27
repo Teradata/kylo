@@ -8,21 +8,15 @@
  * @property {Array.<string>} groups system names of groups the user belongs to
  * @property {string} systemName username for this user
  */
-define(["require", "exports", "angular", "./module-name", "./CommonRestUrlService"], function (require, exports, angular, module_name_1, CommonRestUrlService_1) {
+define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UserGroupService = /** @class */ (function () {
-        /**
-         * Interacts with the Users REST API.
-         * @constructor
-         */
         function UserGroupService($http, $q, CommonRestUrlService) {
             this.$http = $http;
             this.$q = $q;
             this.CommonRestUrlService = CommonRestUrlService;
             this.currentUser = null;
-            //angular.extend(UserGroupService.prototype, 
-            // });
         }
         UserGroupService.prototype.getCurrentUser = function () {
             var _this = this;
@@ -105,11 +99,14 @@ define(["require", "exports", "angular", "./module-name", "./CommonRestUrlServic
                 return response.data;
             });
         };
+        /**
+         * Interacts with the Users REST API.
+         * @constructor
+         */
+        UserGroupService.$inject = ["$http", "$q", "CommonRestUrlService"];
         return UserGroupService;
     }());
     exports.default = UserGroupService;
-    angular.module(module_name_1.moduleName)
-        .service('CommonRestUrlService', CommonRestUrlService_1.default)
-        .factory("UserGroupService", ['$http', '$q', 'CommonRestUrlService', UserGroupService]);
+    angular.module(module_name_1.moduleName).service("UserGroupService", UserGroupService);
 });
 //# sourceMappingURL=UserGroupService.js.map

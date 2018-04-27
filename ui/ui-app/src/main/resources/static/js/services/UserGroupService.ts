@@ -28,12 +28,10 @@ export default class UserGroupService{
  * Interacts with the Users REST API.
  * @constructor
  */
-
+static readonly $inject = ["$http","$q","CommonRestUrlService"];
 constructor (private $http: any,
             private $q: any,
             private CommonRestUrlService: any) {
-        //angular.extend(UserGroupService.prototype, 
-       // });
 }
            getCurrentUser(){
                 var deferred: any = this.$q.defer();
@@ -122,7 +120,5 @@ constructor (private $http: any,
                     });
             }
 }
- angular.module(moduleName)
- .service('CommonRestUrlService',CommonRestUrlService)
- .factory("UserGroupService", ['$http','$q', 'CommonRestUrlService', UserGroupService]);
+angular.module(moduleName).service("UserGroupService",UserGroupService)
  
