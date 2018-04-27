@@ -124,6 +124,16 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // console.log("onDataTransformSchemaLoaded");
                 self.syncFeedsColumns();
                 validate(undefined);
+                if (angular.isDefined(self.model.schemaChanged) && self.model.schemaChanged == true) {
+                    self.isValid = false;
+                    $mdDialog.show($mdDialog.alert()
+                        .parent(angular.element(document.body))
+                        .clickOutsideToClose(true)
+                        .title('Table Schema Changed')
+                        .htmlContent('The table schema no longer matches the schema previously defined. <br/><br/> This is invalid.  If you wish to modify the underlying schema <br/> (i.e. change some column names and/or types) please clone<br/> the feed as a new feed instead.')
+                        .ariaLabel('Table Schema Changed ')
+                        .ok('Got it!'));
+                }
                 self.calcTableState();
                 self.expandSchemaPanel();
             }
