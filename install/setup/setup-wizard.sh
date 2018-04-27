@@ -167,9 +167,9 @@ while [[ ! $install_nifi =~ $yes_no ]]; do
     read -p "Would you like me to install a local nifi instance? Please enter y/n: " install_nifi
 
     if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
-        read -p "Enter Nifi version you wish to install, hit Enter for '1.4.0': " nifi_version
+        read -p "Enter Nifi version you wish to install, hit Enter for '1.6.0': " nifi_version
         if [[ -z "$nifi_version" ]]; then
-            nifi_version=1.4.0
+            nifi_version=1.6.0
         fi
 
         read -p "Enter the NiFi home folder location, hit Enter for '/opt/nifi': " nifi_home
