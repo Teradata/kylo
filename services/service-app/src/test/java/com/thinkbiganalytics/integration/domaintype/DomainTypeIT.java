@@ -20,14 +20,24 @@ package com.thinkbiganalytics.integration.domaintype;
  * #L%
  */
 
+import com.thinkbiganalytics.discovery.model.DefaultField;
+import com.thinkbiganalytics.discovery.model.DefaultTag;
+import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.Tag;
 import com.thinkbiganalytics.feedmgr.rest.model.DomainType;
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.util.Arrays;
+
 import static java.net.HttpURLConnection.HTTP_NOT_FOUND;
+import static org.junit.Assert.assertEquals;
 
 /**
  * Creates and updates a data source
@@ -36,6 +46,22 @@ public class DomainTypeIT extends IntegrationTestBase {
 
     @Test
     public void testCreateAndUpdateDatasource() {
+        FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
+        FieldValidationRule email = new FieldValidationRule();
+
+        toUpperCase.setName("Uppercase");
+        toUpperCase.setDisplayName("Uppercase");
+        toUpperCase.setDescription("Convert string to uppercase");
+        toUpperCase.setObjectClassType("com.thinkbiganalytics.policy.standardization.UppercaseStandardizer");
+        toUpperCase.setObjectShortClassType("UppercaseStandardizer");
+
+        email.setName("email");
+        email.setDisplayName("Email");
+        email.setDescription("Valid email address");
+        email.setObjectClassType("com.thinkbiganalytics.policy.validation.EmailValidator");
+        email.setObjectShortClassType("EmailValidator");
+
+
         DomainType[] initialDomainTypes = getDomainTypes();
 
 
@@ -45,15 +71,15 @@ public class DomainTypeIT extends IntegrationTestBase {
         dt.setDescription("domain type created by integration tests");
 
         DomainType response = createDomainType(dt);
-        Assert.assertEquals(dt.getTitle(), response.getTitle());
-        Assert.assertEquals(dt.getDescription(), response.getDescription());
-        Assert.assertEquals(null, response.getIcon());
-        Assert.assertEquals(null, response.getIconColor());
+        assertEquals(dt.getTitle(), response.getTitle());
+        assertEquals(dt.getDescription(), response.getDescription());
+        assertEquals(null, response.getIcon());
+        assertEquals(null, response.getIconColor());
 
 
         //assert new domain type was added
         DomainType[] currentDomainTypes = getDomainTypes();
-        Assert.assertEquals(initialDomainTypes.length + 1, currentDomainTypes.length);
+        assertEquals(initialDomainTypes.length + 1, currentDomainTypes.length);
 
 
         //update existing domain type
@@ -62,23 +88,52 @@ public class DomainTypeIT extends IntegrationTestBase {
         dt.setDescription("domain type description updated by integration tests");
         dt.setIcon("stars");
         dt.setIconColor("green");
+        DefaultField field = new DefaultField();
+        Tag tag1 = new DefaultTag("tag1");
+        Tag tag2 = new DefaultTag("tag2");
+        field.setTags(Arrays.asList(tag1, tag2));
+        field.setName("field-name");
+        field.setDerivedDataType("decimal");
+        field.setPrecisionScale("9, 3");
+        dt.setField(field);
+        dt.setFieldNamePattern("field-name-pattern");
+        dt.setFieldPolicy(newPolicyBuilder(null).withStandardisation(toUpperCase).withValidation(email).toPolicy());
+        dt.setRegexPattern("regex-pattern");
+
 
         DomainType updated = createDomainType(dt);
-        Assert.assertEquals(dt.getTitle(), updated.getTitle());
-        Assert.assertEquals(dt.getDescription(), updated.getDescription());
-        Assert.assertEquals("stars", updated.getIcon());
-        Assert.assertEquals("green", updated.getIconColor());
+        assertEquals(dt.getTitle(), updated.getTitle());
+        assertEquals(dt.getDescription(), updated.getDescription());
+        assertEquals("stars", updated.getIcon());
+        assertEquals("green", updated.getIconColor());
+
+        Field updatedField = updated.getField();
+        assertEquals(field.getName(), updatedField.getName());
+        assertEquals(field.getDerivedDataType(), updatedField.getDerivedDataType());
+        assertEquals(field.getPrecisionScale(), updatedField.getPrecisionScale());
+        assertEquals(field.getTags().size(), updatedField.getTags().size());
+        assertEquals(tag1.getName(), updatedField.getTags().get(0).getName());
+        assertEquals(tag2.getName(), updatedField.getTags().get(1).getName());
+        assertEquals(dt.getFieldNamePattern(), updated.getFieldNamePattern());
+        assertEquals(dt.getRegexPattern(), updated.getRegexPattern());
+
+        FieldStandardizationRule updatedStandardisation = updated.getFieldPolicy().getStandardization().get(0);
+        assertEquals(toUpperCase.getName(), updatedStandardisation.getName());
+        assertEquals(toUpperCase.getObjectShortClassType(), updatedStandardisation.getObjectShortClassType());
+
+        FieldValidationRule updatedValidation = updated.getFieldPolicy().getValidation().get(0);
+        assertEquals(email.getName(), updatedValidation.getName());
+        assertEquals(email.getObjectShortClassType(), updatedValidation.getObjectShortClassType());
 
 
         //assert domain type was updated, rather than added
         currentDomainTypes = getDomainTypes();
-        Assert.assertEquals(initialDomainTypes.length + 1, currentDomainTypes.length);
-
+        assertEquals(initialDomainTypes.length + 1, currentDomainTypes.length);
 
         //delete domain type
         deleteDomainType(dt.getId());
         currentDomainTypes = getDomainTypes();
-        Assert.assertEquals(initialDomainTypes.length , currentDomainTypes.length);
+        assertEquals(initialDomainTypes.length , currentDomainTypes.length);
 
         //assert domain type was removed
         getDomainTypeExpectingStatus(dt.getId(), HTTP_NOT_FOUND);
