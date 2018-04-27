@@ -80,6 +80,8 @@ export class controller implements ng.IComponentController {
                 private HttpService: any,
                 private Utils: any,
                 private AccessControlService: any) {
+
+        $scope.$on("$destroy", this.ngOnDestroy.bind(this));
     }
 
 
