@@ -138,7 +138,7 @@
 
             <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
 
-                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling"></md-progress-linear>
+                <md-progress-linear md-mode="indeterminate" ng-if="vm.enabling || vm.disabling || vm.startingFeed"></md-progress-linear>
                 <div layout="column" class="layout-padding-top-bottom">
                     <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}">
                         <span ng-if="vm.model.state == 'ENABLED'">{{"views.feed-details.Enabled" | translate}}</span>

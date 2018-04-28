@@ -605,9 +605,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             saveFeedModel: function (model) {
                 var self = this;
                 self.prepareModelForSave(model);
-                if (!self.validateBeforeSave(model)) {
-                    //warn and exit
-                }
                 var deferred = $q.defer();
                 var successFn = function (response) {
                     var invalidCount = 0;

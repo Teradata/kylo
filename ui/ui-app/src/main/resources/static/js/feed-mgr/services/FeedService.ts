@@ -652,9 +652,6 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         saveFeedModel: function (model: any) {
             var self = this;
             self.prepareModelForSave(model);
-            if(!self.validateBeforeSave(model)){
-                //warn and exit
-            }
 
             var deferred = $q.defer();
             var successFn = function (response: any) {

@@ -300,8 +300,11 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (!self.startingFeed && self.allowStart) {
                     self.startingFeed = true;
                     $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response) {
+                        $mdToast.show($mdToast.simple()
+                            .textContent('Feed started')
+                            .hideDelay(3000));
                         self.startingFeed = false;
-                    }, function () {
+                    }, function (response) {
                         $mdDialog.show($mdDialog.alert()
                             .clickOutsideToClose(true)
                             .title("NiFi Error")

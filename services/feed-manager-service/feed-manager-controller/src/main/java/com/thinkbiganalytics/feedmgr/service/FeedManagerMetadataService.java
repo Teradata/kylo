@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -53,11 +53,8 @@ import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil.PROCESS_STATE;
 import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.Action;
 
@@ -72,11 +69,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -106,7 +101,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
     FeedManagerFeedService feedProvider;
-    
+
     @Inject
     private FeedProvider domainFeedProvider;
 
@@ -311,16 +306,16 @@ public class FeedManagerMetadataService implements MetadataService {
 
         return true;
     }
-    
+
     @Override
     @SuppressWarnings("deprecation")
     public FeedSummary startFeed(String feedId) {
         FeedMetadata feedMetadata = this.metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
-            
+
             Feed.ID domainId = domainFeedProvider.resolveId(feedId);
             Feed domainFeed = domainFeedProvider.findById(domainId);
-            
+
             if (domainFeed != null) {
                 domainFeed.getAllowedActions().checkPermission(FeedAccessControl.START);
                 return feedModelTransform.domainToFeedMetadata(domainFeed);
@@ -328,17 +323,21 @@ public class FeedManagerMetadataService implements MetadataService {
                 throw new FeedNotFoundException(domainId);
             }
         });
-        
-        nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
+
+       Optional<ProcessorDTO> feedInputProcessor = nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
             .flatMap(categoryGroup -> nifiClient.processGroups().findByName(categoryGroup.getId(), feedMetadata.getSystemFeedName(), false, true))
-            .ifPresent(feedGroup -> {
-                this.nifiRestClient.getInputProcessors(feedGroup.getId()).stream()
-                    .filter(proc -> feedMetadata.getInputProcessorName().equals(proc.getName()))
-                    .forEach(processor -> {
-                        this.nifiClient.processors().wakeUp(processor);
-                    });
+            .map(feedGroup -> {
+                List<ProcessorDTO> inputProcessors = this.nifiRestClient.getInputProcessors(feedGroup.getId());
+                ProcessorDTO inputProcessor = NifiProcessUtil.findFirstProcessorsByTypeAndName(inputProcessors, feedMetadata.getInputProcessorType(), feedMetadata.getInputProcessorName());
+                if (inputProcessor != null) {
+                    this.nifiClient.processors().wakeUp(inputProcessor);
+                }
+                return inputProcessor;
             });
-        
+        if(!feedInputProcessor.isPresent()){
+            throw new RuntimeException("Unable to start Feed " + feedMetadata.getCategoryAndFeedName());
+        }
+
         return new FeedSummary(feedMetadata);
     }
 
@@ -526,7 +525,7 @@ public class FeedManagerMetadataService implements MetadataService {
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }
-    
+
     @Nonnull
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {

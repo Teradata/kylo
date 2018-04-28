@@ -398,8 +398,13 @@ export class controller {
             if (!self.startingFeed && self.allowStart) {
                 self.startingFeed = true;
                 $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response:any) {
+                    $mdToast.show(
+                        $mdToast.simple()
+                            .textContent('Feed started')
+                            .hideDelay(3000)
+                    );
                 self.startingFeed = false;
-                }, function () {
+                }, function (response : any) {
                     $mdDialog.show(
                         $mdDialog.alert()
                         .clickOutsideToClose(true)
