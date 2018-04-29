@@ -184,6 +184,15 @@ export class VisualQueryPainterService extends fattable.Painter {
         this._rowFont = value;
     }
 
+    fillCellPending(cellDiv: HTMLElement) {
+        cellDiv.textContent = "Wait ...";
+        cellDiv.className = "pending";
+    }
+
+    fillHeaderPending(cellDiv: HTMLElement) {
+        // Override so it doesn't replace our angular template for column cell
+    }
+
     /**
      * Fills and style a cell div.
      *
@@ -250,7 +259,7 @@ export class VisualQueryPainterService extends fattable.Painter {
         // Update scope in a separate thread
         const $scope: any = angular.element(headerDiv).scope();
 
-        if ($scope.header !== header) {
+        if (header != null && $scope.header !== header && header.delegate != undefined) {
             $scope.availableCasts = header.delegate.getAvailableCasts();
             $scope.availableDomainTypes = this.domainTypes;
             $scope.domainType = header.domainTypeId ? this.domainTypes.find((domainType: DomainType) => domainType.id === header.domainTypeId) : null;

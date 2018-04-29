@@ -1,6 +1,12 @@
 define(["require", "exports", "./api/index", "./column-delegate", "./query-engine-constants"], function (require, exports, index_1, column_delegate_1, query_engine_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var PageSpec = /** @class */ (function () {
+        function PageSpec() {
+        }
+        return PageSpec;
+    }());
+    exports.PageSpec = PageSpec;
     /**
      * Provides the ability to query and transform data.
      */
@@ -143,6 +149,12 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
          */
         QueryEngine.prototype.getFieldPolicies = function () {
             return this.getState().fieldPolicies;
+        };
+        QueryEngine.prototype.getActualRows = function () {
+            return this.getState().actualRows;
+        };
+        QueryEngine.prototype.getActualCols = function () {
+            return this.getState().actualCols;
         };
         /**
          * Gets the schema fields for the the current transformation.
@@ -401,12 +413,14 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
         /**
          * Sets the query and datasources.
          */
-        QueryEngine.prototype.setQuery = function (query, datasources) {
+        QueryEngine.prototype.setQuery = function (query, datasources, pageSpec) {
             if (datasources === void 0) { datasources = []; }
+            if (pageSpec === void 0) { pageSpec = null; }
             this.datasources_ = (datasources.length > 0) ? datasources : null;
             this.redo_ = [];
             this.source_ = this.parseQuery(query);
             this.states_ = [this.newState()];
+            this.pageSpec = pageSpec;
         };
         /**
          * Indicates if the limiting should be done before sampling.
@@ -485,7 +499,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
          * @returns a new script state
          */
         QueryEngine.prototype.newState = function () {
-            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null };
+            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null };
         };
         return QueryEngine;
     }());

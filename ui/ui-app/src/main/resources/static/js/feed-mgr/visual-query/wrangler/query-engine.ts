@@ -11,6 +11,13 @@ import {ScriptState} from "./model/script-state";
 import {TransformValidationResult} from "./model/transform-validation-result";
 import {QueryEngineConstants} from "./query-engine-constants";
 
+export class PageSpec {
+    firstRow : number;
+    numRows : number;
+    firstCol : number;
+    numCols : number;
+}
+
 /**
  * Provides the ability to query and transform data.
  */
@@ -20,6 +27,11 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * List of required data source ids.
      */
     protected datasources_: UserDatasource[];
+
+    /**
+     * The page of the dataset to display
+     */
+    protected pageSpec : PageSpec;
 
     /**
      * Transformation function definitions.
@@ -191,6 +203,14 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     getFieldPolicies(): any[] | null {
         return this.getState().fieldPolicies;
+    }
+
+    getActualRows() : number | null {
+        return this.getState().actualRows;
+    }
+
+    getActualCols() : number | null {
+        return this.getState().actualCols;
     }
 
     /**
@@ -496,11 +516,12 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Sets the query and datasources.
      */
-    setQuery(query: string | object, datasources: UserDatasource[] = []): void {
+    setQuery(query: string | object, datasources: UserDatasource[] = [], pageSpec : PageSpec = null): void {
         this.datasources_ = (datasources.length > 0) ? datasources : null;
         this.redo_ = [];
         this.source_ = this.parseQuery(query);
         this.states_ = [this.newState()];
+        this.pageSpec = pageSpec;
     }
 
     /**
@@ -544,7 +565,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      *
      * @return an observable for the response progress
      */
-    abstract transform(): Observable<any>;
+    abstract transform(pageSpec ?:PageSpec): Observable<any>;
 
     /**
      * Reverts to the previous transformation. The current transformation is remembered and may be restored.
@@ -602,6 +623,6 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null};
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null};
     }
 }

@@ -31,7 +31,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
      * @param uiGridConstants the ui-grid constants
      */
     var VisualQueryTable = /** @class */ (function () {
-        function VisualQueryTable($scope_, $element, $timeout_, painter, dataService, tableService, uiGridConstants_) {
+        function VisualQueryTable($scope_, $element, $timeout_, painter, dataService, tableService, uiGridConstants_, $window) {
             var _this = this;
             this.$scope_ = $scope_;
             this.$element = $element;
@@ -40,6 +40,11 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             this.dataService = dataService;
             this.tableService = tableService;
             this.uiGridConstants_ = uiGridConstants_;
+            this.$window = $window;
+            /**
+             * Previous state
+             */
+            this.lastState = -1;
             /**
              * 2D rending context
              */
@@ -48,6 +53,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
              * Width of the table at last refresh.
              */
             this.lastTableWidth_ = 0;
+            this.loaded = false;
             /**
              * The table view.
              * @type {fattable.TableView}
@@ -57,25 +63,33 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             // Refresh table when model changes
             tableService.registerTable(function (event) {
                 if (event.type === wrangler_event_type_1.WranglerEventType.REFRESH) {
-                    _this.refresh();
+                    //this.refresh();
                 }
             });
-            $scope_.$watchCollection(function () { return _this.columns; }, function () {
+            $scope_.$watchCollection(function () { return _this.columns; }, function (newValue, oldValue) {
                 _this.onColumnsChange();
-                _this.refresh();
+                if (_this.tableState != _this.lastState) {
+                    if (newValue.length == oldValue.length) {
+                        _this.refreshRows();
+                    }
+                    else {
+                        _this.refresh();
+                    }
+                }
+                _this.lastState = _this.tableState;
             });
             $scope_.$watchCollection(function () { return _this.domainTypes; }, function () {
                 _this.painter.domainTypes = _this.domainTypes.sort(function (a, b) { return (a.title < b.title) ? -1 : 1; });
-                _this.refresh();
+                //this.refresh()
             });
             $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
             $scope_.$watch(function () { return _this.options ? _this.options.rowFont : null; }, function () { return painter.rowFont = _this.options.rowFont; });
             $scope_.$watchCollection(function () { return _this.rows; }, function () {
-                _this.onRowsChange();
+                //this.onRowsChange();
             });
             $scope_.$watchCollection(function () { return _this.validationResults; }, function () {
                 _this.onValidationResultsChange();
-                _this.refresh();
+                // this.refresh();
             });
             var resizeTimeoutPromise = null;
             var resizeTimeout = function (callback, interval) {
@@ -85,8 +99,9 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 resizeTimeoutPromise = _this.$timeout_(callback, interval);
             };
             // Refresh table on resize
-            $scope_.$watch(function () { return $element.height(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
-            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 500); });
+            //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
+            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 150); });
+            angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 150); });
             // Listen for destroy event
             $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }
@@ -104,16 +119,17 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
          * @param {jQuery} element the table element
          */
         VisualQueryTable.prototype.init = function (element) {
+            this.tableModel = new wrangler_table_model_1.WranglerTableModel(this.dataService);
             this.table_ = fattable({
                 container: element.get(0),
-                model: new wrangler_table_model_1.WranglerTableModel(this.dataService),
-                nbRows: 0,
+                model: this.tableModel,
+                nbRows: 23399,
                 rowHeight: visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT,
                 headerHeight: visual_query_painter_service_1.VisualQueryPainterService.HEADER_HEIGHT,
                 painter: this.painter,
                 columnWidths: [0]
             });
-            this.$timeout_(this.refresh.bind(this), 500);
+            //this.$timeout_(this.refresh.bind(this), 500);
         };
         /**
          * Redraws the table.
@@ -123,26 +139,49 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             if (this.table_ === null) {
                 return;
             }
-            // Re-calculate column widths
-            var widthDiff = Math.abs(this.lastTableWidth_ - $(this.table_.container).width());
-            if (widthDiff > 1) {
-                var columnWidths = this.getColumnWidths();
-                this.table_.columnWidths = columnWidths;
-                this.table_.nbCols = columnWidths.length;
-                var columnOffset = _.reduce(columnWidths, function (memo, width) {
-                    memo.push(memo[memo.length - 1] + width);
-                    return memo;
-                }, [0]);
-                this.table_.columnOffset = columnOffset;
-                this.table_.W = columnOffset[columnOffset.length - 1];
+            if (this.columns != null && this.columns.length > 0) {
+                // Re-calculate column widths
+                var widthDiff = Math.abs(this.lastTableWidth_ - $(this.table_.container).width());
+                if (widthDiff > 1) {
+                    var columnWidths = this.getColumnWidths();
+                    this.table_.columnWidths = columnWidths;
+                    this.table_.nbCols = (this.actualCols != null ? this.actualCols : columnWidths.length);
+                    var columnOffset = _.reduce(columnWidths, function (memo, width) {
+                        memo.push(memo[memo.length - 1] + width);
+                        return memo;
+                    }, [0]);
+                    this.table_.columnOffset = columnOffset;
+                    this.table_.W = columnOffset[columnOffset.length - 1];
+                }
             }
             // Update table properties
-            var rowCount = angular.isArray(this.dataService.rows_) ? this.dataService.rows_.length : 0;
-            this.table_.nbRows = rowCount;
-            this.table_.H = visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT * rowCount;
+            if (this.actualRows != null) {
+                this.table_.nbRows = this.actualRows;
+                this.table_.H = visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
+            }
             // Rebuild table
             this.painter.hideTooltip();
+            // Preserve scroll position
+            var priorScrollLeft;
+            var priorScrollTop;
+            var ourTable = this.table_;
+            if (!angular.isUndefined(ourTable.scroll)) {
+                var ratioX = 0;
+                var ratioY = 0;
+                ratioX = ourTable.scroll.scrollLeft / ourTable.W;
+                ratioY = ourTable.scroll.scrollTop / ourTable.H;
+                var newX = (ourTable.W * ratioX) | 0;
+                var newY = (ourTable.H * ratioY) | 0;
+                if (ourTable.scroll) {
+                    var scrollBar = ourTable.scroll;
+                    priorScrollLeft = scrollBar.scrollLeft;
+                    priorScrollTop = scrollBar.scrollTop;
+                }
+            }
             this.table_.setup();
+            if (!angular.isUndefined(priorScrollLeft)) {
+                ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
+            }
         };
         /**
          * Refreshes the contents of rows.
@@ -299,7 +338,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
         VisualQueryTable.prototype.onValidationResultsChange = function () {
             this.dataService.validationResults = this.validationResults;
         };
-        VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
+        VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants", "$window"];
         /**
          * Indicates a column should be sorted in ascending order.
          */
@@ -311,6 +350,18 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
         return VisualQueryTable;
     }());
     exports.VisualQueryTable = VisualQueryTable;
+    var ColumnModelChange = /** @class */ (function () {
+        function ColumnModelChange(oldValue, newValue) {
+            if (oldValue == null) {
+            }
+            // was new element inserted mid?  stay
+            // was new element appended?    scroll right
+            // was element removed?   stay
+            // row change? Fewer    scroll top?
+        }
+        return ColumnModelChange;
+    }());
+    exports.ColumnModelChange = ColumnModelChange;
     angular.module(moduleName).directive("visualQueryTable", function () {
         return {
             bindToController: {
@@ -318,12 +369,15 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 domainTypes: "=*tableDomainTypes",
                 options: "=*tableOptions",
                 rows: "=*tableRows",
-                validationResults: "=*tableValidation"
+                validationResults: "=*tableValidation",
+                tableState: "=",
+                actualCols: "=",
+                actualRows: "="
             },
             controller: VisualQueryTable,
             restrict: "E",
             link: function ($scope, element, attrs, controller) {
-                controller.$onInit();
+                //(controller as VisualQueryTable).$onInit();
             }
         };
     });

@@ -695,7 +695,7 @@ export class ColumnDelegate implements IColumnDelegate {
                         // Now we need to fill in the null values with zero for our new cols
                         let allcols: string[] = self.toColumnArray(self.controller.engine.getCols());
                         let select: string[] = angular.copy(cols);
-                        let idx: number = cols.length;
+                        let idx: number = cols.length - 1;
                         angular.forEach(allcols, (col, index) => {
                             if (index > idx) {
                                 select.push(`coalesce(${col},0).as("${col}")`);
@@ -1099,16 +1099,14 @@ export class ColumnDelegate implements IColumnDelegate {
         const columnFieldName = this.getColumnFieldName(column);
         let formula = "";
         const self = this;
-        let match = false;
         angular.forEach(grid.columns, function (item, idx) {
             if (item.visible) {
                 const itemFieldName = self.getColumnFieldName(item);
                 formula += (formula.length == 0) ? "select(" : ", ";
-                if (match) {
-                    formula += script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
-                }
                 formula += itemFieldName;
-                match = (itemFieldName == columnFieldName);
+                if (itemFieldName == columnFieldName) {
+                    formula += "," + script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                }
             }
         });
 

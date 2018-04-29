@@ -11,6 +11,8 @@ import {ChainedOperation} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {QueryEngine} from "../wrangler/query-engine";
 import {IPromise} from "angular";
+import {WranglerDataService} from "./services/wrangler-data.service";
+import {PageSpec} from "../wrangler";
 
 declare const CodeMirror: any;
 
@@ -86,6 +88,22 @@ export class TransformDataComponent implements OnInit {
      * @type {Array.<Object>}
      */
     tableRows: object[] = [];
+
+    /**
+     * History state for client to track state changes
+     */
+    tableState: number = null;
+
+    /**
+     * Rows analyzed by the server
+     */
+    actualRows : number = null;
+
+    /**
+     * Cols analyzed by the server
+     */
+    actualCols : number = null;
+
     //Code Mirror options.  Tern Server requires it be in javascript mode
     codeMirrorConfig: object = {
         onLoad: this.codemirrorLoaded.bind(this)
@@ -149,7 +167,7 @@ export class TransformDataComponent implements OnInit {
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
                 private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
-                StepperService: any, WindowUnloadService: WindowUnloadService) {
+                StepperService: any, WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -225,6 +243,9 @@ export class TransformDataComponent implements OnInit {
                 this.engine.setQuery(source, this.model.$datasources);
             }
 
+            // Provide access to table for fetching pages
+            this.wranglerDataService.asyncQuery = this.query.bind(this);
+
             // Watch for changes to field policies
             if (this.fieldPolicies == null) {
                 this.fieldPolicies = [];
@@ -245,7 +266,7 @@ export class TransformDataComponent implements OnInit {
                 });
                 this.engine.setFieldPolicies(this.fieldPolicies);
                 if (domainTypesLoaded) {
-                    this.query();
+                    //this.updateGrid();
                 }
             }, true);
 
@@ -256,8 +277,13 @@ export class TransformDataComponent implements OnInit {
                     domainTypesLoaded = true;
 
                     // Load table data
-                    this.query();
+                    //this.updateGrid();
                 });
+
+            //this.updateGrid();
+            // Indicate ready
+            this.tableState = -1;
+            this.tableColumns = [];
         };
 
         if (this.engine instanceof Promise) {
@@ -513,7 +539,7 @@ export class TransformDataComponent implements OnInit {
      *
      * @return {Promise} a promise for when the query completes
      */
-    query(refresh : boolean = true) : IPromise<any> {
+    query(refresh : boolean = true, pageSpec ?: PageSpec) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
 
@@ -549,9 +575,7 @@ export class TransformDataComponent implements OnInit {
             self.showError(message);
 
             // Reset state
-            self.engine.pop();
-            self.functionHistory.pop();
-            self.refreshGrid();
+            self.onUndo();
             deferred.reject(message);
         };
         const notifyCallback = function (progress: number) {
@@ -562,7 +586,7 @@ export class TransformDataComponent implements OnInit {
             }
         };
 
-        self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
+        self.engine.transform(pageSpec).subscribe(notifyCallback, errorCallback, successCallback);
         return deferred.promise;
     };
 
@@ -594,8 +618,11 @@ export class TransformDataComponent implements OnInit {
         });
 
         //update the ag-grid
-        this.tableColumns = columns;
+        this.updateTableState();
+        this.actualCols = this.engine.getActualCols();
+        this.actualRows = this.engine.getActualRows();
         this.tableRows = this.engine.getRows();
+        this.tableColumns = columns;
         this.tableValidation = this.engine.getValidationResults();
 
         this.updateCodeMirrorAutoComplete();
@@ -807,9 +834,19 @@ export class TransformDataComponent implements OnInit {
     };
 
     /**
+     * Update state counter so clients know that state (function stack) has changed
+     */
+    updateTableState() : void {
+        // Update state variable to indicate to client we are in a new state
+        this.tableState = (this.tableState != this.functionHistory.length ? this.functionHistory.length : this.tableState);
+    }
+
+    /**
      * Refreshes the grid. Used after undo and redo.
      */
     refreshGrid() {
+
+        this.updateTableState();
         let columns = this.engine.getColumns();
         let rows = this.engine.getRows();
 
@@ -1006,7 +1043,7 @@ angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         stepIndex: "@"
     },
     controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-        "WindowUnloadService", TransformDataComponent],
+        "WindowUnloadService", "WranglerDataService", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"

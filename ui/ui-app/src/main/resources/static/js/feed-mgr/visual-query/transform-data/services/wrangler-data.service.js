@@ -2,8 +2,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
+    var PAGE_ROWS = 64;
+    var PAGE_COLS = 100;
     var WranglerDataService = /** @class */ (function () {
-        function WranglerDataService() {
+        function WranglerDataService($rootscope, $q, $timeout) {
+            this.$rootscope = $rootscope;
+            this.$q = $q;
+            this.$timeout = $timeout;
             /**
              * The sort direction.
              */
@@ -12,7 +17,34 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
              * The index of the column being sorted.
              */
             this.sortIndex_ = null;
+            this.loading = false;
         }
+        WranglerDataService.prototype.cellPageName = function (i, j) {
+            var I = (i / PAGE_ROWS) | 0;
+            var J = (j / PAGE_COLS) | 0;
+            return JSON.stringify({ "state": this.state, "coords": [I, J] });
+        };
+        WranglerDataService.prototype.headerPageName = function (j) {
+            var J = (j / PAGE_COLS) | 0;
+            return JSON.stringify({ "state": this.state, "j": J });
+        };
+        ;
+        WranglerDataService.prototype.fetchCellPage = function (pageName, cb) {
+            var coordsObj = JSON.parse(pageName);
+            var I = coordsObj.coords[0];
+            var J = coordsObj.coords[1];
+            var self = this;
+            this.asyncQuery(true, {
+                firstRow: I * PAGE_ROWS,
+                numRows: PAGE_ROWS,
+                firstCol: J * PAGE_COLS,
+                numCols: PAGE_COLS * 2
+            }).then(function () {
+                cb(function (i, j) {
+                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS);
+                });
+            });
+        };
         /**
          * Gets the value for the specified cell.
          *
@@ -20,9 +52,9 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param {number} j the column number
          * @returns {VisualQueryTableCell|null} the cell object
          */
-        WranglerDataService.prototype.getCellSync = function (i, j) {
+        WranglerDataService.prototype.getCell = function (i, j) {
             var column = this.columns_[j];
-            if (i >= 0 && i < this.rows_.length) {
+            if (column != undefined && i >= 0 && i < this.rows_.length) {
                 var originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
                 var validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
                     ? this.validationResults[originalIndex].filter(function (result) { return result.field === column.headerTooltip; })
@@ -45,7 +77,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param {number} j the column number
          * @returns {VisualQueryTableHeader|null} the column header
          */
-        WranglerDataService.prototype.getHeaderSync = function (j) {
+        WranglerDataService.prototype.getHeader = function (j) {
             if (j >= 0 && j < this.columns_.length) {
                 return angular.extend(this.columns_[j], {
                     field: this.columns_[j].name,
@@ -55,13 +87,11 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                     }
                 });
             }
-            else {
-                return null;
-            }
+            return null;
         };
         return WranglerDataService;
     }());
     exports.WranglerDataService = WranglerDataService;
-    angular.module(moduleName).service("WranglerDataService", WranglerDataService);
+    angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q", "$timeout", WranglerDataService]);
 });
 //# sourceMappingURL=wrangler-data.service.js.map

@@ -641,7 +641,7 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
                     // Now we need to fill in the null values with zero for our new cols
                     var allcols = self.toColumnArray(self.controller.engine.getCols());
                     var select = angular.copy(cols);
-                    var idx = cols.length;
+                    var idx = cols.length - 1;
                     angular.forEach(allcols, function (col, index) {
                         if (index > idx) {
                             select.push("coalesce(" + col + ",0).as(\"" + col + "\")");
@@ -978,16 +978,14 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
             var columnFieldName = this.getColumnFieldName(column);
             var formula = "";
             var self = this;
-            var match = false;
             angular.forEach(grid.columns, function (item, idx) {
                 if (item.visible) {
                     var itemFieldName = self.getColumnFieldName(item);
                     formula += (formula.length == 0) ? "select(" : ", ";
-                    if (match) {
-                        formula += script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
-                    }
                     formula += itemFieldName;
-                    match = (itemFieldName == columnFieldName);
+                    if (itemFieldName == columnFieldName) {
+                        formula += "," + script + self.toAsUniqueColumnName(grid.columns, columnFieldName);
+                    }
                 }
             });
             formula += ")";

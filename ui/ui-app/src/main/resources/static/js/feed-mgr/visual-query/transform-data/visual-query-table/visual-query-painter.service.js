@@ -128,6 +128,13 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             enumerable: true,
             configurable: true
         });
+        VisualQueryPainterService.prototype.fillCellPending = function (cellDiv) {
+            cellDiv.textContent = "Wait ...";
+            cellDiv.className = "pending";
+        };
+        VisualQueryPainterService.prototype.fillHeaderPending = function (cellDiv) {
+            // Override so it doesn't replace our angular template for column cell
+        };
         /**
          * Fills and style a cell div.
          *
@@ -192,7 +199,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             }
             // Update scope in a separate thread
             var $scope = angular.element(headerDiv).scope();
-            if ($scope.header !== header) {
+            if (header != null && $scope.header !== header && header.delegate != undefined) {
                 $scope.availableCasts = header.delegate.getAvailableCasts();
                 $scope.availableDomainTypes = this.domainTypes;
                 $scope.domainType = header.domainTypeId ? this.domainTypes.find(function (domainType) { return domainType.id === header.domainTypeId; }) : null;

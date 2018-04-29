@@ -46,4 +46,14 @@ export interface ScriptState<T> {
      * Results of applying field policies.
      */
     validationResults: TransformValidationResult[][];
+
+    /**
+     * Actual number of rows analyzed by server
+     */
+    actualRows: number;
+
+    /**
+     * Actual number of columns analyzed by server
+     */
+    actualCols: number;
 }

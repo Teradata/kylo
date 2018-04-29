@@ -325,10 +325,14 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
          *
          * @return an observable for the response progress
          */
-        SparkQueryEngine.prototype.transform = function () {
+        SparkQueryEngine.prototype.transform = function (pageSpec) {
             // Build the request body
+            if (!pageSpec) {
+                pageSpec = { firstRow: 0, numRows: 128, firstCol: 0, numCols: 64 };
+            }
             var body = {
-                "policies": this.getState().fieldPolicies
+                "policies": this.getState().fieldPolicies,
+                "pageSpec": pageSpec
             };
             var index = this.states_.length - 1;
             if (index > 0) {
@@ -405,6 +409,8 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                     state.table = response.data.table;
                     state.validationResults = response.data.results.validationResults;
                     self.updateFieldPolicies(state);
+                    state.actualCols = response.data.actualCols;
+                    state.actualRows = response.data.actualRows;
                     // Indicate observable is complete
                     deferred.complete();
                 }

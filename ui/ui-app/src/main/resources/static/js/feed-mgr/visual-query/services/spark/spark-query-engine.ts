@@ -33,6 +33,7 @@ import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
+import {PageSpec} from "../../wrangler";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -354,10 +355,16 @@ export class SparkQueryEngine extends QueryEngine<string> {
      *
      * @return an observable for the response progress
      */
-    transform(): Observable<any> {
+    transform(pageSpec ?: PageSpec): Observable<any> {
         // Build the request body
+
+        if (!pageSpec) {
+            pageSpec = {firstRow: 0, numRows: 128, firstCol: 0, numCols: 64};
+        }
+
         let body = {
-            "policies": this.getState().fieldPolicies
+            "policies": this.getState().fieldPolicies,
+            "pageSpec" : pageSpec
         };
         let index = this.states_.length - 1;
 
@@ -442,6 +449,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 state.table = response.data.table;
                 state.validationResults = response.data.results.validationResults;
                 self.updateFieldPolicies(state);
+                state.actualCols = response.data.actualCols;
+                state.actualRows = response.data.actualRows;
 
                 // Indicate observable is complete
                 deferred.complete();

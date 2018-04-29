@@ -49,6 +49,7 @@ import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
@@ -215,7 +216,7 @@ public class TransformService {
         // Execute script
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), getPolicies(request));
+        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), getPolicies(request), request.getPageSpec());
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
@@ -329,7 +330,7 @@ public class TransformService {
         }
 
         // Execute query
-        final TransformResponse response = submitTransformJob(createSqlTask(request), getPolicies(request));
+        final TransformResponse response = submitTransformJob(createSqlTask(request), getPolicies(request), request.getPageSpec());
         return log.exit(response);
     }
 
@@ -559,7 +560,7 @@ public class TransformService {
      * Submits the specified task to be executed and returns the result.
      */
     @Nonnull
-    private TransformResponse submitTransformJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies) throws ScriptException {
+    private TransformResponse submitTransformJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies, @Nullable PageSpec pageSpec) throws ScriptException {
         log.entry(task, policies);
 
         // Prepare script
@@ -574,7 +575,7 @@ public class TransformService {
 
         // Execute script
         final String table = newTableName();
-        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table, converterService), result), engine.getSparkContext());
+        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table, converterService, pageSpec), result), engine.getSparkContext());
         tracker.submitJob(job);
 
         // Build response

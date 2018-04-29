@@ -32,4 +32,14 @@ export interface TransformResponse {
      * Table name with the results
      */
     table: string;
+
+    /**
+     * Actual number of rows analyzed
+     */
+    actualRows: number;
+
+    /**
+     * Actual number of cols analyzed
+     */
+    actualCols: number;
 }

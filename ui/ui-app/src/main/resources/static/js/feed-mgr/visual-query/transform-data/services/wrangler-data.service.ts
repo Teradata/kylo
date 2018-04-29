@@ -1,8 +1,12 @@
 import * as angular from "angular";
 
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
+import {IDeferred, IPromise} from "angular";
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
+
+const PAGE_ROWS = 64;
+const PAGE_COLS = 100;
 
 export class WranglerDataService {
 
@@ -31,6 +35,50 @@ export class WranglerDataService {
      */
     validationResults: TransformValidationResult[][];
 
+    asyncQuery: any;
+
+    loading: boolean = false;
+
+    deferred: any;
+
+    promise: any;
+
+    state: number;
+
+    constructor(private $rootscope: any, private $q: angular.IQService, private $timeout: any) {
+
+    }
+
+    cellPageName(i: number, j: number): string {
+        var I = (i / PAGE_ROWS) | 0;
+        var J = (j / PAGE_COLS) | 0;
+        return JSON.stringify({"state": this.state, "coords": [I, J]});
+    }
+
+    headerPageName(j: number): string {
+        var J = (j / PAGE_COLS) | 0;
+        return JSON.stringify({"state": this.state, "j": J});
+    };
+
+    fetchCellPage(pageName: string, cb: any): void {
+
+        var coordsObj = JSON.parse(pageName);
+        var I = coordsObj.coords[0];
+        var J = coordsObj.coords[1];
+        var self = this;
+
+        this.asyncQuery(true, {
+            firstRow: I * PAGE_ROWS,
+            numRows: PAGE_ROWS,
+            firstCol: J * PAGE_COLS,
+            numCols: PAGE_COLS * 2
+        }).then(() => {
+            cb(function (i: number, j: number) {
+                return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS)
+            });
+        });
+    }
+
     /**
      * Gets the value for the specified cell.
      *
@@ -38,9 +86,9 @@ export class WranglerDataService {
      * @param {number} j the column number
      * @returns {VisualQueryTableCell|null} the cell object
      */
-    getCellSync(i: number, j: number): any {
+    getCell(i: number, j: number): any {
         const column: any = this.columns_[j];
-        if (i >= 0 && i < this.rows_.length) {
+        if (column != undefined && i >= 0 && i < this.rows_.length) {
             const originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
             const validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
                 ? this.validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
@@ -63,7 +111,8 @@ export class WranglerDataService {
      * @param {number} j the column number
      * @returns {VisualQueryTableHeader|null} the column header
      */
-    getHeaderSync(j: number): any {
+    getHeader(j: number): object {
+
         if (j >= 0 && j < this.columns_.length) {
             return angular.extend(this.columns_[j], {
                 field: (this.columns_[j] as any).name,
@@ -72,10 +121,33 @@ export class WranglerDataService {
                     direction: (this.sortIndex_ === j) ? this.sortDirection_ : null
                 }
             });
-        } else {
-            return null;
         }
+        return null;
     }
+
+    /*
+    fetchHeaderPage(pageName: string, cb: any): void {
+
+        var self = this;
+        var jObj = JSON.parse(pageName);
+        var j = jObj.j;
+        var J = (j / PAGE_COLS) | 0;
+
+        this.headerDefer = this.$q.defer();
+        this.headerDefer.promise.then((success) => {
+                console.log("promise then");
+                cb(function (j: number) {
+                    console.log("(resolved)Fetching header at ", j, "J", J);
+                    return self.getHeader(j - J * PAGE_COLS);
+                });
+            }
+        );
+
+    }
+    */
+
 }
 
-angular.module(moduleName).service("WranglerDataService", WranglerDataService);
+angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q", "$timeout", WranglerDataService]);
+
+

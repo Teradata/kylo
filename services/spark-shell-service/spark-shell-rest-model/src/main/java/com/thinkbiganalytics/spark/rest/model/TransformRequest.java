@@ -57,6 +57,11 @@ public class TransformRequest {
     private String script;
 
     /**
+     * Constrain the results returned to the client
+     */
+    private PageSpec pageSpec;
+
+    /**
      * Indicates the transformation should be cached for asynchronous requests
      */
     public boolean isAsync() {
@@ -114,6 +119,8 @@ public class TransformRequest {
         this.policies = policies;
     }
 
+
+
     /**
      * Gets the Scala script with the transformation.
      *
@@ -131,6 +138,23 @@ public class TransformRequest {
     public void setScript(final String script) {
         this.script = script;
     }
+
+    /**
+     * Returns the page index information
+     * @return the page spec
+     */
+    public PageSpec getPageSpec() {
+        return pageSpec;
+    }
+
+    /**
+     * Sets the page index information
+     * @param pageSpec the page spec
+     */
+    public void setPageSpec(PageSpec pageSpec) {
+        this.pageSpec = pageSpec;
+    }
+
 
     /**
      * Results of a previous transformation.

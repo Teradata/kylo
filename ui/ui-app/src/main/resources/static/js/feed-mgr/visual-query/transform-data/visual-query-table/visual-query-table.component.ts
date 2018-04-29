@@ -60,7 +60,7 @@ const MENU_WIDTH = 52;
  */
 export class VisualQueryTable {
 
-    static readonly $inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants"];
+    static readonly $inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants", "$window"];
 
     /**
      * Indicates a column should be sorted in ascending order.
@@ -97,6 +97,16 @@ export class VisualQueryTable {
     rows: any[][];
 
     /**
+     * Whether the data has been actually modified/transformed (vs simple paging)
+     */
+    tableState: number;
+
+    /**
+     * Previous state
+     */
+    lastState: number = -1;
+
+    /**
      * Validation results for the data.
      */
     validationResults: TransformValidationResult[][];
@@ -111,44 +121,59 @@ export class VisualQueryTable {
      */
     private lastTableWidth_ = 0;
 
+    private loaded: boolean = false;
+
+    private actualRows : number;
+
+    private actualCols : number;
+
     /**
      * The table view.
      * @type {fattable.TableView}
      */
     private table_: fattable.TableView = null;
 
+    private tableModel: any;
+
     constructor(private $scope_: angular.IScope, private $element: angular.IAugmentedJQuery, private $timeout_: angular.ITimeoutService, private painter: VisualQueryPainterService,
-                private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any) {
+                private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any, private $window: angular.IWindowService) {
         this.painter.delegate = this;
 
 
         // Refresh table when model changes
         tableService.registerTable((event) => {
             if (event.type === WranglerEventType.REFRESH) {
-                this.refresh();
+                //this.refresh();
             }
         });
 
-        $scope_.$watchCollection(() => this.columns, () => {
+        $scope_.$watchCollection(() => this.columns, (newValue, oldValue) => {
             this.onColumnsChange();
-            this.refresh();
+            if (this.tableState != this.lastState) {
+                if (newValue.length == oldValue.length) {
+                    this.refreshRows();
+                } else {
+                   this.refresh();
+                }
+            }
+            this.lastState = this.tableState;
         });
 
         $scope_.$watchCollection(() => this.domainTypes, () => {
             this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
-            this.refresh()
+            //this.refresh()
         });
 
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
         $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
 
         $scope_.$watchCollection(() => this.rows, () => {
-            this.onRowsChange();
+            //this.onRowsChange();
         });
 
         $scope_.$watchCollection(() => this.validationResults, () => {
             this.onValidationResultsChange();
-            this.refresh();
+            // this.refresh();
         });
 
         let resizeTimeoutPromise: any = null;
@@ -161,9 +186,10 @@ export class VisualQueryTable {
         };
 
         // Refresh table on resize
-        $scope_.$watch(() => $element.height(), () => resizeTimeout(() => this.refresh(), 500));
+        //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
 
-        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 500));
+        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 150));
+        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 150));
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
@@ -185,52 +211,85 @@ export class VisualQueryTable {
      * @param {jQuery} element the table element
      */
     init(element: angular.IAugmentedJQuery) {
+        this.tableModel = new WranglerTableModel(this.dataService);
+
         this.table_ = fattable({
             container: element.get(0),
-            model: new WranglerTableModel(this.dataService),
-            nbRows: 0,
+            model: this.tableModel,
+            nbRows: 23399,
             rowHeight: VisualQueryPainterService.ROW_HEIGHT,
             headerHeight: VisualQueryPainterService.HEADER_HEIGHT,
             painter: this.painter,
             columnWidths: [0]
         });
 
-        this.$timeout_(this.refresh.bind(this), 500);
+        //this.$timeout_(this.refresh.bind(this), 500);
     }
 
     /**
      * Redraws the table.
      */
     refresh() {
+
         // Skip if table not initialized
         if (this.table_ === null) {
             return;
         }
 
-        // Re-calculate column widths
-        const widthDiff = Math.abs(this.lastTableWidth_ - $((this.table_ as any).container).width());
+        if (this.columns != null && this.columns.length > 0) {
 
-        if (widthDiff > 1) {
-            const columnWidths: number[] = this.getColumnWidths();
-            (this.table_ as any).columnWidths = columnWidths;
-            (this.table_ as any).nbCols = columnWidths.length;
+            // Re-calculate column widths
+            const widthDiff = Math.abs(this.lastTableWidth_ - $((this.table_ as any).container).width());
 
-            const columnOffset = _.reduce(columnWidths, function (memo, width) {
-                memo.push(memo[memo.length - 1] + width);
-                return memo;
-            }, [0]);
-            (this.table_ as any).columnOffset = columnOffset;
-            (this.table_ as any).W = columnOffset[columnOffset.length - 1];
+            if (widthDiff > 1) {
+                let columnWidths: number[] = this.getColumnWidths();
+
+                (this.table_ as any).columnWidths = columnWidths;
+                (this.table_ as any).nbCols = (this.actualCols != null ? this.actualCols : columnWidths.length);
+
+                const columnOffset = _.reduce(columnWidths, function (memo, width) {
+                    memo.push(memo[memo.length - 1] + width);
+                    return memo;
+                }, [0]);
+                (this.table_ as any).columnOffset = columnOffset;
+                (this.table_ as any).W = columnOffset[columnOffset.length - 1];
+            }
         }
-
         // Update table properties
-        const rowCount = angular.isArray(this.dataService.rows_) ? this.dataService.rows_.length : 0;
-        (this.table_ as any).nbRows = rowCount;
-        (this.table_ as any).H = VisualQueryPainterService.ROW_HEIGHT * rowCount;
+        if (this.actualRows != null) {
+            (this.table_ as any).nbRows = this.actualRows;
+            (this.table_ as any).H = VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
+        }
 
         // Rebuild table
         this.painter.hideTooltip();
+
+        // Preserve scroll position
+        var priorScrollLeft : number;
+        var priorScrollTop : number;
+
+        var ourTable : any  = (this.table_ as any);
+        if (!angular.isUndefined(ourTable.scroll)) {
+            var ratioX = 0;
+            var ratioY = 0;
+
+            ratioX = ourTable.scroll.scrollLeft / ourTable.W;
+            ratioY = ourTable.scroll.scrollTop  / ourTable.H;
+
+            var newX = (ourTable.W *ratioX) | 0;
+            var newY = (ourTable.H *ratioY) | 0;
+
+            if (ourTable.scroll) {
+                var scrollBar = ourTable.scroll;
+                priorScrollLeft = scrollBar.scrollLeft;
+                priorScrollTop = scrollBar.scrollTop;
+            }
+
+        }
         this.table_.setup();
+        if (!angular.isUndefined(priorScrollLeft)) {
+            ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
+        }
     }
 
     /**
@@ -332,6 +391,7 @@ export class VisualQueryTable {
      * Applies filters to columns.
      */
     private onColumnsChange() {
+
         // Update properties
         _.each(this.columns, function (column: any) {
             column.visible = (column.visible !== false);
@@ -405,6 +465,22 @@ export class VisualQueryTable {
     }
 }
 
+export class ColumnModelChange {
+    constructor(oldValue: object[], newValue: object[] ) {
+        if (oldValue == null) {
+
+        }
+
+        // was new element inserted mid?  stay
+        // was new element appended?    scroll right
+        // was element removed?   stay
+        // row change? Fewer    scroll top?
+
+    }
+
+
+}
+
 angular.module(moduleName).directive("visualQueryTable", function () {
     return {
         bindToController: {
@@ -412,12 +488,15 @@ angular.module(moduleName).directive("visualQueryTable", function () {
             domainTypes: "=*tableDomainTypes",
             options: "=*tableOptions",
             rows: "=*tableRows",
-            validationResults: "=*tableValidation"
+            validationResults: "=*tableValidation",
+            tableState: "=",
+            actualCols: "=",
+            actualRows: "="
         },
         controller: VisualQueryTable,
         restrict: "E",
         link: function ($scope, element, attrs, controller) {
-            (controller as VisualQueryTable).$onInit();
+            //(controller as VisualQueryTable).$onInit();
         }
     };
 });

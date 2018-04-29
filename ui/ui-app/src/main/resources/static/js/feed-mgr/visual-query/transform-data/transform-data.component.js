@@ -18,7 +18,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService, wranglerDataService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
@@ -27,6 +27,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.uiGridConstants = uiGridConstants;
             this.FeedService = FeedService;
             this.BroadcastService = BroadcastService;
+            this.wranglerDataService = wranglerDataService;
             //Flag to determine if we can move on to the next step
             this.isValid = false;
             //Function History
@@ -66,6 +67,18 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              * @type {Array.<Object>}
              */
             this.tableRows = [];
+            /**
+             * History state for client to track state changes
+             */
+            this.tableState = null;
+            /**
+             * Rows analyzed by the server
+             */
+            this.actualRows = null;
+            /**
+             * Cols analyzed by the server
+             */
+            this.actualCols = null;
             //Code Mirror options.  Tern Server requires it be in javascript mode
             this.codeMirrorConfig = {
                 onLoad: this.codemirrorLoaded.bind(this)
@@ -170,6 +183,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 else {
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
+                // Provide access to table for fetching pages
+                _this.wranglerDataService.asyncQuery = _this.query.bind(_this);
                 // Watch for changes to field policies
                 if (_this.fieldPolicies == null) {
                     _this.fieldPolicies = [];
@@ -189,7 +204,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     });
                     _this.engine.setFieldPolicies(_this.fieldPolicies);
                     if (domainTypesLoaded) {
-                        _this.query();
+                        //this.updateGrid();
                     }
                 }, true);
                 // Fetch domain types
@@ -198,8 +213,12 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     _this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
                     // Load table data
-                    _this.query();
+                    //this.updateGrid();
                 });
+                //this.updateGrid();
+                // Indicate ready
+                _this.tableState = -1;
+                _this.tableColumns = [];
             };
             if (this.engine instanceof Promise) {
                 this.engine.then(function (queryEngine) {
@@ -428,7 +447,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          *
          * @return {Promise} a promise for when the query completes
          */
-        TransformDataComponent.prototype.query = function (refresh) {
+        TransformDataComponent.prototype.query = function (refresh, pageSpec) {
             if (refresh === void 0) { refresh = true; }
             var self = this;
             var deferred = this.$q.defer();
@@ -459,9 +478,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 self.resetAllProgress();
                 self.showError(message);
                 // Reset state
-                self.engine.pop();
-                self.functionHistory.pop();
-                self.refreshGrid();
+                self.onUndo();
                 deferred.reject(message);
             };
             var notifyCallback = function (progress) {
@@ -472,7 +489,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                         self.updateGrid();
                 }
             };
-            self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
+            self.engine.transform(pageSpec).subscribe(notifyCallback, errorCallback, successCallback);
             return deferred.promise;
         };
         ;
@@ -500,8 +517,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 });
             });
             //update the ag-grid
-            this.tableColumns = columns;
+            this.updateTableState();
+            this.actualCols = this.engine.getActualCols();
+            this.actualRows = this.engine.getActualRows();
             this.tableRows = this.engine.getRows();
+            this.tableColumns = columns;
             this.tableValidation = this.engine.getValidationResults();
             this.updateCodeMirrorAutoComplete();
         };
@@ -688,9 +708,17 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         };
         ;
         /**
+         * Update state counter so clients know that state (function stack) has changed
+         */
+        TransformDataComponent.prototype.updateTableState = function () {
+            // Update state variable to indicate to client we are in a new state
+            this.tableState = (this.tableState != this.functionHistory.length ? this.functionHistory.length : this.tableState);
+        };
+        /**
          * Refreshes the grid. Used after undo and redo.
          */
         TransformDataComponent.prototype.refreshGrid = function () {
+            this.updateTableState();
             var columns = this.engine.getColumns();
             var rows = this.engine.getRows();
             if (columns === null || rows === null) {
@@ -887,7 +915,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             stepIndex: "@"
         },
         controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-            "WindowUnloadService", TransformDataComponent],
+            "WindowUnloadService", "WranglerDataService", TransformDataComponent],
         controllerAs: "$td",
         require: {
             stepperController: "^thinkbigStepper"

@@ -22,7 +22,9 @@ package com.thinkbiganalytics.spark.metadata;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.spark.model.TransformResult;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 import com.thinkbiganalytics.spark.service.DataSetConverterService;
@@ -32,9 +34,12 @@ import jline.internal.Preconditions;
 import org.apache.spark.sql.Row;
 
 import java.util.List;
+import java.util.Vector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import scala.collection.JavaConversions;
 
 /**
  * Transforms a result into a response.
@@ -53,12 +58,64 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
     @Nonnull
     private final String table;
 
+    private PageSpec pageSpec;
+
     /**
      * Constructs a {@code ResponseStage}.
      */
-    public ResponseStage(@Nonnull final String table, @Nonnull final DataSetConverterService converterService) {
+    public ResponseStage(@Nonnull final String table, @Nonnull final DataSetConverterService converterService, @Nullable final PageSpec pageSpec) {
         this.table = table;
         this.converterService = converterService;
+        this.pageSpec = pageSpec;
+    }
+
+    static class CalculatedPage {
+        boolean isPaged = false;
+        int startIndex = 0;
+        int actualEnd;
+
+        CalculatedPage(Integer availableItems, Integer requestedStart, Integer requestedItems) {
+
+            isPaged = (availableItems != null && availableItems > 0 && requestedStart != null && requestedStart >= 0 && requestedItems != null && requestedItems >= 0);
+            int maxIndex = (availableItems == 0 ? 0 : availableItems);
+            if (isPaged) {
+                // Ensure start is within dataset
+                startIndex = (requestedStart < maxIndex  ? requestedStart : (maxIndex - 1));
+
+                // Ensure final index is within outer boundary +1 of dataset
+                actualEnd = ((startIndex + requestedItems) <= availableItems ? startIndex + requestedItems : maxIndex);
+            } else {
+                // Default to all items
+                startIndex = 0;
+                actualEnd = maxIndex;
+            }
+        }
+
+        /**
+         * Generate array for indices for the start (inclusive) and end (exclusive)
+         */
+        scala.collection.immutable.List<Object> indices() {
+            // Generate the indices
+            List<Object> indicesArray = new Vector<>();
+            for (int i = startIndex; i < actualEnd; i++) {
+                indicesArray.add(i);
+            }
+            return JavaConversions.asScalaBuffer(indicesArray).toList();
+        }
+    }
+
+    private List<Row> toRowSelection(List<Row> allRows, CalculatedPage page) {
+        if (page.isPaged) {
+            return allRows.subList(page.startIndex, page.actualEnd);
+        }
+        return allRows;
+    }
+
+    private List<QueryResultColumn> toColumnSelection(List<QueryResultColumn> allColumns, CalculatedPage page) {
+        if (page.isPaged) {
+            return allColumns.subList(page.startIndex, page.actualEnd);
+        }
+        return allColumns;
     }
 
     @Nonnull
@@ -68,17 +125,27 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
 
         // Transform data set into rows
         final QueryResultRowTransform rowTransform = new QueryResultRowTransform(result.getDataSet().schema(), table, converterService);
-        final List<List<Object>> rows = Lists.transform(result.getDataSet().collectAsList(), new Function<Row, List<Object>>() {
+
+        List<Row> allRows = result.getDataSet().collectAsList();
+        List<QueryResultColumn> allColumns = result.getColumns();
+
+        final CalculatedPage rowPage = new CalculatedPage(allRows.size(), pageSpec.getFirstRow(), pageSpec.getNumRows());
+        final CalculatedPage colPage = new CalculatedPage(allColumns.size(), pageSpec.getFirstCol(), pageSpec.getNumCols());
+
+        final List<Row> rowSelection = toRowSelection(allRows, rowPage);
+        final List<QueryResultColumn> columnSelection = toColumnSelection(allColumns, colPage);
+
+        final List<List<Object>> rows = Lists.transform(rowSelection, new Function<Row, List<Object>>() {
             @Nullable
             @Override
             public List<Object> apply(@Nullable Row row) {
-                return (row != null) ? rowTransform.convertRow(row) : null;
+                return (row != null) ? rowTransform.convertPagedRow(row, colPage.indices()) : null;
             }
         });
 
         // Build the query result
         final TransformQueryResult queryResult = new TransformQueryResult();
-        queryResult.setColumns(result.getColumns());
+        queryResult.setColumns(columnSelection);
         queryResult.setRows(rows);
         queryResult.setValidationResults(result.getValidationResults());
 
@@ -88,6 +155,30 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
         response.setResults(queryResult);
         response.setStatus(TransformResponse.Status.SUCCESS);
         response.setTable(table);
+        response.setActualCols(allColumns.size());
+        response.setActualRows(allRows.size());
         return response;
     }
+
+    public static void main(String[] args) {
+
+        CalculatedPage page = new CalculatedPage(12, 0, 150);
+        assert page.actualEnd == 12;
+        assert page.startIndex == 0;
+
+        page = new CalculatedPage(100, 0, 50);
+        assert page.actualEnd == 49;
+        assert page.startIndex == 0;
+
+        page = new CalculatedPage(100, 101, 50);
+
+        assert page.actualEnd == 99;
+        assert page.startIndex == 99;
+
+        page = new CalculatedPage(0, 100, 50);
+        assert page.isPaged = false;
+
+
+    }
+
 }
