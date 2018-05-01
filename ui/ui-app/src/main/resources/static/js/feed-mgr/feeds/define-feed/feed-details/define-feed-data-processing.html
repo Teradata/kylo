@@ -188,7 +188,7 @@
 
                 <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
                   <label class="label-small md-container-ignore">{{"views.define-feed-data-processing.DP21" | translate}}</label>
-                  <md-select ng-model="vm.model.table.targetFormat" ng-change="vm.onTableFormatChange(opt);">
+                  <md-select ng-model="vm.model.table.targetFormat" ng-change="vm.onTableFormatChange();">
                     <md-option ng-repeat="opt in vm.targetFormatOptions track by $index" ng-value="opt.value">
                       {{opt.label}}
                     </md-option>

@@ -199,6 +199,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 else {
                     self.compressionOptions = ['NONE'];
                 }
+                if (format.indexOf('OpenCSVSerde') >= 0) {
+                    //warn the user that their schema will be switched to strings
+                    $mdDialog.show($mdDialog.alert()
+                        .clickOutsideToClose(true)
+                        .title('Target Schema will be modified')
+                        .htmlContent("Warning.  This format will change your target schema. <br/>All field data types will all be converted to  'string'. <br/>Choose a different type if you wish to preserve your defined schema.")
+                        .ariaLabel('Modifying Target Schema')
+                        .ok('Got it!'));
+                }
             };
             function findProperty(key) {
                 return _.find(self.model.inputProcessor.properties, function (property) {
