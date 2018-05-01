@@ -48,6 +48,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessor
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.QuartzScheduler;
@@ -223,9 +224,11 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         if (feedProcessorId != null && feedName == null) {
             feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
         }
+        if(StringUtils.isNotBlank(feedName)){
+            feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
+        }
         return feedName;
     }
-
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
      *
