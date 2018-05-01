@@ -72,6 +72,7 @@ public class TransformServiceTest {
 
         // Test executing a request
         final TransformRequest request = new TransformRequest();
+        request.setDoProfile(true);
         request.setScript("sqlContext.range(1,10)");
 
         final TransformService service = new TransformService(TransformScript.class, engine, sparkContextService, new MockJobTrackerService(), Mockito.mock(DataSetConverterService.class));
@@ -131,6 +132,7 @@ public class TransformServiceTest {
 
         // Test executing a request
         final TransformRequest request = new TransformRequest();
+        request.setDoProfile(true);
         request.setDatasources(Collections.singletonList(Mockito.mock(Datasource.class)));
         request.setScript("sqlContext.range(1,10)");
 

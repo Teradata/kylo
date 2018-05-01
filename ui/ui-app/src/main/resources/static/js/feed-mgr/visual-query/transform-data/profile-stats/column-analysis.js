@@ -25,6 +25,25 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         }
         ColumnAnalysisController.prototype.show = function () {
             var self = this;
+            self.initializeStats();
+            // populate metrics
+            if (self.data && self.data.length > 0) {
+                self.data.sort(self.compare);
+                // rescale bar
+                var total_1 = parseInt(self.totalCount);
+                var scaleFactor_1 = (1 / (self.data[0].count / total_1));
+                var cummCount_1 = 0;
+                angular.forEach(self.data, function (item) {
+                    var frequency = (item.count / total_1);
+                    item.frequency = frequency * 100;
+                    cummCount_1 += item.frequency;
+                    item.cumm = cummCount_1;
+                    item.width = item.frequency * scaleFactor_1;
+                });
+            }
+        };
+        ColumnAnalysisController.prototype.initializeStats = function () {
+            var self = this;
             angular.forEach(self.profile, function (value) {
                 if (value.columnName == self.field) {
                     switch (value.metricType) {
@@ -46,14 +65,8 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                         case 'EMPTY_COUNT':
                             self.emptyCount = value.metricValue;
                             break;
-                        case 'PERC_EMPTY_VALUES':
-                            self.percEmpty = value.metricValue;
-                            break;
                         case 'NULL_COUNT':
                             self.nullCount = value.metricValue;
-                            break;
-                        case 'PERC_NULL_VALUES':
-                            self.percNull = value.metricValue;
                             break;
                         case 'COLUMN_DATATYPE':
                             self.columnDataType = value.metricValue;
@@ -82,22 +95,20 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
                         case 'VARIANCE':
                             self.variance = value.metricValue;
                             break;
+                        case 'HISTO':
+                            self.histo = value.metricValue;
+                            break;
                     }
                 }
             });
-            if (self.data && self.data.length > 0) {
-                self.data.sort(self.compare);
-                // rescale bar
-                var total_1 = parseInt(self.totalCount);
-                var scaleFactor_1 = (1 / (self.data[0].count / total_1));
-                var cummCount_1 = 0;
-                angular.forEach(self.data, function (item) {
-                    var frequency = (item.count / total_1);
-                    item.frequency = frequency * 100;
-                    cummCount_1 += item.frequency;
-                    item.cumm = cummCount_1;
-                    item.width = item.frequency * scaleFactor_1;
-                });
+            if (this.unique != null) {
+                this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount));
+            }
+            if (this.emptyCount != null) {
+                this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount));
+            }
+            if (this.nullCount != null) {
+                this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount));
             }
         };
         /**

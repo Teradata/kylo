@@ -447,10 +447,13 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          *
          * @return {Promise} a promise for when the query completes
          */
-        TransformDataComponent.prototype.query = function (refresh, pageSpec) {
+        TransformDataComponent.prototype.query = function (refresh, pageSpec, doValidate, doProfile) {
             if (refresh === void 0) { refresh = true; }
+            if (doValidate === void 0) { doValidate = true; }
+            if (doProfile === void 0) { doProfile = false; }
             var self = this;
             var deferred = this.$q.defer();
+            console.log('query');
             //flag to indicate query is running
             this.setExecutingQuery(true);
             this.setQueryProgress(50);
@@ -489,7 +492,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                         self.updateGrid();
                 }
             };
-            self.engine.transform(pageSpec).subscribe(notifyCallback, errorCallback, successCallback);
+            self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
             return deferred.promise;
         };
         ;
@@ -650,36 +653,40 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          */
         TransformDataComponent.prototype.showAnalyzeColumn = function (fieldName) {
             var self = this;
-            var profileStats = this.engine.getProfile();
-            var deferred = this.$q.defer();
-            self.$mdDialog.show({
-                controller: (_a = /** @class */ (function () {
-                        function class_2($mdDialog) {
-                            this.$mdDialog = $mdDialog;
+            self.pushFormulaToEngine("select(" + fieldName + ")", {});
+            self.query(false, { firstRow: 0, firstCol: 0, numCols: 0, numRows: 0 }, true, true).then(function () {
+                var profileStats = self.engine.getProfile();
+                self.engine.pop();
+                var deferred = self.$q.defer();
+                self.$mdDialog.show({
+                    controller: (_a = /** @class */ (function () {
+                            function class_2($mdDialog) {
+                                this.$mdDialog = $mdDialog;
+                                /**
+                                 * Additional details about the error.
+                                 */
+                                this.profile = profileStats;
+                                this.fieldName = fieldName;
+                            }
                             /**
-                             * Additional details about the error.
+                             * Hides this dialog.
                              */
-                            this.profile = profileStats;
-                            this.fieldName = fieldName;
-                        }
-                        /**
-                         * Hides this dialog.
-                         */
-                        class_2.prototype.hide = function () {
-                            this.$mdDialog.hide();
-                        };
-                        return class_2;
-                    }()),
-                    _a.$inject = ["$mdDialog"],
-                    _a),
-                controllerAs: "dialog",
-                templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose: false,
-                fullscreen: false,
-                locals: {}
+                            class_2.prototype.hide = function () {
+                                self.$mdDialog.hide();
+                            };
+                            return class_2;
+                        }()),
+                        _a.$inject = ["$mdDialog"],
+                        _a),
+                    controllerAs: "dialog",
+                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                    locals: {}
+                });
+                var _a;
             });
-            var _a;
         };
         ;
         /**

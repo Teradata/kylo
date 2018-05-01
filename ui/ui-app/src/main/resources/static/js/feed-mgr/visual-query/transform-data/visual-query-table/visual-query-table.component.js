@@ -100,8 +100,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             };
             // Refresh table on resize
             //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
-            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 150); });
-            angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 150); });
+            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
+            angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
             // Listen for destroy event
             $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }
@@ -127,7 +127,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 rowHeight: visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT,
                 headerHeight: visual_query_painter_service_1.VisualQueryPainterService.HEADER_HEIGHT,
                 painter: this.painter,
-                columnWidths: [0]
+                columnWidths: [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
+                autoSetup: false
             });
             //this.$timeout_(this.refresh.bind(this), 500);
         };
@@ -178,6 +179,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                     priorScrollTop = scrollBar.scrollTop;
                 }
             }
+            console.log('table setup!');
             this.table_.setup();
             if (!angular.isUndefined(priorScrollLeft)) {
                 ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);

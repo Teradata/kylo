@@ -6,6 +6,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     var PAGE_COLS = 100;
     var WranglerDataService = /** @class */ (function () {
         function WranglerDataService($rootscope, $q, $timeout) {
+            var _this = this;
             this.$rootscope = $rootscope;
             this.$q = $q;
             this.$timeout = $timeout;
@@ -18,6 +19,13 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
              */
             this.sortIndex_ = null;
             this.loading = false;
+            this.fetchTimeoutPromise = null;
+            this.fetchTimeout = function (callback, interval) {
+                if (_this.fetchTimeoutPromise != null) {
+                    _this.$timeout.cancel(_this.fetchTimeoutPromise);
+                }
+                _this.fetchTimeoutPromise = _this.$timeout(callback, interval);
+            };
         }
         WranglerDataService.prototype.cellPageName = function (i, j) {
             var I = (i / PAGE_ROWS) | 0;
@@ -30,20 +38,23 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         };
         ;
         WranglerDataService.prototype.fetchCellPage = function (pageName, cb) {
-            var coordsObj = JSON.parse(pageName);
-            var I = coordsObj.coords[0];
-            var J = coordsObj.coords[1];
-            var self = this;
-            this.asyncQuery(true, {
-                firstRow: I * PAGE_ROWS,
-                numRows: PAGE_ROWS,
-                firstCol: J * PAGE_COLS,
-                numCols: PAGE_COLS * 2
-            }).then(function () {
-                cb(function (i, j) {
-                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS);
+            var _this = this;
+            this.fetchTimeout(function () {
+                var coordsObj = JSON.parse(pageName);
+                var I = coordsObj.coords[0];
+                var J = coordsObj.coords[1];
+                var self = _this;
+                _this.asyncQuery(true, {
+                    firstRow: I * PAGE_ROWS,
+                    numRows: PAGE_ROWS,
+                    firstCol: J * PAGE_COLS,
+                    numCols: PAGE_COLS * 2
+                }).then(function () {
+                    cb(function (i, j) {
+                        return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS);
+                    });
                 });
-            });
+            }, 100);
         };
         /**
          * Gets the value for the specified cell.

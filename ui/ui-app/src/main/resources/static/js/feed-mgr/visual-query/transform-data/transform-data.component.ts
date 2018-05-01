@@ -539,9 +539,11 @@ export class TransformDataComponent implements OnInit {
      *
      * @return {Promise} a promise for when the query completes
      */
-    query(refresh : boolean = true, pageSpec ?: PageSpec) : IPromise<any> {
+    query(refresh : boolean = true, pageSpec ?: PageSpec, doValidate : boolean = true, doProfile : boolean = false) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
+
+        console.log('query');
 
         //flag to indicate query is running
         this.setExecutingQuery(true);
@@ -586,7 +588,7 @@ export class TransformDataComponent implements OnInit {
             }
         };
 
-        self.engine.transform(pageSpec).subscribe(notifyCallback, errorCallback, successCallback);
+        self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
         return deferred.promise;
     };
 
@@ -764,40 +766,45 @@ export class TransformDataComponent implements OnInit {
 
         const self = this;
 
-        let profileStats = this.engine.getProfile();
+        self.pushFormulaToEngine(`select(${fieldName})`, {});
+        self.query(false, { firstRow:0, firstCol: 0, numCols: 0, numRows:0 }, true, true).then( function() {
 
-        const deferred = this.$q.defer();
+                let profileStats = self.engine.getProfile();
+                self.engine.pop();
+                const deferred = self.$q.defer();
 
-        self.$mdDialog.show({
+                self.$mdDialog.show({
 
-            controller: class {
+                    controller: class {
 
-                /**
-                 * Additional details about the error.
-                 */
-                profile = profileStats;
-                fieldName = fieldName;
+                        /**
+                         * Additional details about the error.
+                         */
+                        profile = profileStats;
+                        fieldName = fieldName;
 
-                static readonly $inject = ["$mdDialog"];
+                        static readonly $inject = ["$mdDialog"];
 
-                constructor(private $mdDialog: angular.material.IDialogService) {
+                        constructor(private $mdDialog: angular.material.IDialogService) {
 
-                }
+                        }
 
-                /**
-                 * Hides this dialog.
-                 */
-                hide() {
-                    this.$mdDialog.hide();
-                }
-            },
-            controllerAs: "dialog",
-            templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: false,
-            locals: {
-            }
+                        /**
+                         * Hides this dialog.
+                         */
+                        hide() {
+                            self.$mdDialog.hide();
+                        }
+                    },
+                    controllerAs: "dialog",
+                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                    locals: {
+                    }
+                });
+
         });
 
     };

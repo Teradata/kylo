@@ -325,14 +325,18 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
          *
          * @return an observable for the response progress
          */
-        SparkQueryEngine.prototype.transform = function (pageSpec) {
+        SparkQueryEngine.prototype.transform = function (pageSpec, doValidate, doProfile) {
             // Build the request body
+            if (doValidate === void 0) { doValidate = true; }
+            if (doProfile === void 0) { doProfile = false; }
             if (!pageSpec) {
-                pageSpec = { firstRow: 0, numRows: 128, firstCol: 0, numCols: 64 };
+                pageSpec = { firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000 };
             }
             var body = {
                 "policies": this.getState().fieldPolicies,
-                "pageSpec": pageSpec
+                "pageSpec": pageSpec,
+                "doProfile": doProfile,
+                "doValidate": doValidate
             };
             var index = this.states_.length - 1;
             if (index > 0) {
@@ -363,12 +367,14 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 var state = self.states_[index];
                 // Check status
                 if (response.data.status === "PENDING") {
+                    /*
                     if (state.columns === null && response.data.results && response.data.results.columns) {
                         state.columns = response.data.results.columns;
                         state.rows = [];
                         state.table = response.data.table;
                         self.updateFieldPolicies(state);
                     }
+                    */
                     deferred.next(response.data.progress);
                     self.$timeout(function () {
                         self.$http({
@@ -392,18 +398,17 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                     return (column.hiveColumnLabel === "processing_dttm");
                 });
                 if (angular.isDefined(invalid)) {
-                    state.columns = [];
                     state.rows = [];
+                    state.columns = [];
                     deferred.error("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
                 }
                 else if (angular.isDefined(reserved)) {
-                    state.columns = [];
                     state.rows = [];
+                    state.columns = [];
                     deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
                 }
                 else {
                     // Update state
-                    state.columns = response.data.results.columns;
                     state.profile = response.data.profile;
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
@@ -411,6 +416,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                     self.updateFieldPolicies(state);
                     state.actualCols = response.data.actualCols;
                     state.actualRows = response.data.actualRows;
+                    state.columns = response.data.results.columns;
                     // Indicate observable is complete
                     deferred.complete();
                 }

@@ -1,7 +1,7 @@
 import * as angular from "angular";
 
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
-import {IDeferred, IPromise} from "angular";
+
 
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
@@ -45,9 +45,19 @@ export class WranglerDataService {
 
     state: number;
 
-    constructor(private $rootscope: any, private $q: angular.IQService, private $timeout: any) {
+    fetchTimeoutPromise: any = null;
+
+
+    constructor(private $rootscope: any, private $q: angular.IQService, private $timeout: angular.ITimeoutService) {
 
     }
+
+    fetchTimeout = <T>(callback: (...args: any[]) => T, interval: number) => {
+        if (this.fetchTimeoutPromise != null) {
+            this.$timeout.cancel(this.fetchTimeoutPromise);
+        }
+        this.fetchTimeoutPromise = this.$timeout(callback, interval);
+    };
 
     cellPageName(i: number, j: number): string {
         var I = (i / PAGE_ROWS) | 0;
@@ -62,21 +72,23 @@ export class WranglerDataService {
 
     fetchCellPage(pageName: string, cb: any): void {
 
-        var coordsObj = JSON.parse(pageName);
-        var I = coordsObj.coords[0];
-        var J = coordsObj.coords[1];
-        var self = this;
+        this.fetchTimeout(() => {
+            var coordsObj = JSON.parse(pageName);
+            var I = coordsObj.coords[0];
+            var J = coordsObj.coords[1];
+            var self = this;
 
-        this.asyncQuery(true, {
-            firstRow: I * PAGE_ROWS,
-            numRows: PAGE_ROWS,
-            firstCol: J * PAGE_COLS,
-            numCols: PAGE_COLS * 2
-        }).then(() => {
-            cb(function (i: number, j: number) {
-                return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS)
+            this.asyncQuery(true, {
+                firstRow: I * PAGE_ROWS,
+                numRows: PAGE_ROWS,
+                firstCol: J * PAGE_COLS,
+                numCols: PAGE_COLS * 2
+            }).then(() => {
+                cb(function (i: number, j: number) {
+                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS)
+                });
             });
-        });
+        }, 100);
     }
 
     /**
@@ -125,26 +137,6 @@ export class WranglerDataService {
         return null;
     }
 
-    /*
-    fetchHeaderPage(pageName: string, cb: any): void {
-
-        var self = this;
-        var jObj = JSON.parse(pageName);
-        var j = jObj.j;
-        var J = (j / PAGE_COLS) | 0;
-
-        this.headerDefer = this.$q.defer();
-        this.headerDefer.promise.then((success) => {
-                console.log("promise then");
-                cb(function (j: number) {
-                    console.log("(resolved)Fetching header at ", j, "J", J);
-                    return self.getHeader(j - J * PAGE_COLS);
-                });
-            }
-        );
-
-    }
-    */
 
 }
 

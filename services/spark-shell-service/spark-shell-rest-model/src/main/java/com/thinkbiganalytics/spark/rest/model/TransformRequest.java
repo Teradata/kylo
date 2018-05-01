@@ -42,6 +42,16 @@ public class TransformRequest {
     private List<Datasource> datasources;
 
     /**
+     * Whether to perform validation
+     */
+    private boolean doValidate = true;
+
+    /**
+     * Whether to perform profiling
+     */
+    private boolean doProfile = false;
+
+    /**
      * Previous transformation result
      */
     private Parent parent;
@@ -120,7 +130,6 @@ public class TransformRequest {
     }
 
 
-
     /**
      * Gets the Scala script with the transformation.
      *
@@ -155,6 +164,37 @@ public class TransformRequest {
         this.pageSpec = pageSpec;
     }
 
+    /**
+     * Whether to perform the validation stage using the configured validation policies
+     * @return true if validation stage should be run
+     */
+    public boolean isDoValidate() {
+        return doValidate;
+    }
+
+    /**
+     * Set whether to perform the validation stage on the results
+     * @param doValidate true if validation stage should be performed
+     */
+    public void setDoValidate(boolean doValidate) {
+        this.doValidate = doValidate;
+    }
+
+    /**
+     * Whether to profile the resultset
+     * @return true if profile should be performed
+     */
+    public boolean isDoProfile() {
+        return doProfile;
+    }
+
+    /**
+     * Set whether profile statistics should be generated for the result
+     * @param doProfile true if to perform profiling
+     */
+    public void setDoProfile(boolean doProfile) {
+        this.doProfile = doProfile;
+    }
 
     /**
      * Results of a previous transformation.
@@ -206,5 +246,7 @@ public class TransformRequest {
         public void setTable(String table) {
             this.table = table;
         }
+
+
     }
 }

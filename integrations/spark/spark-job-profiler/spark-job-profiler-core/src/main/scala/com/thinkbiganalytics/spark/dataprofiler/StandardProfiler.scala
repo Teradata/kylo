@@ -42,7 +42,7 @@ class StandardProfiler(val sqlContext: SQLContext, val sparkContextService: Spar
 
         // Generate the profile model
         val partitionLevelModels = columnValueCounts.mapPartitions(new PartitionLevelModels(schemaMap, profilerConfiguration))
-        if (!partitionLevelModels.isEmpty) {
+        val result = if (!partitionLevelModels.isEmpty) {
             Option(partitionLevelModels.reduce((a, b) => {
                 a.combine(b)
                 a
@@ -50,5 +50,12 @@ class StandardProfiler(val sqlContext: SQLContext, val sparkContextService: Spar
         } else {
             Option.empty
         }
+
+      // Add histogram statistics to the combined model
+        if (!result.isEmpty) {
+          for ((colIdx,field) <- schemaMap) result.get.addAggregate(colIdx, dataset, field);
+        }
+
+      result;
     }
 }

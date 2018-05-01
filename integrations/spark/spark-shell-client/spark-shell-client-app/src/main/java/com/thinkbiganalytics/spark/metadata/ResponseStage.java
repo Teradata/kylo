@@ -160,25 +160,4 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
         return response;
     }
 
-    public static void main(String[] args) {
-
-        CalculatedPage page = new CalculatedPage(12, 0, 150);
-        assert page.actualEnd == 12;
-        assert page.startIndex == 0;
-
-        page = new CalculatedPage(100, 0, 50);
-        assert page.actualEnd == 49;
-        assert page.startIndex == 0;
-
-        page = new CalculatedPage(100, 101, 50);
-
-        assert page.actualEnd == 99;
-        assert page.startIndex == 99;
-
-        page = new CalculatedPage(0, 100, 50);
-        assert page.isPaged = false;
-
-
-    }
-
 }

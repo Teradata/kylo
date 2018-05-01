@@ -202,14 +202,8 @@ public class FloatColumnStatistics extends StandardColumnStatistics {
                + "]\n}";
     }
 
-
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
 
         if (allNulls()) {
@@ -227,9 +221,7 @@ public class FloatColumnStatistics extends StandardColumnStatistics {
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MEAN), String.valueOf(mean)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.STDDEV), String.valueOf(stddev)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.VARIANCE), String.valueOf(variance)));
-        return rows;
     }
-
 
     /**
      * Get maximum value

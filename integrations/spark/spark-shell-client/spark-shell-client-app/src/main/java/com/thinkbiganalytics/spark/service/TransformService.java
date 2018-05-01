@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.service;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -216,7 +217,7 @@ public class TransformService {
         // Execute script
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService), getPolicies(request), request.getPageSpec());
+        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request);
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
@@ -330,7 +331,7 @@ public class TransformService {
         }
 
         // Execute query
-        final TransformResponse response = submitTransformJob(createSqlTask(request), getPolicies(request), request.getPageSpec());
+        final TransformResponse response = submitTransformJob(createSqlTask(request), request);
         return log.exit(response);
     }
 
@@ -560,17 +561,26 @@ public class TransformService {
      * Submits the specified task to be executed and returns the result.
      */
     @Nonnull
-    private TransformResponse submitTransformJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies, @Nullable PageSpec pageSpec) throws ScriptException {
+    private TransformResponse submitTransformJob(final Supplier<TransformResult> task, @Nonnull final TransformRequest request) throws ScriptException {
+
+        final FieldPolicy[] policies = getPolicies(request);
+        final PageSpec pageSpec = request.getPageSpec();
+
         log.entry(task, policies);
 
         // Prepare script
         Supplier<TransformResult> result = task;
 
-        if (policies != null && policies.length > 0 && validator != null) {
-            result = Suppliers.compose(new ValidationStage(policies, validator), result);
+        if (request.isDoValidate()) {
+            if (policies != null && policies.length > 0 && validator != null) {
+                result = Suppliers.compose(new ValidationStage(policies, validator), result);
+            }
         }
-        if (profiler != null) {
-            result = Suppliers.compose(new ProfileStage(profiler), result);
+
+        if (request.isDoProfile()) {
+            if (profiler != null) {
+                result = Suppliers.compose(new ProfileStage(profiler), result);
+            }
         }
 
         // Execute script

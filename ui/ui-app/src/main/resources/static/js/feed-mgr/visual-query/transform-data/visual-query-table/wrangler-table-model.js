@@ -95,7 +95,6 @@ define(["require", "exports", "fattable"], function (require, exports) {
         };
         ;
         WranglerTableModel.prototype.getHeader = function (j, cb) {
-            console.log('getheader', j);
             cb(this.data.getHeader(j));
         };
         ;

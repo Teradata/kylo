@@ -91,7 +91,6 @@ export class WranglerTableModel extends fattable.TableModel {
     };
 
     getHeader(j: number, cb: any): void {
-        console.log('getheader',j);
         cb(this.data.getHeader(j));
     };
 

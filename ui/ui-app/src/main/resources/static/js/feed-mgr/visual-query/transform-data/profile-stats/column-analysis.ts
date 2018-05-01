@@ -27,18 +27,19 @@ export class ColumnAnalysisController implements ng.IComponentController {
     unique: string;
     maxLen: string;
     minLen: string;
-    percUnique: string;
-    percEmpty: string;
-    emptyCount: string;
+    percUnique: number;
+    percEmpty: number;
+    emptyCount: string ;
     columnDataType: string;
     nullCount: string;
-    percNull: string;
-    max : string;
-    min : string;
-    sum : string;
-    mean : string;
-    stddev : string;
-    variance : string;
+    percNull: number;
+    max: string;
+    min: string;
+    sum: string;
+    mean: string;
+    stddev: string;
+    variance: string;
+    histo: string;
 
     constructor(private $scope: any, private $timeout: any) {
         this.show();
@@ -47,6 +48,28 @@ export class ColumnAnalysisController implements ng.IComponentController {
     show(): void {
         var self = this;
 
+        self.initializeStats();
+
+        // populate metrics
+        if (self.data && self.data.length > 0) {
+            self.data.sort(self.compare);
+
+            // rescale bar
+            let total: number = parseInt(self.totalCount);
+            let scaleFactor: number = (1 / (self.data[0].count / total));
+            let cummCount: number = 0;
+            angular.forEach(self.data, function (item: any) {
+                let frequency = (item.count / total);
+                item.frequency = frequency * 100;
+                cummCount += item.frequency
+                item.cumm = cummCount;
+                item.width = item.frequency * scaleFactor;
+            });
+        }
+    }
+
+    initializeStats(): void {
+        var self = this;
         angular.forEach(self.profile, function (value: any) {
             if (value.columnName == self.field) {
 
@@ -69,14 +92,8 @@ export class ColumnAnalysisController implements ng.IComponentController {
                     case 'EMPTY_COUNT':
                         self.emptyCount = value.metricValue;
                         break;
-                    case 'PERC_EMPTY_VALUES':
-                        self.percEmpty = value.metricValue;
-                        break;
                     case 'NULL_COUNT':
                         self.nullCount = value.metricValue;
-                        break;
-                    case 'PERC_NULL_VALUES':
-                        self.percNull = value.metricValue;
                         break;
                     case 'COLUMN_DATATYPE':
                         self.columnDataType = value.metricValue;
@@ -105,27 +122,23 @@ export class ColumnAnalysisController implements ng.IComponentController {
                     case 'VARIANCE':
                         self.variance = value.metricValue;
                         break;
-                }
+                    case 'HISTO':
+                        self.histo = value.metricValue;
+                        break;
 
+                }
             }
         });
-
-        if (self.data && self.data.length > 0) {
-            self.data.sort(self.compare);
-
-            // rescale bar
-            let total: number = parseInt(self.totalCount);
-            let scaleFactor: number = (1 / (self.data[0].count / total));
-            let cummCount: number = 0;
-            angular.forEach(self.data, function (item: any) {
-                let frequency = (item.count / total);
-                item.frequency = frequency * 100;
-                cummCount += item.frequency
-                item.cumm = cummCount;
-                item.width = item.frequency * scaleFactor;
-            });
-
+        if (this.unique != null)  {
+            this.percUnique = (parseInt(this.unique) / parseInt(this.totalCount))
         }
+        if (this.emptyCount != null)  {
+            this.percEmpty = (parseInt(this.emptyCount) / parseInt(this.totalCount));
+        }
+        if (this.nullCount != null) {
+            this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount));
+        }
+
     }
 
     /**
@@ -138,8 +151,6 @@ export class ColumnAnalysisController implements ng.IComponentController {
             return -1;
         return 0;
     }
-
-
 }
 
 angular.module(moduleName).controller("ColumnAnalysisController", ["$scope", "$timeout", ColumnAnalysisController]);

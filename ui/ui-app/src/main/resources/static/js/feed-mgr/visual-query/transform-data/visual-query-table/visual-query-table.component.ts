@@ -188,8 +188,8 @@ export class VisualQueryTable {
         // Refresh table on resize
         //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
 
-        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 150));
-        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 150));
+        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
+        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 50));
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
@@ -220,7 +220,8 @@ export class VisualQueryTable {
             rowHeight: VisualQueryPainterService.ROW_HEIGHT,
             headerHeight: VisualQueryPainterService.HEADER_HEIGHT,
             painter: this.painter,
-            columnWidths: [0]
+            columnWidths: [180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180],
+            autoSetup: false
         });
 
         //this.$timeout_(this.refresh.bind(this), 500);
@@ -286,7 +287,9 @@ export class VisualQueryTable {
             }
 
         }
+        console.log('table setup!');
         this.table_.setup();
+
         if (!angular.isUndefined(priorScrollLeft)) {
             ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
         }

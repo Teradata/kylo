@@ -565,7 +565,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      *
      * @return an observable for the response progress
      */
-    abstract transform(pageSpec ?:PageSpec): Observable<any>;
+    abstract transform(pageSpec ?:PageSpec, doValidate ?: boolean, doProfile ?: boolean): Observable<any>;
 
     /**
      * Reverts to the previous transformation. The current transformation is remembered and may be restored.
