@@ -585,6 +585,7 @@
     "views.alerts-template.ALERT5": "Alerts",
     "views.alerts-template. Job Failure": "Job Failure",
     "views.alerts-template. Service": "Service Failure",
+    "views.alerts-template. Sla Violation": "SLA",
 
     "views.vertical-section-layout-template.Delete": "Delete",
     "views.vertical-section-layout-template.Cancel": "Cancel",
