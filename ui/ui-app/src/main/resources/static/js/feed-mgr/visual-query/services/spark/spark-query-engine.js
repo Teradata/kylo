@@ -367,14 +367,13 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 var state = self.states_[index];
                 // Check status
                 if (response.data.status === "PENDING") {
-                    /*
                     if (state.columns === null && response.data.results && response.data.results.columns) {
-                        state.columns = response.data.results.columns;
-                        state.rows = [];
-                        state.table = response.data.table;
-                        self.updateFieldPolicies(state);
+                        //Unnecessary and causes table refresh problems
+                        // state.columns = response.data.results.columns;
+                        // state.rows = [];
+                        // state.table = response.data.table;
+                        // self.updateFieldPolicies(state);
                     }
-                    */
                     deferred.next(response.data.progress);
                     self.$timeout(function () {
                         self.$http({
@@ -383,7 +382,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                             headers: { "Content-Type": "application/json" },
                             responseType: "json"
                         }).then(successCallback, errorCallback);
-                    }, 1000, false);
+                    }, 500, false);
                     return;
                 }
                 if (response.data.status !== "SUCCESS") {
@@ -413,10 +412,10 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
                     state.validationResults = response.data.results.validationResults;
-                    self.updateFieldPolicies(state);
                     state.actualCols = response.data.actualCols;
                     state.actualRows = response.data.actualRows;
                     state.columns = response.data.results.columns;
+                    self.updateFieldPolicies(state);
                     // Indicate observable is complete
                     deferred.complete();
                 }

@@ -129,7 +129,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             configurable: true
         });
         VisualQueryPainterService.prototype.fillCellPending = function (cellDiv) {
-            cellDiv.textContent = "Wait ...";
+            cellDiv.textContent = "Loading...";
             cellDiv.className = "pending";
         };
         VisualQueryPainterService.prototype.fillHeaderPending = function (cellDiv) {

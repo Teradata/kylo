@@ -260,9 +260,6 @@ export class ColumnDelegate implements IColumnDelegate {
         const formula = "drop(\"" + StringUtils.singleQuote(column.headerTooltip) + "\")";
         this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column)});
         this.controller.fieldPolicies = this.controller.fieldPolicies.filter((value, index) => index == column.index);
-
-        grid.onColumnsChange();
-        grid.refresh();
     }
 
     /**
@@ -768,6 +765,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     setDomainType(column: any, domainTypeId: string) {
         this.controller.setDomainType(column.index, domainTypeId);
+        this.controller.query(true, null, true, false);
     }
 
     /**

@@ -90,6 +90,8 @@ public class HistogramStatistics implements ColumnStatistics, Serializable {
                 break;
             case "double":
                 break;
+            case "long":
+                break;
             default:
                 return false;
         }

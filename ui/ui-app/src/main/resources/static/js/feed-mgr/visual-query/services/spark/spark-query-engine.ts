@@ -129,8 +129,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
      * @param {string} label
      * @return {string}
      */
-    getValidHiveColumnName(label: string){
-        return label.replace(this.VALID_NAME_PATTERN,'')
+    getValidHiveColumnName(label: string) {
+        return label.replace(this.VALID_NAME_PATTERN, '')
     }
 
     /**
@@ -355,7 +355,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
      *
      * @return an observable for the response progress
      */
-    transform(pageSpec ?: PageSpec, doValidate: boolean = true, doProfile : boolean = false): Observable<any> {
+    transform(pageSpec ?: PageSpec, doValidate: boolean = true, doProfile: boolean = false): Observable<any> {
         // Build the request body
 
         if (!pageSpec) {
@@ -364,9 +364,9 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         let body = {
             "policies": this.getState().fieldPolicies,
-            "pageSpec" : pageSpec,
-            "doProfile" : doProfile,
-            "doValidate" : doValidate
+            "pageSpec": pageSpec,
+            "doProfile": doProfile,
+            "doValidate": doValidate
         };
         let index = this.states_.length - 1;
 
@@ -403,14 +403,17 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
             // Check status
             if (response.data.status === "PENDING") {
-                /*
+
+
                 if (state.columns === null && response.data.results && response.data.results.columns) {
-                    state.columns = response.data.results.columns;
-                    state.rows = [];
-                    state.table = response.data.table;
-                    self.updateFieldPolicies(state);
+
+                //Unnecessary and causes table refresh problems
+                    // state.columns = response.data.results.columns;
+                    // state.rows = [];
+                    // state.table = response.data.table;
+                    // self.updateFieldPolicies(state);
                 }
-                */
+
                 deferred.next(response.data.progress);
 
                 self.$timeout(function () {
@@ -420,7 +423,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                         headers: {"Content-Type": "application/json"},
                         responseType: "json"
                     }).then(successCallback, errorCallback);
-                }, 1000, false);
+                }, 500, false);
                 return;
             }
             if (response.data.status !== "SUCCESS") {
@@ -450,10 +453,10 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
                 state.validationResults = response.data.results.validationResults;
-                self.updateFieldPolicies(state);
                 state.actualCols = response.data.actualCols;
                 state.actualRows = response.data.actualRows;
                 state.columns = response.data.results.columns;
+                self.updateFieldPolicies(state);
 
                 // Indicate observable is complete
                 deferred.complete();
@@ -510,27 +513,27 @@ export class SparkQueryEngine extends QueryEngine<string> {
         var self = this;
         if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
             const policyMap = {};
-            state.fieldPolicies.forEach(policy => {
-                policyMap[policy.name] = policy;
-            });
+                state.fieldPolicies.forEach(policy => {
+                    policyMap[policy.name] = policy;
+                });
 
-            state.fieldPolicies = state.columns.map(column => {
-                var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
-                if (policyMap[name]) {
-                    return policyMap[name];
-                } else {
-                    return {
-                        name:name,
-                        fieldName:name,
-                        feedFieldName:name,
-                        domainTypeId: null,
-                        partition: null,
-                        profile: true,
-                        standardization: null,
-                        validation: null
-                    };
-                }
-            });
+                state.fieldPolicies = state.columns.map(column => {
+                    var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                    if (policyMap[name]) {
+                        return policyMap[name];
+                    } else {
+                        return {
+                            name: name,
+                            fieldName: name,
+                            feedFieldName: name,
+                            domainTypeId: null,
+                            partition: null,
+                            profile: true,
+                            standardization: null,
+                            validation: null
+                        };
+                    }
+                });
         }
     }
 }

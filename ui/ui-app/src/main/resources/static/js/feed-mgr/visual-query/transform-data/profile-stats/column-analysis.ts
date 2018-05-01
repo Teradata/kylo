@@ -39,7 +39,10 @@ export class ColumnAnalysisController implements ng.IComponentController {
     mean: string;
     stddev: string;
     variance: string;
-    histo: string;
+    histo: object;
+    validCount: number;
+    invalidCount: string;
+    showValid: boolean = false;
 
     constructor(private $scope: any, private $timeout: any) {
         this.show();
@@ -123,7 +126,15 @@ export class ColumnAnalysisController implements ng.IComponentController {
                         self.variance = value.metricValue;
                         break;
                     case 'HISTO':
-                        self.histo = value.metricValue;
+                        self.histo = angular.fromJson(value.metricValue);
+                        break;
+                    case 'VALID_COUNT':
+                        self.validCount = value.metricValue;
+                        self.showValid = true;
+                        break;
+                    case 'INVALID_COUNT':
+                        self.invalidCount = value.metricValue;
+                        self.showValid = true;
                         break;
 
                 }
@@ -137,6 +148,9 @@ export class ColumnAnalysisController implements ng.IComponentController {
         }
         if (this.nullCount != null) {
             this.percNull = (parseInt(this.nullCount) / parseInt(this.totalCount));
+        }
+        if (this.showValid) {
+            this.validCount = (parseInt(this.totalCount) - parseInt(this.invalidCount));
         }
 
     }
@@ -153,5 +167,101 @@ export class ColumnAnalysisController implements ng.IComponentController {
     }
 }
 
+const columnHistogram = function () {
+    return {
+        restrict: "EA",
+        bindToController: {
+            chartData: '='
+        },
+        controllerAs: 'vm',
+        scope: {},
+        template: '<nvd3 options="vm.chartOptions" data="vm.chartData" api="vm.chartApi"></nvd3>',
+        controller: "HistogramController"
+    };
+};
+export class HistogramController implements ng.IComponentController {
+
+    tooltipData: any;
+    chartData: any;
+    chartApi : any;
+    chartOptions: any= {
+        "chart": {
+            "type": "multiBarChart",
+            "height": 315,
+            "width": 700,
+            "margin": {
+                "top": 20,
+                "right": 20,
+                "bottom": 45,
+                "left": 45
+            },
+            "clipEdge": true,
+            "duration": 250,
+            "stacked": false,
+            "xAxis": {
+                "axisLabel": "Value",
+                "showMaxMin": true,
+                "tickFormat": function(d:number) { return d3.format('0f')(d)}
+            },
+            "yAxis": {
+                "axisLabel": "Count",
+                "axisLabelDistance": -20,
+                "tickFormat": function(d:number) { return d3.format('0f')(d)}
+            },
+            "showControls": false,
+            "showLegend": false,
+            tooltip: {
+                contentGenerator: function (e : any) {
+                    var data = e.data;
+                    var index = e.index;
+                    if (data === null) return;
+                    return `<table><tbody>`+
+                    `<tr><td class="key">Min</td><td>${data.min}</td></tr>`+
+                    `<tr><td class="key">Max</td><td>${data.max}</td></tr>`+
+                    `<tr><td class="key">Count</td><td>${data.y}</td></tr>`+
+                    `</tbody></table>`;
+                }
+            }
+
+
+        }
+    };
+
+    formatData = function() {
+
+        var xAxis = this.chartData._1;
+        var yAxis = this.chartData._2;
+
+        var data = [];
+        for (var i=0; i<xAxis.length-1; i++) {
+            data.push({ min: xAxis[i], max: xAxis[i+1], x:(xAxis[i] + xAxis[i+1])/2, y:yAxis[i]});
+        }
+        this.tooltipData = data;
+        return [{
+            key: 'Count',
+            color: '#bcbd22',
+            values: data
+        }];
+    }
+
+    constructor(private $scope: any) {
+
+    }
+
+    $onInit() {
+        console.log('chartData',this.chartData);
+        this.chartData = this.formatData();
+
+        /*
+        this.$scope.$watch(this.chartData, (newValue:object)=> {
+            this.chartApi.update();
+        })
+        */
+    }
+
+}
+
 angular.module(moduleName).controller("ColumnAnalysisController", ["$scope", "$timeout", ColumnAnalysisController]);
+angular.module(moduleName).controller("HistogramController", ["$scope", HistogramController]);
 angular.module(moduleName).directive("columnAnalysis", directive);
+angular.module(moduleName).directive("columnHistogram", columnHistogram);

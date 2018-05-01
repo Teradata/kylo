@@ -6,7 +6,7 @@ import {TransformValidationResult} from "../../wrangler/model/transform-validati
 const moduleName: string = require("feed-mgr/visual-query/module-name");
 
 const PAGE_ROWS = 64;
-const PAGE_COLS = 100;
+const PAGE_COLS = 1000;
 
 export class WranglerDataService {
 

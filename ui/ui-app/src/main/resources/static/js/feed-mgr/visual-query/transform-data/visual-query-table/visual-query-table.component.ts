@@ -139,42 +139,16 @@ export class VisualQueryTable {
                 private dataService: WranglerDataService, private tableService: WranglerTableService, private uiGridConstants_: any, private $window: angular.IWindowService) {
         this.painter.delegate = this;
 
-
-        // Refresh table when model changes
-        tableService.registerTable((event) => {
-            if (event.type === WranglerEventType.REFRESH) {
-                //this.refresh();
-            }
-        });
-
-        $scope_.$watchCollection(() => this.columns, (newValue, oldValue) => {
+        /* Watch on columns indicating model changed */
+        $scope_.$watchCollection(() => this.columns, () => {
             this.onColumnsChange();
-            if (this.tableState != this.lastState) {
-                if (newValue.length == oldValue.length) {
-                    this.refreshRows();
-                } else {
-                   this.refresh();
-                }
-            }
-            this.lastState = this.tableState;
-        });
-
-        $scope_.$watchCollection(() => this.domainTypes, () => {
-            this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
-            //this.refresh()
+            this.onRowsChange();
+            this.onValidationResultsChange();
+            this.refresh();
         });
 
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
         $scope_.$watch(() => this.options ? this.options.rowFont : null, () => painter.rowFont = this.options.rowFont);
-
-        $scope_.$watchCollection(() => this.rows, () => {
-            //this.onRowsChange();
-        });
-
-        $scope_.$watchCollection(() => this.validationResults, () => {
-            this.onValidationResultsChange();
-            // this.refresh();
-        });
 
         let resizeTimeoutPromise: any = null;
 
@@ -186,8 +160,6 @@ export class VisualQueryTable {
         };
 
         // Refresh table on resize
-        //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
-
         $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
         angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 50));
 
@@ -200,7 +172,6 @@ export class VisualQueryTable {
     }
 
     $onInit() {
-        this.onColumnsChange();
         this.rows = angular.copy(this.rows);
         this.init(this.$element);
     }
@@ -223,8 +194,6 @@ export class VisualQueryTable {
             columnWidths: [180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180,180],
             autoSetup: false
         });
-
-        //this.$timeout_(this.refresh.bind(this), 500);
     }
 
     /**
@@ -238,6 +207,7 @@ export class VisualQueryTable {
         }
 
         if (this.columns != null && this.columns.length > 0) {
+            this.painter.domainTypes = this.domainTypes.sort((a, b) => (a.title < b.title) ? -1 : 1);
 
             // Re-calculate column widths
             const widthDiff = Math.abs(this.lastTableWidth_ - $((this.table_ as any).container).width());
@@ -287,7 +257,6 @@ export class VisualQueryTable {
             }
 
         }
-        console.log('table setup!');
         this.table_.setup();
 
         if (!angular.isUndefined(priorScrollLeft)) {
@@ -404,9 +373,6 @@ export class VisualQueryTable {
         this.dataService.columns_ = _.filter(this.columns, function (column: any) {
             return (column.visible !== false);
         });
-
-        // Update rows
-        this.onRowsChange();
     }
 
     /**

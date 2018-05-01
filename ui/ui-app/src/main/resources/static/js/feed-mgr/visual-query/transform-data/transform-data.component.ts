@@ -543,8 +543,6 @@ export class TransformDataComponent implements OnInit {
         const self = this;
         const deferred = this.$q.defer();
 
-        console.log('query');
-
         //flag to indicate query is running
         this.setExecutingQuery(true);
         this.setQueryProgress(50);
@@ -582,10 +580,11 @@ export class TransformDataComponent implements OnInit {
         };
         const notifyCallback = function (progress: number) {
             //self.setQueryProgress(progress * 100);
+            /*
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
-                if (refresh) self.updateGrid();
             }
+            */
         };
 
         self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
@@ -991,9 +990,9 @@ export class TransformDataComponent implements OnInit {
                 if (index === columnIndex) {
                     this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
                 }
-
                 return fieldPolicy;
             });
+            this.engine.setFieldPolicies(this.fieldPolicies);
         }
     }
 

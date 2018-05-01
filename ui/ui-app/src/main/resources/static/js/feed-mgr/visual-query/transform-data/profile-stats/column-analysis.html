@@ -33,6 +33,15 @@
             <strong>Summary</strong>
             <table>
               <tbody>
+              <tr ng-if="vm.showValid">
+                <th>Valid</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.validCount">0</td>
+              </tr>
+              <tr ng-if="vm.showValid">
+                <th>Invalid</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.invalidCount">0</td>
+              </tr>
+              <tr><td colspan="2">&nbsp;</td></tr>
               <tr>
                 <th>Total</th>
                 <td class="numeric ng-binding" ng-bind="vm.totalCount">0</td>
@@ -91,9 +100,9 @@
       </div>
     </md-content>
   </md-tab>
-  <md-tab label="Numerical" disabled="true">
+  <md-tab label="Numerical" ng-disabled="vm.histo == undefined">
     <md-content class="md-padding">
-      &nbsp;
+      <column-histogram ng-if="vm.histo != undefined" chart-data="vm.histo"></column-histogram>
     </md-content>
   </md-tab>
 </md-tabs>

@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "jquery", "underscore", "../services/wrangler-event-type", "./visual-query-painter.service", "./wrangler-table-model", "fattable"], function (require, exports, angular, $, _, wrangler_event_type_1, visual_query_painter_service_1, wrangler_table_model_1) {
+define(["require", "exports", "angular", "jquery", "underscore", "./visual-query-painter.service", "./wrangler-table-model", "fattable"], function (require, exports, angular, $, _, visual_query_painter_service_1, wrangler_table_model_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -60,37 +60,15 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
              */
             this.table_ = null;
             this.painter.delegate = this;
-            // Refresh table when model changes
-            tableService.registerTable(function (event) {
-                if (event.type === wrangler_event_type_1.WranglerEventType.REFRESH) {
-                    //this.refresh();
-                }
-            });
-            $scope_.$watchCollection(function () { return _this.columns; }, function (newValue, oldValue) {
+            /* Watch on columns indicating model changed */
+            $scope_.$watchCollection(function () { return _this.columns; }, function () {
                 _this.onColumnsChange();
-                if (_this.tableState != _this.lastState) {
-                    if (newValue.length == oldValue.length) {
-                        _this.refreshRows();
-                    }
-                    else {
-                        _this.refresh();
-                    }
-                }
-                _this.lastState = _this.tableState;
-            });
-            $scope_.$watchCollection(function () { return _this.domainTypes; }, function () {
-                _this.painter.domainTypes = _this.domainTypes.sort(function (a, b) { return (a.title < b.title) ? -1 : 1; });
-                //this.refresh()
+                _this.onRowsChange();
+                _this.onValidationResultsChange();
+                _this.refresh();
             });
             $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
             $scope_.$watch(function () { return _this.options ? _this.options.rowFont : null; }, function () { return painter.rowFont = _this.options.rowFont; });
-            $scope_.$watchCollection(function () { return _this.rows; }, function () {
-                //this.onRowsChange();
-            });
-            $scope_.$watchCollection(function () { return _this.validationResults; }, function () {
-                _this.onValidationResultsChange();
-                // this.refresh();
-            });
             var resizeTimeoutPromise = null;
             var resizeTimeout = function (callback, interval) {
                 if (resizeTimeoutPromise != null) {
@@ -99,7 +77,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 resizeTimeoutPromise = _this.$timeout_(callback, interval);
             };
             // Refresh table on resize
-            //$scope_.$watch(() => $window.height(), () => resizeTimeout(() => this.refresh(), 500));
             $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
             angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
             // Listen for destroy event
@@ -109,7 +86,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             this.tableService.unsubscribe();
         };
         VisualQueryTable.prototype.$onInit = function () {
-            this.onColumnsChange();
             this.rows = angular.copy(this.rows);
             this.init(this.$element);
         };
@@ -130,7 +106,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 columnWidths: [180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180, 180],
                 autoSetup: false
             });
-            //this.$timeout_(this.refresh.bind(this), 500);
         };
         /**
          * Redraws the table.
@@ -141,6 +116,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                 return;
             }
             if (this.columns != null && this.columns.length > 0) {
+                this.painter.domainTypes = this.domainTypes.sort(function (a, b) { return (a.title < b.title) ? -1 : 1; });
                 // Re-calculate column widths
                 var widthDiff = Math.abs(this.lastTableWidth_ - $(this.table_.container).width());
                 if (widthDiff > 1) {
@@ -179,7 +155,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
                     priorScrollTop = scrollBar.scrollTop;
                 }
             }
-            console.log('table setup!');
             this.table_.setup();
             if (!angular.isUndefined(priorScrollLeft)) {
                 ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
@@ -279,8 +254,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "../services/wr
             this.dataService.columns_ = _.filter(this.columns, function (column) {
                 return (column.visible !== false);
             });
-            // Update rows
-            this.onRowsChange();
         };
         /**
          * Sorts and applies filters to rows.

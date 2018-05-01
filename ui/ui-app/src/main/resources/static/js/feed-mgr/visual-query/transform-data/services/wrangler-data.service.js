@@ -3,7 +3,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
     var PAGE_ROWS = 64;
-    var PAGE_COLS = 100;
+    var PAGE_COLS = 1000;
     var WranglerDataService = /** @class */ (function () {
         function WranglerDataService($rootscope, $q, $timeout) {
             var _this = this;

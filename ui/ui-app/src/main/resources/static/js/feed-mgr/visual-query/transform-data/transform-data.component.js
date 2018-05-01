@@ -453,7 +453,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             if (doProfile === void 0) { doProfile = false; }
             var self = this;
             var deferred = this.$q.defer();
-            console.log('query');
             //flag to indicate query is running
             this.setExecutingQuery(true);
             this.setQueryProgress(50);
@@ -486,11 +485,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             var notifyCallback = function (progress) {
                 //self.setQueryProgress(progress * 100);
+                /*
                 if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                     didUpdateColumns = true;
-                    if (refresh)
-                        self.updateGrid();
                 }
+                */
             };
             self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
             return deferred.promise;
@@ -860,6 +859,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     }
                     return fieldPolicy;
                 });
+                this.engine.setFieldPolicies(this.fieldPolicies);
             }
         };
         /**

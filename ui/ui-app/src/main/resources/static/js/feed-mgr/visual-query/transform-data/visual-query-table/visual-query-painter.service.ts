@@ -185,7 +185,7 @@ export class VisualQueryPainterService extends fattable.Painter {
     }
 
     fillCellPending(cellDiv: HTMLElement) {
-        cellDiv.textContent = "Wait ...";
+        cellDiv.textContent = "Loading...";
         cellDiv.className = "pending";
     }
 

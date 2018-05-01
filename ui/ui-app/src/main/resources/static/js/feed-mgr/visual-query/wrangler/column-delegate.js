@@ -255,8 +255,6 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
             var formula = "drop(\"" + StringUtils.singleQuote(column.headerTooltip) + "\")";
             this.controller.pushFormula(formula, { formula: formula, icon: "remove_circle", name: "Hide " + this.getColumnDisplayName(column) });
             this.controller.fieldPolicies = this.controller.fieldPolicies.filter(function (value, index) { return index == column.index; });
-            grid.onColumnsChange();
-            grid.refresh();
         };
         /**
          * Display the analyze column view
@@ -709,6 +707,7 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
          */
         ColumnDelegate.prototype.setDomainType = function (column, domainTypeId) {
             this.controller.setDomainType(column.index, domainTypeId);
+            this.controller.query(true, null, true, false);
         };
         /**
          * Sorts the specified column.
