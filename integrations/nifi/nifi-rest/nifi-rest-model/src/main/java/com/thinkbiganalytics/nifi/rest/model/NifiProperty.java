@@ -122,6 +122,7 @@ public final class NifiProperty {
         this.expressionProperties = property.getExpressionProperties();
         this.propertyDescriptor = property.getPropertyDescriptor();
         this.renderType = property.getRenderType();
+        this.renderOptions = property.getRenderOptions();
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
         this.containsConfigurationVariables = property.isContainsConfigurationVariables();
