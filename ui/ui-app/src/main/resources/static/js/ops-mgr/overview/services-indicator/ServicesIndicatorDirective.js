@@ -1,6 +1,122 @@
 define(["require", "exports", "angular", "../module-name", "underscore", "moment", "pascalprecht.translate"], function (require, exports, angular, module_name_1, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var Indicator = /** @class */ (function () {
+        function Indicator(chartOptions, $filter) {
+            this.chartOptions = chartOptions;
+            this.$filter = $filter;
+            this.chartData = [];
+            this.openAlerts = [];
+            this.allServices = [];
+            this.counts = { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 };
+            this.percent = 0;
+            this.dateTime = null;
+            this.grouped = {
+                "HEALTHY": { label: "Healthy", styleClass: "status-healthy", count: 0, data: [] },
+                "WARNING": { label: "Warnings", styleClass: "status-warnings", count: 0, data: [] },
+                "UNHEALTHY": { label: "UNHEALTHY", styleClass: "status-errors", count: 0, data: [] }
+            };
+            this.chartData.push({ key: "HEALTHY", value: 0 });
+            this.chartData.push({ key: "UNHEALTHY", value: 0 });
+            this.chartData.push({ key: "WARNING", value: 0 });
+        }
+        Indicator.prototype.toggleComponentAlert = function (event, component) {
+            var target = event.target;
+            var parentTdWidth = $(target).parents('td:first').width();
+            component.alertDetailsStyle = 'width:' + parentTdWidth + 'px;';
+            if (component.showAlerts == true) {
+                var alertIndex = _.indexOf(this.openAlerts, component);
+                if (alertIndex >= 0) {
+                    this.openAlerts.splice(alertIndex, 1);
+                }
+                component.showAlerts = false;
+            }
+            else {
+                this.openAlerts.push(component);
+                component.showAlerts = true;
+            }
+        };
+        Indicator.prototype.reset = function () {
+            this.openAlerts = [];
+            this.counts = { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 };
+            this.percent = 0;
+            this.dateTime = null;
+            this.allServices = [];
+            angular.forEach(this.grouped, function (groupData, status) {
+                groupData.data = [];
+                groupData.count = 0;
+            });
+        };
+        Indicator.prototype.addService = function (service) {
+            var displayState = service.state == "UP" ? "HEALTHY" : (service.state == "DOWN" ? "UNHEALTHY" : service.state);
+            this.grouped[displayState].data.push(service);
+            this.grouped[displayState].count++;
+            service.latestAlertTimeAgo = null;
+            //update timeAgo text
+            if (service.latestAlertTimestamp != null) {
+                service.latestAlertTimeAgo = moment(service.latestAlertTimestamp).from(moment());
+            }
+        };
+        Indicator.prototype.checkToShowClusterName = function (service) {
+            if (service && service.components) {
+                var componentNames = _.map(service.components, function (component) {
+                    return component.name;
+                });
+                var unique = _.uniq(componentNames);
+                if (componentNames.length != unique.length) {
+                    service.showClusterName = true;
+                }
+                else {
+                    service.showClusterName = false;
+                }
+            }
+        };
+        Indicator.prototype.addServices = function (services) {
+            var _this = this;
+            if (this.openAlerts.length == 0) {
+                this.reset();
+                this.allServices = services;
+                angular.forEach(services, function (service, i) {
+                    _this.addService(service);
+                    service.componentCount = service.components.length;
+                    service.healthyComponentCount = service.healthyComponents.length;
+                    service.unhealthyComponentCount = service.unhealthyComponents.length;
+                    _this.checkToShowClusterName(service);
+                });
+                this.updateCounts();
+                this.updatePercent();
+                this.dateTime = new Date();
+            }
+        };
+        Indicator.prototype.updateCounts = function () {
+            var _this = this;
+            this.counts.upCount = this.grouped["HEALTHY"].count;
+            this.counts.allCount = this.allServices.length;
+            this.counts.downCount = this.grouped["UNHEALTHY"].count;
+            this.counts.warningCount = this.grouped["WARNING"].count;
+            this.counts.errorCount = this.counts.downCount + this.counts.warningCount;
+            angular.forEach(this.chartData, function (item, i) {
+                item.value = _this.grouped[item.key].count;
+            });
+            this.chartOptions.chart.title = this.counts.allCount + " " + this.$filter('translate')('Total');
+        };
+        Indicator.prototype.updatePercent = function () {
+            if (this.counts.upCount > 0) {
+                this.percent = (this.counts.upCount / this.counts.allCount) * 100;
+                this.percent = Math.round(this.percent);
+            }
+            if (this.percent <= 50) {
+                this.healthClass = "errors";
+            }
+            else if (this.percent < 100) {
+                this.healthClass = "warnings";
+            }
+            else {
+                this.healthClass = "success";
+            }
+        };
+        return Indicator;
+    }());
     var controller = /** @class */ (function () {
         function controller($scope, $element, $http, $mdDialog, $mdPanel, $interval, $timeout, ServicesStatusData, OpsManagerDashboardService, BroadcastService, $filter) {
             var _this = this;
@@ -15,59 +131,17 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
             this.OpsManagerDashboardService = OpsManagerDashboardService;
             this.BroadcastService = BroadcastService;
             this.$filter = $filter;
-            this.openAlerts = [];
-            this.watchDashboard = function () {
-                _this.BroadcastService.subscribe(_this.$scope, _this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
-                    _this.ServicesStatusData.transformServicesResponse(_this.OpsManagerDashboardService.dashboard.serviceStatus);
-                    var services = _this.ServicesStatusData.services;
-                    var servicesArr = [];
-                    for (var k in services) {
-                        servicesArr.push(services[k]);
-                    }
-                    _this.indicator.addServices(servicesArr);
-                    _this.dataLoaded = true;
-                });
-            };
-            this.openDetailsDialog = function (key) {
-                _this.$mdDialog.show({
-                    controller: "ServicesDetailsDialogController",
-                    templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html',
-                    parent: angular.element(document.body),
-                    clickOutsideToClose: true,
-                    fullscreen: true,
-                    locals: {
-                        status: key,
-                        selectedStatusData: _this.indicator.grouped[key]
-                    }
-                });
-            };
-            this.updateChart = function () {
-                var title = (_this.indicator.counts.allCount) + " " + _this.$filter('translate')('Total');
-                _this.chartOptions.chart.title = title;
-                if (_this.chartApi.update) {
-                    _this.chartApi.update();
-                }
-            };
-            this.validateTitle = function () {
-                if (_this.validateTitleTimeout != null) {
-                    _this.$timeout.cancel(_this.validateTitleTimeout);
-                }
-                var txt = _this.$element.find('.nv-pie-title').text();
-                if ($.trim(txt) == "0 Total" && _this.indicator.counts.allCount > 0) {
-                    _this.updateChart();
-                }
-                _this.$timeout(function () { _this.validateTitle(); }, 1000);
-            };
-            this.init = function () {
-                _this.watchDashboard();
-            };
             this.dataLoaded = false;
             this.chartApi = {};
             this.chartOptions = {
                 chart: {
                     type: 'pieChart',
-                    x: function (d) { return d.key; },
-                    y: function (d) { return d.value; },
+                    x: function (d) {
+                        return d.key;
+                    },
+                    y: function (d) {
+                        return d.value;
+                    },
                     showLabels: false,
                     duration: 100,
                     "height": 150,
@@ -104,121 +178,65 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
                     }
                 }
             };
-            this.chartData = [];
-            this.chartData.push({ key: "HEALTHY", value: 0 });
-            this.chartData.push({ key: "UNHEALTHY", value: 0 });
-            this.chartData.push({ key: "WARNING", value: 0 });
             this.validateTitle();
-            this.indicator = {
-                openAlerts: [],
-                toggleComponentAlert: function (event, component) {
-                    var target = event.target;
-                    var parentTdWidth = $(target).parents('td:first').width();
-                    component.alertDetailsStyle = 'width:' + parentTdWidth + 'px;';
-                    if (component.showAlerts == true) {
-                        var alertIndex = _.indexOf(_this.indicator.openAlerts, component);
-                        if (alertIndex >= 0) {
-                            _this.indicator.openAlerts.splice(alertIndex, 1);
-                        }
-                        component.showAlerts = false;
-                    }
-                    else {
-                        _this.indicator.openAlerts.push(component);
-                        component.showAlerts = true;
-                    }
-                },
-                allServices: [],
-                counts: { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 },
-                grouped: {
-                    "HEALTHY": { label: "Healthy", styleClass: "status-healthy", count: 0, data: [] },
-                    "WARNING": { label: "Warnings", styleClass: "status-warnings", count: 0, data: [] },
-                    "UNHEALTHY": { label: "UNHEALTHY", styleClass: "status-errors", count: 0, data: [] }
-                },
-                percent: 0,
-                dateTime: null,
-                reset: function () {
-                    _this.openAlerts = [];
-                    _this.counts = { errorCount: 0, allCount: 0, upCount: 0, downCount: 0, warningCount: 0 };
-                    _this.percent = 0;
-                    _this.dateTime = null;
-                    _this.allServices = [];
-                    angular.forEach(_this.indicator.grouped, function (groupData, status) {
-                        groupData.data = [];
-                        groupData.count = 0;
-                    });
-                },
-                addService: function (service) {
-                    var displayState = service.state == "UP" ? "HEALTHY" : (service.state == "DOWN" ? "UNHEALTHY" : service.state);
-                    _this.indicator.grouped[displayState].data.push(service);
-                    _this.indicator.grouped[displayState].count++;
-                    service.latestAlertTimeAgo = null;
-                    //update timeAgo text
-                    if (service.latestAlertTimestamp != null) {
-                        service.latestAlertTimeAgo = moment(service.latestAlertTimestamp).from(moment());
-                    }
-                },
-                checkToShowClusterName: function (service) {
-                    if (service && service.components) {
-                        var componentNames = _.map(service.components, function (component) {
-                            return component.name;
-                        });
-                        var unique = _.uniq(componentNames);
-                        if (componentNames.length != unique.length) {
-                            service.showClusterName = true;
-                        }
-                        else {
-                            service.showClusterName = false;
-                        }
-                    }
-                },
-                addServices: function (services) {
-                    if (_this.openAlerts.length == 0) {
-                        _this.indicator.reset();
-                        _this.allServices = services;
-                        angular.forEach(services, function (service, i) {
-                            _this.indicator.addService(service);
-                            service.componentCount = service.components.length;
-                            service.healthyComponentCount = service.healthyComponents.length;
-                            service.unhealthyComponentCount = service.unhealthyComponents.length;
-                            _this.indicator.checkToShowClusterName(service);
-                        });
-                        _this.indicator.updateCounts();
-                        _this.indicator.updatePercent();
-                        _this.dateTime = new Date();
-                    }
-                },
-                updateCounts: function () {
-                    _this.counts.upCount = _this.indicator.grouped["HEALTHY"].count;
-                    _this.counts.allCount = _this.allServices.length;
-                    _this.counts.downCount = _this.indicator.grouped["UNHEALTHY"].count;
-                    _this.counts.warningCount = _this.indicator.grouped["WARNING"].count;
-                    _this.counts.errorCount = _this.counts.downCount + _this.counts.warningCount;
-                    angular.forEach(_this.chartData, function (item, i) {
-                        item.value = _this.indicator.grouped[item.key].count;
-                    });
-                    _this.chartOptions.chart.title = _this.counts.allCount + " " + $filter('translate')('Total');
-                },
-                updatePercent: function () {
-                    if (_this.counts.upCount > 0) {
-                        _this.percent = (_this.counts.upCount / _this.counts.allCount) * 100;
-                        _this.percent = Math.round(_this.percent);
-                    }
-                    if (_this.percent <= 50) {
-                        _this.healthClass = "errors";
-                    }
-                    else if (_this.percent < 100) {
-                        _this.healthClass = "warnings";
-                    }
-                    else {
-                        _this.healthClass = "success";
-                    }
-                }
-            };
-            $scope.$on('$destroy', function () {
-                //cleanup
-            });
-            this.init();
+            this.indicator = new Indicator(this.chartOptions, this.$filter);
         } // end of constructor
+        controller.prototype.watchDashboard = function () {
+            var _this = this;
+            this.BroadcastService.subscribe(this.$scope, this.OpsManagerDashboardService.DASHBOARD_UPDATED, function (dashboard) {
+                _this.ServicesStatusData.transformServicesResponse(_this.OpsManagerDashboardService.dashboard.serviceStatus);
+                var services = _this.ServicesStatusData.services;
+                var servicesArr = [];
+                for (var k in services) {
+                    servicesArr.push(services[k]);
+                }
+                _this.indicator.addServices(servicesArr);
+                _this.dataLoaded = true;
+            });
+        };
+        controller.prototype.openDetailsDialog = function (key) {
+            this.$mdDialog.show({
+                controller: "ServicesDetailsDialogController",
+                templateUrl: 'js/ops-mgr/overview/services-indicator/services-details-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: true,
+                fullscreen: true,
+                locals: {
+                    status: key,
+                    selectedStatusData: this.indicator.grouped[key]
+                }
+            });
+        };
+        controller.prototype.updateChart = function () {
+            var title = (this.indicator.counts.allCount) + " " + this.$filter('translate')('Total');
+            this.chartOptions.chart.title = title;
+            if (this.chartApi.update) {
+                this.chartApi.update();
+            }
+        };
+        controller.prototype.validateTitle = function () {
+            var _this = this;
+            if (this.validateTitleTimeout != null) {
+                this.$timeout.cancel(this.validateTitleTimeout);
+            }
+            var txt = this.$element.find('.nv-pie-title').text();
+            if ($.trim(txt) == "0 Total" && this.indicator.counts.allCount > 0) {
+                this.updateChart();
+            }
+            this.validateTitleTimeout = this.$timeout(function () {
+                _this.validateTitle();
+            }, 1000);
+        };
+        controller.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        controller.prototype.ngOnInit = function () {
+            this.watchDashboard();
+        };
+        controller.$inject = ["$scope", "$element", "$http",
+            "$mdDialog", "$mdPanel", "$interval", "$timeout",
+            "ServicesStatusData", "OpsManagerDashboardService",
+            "BroadcastService", '$filter'];
         return controller;
     }());
     exports.default = controller;
@@ -256,10 +274,7 @@ define(["require", "exports", "angular", "../module-name", "underscore", "moment
     exports.servicesDetailsDialogController = servicesDetailsDialogController;
     angular.module(module_name_1.moduleName).controller('ServicesDetailsDialogController', ["$scope", "$mdDialog", "$interval", "StateService", "status",
         "selectedStatusData", servicesDetailsDialogController]);
-    angular.module(module_name_1.moduleName).controller('ServicesIndicatorController', ["$scope", "$element", "$http",
-        "$mdDialog", "$mdPanel", "$interval", "$timeout",
-        "ServicesStatusData", "OpsManagerDashboardService",
-        "BroadcastService", '$filter', controller]);
+    angular.module(module_name_1.moduleName).controller('ServicesIndicatorController', controller);
     angular.module(module_name_1.moduleName)
         .directive('tbaServicesIndicator', [function () {
             return {
