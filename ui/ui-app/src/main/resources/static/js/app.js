@@ -1,7 +1,7 @@
 define(["require", "exports", "angular", "underscore", "moment", "angularMaterial", "angularAnimate", "angularAria", "angularMessages", "@uirouter/angularjs", "angular-material-expansion-panel", "angular-material-icons", "angular-material-data-table", "angular-sanitize", "angular-ui-grid", "dirPagination", "ng-fx", "ng-text-truncate", "pascalprecht.translate", "angular-translate-loader-static-files", "angular-translate-storage-local", "angular-translate-handler-log", "angular-translate-storage-cookie", "angular-cookies", "tmh.dynamicLocale", "ocLazyLoad", "kylo-common", "kylo-services", "kylo-side-nav"], function (require, exports, angular, _, moment) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var SVGMorpheus = require("../bower_components/svg-morpheus/source/js/svg-morpheus");
+    var SVGMorpheus = require("../bower_components/svg-morpheus/compile/minified/svg-morpheus");
     'use strict';
     var App = /** @class */ (function () {
         function App() {

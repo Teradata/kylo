@@ -22,10 +22,18 @@ interface FormatContext {
     index: number;
 }
 
+
+
 /**
  * An expression in a Spark script.
  */
 export class SparkExpression {
+
+    /**
+     Constants that calculate the min and max value of an integer in Scala or Java
+     */
+    static SCALA_MIN_INT: number = (-1) * Math.pow(2, 31);
+    static SCALA_MAX_INT: number = Math.pow(2, 31) - 1;
 
     /** Regular expression for conversion strings */
     static FORMAT_REGEX = /%([?*,@]*)([bcdfors])/g;
@@ -250,9 +258,7 @@ export class SparkExpression {
                 literal = expression.source as string;
                 let nLiteral : number  = parseInt(expression.source as string);
                 if( !isNaN(nLiteral) ) {
-                    let SCALA_MIN_INT: number = (-1) * Math.pow(2, 31);
-                    let SCALA_MAX_INT: number = Math.pow(2, 31) - 1;
-                    if (nLiteral < SCALA_MIN_INT || nLiteral > SCALA_MAX_INT) {
+                    if (nLiteral < SparkExpression.SCALA_MIN_INT || nLiteral > SparkExpression.SCALA_MAX_INT) {
                         literal = literal + "L";
                     }
                 }

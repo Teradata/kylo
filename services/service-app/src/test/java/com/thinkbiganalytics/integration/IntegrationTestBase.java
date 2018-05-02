@@ -45,11 +45,13 @@ import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminController;
 import com.thinkbiganalytics.feedmgr.rest.controller.AdminControllerV2;
 import com.thinkbiganalytics.feedmgr.rest.controller.DatasourceController;
+import com.thinkbiganalytics.feedmgr.rest.controller.DomainTypesController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedCategoryRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.FeedRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.NifiIntegrationRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.ServiceLevelAgreementRestController;
 import com.thinkbiganalytics.feedmgr.rest.controller.TemplatesRestController;
+import com.thinkbiganalytics.feedmgr.rest.model.DomainType;
 import com.thinkbiganalytics.feedmgr.rest.model.EntityVersionDifference;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -77,6 +79,7 @@ import com.thinkbiganalytics.jobrepo.rest.controller.JobsRestController;
 import com.thinkbiganalytics.jobrepo.rest.controller.ServiceLevelAssessmentsController;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.JdbcDatasource;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
@@ -258,7 +261,7 @@ public class IntegrationTestBase {
 
     protected void copyDataToDropzone(String testFileName) {
         runCommandOnRemoteSystem("touch /var/dropzone/" + testFileName, APP_NIFI);
-        runCommandOnRemoteSystem("chown -R nifi:nifi /var/dropzone", APP_NIFI);
+        runCommandOnRemoteSystem("chmod 777 /var/dropzone/" + testFileName, APP_NIFI);
     }
 
     protected void waitForFeedToComplete() {
@@ -444,6 +447,8 @@ public class IntegrationTestBase {
 
     protected void cleanup() {
 
+        deleteExistingDatasources();
+        deleteExistingDomainTypes();
         deleteExistingSla();
         disableExistingFeeds();
         deleteExistingFeeds();
@@ -464,6 +469,30 @@ public class IntegrationTestBase {
         }
         agreements = getSla();
         Assert.assertTrue(agreements.length == 0);
+
+    }
+
+    protected void deleteExistingDomainTypes() {
+        LOG.info("Deleting existing Domain Types");
+
+        DomainType[] domainTypes = getDomainTypes();
+        for (DomainType domainType : domainTypes) {
+            deleteDomainType(domainType.getId());
+        }
+        domainTypes = getDomainTypes();
+        Assert.assertTrue(domainTypes.length == 0);
+
+    }
+
+    protected void deleteExistingDatasources() {
+        LOG.info("Deleting existing Datasources");
+
+        Datasource[] datasources = getDatasources();
+        for (Datasource datasource : datasources) {
+            deleteDatasource(datasource.getId());
+        }
+        datasources = getDatasources();
+        Assert.assertTrue(datasources.length == 0);
 
     }
 
@@ -1215,6 +1244,53 @@ public class IntegrationTestBase {
 
         response.then().statusCode(HTTP_NO_CONTENT);
     }
+
+    protected DomainType[] getDomainTypes() {
+        LOG.info("Getting domain types");
+        Response response = given(DomainTypesController.BASE).get();
+        response.then().statusCode(HTTP_OK);
+        return response.as(DomainType[].class);
+    }
+
+    protected DomainType createDomainType(DomainType dt) {
+        LOG.info("Creating domain type '{}'", dt.getTitle());
+
+        Response response = given(DomainTypesController.BASE)
+            .body(dt)
+            .when()
+            .post();
+
+        response.then().statusCode(HTTP_OK);
+
+        return response.as(DomainType.class);
+    }
+
+    protected DomainType getDomainType(String domainTypeId) {
+        LOG.info("Getting domain type {}", domainTypeId);
+        return getDomainTypeExpectingStatus(domainTypeId, HTTP_OK).as(DomainType.class);
+    }
+
+    protected Response getDomainTypeExpectingStatus(String domainTypeId, int status) {
+        LOG.info("Getting domain type {}, expecting status {}", domainTypeId, status);
+
+        Response response = given(DomainTypesController.BASE)
+            .when()
+            .get("/" + domainTypeId);
+
+        response.then().statusCode(status);
+        return response;
+    }
+
+    protected void deleteDomainType(String domainTypeId) {
+        LOG.info("Getting datasources");
+
+        Response response = given(DomainTypesController.BASE)
+            .when()
+            .delete("/" + domainTypeId);
+
+        response.then().statusCode(HTTP_NO_CONTENT);
+    }
+
 
     protected FeedVersions getVersions(String feedId) {
         LOG.info("Getting versions for feed {}", feedId);

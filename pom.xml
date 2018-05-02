@@ -1322,6 +1322,15 @@
         <nifi.version>1.5.0</nifi.version>
       </properties>
     </profile>
+    <profile>
+      <id>nifi.version.1.6.0</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <properties>
+        <nifi.version>1.6.0</nifi.version>
+      </properties>
+    </profile>
   </profiles>
 
 </project>

@@ -40,6 +40,8 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -52,6 +54,7 @@ import java.util.stream.Collectors;
  * It then deletes the original relationship entities and deletes the relationship entity type.
  */
 @Component("FeedSlaUpgradeAction091")
+@Order(998)
 @Profile(KyloUpgrader.KYLO_UPGRADE)
 public class FeedSlaUpgradeAction implements UpgradeState {
 
@@ -99,7 +102,5 @@ public class FeedSlaUpgradeAction implements UpgradeState {
             feedSlaProvider.relateFeeds(sla, feeds);
             entityProvider.deleteEntity(rel.getId());
         }
-        
-        this.typeProvider.deleteType(type.getId());
     }
 }

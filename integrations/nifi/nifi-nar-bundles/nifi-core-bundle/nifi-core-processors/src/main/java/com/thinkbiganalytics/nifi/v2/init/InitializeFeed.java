@@ -12,9 +12,9 @@ package com.thinkbiganalytics.nifi.v2.init;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -56,9 +57,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "initialize", "initialization", "thinkbig"})
-@CapabilityDescription("Controls setup of a feed by routing to an initialization flow.")
+@CapabilityDescription("Controls setup of a feed by routing to an initialization or re-initialization flow.")
 public class InitializeFeed extends FeedProcessor {
-    
+
     public static final String REINITIALIZING_FLAG = "reinitializing";
 
     protected static final AllowableValue[] FAIL_STRATEGY_VALUES = new AllowableValue[]{
@@ -93,33 +94,20 @@ public class InitializeFeed extends FeedProcessor {
         .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
-    
+
     protected static final PropertyDescriptor CLONE_INIT_FLOWFILE = new PropertyDescriptor.Builder()
         .name("Clone initialization flowfile")
-        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. including all content.")
+        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. includes all content.")
         .required(false)
         .allowableValues(CommonProperties.BOOLEANS)
         .defaultValue("true")
-//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//        .expressionLanguageSupported(true)
-        .build();
-    
-    protected static final PropertyDescriptor USE_REINIT_RELATIONSHIP = new PropertyDescriptor.Builder()
-        .name("Use re-initialization flow")
-        .description("Indicates whether a separate re-initialization relationship should be followed when the feed must be re-initialized.  If false (default) then the "
-                        + "regular Initialize relationship is followd.  If true then the 'Re-Initialize' relationship is followed; which must be connected to the alternate flow.")
-        .required(false)
-        .allowableValues(CommonProperties.BOOLEANS)
-        .defaultValue("false")
-//        .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
-//        .expressionLanguageSupported(true)
         .build();
 
     Relationship REL_INITIALIZE = new Relationship.Builder()
         .name("Initialize")
         .description("Begin initialization")
         .build();
-    
+
     Relationship REL_REINITIALIZE = new Relationship.Builder()
         .name("Re-Initialize")
         .description("Begin re-initialization")
@@ -132,6 +120,18 @@ public class InitializeFeed extends FeedProcessor {
     public void scheduled(ProcessContext context) {
         super.scheduled(context);
         this.retryCounts.clear();
+    }
+
+    @Override
+    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(String propertyDescriptorName) {
+        return new PropertyDescriptor.Builder()
+            .name(propertyDescriptorName)
+            .required(false)
+            .addValidator(StandardValidators.createAttributeExpressionLanguageValidator(AttributeExpression.ResultType.STRING, true))
+            .addValidator(StandardValidators.ATTRIBUTE_KEY_PROPERTY_NAME_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .dynamic(true)
+            .build();
     }
 
     /* (non-Javadoc)
@@ -174,7 +174,6 @@ public class InitializeFeed extends FeedProcessor {
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
         list.add(CLONE_INIT_FLOWFILE);
-        list.add(USE_REINIT_RELATIONSHIP);
     }
 
     @Override
@@ -216,12 +215,12 @@ public class InitializeFeed extends FeedProcessor {
             session.transfer(inputFF, CommonProperties.REL_FAILURE);
         }
     }
-    
+
     private void reinitialize(ProcessContext context, ProcessSession session, FlowFile inputFF) {
         beginInitialization(context, session, inputFF, true);
         requeueFlowFile(session, inputFF);
     }
-    
+
     private void reinitializeFailed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
         failed(context, session, inputFF, failTime, true);
     }
@@ -234,20 +233,20 @@ public class InitializeFeed extends FeedProcessor {
         getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
         FlowFile initFF;
         Relationship initRelationship;
-        
+
         if (context.getProperty(CLONE_INIT_FLOWFILE).asBoolean()) {
             initFF = session.clone(inputFF);
         } else {
             initFF = session.create(inputFF);
         }
-        
+
         if (reinitializing) {
-            boolean useReinit = context.getProperty(USE_REINIT_RELATIONSHIP).asBoolean();
+            boolean useReinit = context.hasConnection(REL_REINITIALIZE);
             initRelationship = useReinit ? REL_REINITIALIZE : REL_INITIALIZE;
         } else {
             initRelationship = REL_INITIALIZE;
         }
-        
+
         initFF = session.putAttribute(initFF, REINITIALIZING_FLAG, Boolean.valueOf(reinitializing).toString());
         session.transfer(initFF, initRelationship);
     }

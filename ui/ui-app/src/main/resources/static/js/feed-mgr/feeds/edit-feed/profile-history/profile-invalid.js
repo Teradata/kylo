@@ -100,6 +100,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 tableContainerId: "invalidProfile",
                 headers: this.headers,
                 rows: this.rows,
+                rowHeight: 45,
                 cellText: function (row, column) {
                     // console.log('cellText');
                     //return the longest text out of cell value and its validation errors

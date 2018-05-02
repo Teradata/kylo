@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../services/UserService", "../module-name"], function (require, exports, angular, UserService_1, module_name_1) {
+define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PAGE_NAME = "groups";
@@ -154,9 +154,6 @@ define(["require", "exports", "angular", "../services/UserService", "../module-n
     }());
     exports.default = GroupsTableController;
     angular.module(module_name_1.moduleName)
-        .service("UserService", ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService_1.UserService])
         .controller("GroupsTableController", ["$scope", "AddButtonService", "PaginationDataService", "StateService", "TableOptionsService", "UserService", GroupsTableController]);
 });
 //# sourceMappingURL=GroupsTableController.js.map

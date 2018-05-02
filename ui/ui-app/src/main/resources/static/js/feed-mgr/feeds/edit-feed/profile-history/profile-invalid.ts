@@ -111,6 +111,7 @@ export class FeedProfileInvalidResultsController implements ng.IComponentControl
             tableContainerId: "invalidProfile",
             headers: this.headers,
             rows: this.rows,
+            rowHeight: 45,
             cellText: (row: any, column: any) => {
                 // console.log('cellText');
                 //return the longest text out of cell value and its validation errors

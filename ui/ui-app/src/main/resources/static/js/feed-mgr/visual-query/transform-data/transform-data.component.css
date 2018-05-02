@@ -7,8 +7,6 @@
 /* stylelint-disable material/no-prefixes */
 /* stylelint-enable */
 thinkbig-visual-query-transform {
-  /* Column headers */
-  /* Column menu button */
   /** Tooltip */
   /**
     Override toolbar buttons
@@ -69,9 +67,11 @@ thinkbig-visual-query-transform thinkbig-step-buttons {
 thinkbig-visual-query-transform visual-query-table {
   position: absolute;
   top: 0;
+  /* Column headers */
+  /* Column menu button */
 }
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
-  padding: 0px 5px 0px 0px;
+  padding: 0 5px 0 0;
   text-overflow: ellipsis;
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -89,7 +89,7 @@ thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd 
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
   background-color: rgba(0, 0, 0, 0.01);
 }
-thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid, thinkbig-visual-query-transform visual-query-table div.invalidinvalid {
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
   background-color: #ffcdd2 !important;
 }
 thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
@@ -101,19 +101,71 @@ thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.sele
   -ms-user-select: text;
   user-select: text;
 }
+thinkbig-visual-query-transform visual-query-table .fattable-header-container {
+  border-bottom: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+}
 thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
   font-size: 13px;
   color: rgba(0, 0, 0, 0.54);
   letter-spacing: 0.02em;
   white-space: nowrap;
   border-right: 1px solid lightgray;
+  display: flex;
+  justify-content: space-between;
+  background: white;
 }
 thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
   padding-left: 24px;
   padding-right: 0;
 }
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+  padding-left: 5px;
+  padding-right: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-separator {
+  cursor: col-resize;
+  display: block;
+  padding-left: 0;
+  width: 1px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-value {
+  padding-top: 10px;
+  display: block;
+  padding-left: 0;
+}
 thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div {
   letter-spacing: 0.01em;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div.first-column {
+  letter-spacing: 0.01em;
+  padding-left: 24px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-label {
+  color: steelblue;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-title {
+  color: black;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button {
+  padding: 0;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button > .md-button.md-icon-button {
+  height: inherit;
+  line-height: inherit;
+  padding: 0 6px;
+  font-size: 13px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  display: inline-block;
+  height: 23px;
+  margin: auto;
 }
 thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-domain-type {
   line-height: inherit;
@@ -123,29 +175,6 @@ thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-doma
 }
 thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-menu-content {
   max-height: 352px;
-}
-thinkbig-visual-query-transform .ui-grid-header-cell-label {
-  color: steelblue;
-  margin-right: 1em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-thinkbig-visual-query-transform .ui-grid-header-cell-title {
-  color: black;
-}
-thinkbig-visual-query-transform .ui-grid-column-menu-button {
-  padding: 0;
-}
-thinkbig-visual-query-transform .ui-grid-column-menu-button > .md-button.md-icon-button {
-  height: inherit;
-  line-height: inherit;
-  padding: 0 6px;
-  font-size: 13px;
-}
-thinkbig-visual-query-transform .ui-grid-column-menu-button .ui-grid-icon-angle-down {
-  display: inline-block;
-  height: 23px;
-  margin: auto;
 }
 thinkbig-visual-query-transform .md-tooltip.visual-query-tooltip {
   height: auto;

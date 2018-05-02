@@ -11,6 +11,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         ImportComponentType["REMOTE_INPUT_PORT"] = "REMOTE_INPUT_PORT";
         ImportComponentType["USER_DATASOURCES"] = "USER_DATASOURCES";
         ImportComponentType["TEMPLATE_CONNECTION_INFORMATION"] = "TEMPLATE_CONNECTION_INFORMATION";
+        ImportComponentType["FEED_CATEGORY_USER_FIELDS"] = "FEED_CATEGORY_USER_FIELDS";
+        ImportComponentType["FEED_USER_FIELDS"] = "FEED_USER_FIELDS";
     })(ImportComponentType = exports.ImportComponentType || (exports.ImportComponentType = {}));
     var DefaultImportService = /** @class */ (function () {
         function DefaultImportService() {
@@ -61,6 +63,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
         DefaultImportService.prototype.newUserDatasourcesImportOption = function () {
             return this.newImportComponentOption("USER_DATASOURCES" /* USER_DATASOURCES */);
+        };
+        DefaultImportService.prototype.newFeedCategoryUserFieldsImportOption = function () {
+            return this.newImportComponentOption("FEED_CATEGORY_USER_FIELDS" /* FEED_CATEGORY_USER_FIELDS */);
+        };
+        DefaultImportService.prototype.newFeedUserFieldsImportOption = function () {
+            return this.newImportComponentOption("FEED_USER_FIELDS" /* FEED_USER_FIELDS */);
         };
         DefaultImportService.prototype.newUploadKey = function () {
             return _.uniqueId("upload_") + new Date().getTime() + this.guid();

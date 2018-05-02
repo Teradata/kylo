@@ -54,7 +54,9 @@ import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.security.rest.model.User;
 
 import org.junit.Assert;
+import org.junit.FixMethodOrder;
 import org.junit.Test;
+import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,6 +80,7 @@ import java.util.concurrent.TimeUnit;
  * query and asserts the number of rows returned.
  *
  */
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class FeedIT extends IntegrationTestBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedIT.class);
@@ -348,7 +351,7 @@ public class FeedIT extends IntegrationTestBase {
         //drop files in dropzone to run the feed
         //runCommandOnRemoteSystem(String.format("sudo chmod a+w %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
         copyFileLocalToRemote(usersDataPath + USERDATA1_CSV, VAR_DROPZONE, IntegrationTestBase.APP_NIFI);
-        runCommandOnRemoteSystem(String.format("chown -R nifi:nifi %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
+        runCommandOnRemoteSystem(String.format("chmod 777 %s/%s", VAR_DROPZONE, USERDATA1_CSV), IntegrationTestBase.APP_NIFI);
     }
 
 

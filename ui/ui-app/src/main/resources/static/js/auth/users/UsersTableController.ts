@@ -179,9 +179,6 @@ export default class UsersTableController implements ng.IComponentController {
     }
 }
 angular.module(moduleName)
-        .service("UserService",['$http',
-                          'CommonRestUrlService',
-                          'UserGroupService', UserService])
        .controller("UsersTableController",
                      ["$scope",
                      "AddButtonService",

@@ -142,15 +142,6 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
          * @param {VisualQueryTableCell|null} cell the cell object
          */
         VisualQueryPainterService.prototype.fillCell = function (cellDiv, cell) {
-            // Adjust padding based on column number
-            if (cell !== null && cell.column === 0) {
-                cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-                cellDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-                cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            }
             // Set style
             if (cell === null) {
                 cellDiv.className = "";
@@ -163,6 +154,10 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             }
             else {
                 cellDiv.className = "";
+            }
+            // Adjust padding based on column number
+            if (cell !== null && cell.column === 0) {
+                cellDiv.className += " first-column ";
             }
             // Set contents
             if (cell === null) {
@@ -188,15 +183,6 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
          * @param {VisualQueryTableHeader|null} header the column header
          */
         VisualQueryPainterService.prototype.fillHeader = function (headerDiv, header) {
-            // Adjust padding based on column number
-            if (header !== null && header.index === 0) {
-                headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-                headerDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-                headerDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            }
             // Update scope in a separate thread
             var $scope = angular.element(headerDiv).scope();
             if (header != null && $scope.header !== header && header.delegate != undefined) {

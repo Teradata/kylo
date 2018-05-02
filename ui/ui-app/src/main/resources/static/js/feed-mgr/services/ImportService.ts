@@ -17,7 +17,9 @@ export enum ImportComponentType {
     REUSABLE_TEMPLATE =  Import.ImportComponentType.REUSABLE_TEMPLATE,
     REMOTE_INPUT_PORT =  Import.ImportComponentType.REMOTE_INPUT_PORT,
     USER_DATASOURCES =  Import.ImportComponentType.USER_DATASOURCES,
-    TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION
+    TEMPLATE_CONNECTION_INFORMATION =  Import.ImportComponentType.TEMPLATE_CONNECTION_INFORMATION,
+    FEED_CATEGORY_USER_FIELDS = Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS,
+    FEED_USER_FIELDS = Import.ImportComponentType.FEED_USER_FIELDS
 }
 
 export class DefaultImportService implements ImportService{
@@ -83,6 +85,14 @@ export class DefaultImportService implements ImportService{
 
     newUserDatasourcesImportOption(): ImportComponentOption {
         return this.newImportComponentOption( Import.ImportComponentType.USER_DATASOURCES)
+    }
+    
+    newFeedCategoryUserFieldsImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.FEED_CATEGORY_USER_FIELDS);
+    }
+
+    newFeedUserFieldsImportOption(): ImportComponentOption {
+        return this.newImportComponentOption( Import.ImportComponentType.FEED_USER_FIELDS);
     }
 
     newUploadKey(): string {

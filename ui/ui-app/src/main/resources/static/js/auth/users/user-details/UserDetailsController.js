@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "underscore", "../../services/UserService", "../../module-name"], function (require, exports, angular, _, UserService_1, module_name_1) {
+define(["require", "exports", "angular", "underscore", "../../module-name"], function (require, exports, angular, _, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var UserDetailsController = /** @class */ (function () {
@@ -254,9 +254,6 @@ define(["require", "exports", "angular", "underscore", "../../services/UserServi
     }());
     exports.default = UserDetailsController;
     angular.module(module_name_1.moduleName)
-        .service("UserService", ['$http',
-        'CommonRestUrlService',
-        'UserGroupService', UserService_1.UserService])
         .controller('UserDetailsController', ["$scope", "$mdDialog", "$mdToast", "$transition$", "AccessControlService", "UserService", "StateService", UserDetailsController]);
 });
 //# sourceMappingURL=UserDetailsController.js.map

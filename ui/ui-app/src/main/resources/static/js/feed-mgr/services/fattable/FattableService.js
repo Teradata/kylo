@@ -33,7 +33,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     var moduleName = require('feed-mgr/module-name');
     function FattableService($window) {
         var self = this;
-        var FONT_FAMILY = "Roboto, \"Helvetica Neue\", sans-serif";
         var ATTR_DATA_COLUMN_ID = "data-column-id";
         var optionDefaults = {
             tableContainerId: "",
@@ -41,14 +40,16 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             rows: [],
             minColumnWidth: 50,
             maxColumnWidth: 300,
-            rowHeight: 53,
+            rowHeight: 27,
             headerHeight: 40,
+            headerPadding: 5,
             padding: 50,
-            headerFontFamily: FONT_FAMILY,
-            headerFontSize: "12px",
-            headerFontWeight: "bold",
-            rowFontFamily: FONT_FAMILY,
-            rowFontSize: "14px",
+            firstColumnPaddingLeft: 24,
+            headerFontFamily: "Roboto, \"Helvetica Neue\", sans-serif",
+            headerFontSize: "13px",
+            headerFontWeight: "500",
+            rowFontFamily: "sans-serif",
+            rowFontSize: "13px",
             rowFontWeight: "normal",
             setupRefreshDebounce: 300,
             headerText: function (header) {
@@ -114,7 +115,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // console.log("setupHeader");
                 var separator = angular.element('<div class="header-separator"></div>');
                 separator.on("mousedown", function (event) { return mousedown(separator, event); });
-                var heading = angular.element('<div class="header-value"></div>');
+                var heading = angular.element('<div class="header-value ui-grid-header-cell-title"></div>');
                 var headerDiv = angular.element(div);
                 headerDiv.append(heading).append(separator);
             };
@@ -122,14 +123,17 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (data === undefined) {
                     return;
                 }
+                if (data.columnId === 0) {
+                    div.className = " first-column ";
+                }
                 div.style.fontSize = settings.rowFontSize;
                 div.style.fontFamily = settings.rowFontFamily;
-                div.className = "layout-column layout-align-center-start ";
+                div.className += "layout-column layout-align-center-start ";
                 if (data["rowId"] % 2 === 0) {
-                    div.className += "even";
+                    div.className += " even ";
                 }
                 else {
-                    div.className += "odd";
+                    div.className += " odd ";
                 }
                 settings.fillCell(div, data);
             };
@@ -137,10 +141,12 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // console.log('fill header', header);
                 div.style.fontSize = settings.headerFontSize;
                 div.style.fontFamily = settings.headerFontFamily;
-                div.style.fontWeight = "bold";
+                div.style.fontWeight = settings.headerFontWeight;
                 var children = angular.element(div).children();
                 setColumnId(children.last(), header.id);
-                var valueSpan = children.first().get(0);
+                var valueDiv = children.first();
+                valueDiv.css("width", (self.table.columnWidths[header.id] - settings.headerPadding - 2) + "px"); //leave 2 pixels for column separator
+                var valueSpan = valueDiv.get(0);
                 settings.fillHeader(valueSpan, header);
             };
             tableData.getCellSync = function (i, j) {
@@ -148,6 +154,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (data !== undefined) {
                     //add row id so that we can add odd/even classes to rows
                     data.rowId = i;
+                    data.columnId = j;
                 }
                 return data;
             };

@@ -136,10 +136,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
                             + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                             + ' STORED AS TEXTFILE',
-                        targetFormat: null,
+                        targetFormat: 'STORED AS ORC',
                         fieldPolicies: [],
                         partitions: [],
-                        options: { compress: false, compressionFormat: null, auditLogging: true, encrypt: false, trackHistory: false },
+                        options: { compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false },
                         sourceTableIncrementalDateField: null
                     },
                     category: { id: null, name: null },
@@ -335,6 +335,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (policies === void 0) { policies = null; }
                 this.createFeedModel.table.tableSchema.fields = fields;
                 this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(function (field) { return _this.newTableFieldPolicy(field.name); });
+                this.createFeedModel.schemaChanged = !this.validateSchemaDidNotChange(this.createFeedModel);
             },
             /**
              * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
@@ -483,6 +484,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (model.cloned) {
                     model.state = null;
                 }
+                //remove the self.model.originalTableSchema if its there
+                delete model.originalTableSchema;
                 if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                     // Set feed
                     var newFields = [];
@@ -577,6 +580,22 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             hideFeedSavingDialog: function () {
                 $mdDialog.hide();
+            },
+            validateSchemaDidNotChange: function (model) {
+                var valid = true;
+                //if we are editing we need to make sure we dont modify the originalTableSchema
+                if (model.id && model.originalTableSchema && model.table && model.table.tableSchema) {
+                    //if model.originalTableSchema != model.table.tableSchema  ... ERROR
+                    //mark as invalid if they dont match
+                    var origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(function (i) {
+                        return i.name + " " + i.derivedDataType;
+                    }).value().join();
+                    var updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(function (i) {
+                        return i.name + " " + i.derivedDataType;
+                    }).value().join();
+                    valid = origFields == updatedFields;
+                }
+                return valid;
             },
             /**
              * Save the model Posting the data to the server

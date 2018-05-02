@@ -193,6 +193,10 @@ define(["require", "exports", "angular", "underscore", "../../module-name"], fun
                         _this.remoteProcessGroupValidation.invalidMessage = "Unable to verify input port connections for your remote process group";
                     });
                 }
+                else {
+                    this.remoteProcessGroupValidation.validatingPorts = false;
+                    this.remoteProcessGroupValidation.valid = true;
+                }
             }
             else {
                 this.remoteProcessGroupValidation.validatingPorts = false;

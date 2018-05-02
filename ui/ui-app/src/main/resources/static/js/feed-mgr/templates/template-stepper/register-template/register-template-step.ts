@@ -226,6 +226,10 @@ export class RegisterCompleteRegistrationController {
 
                 });
             }
+            else {
+                this.remoteProcessGroupValidation.validatingPorts = false;
+                this.remoteProcessGroupValidation.valid = true;
+            }
         }
         else {
             this.remoteProcessGroupValidation.validatingPorts = false;
