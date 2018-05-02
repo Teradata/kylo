@@ -499,11 +499,16 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             };
             this.findAndReplaceString = function (str, findStr, replacementStr) {
                 var i = 0;
-                var strLength = str.length;
-                for (i; i < strLength; i++) {
-                    str = str.replace(findStr, replacementStr);
+                if (angular.isUndefined(str) || angular.isUndefined(findStr)) {
+                    return '';
                 }
-                return str;
+                else {
+                    var strLength = str.length;
+                    for (i; i < strLength; i++) {
+                        str = str.replace(findStr, replacementStr);
+                    }
+                    return str;
+                }
             };
             init();
         }
