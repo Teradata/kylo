@@ -12,7 +12,6 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
             this.loadingProcessorStatistics = false;
             this.lastSummaryStats = [];
             this.keepLastSummary = 20;
-            this.flowsStartedPerSecond = 0;
             this.init();
         }
         FeedStatsService.prototype.init = function () {
@@ -180,7 +179,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
                 topNProcessorDurationData = _.first(topNProcessorDurationData, _this.processorStatistics.topN);
                 var timeDiffMillis = processorStatsContainer.endTime - processorStatsContainer.startTime;
                 var secondsDiff = timeDiffMillis / 1000;
-                _this.flowsStartedPerSecond = secondsDiff > 0 ? ((flowsStarted / secondsDiff)).toFixed(2) : 0;
+                var flowsStartedPerSecondStr = secondsDiff > 0 ? ((flowsStarted / secondsDiff)).toFixed(2) : 0;
                 _this.processorStatistics.raw = processorStatsContainer;
                 var summary = _this.summaryStatistics;
                 summary.time.startTime = processorStatsContainer.startTime;
@@ -191,7 +190,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "pascalp
                 summary.totalEvents = totalEvents;
                 summary.failedEvents = failedEvents;
                 summary.flowsSuccess = flowsSuccess;
-                summary.flowsStartedPerSecond = flowsStartedPerSecond != 0 ? parseFloat(flowsStartedPerSecond.toString()) : flowsStartedPerSecond;
+                summary.flowsStartedPerSecond = flowsStartedPerSecondStr != 0 ? parseFloat(flowsStartedPerSecondStr.toString()) : flowsStartedPerSecond;
                 summary.avgFlowDurationMilis = (flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
                 summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
                 summary.avgFlowDuration = summary.avgFlowDuration != 0 ? parseFloat(summary.avgFlowDuration) : 0;
