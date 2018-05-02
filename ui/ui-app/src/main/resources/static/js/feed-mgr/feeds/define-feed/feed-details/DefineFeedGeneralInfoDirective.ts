@@ -181,7 +181,7 @@ export class DefineFeedGeneralInfoController {
     }
     static readonly $inject = ["$scope","$log","$http","$mdToast","RestUrlService","FeedService","CategoriesService"];
 
-    constructor(private $scope:any,private $log:any, private $http:any,private $mdToast:any,private RestUrlService:any, private FeedService:any, private CategoriesService:any) {
+    constructor(private $scope:IScope,private $log:angular.ILogService, private $http:angular.IHttpService,private $mdToast:angular.material.IToastService,private RestUrlService:any, private FeedService:any, private CategoriesService:any) {
 
         this.populateExistingFeedNames();
         

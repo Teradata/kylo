@@ -88,7 +88,7 @@ export class DefineFeedDetailsController {
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
         "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
 
-    constructor(private $scope: any, private $http: any, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
         , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
         this.model = FeedService.createFeedModel;

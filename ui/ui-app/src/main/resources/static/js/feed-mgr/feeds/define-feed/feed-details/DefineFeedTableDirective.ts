@@ -116,7 +116,7 @@ export class DefineFeedTableController {
             "$mdExpansionPanel","RestUrlService","FeedService","FileUpload","BroadcastService",
             "Utils", "FeedTagService", "DomainTypesService"];
 
-    constructor(private $rootScope:any, private $scope:any, private $http:any, private $timeout:any, private $mdToast:any, private $filter:any, private $mdDialog:any
+    constructor(private $rootScope:IScope, private $scope:IScope, private $http:angular.IHttpService, private $timeout:angular.ITimeoutService, private $mdToast:angular.material.IToastService, private $filter:any, private $mdDialog:angular.material.IDialogService
         ,private $mdExpansionPanel:any, private RestUrlService:any, private FeedService:any, private FileUpload:any, private BroadcastService:any, private Utils:any, private FeedTagService:any,
         private DomainTypesService:any) {
 

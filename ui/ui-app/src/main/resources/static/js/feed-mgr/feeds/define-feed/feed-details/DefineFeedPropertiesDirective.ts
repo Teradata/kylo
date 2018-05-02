@@ -87,7 +87,7 @@ export class DefineFeedPropertiesController {
 
     static readonly $inject = ["$scope","$http","$mdToast","RestUrlService","FeedTagService","FeedService"];
 
-    constructor(private $scope:any, private $http:any, private $mdToast:any, private RestUrlService :any, private FeedTagService:any, private FeedService:any) {
+    constructor(private $scope:IScope, private $http:angular.IHttpService, private $mdToast:angular.material.IToastService, private RestUrlService :any, private FeedTagService:any, private FeedService:any) {
 
         this.model = FeedService.createFeedModel;
         this.feedTagService = FeedTagService;

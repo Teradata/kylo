@@ -99,10 +99,10 @@ export class DefineFeedScheduleController {
     static readonly $inject = ["$scope", "$http", "$mdDialog", "$timeout", "RestUrlService", "FeedService", "StateService",
         "StepperService", "CategoriesService", "BroadcastService", "$filter", "FeedCreationErrorService"];
 
-    constructor(private $scope: any, private $http: any, private $mdDialog: any, private $timeout: any
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $timeout: angular.ITimeoutService
         , private RestUrlService: any, private FeedService: any, private StateService: any
         , private StepperService: any, private CategoriesService: any, private BroadcastService: any
-        , private $filter: any, private FeedCreationErrorService: any) {
+        , private $filter: angular.IFilterService, private FeedCreationErrorService: any) {
         /**
          * Get notified when a step is changed/becomes active
          */

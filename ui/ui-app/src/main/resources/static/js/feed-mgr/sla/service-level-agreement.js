@@ -608,7 +608,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "../../s
                 }
                 else {
                     //ensure the user has the EDIT_SLA and if editing for a feed ensure the user has access to edit that feed
-                    var entityAccessControlled = this.feed != null && this.AccessControlService.isEntityAccessControlled();
+                    var entityAccessControlled = this.feed != null && this.accessControlService.isEntityAccessControlled();
                     //Apply the entity access permissions
                     var requests = {
                         entityEditAccess: entityAccessControlled == true ? this.FeedService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, this.feed) : true,

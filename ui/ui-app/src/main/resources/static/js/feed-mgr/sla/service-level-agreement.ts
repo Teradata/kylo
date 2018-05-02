@@ -770,7 +770,7 @@ export default class ServiceLevelAgreementController implements ng.IComponentCon
         else {
             //ensure the user has the EDIT_SLA and if editing for a feed ensure the user has access to edit that feed
 
-            var entityAccessControlled = this.feed != null && this.AccessControlService.isEntityAccessControlled();
+            var entityAccessControlled = this.feed != null && this.accessControlService.isEntityAccessControlled();
 
             //Apply the entity access permissions
             var requests = {
