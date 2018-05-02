@@ -102,7 +102,7 @@ export class DefineFeedDetailsController {
         BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, (event: any, index: any) => {
             if (index == parseInt(this.stepIndex)) {
                 this.validate();
-            }
+            } 
         });
         
         this.inputProcessorIdWatch = $scope.$watch(() => {
@@ -145,7 +145,6 @@ export class DefineFeedDetailsController {
 
         return matchingInput;
     }
-
     /**
          * Prepares the processor properties of the specified template for display.
          *
@@ -163,7 +162,7 @@ export class DefineFeedDetailsController {
                 .filter((property) => {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
-                .each(this.FeedService.findControllerServicesForProperty);
+                .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
 
         } else {
             this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
@@ -203,7 +202,7 @@ export class DefineFeedDetailsController {
             .filter((property) => {
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
-            .each(this.FeedService.findControllerServicesForProperty);
+            .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
 
         this.loading = false;
         this.validate();

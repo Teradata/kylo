@@ -99,6 +99,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @param {Object} template the template with properties
              */
         DefineFeedDetailsController.prototype.initializeProperties = function (template) {
+            var _this = this;
             if (angular.isDefined(this.model.cloned) && this.model.cloned == true) {
                 this.RegisterTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
                 var inputProcessors = this.model.inputProcessors;
@@ -110,7 +111,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     .filter(function (property) {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
-                    .each(this.FeedService.findControllerServicesForProperty);
+                    .each(function (property) { return _this.FeedService.findControllerServicesForProperty(property); });
             }
             else {
                 this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
@@ -146,7 +147,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 .filter(function (property) {
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
-                .each(this.FeedService.findControllerServicesForProperty);
+                .each(function (property) { return _this.FeedService.findControllerServicesForProperty(property); });
             this.loading = false;
             this.validate();
         };
