@@ -136,7 +136,7 @@ export class DefineFeedScheduleController {
         this.validate();
 
         // Detect if NiFi is clustered
-        $http.get(RestUrlService.NIFI_STATUS).then(function (response: any) {
+        $http.get(RestUrlService.NIFI_STATUS).then( (response: any) => {
             this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
             this.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
             this.updateScheduleStrategies();
@@ -210,7 +210,7 @@ export class DefineFeedScheduleController {
                     feed: this.model,
                     index: index
                 }
-            }).then(function () {
+            }).then(() =>{
                 this.validate();
             });
         };
@@ -226,7 +226,7 @@ export class DefineFeedScheduleController {
         else {
             if (model.waitForStepperControllerRetryAmount < 20) {
                 model.waitForStepperControllerRetryAmount++;
-                model.$timeout(function () {
+                model.$timeout(() =>{
                     model.waitForStepperController(model,callback)
                 }, 10);
             }
@@ -280,13 +280,13 @@ export class DefineFeedScheduleController {
 
             this.createdFeed = null;
 
-            this.FeedService.saveFeedModel(this.model).then(function (response: any) {
+            this.FeedService.saveFeedModel(this.model).then((response: any) => {
                 this.createdFeed = response.data;
                 this.savingFeed = false;
                 this.StateService.FeedManager().Feed().navigateToDefineFeedComplete(this.createdFeed, null);
 
                 //  this.showCompleteDialog();
-            }, function (response: any) {
+            }, (response: any) => {
                 this.savingFeed = false;
                 this.createdFeed = response.data;
                 this.FeedCreationErrorService.buildErrorData(this.model.feedName, response);
@@ -320,7 +320,7 @@ export class DefineFeedScheduleController {
         var self = this;
         // Check if last strategy is valid
         if (this.model.schedule.schedulingStrategy) {
-            var validStrategy = _.some(this.scheduleStrategies, function (strategy: any) {
+            var validStrategy = _.some(this.scheduleStrategies, (strategy: any) => {
                 return strategy.value == self.model.schedule.schedulingStrategy;
             });
             if (!validStrategy) {

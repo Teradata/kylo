@@ -113,9 +113,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.validate();
             // Detect if NiFi is clustered
             $http.get(RestUrlService.NIFI_STATUS).then(function (response) {
-                this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
-                this.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
-                this.updateScheduleStrategies();
+                _this.isClustered = (angular.isDefined(response.data.clustered) && response.data.clustered);
+                _this.supportsExecutionNode = (angular.isDefined(response.data.version) && !response.data.version.match(/^0\.|^1\.0/));
+                _this.updateScheduleStrategies();
             });
         }
         DefineFeedScheduleController.prototype.$onInit = function () {
@@ -183,6 +183,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
         };
         ;
         DefineFeedScheduleController.prototype.showPreconditionDialog = function (index) {
+            var _this = this;
             if (index == undefined) {
                 index = null;
             }
@@ -197,7 +198,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     index: index
                 }
             }).then(function () {
-                this.validate();
+                _this.validate();
             });
         };
         ;
@@ -259,21 +260,22 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * Create the feed, save it to the server, populate the {@code createdFeed} object upon save
              */
         DefineFeedScheduleController.prototype.createFeed = function () {
+            var _this = this;
             if (this.defineFeedScheduleForm.$valid) {
                 this.savingFeed = true;
                 this.showProgress();
                 this.createdFeed = null;
                 this.FeedService.saveFeedModel(this.model).then(function (response) {
-                    this.createdFeed = response.data;
-                    this.savingFeed = false;
-                    this.StateService.FeedManager().Feed().navigateToDefineFeedComplete(this.createdFeed, null);
+                    _this.createdFeed = response.data;
+                    _this.savingFeed = false;
+                    _this.StateService.FeedManager().Feed().navigateToDefineFeedComplete(_this.createdFeed, null);
                     //  this.showCompleteDialog();
                 }, function (response) {
-                    this.savingFeed = false;
-                    this.createdFeed = response.data;
-                    this.FeedCreationErrorService.buildErrorData(this.model.feedName, response);
-                    this.hideProgress();
-                    this.FeedCreationErrorService.showErrorDialog();
+                    _this.savingFeed = false;
+                    _this.createdFeed = response.data;
+                    _this.FeedCreationErrorService.buildErrorData(_this.model.feedName, response);
+                    _this.hideProgress();
+                    _this.FeedCreationErrorService.showErrorDialog();
                 });
             }
         };
