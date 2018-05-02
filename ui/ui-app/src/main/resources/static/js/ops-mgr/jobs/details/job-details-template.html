@@ -21,7 +21,6 @@
   <card-layout flex>
     <header-section transclude-to="head" flex layout>
       <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
-      <!-- <span class="md-caption" layout-align="end top">Job {{vm.relatedJobIndex+1}} of {{vm.relatedJobs.length}}</span> -->
     </header-section>
     <body-section transclude-to="body" transclude-replace="true">
       <md-content ng-if="vm.unableToFindJob == false">
@@ -85,7 +84,7 @@
                                         </span>
 
                 </div>
-                <md-list ng-show="vm.loading == false" class="list-item-table">
+                <md-list ng-show="vm.pageState.loading == false" class="list-item-table">
                   <md-divider></md-divider>
                   <md-list-item ng-if="vm.showJobParameters == true">
                     <div flex="30" class="item-column md-list-item-text accent-color-3">
@@ -189,7 +188,7 @@
                       <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
-                      <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
+                      <md-list flex layout-fill ng-show="vm.pageState.loading == false" class="list-item-table">
                         <md-divider></md-divider>
                         <md-list-item>
                           <div flex="30" class="item-column md-list-item-text accent-color-3">
@@ -348,21 +347,7 @@
           </md-list-item>
           -->
           <md-divider></md-divider>
-          <!-- not used now... unhide later once replay is integrated
-          <md-list-item ">
-            <div layout="column" class="item-column md-list-item-text ">
-              <span class="item-title">Related Jobs</span>
-              <md-input-container>
-                <label>Job</label>
-                <md-select ng-model="vm.relatedJob" ng-change="vm.changeRelatedJob(vm.relatedJob)">
-                  <md-option ng-repeat="relatedJob in vm.relatedJobs" value="{{relatedJob.jobExecutionId}}">
-                    {{$index +1}}. {{relatedJob.startTime | date:'MMM d, yyyy HH:mm:ss'}}
-                  </md-option>
-                </md-select>
-              </md-input-container>
-            </div>
-          </md-list-item>
-           -->
+
         </md-list>
 
 
