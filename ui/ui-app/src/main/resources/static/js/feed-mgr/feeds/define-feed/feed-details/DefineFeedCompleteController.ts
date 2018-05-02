@@ -9,13 +9,14 @@ export default class DefineFeedCompleteController {
     model: any;
     error: any;
     isValid: any;
+    $transition$: Transition;
 
-    static readonly $inject = ["$scope","$q","$http","$mdToast","$transition$","RestUrlService","FeedService","StateService"];
+    static readonly $inject = ["$scope","$q","$http","$mdToast","RestUrlService","FeedService","StateService"];
 
-    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $transition$: Transition, private RestUrlService: any, private FeedService: any, private StateService: any) {
-
-        this.model = $transition$.params().feedModel;
-        this.error = $transition$.params().error;
+    constructor(private $scope: IScope, private $q: angular.IQService, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private RestUrlService: any, private FeedService: any, private StateService: any) {
+        
+        this.model = this.$transition$.params().feedModel;
+        this.error = this.$transition$.params().error;
 
         this.isValid = this.error == null;
              
@@ -66,6 +67,9 @@ export default class DefineFeedCompleteController {
 
 angular.module(moduleName)
     .component('thinkbigDefineFeedCompleteController', {
+        bindings: {
+            $transition$: '<'
+        },
         templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
         controllerAs: 'vm',
         controller: DefineFeedCompleteController,

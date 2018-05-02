@@ -3,17 +3,16 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/feeds/define-feed/module-name');
     var DefineFeedCompleteController = /** @class */ (function () {
-        function DefineFeedCompleteController($scope, $q, $http, $mdToast, $transition$, RestUrlService, FeedService, StateService) {
+        function DefineFeedCompleteController($scope, $q, $http, $mdToast, RestUrlService, FeedService, StateService) {
             this.$scope = $scope;
             this.$q = $q;
             this.$http = $http;
             this.$mdToast = $mdToast;
-            this.$transition$ = $transition$;
             this.RestUrlService = RestUrlService;
             this.FeedService = FeedService;
             this.StateService = StateService;
-            this.model = $transition$.params().feedModel;
-            this.error = $transition$.params().error;
+            this.model = this.$transition$.params().feedModel;
+            this.error = this.$transition$.params().error;
             this.isValid = this.error == null;
         }
         ;
@@ -56,12 +55,15 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             var feedId = this.getFeedId();
             this.StateService.FeedManager().Feed().navigateToFeedDetails(feedId, 3);
         };
-        DefineFeedCompleteController.$inject = ["$scope", "$q", "$http", "$mdToast", "$transition$", "RestUrlService", "FeedService", "StateService"];
+        DefineFeedCompleteController.$inject = ["$scope", "$q", "$http", "$mdToast", "RestUrlService", "FeedService", "StateService"];
         return DefineFeedCompleteController;
     }());
     exports.default = DefineFeedCompleteController;
     angular.module(moduleName)
         .component('thinkbigDefineFeedCompleteController', {
+        bindings: {
+            $transition$: '<'
+        },
         templateUrl: 'js/feed-mgr/feeds/define-feed/feed-details/define-feed-complete.html',
         controllerAs: 'vm',
         controller: DefineFeedCompleteController,
