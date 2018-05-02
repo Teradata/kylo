@@ -1,3 +1,5 @@
+import {IPromise} from "angular";
+
 export interface ColumnController {
 
     /**
@@ -11,7 +13,7 @@ export interface ColumnController {
      * @param {string} formula the formula
      * @param {TransformContext} context the UI context for the transformation
      */
-    addFunction(formula: any, context: any): void
+    addFunction(formula: any, context: any): IPromise<{}>
 
     /**
      * Appends the specified formula to the current script.
@@ -19,9 +21,11 @@ export interface ColumnController {
      * @param {string} formula - the formula
      * @param {TransformContext} context - the UI context for the transformation
      * @param {boolean} doQuery - true to immediately execute the query
+     * @param {boolean} refreshGrid - whether to refresh grid
      */
-    pushFormula(formula: any, context: any): void;
-    pushFormula(formula: any, context: any, doQuery: boolean): void;
+    pushFormula(formula: any, context: any, doQuery?: boolean, refreshGrid?:boolean): IPromise<{}>;
+
+    showAnalyzeColumn(fieldName: string) : any;
 
     /**
      * Sets the domain type for the specified field.

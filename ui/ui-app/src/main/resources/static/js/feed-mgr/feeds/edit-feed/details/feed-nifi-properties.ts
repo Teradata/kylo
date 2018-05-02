@@ -58,11 +58,6 @@ export class FeedNIFIController implements ng.IComponentController {
      * @type {boolean}
      */
     editableSection: boolean = false;
-    /**
-     * The property for the date field
-     * @type {string}
-     */
-    INCREMENTAL_DATE_PROPERTY_KEY: string = 'Date Field';
 
     static $inject = ["$scope", "$http", "$q", "RestUrlService", "AccessControlService", "EntityAccessControlService", "FeedService", "EditFeedNifiPropertiesService", "FeedInputProcessorOptionsFactory", "FeedDetailsProcessorRenderingHelper", "BroadcastService", "FeedPropertyService", "$filter"];
 
@@ -103,7 +98,9 @@ export class FeedNIFIController implements ng.IComponentController {
             }
             //tell the ui what properties to show/hide
             var renderGetTableData = this.FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(this.model.inputProcessor, this.model.nonInputProcessors);
-            this.updateControllerServiceProperties();
+            //update the names for the controller services
+            this.updateControllerServiceDisplayName();
+
         })
 
         var inputProcessorIdWatch = this.$scope.$watch(() => {
@@ -112,11 +109,14 @@ export class FeedNIFIController implements ng.IComponentController {
             this.updateInputProcessor(newVal);
         });
 
+
         //Apply the entity access permissions
          this.$q.when(this.accessControlService.hasPermission(this.EntityAccessControlService.FEEDS_EDIT,this.model,this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then((access:any) => {
             this.allowEdit = !this.versions && access && !this.model.view.feedDetails.disabled
         });
     }
+
+
 
 
     /**
@@ -141,7 +141,7 @@ export class FeedNIFIController implements ng.IComponentController {
         this.editModel.inputProcessors = inputProcessors;
         this.editModel.nonInputProcessors = nonInputProcessors;
 
-        // Find controller services
+        // Find controller services and add in the select options
         _.chain(this.editModel.inputProcessors.concat(this.editModel.nonInputProcessors))
             .pluck("properties")
             .flatten(true)
@@ -151,7 +151,6 @@ export class FeedNIFIController implements ng.IComponentController {
             .each(this.FeedService.findControllerServicesForProperty);
 
 
-        //NEED TO COPY IN TABLE PROPS HERE
         this.editModel.table = angular.copy(this.FeedService.editFeedModel.table);
         this.EditFeedNifiPropertiesService.editFeedModel = this.editModel;
         if (angular.isDefined(this.model.inputProcessor)) {
@@ -188,13 +187,7 @@ export class FeedNIFIController implements ng.IComponentController {
         //table type is edited here so need to update that prop as well
         copy.table.tableType = this.editModel.table.tableType
 
-        if (copy.table.incrementalDateField) {
-            var dateProperty: any = this.findIncrementalDateFieldProperty();
-            if (dateProperty) {
-                dateProperty.value = this.editModel.table.incrementalDateField;
-            }
-            copy.table.incrementalDateField = this.editModel.table.incrementalDateField;
-        }
+        copy.table.sourceTableIncrementalDateField = this.editModel.table.sourceTableIncrementalDateField;
 
         //update the db properties
 
@@ -215,8 +208,6 @@ export class FeedNIFIController implements ng.IComponentController {
             this.FeedPropertyService.updateDisplayValueForProcessors(this.model.inputProcessors);
             this.FeedPropertyService.updateDisplayValueForProcessors(this.model.nonInputProcessors);
 
-            this.updateControllerServiceProperties();
-            //update the displayValue
             //Get the updated value from the server.
             this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
         }, (response: any) => {
@@ -230,91 +221,18 @@ export class FeedNIFIController implements ng.IComponentController {
     };
 
 
-    /**
-     * add the select options to controller services
-     */
-    updateControllerServiceProperties() {
-
-        _.filter(this.model.nonInputProcessors, (processor: any) => {
-            if (processor && processor.properties) {
-                var props = _.filter(processor.properties, (property: any) => {
-                    if (this.isControllerServiceProperty(property)) {
-                        this.setControllerServicePropertyDisplayName(property);
-                        return true
-                    }
-                });
-                return true;
-            }
-
-        });
-
-        _.filter(this.model.inputProcessor, (processor: any) => {
-            if (processor && processor.properties) {
-                var props = _.filter(processor.properties, (property: any) => {
-                    if (this.isControllerServiceProperty(property)) {
-                        this.setControllerServicePropertyDisplayName(property);
-                        return true;
-                    }
-                });
-                return true;
-            }
-        });
-
-
-    }
-
-    /**
-     * determine if a property is a controller service
-     * @param property
-     * @returns {boolean}
-     */
-    isControllerServiceProperty(property: any) {
-        var controllerService = property.propertyDescriptor.identifiesControllerService;
-        if (controllerService != null && controllerService != undefined && controllerService != '') {
-            return true;
+    private updateControllerServiceDisplayName() :void {
+        if(this.model != null) {
+            _.chain(this.model.inputProcessors.concat(this.model.nonInputProcessors))
+                .pluck("properties")
+                .flatten(true)
+                .filter((property: any) => {
+                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                })
+                .each(this.FeedService.setControllerServicePropertyDisplayName);
         }
-        return false;
+
     }
-
-    /**
-     * add the proper select values to controller services
-     * @param property
-     */
-    setControllerServicePropertyDisplayName(property: any) {
-        var controllerService = property.propertyDescriptor.identifiesControllerService;
-        if (controllerService != null && controllerService != undefined && controllerService != '') {
-            //fetch the name
-            var promise = this.$http.get(this.RestUrlService.GET_CONTROLLER_SERVICE_URL(property.value));
-            promise.then((response: any) => {
-                if (response && response.data) {
-                    property.displayValue = response.data.name;
-                    //set the allowable values on the property
-                    if (property.propertyDescriptor.allowableValues == null) {
-                        property.propertyDescriptor.allowableValues = [];
-                        property.propertyDescriptor.allowableValues.push({value: property.value, displayName: property.displayValue});
-                    }
-                }
-            }, (err: any) => {
-                //unable to fetch controller service... the id will display
-            });
-
-
-        }
-    }
-
-
-    private findProperty(key: any) {
-        return _.find(this.model.allProperties, (property: any) => {
-            //return property.key = 'Source Database Connection';
-            return property.key == key;
-        });
-    }
-
-
-    private findIncrementalDateFieldProperty() {
-        return this.findProperty(this.INCREMENTAL_DATE_PROPERTY_KEY);
-    }
-
 
     private updateInputProcessor(newVal: any) {
         angular.forEach(this.editModel.inputProcessors, (processor) => {

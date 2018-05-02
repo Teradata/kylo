@@ -115,6 +115,9 @@ const moduleName = require('feed-mgr/module-name');
 
         this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
+
+        this.ROOT_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/root-input-ports";
+
         this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";
         this.METADATA_PROPERTY_NAMES_URL = this.ROOT + "/proxy/v1/feedmgr/metadata-properties";
 

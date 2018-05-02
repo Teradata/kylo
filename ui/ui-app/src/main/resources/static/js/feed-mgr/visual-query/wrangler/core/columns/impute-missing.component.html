@@ -1,0 +1,44 @@
+<mat-toolbar mat-dialog-title class="mat-dialog-title" [color]="['primary']">
+  <span>{{title}}</span>
+  <span class="flex"></span>
+  <button mat-icon-button (click)="cancel()">
+    <mat-icon arial-label="Close dialog">close</mat-icon>
+  </button>
+</mat-toolbar>
+<div mat-dialog-content class="mat-dialog-content">
+  <form class="layout-column" [formGroup]="form">
+    <p>{{message}}</p>
+
+    <!--
+    <mat-form-field *ngIf="allowType">
+      <mat-select formControlName="type" placeholder="Type" required>
+        <mat-option [value]="'last'">Last</mat-option>
+        <mat-option [value]="'first'">First</mat-option>
+      </mat-select>
+    </mat-form-field>
+-->
+
+    <mat-form-field>
+      <mat-select placeholder="Grouping field"  formControlName="groupBy" required>
+      <mat-option *ngFor="let field of fieldOptions" [value]="field.value">
+          {{field.viewValue}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="groupBy.hasError('required')">Required</mat-error>
+    </mat-form-field>
+
+    <mat-form-field>
+      <mat-select placeholder="Ordering field" formControlName="orderBy" required>
+        <mat-option *ngFor="let field of fieldOptions" [value]="field.value">
+          {{field.viewValue}}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="groupBy.hasError('required')">Required</mat-error>
+    </mat-form-field>
+
+  </form>
+</div>
+<div mat-dialog-actions class="mat-dialog-actions">
+  <button mat-button (click)="cancel()">Cancel</button>
+  <button mat-raised-button [color]="['primary']" [disabled]="!form.valid" (click)="apply()">Apply</button>
+</div>

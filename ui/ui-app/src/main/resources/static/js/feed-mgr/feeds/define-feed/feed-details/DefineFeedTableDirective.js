@@ -48,7 +48,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.selectedColumn = null;
             this.fieldNamesUniqueRetryAmount = 0;
             this.showMethodPanel = true;
-            this.showTablePanel = true;
             this.uploadBtnDisabled = false;
             this.partitionFormulas = [];
             this.feedFormat = '';
@@ -96,6 +95,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', function () {
                 _this.syncFeedsColumns();
                 _this.validate(undefined);
+                _this.calcTableState();
+                _this.expandSchemaPanel();
             });
             this.invalidColumnsWatch = $scope.$watch(function () {
                 return _this.defineFeedTableForm.invalidColumns;
@@ -148,7 +149,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             });
             this.validate(undefined);
             this.expanded = false;
-            this.calcTableState();
         }
         DefineFeedTableController.prototype.$onInit = function () {
             this.ngOnInit();
@@ -341,7 +341,6 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             this.dataTypeLocked = angular.isDefined(this.dataTypeLocked) && (this.typeLocked === true || this.typeLocked === "true");
             this.canRemoveFields = angular.isUndefined(this.canRemoveFields) || this.canRemoveFields === true || this.canRemoveFields === "true";
             this.showMethodPanel = (this.model.table.method != 'EXISTING_TABLE');
-            this.showTablePanel = (this.model.table.tableSchema.fields.length > 0);
         };
         ;
         /*

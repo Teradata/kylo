@@ -37,10 +37,6 @@
   -moz-box-sizing: border-box;
 }
 
-.fattable .fattable-body-container > div > div.even {
-  background-color: rgba(0,0,0, 0.01);
-}
-
 .fattable .fattable-header-container .fattable-viewport .header-separator {
   border-left: 1px solid lightgrey;
   cursor: col-resize;

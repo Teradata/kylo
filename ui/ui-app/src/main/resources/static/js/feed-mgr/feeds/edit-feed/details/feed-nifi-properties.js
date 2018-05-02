@@ -49,11 +49,6 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
              * @type {boolean}
              */
             this.editableSection = false;
-            /**
-             * The property for the date field
-             * @type {string}
-             */
-            this.INCREMENTAL_DATE_PROPERTY_KEY = 'Date Field';
             this.versions = $scope.versions;
             //dont allow editing if we are looking at versions
             this.allowEdit = !this.versions;
@@ -81,7 +76,8 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 }
                 //tell the ui what properties to show/hide
                 var renderGetTableData = _this.FeedDetailsProcessorRenderingHelper.updateGetTableDataRendering(_this.model.inputProcessor, _this.model.nonInputProcessors);
-                _this.updateControllerServiceProperties();
+                //update the names for the controller services
+                _this.updateControllerServiceDisplayName();
             });
             var inputProcessorIdWatch = this.$scope.$watch(function () {
                 return _this.editModel.inputProcessorId;
@@ -111,7 +107,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             this.editModel.allInputProcessorProperties = allInputProcessorProperties;
             this.editModel.inputProcessors = inputProcessors;
             this.editModel.nonInputProcessors = nonInputProcessors;
-            // Find controller services
+            // Find controller services and add in the select options
             _.chain(this.editModel.inputProcessors.concat(this.editModel.nonInputProcessors))
                 .pluck("properties")
                 .flatten(true)
@@ -119,7 +115,6 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
                 .each(this.FeedService.findControllerServicesForProperty);
-            //NEED TO COPY IN TABLE PROPS HERE
             this.editModel.table = angular.copy(this.FeedService.editFeedModel.table);
             this.EditFeedNifiPropertiesService.editFeedModel = this.editModel;
             if (angular.isDefined(this.model.inputProcessor)) {
@@ -152,13 +147,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             copy.historyReindexingStatus = undefined;
             //table type is edited here so need to update that prop as well
             copy.table.tableType = this.editModel.table.tableType;
-            if (copy.table.incrementalDateField) {
-                var dateProperty = this.findIncrementalDateFieldProperty();
-                if (dateProperty) {
-                    dateProperty.value = this.editModel.table.incrementalDateField;
-                }
-                copy.table.incrementalDateField = this.editModel.table.incrementalDateField;
-            }
+            copy.table.sourceTableIncrementalDateField = this.editModel.table.sourceTableIncrementalDateField;
             //update the db properties
             this.FeedService.saveFeedModel(copy).then(function (response) {
                 _this.FeedService.hideFeedSavingDialog();
@@ -172,8 +161,6 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 _this.model.inputProcessorType = _this.editModel.inputProcessorType;
                 _this.FeedPropertyService.updateDisplayValueForProcessors(_this.model.inputProcessors);
                 _this.FeedPropertyService.updateDisplayValueForProcessors(_this.model.nonInputProcessors);
-                _this.updateControllerServiceProperties();
-                //update the displayValue
                 //Get the updated value from the server.
                 _this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
             }, function (response) {
@@ -186,77 +173,16 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             });
         };
         ;
-        /**
-         * add the select options to controller services
-         */
-        FeedNIFIController.prototype.updateControllerServiceProperties = function () {
-            var _this = this;
-            _.filter(this.model.nonInputProcessors, function (processor) {
-                if (processor && processor.properties) {
-                    var props = _.filter(processor.properties, function (property) {
-                        if (_this.isControllerServiceProperty(property)) {
-                            _this.setControllerServicePropertyDisplayName(property);
-                            return true;
-                        }
-                    });
-                    return true;
-                }
-            });
-            _.filter(this.model.inputProcessor, function (processor) {
-                if (processor && processor.properties) {
-                    var props = _.filter(processor.properties, function (property) {
-                        if (_this.isControllerServiceProperty(property)) {
-                            _this.setControllerServicePropertyDisplayName(property);
-                            return true;
-                        }
-                    });
-                    return true;
-                }
-            });
-        };
-        /**
-         * determine if a property is a controller service
-         * @param property
-         * @returns {boolean}
-         */
-        FeedNIFIController.prototype.isControllerServiceProperty = function (property) {
-            var controllerService = property.propertyDescriptor.identifiesControllerService;
-            if (controllerService != null && controllerService != undefined && controllerService != '') {
-                return true;
+        FeedNIFIController.prototype.updateControllerServiceDisplayName = function () {
+            if (this.model != null) {
+                _.chain(this.model.inputProcessors.concat(this.model.nonInputProcessors))
+                    .pluck("properties")
+                    .flatten(true)
+                    .filter(function (property) {
+                    return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
+                })
+                    .each(this.FeedService.setControllerServicePropertyDisplayName);
             }
-            return false;
-        };
-        /**
-         * add the proper select values to controller services
-         * @param property
-         */
-        FeedNIFIController.prototype.setControllerServicePropertyDisplayName = function (property) {
-            var controllerService = property.propertyDescriptor.identifiesControllerService;
-            if (controllerService != null && controllerService != undefined && controllerService != '') {
-                //fetch the name
-                var promise = this.$http.get(this.RestUrlService.GET_CONTROLLER_SERVICE_URL(property.value));
-                promise.then(function (response) {
-                    if (response && response.data) {
-                        property.displayValue = response.data.name;
-                        //set the allowable values on the property
-                        if (property.propertyDescriptor.allowableValues == null) {
-                            property.propertyDescriptor.allowableValues = [];
-                            property.propertyDescriptor.allowableValues.push({ value: property.value, displayName: property.displayValue });
-                        }
-                    }
-                }, function (err) {
-                    //unable to fetch controller service... the id will display
-                });
-            }
-        };
-        FeedNIFIController.prototype.findProperty = function (key) {
-            return _.find(this.model.allProperties, function (property) {
-                //return property.key = 'Source Database Connection';
-                return property.key == key;
-            });
-        };
-        FeedNIFIController.prototype.findIncrementalDateFieldProperty = function () {
-            return this.findProperty(this.INCREMENTAL_DATE_PROPERTY_KEY);
         };
         FeedNIFIController.prototype.updateInputProcessor = function (newVal) {
             var _this = this;

@@ -60,7 +60,24 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             }
         };
     };
-    angular.module(moduleName)
-        .directive('nifiPropertyInput', directive);
+    var emptyStringToNull = function () {
+        // There is a distinction in Nifi between empty string and null, e.g. some
+        // processors consider empty string invalid where null is valid. Without
+        // this directive it would be impossible to set existing values to null
+        return {
+            restrict: 'EA',
+            require: '?ngModel',
+            link: function ($scope, element, attr, ngModel) {
+                if (ngModel) {
+                    var replaceEmptyStringWithNull = function (value) {
+                        return value === '' ? null : value;
+                    };
+                    ngModel.$parsers.push(replaceEmptyStringWithNull);
+                }
+            }
+        };
+    };
+    angular.module(moduleName).directive('emptyStringToNull', emptyStringToNull);
+    angular.module(moduleName).directive('nifiPropertyInput', directive);
 });
 //# sourceMappingURL=nifi-property-input.js.map

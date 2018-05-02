@@ -1,5 +1,6 @@
 language: java
 jdk:
+- openjdk8
 - oraclejdk8
 
 # Use Ubuntu Trusty with latest JDK 8

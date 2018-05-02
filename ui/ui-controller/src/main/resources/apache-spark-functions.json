@@ -2430,9 +2430,9 @@
     "!sparkType": "column"
   },
   "first": {
-    "!type": "fn(e: Column) -> Column",
+    "!type": "fn(e: Column, opt_ignorenulls: boolean) -> Column",
     "!doc": "Aggregate function: returns the first value in a group.",
-    "!spark": "functions.first(%c)",
+    "!spark": "functions.first(%c%,?b)",
     "!sparkType": "column"
   },
   "grouping": {
@@ -2454,9 +2454,9 @@
     "!sparkType": "column"
   },
   "last": {
-    "!type": "fn(e: Column) -> Column",
+    "!type": "fn(e: Column, opt_ignorenulls: boolean) -> Column",
     "!doc": "Aggregate function: returns the last value in a group.",
-    "!spark": "functions.last(%c)",
+    "!spark": "functions.last(%c%,?b)",
     "!sparkType": "column"
   },
   "max": {

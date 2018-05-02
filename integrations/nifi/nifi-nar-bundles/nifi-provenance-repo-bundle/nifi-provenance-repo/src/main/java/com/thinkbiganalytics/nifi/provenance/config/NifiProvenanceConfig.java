@@ -22,6 +22,7 @@ package com.thinkbiganalytics.nifi.provenance.config;
 
 import com.thinkbiganalytics.nifi.provenance.jms.KyloFeedBatchStreamTypeJmsListener;
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventJmsWriter;
+import com.thinkbiganalytics.nifi.provenance.jms.RemoteProvenanceEventJmsListener;
 import com.thinkbiganalytics.nifi.provenance.repo.ConfigurationPropertiesRefresher;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
@@ -59,6 +60,11 @@ public class NifiProvenanceConfig {
     @Bean
     public KyloFeedBatchStreamTypeJmsListener kyloFeedBatchStreamTypeJmsListener() {
         return new KyloFeedBatchStreamTypeJmsListener();
+    }
+
+    @Bean
+    public RemoteProvenanceEventJmsListener remoteProvenanceEventJmsListener(){
+        return new RemoteProvenanceEventJmsListener();
     }
 
 }

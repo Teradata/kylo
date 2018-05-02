@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../constants/AccessConstants", "app"], function (require, exports, angular, AccessConstants_1) {
+define(["require", "exports", "angular", "../services/AccessControlService", "app"], function (require, exports, angular, AccessControlService_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -56,7 +56,7 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
              * The Query string for the Global Search
              * @type {string}
              */
-            this.searchQuery = '';
+            this.searchQuery = null;
             /**
              * Indicates that global searches are allowed.
              * @type {boolean}
@@ -78,9 +78,11 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
              * Search for something
              */
             this.search = function () {
-                _this.SearchService.searchQuery = _this.searchQuery;
-                if (_this.currentState.name != 'search') {
-                    _this.StateService.Search().navigateToSearch(true);
+                if (_this.searchQuery != null && _this.searchQuery.length > 0) {
+                    _this.SearchService.searchQuery = _this.searchQuery;
+                    if (_this.currentState.name != 'search') {
+                        _this.StateService.Search().navigateToSearch(true);
+                    }
                 }
             };
             /**
@@ -107,12 +109,18 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
             /**
             * Set the ui-router states to the $rootScope for easy access
             */
-            $rootScope.previousState;
-            $rootScope.currentState;
-            $transitions.onSuccess({}, function (transition) {
+            this.$rootScope.previousState;
+            this.$rootScope.currentState;
+            // to focus on input element after it appears
+            $scope.$watch(function () {
+                return document.querySelector('#search-bar:not(.ng-hide)');
+            }, function () {
+                document.getElementById('search-input').focus();
+            });
+            this.$transitions.onSuccess({}, function (transition) {
                 _this.currentState = transition.to();
                 if (_this.currentState.name != 'search') {
-                    _this.searchQuery = '';
+                    _this.searchQuery = null;
                 }
                 else {
                     _this.searchQuery = SearchService.searchQuery;
@@ -135,12 +143,28 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
             accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                 _this.allowSearch = accessControlService
-                    .hasAction(AccessConstants_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
+                    .hasAction(AccessControlService_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
             });
         }
         controller.prototype.closeSideNavList = function () {
             this.$mdSidenav('left').close();
         };
+        controller.prototype.showPreSearchBar = function () {
+            return this.searchQuery == null;
+        };
+        ;
+        controller.prototype.initiateSearch = function () {
+            this.searchQuery = '';
+        };
+        ;
+        controller.prototype.showSearchBar = function () {
+            return this.searchQuery != null;
+        };
+        ;
+        controller.prototype.endSearch = function () {
+            return this.searchQuery = null;
+        };
+        ;
         controller.prototype.showLoadingDialog = function () {
             this.loading = true;
             this.$mdDialog.show({
@@ -166,5 +190,5 @@ define(["require", "exports", "angular", "../constants/AccessConstants", "app"],
 });
 //.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
 //    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-// controller]); 
+// controller]);
 //# sourceMappingURL=IndexController.js.map

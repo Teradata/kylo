@@ -39,14 +39,14 @@ var directive = function () {
                     $scope.property.renderOptions ={};
                 }
                 if($scope.property.renderOptions['selectCustom'] == 'true' ) {
-                if($scope.property.renderOptions['selectOptions']){
-                    $scope.property.selectOptions = angular.fromJson($scope.property.renderOptions['selectOptions']);
-                }
-                else {
-                    $scope.property.selectOptions = [];
+                    if($scope.property.renderOptions['selectOptions']){
+                        $scope.property.selectOptions = angular.fromJson($scope.property.renderOptions['selectOptions']);
+                    }
+                    else {
+                        $scope.property.selectOptions = [];
+                    }
                 }
             }
-        }
 
 
             if( $scope.property.renderType == 'checkbox-custom' ) {
@@ -62,18 +62,31 @@ var directive = function () {
                     $scope.property.renderOptions['falseValue'] = 'false';
                 }
             }
-
-
-
         }
 
     };
-}
+};
 
+var emptyStringToNull = function () {
+    // There is a distinction in Nifi between empty string and null, e.g. some
+    // processors consider empty string invalid where null is valid. Without
+    // this directive it would be impossible to set existing values to null
+    return {
+        restrict: 'EA',
+        require: '?ngModel',
+        link: function ($scope:any, element:any, attr:any, ngModel:any) {
+            if (ngModel) {
+                const replaceEmptyStringWithNull = function (value:any) {
+                    return value === '' ? null : value;
+                };
+                ngModel.$parsers.push(replaceEmptyStringWithNull);
+            }
+        }
+    };
+};
 
+angular.module(moduleName).directive('emptyStringToNull', emptyStringToNull);
 
-
-angular.module(moduleName)
-    .directive('nifiPropertyInput', directive);
+angular.module(moduleName).directive('nifiPropertyInput', directive);
 
 

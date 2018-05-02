@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -42,6 +43,9 @@ public class KyloVolatileProvenanceEventRepository extends VolatileProvenanceRep
     private static final Logger log = LoggerFactory.getLogger(KyloVolatileProvenanceEventRepository.class);
 
     private KyloProvenanceEventRepositoryUtil provenanceEventRepositoryUtil = new KyloProvenanceEventRepositoryUtil();
+
+    private InetSocketAddress nodeIdAddress;
+    private boolean isClustered = false;
 
     public KyloVolatileProvenanceEventRepository() {
         super();
@@ -58,7 +62,7 @@ public class KyloVolatileProvenanceEventRepository extends VolatileProvenanceRep
 
     private void init() {
         log.info("Initializing KyloVolatileProvenanceEventRepository");
-        provenanceEventRepositoryUtil.init();
+        provenanceEventRepositoryUtil.init(nodeIdAddress,isClustered);
         //initialize the manager to gather and send the statistics
         FeedStatisticsManager.getInstance();
     }

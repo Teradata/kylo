@@ -1,5 +1,6 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
+import * as moment from 'moment';
 const moduleName = require('feed-mgr/module-name');
 
 
@@ -163,7 +164,7 @@ const moduleName = require('feed-mgr/module-name');
                 }
                 else {
                     //string is timestamp in millis UTC format
-                    // return new moment(parseInt(dateStr)).toDate();// TODO GREG
+                    return moment(parseInt(dateStr)).toDate();// TODO GREG
                 }
             },
 

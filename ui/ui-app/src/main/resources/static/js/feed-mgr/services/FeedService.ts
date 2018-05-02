@@ -1,7 +1,19 @@
 import * as angular from "angular";
 import * as _ from "underscore";
-import { DomainType } from "./DomainTypesService.d";
+import {DomainType} from "./DomainTypesService";
+import {Common} from "../../common/CommonTypes";
 import AccessControlService from "../../services/AccessControlService";
+
+/**
+ * A cache of the controllerservice Id to its display name.
+ * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
+ * and not the UUID of the service.
+ *
+ * @type {{}}
+ */
+let controllerServiceDisplayCache :Common.Map<string> = {};
+
+let controllerServiceDisplayCachePromiseTracker: any = {};
 
 export class FeedService {
     data: any;
@@ -764,6 +776,42 @@ export class FeedService {
                         return response.data;
                     });
             },
+        setControllerServicePropertyDisplayName:function(property: any){
+
+            let setDisplayValue = (property :any) : boolean => {
+                let cacheEntry:string = controllerServiceDisplayCache[property.value];
+                if(cacheEntry != null) {
+                    property.displayValue =cacheEntry;
+                    return true;
+                }
+                return false;
+            }
+
+            if(angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService)) {
+                if (!setDisplayValue(property)) {
+
+                    let entry: any = controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                    if (entry == undefined) {
+                        let promise = this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService);
+                        entry = {request: promise, waitingProperties: []};
+                        entry.waitingProperties.push(property);
+                        controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService] = entry;
+                        promise.then((services: any) => {
+                            _.each(services, (service: any) => {
+                                controllerServiceDisplayCache[service.id] = service.name;
+                            });
+                            _.each(entry.waitingProperties, (property) => {
+                                setDisplayValue(property);
+                            });
+                            delete controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                        })
+                    }
+                    else {
+                        entry.waitingProperties.push(property);
+                    }
+                }
+            }
+        },
             /**
              * Finds the allowed controller services for the specified property and sets the allowable values.
              *

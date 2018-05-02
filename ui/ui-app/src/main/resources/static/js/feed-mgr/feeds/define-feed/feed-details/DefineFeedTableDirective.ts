@@ -43,7 +43,6 @@ export class DefineFeedTableController {
     fieldNamesUniqueRetryAmount:number=0;
 
     showMethodPanel:boolean=true;
-    showTablePanel:boolean=true;
     uploadBtnDisabled:boolean=false;
     partitionFormulas:any=[];
 
@@ -158,6 +157,8 @@ export class DefineFeedTableController {
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', () =>{
             this.syncFeedsColumns();
             this.validate(undefined);
+            this.calcTableState();
+            this.expandSchemaPanel();
         });
 
         this.invalidColumnsWatch = $scope.$watch(() => {
@@ -217,8 +218,6 @@ export class DefineFeedTableController {
 
         this.validate(undefined);
         this.expanded = false;
-
-        this.calcTableState();
     }
         isSchemaPanelExpanded(){
             return this.expanded;
@@ -386,7 +385,6 @@ export class DefineFeedTableController {
         this.dataTypeLocked = angular.isDefined(this.dataTypeLocked) && (this.typeLocked === true || this.typeLocked === "true");
         this.canRemoveFields = angular.isUndefined(this.canRemoveFields) || this.canRemoveFields === true || this.canRemoveFields === "true";
         this.showMethodPanel = (this.model.table.method != 'EXISTING_TABLE');
-        this.showTablePanel = (this.model.table.tableSchema.fields.length > 0);
     };
     
 

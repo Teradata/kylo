@@ -65,6 +65,11 @@ define(["require", "exports", "angular", "../../services/AccessControlService", 
                 .then(function (actionSet) {
                 _this.allowExport = accessControlService.hasAction(AccessControlService_1.default.FEEDS_EXPORT, actionSet.actions);
             });
+            //rebind this controller to the onOrderChange function
+            //https://github.com/daniel-nagy/md-data-table/issues/616
+            this.onOrderChange = this.onOrderChange.bind(this);
+            this.selectedTableOption = this.selectedTableOption.bind(this);
+            this.onDataTablePaginationChange = this.onDataTablePaginationChange.bind(this);
         }
         FeedsTableController.prototype.onViewTypeChange = function (viewType) {
             this.PaginationDataService.viewType(this.pageName, this.viewType);

@@ -353,7 +353,7 @@ export class VisualQueryTable {
         const self = this;
 
         // Add index column
-        if (this.rows.length > 0 && this.rows[0].length === this.columns.length) {
+        if (this.rows && this.rows.length > 0 && this.rows[0].length === this.columns.length) {
             this.rows.forEach((row, index) => row.push(index));
         }
 

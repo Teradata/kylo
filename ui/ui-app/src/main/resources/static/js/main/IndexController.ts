@@ -47,12 +47,21 @@ export class controller implements ng.IComponentController{
           /**
           * Set the ui-router states to the $rootScope for easy access
           */
-            $rootScope.previousState;
-            $rootScope.currentState;
-            $transitions.onSuccess({}, (transition: any)=> {
+            this.$rootScope.previousState;
+            this.$rootScope.currentState;
+
+
+            // to focus on input element after it appears
+            $scope.$watch(function() {
+                return document.querySelector('#search-bar:not(.ng-hide)');
+            }, function(){
+                document.getElementById('search-input').focus();
+            });
+
+            this.$transitions.onSuccess({}, (transition: any)=> {
             this.currentState = transition.to();
             if (this.currentState.name != 'search') {
-                this.searchQuery = '';
+                this.searchQuery = null;
             }
             else {
                 this.searchQuery = SearchService.searchQuery;
@@ -76,7 +85,7 @@ export class controller implements ng.IComponentController{
             accessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
                     this.allowSearch = accessControlService
-                                            .hasAction(AccessConstants.GLOBAL_SEARCH_ACCESS, 
+                                            .hasAction(AccessConstants.GLOBAL_SEARCH_ACCESS,
                                                         actionSet.actions);
                 });
 
@@ -115,7 +124,7 @@ export class controller implements ng.IComponentController{
          * The Query string for the Global Search
          * @type {string}
          */
-        searchQuery: any = '';
+        searchQuery: any = null;
 
         /**
          * Indicates that global searches are allowed.
@@ -141,13 +150,32 @@ export class controller implements ng.IComponentController{
             this.$mdSidenav('left').close();
         }
 
+
+        showPreSearchBar() : boolean {
+            return this.searchQuery == null;
+        };
+
+        initiateSearch() : void {
+            this.searchQuery = '';
+        };
+
+        showSearchBar() : boolean {
+            return this.searchQuery != null
+        };
+
+        endSearch() : void {
+            return this.searchQuery = null;
+        };
+
         /**
          * Search for something
          */
         search = () =>{
-            this.SearchService.searchQuery = this.searchQuery;
-            if (this.currentState.name != 'search') {
-                this.StateService.Search().navigateToSearch(true);
+            if (this.searchQuery != null && this.searchQuery.length > 0) {
+                this.SearchService.searchQuery = this.searchQuery;
+                if (this.currentState.name != 'search') {
+                    this.StateService.Search().navigateToSearch(true);
+                }
             }
         };
 

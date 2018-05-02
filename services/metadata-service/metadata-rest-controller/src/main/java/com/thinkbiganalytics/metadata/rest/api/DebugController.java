@@ -422,13 +422,19 @@ public class DebugController {
     public RestResponseStatus registerIndex(JcrIndexDefinition indexDefinition){
         return  metadata.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, MetadataAccessControl.ADMIN_METADATA);
-            
+
+            Session session = JcrMetadataAccess.getActiveSession();
+            Workspace workspace = (Workspace) session.getWorkspace();
+            String nodeType = indexDefinition.getNodeType();
             try {
-                Session session = JcrMetadataAccess.getActiveSession();
-                Workspace workspace = (Workspace) session.getWorkspace();
-                ModeshapeIndexUtil.registerIndex(workspace.getIndexManager(), indexDefinition.getIndexName(), IndexDefinition.IndexKind.valueOf(indexDefinition.getIndexKind().toUpperCase()), "local", indexDefinition.getNodeType(), indexDefinition.getDescription(), null, indexDefinition.getPropertyName(),
-                                                 indexDefinition.getPropertyType());
-                return RestResponseStatus.SUCCESS;
+                if (workspace.getNodeTypeManager().hasNodeType(nodeType)) {
+                    ModeshapeIndexUtil.registerIndex(workspace.getIndexManager(), indexDefinition.getIndexName(), IndexDefinition.IndexKind.valueOf(indexDefinition.getIndexKind().toUpperCase()),
+                                                     "local", nodeType, indexDefinition.getDescription(), null, indexDefinition.getPropertyName(),
+                                                     indexDefinition.getPropertyType());
+                    return RestResponseStatus.SUCCESS;
+                } else {
+                    throw new IllegalArgumentException(String.format("Unknown Index Node Type %s", nodeType));
+                }
             } catch (RepositoryException e) {
                 throw new RuntimeException(e);
             }

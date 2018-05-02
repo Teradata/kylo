@@ -13,8 +13,6 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>nifi-provenance-constants</module>
-    <module>nifi-provenance-model</module>
     <module>nifi-savepoint</module>
     <module>nifi-rest</module>
     <module>nifi-nar-bundles</module>

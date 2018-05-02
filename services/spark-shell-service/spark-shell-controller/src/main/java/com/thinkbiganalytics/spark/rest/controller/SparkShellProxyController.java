@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
@@ -195,7 +196,7 @@ public class SparkShellProxyController {
     @Path("data-sources")
     @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Finds Spark data sources")
-    @ApiResponse(code = 200, message = "List of Spark data sources.", response = String.class, responseContainer = "List")
+    @ApiResponse(code = 200, message = "List of Spark data sources.", response = DataSources.class)
     public Response getDataSources() {
         final SparkShellProcess process = getSparkShellProcess();
         return Response.ok(restClient.getDataSources(process)).build();

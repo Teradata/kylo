@@ -27,9 +27,12 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
 import com.google.common.cache.RemovalNotification;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.nifi.provenance.RemoteMessageResponseWithRelatedFlowFiles;
+import com.thinkbiganalytics.nifi.provenance.model.RemoteEventMessageResponse;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.apache.commons.io.serialization.ValidatingObjectInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.joda.time.DateTime;
@@ -189,6 +192,7 @@ public class FeedEventStatistics implements Serializable {
     protected Map<String, List<String>> streamingFeedProcessorIds = new ConcurrentHashMap<>();
 
 
+
     /**
      * List of the input processor ids that are streaming
      */
@@ -212,6 +216,7 @@ public class FeedEventStatistics implements Serializable {
     public void setBackupLocation(String backupLocation) {
         this.backupLocation = backupLocation;
     }
+
 
     private boolean shouldSkipChildren(ProvenanceEventType eventType, String componentType) {
         boolean
@@ -341,19 +346,101 @@ public class FeedEventStatistics implements Serializable {
     }
 
 
-    public void checkAndAssignStartingFlowFile(ProvenanceEventRecord event) {
-        if (ProvenanceEventUtil.isStartingFeedFlow(event)) {
-            //startingFlowFiles.add(event.getFlowFileUuid());
-            allFlowFileToFeedFlowFile.put(event.getFlowFileUuid(), event.getFlowFileUuid());
-            //add the flow to active processing
-            feedFlowProcessing.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new AtomicInteger(0)).incrementAndGet();
-            feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
-
-            feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(), processorId -> new AtomicLong(0)).incrementAndGet();
-            feedProcessorRunningFeedFlowsChanged.set(true);
-            changedFeedProcessorRunningFeedFlows.add(event.getComponentId());
-            //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
+    public void load(RemoteMessageResponseWithRelatedFlowFiles response){
+        RemoteEventMessageResponse remoteEventMessageResponse = response.getRemoteEventMessageResponse();
+        if(remoteEventMessageResponse.isTrackingDetails()){
+            this.detailedTrackingFeedFlowFileId.add(remoteEventMessageResponse.getFeedFlowFileId());
         }
+        this.feedFlowFileIdToFeedProcessorId.put(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedProcessorId());
+        this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
+        this.allFlowFileToFeedFlowFile.put(remoteEventMessageResponse.getSourceFlowFileId(),remoteEventMessageResponse.getFeedFlowFileId());
+        this.feedFlowFileStartTime.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),remoteEventMessageResponse.getFeedFlowFileStartTime());
+        this.feedFlowProcessing.putIfAbsent(remoteEventMessageResponse.getFeedFlowFileId(),new AtomicInteger(remoteEventMessageResponse.getFeedFlowRunningCount().intValue()));
+
+        response.getRelatedFlowFiles().stream().forEach(ff -> allFlowFileToFeedFlowFile.putIfAbsent(ff, remoteEventMessageResponse.getFeedFlowFileId()));
+
+    }
+
+    public static class StartingFlowFileResult {
+        private String sourceSystemFlowFileIdentifier;
+        private String startingFlowFileId;
+        private boolean registeredStartingEvent;
+
+        public StartingFlowFileResult(){
+
+        }
+
+        public boolean isRemote() {
+            return StringUtils.isNotBlank(sourceSystemFlowFileIdentifier);
+        }
+
+        public String getSourceSystemFlowFileIdentifier() {
+            return sourceSystemFlowFileIdentifier;
+        }
+
+        public void setSourceSystemFlowFileIdentifier(String sourceSystemFlowFileIdentifier) {
+            this.sourceSystemFlowFileIdentifier = sourceSystemFlowFileIdentifier;
+        }
+
+        public String getStartingFlowFileId() {
+            return startingFlowFileId;
+        }
+
+        public void setStartingFlowFileId(String startingFlowFileId) {
+            this.startingFlowFileId = startingFlowFileId;
+        }
+
+        public boolean isRegisteredStartingEvent() {
+            return registeredStartingEvent;
+        }
+
+        public void setRegisteredStartingEvent(boolean registeredStartingEvent) {
+            this.registeredStartingEvent = registeredStartingEvent;
+        }
+    }
+
+
+    public StartingFlowFileResult checkAndAssignStartingFlowFile(ProvenanceEventRecord event, Long eventId) {
+        StartingFlowFileResult result = new StartingFlowFileResult();
+        if (ProvenanceEventUtil.isStartingFeedFlow(event)) {
+            result.setStartingFlowFileId(event.getFlowFileUuid());
+            //determine if we are working with a remote input.  if so try to assign this back to the incoming flowfile
+            String sourceSystemFlowFileIdentifier = ProvenanceEventUtil.parseSourceSystemFlowFileIdentifier(event);
+            if(sourceSystemFlowFileIdentifier != null){
+                result.setSourceSystemFlowFileIdentifier(sourceSystemFlowFileIdentifier);
+                String startingFlowFile = allFlowFileToFeedFlowFile.get(sourceSystemFlowFileIdentifier);
+                if(StringUtils.isNotBlank(startingFlowFile)){
+                    //remove it from the remote map
+                    allFlowFileToFeedFlowFile.put(event.getFlowFileUuid(),startingFlowFile);
+                    if (feedFlowProcessing.containsKey(startingFlowFile)) {
+                        feedFlowProcessing.get(startingFlowFile).incrementAndGet();
+                    }
+                    log.info("Received a Remote Event {}, coming from a previous flowfile {}.  Assigning relationship ",event.getFlowFileUuid(),sourceSystemFlowFileIdentifier);
+                    result.setStartingFlowFileId(startingFlowFile);
+                    result.setRegisteredStartingEvent(true);
+                }
+                else {
+                    //unable to find feedflowfile for this remote event.
+                    //queue up the event and wait for the related data
+                   RemoteProvenanceEventService.getInstance().addRemoteSourceEventToQueue(sourceSystemFlowFileIdentifier, event, eventId);
+                   return result;
+                }
+            }
+            else {
+                //startingFlowFiles.add(event.getFlowFileUuid());
+                allFlowFileToFeedFlowFile.put(event.getFlowFileUuid(), event.getFlowFileUuid());
+                //add the flow to active processing
+                feedFlowProcessing.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new AtomicInteger(0)).incrementAndGet();
+                feedFlowFileIdToFeedProcessorId.put(event.getFlowFileUuid(), event.getComponentId());
+
+                feedProcessorRunningFeedFlows.computeIfAbsent(event.getComponentId(), processorId -> new AtomicLong(0)).incrementAndGet();
+                feedProcessorRunningFeedFlowsChanged.set(true);
+                changedFeedProcessorRunningFeedFlows.add(event.getComponentId());
+                //  feedFlowToRelatedFlowFiles.computeIfAbsent(event.getFlowFileUuid(), feedFlowFileId -> new HashSet<>()).add(event.getFlowFileUuid());
+                result.setRegisteredStartingEvent(true);
+            }
+        }
+        return result;
     }
 
     public void markFeedProcessorRunningFeedFlowsUnchanged() {
@@ -392,7 +479,11 @@ public class FeedEventStatistics implements Serializable {
 
         //  activeFlowFiles.add(event.getFlowFileUuid());
         String startingFlowFile = allFlowFileToFeedFlowFile.get(event.getFlowFileUuid());
+
+
+
         boolean trackingEventFlowFile = false;
+
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
 
             if (startingFlowFile == null) {
@@ -522,13 +613,21 @@ public class FeedEventStatistics implements Serializable {
 
     public String getFeedProcessorId(ProvenanceEventRecord event) {
         String feedFlowFileId = getFeedFlowFileId(event);
+        return getFeedProcessorId(feedFlowFileId);
+    }
+
+    public String getFeedProcessorId(String feedFlowFileId) {
         return feedFlowFileId != null ? feedFlowFileIdToFeedProcessorId.get(feedFlowFileId) : null;
     }
 
     public Long getFeedFlowStartTime(ProvenanceEventRecord event) {
         String feedFlowFile = getFeedFlowFileId(event);
-        if (feedFlowFile != null) {
-            return feedFlowFileStartTime.getOrDefault(feedFlowFile, null);
+        return getFeedFlowStartTime(feedFlowFile);
+    }
+
+    public Long getFeedFlowStartTime(String feedFlowFileId) {
+        if (feedFlowFileId != null) {
+            return feedFlowFileStartTime.getOrDefault(feedFlowFileId, null);
         }
         return null;
     }
@@ -653,26 +752,50 @@ public class FeedEventStatistics implements Serializable {
     }
 
 
-    public void checkAndClear(String eventFlowFileId, String eventType, Long eventId) {
+    public void checkAndClear(ProvenanceEventRecord event, Long eventId) {
+        String eventFlowFileId = event.getFlowFileUuid();
+        String eventType = event.getEventType().name();
         if (ProvenanceEventType.DROP.name().equals(eventType)) {
+            boolean canClear = true;
 
-            boolean isTrackingDetails = isTrackingDetails(eventFlowFileId);
-
-            if (!isTrackingDetails) {
-                //if we are not tracking ProvenanceEventDTO details then we can just expire all the flowfile data
-                clearData(eventId, eventFlowFileId);
-            } else {
-                //if we are tracking details it needs to be added to an expiring map.
-                //Sometimes the DROP event for the flowfile will come in before the next event causing us to loose the tracking information
-                //this will happen in a very short time, so adding to an expiring cache to help manage the cleanup of these entries is needed.
-                detailedTrackingFlowFilesToDelete.put(eventId, eventFlowFileId);
+            if(RemoteProvenanceEventService.getInstance().isRemoteInputPortEvent(event)){
+                RemoteProvenanceEventService.getInstance().registerRemoteInputPortDropEvent(event,eventId);
+                canClear = RemoteProvenanceEventService.getInstance().canRemoteEventDataBeDeleted(eventFlowFileId);
             }
-        }
 
-        eventDuration.remove(eventId);
-        eventStartTime.remove(eventId);
+            if (canClear) {
+
+                clearEventAndTrackingData(eventId, eventFlowFileId);
+            }
+
+            eventDuration.remove(eventId);
+            eventStartTime.remove(eventId);
+        }
     }
 
+    private void clearEventAndTrackingData(Long eventId, String eventFlowFileId) {
+        boolean isTrackingDetails = isTrackingDetails(eventFlowFileId);
+        log.debug("Removing FlowFile {}, EventId: {}, isTracking: {}",eventFlowFileId,eventId,isTrackingDetails);
+        if (!isTrackingDetails) {
+            //if we are not tracking ProvenanceEventDTO details then we can just expire all the flowfile data
+            clearData(eventId, eventFlowFileId);
+        } else {
+            //if we are tracking details it needs to be added to an expiring map.
+            //Sometimes the DROP event for the flowfile will come in before the next event causing us to loose the tracking information
+            //this will happen in a very short time, so adding to an expiring cache to help manage the cleanup of these entries is needed.
+            detailedTrackingFlowFilesToDelete.put(eventId, eventFlowFileId);
+        }
+    }
+
+    /**
+     *
+     * @param remoteSourceFlowFiles
+     */
+    public void checkAndClearRemoteEvents(Collection<RemoteProvenanceEventService.RemoteSourceFlowFile> remoteSourceFlowFiles){
+        remoteSourceFlowFiles.stream().forEach(remoteSourceFlowFile -> {
+            clearEventAndTrackingData(remoteSourceFlowFile.getDropEventId(),remoteSourceFlowFile.getFlowFileId());
+        });
+    }
 
     /**
      * is this the last DROP event for a feed that is being tracked to go to ops manager
@@ -721,7 +844,7 @@ public class FeedEventStatistics implements Serializable {
     }
 
     public void cleanup(ProvenanceEventRecord event, Long eventId) {
-        checkAndClear(event.getFlowFileUuid(), event.getEventType().name(), eventId);
+        checkAndClear(event, eventId);
     }
 
     public void setDeleteBackupAfterLoad(boolean deleteBackupAfterLoad) {
@@ -738,4 +861,7 @@ public class FeedEventStatistics implements Serializable {
         sb.append('}');
         return sb.toString();
     }
+
+
+
 }

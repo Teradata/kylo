@@ -347,6 +347,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         return promise;
     }
 
+    /**
+     * Fetch the input PortDTO objects on the Root process group
+     * @return {angular.IPromise<angular.IHttpResponse<any>>}
+     */
+    fetchRootInputPorts(): angular.IPromise<angular.IHttpResponse<any>> {
+       return this.$http.get(this.RestUrlService.ROOT_INPUT_PORTS);
+    }
 
     replaceAll(str: string, find: string, replace: string): string {
         return str.replace(new RegExp(this.escapeRegExp(find), 'g'), replace);

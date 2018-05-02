@@ -281,5 +281,13 @@ public class JpaBatchStepExecutionProvider implements BatchStepExecutionProvider
         JpaBatchStepExecutionContextValue eventIdContextValue = new JpaBatchStepExecutionContextValue(stepExecution, "NiFi Event Id");
         eventIdContextValue.setStringVal(event.getEventId().toString());
         stepExecution.addStepExecutionContext(eventIdContextValue);
+
+        //add in the clusterNodeIdAddress as a property
+        String clusterAddress = event.getClusterNodeAddress();
+        if(StringUtils.isNotBlank(clusterAddress)) {
+            JpaBatchStepExecutionContextValue clusterNodeAddress = new JpaBatchStepExecutionContextValue(stepExecution, "NiFi Node Address");
+            clusterNodeAddress.setStringVal(clusterAddress);
+            stepExecution.addStepExecutionContext(clusterNodeAddress);
+        }
     }
 }

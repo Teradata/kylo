@@ -85,12 +85,12 @@
 
             <md-input-container class="md-block">
               <label>Database User</label>
-              <input ng-model="vm.editModel.databaseUser"/>
+              <input autocomplete="new-password" ng-model="vm.editModel.databaseUser"/>
             </md-input-container>
 
             <md-input-container class="md-block">
               <label>Password</label>
-              <input type="password" ng-model="vm.editModel.password" ng-change="vm.onPasswordChange()"/>
+              <input type="password" autocomplete="new-password" ng-model="vm.editModel.password" ng-change="vm.onPasswordChange()"/>
             </md-input-container>
 
             <md-input-container class="md-block" style="padding-top: 0">

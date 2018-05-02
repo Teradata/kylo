@@ -49,4 +49,6 @@ public class NifiConstants {
     public static String OUTPUT_PORT = NIFI_PORT_TYPE.OUTPUT_PORT.name();
 
     public static String INPUT_PORT = NIFI_PORT_TYPE.INPUT_PORT.name();
+
+    public static String REMOTE_INPUT_PORT = "REMOTE_INPUT_PORT";
 }

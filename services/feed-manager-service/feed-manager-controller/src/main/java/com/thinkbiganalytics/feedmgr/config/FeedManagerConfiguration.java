@@ -63,6 +63,7 @@ import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateUtil;
+import com.thinkbiganalytics.feedmgr.service.template.RemoteInputPortService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.exporting.DefaultTemplateExporter;
 import com.thinkbiganalytics.metadata.api.feed.export.FeedExporter;
@@ -398,6 +399,11 @@ public class FeedManagerConfiguration {
             return new ImportFeedTemplateXml(importTemplate, importTemplateOptions);
         }
 
+    }
+
+    @Bean
+    public RemoteInputPortService remoteInputPortService(){
+        return  new RemoteInputPortService();
     }
 
     @Bean

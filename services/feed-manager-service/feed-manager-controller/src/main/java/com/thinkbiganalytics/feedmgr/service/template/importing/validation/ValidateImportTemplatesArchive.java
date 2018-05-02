@@ -28,6 +28,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplateRequest;
 import com.thinkbiganalytics.feedmgr.rest.model.UploadProgressMessage;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
+import com.thinkbiganalytics.feedmgr.service.template.NiFiTemplateCache;
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
@@ -55,6 +56,9 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
     private RegisteredTemplateService registeredTemplateService;
     @Inject
     private TemplateConnectionUtil templateConnectionUtil;
+
+    @Inject
+    private NiFiTemplateCache niFiTemplateCache;
 
 
 
@@ -99,7 +103,8 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
                     try {
                         String templateName = NifiTemplateParser.getTemplateName(reusableTemplateXml);
                         UploadProgressMessage statusMessage = uploadProgressService.addUploadStatus(importTemplateOptions.getUploadKey(), "Validating Reusable Template. " + templateName);
-                        TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
+                        TemplateDTO dto =  niFiTemplateCache.geTemplate(null,templateName);
+                      //  TemplateDTO dto = nifiRestClient.getTemplateByName(templateName);
                         //if there is a match and it has not been acknowledged by the user to overwrite or not, error out
                         if (dto != null && !reusableTemplateOption.isUserAcknowledged()) {
                             //error out it exists

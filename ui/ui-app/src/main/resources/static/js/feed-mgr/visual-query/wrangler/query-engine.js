@@ -248,6 +248,14 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
             return this.getState().rows;
         };
         /**
+         * Gets the cols
+         *
+         * @returns the rows or {@code null} if the transformation has not been applied
+         */
+        QueryEngine.prototype.getCols = function () {
+            return this.getState().columns;
+        };
+        /**
          * Lists the names of the supported data source types.
          *
          * Used in error messages to list the supported data source types.

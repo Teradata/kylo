@@ -16,6 +16,11 @@
     <i class="ui-grid-icon-angle-down">&nbsp;</i>
   </md-button>
   <md-menu-content class="visual-query-column-menu">
+    <md-menu-item>
+      <md-button ng-click="header.delegate.showAnalyzeColumn(header, table)">
+        <i class="material-icons">assessment</i>&nbsp;</i> {{"views.query-table-header.analyze" | translate}}
+      </md-button>
+    </md-menu-item>
     <md-menu-item ng-if="header.sort.direction != 'asc'">
       <md-button ng-click="header.delegate.sortColumn('asc', header, table)">
         <i class="ui-grid-icon-sort-alt-up">&nbsp;</i> {{"views.query-table-header.sort-ascending" | translate}}
@@ -54,7 +59,7 @@
         <md-menu-content class="visual-query-column-menu">
           <md-menu-item ng-repeat="type in availableCasts">
             <md-button ng-click="header.delegate.castTo(type)">
-              <ng-md-icon ng-if="type.icon" icon="{{type.icon}}"></ng-md-icon>
+              <i class="material-icons" ng-style="{'fill':type.iconColor}">{{type.icon}}</i>
               {{type.name}}
             </md-button>
           </md-menu-item>
@@ -72,7 +77,7 @@
           </md-menu-item>
           <md-menu-item ng-repeat="domainType in availableDomainTypes">
             <md-button ng-click="header.delegate.setDomainType(header, domainType.id)">
-              <ng-md-icon icon="{{domainType.icon}}" ng-style="{'fill':domainType.iconColor}"></ng-md-icon>
+              <i class="material-icons" ng-style="{'fill':domainType.iconColor}">{{domainType.icon}}</i>
               {{domainType.title}}
             </md-button>
           </md-menu-item>
@@ -86,13 +91,11 @@
         </md-button>
         <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
-            <div>
-              <i class="material-icons" style="margin-left:-14px"  ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
+            <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
               <md-input-container>
-                <label>{{ filter.label }}</label>
+                <label style="left:12px">{{ filter.label }}</label>
                 <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(filter, table)">
               </md-input-container>
-            </div>
           </md-menu-item>
         </md-menu-content>
       </md-menu>
