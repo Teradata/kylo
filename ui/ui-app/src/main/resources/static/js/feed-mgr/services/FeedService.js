@@ -718,7 +718,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     // Show progress indicator
                     property.isLoading = true;
                     // Fetch the list of controller services
-                    this.data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
+                    this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
                         .then(function (services) {
                         // Update the allowable values
                         property.isLoading = false;
