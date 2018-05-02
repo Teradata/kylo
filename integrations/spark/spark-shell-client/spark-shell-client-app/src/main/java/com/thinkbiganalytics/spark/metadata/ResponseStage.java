@@ -128,20 +128,32 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
 
         List<Row> allRows = result.getDataSet().collectAsList();
         List<QueryResultColumn> allColumns = result.getColumns();
+        List<List<Object>> rows;
+        List<QueryResultColumn> columnSelection;
+        if (pageSpec != null) {
+            final CalculatedPage rowPage = new CalculatedPage(allRows.size(), pageSpec.getFirstRow(), pageSpec.getNumRows());
+            final CalculatedPage colPage = new CalculatedPage(allColumns.size(), pageSpec.getFirstCol(), pageSpec.getNumCols());
 
-        final CalculatedPage rowPage = new CalculatedPage(allRows.size(), pageSpec.getFirstRow(), pageSpec.getNumRows());
-        final CalculatedPage colPage = new CalculatedPage(allColumns.size(), pageSpec.getFirstCol(), pageSpec.getNumCols());
+            List<Row> rowSelection = toRowSelection(allRows, rowPage);
+            columnSelection = toColumnSelection(allColumns, colPage);
+            rows = Lists.transform(rowSelection, new Function<Row, List<Object>>() {
+                @Nullable
+                @Override
+                public List<Object> apply(@Nullable Row row) {
+                    return (row != null) ? rowTransform.convertPagedRow(row, colPage.indices()) : null;
+                }
+            });
+        } else {
+            columnSelection = allColumns;
+            rows = Lists.transform(result.getDataSet().collectAsList(), new Function<Row, List<Object>>() {
+                @Nullable
+                @Override
+                public List<Object> apply(@Nullable Row row) {
+                    return (row != null) ? rowTransform.convertRow(row) : null;
+                }
+            });
 
-        final List<Row> rowSelection = toRowSelection(allRows, rowPage);
-        final List<QueryResultColumn> columnSelection = toColumnSelection(allColumns, colPage);
-
-        final List<List<Object>> rows = Lists.transform(rowSelection, new Function<Row, List<Object>>() {
-            @Nullable
-            @Override
-            public List<Object> apply(@Nullable Row row) {
-                return (row != null) ? rowTransform.convertPagedRow(row, colPage.indices()) : null;
-            }
-        });
+        }
 
         // Build the query result
         final TransformQueryResult queryResult = new TransformQueryResult();

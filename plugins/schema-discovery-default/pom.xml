@@ -90,8 +90,11 @@
       <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
+    <dependency>
+      <groupId>com.databricks</groupId>
+      <artifactId>spark-xml_2.11</artifactId>
+      <version>0.4.1</version>
+    </dependency>
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>

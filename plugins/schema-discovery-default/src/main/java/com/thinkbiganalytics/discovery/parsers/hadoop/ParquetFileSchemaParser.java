@@ -34,6 +34,6 @@ public class ParquetFileSchemaParser extends AbstractSparkFileSchemaParser imple
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.PARQUET, target);
+        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.PARQUET, target, new DefaultSparkCommandBuilder("parquet"));
     }
 }

@@ -34,7 +34,18 @@ public class AvroFileSchemaParser extends AbstractSparkFileSchemaParser implemen
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.AVRO, target);
+        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.AVRO, target, new AvroCommandBuilder());
+    }
+
+    static class AvroCommandBuilder implements SparkCommandBuilder {
+
+        @Override
+        public String build(String pathToFile) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("import com.databricks.spark.avro._\n");
+            sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
+            return sb.toString();
+        }
     }
 
 }
