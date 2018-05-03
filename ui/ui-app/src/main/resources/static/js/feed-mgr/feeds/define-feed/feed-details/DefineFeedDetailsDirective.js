@@ -161,6 +161,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 })
                     .each(findControllerServicesForProperty);
                 self.loading = false;
+                self.model.isStream = template.isStream;
                 validate();
             }
             /**
