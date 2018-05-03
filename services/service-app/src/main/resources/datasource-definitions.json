@@ -8,7 +8,7 @@
     "datasourceType": "HiveDatasource",
     "connectionType": "SOURCE",
     "identityString": "${schema}.${table}",
-    "title": "${schema}.${Table}"
+    "title": "${schema}.${table}"
   },
   {
     "processorType": "com.thinkbiganalytics.nifi.v2.ingest.MergeTable",
