@@ -6,635 +6,713 @@ import OpsManagerJobService from "../../services/OpsManagerJobService";
 import IconService from "../../services/IconStatusService";
 import OpsManagerRestUrlService from "../../services/OpsManagerRestUrlService";
 
-export class JobDetailsDirectiveController implements ng.IComponentController{
-        allowAdmin: boolean;
-        pageName: string;
-        //Page State
-        refreshing: boolean;
-        loading: boolean;
-        showProgress: boolean;
+import {Common} from "../../../common/CommonTypes";
 
-        //Track active requests and be able to cancel them if needed
-        activeJobRequests: any[]
-        jobData: any;
-        stepData: any;
-        allSteps: any[];
-        jobTab: any;
-        tabMetadata: any;
-        UNKNOWN_JOB_EXECUTION_ID: any;
-        next: any;
-        previous: any;
-        
-        //Refresh Intervals
-        refreshTimeout: any;
-        jobExecutionId: any;
-        executionId: any;
 
-        unableToFindJob: boolean;
-        showJobParameters: boolean;
-        toggleJobParametersVar: any;
-        relatedJobs: any[];
-        relatedJob: any;
-        changeRelatedJobVar: any;
-        navigateToLogsVar: any;
-        navigateToLogsForStepVar: any;
-        logUiEnabledVar: boolean;
-        refreshInterval: any;
-        refreshIntervalTime: any;
-        deferred: any;
-        relatedJobIndex: any;
-        loadJobs: any;
+class PageState {
+    refreshing: boolean;
+    loading: boolean;
+    showProgress: boolean;
 
-constructor(private $scope: any,
-            private $http: any,
-            private $state: any,
-            private $interval: any,
-            private $timeout: any,
-            private $q: any,
-            private $mdToast: any,
-            private OpsManagerRestUrlService: any,
-            private OpsManagerJobService: any,
-            private IconService: any,
-            private AccessControlService: any,
-            private AngularModuleExtensionService: any,
-            private $filter: any){
-                     /**
-         * Indicates that admin operations are allowed.
-         * @type {boolean}
-         */
-        this.allowAdmin = false;
+    constructor() {
 
-        this.pageName = 'jobs';
-        //Page State
+    }
+
+    showLoading() {
         this.refreshing = false;
         this.loading = true;
         this.showProgress = true;
+    }
 
-        //Track active requests and be able to cancel them if needed
-        this.activeJobRequests = []
+    isRefreshing() {
+        return this.refreshing;
+    }
 
-        this.jobData = {};
+    isLoading() {
+        return this.loading;
+    }
 
-        /**
-         * {step1:data,step2:data}
-         * @type {{}}
-         */
+    finishedLoading() {
+        this.loading = false;
+    }
+
+    finished() {
+        this.refreshing = false;
+        this.showProgress = false;
+        this.loading = false;
+    }
+}
+
+class Step {
+    name: string;
+    stepName: string;
+    nifiEventId: number;
+    startTime: any;
+    endTime: any;
+    runTime: number;
+    tabIcon: string;
+    tabIconStyle: string;
+    running: boolean;
+    displayStatus: string;
+    exitCode: string;
+    cssStatusClass?: string;
+    statusIcon: string;
+    disabled: boolean;
+    executionContext:any;
+    exitDescription:string;
+    executionId:number;
+    jobParameters?:any[];
+    constructor() {
+
+    }
+
+
+}
+
+class Job {
+    jobExecutionId: number;
+    executionId:number;
+    name: string;
+    jobName: string;
+    exitDescription: string;
+    running: boolean;
+    stopping: boolean;
+    tabIcon: string;
+    tabIconStyle: string;
+    statusIcon: string;
+    cssStatusClass?: string;
+    displayStatus:string;
+    status:string;
+    executedSteps: Step[];
+    jobParameters: any[];
+    executionContext:any;
+    executionContextArray: any[];
+    renderTriggerRetry?:boolean
+    triggerRetryFlowfile:any;
+    errorMessage?:string;
+    exitStatus:string;
+
+    constructor(){
+
+    }
+
+}
+
+class StepWithTitle {
+
+    title:string;
+    content:Step;
+
+    constructor( title: string,  content: Step) {
+        this.title = title;
+        this.content = content;
+    }
+}
+
+class JobWithTitle {
+    title:string;
+    content:Job;
+
+    constructor( title: string,  content: Job) {
+        this.title = title;
+        this.content = content;
+    }
+}
+
+class TabAnimationControl {
+
+    private enableTabAnimationTimeout: angular.IPromise<any>;
+
+    constructor(private $timeout: angular.ITimeoutService) {
+
+    }
+
+    /**
+     * Might not be needed
+     */
+    disableTabAnimation() {
+        angular.element('.job-details-tabs').addClass('no-animation');
+    }
+
+
+    enableTabAnimation() {
+        if (this.enableTabAnimationTimeout) {
+            this.$timeout.cancel(this.enableTabAnimationTimeout);
+        }
+        this.enableTabAnimationTimeout = this.$timeout(() => {
+            angular.element('.job-details-tabs').removeClass('no-animation');
+        }, 1000);
+
+    }
+}
+
+export class JobDetailsDirectiveController implements ng.IComponentController {
+
+    /**
+     * Flag for admin controls
+     */
+    allowAdmin: boolean = false;
+
+    /**
+     * Track loading, progress
+     * @type {PageState}
+     */
+    pageState: PageState = new PageState();
+
+    /**
+     * Track active requests and be able to cancel them if needed
+     */
+    activeJobRequests: angular.IDeferred<any>[] = [];
+
+    /**
+     *
+     */
+    jobData: Job;
+
+    /**
+     * Map of the stepName to Step objects
+     */
+    stepData: Common.Map<Step>;
+
+    /**
+     * Array of all the steps
+     */
+    allSteps: StepWithTitle[] = [];
+    /**
+     * The Job with content
+     */
+    jobTab: JobWithTitle;
+
+    tabMetadata: {
+        selectedIndex: 0,
+        bottom: false
+    };
+
+    UNKNOWN_JOB_EXECUTION_ID: string = "UNKNOWN";
+
+
+    //Refresh Intervals
+    refreshTimeout: angular.IPromise<any> = null;
+    /**
+     * The active Job ID
+     */
+    jobExecutionId: number;
+
+    executionId:string;
+
+    /**
+     * Flag indicating the loading of the passed in JobExecutionId was unable to bring back data
+     * @type {boolean}
+     */
+    unableToFindJob: boolean = false;
+    /**
+     * Show the Job Params in the Job Details tab
+     * @type {boolean}
+     */
+    showJobParameters: boolean = true;
+
+    /**
+     * Should we show the log ui buttons
+     * @type {boolean}
+     */
+    logUiEnabled: boolean = false;
+
+    deferred: angular.IDeferred<any>;
+
+    tabAnimationControl: TabAnimationControl;
+
+
+    statusCssMap: Common.Map<string>;
+
+    static $inject = ["$scope", "$http", "$state", "$interval", "$timeout", "$q",
+        "$mdToast", "OpsManagerRestUrlService",
+        "OpsManagerJobService", "IconService", "AccessControlService", "AngularModuleExtensionService",
+        "$filter"]
+
+    constructor(private $scope: angular.IScope,
+                private $http: angular.IHttpService,
+                private $state: any,
+                private $interval: angular.IIntervalService,
+                private $timeout: angular.ITimeoutService,
+                private $q: angular.IQService,
+                private $mdToast: angular.material.IToastService,
+                private OpsManagerRestUrlService: any,
+                private OpsManagerJobService: any,
+                private IconService: any,
+                private AccessControlService: any,
+                private AngularModuleExtensionService: any,
+                private $filter: angular.IFilterService) {
+
+        this.pageState.showLoading();
+
+
+        this.jobData = new Job();
+
         this.stepData = {};
-
-        /**
-         * [{{title:'',data:{}},{title:'',data:{}}...}]
-         * @type {{}}
-         */
-
-        this.allSteps = [];
 
         this.jobTab = {title: 'JOB', content: this.jobData}
 
-        //  this.selectedTab = this.jobTabs[0];
-        this.tabMetadata = {
-            selectedIndex: 0,
-            bottom: false
+
+        this.tabAnimationControl = new TabAnimationControl(this.$timeout);
+
+        var cssStatus = {
+            'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'],
+            'error': ['FAILED'],
+            'warn': ['STOPPING', 'STOPPED', 'WARNING'],
+            'abandoned': ['ABANDONED'],
+            'unknown': ['UNKNOWN']
         };
-
-        var UNKNOWN_JOB_EXECUTION_ID = "UNKNOWN";
-
-        this.next = this.nextTab;
-        this.previous = this.previousTab;
-
-        //Refresh Intervals
-        this.refreshTimeout = null;
-        this.jobData = {};
-        this.jobExecutionId = null;
-
-        /**
-         * Flag indicating the loading of the passed in JobExecutionId was unable to bring back data
-         * @type {boolean}
-         */
-        this.unableToFindJob = false;
-
-        this.showJobParameters = true;
-        this.toggleJobParametersVar = this.toggleJobParameters;
-        this.relatedJobs = [];
-        this.relatedJob = null;
-        this.changeRelatedJobVar = this.changeRelatedJob;
-        this.navigateToLogsVar = this.navigateToLogs;
-        this.navigateToLogsForStepVar = this.navigateToLogsForStep;
-        this.logUiEnabledVar = false;
-
-        this.init();
-        this.logUiEnabled();
-
-         $scope.$on('$destroy', ()=>{
-            this.cancelLoadJobDataTimeout();
-        })
-
-        // Fetch allowed permissions
-        AccessControlService.getUserAllowedActions()
-                .then((actionSet: any)=> {
-                    this.allowAdmin = AccessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+        this.statusCssMap = {};
+        _.each(cssStatus, (arr: any, key: any) => {
+            _.each(arr, (status: any, i: any) => {
+                this.statusCssMap[status] = key;
+            });
         });
+
+
+        $scope.$on("$destroy", this.ngOnDestroy.bind(this));
+
     }
 
-        init = ()=> {
-            var executionId = this.executionId;
-            this.jobExecutionId = executionId;
-            this.relatedJob = this.jobExecutionId;
-            this.loadJobData();
-            //   loadRelatedJobs();
-        }
-        triggerSavepointRetry() {
-          //var self = this;
-            if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
-                console.log('TRIGGER SAVE replay for ',this.jobData.triggerRetryFlowfile);
-                this.jobData.renderTriggerRetry = false;
-                this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile)).then(()=>{
 
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Triggered the retry')
-                            .hideDelay(3000)
-                    );
-                    this.loadJobData(true);
+    $onInit() {
+        this.ngOnInit();
+    }
+
+    $onDestroy() {
+        this.ngOnDestroy();
+    }
+
+    ngOnInit() {
+        this.jobExecutionId = parseInt(this.executionId)
+        //init the log ui flag
+        this.logUiEnabled = this.AngularModuleExtensionService.stateExists("log-ui");
+
+        // Fetch allowed permissions
+        this.AccessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                this.allowAdmin = this.AccessControlService.hasAction(this.AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+            });
+        this.loadJobData();
+
+    }
+
+    ngOnDestroy() {
+        this.cancelLoadJobDataTimeout();
+    }
+
+
+    abandonJob(event: angular.IAngularEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        var executionId = this.jobData.executionId;
+        this.OpsManagerJobService.abandonJob(this.jobData.executionId, {includeSteps: true}, (response: any) => {
+            this.updateJob(executionId, response.data)
+        })
+    }
+
+    failJob(event: angular.IAngularEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        var executionId = this.jobData.executionId;
+
+        let _fail = ()=>{
+            this.OpsManagerJobService.failJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
+                this.updateJob(executionId, response.data);
+            })
+        }
+
+        if(this.jobData.renderTriggerRetry){
+            this.triggerSavepointReleaseFailure(_fail)
+        }
+        else {
+            _fail()
+        }
+    };
+
+    restartJob(event:angular.IAngularEvent) {
+        event.stopPropagation();
+        event.preventDefault();
+        var executionId = this.jobData.executionId;
+        this.OpsManagerJobService.restartJob(this.jobData.executionId, {includeSteps: true}, (response:any) => {
+                this.updateJob(executionId, response.data);
+            }, (errMsg:any) => {
+                this.addJobErrorMessage(errMsg);
+            }
+        );
+    };
+
+    triggerSavepointRetry() {
+        if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+            this.jobData.renderTriggerRetry = false;
+            this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RETRY(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).then(() => {
+
+                this.$mdToast.show(
+                    this.$mdToast.simple()
+                        .textContent('Triggered the retry')
+                        .hideDelay(3000)
+                );
+                this.loadJobData(true);
+            });
+        }
+    }
+
+    triggerSavepointReleaseFailure(callbackFn: any) {
+        if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
+            this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile),null).then((response: any) => {
+
+                this.$mdToast.show(
+                    this.$mdToast.simple()
+                        .textContent('Triggered the release and failure')
+                        .hideDelay(3000)
+                );
+                if (angular.isDefined(callbackFn)) {
+                    callbackFn();
+                }
+                this.loadJobData(true);
+
+            });
+        }
+    }
+
+
+    navigateToLogs(jobStartTime: any, jobEndTime: any) {
+        this.$state.go("log-ui", {startTime: jobStartTime, endTime: jobEndTime, showCustom: true});
+    }
+
+    navigateToLogsForStep(failedStep: any) {
+        var previousStep: any = '';
+        for (var title in this.stepData) {
+            var step = this.stepData[title];
+            if (failedStep.title == title) {
+                break;
+            }
+            previousStep = step;
+        }
+        this.$state.go("log-ui", {startTime: previousStep.startTime, endTime: failedStep.content.endTime, showCustom: true});
+    }
+
+    //Tab Functions
+    toggleJobParameters(name: string) {
+        if (name == 'JobParameters') {
+            this.showJobParameters = true;
+        }
+        else {
+            this.showJobParameters = false;
+        }
+    }
+
+
+    private cancelLoadJobDataTimeout() {
+        if (this.refreshTimeout != null) {
+            this.$timeout.cancel(this.refreshTimeout);
+            this.refreshTimeout = null;
+        }
+    }
+
+    //Load Feeds
+    private loadJobData(force?: boolean) {
+        this.cancelLoadJobDataTimeout();
+
+        if (force || !this.pageState.refreshing) {
+            this.unableToFindJob = false;
+            if (force) {
+                angular.forEach(this.activeJobRequests, (canceler: any, i: any) => {
+                    canceler.resolve();
                 });
-            }
-        }
-        triggerSavepointReleaseFailure(callbackFn:any) {
-         // var self = this;
-            if (angular.isDefined(this.jobData.triggerRetryFlowfile)) {
-                this.$http.post(this.OpsManagerRestUrlService.TRIGGER_SAVEPOINT_RELEASE(this.jobExecutionId, this.jobData.triggerRetryFlowfile)).then((response:any)=>{
-                    console.log('TRIGGERD FAILURE ',response)
-
-                    this.$mdToast.show(
-                        this.$mdToast.simple()
-                            .textContent('Triggered the release and failure')
-                            .hideDelay(3000)
-                    );
-                    if(angular.isDefined(callbackFn)){
-                        callbackFn();
-                    }
-                    this.loadJobData(true);
-
-                });
-            }
-        }
-        nextTab=()=> {
-            this.tabMetadata.selectedIndex = Math.min(this.tabMetadata.selectedIndex + 1, 2);
-        };
-        previousTab=()=> {
-            this.tabMetadata.selectedIndex = Math.max(this.tabMetadata.selectedIndex - 1, 0);
-        };
-
-        logUiEnabled=() =>{
-            this.logUiEnabledVar = this.AngularModuleExtensionService.stateExists("log-ui");
-        }
-        navigateToLogs=(jobStartTime: any, jobEndTime: any)=>{
-            this.$state.go("log-ui", {startTime:jobStartTime, endTime:jobEndTime, showCustom:true});
-        }
-
-        navigateToLogsForStep=(failedStep: any)=>{
-            var previousStep: any = '';
-            for (var title in this.stepData) {
-                var step = this.stepData[title];
-                if(failedStep.title == title) {
-                    break;
-                }
-                previousStep = step;
-            }
-            this.$state.go("log-ui", {startTime:previousStep.startTime, endTime:failedStep.content.endTime, showCustom:true});
-        }
-
-        //Tab Functions
-        toggleJobParameters=(name: any)=> {
-            if (name == 'JobParameters') {
-                this.showJobParameters = true;
-            }
-            else {
-                this.showJobParameters = false;
-            }
-        }
-
-        selectFirstTab=() =>{
-            this.tabMetadata.selectedIndex = 0;
-            // this.selectedTab = this.jobTabs[0];
-        }
-
-        cancelLoadJobDataTimeout=()=> {
-            if (this.refreshTimeout != null) {
-                this.$timeout.cancel(this.refreshTimeout);
-                this.refreshTimeout = null;
-            }
-        }
-
-        //Load Feeds
-        loadJobData=(force?: any)=> {
-            this.cancelLoadJobDataTimeout();
-
-            if (force || !this.refreshing) {
-                this.unableToFindJob = false;
-                if (force) {
-                    angular.forEach(this.activeJobRequests, (canceler: any, i: any)=> {
-                        canceler.resolve();
-                    });
-                    this.activeJobRequests = [];
-                }
-
-                this.refreshing = true;
-                var sortOptions = '';
-                var canceler = this.$q.defer();
-                var successFn = (response: any)=> {
-
-                    if (response.data) {
-                        //transform the data for UI
-                        this.transformJobData(response.data);
-                        if (response.data.running == true || response.data.stopping == true) {
-                            this.cancelLoadJobDataTimeout();
-                            this.refreshTimeout = this.$timeout(()=> {
-                                this.loadJobData()
-                            }, 1000);
-                        }
-
-                        if (this.loading) {
-                            this.loading = false;
-                        }
-                    }
-                    else {
-                        this.unableToFindJob = true;
-                    }
-
-                    this.finishedRequest(canceler);
-
-                }
-                var errorFn = (err: any)=> {
-                    this.finishedRequest(canceler);
-                    this.unableToFindJob = true;
-                    this.addJobErrorMessage(err)
-                }
-                var finallyFn = ()=> {
-
-                }
-                this.activeJobRequests.push(canceler);
-                this.deferred = canceler;
-                var params = {'includeSteps': true}
-
-                this.$http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId), {timeout: canceler.promise, params: params}).then(successFn, errorFn);
+                this.activeJobRequests = [];
             }
 
-            return this.deferred;
+            this.pageState.refreshing = true;
+            var sortOptions = '';
+            var canceler = this.$q.defer();
+            var successFn = (response: any) => {
 
-        }
-
-        finishedRequest=(canceler: any)=> {
-            var index = _.indexOf(this.activeJobRequests, canceler);
-            if (index >= 0) {
-                this.activeJobRequests.splice(index, 1);
-            }
-            this.enableTabAnimation();
-            canceler.resolve();
-            canceler = null;
-            this.refreshing = false;
-            this.showProgress = false;
-        }
-
-
-          loadRelatedJobs=(setExecutionId: any)=> {
-            var successFn = (response: any)=> {
                 if (response.data) {
-                    this.relatedJobs = response.data;
-                    if (setExecutionId) {
-                        this.relatedJob = setExecutionId;
+                    //transform the data for UI
+                    this.transformJobData(response.data);
+                    if (response.data.running == true || response.data.stopping == true) {
+                        this.cancelLoadJobDataTimeout();
+                        this.refreshTimeout = this.$timeout(() => {
+                            this.loadJobData()
+                        }, 1000);
                     }
-                    this.updateRelatedJobIndex();
-                }
-            }
-            var errorFn = (err: any)=> {
-            }
-            //todo uncomment once related job are linked and working
-            // $http.get(OpsManagerJobService.RELATED_JOBS_URL(this.jobExecutionId)).then(successFn, errorFn);
-        }
-        
-        updateRelatedJobIndex=()=> {
-            if (this.relatedJob) {
-                angular.forEach(this.relatedJobs, (job: any, i: any)=> {
-                    if (job.jobExecutionId == this.relatedJob) {
-                        this.relatedJobIndex = i;
-                    }
-                })
-            }
-        }
-
-        disableTabAnimation=()=> {
-            angular.element('.job-details-tabs').addClass('no-animation');
-        }
-
-        enableTabAnimationTimeout: any;
-        enableTabAnimation() {
-            if (this.enableTabAnimationTimeout) {
-                this.$timeout.cancel(this.enableTabAnimationTimeout);
-            }
-            this.enableTabAnimationTimeout = this.$timeout(()=> {
-                angular.element('.job-details-tabs').removeClass('no-animation');
-            }, 1000);
-
-        }
-
-        changeRelatedJob=(relatedJob: any)=> {
-            //remove animation for load
-            this.disableTabAnimation();
-            this.loadJobExecution(relatedJob)
-        }
-
-        mapToArray=(map: any, obj: any, fieldName: any, removeKeys?: any)=> {
-            if (removeKeys == undefined) {
-                removeKeys = [];
-            }
-            var arr = [];
-            for (var key in map) {
-                if (_.indexOf(removeKeys, key) == -1) {
-                    if (map.hasOwnProperty(key)) {
-                        arr.push({key: key, value: map[key]});
-                    }
-                }
-            }
-            obj[fieldName] = arr;
-        }
-
-        assignParameterArray=(obj: any)=> {
-            if (obj) {
-                if (obj.jobParameters) {
-                    this.mapToArray(obj.jobParameters, obj, 'jobParametersArray')
+                    this.pageState.finishedLoading();
                 }
                 else {
-                    obj['jobParametersArray'] = [];
+                    this.unableToFindJob = true;
                 }
 
-                if (obj.executionContext) {
-                    this.mapToArray(obj.executionContext, obj, 'executionContextArray', ['batch.stepType', 'batch.taskletType'])
-                }
-                else {
-                    obj['executionContextArray'] = [];
-                }
+                this.finishedRequest(canceler);
 
             }
+            var errorFn = (err: any) => {
+                this.finishedRequest(canceler);
+                this.unableToFindJob = true;
+                this.addJobErrorMessage(err)
+            }
+            var finallyFn = () => {
 
+            }
+            this.activeJobRequests.push(canceler);
+            this.deferred = canceler;
+            var params = {'includeSteps': true}
+
+            this.$http.get(this.OpsManagerJobService.LOAD_JOB_URL(this.jobExecutionId), {timeout: canceler.promise, params: params}).then(successFn, errorFn);
         }
 
-        statusCssMap: any;
-        cssClassForDisplayStatus=(displayStatus: any)=> {
-            var cssStatus = {
-                'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'],
-                'error': ['FAILED'],
-                'warn': ['STOPPING', 'STOPPED', 'WARNING'],
-                'abandoned': ['ABANDONED'],
-                'unknown': ['UNKNOWN']
-            };
-            this.statusCssMap = {};
-            _.each(cssStatus, (arr: any, key: any)=> {
-                _.each(arr,  (status: any, i: any)=> {
-                    this.statusCssMap[status] = key;
-                });
-            });
-            return this.statusCssMap[displayStatus];
+        return this.deferred;
 
+    }
+
+    private finishedRequest(canceler: angular.IDeferred<any>){
+        var index = _.indexOf(this.activeJobRequests, canceler);
+        if (index >= 0) {
+            this.activeJobRequests.splice(index, 1);
         }
-
-        transformJobData=(job: any)=> {
-            this.assignParameterArray(job);
-            job.name = job.jobName;
-            job.running = false;
-            job.stopping = false;
-            job.exitDescription = job.exitStatus;
-            if (job.exitDescription == undefined || job.exitDescription == '') {
-                job.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
-            }
-            job.tabIcon = undefined;
-
-            var iconStyle = this.IconService.iconStyleForJobStatus(job.displayStatus);
-            var icon = this.IconService.iconForJobStatus(job.displayStatus);
-            job.cssStatusClass =this.cssClassForDisplayStatus(job.displayStatus);
-
-            if (job.status == "STARTED") {
-                job.running = true;
-            }
-            if (job.status == 'STOPPING') {
-                job.stopping = true;
-            }
-            job.statusIcon = icon;
-            job.tabIconStyle = iconStyle;
-
-            angular.extend(this.jobData, job);
+        this.tabAnimationControl.enableTabAnimation();
+        canceler.resolve();
+        canceler = null;
+        this.pageState.finished();
+    }
 
 
-            if (job.executedSteps) {
-                //Sort first by NiFi Event Id (only if its there and >=0 )
-                // then by the start time
-                job.executedSteps.sort(function(a:any,b:any) {
-
-                    function compareValues(a1:any, b1:any){
-                        if (a1 > b1) return 1;
-                        if (b1 > a1) return -1;
-                        return 0;
+    private mapToArray(map:any[], obj: any , type:string, fieldName:string, removeKeys ?:string[]) {
+        if (removeKeys == undefined) {
+            removeKeys = [];
+        }
+        var arr = [];
+        var renderTriggerSavepointRetry = false;
+        var jobComplete = false;
+        for (var key in map) {
+            if (_.indexOf(removeKeys, key) == -1) {
+                if (map.hasOwnProperty(key)) {
+                    arr.push({key: key, value: map[key]});
+                    if (type == 'JOB' && fieldName == 'executionContextArray') {
+                        if(key == 'kylo.job.finished') {
+                            jobComplete = true;
+                        }
+                        if(!renderTriggerSavepointRetry) {
+                            renderTriggerSavepointRetry = this.checkTriggerSavepoint(obj, key, map[key]);
+                        }
                     }
+                }
+            }
+        }
 
-                    var startTimeA = a['startTime'];
-                    var startTimeB = b['startTime'];
+        if (type == 'JOB' && fieldName == 'executionContextArray' && (!renderTriggerSavepointRetry || jobComplete)) {
+            obj.renderTriggerRetry = false;
+        }
+        obj[fieldName] = arr;
+    }
 
-                    var eventIdA = a['nifiEventId'];
-                    var eventIdB = b['nifiEventId'];
+    private checkTriggerSavepoint(job:Job,key:string,value:any){
+        if(key == 'savepoint.trigger.flowfile' && angular.isDefined(value)) {
+            {
+                job.renderTriggerRetry = true;
+                job.triggerRetryFlowfile = value;
+                return true;
+            }
+        }
+        return false;
+    }
 
-                    var compareEventIdA = eventIdA != undefined && eventIdA >=0 -1;
-                    var compareEventIdB = eventIdB != undefined && eventIdB >=0 -1;
 
-                    var compare = 0;
-                    if(compareEventIdA && compareEventIdB) {
+    private assignParameterArray (obj:any, type:string) {
+        if (obj) {
+            if (obj.jobParameters) {
+                this.mapToArray(obj.jobParameters, obj, type,'jobParametersArray')
+            }
+            else {
+                obj['jobParametersArray'] = [];
+            }
+
+            if (obj.executionContext) {
+                this.mapToArray(obj.executionContext, obj, type,'executionContextArray', ['batch.stepType', 'batch.taskletType'])
+            }
+            else {
+                obj['executionContextArray'] = [];
+            }
+
+        }
+
+    }
+
+
+    private cssClassForDisplayStatus(displayStatus: any){
+        return this.statusCssMap[displayStatus];
+    }
+
+    private transformJobData(job: Job) {
+        this.assignParameterArray(job,'JOB');
+        job.name = job.jobName;
+        job.running = false;
+        job.stopping = false;
+        job.exitDescription = job.exitStatus;
+        if (job.exitDescription == undefined || job.exitDescription == '') {
+            job.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
+        }
+        job.tabIcon = undefined;
+
+        var iconStyle = this.IconService.iconStyleForJobStatus(job.displayStatus);
+        var icon = this.IconService.iconForJobStatus(job.displayStatus);
+        job.cssStatusClass = this.cssClassForDisplayStatus(job.displayStatus);
+
+        if (job.status == "STARTED") {
+            job.running = true;
+        }
+        if (job.status == 'STOPPING') {
+            job.stopping = true;
+        }
+        job.statusIcon = icon;
+        job.tabIconStyle = iconStyle;
+
+        angular.extend(this.jobData, job);
+
+
+        if (job.executedSteps) {
+            //Sort first by NiFi Event Id (only if its there and >=0 )
+            // then by the start time
+            job.executedSteps.sort(function (a: Step, b: Step) {
+
+                function compareValues(a1: any, b1: any) {
+                    if (a1 > b1) return 1;
+                    if (b1 > a1) return -1;
+                    return 0;
+                }
+
+                var startTimeA = a['startTime'];
+                var startTimeB = b['startTime'];
+
+                var eventIdA = a['nifiEventId'];
+                var eventIdB = b['nifiEventId'];
+
+                var compareEventIdA = eventIdA != undefined && eventIdA >= 0 - 1;
+                var compareEventIdB = eventIdB != undefined && eventIdB >= 0 - 1;
+
+                var compare = 0;
+                if (compareEventIdA && compareEventIdB) {
                     compare = compareValues(eventIdA, eventIdB);
-                    }
-                    if(compare == 0){
-                        compare = compareValues(startTimeA,startTimeB);
-                    }
-                    return compare;
-
-                });
-
-                angular.forEach(job.executedSteps, (step: any, i: any)=> {
-                    var stepName = "Step " + (i + 1);
-                    if (this.stepData[stepName] == undefined) {
-                        this.stepData[stepName] = {};
-                        this.allSteps.push({title: stepName, content: this.stepData[stepName]})
-                    }
-                    angular.extend(this.stepData[stepName], this.transformStep(step));
-
-                });
-            }
-        }
-
-        transformStep=(step: any)=> {
-            step.name = step.stepName;
-            step.running = false;
-            step.tabIcon = undefined;
-            if (step.runTime == undefined && step.endTime && step.startTime) {
-                step.runTime = step.endTime - step.startTime;
-            }
-            if (step.endTime == undefined && step.startTime) {
-                step.running = true;
-                if (step.runTime == undefined) {
-                    step.runTime = new Date().getTime() - step.startTime;
                 }
-            }
-            step.displayStatus = step.exitCode;
+                if (compare == 0) {
+                    compare = compareValues(startTimeA, startTimeB);
+                }
+                return compare;
 
-            if (step.exitDescription == undefined || step.exitDescription == '') {
-                step.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
-            }
-
-            var style = this.IconService.iconStyleForJobStatus(step.displayStatus);
-            var icon = this.IconService.iconForJobStatus(step.displayStatus);
-            step.cssStatusClass = this.cssClassForDisplayStatus(step.displayStatus);
-            step.statusIcon = icon;
-            if (step.displayStatus == 'FAILED' || step.displayStatus == 'EXECUTING' || step.displayStatus == 'WARNING') {
-                step.tabIconStyle = style;
-                step.tabIcon = icon;
-            }
-
-            if (step.startTime == null || step.startTime == undefined) {
-                step.disabled = true;
-            }
-            else {
-                step.disabled = false;
-            }
-
-            this.assignParameterArray(step);
-            return step;
-        }
-
-        clearRefreshInterval=()=> {
-            if (this.refreshInterval != null) {
-                this.$interval.cancel(this.refreshInterval);
-                this.refreshInterval = null;
-            }
-        }
-
-        setRefreshInterval=() =>{
-            this.clearRefreshInterval();
-            if (this.refreshIntervalTime) {
-                this.refreshInterval = this.$interval(this.loadJobs, this.refreshIntervalTime);
-
-            }
-        }
-
-        //Util Functions
-        capitalize=(string: string)=> {
-            return string.charAt(0).toUpperCase() + string.substring(1).toLowerCase();
-        }
-
-        updateJob=(executionId: any, job: any)=> {
-            this.clearErrorMessage();
-            var existingJob = this.jobData;
-            if (existingJob && executionId == job.executionId) {
-                this.transformJobData(job);
-            }
-            else {
-                this.disableTabAnimation();
-                this.loadJobExecution(job.executionId);
-
-            }
-        }
-
-        loadJobExecution=(executionId: any)=> {
-            this.jobExecutionId = executionId;
-
-            //reset steps
-            var len = this.allSteps.length;
-            while (len > 1) {
-                this.allSteps.splice(len - 1, 1);
-                len = this.allSteps.length;
-            }
-            //clear out all the steps
-            angular.forEach(Object.keys(this.stepData), (key: any, i: any)=> {
-                delete this.stepData[key];
             });
 
-            this.loadJobData(true);
-            //  loadRelatedJobs(executionId);
-        }
+            angular.forEach(job.executedSteps, (step: any, i: any) => {
+                var stepName = "Step " + (i + 1);
+                if (this.stepData[stepName] == undefined) {
+                    this.stepData[stepName] = new Step();
+                    this.allSteps.push({title: stepName, content: this.stepData[stepName]})
+                }
+                angular.extend(this.stepData[stepName], this.transformStep(step));
 
-        addJobErrorMessage=(errMsg: any) =>{
-            var existingJob = this.jobData;
-            if (existingJob) {
-                existingJob.errorMessage = errMsg;
+            });
+        }
+    }
+
+   private transformStep (step: Step) {
+        step.name = step.stepName;
+        step.running = false;
+        step.tabIcon = undefined;
+        if (step.runTime == undefined && step.endTime && step.startTime) {
+            step.runTime = step.endTime - step.startTime;
+        }
+        if (step.endTime == undefined && step.startTime) {
+            step.running = true;
+            if (step.runTime == undefined) {
+                step.runTime = new Date().getTime() - step.startTime;
             }
         }
+        step.displayStatus = step.exitCode;
 
-        clearErrorMessage=()=> {
-            var existingJob = this.jobData;
-            if (existingJob) {
-                existingJob.errorMessage = '';
-            }
+        if (step.exitDescription == undefined || step.exitDescription == '') {
+            step.exitDescription = this.$filter('translate')('views.JobDetailsDirective.Nda')
         }
 
-        restartJob = (event: any)=> {
-            event.stopPropagation();
-            event.preventDefault();
-            var executionId = this.jobData.executionId;
-            var xhr = this.OpsManagerJobService.restartJob(this.jobData.executionId, {includeSteps: true}, (response: any)=> {
-                        this.updateJob(executionId, response.data);
-                        //  loadJobs(true);
-                    }, (errMsg: any)=> {
-                        this.addJobErrorMessage(executionId+errMsg); // executionId, errMsg
-                    }
-            );
-        };
+        var style = this.IconService.iconStyleForJobStatus(step.displayStatus);
+        var icon = this.IconService.iconForJobStatus(step.displayStatus);
+        step.cssStatusClass = this.cssClassForDisplayStatus(step.displayStatus);
+        step.statusIcon = icon;
+        if (step.displayStatus == 'FAILED' || step.displayStatus == 'EXECUTING' || step.displayStatus == 'WARNING') {
+            step.tabIconStyle = style;
+            step.tabIcon = icon;
+        }
 
-        stopJob = (event: any)=> {
-            event.stopPropagation();
-            event.preventDefault();
-            var executionId = this.jobData.executionId;
-            this.OpsManagerJobService.stopJob(this.jobData.executionId, {includeSteps: true}, (response: any)=> {
-                this.updateJob(executionId, response.data)
-                //  loadJobs(true);
-            })
-        };
+        if (step.startTime == null || step.startTime == undefined) {
+            step.disabled = true;
+        }
+        else {
+            step.disabled = false;
+        }
 
-        abandonJob = (event: any)=> {
-            event.stopPropagation();
-            event.preventDefault();
-            var executionId = this.jobData.executionId;
-            this.OpsManagerJobService.abandonJob(this.jobData.executionId, {includeSteps: true}, (response: any)=> {
-                this.updateJob(executionId, response.data)
-                //  loadJobs(true);
-            })
-        };
+        this.assignParameterArray(step,'STEP');
+        return step;
+    }
 
-        failJob = (event: any)=> {
-            event.stopPropagation();
-            event.preventDefault();
-            var executionId = this.jobData.executionId;
-            this.OpsManagerJobService.failJob(this.jobData.executionId, {includeSteps: true}, (response: any)=>{
-                this.updateJob(executionId, response.data)
-                //  loadJobs(true);
-            })
-        };
+    private updateJob(executionId: number, job: Job) {
+        this.clearErrorMessage();
+        var existingJob = this.jobData;
+        if (existingJob && executionId == job.executionId) {
+            this.transformJobData(job);
+        }
+        else {
+            this.tabAnimationControl.disableTabAnimation();
+            this.loadJobExecution(job.executionId);
+
+        }
+    }
+
+    private loadJobExecution(executionId: number) {
+        this.jobExecutionId = executionId;
+
+        //reset steps
+        var len = this.allSteps.length;
+        while (len > 1) {
+            this.allSteps.splice(len - 1, 1);
+            len = this.allSteps.length;
+        }
+        //clear out all the steps
+        angular.forEach(Object.keys(this.stepData), (stepName: string, i: number) => {
+            delete this.stepData[stepName];
+        });
+
+        this.loadJobData(true);
+    }
+
+    private addJobErrorMessage(errMsg: string) {
+        var existingJob = this.jobData;
+        if (existingJob) {
+            existingJob.errorMessage = errMsg;
+        }
+    }
+
+    private clearErrorMessage() {
+        var existingJob = this.jobData;
+        if (existingJob) {
+            existingJob.errorMessage = '';
+        }
+    }
 }
+
 angular.module(moduleName)
-.controller("JobDetailsDirectiveController", ["$scope","$http", "$state", "$interval","$timeout","$q",
-            "$mdToast","OpsManagerRestUrlService",
-            "OpsManagerJobService","IconService","AccessControlService", "AngularModuleExtensionService",
-            "$filter",JobDetailsDirectiveController]);
+    .controller("JobDetailsDirectiveController", JobDetailsDirectiveController);
 angular.module(moduleName).directive("tbaJobDetails", [
 
-    ()=>
-    {
+    () => {
         return {
             restrict: "EA",
             bindToController: {
                 cardTitle: "@",
-                refreshIntervalTime: "@",
-                executionId:'='
+                executionId: '='
             },
             controllerAs: 'vm',
             scope: {},
             templateUrl: 'js/ops-mgr/jobs/details/job-details-template.html',
             controller: "JobDetailsDirectiveController",
-            link: function($scope, element, attrs, controller) {
+            link: function ($scope, element, attrs, controller) {
 
             }
         };

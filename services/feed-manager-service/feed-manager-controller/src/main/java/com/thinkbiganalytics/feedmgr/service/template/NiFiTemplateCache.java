@@ -236,14 +236,20 @@ public class NiFiTemplateCache {
         if (registeredTemplate.getNifiTemplate() != null) {
             //   Map<String, NifiProperty> selectedProperties = registeredTemplate.getProperties().stream().filter(p -> p.isSelected()).collect(Collectors.toMap(p -> p.getProcessorNameTypeKey(), p -> p));
             List<NifiProperty> cachedProperties = getTemplateProperties(registeredTemplate.getNifiTemplate(), true, registeredTemplate);
-            cachedProperties.stream().forEach(p -> p.setSelected(false));
+            cachedProperties.stream().forEach(p -> {
+                p.setSelected(false);
+                p.setUserEditable(false);
+            });
             NifiPropertyUtil.matchAndSetPropertyByProcessorName(cachedProperties, registeredTemplate.getProperties(),
                                                                 NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             //also update the non property descriptor cache if present
             String cacheKey = cacheKey(registeredTemplate.getNifiTemplate(), false);
             TemplatePropertiesCache cache = templatePropertiesCache.getIfPresent(cacheKey);
             if (cache != null) {
-                cache.getProperties().stream().forEach(p -> p.setSelected(false));
+                cache.getProperties().stream().forEach(p -> {
+                    p.setSelected(false);
+                    p.setUserEditable(false);
+                });
                 NifiPropertyUtil.matchAndSetPropertyByProcessorName(cache.getProperties(), registeredTemplate.getProperties(),
                                                                     NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }

@@ -22,7 +22,6 @@ export class FeedStatsService {
     feedProcessorErrors:any;
     lastSummaryStats:any[] = [];
     keepLastSummary:number = 20;
-    flowsStartedPerSecond:any =0;
 
     constructor(private $q: any,
         private ProvenanceEventStatsService: any){
@@ -232,7 +231,7 @@ export class FeedStatsService {
 
                     var timeDiffMillis = processorStatsContainer.endTime - processorStatsContainer.startTime;
                     var secondsDiff = timeDiffMillis / 1000;
-                    this.flowsStartedPerSecond = secondsDiff > 0 ? ((flowsStarted / secondsDiff)).toFixed(2) : 0;
+                    var flowsStartedPerSecondStr = secondsDiff > 0 ? ((flowsStarted / secondsDiff)).toFixed(2) : 0;
 
                     this.processorStatistics.raw = processorStatsContainer;
                     var summary = this.summaryStatistics;
@@ -245,7 +244,7 @@ export class FeedStatsService {
                     summary.totalEvents = totalEvents;
                     summary.failedEvents = failedEvents;
                     summary.flowsSuccess = flowsSuccess;
-                    summary.flowsStartedPerSecond = flowsStartedPerSecond != 0 ? parseFloat(flowsStartedPerSecond.toString()) : flowsStartedPerSecond;
+                    summary.flowsStartedPerSecond = flowsStartedPerSecondStr != 0 ? parseFloat(flowsStartedPerSecondStr.toString()) : flowsStartedPerSecond;
                     summary.avgFlowDurationMilis = (flowsFinished > 0 ? (flowDuration / flowsFinished) : 0);
                     summary.avgFlowDuration = flowsFinished > 0 ? ((flowDuration / flowsFinished) / 1000).toFixed(2) : 0;
 
