@@ -55,7 +55,8 @@ var DateTimeUtils: any = function ($translate: any): any{
         var timeFormat = padLeft(hours,2,'0')+":"+padLeft(minutes,2,'0')+":"+padLeft(seconds,2,'0');
 
         if(seconds == 0 && minutes ==0){
-            millisStr = minutesms/1000 + ' ' + $translate('views.Utils.sec');
+            var roundedMs = Math.ceil((minutesms/1000) * 100)/100;
+            millisStr = roundedMs + ' ' + $translate('views.Utils.sec');
         }
         if (hours > 0 || (hours == 0 && minutes > 0)) {
             minutesStr = minutes + ' ' + $translate('views.Utils.min');

@@ -226,6 +226,8 @@ export class DefineFeedDetailsController {
                     .each(findControllerServicesForProperty);
 
             self.loading = false;
+
+            self.model.isStream = template.isStream;
             validate();
         }
 

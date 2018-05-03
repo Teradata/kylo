@@ -507,7 +507,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     private void ensureStreamingJobExecutionRecord(NifiFeedProcessorStats stats) {
         if(stats.getJobsStarted() >0 || stats.getJobsFinished() >0) {
             OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(stats.getFeedName());
-            if(feed.isStream()) {
+            if(feed != null && feed.isStream()) {
                 ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
                 event.setEventId(stats.getMaxEventId());
                 event.setEventTime(stats.getMinEventTime().getMillis());

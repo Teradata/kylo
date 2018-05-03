@@ -408,6 +408,7 @@
                                     <includeOnlyProperty>^git.commit.id.describe$</includeOnlyProperty>
                                     <includeOnlyProperty>^git.branch$</includeOnlyProperty>
                                 </includeOnlyProperties>
+                                <useNativeGit>true</useNativeGit>
                         </configuration>
                     </plugin>
                 </plugins>

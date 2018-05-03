@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 
@@ -234,6 +235,8 @@ public class ValidateImportTemplatesArchive extends AbstractValidateImportTempla
         RegisteredTemplate template = importTemplate.getTemplateToImport();
         //detect any sensitive properties and prompt for input before proceeding
         List<NifiProperty> sensitiveProperties = template.getSensitiveProperties();
+        //filter out only those that are not user editable
+        sensitiveProperties = sensitiveProperties.stream().filter(p->!p.isUserEditable()).collect(Collectors.toList());
         ImportUtil.addToImportOptionsSensitiveProperties(importTemplateOptions, sensitiveProperties, ImportComponent.TEMPLATE_DATA);
         boolean valid = ImportUtil.applyImportPropertiesToTemplate(template, importTemplate, ImportComponent.TEMPLATE_DATA);
         if (!valid) {

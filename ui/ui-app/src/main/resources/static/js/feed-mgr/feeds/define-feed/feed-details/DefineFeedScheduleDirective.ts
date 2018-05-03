@@ -210,6 +210,13 @@ export class DefineFeedScheduleController {
             self.model.schedule.schedulingPeriod = "5 min";
         }
 
+        function setStreamTimerDriven() {
+            self.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
+            self.timerAmount = 0;
+            self.timerUnits = "sec";
+            self.model.schedule.schedulingPeriod = "0 sec";
+        }
+
         /**
          * Force the model to be set to Cron
          */
@@ -238,7 +245,10 @@ export class DefineFeedScheduleController {
         function setDefaultScheduleStrategy() {
             if(angular.isUndefined(self.model.cloned) || self.model.cloned == false) {
                 if (self.model.inputProcessorType != '' && (self.model.schedule.schedulingStrategyTouched == false || self.model.schedule.schedulingStrategyTouched == undefined)) {
-                    if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
+                    if(angular.isDefined(self.model.isStream) && self.model.isStream) {
+                        setStreamTimerDriven();
+                    }
+                    else if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
                         setTimerDriven();
                     }
                     else if (self.model.inputProcessorType.indexOf("GetTableData") >= 0) {
@@ -300,7 +310,7 @@ export class DefineFeedScheduleController {
             if (self.timerAmount < 0) {
                 self.timerAmount = null;
             }
-            if (self.timerAmount != null && (self.timerAmount == 0 || (self.timerAmount < 3 && self.timerUnits == 'sec'))) {
+            if (!self.model.isStream && self.timerAmount != null && (self.timerAmount == 0 || (self.timerAmount < 3 && self.timerUnits == 'sec'))) {
                 self.showTimerAlert();
             }
             self.model.schedule.schedulingPeriod = self.timerAmount + " " + self.timerUnits;

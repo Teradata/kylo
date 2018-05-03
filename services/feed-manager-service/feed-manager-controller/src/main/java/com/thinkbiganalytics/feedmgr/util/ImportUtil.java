@@ -123,7 +123,8 @@ public class ImportUtil {
             option.getErrorMessages().add(msg);
             return false;
         } else {
-            template.getSensitiveProperties().forEach(nifiProperty -> {
+            //validate those properties that dont require user input are supplied
+            template.getSensitiveProperties().stream().filter(p->!p.isUserEditable()).forEach(nifiProperty -> {
                 ImportProperty
                     userSuppliedValue =
                     option.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey()

@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
@@ -48,9 +49,18 @@ public class NifiConnectionService {
     LegacyNifiRestClient nifiRestClient;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
+    private ScheduledExecutorService connectionCheckService;
+
     @PostConstruct
     private void init() {
         initConnectionTimer();
+    }
+
+    @PreDestroy
+    private void destroy(){
+        if(connectionCheckService != null){
+            connectionCheckService.shutdown();
+        }
     }
 
     public void subscribeConnectionListener(NifiConnectionListener connectionListener) {
@@ -105,8 +115,8 @@ public class NifiConnectionService {
 
     private void initConnectionTimer() {
         long millis = 5000L; //every 5 seconds check for a connection
-        ScheduledExecutorService service = Executors.newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(this::checkConnection, millis, millis, TimeUnit.MILLISECONDS);
+        connectionCheckService = Executors.newSingleThreadScheduledExecutor();
+        connectionCheckService.scheduleAtFixedRate(this::checkConnection, millis, millis, TimeUnit.MILLISECONDS);
     }
 
 
