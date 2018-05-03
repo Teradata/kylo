@@ -61,9 +61,7 @@ export class DefineFeedController implements ng.IComponentController {
          * @type {boolean}
          */
         cloning:boolean = false;
-        
-        
-        
+            
         /**
          * After the stepper is initialized this will get called to setup access control
          * @param stepper
