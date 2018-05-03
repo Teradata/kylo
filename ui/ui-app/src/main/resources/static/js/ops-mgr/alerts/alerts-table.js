@@ -12,6 +12,27 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             this.StateService = StateService;
             this.TabService = TabService;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
+            this.showCleared = false;
+            /**
+                 * The filter supplied in the page
+                 * @type {string}
+                 */
+            this.filter = angular.isDefined(this.query) ? this.query : '';
+            /**
+             * Array holding onto the active alert promises
+             * @type {Array}
+             */
+            this.activeAlertRequests = [];
+            /**
+             * The time of the newest alert from the last server response.
+             * @type {number|null}
+             */
+            this.newestTime = null;
+            /**
+             * The time of the oldest alert from the last server response.
+             * @type {number|null}
+             */
+            this.oldestTime = null;
             this.initAlertTypes = function () {
                 _this.$http.get(_this.OpsManagerRestUrlService.ALERT_TYPES).then(function (response) {
                     _this.alertTypes = _this.alertTypes.concat(response.data);
@@ -280,12 +301,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             this.filterAlertState = UNHANDLED_FILTER;
             this.alertStates = [{ label: 'ALL' }, { label: 'HANDLED' }, UNHANDLED_FILTER];
             this.initAlertTypes();
-            this.showCleared = false;
-            /**
-             * The filter supplied in the page
-             * @type {string}
-             */
-            this.filter = angular.isDefined(this.query) ? this.query : '';
             $scope.$watch(function () {
                 return _this.filter;
             }, function (newVal, oldVal) {
@@ -293,20 +308,6 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                     return _this.loadAlerts(true).promise;
                 }
             });
-            /**
-            * Array holding onto the active alert promises
-            * @type {Array}
-            */
-            this.activeAlertRequests = [];
-            /**
-             * The time of the newest alert from the last server response.
-             * @type {number|null}
-             */
-            this.newestTime = null;
-            /**
-             * The time of the oldest alert from the last server response.
-             * @type {number|null}
-             */
             $scope.$watch(function () {
                 return _this.viewType;
             }, function (newVal) {
@@ -321,24 +322,34 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
             }, function (newVal) {
                 return _this.loadAlerts().promise;
             });
-            this.oldestTime = null;
             $scope.$on('$destroy', function () {
             });
         } // end of constructor
+        AlertsTableController.$inject = ["$scope", "$http", "$q", "TableOptionsService", "PaginationDataService", "StateService",
+            "TabService", "OpsManagerRestUrlService"];
         return AlertsTableController;
     }());
     exports.AlertsTableController = AlertsTableController;
     var AlertsController = /** @class */ (function () {
-        function AlertsController($transition$) {
-            this.$transition$ = $transition$;
-            this.query = $transition$.params().query;
+        // static readonly $inject = ["$transition$"];
+        function AlertsController() {
+            this.query = this.$transition$.params().query;
         }
         return AlertsController;
     }());
     exports.AlertsController = AlertsController;
-    angular.module(module_name_1.moduleName).controller("AlertsController", ["$transition$", AlertsController]);
-    angular.module(module_name_1.moduleName).controller("AlertsTableController", ["$scope", "$http", "$q", "TableOptionsService", "PaginationDataService", "StateService",
-        "TabService", "OpsManagerRestUrlService", AlertsTableController]);
+    angular.module(module_name_1.moduleName).component("alertsController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: AlertsController,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/alerts/alerts-table.html"
+    });
+    angular.module(module_name_1.moduleName).component("alertsTableController", {
+        controller: AlertsTableController,
+        controllerAs: "vm"
+    });
     angular.module(module_name_1.moduleName).directive("tbaAlertsTable", [
         function () {
             return {
@@ -351,7 +362,7 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 controllerAs: 'vm',
                 scope: {},
                 templateUrl: 'js/ops-mgr/alerts/alerts-table-template.html',
-                controller: "AlertsTableController",
+                controller: AlertsTableController,
                 link: function ($scope, element, attrs, controller) {
                 }
             };

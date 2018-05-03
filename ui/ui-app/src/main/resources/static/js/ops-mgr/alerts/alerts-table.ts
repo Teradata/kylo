@@ -2,12 +2,16 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
+import {DefaultPaginationDataService} from "../../services/PaginationDataService";
+import {DefaultTableOptionsService}  from "../../services/TableOptionsService";
+import StateService from "../../services/StateService";
 import TabService from "../services/TabService";
+import {Transition} from "@uirouter/core";
 
 export class AlertsTableController implements ng.IComponentController{
     pageName: any;
-    loading: any;
-    showProgress: any;
+    loading: boolean;
+    showProgress: boolean;
     paginationData: any;
     viewType: any;
     tabNames: any;
@@ -20,12 +24,29 @@ export class AlertsTableController implements ng.IComponentController{
     alertTypes: any;
     filterAlertState: any;
     alertStates: any;
-    showCleared: any;
-    filter: any;
+    showCleared: boolean = false;
     query: any;
-    activeAlertRequests: any;
-    newestTime: any;
-    oldestTime: any;
+    /**
+         * The filter supplied in the page
+         * @type {string}
+         */
+    filter: any =  angular.isDefined(this.query) ? this.query : '';
+
+    /**
+     * Array holding onto the active alert promises
+     * @type {Array}
+     */
+    activeAlertRequests: any = [];
+    /**
+     * The time of the newest alert from the last server response.
+     * @type {number|null}
+     */
+    newestTime: any = null;
+    /**
+     * The time of the oldest alert from the last server response.
+     * @type {number|null}
+     */
+    oldestTime: any = null;
     ALL_ALERT_TYPES_FILTER: any;
     direction: any;
     PAGE_DIRECTION: any;
@@ -33,14 +54,16 @@ export class AlertsTableController implements ng.IComponentController{
     deferred: any;
     promise: any;
 
-constructor(private $scope: any,
-            private $http: any,
-            private $q: any,
-            private TableOptionsService: any,
-            private PaginationDataService: any, 
-            private StateService: any,
-            private TabService: any,
-            private OpsManagerRestUrlService: any){
+static readonly $inject = ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService",
+    "TabService","OpsManagerRestUrlService"];
+constructor(private $scope: angular.IScope,
+            private $http: angular.IHttpService,
+            private $q: angular.IQService,
+            private TableOptionsService: DefaultTableOptionsService,
+            private PaginationDataService: DefaultPaginationDataService, 
+            private StateService: StateService,
+            private TabService: TabService,
+            private OpsManagerRestUrlService: OpsManagerRestUrlService){
          this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'alerts';
         //Page State
         this.loading = true;
@@ -68,12 +91,6 @@ constructor(private $scope: any,
 
         this.alertStates = [{label:'ALL'},{label:'HANDLED'},UNHANDLED_FILTER]
         this.initAlertTypes();
-        this.showCleared = false;
-        /**
-         * The filter supplied in the page
-         * @type {string}
-         */
-        this.filter =  angular.isDefined(this.query) ? this.query : '';
 
         $scope.$watch(() =>{
             return this.filter;
@@ -81,27 +98,9 @@ constructor(private $scope: any,
             if (newVal != oldVal) {
                 return this.loadAlerts(true).promise;
             }
-
         });
-         /**
-         * Array holding onto the active alert promises
-         * @type {Array}
-         */
-        this.activeAlertRequests = [];
-
-        /**
-         * The time of the newest alert from the last server response.
-         * @type {number|null}
-         */
-        this.newestTime = null;
-
-        /**
-         * The time of the oldest alert from the last server response.
-         * @type {number|null}
-         */
-
-
-          $scope.$watch( ()=> {
+        
+        $scope.$watch( ()=> {
             return this.viewType;
         },  (newVal: any)=> {
             this.onViewTypeChange(newVal);
@@ -117,7 +116,6 @@ constructor(private $scope: any,
             return this.loadAlerts().promise;
         });
 
-        this.oldestTime = null;
         $scope.$on('$destroy',  ()=> {
         });
 
@@ -136,9 +134,7 @@ constructor(private $scope: any,
 
         onFilterAlertStateChange = (alertState: any)=>{
              this.loadAlerts(true);
-        }
-
-       
+        }       
 
         paginationId =  (tab: any)=> {
             return this.PaginationDataService.paginationId(this.pageName, tab.title);
@@ -214,7 +210,6 @@ constructor(private $scope: any,
             return options;
         }
 
-
         selectedAdditionalMenuOption=(item: any)=> {
             if (item.type == 'showCleared') {
                 this.showCleared = !this.showCleared;
@@ -226,9 +221,7 @@ constructor(private $scope: any,
                 }
                 this.loadAlerts();
             }
-
         }
-
 
         /**
          * Called when a user Clicks on a table Option
@@ -242,10 +235,7 @@ constructor(private $scope: any,
             this.loadAlerts();
         };
 
-
-
         //Load Alerts
-
         loadAlerts=(direction?: any)=> {
             if (direction == undefined) {
                 direction = this.PAGE_DIRECTION.none;
@@ -296,9 +286,7 @@ constructor(private $scope: any,
                             this.loading = false;
                         }
                     }
-
                     this.finishedRequest(canceler);
-
                 };
                 var errorFn =  (err: any)=> {
                     this.finishedRequest(canceler);
@@ -307,9 +295,7 @@ constructor(private $scope: any,
                 this.activeAlertRequests.push(canceler);
                 this.deferred = canceler;
                 this.promise = this.deferred.promise;
-
                 var filter = this.filter;
-
                 var params: any = {limit: limit};
 
                 // Get the next oldest or next newest alerts depending on paging direction.
@@ -330,14 +316,12 @@ constructor(private $scope: any,
                     }
                 }
                 params.cleared = this.showCleared;
-
                 if (tabTitle != 'All') {
                 	params.level=tabTitle;
                 }
                 if(filter != '') {
                     params.filter = filter;
                 }
-
                 if(this.filterAlertType.label != 'ALL'){
                     if(params.filter == undefined){
                         params.filter = this.filterAlertType.type;
@@ -346,19 +330,13 @@ constructor(private $scope: any,
                         params.filter+=','+this.filterAlertType.type;
                     }
                 }
-
-
                 if(this.filterAlertState.label != 'ALL'){
                     params.state = this.filterAlertState.label;
                 }
-
-
                 this.$http.get(this.OpsManagerRestUrlService.ALERTS_URL, {timeout: canceler.promise, params: params}).then(successFn, errorFn);
             }
             this.showProgress = true;
-
             return this.deferred;
-
         }
 
         /**
@@ -389,7 +367,6 @@ constructor(private $scope: any,
                 var transformedAlert = this.transformAlert(alert);
                 this.TabService.addContent(this.pageName, tabTitle, transformedAlert);
             });
-
         }
 
         /**
@@ -418,20 +395,28 @@ constructor(private $scope: any,
         alertDetails =  (event: any, alert: any)=> {
             this.StateService.OpsManager().Alert().navigateToAlertDetails(alert.id);
         };
-
 }
-
 
 export class AlertsController implements ng.IComponentController{
     query: any;
-    constructor(private $transition$: any){
-        this.query = $transition$.params().query;
+    $transition$: Transition;
+   // static readonly $inject = ["$transition$"];
+    constructor(/*private $transition$: Transition*/){
+        this.query = this.$transition$.params().query;
     }
 }
-angular.module(moduleName).controller("AlertsController",["$transition$",AlertsController]);
-angular.module(moduleName).controller("AlertsTableController", 
-    ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService",
-    "TabService","OpsManagerRestUrlService",AlertsTableController]);
+angular.module(moduleName).component("alertsController", { 
+        bindings: {
+            $transition$: '<'
+        },
+        controller: AlertsController,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/alerts/alerts-table.html"
+    });
+angular.module(moduleName).component("alertsTableController", {
+        controller: AlertsTableController,
+        controllerAs: "vm"
+    });
 angular.module(moduleName).directive("tbaAlertsTable", [
         ()=> {
            return {
@@ -444,7 +429,7 @@ angular.module(moduleName).directive("tbaAlertsTable", [
             controllerAs: 'vm',
             scope: {},
             templateUrl: 'js/ops-mgr/alerts/alerts-table-template.html',
-            controller: "AlertsTableController",
+            controller: AlertsTableController,
             link: function ($scope: any, element: any, attrs: any, controller: any) {
 
             }

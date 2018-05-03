@@ -162,6 +162,7 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
                 _this.allowAdmin = accessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
             });
         } // end of constructor
+        AlertDetailsDirectiveController.$inject = ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService"];
         return AlertDetailsDirectiveController;
     }());
     exports.AlertDetailsDirectiveController = AlertDetailsDirectiveController;
@@ -208,19 +209,28 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
                 });
             };
         }
+        EventDialogController.$inject = ["$scope", "$http", "$mdDialog", "OpsManagerRestUrlService", "alert"];
         return EventDialogController;
     }());
     exports.EventDialogController = EventDialogController;
     var AlertDetailsController = /** @class */ (function () {
-        function AlertDetailsController($transition$) {
-            this.$transition$ = $transition$;
-            this.alertId = $transition$.params().alertId;
+        function AlertDetailsController() {
+            this.alertId = this.$transition$.params().alertId;
         }
         return AlertDetailsController;
     }());
     exports.AlertDetailsController = AlertDetailsController;
-    angular.module(module_name_1.moduleName).controller("AlertDetailsController", ["$transition$", AlertDetailsController]);
-    angular.module(module_name_1.moduleName).controller("AlertDetailsDirectiveController", ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService", AlertDetailsDirectiveController]);
+    angular.module(module_name_1.moduleName).component("alertDetailsController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: AlertDetailsController,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/alerts/alert-details.html"
+    });
+    angular.module(module_name_1.moduleName).component("alertDetailsDirectiveController", {
+        controller: AlertDetailsDirectiveController,
+    });
     angular.module(module_name_1.moduleName).directive("tbaAlertDetails", [
         function () {
             return {
@@ -232,10 +242,12 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
                 controllerAs: "vm",
                 scope: true,
                 templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
-                controller: "AlertDetailsDirectiveController"
+                controller: AlertDetailsDirectiveController
             };
         }
     ]);
-    angular.module(module_name_1.moduleName).controller("EventDialogController", ["$scope", "$http", "$mdDialog", "OpsManagerRestUrlService", "alert", EventDialogController]);
+    angular.module(module_name_1.moduleName).component("eventDialogController", {
+        controller: EventDialogController,
+    });
 });
 //# sourceMappingURL=AlertDetailsController.js.map

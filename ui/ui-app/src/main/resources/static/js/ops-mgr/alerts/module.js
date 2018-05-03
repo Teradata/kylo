@@ -11,9 +11,8 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 url: '/alerts',
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/alerts/alerts-table.html',
-                        controller: 'AlertsController',
-                        controllerAs: 'vm'
+                        // templateUrl: 'js/ops-mgr/alerts/alerts-table.html',
+                        component: 'alertsController',
                     }
                 },
                 params: {
@@ -31,9 +30,8 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 url: "/alert-details/{alertId}",
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/alerts/alert-details.html',
-                        controller: 'AlertDetailsController',
-                        controllerAs: 'vm'
+                        //templateUrl: 'js/ops-mgr/alerts/alert-details.html',
+                        component: 'alertDetailsController',
                     }
                 },
                 params: {

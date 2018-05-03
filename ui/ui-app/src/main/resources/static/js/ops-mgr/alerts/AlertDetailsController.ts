@@ -4,6 +4,7 @@ import * as _ from "underscore";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
 import AccessConstants from '../../constants/AccessConstants';
+import {Transition} from "@uirouter/core";
 
    /** Manages the Alert Details page.
      * @constructor
@@ -17,6 +18,7 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
     allowAdmin: boolean = false; //Indicates that admin operations are allowed. {boolean}
     alertData: any; //The alert details. {Object}
     alertId: any;
+    static readonly $inject=["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService"];
     constructor(private $scope: angular.IScope,
                 private $http: angular.IHttpService,
                 private $mdDialog: angular.material.IDialogService ,
@@ -200,6 +202,7 @@ export interface IMyScope extends ng.IScope {
      * @param alert the alert to update
      */
 export class EventDialogController implements ng.IComponentController{
+    static readonly $inject=["$scope","$http","$mdDialog","OpsManagerRestUrlService","alert"];
     constructor(private $scope: IMyScope, //the Angular scope
                 private $http: angular.IHttpService,  //the HTTP service
                 private $mdDialog: angular.material.IDialogService, //the dialog service
@@ -232,13 +235,23 @@ export class EventDialogController implements ng.IComponentController{
 
 export class AlertDetailsController implements ng.IComponentController{
     alertId: any;
-    constructor(private $transition$: any){
-        this.alertId = $transition$.params().alertId;
+    $transition$: Transition;
+    constructor(){
+        this.alertId = this.$transition$.params().alertId;
     }
 }
 
-angular.module(moduleName).controller("AlertDetailsController",["$transition$",AlertDetailsController]);
-angular.module(moduleName).controller("AlertDetailsDirectiveController", ["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService",AlertDetailsDirectiveController]);
+angular.module(moduleName).component("alertDetailsController", {
+        bindings: {
+            $transition$: '<'
+        },
+        controller: AlertDetailsController,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/alerts/alert-details.html"
+    });
+angular.module(moduleName).component("alertDetailsDirectiveController", { 
+        controller: AlertDetailsDirectiveController,
+    });
 angular.module(moduleName).directive("tbaAlertDetails",
         [
             ()=> {
@@ -251,8 +264,10 @@ angular.module(moduleName).directive("tbaAlertDetails",
                     controllerAs: "vm",
                     scope: true,
                     templateUrl: "js/ops-mgr/alerts/alert-details-template.html",
-                    controller: "AlertDetailsDirectiveController"
+                    controller: AlertDetailsDirectiveController
                 };
             }
         ]);
-angular.module(moduleName).controller("EventDialogController", ["$scope","$http","$mdDialog","OpsManagerRestUrlService","alert",EventDialogController]);
+angular.module(moduleName).component("eventDialogController", { 
+        controller: EventDialogController,
+    });
