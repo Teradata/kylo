@@ -20,6 +20,7 @@ package com.thinkbiganalytics.service;
  * #L%
  */
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.app.ApplicationStartupListenerType;
 import com.thinkbiganalytics.app.ServicesApplicationStartup;
 import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
@@ -36,6 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +47,7 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
 
     private static final Logger log = LoggerFactory.getLogger(DefaultServicesApplicationStartup.class);
 
+
     int maxThreads = 10;
     ExecutorService executorService =
         new ThreadPoolExecutor(
@@ -53,6 +56,7 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
             10, // time to wait before resizing pool
             TimeUnit.SECONDS,
             new ArrayBlockingQueue<Runnable>(maxThreads, true),
+            new ThreadFactoryBuilder().setDaemon(true).setNameFormat("kylo-startup pool-%d").build(),
             new ThreadPoolExecutor.CallerRunsPolicy());
     private DateTime startTime = null;
     private List<ServicesApplicationStartupListener> startupListeners = new ArrayList<>();
@@ -60,6 +64,7 @@ public class DefaultServicesApplicationStartup implements ServicesApplicationSta
     public void subscribe(ServicesApplicationStartupListener o) {
         startupListeners.add(o);
     }
+
 
     private ApplicationType applicationType;
 
