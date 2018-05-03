@@ -9,9 +9,9 @@ define(["require", "exports", "angular", "underscore", "./module-name"], functio
         DefaultTableOptionsService.prototype.newSortOptions = function (key, labelValueMap, defaultValue, defaultDirection) {
             var sortOptions = Object.keys(labelValueMap).map(function (mapKey) {
                 var value = labelValueMap[mapKey];
-                var sortOption = { label: mapKey, value: value, direction: '', reverse: false, type: 'sort' };
+                var sortOption = { label: mapKey, value: value, direction: '', reverse: false, type: 'sort', default: 'asc' };
                 if (defaultValue && value == defaultValue) {
-                    sortOption['default'] = defaultValue;
+                    sortOption['default'] = defaultDirection || 'asc';
                     sortOption['direction'] = defaultDirection || 'asc';
                     sortOption['reverse'] = sortOption['direction'] == 'asc' ? false : true;
                     sortOption['icon'] = sortOption['direction'] == 'asc' ? 'keyboard_arrow_up' : 'keyboard_arrow_down';

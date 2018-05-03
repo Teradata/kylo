@@ -8,19 +8,14 @@ import Tab = ListTableView.Tab;
 import {DefaultImportService} from "../feed-mgr/services/ImportService";
 import {moduleName} from './module-name';
 
-
-
 export enum ViewType {
     TABLE,
     LIST
 }
 
 export class DefaultPaginationDataService implements PaginationDataService{
-
     data:Common.Map<PaginationData> = {};
-
     constructor() {
-
     }
 
     paginationData(pageName:string, tabName?:string,defaultRowsPerPage?:number) :PaginationData {
@@ -143,7 +138,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
      * @param value
      * @returns {string|Function|*|number}
      */
-    rowsPerPage(pageName:string, value:number) :number{
+    rowsPerPage(pageName:string, value?:number) :number{
         if (value != undefined) {
             this.paginationData(pageName).rowsPerPage = value;
         }
@@ -207,9 +202,6 @@ export class DefaultPaginationDataService implements PaginationDataService{
         }
         return this.paginationData(pageName, tabName).tabs[tabName].currentPage;
     }
-
 }
 
 angular.module(moduleName).factory('PaginationDataService', () => new DefaultPaginationDataService());
-
-
