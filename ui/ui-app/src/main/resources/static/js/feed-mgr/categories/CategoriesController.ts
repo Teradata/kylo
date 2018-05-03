@@ -6,13 +6,21 @@ const moduleName = require('feed-mgr/categories/module-name');
 
 export class CategoriesController {
 
-
-    categories:any;
-    loading:any;
-    searchQuery:any;
-    editCategory:any;
-
-
+    /**
+    * List of categories.
+    * @type {Array.<Object>}
+    */
+    categories: any = [];
+    /**
+    * Indicates that the category data is being loaded.
+    * @type {boolean}
+    */
+    loading: boolean = true;
+    /**
+    * Query for filtering categories.
+    * @type {string}
+    */
+    searchQuery: string = "";
 
     /**
      * Displays a list of categories.
@@ -24,62 +32,43 @@ export class CategoriesController {
      * @param CategoriesService the categories service
      * @param StateService the page state service
      */
-    constructor(private $scope:any, private accessControlService:AccessControlService, private AddButtonService:any
-        , private CategoriesService:any, private StateService:any) {
-        var self = this;
+    constructor(private $scope: any, private accessControlService: AccessControlService, private AddButtonService: any
+        , private CategoriesService: any, private StateService: any) {
 
-        /**
-         * List of categories.
-         * @type {Array.<Object>}
-         */
-        self.categories = [];
-        $scope.$watchCollection(
-                function() {return CategoriesService.categories},
-                function(newVal:any) {self.categories = newVal}
+        this.$scope.$watchCollection(
+            () => { return CategoriesService.categories },
+            (newVal: any) => { this.categories = newVal }
         );
 
-        $scope.getIconColorStyle = function(color:any) {
-            return {'fill':color};
-        };
-
-        /**
-         * Indicates that the category data is being loaded.
-         * @type {boolean}
-         */
-        self.loading = true;
-
-        /**
-         * Query for filtering categories.
-         * @type {string}
-         */
-        self.searchQuery = "";
-
-        /**
-         * Navigates to the details page for the specified category.
-         *
-         * @param {Object} category the category
-         */
-        self.editCategory = function(category:any) {
-            StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
+        $scope.getIconColorStyle = (color: any) => {
+            return { 'fill': color };
         };
 
         // Register Add button
-        accessControlService.getUserAllowedActions()
-                .then(function(actionSet:any) {
-                    if (accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
-                        AddButtonService.registerAddButton('categories', function() {
-                            StateService.FeedManager().Category().navigateToCategoryDetails(null);
-                        });
-                    }
-                });
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) =>{
+                if (accessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions)) {
+                    AddButtonService.registerAddButton('categories', ()=> {
+                        StateService.FeedManager().Category().navigateToCategoryDetails(null);
+                    });
+                }
+            });
 
         // Refresh list of categories
         CategoriesService.reload()
-                .then(function() {
-                    self.loading = false;
-                });
+            .then(() => {
+                this.loading = false;
+            });
+    };
+    /**
+    * Navigates to the details page for the specified category.
+    *
+    * @param {Object} category the category
+    */
+    editCategory(category: any) {
+        this.StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
     };
 
 }
-angular.module(moduleName).controller('CategoriesController', ["$scope","AccessControlService","AddButtonService","CategoriesService","StateService",CategoriesController]);
+angular.module(moduleName).controller('CategoriesController', ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService", CategoriesController]);
 

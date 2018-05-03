@@ -12,74 +12,74 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
          * @constructor
          */
         function CategoryDetailsController($scope, $transition$, $q, CategoriesService, accessControlService) {
+            var _this = this;
             this.$scope = $scope;
             this.$transition$ = $transition$;
             this.$q = $q;
             this.CategoriesService = CategoriesService;
             this.accessControlService = accessControlService;
-            var self = this;
             /**
-             * Indicates if the category is currently being loaded.
-             * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
-             */
-            self.loadingCategory = true;
-            self.showAccessControl = false;
-            /**
-             * Category data.
-             * @type {CategoryModel}
-             */
-            self.model = {};
+            * Indicates if the category is currently being loaded.
+            * @type {boolean} {@code true} if the category is being loaded, or {@code false} if it has finished loading
+            */
+            this.loadingCategory = true;
+            this.showAccessControl = false;
+            this.model = {};
             $scope.$watch(function () {
                 return CategoriesService.model;
             }, function (newModel, oldModel) {
-                self.model = newModel;
+                _this.model = newModel;
                 if (oldModel && oldModel.id == null && newModel.id != null) {
-                    checkAccessControl();
+                    _this.checkAccessControl();
                 }
             }, true);
-            /**
-             * Loads the category data once the list of categories has loaded.
-             */
-            self.onLoad = function () {
-                if (angular.isString($transition$.params().categoryId)) {
-                    self.model = CategoriesService.model = CategoriesService.findCategory($transition$.params().categoryId);
-                    if (angular.isDefined(CategoriesService.model)) {
-                        CategoriesService.model.loadingRelatedFeeds = true;
-                        CategoriesService.populateRelatedFeeds(CategoriesService.model).then(function (category) {
-                            category.loadingRelatedFeeds = false;
-                        });
-                    }
-                    self.loadingCategory = false;
-                }
-                else {
-                    CategoriesService.getUserFields()
-                        .then(function (userFields) {
-                        CategoriesService.model = CategoriesService.newCategory();
-                        CategoriesService.model.userProperties = userFields;
-                        self.loadingCategory = false;
-                    });
-                }
-            };
-            self.getIconColorStyle = function (iconColor) {
-                return { 'fill': iconColor };
-            };
             // Load the list of categories
             if (CategoriesService.categories.length === 0) {
-                CategoriesService.reload().then(self.onLoad);
+                CategoriesService.reload().then(this.onLoad);
             }
             else {
-                self.onLoad();
+                this.onLoad();
             }
-            function checkAccessControl() {
-                if (accessControlService.isEntityAccessControlled()) {
-                    //Apply the entity access permissions... only showAccessControl if the user can change permissions
-                    $q.when(accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_ACCESS, self.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function (access) {
-                        self.showAccessControl = access;
+            this.checkAccessControl();
+        }
+        CategoryDetailsController.prototype.getIconColorStyle = function (iconColor) {
+            return { 'fill': iconColor };
+        };
+        ;
+        /**
+        * Loads the category data once the list of categories has loaded.
+        */
+        CategoryDetailsController.prototype.onLoad = function () {
+            var _this = this;
+            if (angular.isString(this.$transition$.params().categoryId)) {
+                this.model = this.CategoriesService.model = this.CategoriesService.findCategory(this.$transition$.params().categoryId);
+                if (angular.isDefined(this.CategoriesService.model)) {
+                    this.CategoriesService.model.loadingRelatedFeeds = true;
+                    this.CategoriesService.populateRelatedFeeds(this.CategoriesService.model).then(function (category) {
+                        category.loadingRelatedFeeds = false;
                     });
                 }
+                this.loadingCategory = false;
             }
-            checkAccessControl();
-        }
+            else {
+                this.CategoriesService.getUserFields()
+                    .then(function (userFields) {
+                    _this.CategoriesService.model = _this.CategoriesService.newCategory();
+                    _this.CategoriesService.model.userProperties = userFields;
+                    _this.loadingCategory = false;
+                });
+            }
+        };
+        ;
+        CategoryDetailsController.prototype.checkAccessControl = function () {
+            var _this = this;
+            if (this.accessControlService.isEntityAccessControlled()) {
+                //Apply the entity access permissions... only showAccessControl if the user can change permissions
+                this.$q.when(this.accessControlService.hasPermission(AccessControlService_1.default.CATEGORIES_ACCESS, this.model, AccessControlService_1.default.ENTITY_ACCESS.CATEGORY.CHANGE_CATEGORY_PERMISSIONS)).then(function (access) {
+                    _this.showAccessControl = access;
+                });
+            }
+        };
         return CategoryDetailsController;
     }());
     exports.CategoryDetailsController = CategoryDetailsController;

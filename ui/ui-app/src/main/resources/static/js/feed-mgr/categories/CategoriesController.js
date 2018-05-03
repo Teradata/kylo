@@ -14,41 +14,33 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
          * @param StateService the page state service
          */
         function CategoriesController($scope, accessControlService, AddButtonService, CategoriesService, StateService) {
+            var _this = this;
             this.$scope = $scope;
             this.accessControlService = accessControlService;
             this.AddButtonService = AddButtonService;
             this.CategoriesService = CategoriesService;
             this.StateService = StateService;
-            var self = this;
             /**
-             * List of categories.
-             * @type {Array.<Object>}
-             */
-            self.categories = [];
-            $scope.$watchCollection(function () { return CategoriesService.categories; }, function (newVal) { self.categories = newVal; });
+            * List of categories.
+            * @type {Array.<Object>}
+            */
+            this.categories = [];
+            /**
+            * Indicates that the category data is being loaded.
+            * @type {boolean}
+            */
+            this.loading = true;
+            /**
+            * Query for filtering categories.
+            * @type {string}
+            */
+            this.searchQuery = "";
+            this.$scope.$watchCollection(function () { return CategoriesService.categories; }, function (newVal) { _this.categories = newVal; });
             $scope.getIconColorStyle = function (color) {
                 return { 'fill': color };
             };
-            /**
-             * Indicates that the category data is being loaded.
-             * @type {boolean}
-             */
-            self.loading = true;
-            /**
-             * Query for filtering categories.
-             * @type {string}
-             */
-            self.searchQuery = "";
-            /**
-             * Navigates to the details page for the specified category.
-             *
-             * @param {Object} category the category
-             */
-            self.editCategory = function (category) {
-                StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
-            };
             // Register Add button
-            accessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                 if (accessControlService.hasAction(AccessControlService_1.default.CATEGORIES_EDIT, actionSet.actions)) {
                     AddButtonService.registerAddButton('categories', function () {
@@ -59,9 +51,18 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
             // Refresh list of categories
             CategoriesService.reload()
                 .then(function () {
-                self.loading = false;
+                _this.loading = false;
             });
         }
+        ;
+        /**
+        * Navigates to the details page for the specified category.
+        *
+        * @param {Object} category the category
+        */
+        CategoriesController.prototype.editCategory = function (category) {
+            this.StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
+        };
         ;
         return CategoriesController;
     }());
