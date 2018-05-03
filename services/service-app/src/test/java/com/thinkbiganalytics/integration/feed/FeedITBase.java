@@ -9,9 +9,9 @@ package com.thinkbiganalytics.integration.feed;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -63,13 +63,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -81,50 +75,44 @@ import java.util.concurrent.TimeUnit;
  *
  */
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FeedIT extends IntegrationTestBase {
+public abstract class FeedITBase extends IntegrationTestBase {
 
-    private static final Logger LOG = LoggerFactory.getLogger(FeedIT.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FeedITBase.class);
 
-    private static final String SAMPLES_DIR = "/samples";
-    private static final String DATA_SAMPLES_DIR = SAMPLES_DIR + "/sample-data/csv/";
+    protected static final String SAMPLES_DIR = "/samples";
     private static final String NIFI_FEED_SAMPLE_VERSION = "nifi-1.3";
     private static final String NIFI_TEMPLATE_SAMPLE_VERSION = "nifi-1.0";
     private static final String TEMPLATE_SAMPLES_DIR = SAMPLES_DIR + "/templates/" + NIFI_TEMPLATE_SAMPLE_VERSION + "/";
     private static final String FEED_SAMPLES_DIR = SAMPLES_DIR + "/feeds/" + NIFI_FEED_SAMPLE_VERSION + "/";
     protected static final String DATA_INGEST_ZIP = "data_ingest.zip";
     private static final String VAR_DROPZONE = "/var/dropzone";
-    private static final String USERDATA1_CSV = "userdata1.csv";
     private static final int FEED_COMPLETION_WAIT_DELAY = 180;
-    private static final int VALID_RESULTS = 879;
     private static final String INDEX_TEXT_SERVICE_V2_FEED_ZIP = "index_text_service_v2.feed.zip";
-    private static String CATEGORY_NAME = "Functional Tests";
+    protected static String CATEGORY_NAME = "Functional Tests";
 
     private String sampleFeedsPath;
     protected String sampleTemplatesPath;
     private String usersDataPath;
 
-    private FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
-    private FieldValidationRule email = new FieldValidationRule();
-    private FieldValidationRule lookup = new FieldValidationRule();
-    private FieldValidationRule notNull = new FieldValidationRule();
-    private FieldStandardizationRule base64EncodeBinary = new FieldStandardizationRule();
-    private FieldStandardizationRule base64EncodeString = new FieldStandardizationRule();
-    private FieldStandardizationRule base64DecodeBinary = new FieldStandardizationRule();
-    private FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
-    private FieldValidationRule length = new FieldValidationRule();
-    private FieldValidationRule ipAddress = new FieldValidationRule();
+    protected FieldStandardizationRule toUpperCase = new FieldStandardizationRule();
+    protected FieldValidationRule email = new FieldValidationRule();
+    protected FieldValidationRule lookup = new FieldValidationRule();
+    protected FieldValidationRule notNull = new FieldValidationRule();
+    protected FieldStandardizationRule base64EncodeBinary = new FieldStandardizationRule();
+    protected FieldStandardizationRule base64EncodeString = new FieldStandardizationRule();
+    protected FieldStandardizationRule base64DecodeBinary = new FieldStandardizationRule();
+    protected FieldStandardizationRule base64DecodeString = new FieldStandardizationRule();
+    protected FieldValidationRule length = new FieldValidationRule();
+    protected FieldValidationRule ipAddress = new FieldValidationRule();
 
-    private String createNewFeedName() {
+    protected String createNewFeedName() {
         LocalDateTime now = LocalDateTime.now();
         String time = now.format(DateTimeFormatter.ofPattern("HH_mm_ss_SSS"));
         return "users_" + time;
     }
 
-    @Test
-    public void testDataIngestFeed() throws Exception {
+    protected void dataIngestFeedBase() throws Exception {
         prepare();
-
-        importSystemFeeds();
 
         copyDataToDropzone();
 
@@ -135,6 +123,7 @@ public class FeedIT extends IntegrationTestBase {
 
         //create standard ingest feed
         FeedMetadata feed = getCreateFeedRequest(category, ingest, createNewFeedName());
+        customizeFeed(feed);
         FeedMetadata response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
 
@@ -146,8 +135,7 @@ public class FeedIT extends IntegrationTestBase {
         abandonAllJobs(response.getCategoryAndFeedName());
     }
 
-    @Test
-    public void testEditFeed() throws Exception {
+    protected void editFeed() throws Exception {
         // Prepare environment
         prepare();
 
@@ -170,77 +158,38 @@ public class FeedIT extends IntegrationTestBase {
         feed.setDescription(null);
         feed.setDataOwner("Some Other Guy");
         NifiProperty fileFilter = feed.getProperties().get(0);
-        fileFilter.setValue("some-file.csv");
+        fileFilter.setValue(getEditedFileName());
 
         List<FieldPolicy> policies = feed.getTable().getFieldPolicies();
 
-        FieldPolicy id = policies.get(1);
-        id.getValidation().add(notNull); //add new validator
+        editFieldPolicies(policies);
+
         feed.getTable().setPrimaryKeyFields("id");
-
-        FieldPolicy firstName = policies.get(2);
-        firstName.setProfile(false); //flip profiling
-
-        FieldPolicy secondName = policies.get(3);
-        secondName.setIndex(false); //flip indexing
-        secondName.getStandardization().add(toUpperCase); //add new standardiser
-
-        FieldPolicy email = policies.get(4);
-        email.setValidation(Collections.emptyList()); //remove validators
-
-        FieldPolicy gender = policies.get(5);
-        FieldValidationRule lookup = gender.getValidation().get(0);
-        lookup.getProperties().get(0).setValue("new value"); //change existing validator property
-        gender.setProfile(true); //add profiling
-        gender.setIndex(true); //add indexing
-
-        FieldPolicy creditCard = policies.get(7);
-        FieldStandardizationRule base64EncodeBinary = creditCard.getStandardization().get(0);
-        base64EncodeBinary.getProperties().get(0).setValue("STRING"); //change existing standardiser property
-
         feed.getOptions().setSkipHeader(false);
-
         feed.getTable().setTargetMergeStrategy("ROLLING_SYNC");
-
         feed.getTags().add(new DefaultTag("updated"));
-
         feed.getSchedule().setSchedulingPeriod("20 sec");
-
 
         response = createFeed(feed).getFeedMetadata();
         Assert.assertEquals(feed.getFeedName(), response.getFeedName());
         Assert.assertEquals(feed.getDescription(), response.getDescription());
 
-
         FeedVersions feedVersions = getVersions(feed.getFeedId());
         List<EntityVersion> versions = feedVersions.getVersions();
         Assert.assertEquals(2, versions.size());
-
 
         EntityVersionDifference entityDiff = getVersionDiff(feed.getFeedId(), versions.get(1).getId(), versions.get(0).getId());
         EntityDifference diff = entityDiff.getDifference();
         JsonNode patch = diff.getPatch();
         ArrayNode diffs = (ArrayNode) patch;
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/properties/0/value", "some-file.csv")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/schedule/schedulingPeriod", "20 sec")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/description")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/tags/1")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/dataOwner", "Some Other Guy")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/table/fieldPolicies/1/validation/0")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/2/profile", "false")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/3/index", "false")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("add", "/table/fieldPolicies/3/standardization/0")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("remove", "/table/fieldPolicies/4/validation/0")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/profile", "true")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/index", "true")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/5/validation/0/properties/0/value", "new value")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/7/standardization/0/properties/0/value", "STRING")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldPolicies/8/standardization/0/properties/0/value", "STRING")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/targetMergeStrategy", "ROLLING_SYNC")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/table/fieldIndexString", "first_name,gender")));
-        Assert.assertTrue(versionPatchContains(diffs, new Diff("replace", "/options/skipHeader", "false")));
+        assertEditChanges(diffs);
     }
 
+    protected abstract void assertEditChanges(ArrayNode diffs);
+
+    protected abstract void editFieldPolicies(List<FieldPolicy> policies);
+
+    protected abstract String getEditedFileName();
 
     @Override
     public void startClean() {
@@ -252,7 +201,7 @@ public class FeedIT extends IntegrationTestBase {
         String basedir = path.substring(0, path.indexOf("services"));
         sampleFeedsPath = basedir + FEED_SAMPLES_DIR;
         sampleTemplatesPath = basedir + TEMPLATE_SAMPLES_DIR;
-        usersDataPath = basedir + DATA_SAMPLES_DIR;
+        usersDataPath = basedir + getSamplesDir();
 
         toUpperCase.setName("Uppercase");
         toUpperCase.setDisplayName("Uppercase");
@@ -313,7 +262,7 @@ public class FeedIT extends IntegrationTestBase {
         notNull.setObjectClassType("com.thinkbiganalytics.policy.validation.NotNullValidator");
         notNull.setObjectShortClassType("NotNullValidator");
         notNull.setProperties(newFieldRuleProperties(newFieldRuleProperty("EMPTY_STRING", "allowEmptyString", "false"),
-                                                     newFieldRuleProperty("TRIM_STRING", "trimString", "true")));
+                newFieldRuleProperty("TRIM_STRING", "trimString", "true")));
 
         length.setName("Length");
         length.setDisplayName("Length");
@@ -321,7 +270,7 @@ public class FeedIT extends IntegrationTestBase {
         length.setObjectClassType("com.thinkbiganalytics.policy.validation.LengthValidator");
         length.setObjectShortClassType("LengthValidator");
         length.setProperties(newFieldRuleProperties(newFieldRuleProperty("Max Length", "maxLength", "15"),
-                                                    newFieldRuleProperty("Min Length", "minLength", "5")));
+                newFieldRuleProperty("Min Length", "minLength", "5")));
     }
 
 
@@ -350,14 +299,20 @@ public class FeedIT extends IntegrationTestBase {
 
         //drop files in dropzone to run the feed
         //runCommandOnRemoteSystem(String.format("sudo chmod a+w %s", VAR_DROPZONE), IntegrationTestBase.APP_NIFI);
-        copyFileLocalToRemote(usersDataPath + USERDATA1_CSV, VAR_DROPZONE, IntegrationTestBase.APP_NIFI);
-        runCommandOnRemoteSystem(String.format("chmod 777 %s/%s", VAR_DROPZONE, USERDATA1_CSV), IntegrationTestBase.APP_NIFI);
+        copyFileLocalToRemote(usersDataPath + getFileName(), VAR_DROPZONE, IntegrationTestBase.APP_NIFI);
+        runCommandOnRemoteSystem(String.format("chmod 777 %s/%s", VAR_DROPZONE, getFileName()), IntegrationTestBase.APP_NIFI);
     }
-
 
     protected void waitForFeedToComplete() {
         //wait for feed completion by waiting for certain amount of time and then
         waitFor(FEED_COMPLETION_WAIT_DELAY, TimeUnit.SECONDS, "for feed to complete");
+    }
+
+    protected void assertHiveData(String feedName) {
+        assertHiveTables("functional_tests", feedName);
+        getHiveSchema("functional_tests", feedName);
+        List<HashMap<String, String>> rows = getHiveQuery("SELECT * FROM " + "functional_tests" + "." + feedName + " LIMIT 880");
+        Assert.assertEquals(getValidResults(), rows.size());
     }
 
     protected void failJobs(String categoryAndFeedName) {
@@ -365,89 +320,6 @@ public class FeedIT extends IntegrationTestBase {
 
         DefaultExecutedJob[] jobs = getJobs(0,50,"-startTime","jobInstance.feed.name%3D%3D" + categoryAndFeedName);
         Arrays.stream(jobs).map(this::failJob).forEach(job -> Assert.assertEquals(ExecutionStatus.FAILED, job.getStatus()));
-    }
-
-    public void assertExecutedJobs(String feedName, String feedId) throws IOException {
-        LOG.info("Asserting there are 2 completed jobs: userdata ingest job, index text service system jobs");
-        DefaultExecutedJob[] jobs = getJobs(0,50,null,null);
-
-        //TODO assert all executed jobs are successful
-        DefaultExecutedJob ingest = Arrays.stream(jobs).filter(job -> ("functional_tests." + feedName.toLowerCase()).equals(job.getFeedName())).findFirst().get();
-        Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());
-        Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), ingest.getExitCode());
-
-        LOG.info("Asserting user data jobs has expected number of steps");
-        DefaultExecutedJob job = getJobWithSteps(ingest.getExecutionId());
-        Assert.assertEquals(ingest.getExecutionId(), job.getExecutionId());
-        List<ExecutedStep> steps = job.getExecutedSteps();
-        Assert.assertEquals(21, steps.size());
-        for (ExecutedStep step : steps) {
-            Assert.assertEquals(ExitStatus.COMPLETED.getExitCode(), step.getExitCode());
-        }
-
-        LOG.info("Asserting number of total/valid/invalid rows");
-        Assert.assertEquals(1000, getTotalNumberOfRecords(feedId));
-        Assert.assertEquals(VALID_RESULTS, getNumberOfValidRecords(feedId));
-        Assert.assertEquals(121, getNumberOfInvalidRecords(feedId));
-
-        assertValidatorsAndStandardisers(feedId, feedName);
-
-        //TODO assert data via global search
-        assertHiveData(feedName);
-    }
-
-    private void assertValidatorsAndStandardisers(String feedId, String feedName) {
-        LOG.info("Asserting Validators and Standardisers");
-
-        String processingDttm = getProcessingDttm(feedId);
-
-        assertNamesAreInUppercase(feedId, processingDttm);
-        assertMultipleBase64Encodings(feedId, processingDttm);
-        assertBinaryColumnData(feedName);
-
-        assertValidatorResults(feedId, processingDttm, "LengthValidator", 47);
-        assertValidatorResults(feedId, processingDttm, "NotNullValidator", 67);
-        assertValidatorResults(feedId, processingDttm, "EmailValidator", 3);
-        assertValidatorResults(feedId, processingDttm, "LookupValidator", 4);
-        assertValidatorResults(feedId, processingDttm, "IPAddressValidator", 4);
-    }
-
-    private void assertHiveData(String feedName) {
-        assertHiveTables("functional_tests", feedName);
-        getHiveSchema("functional_tests", feedName);
-        List<HashMap<String, String>> rows = getHiveQuery("SELECT * FROM " + "functional_tests" + "." + feedName + " LIMIT 880");
-        Assert.assertEquals(VALID_RESULTS, rows.size());
-    }
-
-    private void assertBinaryColumnData(String feedName) {
-        LOG.info("Asserting binary CC column data");
-        DefaultHiveSchema schema = getHiveSchema("functional_tests", feedName);
-        Field ccField = schema.getFields().stream().filter(field -> field.getName().equals("cc")).iterator().next();
-        Assert.assertEquals("binary", ccField.getDerivedDataType());
-
-        List<HashMap<String, String>> rows = getHiveQuery("SELECT cc FROM " + "functional_tests" + "." + feedName + " where id = 1");
-        Assert.assertEquals(1, rows.size());
-        HashMap<String, String> row = rows.get(0);
-
-        // where TmpjMU9UVXlNVGcyTkRreU1ERXhOZz09 is double Base64 encoding for cc field of the first row (6759521864920116),
-        // one base64 encoding by our standardiser and second base64 encoding by spring framework for returning binary data
-        Assert.assertEquals("TmpjMU9UVXlNVGcyTkRreU1ERXhOZz09", row.get("cc"));
-    }
-
-    private void assertNamesAreInUppercase(String feedId, String processingDttm) {
-        LOG.info("Asserting all names are in upper case");
-        String topN = getProfileStatsForColumn(feedId, processingDttm, "TOP_N_VALUES", "first_name");
-        Assert.assertTrue(CharMatcher.JAVA_LOWER_CASE.matchesNoneOf(topN));
-    }
-
-    private void assertMultipleBase64Encodings(String feedId, String processingDttm) {
-        LOG.info("Asserting multiple base 64 encoding and decoding, which also operate on different data types (string and binary), produce expected initial human readable form");
-        String countries = getProfileStatsForColumn(feedId, processingDttm, "TOP_N_VALUES", "country");
-        Assert.assertTrue(countries.contains("China"));
-        Assert.assertTrue(countries.contains("Indonesia"));
-        Assert.assertTrue(countries.contains("Russia"));
-        Assert.assertTrue(countries.contains("Philippines"));
-        Assert.assertTrue(countries.contains("Brazil"));
     }
 
     protected FeedMetadata getCreateFeedRequest(FeedCategory category, ImportTemplate template, String name) throws Exception {
@@ -461,11 +333,11 @@ public class FeedIT extends IntegrationTestBase {
         feed.setInputProcessorType("org.apache.nifi.processors.standard.GetFile");
 
         List<NifiProperty> properties = new ArrayList<>();
-        NifiProperty fileFilter = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "File Filter", USERDATA1_CSV);
+        NifiProperty fileFilter = new NifiProperty("305363d8-015a-1000-0000-000000000000", "1f67e296-2ff8-4b5d-0000-000000000000", "File Filter", getFileName());
         fileFilter.setProcessGroupName("NiFi Flow");
         fileFilter.setProcessorName("Filesystem");
         fileFilter.setProcessorType("org.apache.nifi.processors.standard.GetFile");
-        fileFilter.setTemplateValue("mydata\\d{1,3}.csv");
+        fileFilter.setTemplateValue(getFileTemplateValue());
         fileFilter.setInputProperty(true);
         fileFilter.setUserEditable(true);
         properties.add(fileFilter);
@@ -495,44 +367,21 @@ public class FeedIT extends IntegrationTestBase {
         TableSetup table = new TableSetup();
         DefaultTableSchema schema = new DefaultTableSchema();
         schema.setName("test1");
-        List<Field> fields = new ArrayList<>();
-        fields.add(newTimestampField("registration_dttm"));
-        fields.add(newBigIntField("id"));
-        fields.add(newStringField("first_name"));
-        fields.add(newStringField("second_name"));
-        fields.add(newStringField("email"));
-        fields.add(newStringField("gender"));
-        fields.add(newStringField("ip_address"));
-        fields.add(newBinaryField("cc"));
-        fields.add(newStringField("country"));
-        fields.add(newStringField("birthdate"));
-        fields.add(newStringField("salary"));
-        schema.setFields(fields);
+        schema.setFields(getFields());
 
         table.setTableSchema(schema);
         table.setSourceTableSchema(schema);
         table.setFeedTableSchema(schema);
         table.setTargetMergeStrategy("DEDUPE_AND_MERGE");
-        table.setFeedFormat(
-            "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'\n WITH SERDEPROPERTIES ( 'separatorChar' = ',' ,'escapeChar' = '\\\\' ,'quoteChar' = '\\'') STORED AS TEXTFILE");
+        table.setFeedFormat(getFeedFormat());
         table.setTargetFormat("STORED AS ORC");
 
-        List<FieldPolicy> policies = new ArrayList<>();
-        policies.add(newPolicyBuilder("registration_dttm").toPolicy());
-        policies.add(newPolicyBuilder("id").toPolicy());
-        policies.add(newPolicyBuilder("first_name").withStandardisation(toUpperCase).withProfile().withIndex().toPolicy());
-        policies.add(newPolicyBuilder("second_name").withProfile().withIndex().toPolicy());
-        policies.add(newPolicyBuilder("email").withValidation(email).toPolicy());
-        policies.add(newPolicyBuilder("gender").withValidation(lookup, notNull).toPolicy());
-        policies.add(newPolicyBuilder("ip_address").withValidation(ipAddress).toPolicy());
-        policies.add(newPolicyBuilder("cc").withStandardisation(base64EncodeBinary).withProfile().toPolicy());
-        policies.add(newPolicyBuilder("country").withStandardisation(base64EncodeBinary, base64DecodeBinary, base64EncodeString, base64DecodeString).withValidation(notNull, length).withProfile().toPolicy());
-        policies.add(newPolicyBuilder("birthdate").toPolicy());
-        policies.add(newPolicyBuilder("salary").toPolicy());
+        List<FieldPolicy> policies = getFieldPolicies();
         table.setFieldPolicies(policies);
 
-        List<PartitionField> partitions = new ArrayList<>();
-        partitions.add(byYear("registration_dttm"));
+        table.setTargetSourceFieldMap(getTargetSourceFieldMap());
+
+        List<PartitionField> partitions = getPartitionFields();
         table.setPartitions(partitions);
 
         TableOptions options = new TableOptions();
@@ -547,9 +396,7 @@ public class FeedIT extends IntegrationTestBase {
 
         feed.setDataOwner("Marketing");
 
-        List<Tag> tags = new ArrayList<>();
-        tags.add(new DefaultTag("users"));
-        tags.add(new DefaultTag("registrations"));
+        List<Tag> tags = getTags();
         feed.setTags(tags);
 
         User owner = new User();
@@ -563,5 +410,33 @@ public class FeedIT extends IntegrationTestBase {
 
         return feed;
     }
+
+    public abstract void assertExecutedJobs(String feedName, String feedId) throws IOException;
+
+    protected abstract List<Tag> getTags();
+
+    protected abstract List<PartitionField> getPartitionFields();
+
+    protected abstract List<FieldPolicy> getFieldPolicies();
+
+    protected abstract List<Field> getFields();
+
+    protected abstract String getSamplesDir();
+
+    protected abstract String getFileName();
+
+    protected abstract String getFileTemplateValue();
+
+    protected abstract String getFeedFormat();
+
+    protected abstract int getValidResults();
+
+    protected abstract Map<String, String> getTargetSourceFieldMap();
+
+    protected abstract void assertValidatorsAndStandardisers(String feedId, String feedName);
+
+    protected abstract boolean skipHeader();
+
+    protected abstract void customizeFeed(FeedMetadata feed);
 
 }
