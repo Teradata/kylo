@@ -145,8 +145,16 @@ public class TableMergeSyncSupport implements Serializable {
         // 3. Drop the sync table. Since it is a managed table it will drop the old data
         dropTable(targetSchema, targetTable);
 
-        // 4. Rename the sync table
+        // 4. Make the table external
+        String markExternal = "ALTER TABLE " + targetSchema + "." + syncTable + " SET TBLPROPERTIES('EXTERNAL'='TRUE')";
+        doExecuteSQL(markExternal);
+
+        // 5. Rename the sync table
         renameTable(targetSchema, syncTable, targetTable);
+
+        // 6. Unmark the table external
+        String unmarkExternal = "ALTER TABLE " + targetSchema + "." + targetTable + " SET TBLPROPERTIES('EXTERNAL'='FALSE')";
+        doExecuteSQL(unmarkExternal);
     }
 
     /**
