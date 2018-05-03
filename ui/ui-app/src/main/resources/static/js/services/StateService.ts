@@ -31,6 +31,7 @@ export default class StateService{
     Search: any;
     Tables: any;
     Categories: any;
+    static $inject=["$state"];
     constructor (private $state: any){
         var AuthStates = function(){
             var data: any = {}
@@ -347,4 +348,4 @@ export default class StateService{
         return new States;
 } 
 }
-angular.module(moduleName).factory('StateService', ["$state", StateService]);
+angular.module(moduleName).service('StateService',StateService);

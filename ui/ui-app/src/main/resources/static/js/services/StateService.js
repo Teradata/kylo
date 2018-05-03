@@ -285,9 +285,10 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             this.Categories = CategoryStates;
             return new States;
         }
+        StateService.$inject = ["$state"];
         return StateService;
     }());
     exports.default = StateService;
-    angular.module(module_name_1.moduleName).factory('StateService', ["$state", StateService]);
+    angular.module(module_name_1.moduleName).service('StateService', StateService);
 });
 //# sourceMappingURL=StateService.js.map
