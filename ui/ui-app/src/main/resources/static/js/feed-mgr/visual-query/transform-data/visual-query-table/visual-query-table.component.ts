@@ -6,7 +6,6 @@ import * as _ from "underscore";
 import {DomainType} from "../../../services/DomainTypesService";
 import {TransformValidationResult} from "../../wrangler/model/transform-validation-result";
 import {WranglerDataService} from "../services/wrangler-data.service";
-import {WranglerEventType} from "../services/wrangler-event-type";
 import {WranglerTableService} from "../services/wrangler-table.service";
 import {VisualQueryPainterService} from "./visual-query-painter.service";
 import {WranglerTableModel} from "./wrangler-table-model";
@@ -121,8 +120,6 @@ export class VisualQueryTable {
      */
     private lastTableWidth_ = 0;
 
-    private loaded: boolean = false;
-
     private actualRows : number;
 
     private actualCols : number;
@@ -160,8 +157,8 @@ export class VisualQueryTable {
         };
 
         // Refresh table on resize
-        $scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
-        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 50));
+        //$scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
+        angular.element($window).bind('resize',()=> resizeTimeout(() => this.refresh(), 150));
 
         // Listen for destroy event
         $scope_.$on("destroy", () => this.$onDestroy());
@@ -225,15 +222,16 @@ export class VisualQueryTable {
                 (this.table_ as any).columnOffset = columnOffset;
                 (this.table_ as any).W = columnOffset[columnOffset.length - 1];
             }
-        }
-        // Update table properties
-        if (this.actualRows != null) {
-            (this.table_ as any).nbRows = this.actualRows;
-            (this.table_ as any).H = VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
-        }
+            // Update table properties
 
-        // Rebuild table
-        this.painter.hideTooltip();
+            if (this.actualRows != null) {
+                (this.table_ as any).nbRows = this.actualRows;
+                (this.table_ as any).H = VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
+            }
+
+            // Rebuild table
+            this.painter.hideTooltip();
+        }
 
         // Preserve scroll position
         var priorScrollLeft : number;
@@ -310,12 +308,30 @@ export class VisualQueryTable {
         return this.canvasContext_;
     }
 
+   /**
+    * Calculate row widths by sampling values
+   */
+    private sampleMaxWidth(col: number) : string {
+
+         let maxValue : string = "";
+         // Sample up to 20 rows
+         for (var row = 0; row < this.rows.length && row < 20 ; row++) {
+             var val = this.rows[row][col];
+             if (val && val.length > maxValue.length) {
+                 maxValue = val;
+             }
+         }
+         // Avoid letting one column dominate so we limit max
+         return maxValue;
+    }
+
     /**
      * Calculates the width for every column.
      *
      * @returns {Array.<number>} the column widths
      */
     private getColumnWidths(): number[] {
+        var self = this;
         // Skip if no columns
         if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
             return [];
@@ -336,7 +352,8 @@ export class VisualQueryTable {
         context.font = this.painter.rowFont;
 
         const rowWidths = _.map(this.dataService.columns_, function (column: any, index) {
-            const textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
+            let textWidthChars = (column.longestValue != null ? column.longestValue : self.sampleMaxWidth(index));
+            const textWidth = context.measureText(textWidthChars).width;
             const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 3;
             return Math.ceil(textWidth + padding);
         });
@@ -446,8 +463,6 @@ export class ColumnModelChange {
         // row change? Fewer    scroll top?
 
     }
-
-
 }
 
 angular.module(moduleName).directive("visualQueryTable", function () {

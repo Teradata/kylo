@@ -229,22 +229,31 @@ export class SparkColumnDelegate extends ColumnDelegate {
     private castToTimestamp(): void {
         const sampleValue = this.getSampleValue();
 
+        // Detect ISO dates
+
         if (this.dataCategory === DataCategory.DATETIME) {
             const formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
         } else if (this.dataCategory === DataCategory.STRING) {
-            this.dialog.openDateFormat({
-                message: "Enter the pattern for parsing this column as a timestamp:",
-                pattern: "yyyy-MM-dd HH:mm:ss",
-                patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
-                title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                type: DateFormatType.STRING
-            }).subscribe(response => {
-                const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+            // If ISO date then just convert it. Otherwise, prompt.
+            if (Date.parse(sampleValue) != undefined) {
+                var script = `${this.fieldName}.cast("timestamp")`;
                 const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
-            });
+            } else {
+                this.dialog.openDateFormat({
+                    message: "Enter the pattern for parsing this column as a timestamp:",
+                    pattern: "yyyy-MM-dd HH:mm:ss",
+                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                    preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
+                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                    type: DateFormatType.STRING
+                }).subscribe(response => {
+                    const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+                    const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                    this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
+                });
+            }
         }
     }
 

@@ -208,23 +208,32 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
         SparkColumnDelegate.prototype.castToTimestamp = function () {
             var _this = this;
             var sampleValue = this.getSampleValue();
+            // Detect ISO dates
             if (this.dataCategory === column_delegate_1.DataCategory.DATETIME) {
                 var formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, { columns: this.controller.tableColumns });
                 this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp" });
             }
             else if (this.dataCategory === column_delegate_1.DataCategory.STRING) {
-                this.dialog.openDateFormat({
-                    message: "Enter the pattern for parsing this column as a timestamp:",
-                    pattern: "yyyy-MM-dd HH:mm:ss",
-                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                    preview: (sampleValue != null) ? function (format) { return _this.parseDate(sampleValue, format).map(function (date) { return moment(date).format("YYYY-MM-DD HH:mm:ss"); }); } : null,
-                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                    type: dialog_service_1.DateFormatType.STRING
-                }).subscribe(function (response) {
-                    var script = "unix_timestamp(" + _this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(_this.displayName) + "\")";
-                    var formula = _this.toFormula(script, _this.column, { columns: _this.controller.tableColumns });
-                    _this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + _this.displayName + " to timestamp" });
-                });
+                // If ISO date then just convert it. Otherwise, prompt.
+                if (Date.parse(sampleValue) != undefined) {
+                    var script = this.fieldName + ".cast(\"timestamp\")";
+                    var formula = this.toFormula(script, this.column, { columns: this.controller.tableColumns });
+                    this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp" });
+                }
+                else {
+                    this.dialog.openDateFormat({
+                        message: "Enter the pattern for parsing this column as a timestamp:",
+                        pattern: "yyyy-MM-dd HH:mm:ss",
+                        patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                        preview: (sampleValue != null) ? function (format) { return _this.parseDate(sampleValue, format).map(function (date) { return moment(date).format("YYYY-MM-DD HH:mm:ss"); }); } : null,
+                        title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                        type: dialog_service_1.DateFormatType.STRING
+                    }).subscribe(function (response) {
+                        var script = "unix_timestamp(" + _this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(_this.displayName) + "\")";
+                        var formula = _this.toFormula(script, _this.column, { columns: _this.controller.tableColumns });
+                        _this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + _this.displayName + " to timestamp" });
+                    });
+                }
             }
         };
         /**

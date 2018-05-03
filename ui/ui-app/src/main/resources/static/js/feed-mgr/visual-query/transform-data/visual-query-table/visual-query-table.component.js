@@ -53,7 +53,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
              * Width of the table at last refresh.
              */
             this.lastTableWidth_ = 0;
-            this.loaded = false;
             /**
              * The table view.
              * @type {fattable.TableView}
@@ -77,8 +76,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 resizeTimeoutPromise = _this.$timeout_(callback, interval);
             };
             // Refresh table on resize
-            $scope_.$watch(function () { return $element.width(); }, function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
-            angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 50); });
+            //$scope_.$watch(() => $element.width(), () => resizeTimeout(() => this.refresh(), 50));
+            angular.element($window).bind('resize', function () { return resizeTimeout(function () { return _this.refresh(); }, 150); });
             // Listen for destroy event
             $scope_.$on("destroy", function () { return _this.$onDestroy(); });
         }
@@ -130,14 +129,14 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                     this.table_.columnOffset = columnOffset;
                     this.table_.W = columnOffset[columnOffset.length - 1];
                 }
+                // Update table properties
+                if (this.actualRows != null) {
+                    this.table_.nbRows = this.actualRows;
+                    this.table_.H = visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
+                }
+                // Rebuild table
+                this.painter.hideTooltip();
             }
-            // Update table properties
-            if (this.actualRows != null) {
-                this.table_.nbRows = this.actualRows;
-                this.table_.H = visual_query_painter_service_1.VisualQueryPainterService.ROW_HEIGHT * this.actualRows;
-            }
-            // Rebuild table
-            this.painter.hideTooltip();
             // Preserve scroll position
             var priorScrollLeft;
             var priorScrollTop;
@@ -202,12 +201,28 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             return this.canvasContext_;
         };
         /**
+         * Calculate row widths by sampling values
+        */
+        VisualQueryTable.prototype.sampleMaxWidth = function (col) {
+            var maxValue = "";
+            // Sample up to 20 rows
+            for (var row = 0; row < this.rows.length && row < 20; row++) {
+                var val = this.rows[row][col];
+                if (val && val.length > maxValue.length) {
+                    maxValue = val;
+                }
+            }
+            // Avoid letting one column dominate so we limit max
+            return maxValue;
+        };
+        /**
          * Calculates the width for every column.
          *
          * @returns {Array.<number>} the column widths
          */
         VisualQueryTable.prototype.getColumnWidths = function () {
             var _this = this;
+            var self = this;
             // Skip if no columns
             if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
                 return [];
@@ -224,7 +239,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             // Determine column widths based on row sampling
             context.font = this.painter.rowFont;
             var rowWidths = _.map(this.dataService.columns_, function (column, index) {
-                var textWidth = (column.longestValue != null) ? context.measureText(column.longestValue).width : 0;
+                var textWidthChars = (column.longestValue != null ? column.longestValue : self.sampleMaxWidth(index));
+                var textWidth = context.measureText(textWidthChars).width;
                 var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 3;
                 return Math.ceil(textWidth + padding);
             });

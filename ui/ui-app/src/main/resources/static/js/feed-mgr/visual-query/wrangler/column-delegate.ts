@@ -425,7 +425,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = self.getColumnFieldName(column);
         let count = 0;
 
-        // Sample a row and determine how many elements
+        // Sample rows determine how many array elements
         if (grid.rows != null && grid.rows.length > 0) {
             let idx: number = 0;
             angular.forEach(grid.columns, (col, key) => {
@@ -435,26 +435,15 @@ export class ColumnDelegate implements IColumnDelegate {
                 count = (row[idx] != null && row[idx].length > count ? row[idx].length : count)
             });
         }
+        var columns = self.toColumnArray(grid.columns, fieldName);
+        //var i=0;
+        for (let i = 0; i < count; i++) {
+            let newFieldName = fieldName + "_" + i;
+            columns.push(`getItem(${fieldName}, ${i}).as("${newFieldName}")`);
+        }
+        var formula = `select(${columns.join(",")}`;
 
-        let chainedOp: ChainedOperation = new ChainedOperation(count * 2);
-        self.controller.setChainedQuery(chainedOp);
-
-        (async function loop() {
-            for (let i: number = count; i > 0; i--) {
-                let newFieldName = fieldName + "_" + i;
-                let formula = `getItem(${fieldName}, ${i - 1}).as("${newFieldName}")`;
-
-                await self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array item  " + i}, true, false);
-                chainedOp.nextStep();
-
-                let cols = self.controller.engine.getCols();
-                const moveFormula = self.generateMoveScript(fieldName, newFieldName, cols);
-
-                let doRefresh: boolean = (i == 1);
-                await self.controller.pushFormula(moveFormula, {formula: formula, icon: "functions", name: "Move column " + newFieldName}, true, doRefresh);
-                chainedOp.nextStep();
-            }
-        })();
+        self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
 
 
@@ -606,6 +595,15 @@ export class ColumnDelegate implements IColumnDelegate {
             let script = `coalesce(${fieldName}, last(${fieldName}, true).over(partitionBy(${response.groupBy}).orderBy(${response.orderBy}))).as("${fieldName}")`;
             const formula = self.toFormula(script, column, grid);
             self.controller.addFunction(formula, {formula: formula, icon: "functions", name: `Impute missing values ${fieldName}`});
+        });
+    }
+
+    flattenStructColumn(self: any, column: any, grid:any) {
+        const fieldName = self.getColumnFieldName(column);
+        const formula = self.toFormula(`col("${fieldName}.*")`, column, grid);
+        self.controller.addFunction(formula, {
+            formula: formula, icon: "functions",
+            name: "Flatten " + fieldName
         });
     }
 
@@ -1050,6 +1048,9 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Second of', icon: 'access_time', name: 'Second', operation: 'second'},
                 {description: 'Week of year for', icon: 'today', name: 'Week of Year', operation: 'weekofyear'},
                 {description: 'Year of', icon: 'today', name: 'Year', operation: 'year'});
+        }
+        else if (dataCategory == DataCategory.STRUCT) {
+            transforms.push({description: 'Flatten struct', icon: 'functions', name: 'Flatten struct', operation: self.flattenStructColumn});
         }
         else if (dataCategory === DataCategory.MAP) {
             transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'});

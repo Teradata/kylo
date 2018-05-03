@@ -163,6 +163,12 @@ export class TransformDataComponent implements OnInit {
     tableValidation: TransformValidationResult[][];
 
     /**
+     * Whether we've completed initial load?
+     * @type {boolean}
+     */
+    isLoaded: boolean = false;
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
@@ -182,6 +188,7 @@ export class TransformDataComponent implements OnInit {
 
         // Invalidate when SQL changes
         const self = this;
+
         $scope.$watch(
             function () {
                 return (typeof self.model === "object") ? self.model.sql : null;
@@ -193,6 +200,7 @@ export class TransformDataComponent implements OnInit {
                 }
             }
         );
+
     }
 
     $onInit(): void {
@@ -284,6 +292,12 @@ export class TransformDataComponent implements OnInit {
             // Indicate ready
             this.tableState = -1;
             this.tableColumns = [];
+
+            // Initial load will trigger query from the table model.
+            if (this.isLoaded) {
+                this.query();
+            }
+            this.isLoaded = true;
         };
 
         if (this.engine instanceof Promise) {

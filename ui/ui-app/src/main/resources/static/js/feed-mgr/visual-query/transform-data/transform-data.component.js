@@ -116,6 +116,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              */
             this.heightOffset = "0";
             /**
+             * Whether we've completed initial load?
+             * @type {boolean}
+             */
+            this.isLoaded = false;
+            /**
              * Called when the user clicks Add on the function bar
              */
             this.onAddFunction = function () {
@@ -219,6 +224,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 // Indicate ready
                 _this.tableState = -1;
                 _this.tableColumns = [];
+                // Initial load will trigger query from the table model.
+                if (_this.isLoaded) {
+                    _this.query();
+                }
+                _this.isLoaded = true;
             };
             if (this.engine instanceof Promise) {
                 this.engine.then(function (queryEngine) {
