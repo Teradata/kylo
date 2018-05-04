@@ -20,18 +20,18 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
  * #L%
  */
 
-import com.google.common.base.Preconditions;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
-import com.thinkbiganalytics.kylo.catalog.spark.SparkSqlUtil;
+import com.thinkbiganalytics.kylo.catalog.spark.SparkUtil;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import org.apache.spark.sql.DataFrameWriter;
 
-import javax.annotation.Nonnull;
+import java.net.URL;
+import java.util.List;
 
-import scala.Option;
+import javax.annotation.Nonnull;
 
 /**
  * Base implementation of a data set provider that can read from and write to Hive tables.
@@ -48,25 +48,24 @@ abstract class AbstractHiveDataSetProvider<T> implements DataSetProvider<T> {
     @Nonnull
     @Override
     public final T read(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options) {
-        final Option<String> path = options.getOption(KyloCatalogConstants.PATH_OPTION);
-        if (path.isDefined()) {
-            return loadFromTable(client, path.get());
-        } else {
-            throw new IllegalStateException("Table name must be defined as path");
-        }
+        final String tableName = DataSetUtil.getOptionOrThrow(options, KyloCatalogConstants.PATH_OPTION, "Table name must be defined as path");
+        addJars(client, options.getJars());
+        return loadFromTable(client, tableName);
     }
 
     @Override
     public final void write(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options, @Nonnull final T dataSet) {
-        final Option<String> pathOption = options.getOption(KyloCatalogConstants.PATH_OPTION);
-        final String tableName = (pathOption.isDefined()) ? pathOption.get() : null;
-        Preconditions.checkNotNull(tableName, "Table name must be defined as path");
+        final String tableName = DataSetUtil.getOptionOrThrow(options, KyloCatalogConstants.PATH_OPTION, "Table name must be defined as path");
+        addJars(client, options.getJars());
 
-        final DataFrameWriter writer = SparkSqlUtil.prepareDataFrameWriter(getDataFrameWriter(dataSet, options), options);
-        if (KyloCatalogConstants.HIVE_FORMAT.equals(options.getFormat())) {
-            writer.format("orc");  // set default output format
-        }
-        writer.saveAsTable(tableName);
+        // CDH-33639 Tables saved with the Spark SQL DataFrame.saveAsTable method are not compatible with Hive
+        // (https://www.cloudera.com/documentation/enterprise/release-notes/topics/cdh_rn_spark_ki.html#ki_sparksql_dataframe_saveastable)
+        //
+        // Using DataFrameWriter.insertInto is a workaround but requires the DataFrame's fields to be in the same order as the target table's columns. The only way to achieve the same functionality as
+        // saveAsTable is to save the DataFrame as a temp table (DataFrame.registerTempTable), execute a Hive query to create the target table, re-order the columns to match the target table, then
+        // execute a Hive query to insert into the table.
+        final DataFrameWriter writer = SparkUtil.prepareDataFrameWriter(getDataFrameWriter(dataSet, options), options, null);
+        writer.insertInto(tableName);
     }
 
     /**
@@ -82,4 +81,20 @@ abstract class AbstractHiveDataSetProvider<T> implements DataSetProvider<T> {
      */
     @Nonnull
     protected abstract T loadFromTable(@Nonnull KyloCatalogClient<T> client, @Nonnull String tableName);
+
+    /**
+     * Executes the specified SQL query.
+     */
+    protected abstract void sql(@Nonnull KyloCatalogClient<T> client, @Nonnull String query);
+
+    /**
+     * Adds the specified jars to the Hive isolated client loader.
+     */
+    private void addJars(@Nonnull final KyloCatalogClient<T> client, @Nonnull final List<String> jars) {
+        for (final String jar : jars) {
+            final URL url = SparkUtil.parseUrl(jar);
+            final String path = "hadoop".equals(url.getProtocol()) ? url.getPath() : url.toString();
+            sql(client, "ADD JAR " + path);
+        }
+    }
 }

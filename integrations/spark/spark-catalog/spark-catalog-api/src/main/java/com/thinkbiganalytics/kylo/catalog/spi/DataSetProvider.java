@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kylo.catalog.spi;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogException;
 
 import javax.annotation.Nonnull;
 
@@ -33,6 +34,8 @@ public interface DataSetProvider<T> {
 
     /**
      * Reads in a data set using the specified options.
+     *
+     * @throws KyloCatalogException if the data set cannot be read
      */
     @Nonnull
     T read(@Nonnull KyloCatalogClient<T> client, @Nonnull DataSetOptions options);
@@ -44,6 +47,8 @@ public interface DataSetProvider<T> {
 
     /**
      * Writes out a data set using the specified options.
+     *
+     * @throws KyloCatalogException if the data cannot be written
      */
     void write(@Nonnull KyloCatalogClient<T> client, @Nonnull DataSetOptions options, @Nonnull T dataSet);
 }

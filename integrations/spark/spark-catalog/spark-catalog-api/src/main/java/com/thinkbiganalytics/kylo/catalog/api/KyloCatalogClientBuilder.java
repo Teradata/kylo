@@ -50,6 +50,8 @@ public interface KyloCatalogClientBuilder<T> {
 
     /**
      * Builds a {@link KyloCatalogClient}.
+     *
+     * @throws KyloCatalogException if the client cannot be created
      */
     @Nonnull
     KyloCatalogClient<T> build();

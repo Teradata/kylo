@@ -21,8 +21,7 @@ package com.thinkbiganalytics.kylo.catalog.spark.sources;
  */
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
-import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
-import com.thinkbiganalytics.kylo.catalog.spark.SparkSqlUtil;
+import com.thinkbiganalytics.kylo.catalog.spark.SparkUtil;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetOptions;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
@@ -44,21 +43,20 @@ abstract class AbstractSparkDataSetProvider<T> implements DataSetProvider<T> {
 
     @Override
     public final boolean supportsFormat(@Nonnull final String source) {
-        // supports any format that doesn't have another implementation
-        return !KyloCatalogConstants.HIVE_FORMAT.equalsIgnoreCase(source);
+        return true;  // supports any format supported by Spark
     }
 
     @Nonnull
     @Override
     public final T read(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options) {
-        final DataFrameReader reader = SparkSqlUtil.prepareDataFrameReader(getDataFrameReader(client, options), options);
+        final DataFrameReader reader = SparkUtil.prepareDataFrameReader(getDataFrameReader(client, options), options, client);
         final Seq<String> paths = (options.getPaths() != null) ? JavaConversions.asScalaBuffer(options.getPaths()) : null;
         return load(reader, paths);
     }
 
     @Override
     public final void write(@Nonnull final KyloCatalogClient<T> client, @Nonnull final DataSetOptions options, @Nonnull final T dataSet) {
-        final DataFrameWriter writer = SparkSqlUtil.prepareDataFrameWriter(getDataFrameWriter(dataSet, options), options);
+        final DataFrameWriter writer = SparkUtil.prepareDataFrameWriter(getDataFrameWriter(dataSet, options), options, client);
         writer.save();
     }
 
