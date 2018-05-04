@@ -208,7 +208,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
             };
         }
         HistogramController.prototype.$onInit = function () {
-            console.log('chartData', this.chartData);
             this.chartData = this.formatData();
             /*
             this.$scope.$watch(this.chartData, (newValue:object)=> {

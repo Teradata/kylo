@@ -249,7 +249,6 @@ export class HistogramController implements ng.IComponentController {
     }
 
     $onInit() {
-        console.log('chartData',this.chartData);
         this.chartData = this.formatData();
 
         /*

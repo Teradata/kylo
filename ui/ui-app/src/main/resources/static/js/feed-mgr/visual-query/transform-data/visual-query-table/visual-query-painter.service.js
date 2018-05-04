@@ -45,7 +45,25 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
              * Indicates that the tooltip should be visible.
              */
             _this.tooltipVisible = false;
-            $templateRequest(HEADER_TEMPLATE);
+            /**
+             * Indicate thate the header template has been loaded into the $templateCache
+             * @type {boolean}
+             */
+            _this.headerTemplateLoaded = false;
+            /**
+             * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
+             * Once the template is loaded these elements will get filled
+             * @type {any[]}
+             */
+            _this.waitingHeaderDivs = [];
+            //Request the Header template and fill in the contents of any header divs waiting on the template.
+            $templateRequest(HEADER_TEMPLATE).then(function (response) {
+                _this.headerTemplateLoaded = true;
+                angular.forEach(_this.waitingHeaderDivs, function (headerDiv) {
+                    _this.compileHeader(headerDiv);
+                });
+                _this.waitingHeaderDivs = [];
+            });
             // Hide tooltip on scroll. Skip Angular change detection.
             window.addEventListener("scroll", function () {
                 if (_this.tooltipVisible) {
@@ -235,9 +253,16 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             // Set style attributes
             headerDiv.style.font = this.headerFont;
             headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
-            // Load template
-            headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE);
-            this.$compile(headerDiv)(this.$scope.$new(true));
+            //if the header template is not loaded yet then fill it with Loading text.
+            // the callback on the templateRequest will compile those headers waiting
+            if (!this.headerTemplateLoaded) {
+                headerDiv.textContent = "Loading...";
+                headerDiv.className = "pending";
+                this.waitingHeaderDivs.push(headerDiv);
+            }
+            else {
+                this.compileHeader(headerDiv);
+            }
         };
         /**
          * Cleanup any events attached to the header
@@ -264,6 +289,11 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
         VisualQueryPainterService.prototype.cleanUp = function (table) {
             _super.prototype.cleanUp.call(this, table);
             angular.element(table).unbind();
+        };
+        VisualQueryPainterService.prototype.compileHeader = function (headerDiv) {
+            // Load template
+            headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE);
+            this.$compile(headerDiv)(this.$scope.$new(true));
         };
         /**
          * Hides the cell menu.
