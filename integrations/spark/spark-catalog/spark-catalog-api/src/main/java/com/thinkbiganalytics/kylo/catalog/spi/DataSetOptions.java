@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.spi;
 import org.apache.spark.sql.SaveMode;
 import org.apache.spark.sql.types.StructType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,7 @@ public class DataSetOptions {
 
     private List<String> bucketColumnNames;
     private String format;
+    private List<String> jars = new ArrayList<>();
     private SaveMode mode;
     private int numBuckets;
     private final Map<String, String> options = new HashMap<>();
@@ -65,6 +67,19 @@ public class DataSetOptions {
 
     public void setFormat(@Nonnull final String format) {
         this.format = format;
+    }
+
+    public void addJar(@Nonnull final String path) {
+        jars.add(path);
+    }
+
+    public void addJars(@Nonnull final List<String> paths) {
+        jars.addAll(paths);
+    }
+
+    @Nonnull
+    public List<String> getJars() {
+        return jars;
     }
 
     @Nullable

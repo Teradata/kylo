@@ -23,8 +23,22 @@ package com.thinkbiganalytics.kylo.catalog.api;
 /**
  * Constants used by the Kylo Catalog.
  */
-@SuppressWarnings("unused")
 public class KyloCatalogConstants {
+
+    /**
+     * Option key for data set format of Spark data set provider.
+     */
+    public static final String FORMAT_OPTION = "format";
+
+    /**
+     * Option key for data set format of Spark data set provider.
+     */
+    public static final String FORMAT_OPTION2 = "kylo.catalog.format";
+
+    /**
+     * Option key prefix for Hadoop configuration options
+     */
+    public static final String HADOOP_CONF_PREFIX = "spark.hadoop.";
 
     /**
      * Data source for accessing Hive tables.
