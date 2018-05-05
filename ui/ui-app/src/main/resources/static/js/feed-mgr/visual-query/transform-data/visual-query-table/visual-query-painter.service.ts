@@ -222,10 +222,11 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     fillCell(cellDiv: HTMLElement, cell: any) {
         // Set style
+
         if (cell === null) {
             cellDiv.className = "";
         } else if (cell.validation) {
-            cellDiv.className = "invalid";
+            $(cellDiv).addClass("invalid");
         } else if (cell.value === null) {
             cellDiv.className = "null";
         } else {

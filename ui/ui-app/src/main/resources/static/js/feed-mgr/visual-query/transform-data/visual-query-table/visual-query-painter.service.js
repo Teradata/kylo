@@ -165,7 +165,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 cellDiv.className = "";
             }
             else if (cell.validation) {
-                cellDiv.className = "invalid";
+                $(cellDiv).addClass("invalid");
             }
             else if (cell.value === null) {
                 cellDiv.className = "null";

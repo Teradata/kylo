@@ -22,11 +22,6 @@ export class WranglerDataService {
      */
     sortIndex_: (number | null) = null;
 
-    /**
-     * Validation results for the current data.
-     */
-    validationResults: TransformValidationResult[][];
-
     asyncQuery: any;
 
     columns_ : any[];
@@ -63,18 +58,24 @@ export class WranglerDataService {
             var J = coordsObj.coords[1];
             var self = this;
 
+            let firstRow = I * PAGE_ROWS;
+            let firstCol = J * PAGE_COLS;
+
             this.asyncQuery(new PageSpec( {
-                firstRow: I * PAGE_ROWS,
+                firstRow: firstRow,
                 numRows: PAGE_ROWS,
-                firstCol: J * PAGE_COLS,
+                firstCol: firstCol,
                 numCols: PAGE_COLS
             })).then((result: ScriptState<any>) => {
                 this.state = result.tableState;
                 var rows = result.rows;
                 var validationResults = angular.copy(result.validationResults);
-
+                // Align validation results to page. Temporary - until we page validation results on server
+                if (validationResults != null && validationResults.length > firstRow) {
+                    validationResults = validationResults.slice(firstRow, validationResults.length-1);
+                }
                 cb((i: number, j: number) =>  {
-                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, this.columns_, validationResults)
+                    return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, validationResults)
                 });
             });
         },100);
@@ -89,17 +90,16 @@ export class WranglerDataService {
      * @param {number} j the column number
      * @returns {VisualQueryTableCell|null} the cell object
      */
-    getCell(i: number, j: number, rows: object[][], cols: object[], validationResults : TransformValidationResult[][]): any {
-        const column: any = cols;
+    getCell(i: number, j: number, rows: object[][], validationResults : TransformValidationResult[][]): any {
+        const column: any = this.columns_[j];
         if (column != undefined && i >= 0 && i < rows.length) {
-            /*
-            TODO: Add back in
-            const originalIndex = (rows[i].length > cols.length) ? rows[i][cols.length] : null;
-            const validation = (validationResults != null && originalIndex < validationResults.length && validationResults[originalIndex] != null)
-                ? validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
+
+            const validation = (validationResults != null && i < validationResults.length && validationResults[i] != null)
+                ? validationResults[i].filter(result => {
+                    return (result.field === column.displayName);
+                })
                 : null;
-                */
-            const validation : any = null;
+
             return {
                 column: j,
                 field: column.name,

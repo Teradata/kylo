@@ -35,17 +35,23 @@ define(["require", "exports", "angular", "underscore", "../../wrangler/query-eng
                 var I = coordsObj.coords[0];
                 var J = coordsObj.coords[1];
                 var self = _this;
+                var firstRow = I * PAGE_ROWS;
+                var firstCol = J * PAGE_COLS;
                 _this.asyncQuery(new query_engine_1.PageSpec({
-                    firstRow: I * PAGE_ROWS,
+                    firstRow: firstRow,
                     numRows: PAGE_ROWS,
-                    firstCol: J * PAGE_COLS,
+                    firstCol: firstCol,
                     numCols: PAGE_COLS
                 })).then(function (result) {
                     _this.state = result.tableState;
                     var rows = result.rows;
                     var validationResults = angular.copy(result.validationResults);
+                    // Align validation results to page. Temporary - until we page validation results on server
+                    if (validationResults != null && validationResults.length > firstRow) {
+                        validationResults = validationResults.slice(firstRow, validationResults.length - 1);
+                    }
                     cb(function (i, j) {
-                        return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, _this.columns_, validationResults);
+                        return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, validationResults);
                     });
                 });
             }, 100);
@@ -58,17 +64,14 @@ define(["require", "exports", "angular", "underscore", "../../wrangler/query-eng
          * @param {number} j the column number
          * @returns {VisualQueryTableCell|null} the cell object
          */
-        WranglerDataService.prototype.getCell = function (i, j, rows, cols, validationResults) {
-            var column = cols;
+        WranglerDataService.prototype.getCell = function (i, j, rows, validationResults) {
+            var column = this.columns_[j];
             if (column != undefined && i >= 0 && i < rows.length) {
-                /*
-                TODO: Add back in
-                const originalIndex = (rows[i].length > cols.length) ? rows[i][cols.length] : null;
-                const validation = (validationResults != null && originalIndex < validationResults.length && validationResults[originalIndex] != null)
-                    ? validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
+                var validation = (validationResults != null && i < validationResults.length && validationResults[i] != null)
+                    ? validationResults[i].filter(function (result) {
+                        return (result.field === column.displayName);
+                    })
                     : null;
-                    */
-                var validation = null;
                 return {
                     column: j,
                     field: column.name,

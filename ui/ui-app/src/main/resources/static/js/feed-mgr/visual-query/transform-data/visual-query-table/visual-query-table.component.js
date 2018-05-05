@@ -65,7 +65,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 _this.dataService.columns_ = _this.columns;
                 _this.onColumnsChange();
                 _this.onRowsChange();
-                _this.onValidationResultsChange();
                 _this.refresh();
             });
             $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
@@ -327,9 +326,6 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                     }
                 });
             }
-        };
-        VisualQueryTable.prototype.onValidationResultsChange = function () {
-            this.dataService.validationResults = this.validationResults;
         };
         VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants", "$window"];
         /**

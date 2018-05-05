@@ -106,7 +106,7 @@ export class VisualQueryTable {
     lastState: number = -1;
 
     /**
-     * Validation results for the data.
+     * TODO: Remove Validation results for the data.
      */
     validationResults: TransformValidationResult[][];
 
@@ -142,7 +142,6 @@ export class VisualQueryTable {
             this.dataService.columns_ = this.columns;
             this.onColumnsChange();
             this.onRowsChange();
-            this.onValidationResultsChange();
             this.refresh();
         });
 
@@ -449,9 +448,7 @@ export class VisualQueryTable {
         }
     }
 
-    private onValidationResultsChange() {
-        this.dataService.validationResults = this.validationResults;
-    }
+
 }
 
 export class ColumnModelChange {

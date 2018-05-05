@@ -762,8 +762,10 @@ export class ColumnDelegate implements IColumnDelegate {
      * Sets the domain type for the specified column.
      */
     setDomainType(column: any, domainTypeId: string) {
+        const fieldName = this.getColumnFieldName(column);
         this.controller.setDomainType(column.index, domainTypeId);
-        this.controller.query(true, null, true, false);
+        const formula = `withColumn("${fieldName}", ${fieldName})`
+        this.controller.pushFormula(formula, {formula: formula, icon: 'functions', name: 'Change domain type'})
     }
 
     /**

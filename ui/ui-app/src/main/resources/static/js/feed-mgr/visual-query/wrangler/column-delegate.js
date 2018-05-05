@@ -653,8 +653,10 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
          * Sets the domain type for the specified column.
          */
         ColumnDelegate.prototype.setDomainType = function (column, domainTypeId) {
+            var fieldName = this.getColumnFieldName(column);
             this.controller.setDomainType(column.index, domainTypeId);
-            this.controller.query(true, null, true, false);
+            var formula = "withColumn(\"" + fieldName + "\", " + fieldName + ")";
+            this.controller.pushFormula(formula, { formula: formula, icon: 'functions', name: 'Change domain type' });
         };
         /**
          * Sorts the specified column.
