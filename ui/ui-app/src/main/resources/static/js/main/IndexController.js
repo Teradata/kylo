@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../services/AccessControlService", "app"], function (require, exports, angular, AccessControlService_1) {
+define(["require", "exports", "angular", "../constants/AccessConstants", "app"], function (require, exports, angular, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
@@ -143,7 +143,7 @@ define(["require", "exports", "angular", "../services/AccessControlService", "ap
             accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
                 _this.allowSearch = accessControlService
-                    .hasAction(AccessControlService_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
+                    .hasAction(AccessConstants_1.default.GLOBAL_SEARCH_ACCESS, actionSet.actions);
             });
         }
         controller.prototype.closeSideNavList = function () {
@@ -181,14 +181,10 @@ define(["require", "exports", "angular", "../services/AccessControlService", "ap
         return controller;
     }());
     exports.controller = controller;
-    /* angular.module('kylo').component("indexController", {
-           controller: controller,
-           controllerAs: "mc",
-           templateUrl: "index.html"
-       });*/
-    angular.module('kylo').controller('IndexController', controller);
+    angular.module('kylo').component("indexController", {
+        controller: controller,
+        controllerAs: "mc",
+        templateUrl: "js/main/index.component.html"
+    });
 });
-//.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-//    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-// controller]);
 //# sourceMappingURL=IndexController.js.map

@@ -211,12 +211,8 @@ export class controller implements ng.IComponentController{
         }, this.LOADING_DIALOG_WAIT_TIME);
 }
 
- /* angular.module('kylo').component("indexController", { 
+  angular.module('kylo').component("indexController", {
         controller: controller,
         controllerAs: "mc",
-        templateUrl: "index.html"
-    });*/
-    angular.module('kylo').controller('IndexController',controller);
-//.controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-                                                             //    "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-                                                               // controller]);
+        templateUrl: "js/main/index.component.html"
+    });
