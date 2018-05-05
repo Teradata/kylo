@@ -20,6 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.spark;
  * #L%
  */
 
+import com.google.common.base.Optional;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogReader;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogWriter;
@@ -27,13 +28,14 @@ import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.spark.SparkContext;
+import org.apache.spark.sql.sources.DataSourceRegister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.net.URLStreamHandlerFactory;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 import scala.Option;
 
@@ -43,7 +45,9 @@ import scala.Option;
  * @param <T> Spark {@code DataFrame} class
  * @see AbstractKyloCatalogClientBuilder
  */
-abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
+public abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractKyloCatalogClient.class);
 
     /**
      * List of data set providers to try in-order
@@ -71,14 +75,13 @@ abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
     /**
      * Constructs an {@code AbstractKyloCatalogClient}.
      *
-     * @param sparkContext            Spark context
-     * @param dataSetProviders        list of data set providers to search in-order
-     * @param urlStreamHandlerFactory provides access to JAR files in Hadoop
+     * @param sparkContext     Spark context
+     * @param dataSetProviders list of data set providers to search in-order
      */
-    AbstractKyloCatalogClient(@Nonnull final SparkContext sparkContext, @Nonnull final List<DataSetProvider<T>> dataSetProviders, @Nullable final URLStreamHandlerFactory urlStreamHandlerFactory) {
+    AbstractKyloCatalogClient(@Nonnull final SparkContext sparkContext, @Nonnull final List<DataSetProvider<T>> dataSetProviders) {
         hadoopConfiguration = sparkContext.hadoopConfiguration();
         this.dataSetProviders = dataSetProviders;
-        resourceLoader = DataSourceResourceLoader.create(urlStreamHandlerFactory, sparkContext);
+        resourceLoader = DataSourceResourceLoader.create(sparkContext);
     }
 
     @Override
@@ -99,8 +102,28 @@ abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
         return Option.<DataSetProvider<T>>empty();
     }
 
+    /**
+     * Gets the data source with the specified name.
+     *
+     * @param shortName data source name, case insensitive
+     * @return the data source, if found
+     * @throws IllegalArgumentException if multiple data sources match the name
+     */
+    @Nonnull
+    public Option<DataSourceRegister> getDataSource(@Nonnull final String shortName) {
+        final Optional<DataSourceRegister> dataSource = resourceLoader.getDataSource(shortName);
+        return dataSource.isPresent() ? Option.apply(dataSource.get()) : Option.<DataSourceRegister>empty();
+    }
+
     @Override
     public boolean isClosed() {
+        if (!isClosed && isSparkStopped()) {
+            try {
+                close();
+            } catch (final Exception e) {
+                log.warn("Failed to close KyloCatalogClient[{}]: {}", this, e, e);
+            }
+        }
         return isClosed;
     }
 
@@ -115,4 +138,9 @@ abstract class AbstractKyloCatalogClient<T> implements KyloCatalogClient<T> {
     public KyloCatalogWriter<T> write(@Nonnull T df) {
         return new DefaultKyloCatalogWriter<>(this, hadoopConfiguration, resourceLoader, df);
     }
+
+    /**
+     * Indicates if the Spark session is stopped.
+     */
+    protected abstract boolean isSparkStopped();
 }

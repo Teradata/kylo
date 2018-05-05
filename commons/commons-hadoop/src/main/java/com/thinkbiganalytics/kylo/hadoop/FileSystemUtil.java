@@ -30,6 +30,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.Arrays;
@@ -60,22 +61,36 @@ public class FileSystemUtil {
      * @throws IOException if an I/O error occurs or the scheme is not supported
      */
     public static boolean fileExists(@Nonnull final URI uri, @Nonnull final Configuration conf) throws IOException {
-        switch (uri.getScheme()) {
+        // Remove hadoop: scheme
+        final URI hadoopUri;
+
+        if ("hadoop".equals(uri.getScheme())) {
+            try {
+                hadoopUri = new URI(uri.getSchemeSpecificPart());
+            } catch (final URISyntaxException e) {
+                throw new IOException("Not a valid hadoop URI: " + uri);
+            }
+        } else {
+            hadoopUri = uri;
+        }
+
+        // Determine if file exists
+        switch (hadoopUri.getScheme()) {
             case "file":
-                log.debug("Checking local path exists: {}", uri);
-                return new File(uri).exists();
+                log.debug("Checking local path exists: {}", hadoopUri);
+                return new File(hadoopUri).exists();
 
             case "hdfs":
-                log.debug("Checking HDFS path exists: {}", uri);
+                log.debug("Checking HDFS path exists: {}", hadoopUri);
                 try {
-                    return FileSystem.get(uri, conf).exists(new Path(uri));
+                    return FileSystem.get(hadoopUri, conf).exists(new Path(hadoopUri));
                 } catch (final IOException e) {
-                    log.debug("Unable to read HDFS path: {}", uri, e);
+                    log.debug("Unable to read HDFS path: {}", hadoopUri, e);
                     return true;
                 }
 
             default:
-                throw new IOException("Not a supported scheme: " + uri.getScheme());
+                throw new IOException("Not a supported scheme: " + hadoopUri.getScheme());
         }
     }
 
@@ -92,7 +107,7 @@ public class FileSystemUtil {
         URI uri = URI.create(s);
 
         if (uri.getScheme() == null) {
-            uri = ((conf != null) ? FileSystem.getDefaultUri(conf) : URI.create("file:///")).resolve(uri);
+            uri = ((conf != null) ? FileSystem.getDefaultUri(conf) : URI.create("file:///").resolve(new File("").getAbsolutePath() + "/")).resolve(uri);
         }
         if (!IGNORED_PROTOCOLS.contains(uri.getScheme())) {
             uri = URI.create("hadoop:" + uri);

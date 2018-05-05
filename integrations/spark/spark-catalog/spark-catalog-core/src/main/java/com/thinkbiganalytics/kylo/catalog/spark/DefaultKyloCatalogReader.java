@@ -20,6 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.spark;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
@@ -116,8 +117,8 @@ class DefaultKyloCatalogReader<T> implements KyloCatalogReader<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> addJar(@Nullable final String path) {
-        if (path != null) {
-            resourceLoader.addJar(path);
+        if (path != null && resourceLoader.addJar(path)) {
+            options.addJar(path);
         }
         return this;
     }
@@ -125,8 +126,8 @@ class DefaultKyloCatalogReader<T> implements KyloCatalogReader<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> addJars(@Nullable final List<String> paths) {
-        if (paths != null) {
-            resourceLoader.addJars(paths);
+        if (paths != null && resourceLoader.addJars(paths)) {
+            options.addJars(paths);
         }
         return this;
     }
@@ -150,29 +151,26 @@ class DefaultKyloCatalogReader<T> implements KyloCatalogReader<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> option(@Nonnull final String key, final double value) {
-        options.setOption(key, Double.toString(value));
-        return this;
+        return option(key, Double.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> option(@Nonnull final String key, final long value) {
-        options.setOption(key, Long.toString(value));
-        return this;
+        return option(key, Long.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> option(@Nonnull final String key, final boolean value) {
-        options.setOption(key, Boolean.toString(value));
-        return this;
+        return option(key, Boolean.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogReader<T> option(@Nonnull final String key, @Nullable final String value) {
-        if (key.startsWith("spark.hadoop.")) {
-            hadoopConfiguration.set(key.substring(13), value);
+        if (key.startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX)) {
+            hadoopConfiguration.set(key.substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), value);
         }
         options.setOption(key, value);
         return this;
@@ -241,5 +239,14 @@ class DefaultKyloCatalogReader<T> implements KyloCatalogReader<T> {
         } catch (final Exception e) {
             throw new KyloCatalogException("Unable to load '" + options.getFormat() + "' source: " + e, e);
         }
+    }
+
+    /**
+     * Gets the data set options.
+     */
+    @Nonnull
+    @VisibleForTesting
+    DataSetOptions getOptions() {
+        return options;
     }
 }

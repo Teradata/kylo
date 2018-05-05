@@ -57,6 +57,7 @@ public class FileSystemUtilTest {
         final File file = File.createTempFile("kylo-", ".tmp");
         try {
             Assert.assertTrue("Expected HDFS file to exist", FileSystemUtil.fileExists(URI.create("hdfs:" + file.getAbsolutePath()), conf));
+            Assert.assertTrue("Expected HDFS file to exist", FileSystemUtil.fileExists(URI.create("hadoop:hdfs:" + file.getAbsolutePath()), conf));
         } finally {
             Files.delete(file.toPath());
         }
@@ -94,6 +95,7 @@ public class FileSystemUtilTest {
         conf.set("fs.defaultFS", "mock:///");
 
         Assert.assertEquals(new URL("file:/path/file.ext"), FileSystemUtil.parseUrl("/path/file.ext", null));
+        Assert.assertEquals(new File("file.ext").toURI().toURL(), FileSystemUtil.parseUrl("file.ext", null));
         Assert.assertEquals(new URL("hadoop:mock:/path/file.ext"), FileSystemUtil.parseUrl("/path/file.ext", conf));
         Assert.assertEquals(new URL("http://localhost/path/file.ext"), FileSystemUtil.parseUrl("http://localhost/path/file.ext", null));
         Assert.assertEquals(new URL("hadoop:hdfs://localhost:8020/path/file.ext"), FileSystemUtil.parseUrl("hdfs://localhost:8020/path/file.ext", null));

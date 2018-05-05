@@ -89,19 +89,21 @@ public class HadoopClassLoader extends URLClassLoader {
      * Add a JAR dependency containing data source classes or their dependencies.
      *
      * @param path a local file, a Hadoop file, or a web URL
+     * @return {@code true} if the jar was added, or {@code false} if the jar was ignored
      * @throws IllegalArgumentException if the {@code path} is not a valid URL
      */
-    public void addJar(@Nullable final String path) {
-        addURL(path, true);
+    public boolean addJar(@Nullable final String path) {
+        return addURL(path, true);
     }
 
     /**
      * Adds JAR dependencies containing data source classes and their dependencies.
      *
      * @param paths local files, Hadoop files, or web URLs
+     * @return {@code true} if at least one jar was added, or {@code false} if they were all ignored
      * @throws IllegalArgumentException if a path is not a valid URL
      */
-    public void addJars(@Nullable final List<String> paths) {
+    public boolean addJars(@Nullable final List<String> paths) {
         boolean shouldReload = false;
 
         if (paths != null) {
@@ -113,6 +115,8 @@ public class HadoopClassLoader extends URLClassLoader {
         if (shouldReload) {
             reload();
         }
+
+        return shouldReload;
     }
 
     @Override

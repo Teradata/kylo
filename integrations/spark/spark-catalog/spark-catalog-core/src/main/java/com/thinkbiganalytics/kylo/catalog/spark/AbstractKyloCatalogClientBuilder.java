@@ -22,8 +22,10 @@ package com.thinkbiganalytics.kylo.catalog.spark;
 
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClientBuilder;
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogException;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -34,6 +36,7 @@ import javax.annotation.Nonnull;
  * @param <T> Spark {@code DataFrame} class
  * @see AbstractKyloCatalogClient
  */
+@SuppressWarnings("WeakerAccess")
 abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientBuilder<T> {
 
     /**
@@ -51,7 +54,7 @@ abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientB
      * Constructs an {@code AbstractKyloCatalogClientBuilder} with the specified default data set providers.
      */
     protected AbstractKyloCatalogClientBuilder(@Nonnull final List<DataSetProvider<T>> defaultDataSetProviders) {
-        dataSetProviders = defaultDataSetProviders;
+        dataSetProviders = new ArrayList<>(defaultDataSetProviders);
     }
 
     @Nonnull
@@ -75,6 +78,10 @@ abstract class AbstractKyloCatalogClientBuilder<T> implements KyloCatalogClientB
     public final KyloCatalogClient<T> build() {
         KyloCatalogClient<T> client = activeClient.get();
         if (client == null || client.isClosed()) {
+            if (dataSetProviders.isEmpty()) {
+                throw new KyloCatalogException("At least one DataSetProvider is required");
+            }
+
             synchronized (activeClient) {
                 if (activeClient.get() == null || activeClient.get().isClosed()) {
                     activeClient.set(create(dataSetProviders));

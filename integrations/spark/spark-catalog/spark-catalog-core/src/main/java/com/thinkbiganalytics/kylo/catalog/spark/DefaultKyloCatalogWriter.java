@@ -20,6 +20,7 @@ package com.thinkbiganalytics.kylo.catalog.spark;
  * #L%
  */
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
@@ -124,8 +125,8 @@ class DefaultKyloCatalogWriter<T> implements KyloCatalogWriter<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> addJar(@Nullable final String path) {
-        if (path != null) {
-            resourceLoader.addJar(path);
+        if (path != null && resourceLoader.addJar(path)) {
+            options.addJar(path);
         }
         return this;
     }
@@ -133,8 +134,8 @@ class DefaultKyloCatalogWriter<T> implements KyloCatalogWriter<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> addJars(@Nullable final List<String> paths) {
-        if (paths != null) {
-            resourceLoader.addJars(paths);
+        if (paths != null && resourceLoader.addJars(paths)) {
+            options.addJars(paths);
         }
         return this;
     }
@@ -166,7 +167,7 @@ class DefaultKyloCatalogWriter<T> implements KyloCatalogWriter<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> mode(@Nonnull final String saveMode) {
-        mode(SparkSqlUtil.toSaveMode(saveMode));
+        mode(SparkUtil.toSaveMode(saveMode));
         return this;
     }
 
@@ -180,29 +181,26 @@ class DefaultKyloCatalogWriter<T> implements KyloCatalogWriter<T> {
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> option(@Nonnull final String key, final double value) {
-        options.setOption(key, Double.toString(value));
-        return this;
+        return option(key, Double.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> option(@Nonnull final String key, final long value) {
-        options.setOption(key, Long.toString(value));
-        return this;
+        return option(key, Long.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> option(@Nonnull final String key, final boolean value) {
-        options.setOption(key, Boolean.toString(value));
-        return this;
+        return option(key, Boolean.toString(value));
     }
 
     @Nonnull
     @Override
     public DefaultKyloCatalogWriter<T> option(@Nonnull final String key, @Nullable final String value) {
-        if (key.startsWith("spark.hadoop.")) {
-            hadoopConfiguration.set(key.substring(13), value);
+        if (key.startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX)) {
+            hadoopConfiguration.set(key.substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), value);
         }
         options.setOption(key, value);
         return this;
@@ -263,5 +261,14 @@ class DefaultKyloCatalogWriter<T> implements KyloCatalogWriter<T> {
     public DefaultKyloCatalogWriter<T> sortBy(@Nonnull final String colName, final String... colNames) {
         options.setSortColumnNames((colNames != null && colNames.length > 0) ? Lists.asList(colName, colNames) : Collections.singletonList(colName));
         return this;
+    }
+
+    /**
+     * Gets the data set options.
+     */
+    @Nonnull
+    @VisibleForTesting
+    DataSetOptions getOptions() {
+        return options;
     }
 }

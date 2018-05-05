@@ -79,37 +79,35 @@ public class HadoopClassLoaderTest {
         final HadoopClassLoader classLoader = new HadoopClassLoader(conf);
 
         // Test null paths
-        classLoader.addJar(null);
-        classLoader.addJars(null);
+        Assert.assertFalse("Expected null jar to be ignored", classLoader.addJar(null));
+        Assert.assertFalse("Expected null jars to be ignored", classLoader.addJars(null));
         Assert.assertArrayEquals(new URL[0], classLoader.getURLs());
         Assert.assertEquals(0, conf.size());
 
         // Test invalid path
-        classLoader.addJar("file:/tmp/" + UUID.randomUUID());
+        Assert.assertFalse("Expected invalid jar to be ignored", classLoader.addJar("file:/tmp/" + UUID.randomUUID()));
         Assert.assertArrayEquals(new URL[0], classLoader.getURLs());
         Assert.assertEquals(0, conf.size());
 
         // Test Hadoop path
-        classLoader.addJar("mock:/tmp/file.ext");
+        Assert.assertTrue("Expected Hadoop jar to be added", classLoader.addJar("mock:/tmp/file.ext"));
         Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo("hadoop:mock:/tmp/file.ext"))));
 
         // Test path without FileSystem services
-        final String classFileUrl = getClass().getResource("HadoopClassLoaderTest.class").toString();
-        final String classDirUrl = classFileUrl.substring(0, classFileUrl.indexOf("HadoopClassLoaderTest"));
-        classLoader.addJar(classDirUrl);
-        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(classDirUrl))));
+        final String classUrl = getClass().getResource("./").toString();
+        Assert.assertTrue("Expected class directory to be added", classLoader.addJar(classUrl));
+        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(classUrl))));
         Assert.assertEquals(0, conf.size());
 
         // Test path with FileSystem services
-        final String resourceFileUrl = getClass().getResource("/META-INF/services/org.apache.hadoop.fs.FileSystem").toString();
-        final String resourceDirUrl = resourceFileUrl.substring(0, resourceFileUrl.indexOf("META-INF"));
-        classLoader.addJar(resourceDirUrl);
-        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(resourceDirUrl))));
+        final String resourceUrl = getClass().getResource("/").toString();
+        Assert.assertTrue("Expected resource directory to be added", classLoader.addJar(resourceUrl));
+        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(resourceUrl))));
         Assert.assertEquals(MockFileSystem.class, conf.getClass("fs.mock.impl", null));
 
         // Test existing jar
         final int existingSize = classLoader.getURLs().length;
-        classLoader.addJar(resourceDirUrl);
+        Assert.assertFalse("Expected existing jar to be ignored", classLoader.addJar(resourceUrl));
         Assert.assertEquals(existingSize, classLoader.getURLs().length);
     }
 }
