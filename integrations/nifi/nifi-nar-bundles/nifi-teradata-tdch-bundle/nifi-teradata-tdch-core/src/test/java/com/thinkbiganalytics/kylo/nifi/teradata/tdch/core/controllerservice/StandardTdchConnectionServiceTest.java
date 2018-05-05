@@ -27,6 +27,7 @@ import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +53,7 @@ public class StandardTdchConnectionServiceTest {
     private static final String CONNECTION_SERVICE_ID = "std-tdch-conn-service";
 
 
+    @Ignore
     @Test
     public void testStandardTdchConnectionServiceConfiguration() throws InitializationException {
         final TestRunner runner = TestRunners.newTestRunner(TestTdchProcessorForTestingTdchConnectionService.class);
@@ -158,6 +160,7 @@ public class StandardTdchConnectionServiceTest {
 
     }
 
+    @Ignore
     @Test
     public void testTdchJarPath() throws InitializationException {
         ValidationResult validationResult;
@@ -209,6 +212,7 @@ public class StandardTdchConnectionServiceTest {
 
     }
 
+    @Ignore
     @Test
     public void testHdpHiveConf() throws InitializationException {
         ValidationResult validationResult;
@@ -239,6 +243,7 @@ public class StandardTdchConnectionServiceTest {
         runner.assertValid(standardTdchConnectionService);
     }
 
+    @Ignore
     @Test
     public void testHdpHiveLib() throws InitializationException {
         ValidationResult validationResult;
@@ -396,6 +401,7 @@ public class StandardTdchConnectionServiceTest {
         runner.assertValid(standardTdchConnectionService);
     }
 
+    @Ignore
     @Test
     public void testCdhHiveLib() throws InitializationException {
         ValidationResult validationResult;

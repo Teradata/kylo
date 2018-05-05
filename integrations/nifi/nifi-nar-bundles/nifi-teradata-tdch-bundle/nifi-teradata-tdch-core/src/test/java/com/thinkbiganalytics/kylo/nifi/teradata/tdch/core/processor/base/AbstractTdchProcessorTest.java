@@ -28,6 +28,7 @@ import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,6 +54,7 @@ public class AbstractTdchProcessorTest {
         //Nothing for now
     }
 
+    @Ignore
     @Test
     public void testControllerServiceConfiguration() throws InitializationException {
         final String TDCH_JAR_BASE = "src/test/resources/usr/lib/tdch/1.5/lib";
