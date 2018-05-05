@@ -26,11 +26,9 @@ import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 
-import java.net.URLStreamHandlerFactory;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Implementation of {@link KyloCatalogClient} that supports Spark 1.
@@ -46,8 +44,8 @@ public class KyloCatalogClientV1 extends AbstractKyloCatalogClient<DataFrame> {
     /**
      * Constructs a {@code KyloCatalogClientV1} using the specified Spark SQL context and data set providers.
      */
-    KyloCatalogClientV1(@Nonnull final SQLContext sqlContext, @Nonnull final List<DataSetProvider<DataFrame>> dataSetProviders, @Nullable final URLStreamHandlerFactory urlStreamHandlerFactory) {
-        super(sqlContext.sparkContext(), dataSetProviders, urlStreamHandlerFactory);
+    KyloCatalogClientV1(@Nonnull final SQLContext sqlContext, @Nonnull final List<DataSetProvider<DataFrame>> dataSetProviders) {
+        super(sqlContext.sparkContext(), dataSetProviders);
         this.sqlContext = sqlContext;
     }
 
@@ -57,5 +55,10 @@ public class KyloCatalogClientV1 extends AbstractKyloCatalogClient<DataFrame> {
     @Nonnull
     public SQLContext getSQLContext() {
         return sqlContext;
+    }
+
+    @Override
+    protected boolean isSparkStopped() {
+        return sqlContext.sparkContext().isStopped();
     }
 }

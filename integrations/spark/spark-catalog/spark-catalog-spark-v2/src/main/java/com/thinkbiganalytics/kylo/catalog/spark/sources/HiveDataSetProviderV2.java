@@ -47,4 +47,9 @@ public class HiveDataSetProviderV2 extends AbstractHiveDataSetProvider<Dataset<R
     protected Dataset<Row> loadFromTable(@Nonnull final KyloCatalogClient<Dataset<Row>> client, @Nonnull final String tableName) {
         return ((KyloCatalogClientV2) client).getSparkSession().table(tableName);
     }
+
+    @Override
+    protected void sql(@Nonnull final KyloCatalogClient<Dataset<Row>> client, @Nonnull final String query) {
+        ((KyloCatalogClientV2) client).getSparkSession().sql(query);
+    }
 }

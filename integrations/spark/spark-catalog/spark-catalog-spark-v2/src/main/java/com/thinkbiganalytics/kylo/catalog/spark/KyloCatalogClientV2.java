@@ -27,11 +27,9 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 
-import java.net.URLStreamHandlerFactory;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
 /**
  * Implementation of {@link KyloCatalogClient} that supports Spark 2.
@@ -47,9 +45,8 @@ public class KyloCatalogClientV2 extends AbstractKyloCatalogClient<Dataset<Row>>
     /**
      * Constructs a {@code KyloCatalogClientV2} using the specified Spark session and data set providers.
      */
-    KyloCatalogClientV2(@Nonnull final SparkSession sparkSession, @Nonnull final List<DataSetProvider<Dataset<Row>>> dataSetProviders,
-                        @Nullable final URLStreamHandlerFactory urlStreamHandlerFactory) {
-        super(sparkSession.sparkContext(), dataSetProviders, urlStreamHandlerFactory);
+    KyloCatalogClientV2(@Nonnull final SparkSession sparkSession, @Nonnull final List<DataSetProvider<Dataset<Row>>> dataSetProviders) {
+        super(sparkSession.sparkContext(), dataSetProviders);
         this.sparkSession = sparkSession;
     }
 
@@ -59,5 +56,10 @@ public class KyloCatalogClientV2 extends AbstractKyloCatalogClient<Dataset<Row>>
     @Nonnull
     public SparkSession getSparkSession() {
         return sparkSession;
+    }
+
+    @Override
+    protected boolean isSparkStopped() {
+        return sparkSession.sparkContext().isStopped();
     }
 }

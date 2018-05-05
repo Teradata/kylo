@@ -45,4 +45,9 @@ public class HiveDataSetProviderV1 extends AbstractHiveDataSetProvider<DataFrame
     protected DataFrame loadFromTable(@Nonnull final KyloCatalogClient<DataFrame> client, @Nonnull final String tableName) {
         return ((KyloCatalogClientV1) client).getSQLContext().table(tableName);
     }
+
+    @Override
+    protected void sql(@Nonnull final KyloCatalogClient<DataFrame> client, @Nonnull final String query) {
+        ((KyloCatalogClientV1) client).getSQLContext().sql(query);
+    }
 }

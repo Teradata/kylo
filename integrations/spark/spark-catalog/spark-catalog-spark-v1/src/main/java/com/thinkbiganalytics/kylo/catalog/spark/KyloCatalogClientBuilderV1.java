@@ -23,11 +23,9 @@ package com.thinkbiganalytics.kylo.catalog.spark;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogClient;
 import com.thinkbiganalytics.kylo.catalog.spi.DataSetProvider;
 
-import org.apache.hadoop.fs.FsUrlStreamHandlerFactory;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.SQLContext;
 
-import java.net.URLStreamHandlerFactory;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -54,7 +52,6 @@ public class KyloCatalogClientBuilderV1 extends AbstractKyloCatalogClientBuilder
     @Nonnull
     @Override
     protected KyloCatalogClient<DataFrame> create(@Nonnull final List<DataSetProvider<DataFrame>> dataSetProviders) {
-        final URLStreamHandlerFactory urlStreamHandlerFactory = new FsUrlStreamHandlerFactory(sqlContext.sparkContext().hadoopConfiguration());
-        return new KyloCatalogClientV1(sqlContext, dataSetProviders, urlStreamHandlerFactory);
+        return new KyloCatalogClientV1(sqlContext, dataSetProviders);
     }
 }
