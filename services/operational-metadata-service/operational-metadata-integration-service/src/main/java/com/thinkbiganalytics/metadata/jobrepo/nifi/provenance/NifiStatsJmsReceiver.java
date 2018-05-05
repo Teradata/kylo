@@ -526,7 +526,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                 List<ProvenanceEventRecordDTO> events = new ArrayList<>();
                 events.add(event);
                 holder.setEvents(events);
-                log.info("Ensuring Streaming Feed Event: {} has a respective JobExecution record ",event);
+                log.debug("Ensuring Streaming Feed Event: {} has a respective JobExecution record ",event);
                 provenanceEventReceiver.receiveEvents(holder);
             }
         }

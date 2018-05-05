@@ -686,13 +686,15 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             //reset the sensitive properties
             FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
+            //post to the server to save with a custom timeout of 7 minutes.
             var promise = $http({
                 url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                 method: "POST",
                 data: angular.toJson(copy),
                 headers: {
                     'Content-Type': 'application/json; charset=UTF-8'
-                }
+                },
+                timeout: 7*60 * 1000
             }).then(successFn, errorFn);
 
             return deferred.promise;

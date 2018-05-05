@@ -18,28 +18,20 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
  * limitations under the License.
  * #L%
  */
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 /**
  * Lock on a given key
  */
 public class ProvenanceEventJobExecutionLockManager {
 
-    static Map<String, Lock> locks = new ConcurrentHashMap<>();
+    static Map<String, JobLock> locks = new ConcurrentHashMap<>();
 
-    public static Lock getLock(String key) {
-        Lock lock = locks.putIfAbsent(key, new ReentrantLock());
+    public static JobLock getLock(String key) {
+        JobLock lock = locks.putIfAbsent(key, new JobLock(key));
         if (lock == null) {
             lock = locks.get(key);
         }
@@ -48,11 +40,37 @@ public class ProvenanceEventJobExecutionLockManager {
     }
 
     public static void releaseLock(String key) {
-        Lock lock = locks.get(key);
-        if (lock != null) {
-            lock.unlock();
-            locks.remove(key);
+        JobLock jobLock = locks.get(key);
+        releaseLock(jobLock);
+    }
+
+    public static void releaseLock(JobLock jobLock) {
+        if (jobLock != null) {
+            ReentrantLock lock = jobLock.getLock();
+            if (lock.isHeldByCurrentThread()) {
+                lock.unlock();
+                locks.remove(jobLock.getKey());
+            }
         }
     }
 
+
+    public static class JobLock {
+
+        ReentrantLock lock;
+        String key;
+
+        public JobLock(String key) {
+            this.lock = new ReentrantLock();
+            this.key = key;
+        }
+
+        public ReentrantLock getLock() {
+            return lock;
+        }
+
+        public String getKey() {
+            return key;
+        }
+    }
 }

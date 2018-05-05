@@ -46,7 +46,9 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 }
             };
             this.getCountOfActiveSteps = function () {
-                return _.filter(_this.StepperService.getSteps(_this.stepperName), function (step) { return step.active; }).length;
+                return _.filter(_this.StepperService.getSteps(_this.stepperName), function (step) {
+                    return step.active;
+                }).length;
             };
             this.goToFirstStep = function () {
                 _this.selectedStepIndex = 0;
@@ -117,6 +119,16 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 var step = _this.getStep(index);
                 step.complete = true;
                 step.updateStepType();
+            };
+            this.isStepVisited = function (index) {
+                var iIndex;
+                if (typeof index == "string") {
+                    iIndex = parseInt(index);
+                }
+                else {
+                    iIndex = index;
+                }
+                return _this.steps[index].visited;
             };
             this.incompleteStep = function (index) {
                 var step = _this.getStep(index);

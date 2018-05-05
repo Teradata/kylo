@@ -96,6 +96,20 @@ export class VisualQueryPainterService extends fattable.Painter {
      */
     private tooltipVisible: boolean = false;
 
+    /**
+     * Indicate thate the header template has been loaded into the $templateCache
+     * @type {boolean}
+     */
+    private headerTemplateLoaded : boolean = false;
+
+
+    /**
+     * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
+     * Once the template is loaded these elements will get filled
+     * @type {any[]}
+     */
+    private waitingHeaderDivs : HTMLElement[] = [];
+
     static readonly $inject = ["$compile", "$mdPanel", "$rootScope", "$templateCache", "$templateRequest", "$timeout", "$window"];
 
     /**
@@ -106,7 +120,14 @@ export class VisualQueryPainterService extends fattable.Painter {
                 private $window: angular.IWindowService) {
         super();
 
-        $templateRequest(HEADER_TEMPLATE);
+        //Request the Header template and fill in the contents of any header divs waiting on the template.
+        $templateRequest(HEADER_TEMPLATE).then((response) => {
+            this.headerTemplateLoaded = true;
+            angular.forEach(this.waitingHeaderDivs,(headerDiv : HTMLElement) => {
+                this.compileHeader(headerDiv);
+            });
+            this.waitingHeaderDivs = [];
+        });
 
         // Hide tooltip on scroll. Skip Angular change detection.
         window.addEventListener("scroll", () => {
@@ -296,10 +317,17 @@ export class VisualQueryPainterService extends fattable.Painter {
         // Set style attributes
         headerDiv.style.font = this.headerFont;
         headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
+        //if the header template is not loaded yet then fill it with Loading text.
+        // the callback on the templateRequest will compile those headers waiting
+        if(!this.headerTemplateLoaded) {
+            headerDiv.textContent = "Loading...";
+            headerDiv.className = "pending";
+            this.waitingHeaderDivs.push(headerDiv)
+        }
+        else {
+            this.compileHeader(headerDiv);
+        }
 
-        // Load template
-        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
-        this.$compile(headerDiv)(this.$scope.$new(true));
     }
 
     /**
@@ -329,6 +357,12 @@ export class VisualQueryPainterService extends fattable.Painter {
     cleanUp(table:HTMLElement){
         super.cleanUp(table);
         angular.element(table).unbind();
+    }
+
+    private compileHeader(headerDiv: HTMLElement) {
+        // Load template
+        headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
+        this.$compile(headerDiv)(this.$scope.$new(true));
     }
 
     /**
