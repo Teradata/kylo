@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 import * as _ from "underscore";
-export default class controller implements ng.IComponentController{
+export class StepperController implements ng.IComponentController{
     showProgress: any;
     height: any;
     steps: any[];
@@ -220,7 +220,7 @@ export default class controller implements ng.IComponentController{
 }
 
 
-angular.module(moduleName).controller('StepperController', ["$scope","$attrs","$element","StepperService","Utils","BroadcastService","WindowUnloadService",controller]);
+angular.module(moduleName).controller('StepperController', ["$scope","$attrs","$element","StepperService","Utils","BroadcastService","WindowUnloadService",StepperController]);
 
 angular.module(moduleName).directive("thinkbigStepper",
   ['$compile', '$templateRequest',($compile, $templateRequest) => {

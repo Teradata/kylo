@@ -1,8 +1,8 @@
 define(["require", "exports", "angular", "../module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var controller = /** @class */ (function () {
-        function controller($scope, $attrs, $element, StepperService, Utils, BroadcastService, WindowUnloadService) {
+    var StepperController = /** @class */ (function () {
+        function StepperController($scope, $attrs, $element, StepperService, Utils, BroadcastService, WindowUnloadService) {
             var _this = this;
             this.$scope = $scope;
             this.$attrs = $attrs;
@@ -169,10 +169,10 @@ define(["require", "exports", "angular", "../module-name", "underscore"], functi
                 _this.steps = [];
             });
         }
-        return controller;
+        return StepperController;
     }());
-    exports.default = controller;
-    angular.module(module_name_1.moduleName).controller('StepperController', ["$scope", "$attrs", "$element", "StepperService", "Utils", "BroadcastService", "WindowUnloadService", controller]);
+    exports.StepperController = StepperController;
+    angular.module(module_name_1.moduleName).controller('StepperController', ["$scope", "$attrs", "$element", "StepperService", "Utils", "BroadcastService", "WindowUnloadService", StepperController]);
     angular.module(module_name_1.moduleName).directive("thinkbigStepper", ['$compile', '$templateRequest', function ($compile, $templateRequest) {
             return {
                 restrict: "EA",
