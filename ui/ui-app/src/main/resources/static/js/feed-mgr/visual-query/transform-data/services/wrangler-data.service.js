@@ -1,15 +1,13 @@
-define(["require", "exports", "angular"], function (require, exports, angular) {
+define(["require", "exports", "angular", "underscore", "../../wrangler/query-engine"], function (require, exports, angular, _, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
     var PAGE_ROWS = 64;
     var PAGE_COLS = 1000;
     var WranglerDataService = /** @class */ (function () {
-        function WranglerDataService($rootscope, $q, $timeout) {
-            var _this = this;
+        function WranglerDataService($rootscope, $q) {
             this.$rootscope = $rootscope;
             this.$q = $q;
-            this.$timeout = $timeout;
             /**
              * The sort direction.
              */
@@ -18,19 +16,12 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
              * The index of the column being sorted.
              */
             this.sortIndex_ = null;
-            this.loading = false;
-            this.fetchTimeoutPromise = null;
-            this.fetchTimeout = function (callback, interval) {
-                if (_this.fetchTimeoutPromise != null) {
-                    _this.$timeout.cancel(_this.fetchTimeoutPromise);
-                }
-                _this.fetchTimeoutPromise = _this.$timeout(callback, interval);
-            };
         }
         WranglerDataService.prototype.cellPageName = function (i, j) {
             var I = (i / PAGE_ROWS) | 0;
             var J = (j / PAGE_COLS) | 0;
-            return JSON.stringify({ "state": this.state, "coords": [I, J] });
+            var name = JSON.stringify({ "state": this.state, "coords": [I, J] });
+            return name;
         };
         WranglerDataService.prototype.headerPageName = function (j) {
             var J = (j / PAGE_COLS) | 0;
@@ -39,22 +30,26 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         ;
         WranglerDataService.prototype.fetchCellPage = function (pageName, cb) {
             var _this = this;
-            this.fetchTimeout(function () {
+            var asyncFn = _.debounce(function () {
                 var coordsObj = JSON.parse(pageName);
                 var I = coordsObj.coords[0];
                 var J = coordsObj.coords[1];
                 var self = _this;
-                _this.asyncQuery(true, {
+                _this.asyncQuery(new query_engine_1.PageSpec({
                     firstRow: I * PAGE_ROWS,
                     numRows: PAGE_ROWS,
                     firstCol: J * PAGE_COLS,
-                    numCols: PAGE_COLS * 2
-                }).then(function () {
+                    numCols: PAGE_COLS
+                })).then(function (result) {
+                    _this.state = result.tableState;
+                    var rows = result.rows;
+                    var validationResults = angular.copy(result.validationResults);
                     cb(function (i, j) {
-                        return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS);
+                        return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, _this.columns_, validationResults);
                     });
                 });
             }, 100);
+            asyncFn();
         };
         /**
          * Gets the value for the specified cell.
@@ -63,19 +58,23 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @param {number} j the column number
          * @returns {VisualQueryTableCell|null} the cell object
          */
-        WranglerDataService.prototype.getCell = function (i, j) {
-            var column = this.columns_[j];
-            if (column != undefined && i >= 0 && i < this.rows_.length) {
-                var originalIndex = (this.rows_[i].length > this.columns_.length) ? this.rows_[i][this.columns_.length] : null;
-                var validation = (this.validationResults != null && originalIndex < this.validationResults.length && this.validationResults[originalIndex] != null)
-                    ? this.validationResults[originalIndex].filter(function (result) { return result.field === column.headerTooltip; })
+        WranglerDataService.prototype.getCell = function (i, j, rows, cols, validationResults) {
+            var column = cols;
+            if (column != undefined && i >= 0 && i < rows.length) {
+                /*
+                TODO: Add back in
+                const originalIndex = (rows[i].length > cols.length) ? rows[i][cols.length] : null;
+                const validation = (validationResults != null && originalIndex < validationResults.length && validationResults[originalIndex] != null)
+                    ? validationResults[originalIndex].filter(result => result.field === column.headerTooltip)
                     : null;
+                    */
+                var validation = null;
                 return {
                     column: j,
                     field: column.name,
                     row: i,
                     validation: (validation !== null && validation.length > 0) ? validation : null,
-                    value: this.rows_[i][j]
+                    value: rows[i][j]
                 };
             }
             else {
@@ -89,7 +88,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
          * @returns {VisualQueryTableHeader|null} the column header
          */
         WranglerDataService.prototype.getHeader = function (j) {
-            if (j >= 0 && j < this.columns_.length) {
+            if (j >= 0 && this.columns_ && j < this.columns_.length) {
                 return angular.extend(this.columns_[j], {
                     field: this.columns_[j].name,
                     index: j,
@@ -103,6 +102,6 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         return WranglerDataService;
     }());
     exports.WranglerDataService = WranglerDataService;
-    angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q", "$timeout", WranglerDataService]);
+    angular.module(moduleName).service("WranglerDataService", ["$rootScope", "$q", WranglerDataService]);
 });
 //# sourceMappingURL=wrangler-data.service.js.map

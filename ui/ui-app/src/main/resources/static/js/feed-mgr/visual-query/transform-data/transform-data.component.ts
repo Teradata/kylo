@@ -1,18 +1,17 @@
 import {Input, OnInit} from "@angular/core";
 import * as angular from "angular";
+import {IDeferred, IPromise} from "angular";
 import * as $ from "jquery";
 import * as _ from "underscore";
 
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
-import {DataCategory} from "../wrangler/column-delegate";
-import {ChainedOperation} from "../wrangler/column-delegate";
+import {ChainedOperation, DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
-import {QueryEngine} from "../wrangler/query-engine";
-import {IPromise} from "angular";
+import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
-import {PageSpec} from "../wrangler";
+import {ScriptState} from "../wrangler";
 
 declare const CodeMirror: any;
 
@@ -70,7 +69,9 @@ export class TransformDataComponent implements OnInit {
      * Columns for the results table.
      * @type {Array.<Object>}
      */
-    tableColumns: any = [];
+    tableColumns: any[];
+
+    validationResults: TransformValidationResult[][];
 
     //noinspection JSUnusedGlobalSymbols
     /**
@@ -87,12 +88,17 @@ export class TransformDataComponent implements OnInit {
      * Rows for the results table.
      * @type {Array.<Object>}
      */
-    tableRows: object[] = [];
+    tableRows: object[][];
 
     /**
-     * History state for client to track state changes
+     * History state token for client to track state changes
      */
-    tableState: number = null;
+    tableState: number;
+
+    /**
+     * Last page requested
+     */
+    currentPage: PageSpec;
 
     /**
      * Rows analyzed by the server
@@ -173,7 +179,7 @@ export class TransformDataComponent implements OnInit {
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
                 private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
-                StepperService: any, WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService) {
+                StepperService: any, WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -252,7 +258,7 @@ export class TransformDataComponent implements OnInit {
             }
 
             // Provide access to table for fetching pages
-            this.wranglerDataService.asyncQuery = this.query.bind(this);
+            this.wranglerDataService.asyncQuery = this.queryOrGetState.bind(this);
 
             // Watch for changes to field policies
             if (this.fieldPolicies == null) {
@@ -290,7 +296,7 @@ export class TransformDataComponent implements OnInit {
 
             //this.updateGrid();
             // Indicate ready
-            this.tableState = -1;
+            this.updateTableState(); // = 0;
             this.tableColumns = [];
 
             // Initial load will trigger query from the table model.
@@ -549,11 +555,32 @@ export class TransformDataComponent implements OnInit {
     }
 
     /**
+     * Executes query if state changed, otherwise returns the current state
+     */
+    queryOrGetState(pageSpec : PageSpec) : IPromise<ScriptState<any>> {
+        var self = this;
+        const deferred : IDeferred<ScriptState<any>> = this.$q.defer();
+        if (pageSpec.equals(this.currentPage)) {
+            this.$timeout_(() => {
+                return deferred.resolve(self.engine.getState());
+            },10);
+        } else {
+            self.query(true, pageSpec).then( ()=> {
+                this.currentPage = pageSpec;
+                return deferred.resolve(self.engine.getState());
+            }).catch( (reason)=> {
+                deferred.reject(reason);
+            });
+        }
+        return deferred.promise;
+    }
+
+    /**
      * Query Hive using the query from the previous step. Set the Grids rows and columns.
      *
      * @return {Promise} a promise for when the query completes
      */
-    query(refresh : boolean = true, pageSpec ?: PageSpec, doValidate : boolean = true, doProfile : boolean = false) : IPromise<any> {
+     query(refresh : boolean = true, pageSpec ?: PageSpec, doValidate : boolean = true, doProfile : boolean = false) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
 
@@ -759,7 +786,7 @@ export class TransformDataComponent implements OnInit {
                 self.functionHistory.push(context);
 
                 if (doQuery || self.engine.getRows() === null) {
-                    return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                    return self.query(refreshGrid, self.currentPage).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
                 }
             }
             // Formula couldn't parse
@@ -780,7 +807,7 @@ export class TransformDataComponent implements OnInit {
         const self = this;
 
         self.pushFormulaToEngine(`select(${fieldName})`, {});
-        self.query(false, { firstRow:0, firstCol: 0, numCols: 0, numRows:0 }, true, true).then( function() {
+        self.query(false, PageSpec.emptyPage(), true, true).then( function() {
 
                 let profileStats = self.engine.getProfile();
                 self.engine.pop();
@@ -858,7 +885,7 @@ export class TransformDataComponent implements OnInit {
      */
     updateTableState() : void {
         // Update state variable to indicate to client we are in a new state
-        this.tableState = (this.tableState != this.functionHistory.length ? this.functionHistory.length : this.tableState);
+        this.tableState = this.engine.getState().tableState;
     }
 
     /**
@@ -1063,7 +1090,7 @@ angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         stepIndex: "@"
     },
     controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-        "WindowUnloadService", "WranglerDataService", TransformDataComponent],
+        "WindowUnloadService", "WranglerDataService", "$timeout", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"

@@ -16,6 +16,22 @@ export class PageSpec {
     numRows : number;
     firstCol : number;
     numCols : number;
+
+    public constructor (init?:Partial<PageSpec>) {
+        Object.assign(this, init);
+    }
+
+    equals(page: PageSpec) : boolean {
+        return JSON.stringify(this) === JSON.stringify(page);
+    }
+
+    static emptyPage() : PageSpec {
+        return new PageSpec({ firstRow:0, firstCol: 0, numCols: 0, numRows:0 });
+    }
+
+    static defaultPage() : PageSpec {
+        return new PageSpec({ firstRow:0, firstCol: 0, numCols: 1000, numRows:64 });
+    }
 }
 
 /**
@@ -613,7 +629,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     /**
      * Gets the current state.
      */
-    protected getState(): ScriptState<T> {
+    public getState(): ScriptState<T> {
         return this.states_.length > 0 ? this.states_[this.states_.length - 1] : {} as ScriptState<T>;
     }
 
@@ -623,6 +639,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null};
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, tableState:(new Date()).getTime()};
     }
+
+
 }
+

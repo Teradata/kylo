@@ -56,4 +56,9 @@ export interface ScriptState<T> {
      * Actual number of columns analyzed by server
      */
     actualCols: number;
+
+    /**
+     * Identifier for this state
+     */
+    tableState: number;
 }

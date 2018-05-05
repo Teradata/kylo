@@ -138,6 +138,8 @@ export class VisualQueryTable {
 
         /* Watch on columns indicating model changed */
         $scope_.$watchCollection(() => this.columns, () => {
+            this.dataService.state = this.tableState;
+            this.dataService.columns_ = this.columns;
             this.onColumnsChange();
             this.onRowsChange();
             this.onValidationResultsChange();
@@ -255,6 +257,7 @@ export class VisualQueryTable {
             }
 
         }
+
         this.table_.setup();
 
         if (!angular.isUndefined(priorScrollLeft)) {
@@ -333,7 +336,7 @@ export class VisualQueryTable {
     private getColumnWidths(): number[] {
         var self = this;
         // Skip if no columns
-        if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
+        if (!angular.isArray(this.columns) || this.columns.length === 0) {
             return [];
         }
 
@@ -341,7 +344,7 @@ export class VisualQueryTable {
         const context = this.get2dContext();
         context.font = this.painter.headerFont;
 
-        const headerWidths = this.dataService.columns_.map((column: any, index) => {
+        const headerWidths = this.columns.map((column: any, index) => {
             const textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
             const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 3;
             const menuWidth = (this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
@@ -351,7 +354,7 @@ export class VisualQueryTable {
         // Determine column widths based on row sampling
         context.font = this.painter.rowFont;
 
-        const rowWidths = _.map(this.dataService.columns_, function (column: any, index) {
+        const rowWidths = _.map(this.columns, function (column: any, index) {
             let textWidthChars = (column.longestValue != null ? column.longestValue : self.sampleMaxWidth(index));
             const textWidth = context.measureText(textWidthChars).width;
             const padding = (index === 0) ? VisualQueryPainterService.COLUMN_PADDING_FIRST : VisualQueryPainterService.COLUMN_PADDING * 3;
@@ -362,7 +365,7 @@ export class VisualQueryTable {
         const columnWidths = [];
         let totalWidth = 0;
 
-        for (let i = 0; i < this.dataService.columns_.length; ++i) {
+        for (let i = 0; i < this.columns.length; ++i) {
             const width = Math.min(Math.max(headerWidths[i], rowWidths[i], COLUMN_WIDTH_MIN), COLUMN_WIDTH_MAX);
             columnWidths.push(width);
             totalWidth += width;
@@ -387,7 +390,7 @@ export class VisualQueryTable {
         });
 
         // Filter columns
-        this.dataService.columns_ = _.filter(this.columns, function (column: any) {
+        this.columns = _.filter(this.columns, function (column: any) {
             return (column.visible !== false);
         });
     }
@@ -404,8 +407,8 @@ export class VisualQueryTable {
         }
 
         // Filter rows
-        this.dataService.rows_ = _.filter(this.rows, function (row) {
-            return _.every(self.dataService.columns_, function (column: any, index) {
+        this.rows = _.filter(this.rows, function (row) {
+            return _.every(self.columns, function (column: any, index) {
                 return _.every(column.filters, function (filter: any) {
                     if (angular.isUndefined(filter.term) || filter.term === null) {
                         return true;
@@ -436,7 +439,7 @@ export class VisualQueryTable {
             const lessThan = (this.dataService.sortDirection_ === (VisualQueryTable as any).ASC) ? -1 : 1;
             const greaterThan = -lessThan;
 
-            this.dataService.rows_.sort(function (a, b) {
+            this.rows.sort(function (a, b) {
                 if (a[column] === b[column]) {
                     return 0;
                 } else {

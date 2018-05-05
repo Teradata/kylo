@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/index", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-column", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, http_1, angular, Observable_1, Subject_1, _, VisualQueryService_1, index_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_column_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
+define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/index", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-column", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "../../wrangler/query-engine", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, http_1, angular, Observable_1, Subject_1, _, VisualQueryService_1, index_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_column_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1, query_engine_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -330,7 +330,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             if (doValidate === void 0) { doValidate = true; }
             if (doProfile === void 0) { doProfile = false; }
             if (!pageSpec) {
-                pageSpec = { firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000 };
+                pageSpec = query_engine_2.PageSpec.defaultPage();
             }
             var body = {
                 "policies": this.getState().fieldPolicies,

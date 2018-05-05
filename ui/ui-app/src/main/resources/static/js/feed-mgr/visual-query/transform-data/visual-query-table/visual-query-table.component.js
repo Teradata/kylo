@@ -61,6 +61,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             this.painter.delegate = this;
             /* Watch on columns indicating model changed */
             $scope_.$watchCollection(function () { return _this.columns; }, function () {
+                _this.dataService.state = _this.tableState;
+                _this.dataService.columns_ = _this.columns;
                 _this.onColumnsChange();
                 _this.onRowsChange();
                 _this.onValidationResultsChange();
@@ -224,13 +226,13 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             var _this = this;
             var self = this;
             // Skip if no columns
-            if (!angular.isArray(this.dataService.columns_) || this.dataService.columns_.length === 0) {
+            if (!angular.isArray(this.columns) || this.columns.length === 0) {
                 return [];
             }
             // Determine column widths based on header size
             var context = this.get2dContext();
             context.font = this.painter.headerFont;
-            var headerWidths = this.dataService.columns_.map(function (column, index) {
+            var headerWidths = this.columns.map(function (column, index) {
                 var textWidth = Math.max(context.measureText(column.displayName).width, context.measureText(column.dataType).width);
                 var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 3;
                 var menuWidth = (_this.domainTypes ? DOMAIN_TYPE_WIDTH : 0) + (index === 0 ? MENU_WIDTH * 1.5 : MENU_WIDTH);
@@ -238,7 +240,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             });
             // Determine column widths based on row sampling
             context.font = this.painter.rowFont;
-            var rowWidths = _.map(this.dataService.columns_, function (column, index) {
+            var rowWidths = _.map(this.columns, function (column, index) {
                 var textWidthChars = (column.longestValue != null ? column.longestValue : self.sampleMaxWidth(index));
                 var textWidth = context.measureText(textWidthChars).width;
                 var padding = (index === 0) ? visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING_FIRST : visual_query_painter_service_1.VisualQueryPainterService.COLUMN_PADDING * 3;
@@ -247,7 +249,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             // Calculate total width
             var columnWidths = [];
             var totalWidth = 0;
-            for (var i = 0; i < this.dataService.columns_.length; ++i) {
+            for (var i = 0; i < this.columns.length; ++i) {
                 var width = Math.min(Math.max(headerWidths[i], rowWidths[i], COLUMN_WIDTH_MIN), COLUMN_WIDTH_MAX);
                 columnWidths.push(width);
                 totalWidth += width;
@@ -267,7 +269,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 column.visible = (column.visible !== false);
             });
             // Filter columns
-            this.dataService.columns_ = _.filter(this.columns, function (column) {
+            this.columns = _.filter(this.columns, function (column) {
                 return (column.visible !== false);
             });
         };
@@ -281,8 +283,8 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 this.rows.forEach(function (row, index) { return row.push(index); });
             }
             // Filter rows
-            this.dataService.rows_ = _.filter(this.rows, function (row) {
-                return _.every(self.dataService.columns_, function (column, index) {
+            this.rows = _.filter(this.rows, function (row) {
+                return _.every(self.columns, function (column, index) {
                     return _.every(column.filters, function (filter) {
                         if (angular.isUndefined(filter.term) || filter.term === null) {
                             return true;
@@ -316,7 +318,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 var column_1 = this.dataService.sortIndex_;
                 var lessThan_1 = (this.dataService.sortDirection_ === VisualQueryTable.ASC) ? -1 : 1;
                 var greaterThan_1 = -lessThan_1;
-                this.dataService.rows_.sort(function (a, b) {
+                this.rows.sort(function (a, b) {
                     if (a[column_1] === b[column_1]) {
                         return 0;
                     }

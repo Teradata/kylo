@@ -2,8 +2,18 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PageSpec = /** @class */ (function () {
-        function PageSpec() {
+        function PageSpec(init) {
+            Object.assign(this, init);
         }
+        PageSpec.prototype.equals = function (page) {
+            return JSON.stringify(this) === JSON.stringify(page);
+        };
+        PageSpec.emptyPage = function () {
+            return new PageSpec({ firstRow: 0, firstCol: 0, numCols: 0, numRows: 0 });
+        };
+        PageSpec.defaultPage = function () {
+            return new PageSpec({ firstRow: 0, firstCol: 0, numCols: 1000, numRows: 64 });
+        };
         return PageSpec;
     }());
     exports.PageSpec = PageSpec;
@@ -499,7 +509,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
          * @returns a new script state
          */
         QueryEngine.prototype.newState = function () {
-            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null };
+            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null, tableState: (new Date()).getTime() };
         };
         return QueryEngine;
     }());

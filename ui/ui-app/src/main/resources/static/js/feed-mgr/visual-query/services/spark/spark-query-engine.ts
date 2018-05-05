@@ -33,7 +33,7 @@ import {SparkColumnDelegate} from "./spark-column";
 import {SparkConstants} from "./spark-constants";
 import {SparkQueryParser} from "./spark-query-parser";
 import {SparkScriptBuilder} from "./spark-script-builder";
-import {PageSpec} from "../../wrangler";
+import {PageSpec} from "../../wrangler/query-engine";
 
 /**
  * Generates a Scala script to be executed by Kylo Spark Shell.
@@ -359,7 +359,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         // Build the request body
 
         if (!pageSpec) {
-            pageSpec = {firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000};
+            pageSpec = PageSpec.defaultPage();
         }
 
         let body = {

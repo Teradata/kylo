@@ -7,7 +7,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, column_delegate_2, query_engine_1) {
+define(["require", "exports", "@angular/core", "angular", "jquery", "underscore", "../wrangler/column-delegate", "../wrangler/query-engine"], function (require, exports, core_1, angular, $, _, column_delegate_1, query_engine_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require("feed-mgr/visual-query/module-name");
@@ -18,7 +18,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService, wranglerDataService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService, wranglerDataService, $timeout_) {
             this.$scope = $scope;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
@@ -28,6 +28,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.FeedService = FeedService;
             this.BroadcastService = BroadcastService;
             this.wranglerDataService = wranglerDataService;
+            this.$timeout_ = $timeout_;
             //Flag to determine if we can move on to the next step
             this.isValid = false;
             //Function History
@@ -48,12 +49,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.isShowSampleMenu = false;
             //noinspection JSUnusedGlobalSymbols
             /**
-             * Columns for the results table.
-             * @type {Array.<Object>}
-             */
-            this.tableColumns = [];
-            //noinspection JSUnusedGlobalSymbols
-            /**
              * Configuration for the results table.
              * @type {Object}
              */
@@ -61,16 +56,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 headerFont: "500 13px Roboto, 'Helvetica Neue', sans-serif",
                 rowFont: "regular 13px Roboto, 'Helvetica Neue', sans-serif"
             };
-            //noinspection JSUnusedGlobalSymbols
-            /**
-             * Rows for the results table.
-             * @type {Array.<Object>}
-             */
-            this.tableRows = [];
-            /**
-             * History state for client to track state changes
-             */
-            this.tableState = null;
             /**
              * Rows analyzed by the server
              */
@@ -98,7 +83,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             /*
             Active query will be followed by an immediate query
              */
-            this.chainedOperation = new column_delegate_2.ChainedOperation();
+            this.chainedOperation = new column_delegate_1.ChainedOperation();
             /**
              * Method for limiting the number of results.
              */
@@ -189,7 +174,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
                 // Provide access to table for fetching pages
-                _this.wranglerDataService.asyncQuery = _this.query.bind(_this);
+                _this.wranglerDataService.asyncQuery = _this.queryOrGetState.bind(_this);
                 // Watch for changes to field policies
                 if (_this.fieldPolicies == null) {
                     _this.fieldPolicies = [];
@@ -222,7 +207,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 });
                 //this.updateGrid();
                 // Indicate ready
-                _this.tableState = -1;
+                _this.updateTableState(); // = 0;
                 _this.tableColumns = [];
                 // Initial load will trigger query from the table model.
                 if (_this.isLoaded) {
@@ -453,6 +438,28 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var _a;
         };
         /**
+         * Executes query if state changed, otherwise returns the current state
+         */
+        TransformDataComponent.prototype.queryOrGetState = function (pageSpec) {
+            var _this = this;
+            var self = this;
+            var deferred = this.$q.defer();
+            if (pageSpec.equals(this.currentPage)) {
+                this.$timeout_(function () {
+                    return deferred.resolve(self.engine.getState());
+                }, 10);
+            }
+            else {
+                self.query(true, pageSpec).then(function () {
+                    _this.currentPage = pageSpec;
+                    return deferred.resolve(self.engine.getState());
+                }).catch(function (reason) {
+                    deferred.reject(reason);
+                });
+            }
+            return deferred.promise;
+        };
+        /**
          * Query Hive using the query from the previous step. Set the Grids rows and columns.
          *
          * @return {Promise} a promise for when the query completes
@@ -645,7 +652,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     // Add to function history
                     self.functionHistory.push(context);
                     if (doQuery || self.engine.getRows() === null) {
-                        return self.query(refreshGrid).catch(function (reason) { return deferred.reject(reason); }).then(function (value) { return deferred.resolve(); });
+                        return self.query(refreshGrid, self.currentPage).catch(function (reason) { return deferred.reject(reason); }).then(function (value) { return deferred.resolve(); });
                     }
                 }
                 // Formula couldn't parse
@@ -663,7 +670,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         TransformDataComponent.prototype.showAnalyzeColumn = function (fieldName) {
             var self = this;
             self.pushFormulaToEngine("select(" + fieldName + ")", {});
-            self.query(false, { firstRow: 0, firstCol: 0, numCols: 0, numRows: 0 }, true, true).then(function () {
+            self.query(false, query_engine_1.PageSpec.emptyPage(), true, true).then(function () {
                 var profileStats = self.engine.getProfile();
                 self.engine.pop();
                 var deferred = self.$q.defer();
@@ -728,7 +735,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          */
         TransformDataComponent.prototype.updateTableState = function () {
             // Update state variable to indicate to client we are in a new state
-            this.tableState = (this.tableState != this.functionHistory.length ? this.functionHistory.length : this.tableState);
+            this.tableState = this.engine.getState().tableState;
         };
         /**
          * Refreshes the grid. Used after undo and redo.
@@ -908,7 +915,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * Resets all progress to non-running
          */
         TransformDataComponent.prototype.resetAllProgress = function () {
-            this.chainedOperation = new column_delegate_2.ChainedOperation();
+            this.chainedOperation = new column_delegate_1.ChainedOperation();
             this.queryProgress = 0;
             this.executingQuery = false;
         };
@@ -932,7 +939,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             stepIndex: "@"
         },
         controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-            "WindowUnloadService", "WranglerDataService", TransformDataComponent],
+            "WindowUnloadService", "WranglerDataService", "$timeout", TransformDataComponent],
         controllerAs: "$td",
         require: {
             stepperController: "^thinkbigStepper"
