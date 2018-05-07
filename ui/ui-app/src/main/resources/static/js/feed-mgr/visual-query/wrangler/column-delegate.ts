@@ -389,7 +389,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * Generates a script to move the column B directly to the right of column A
      * @returns {string}
      */
-    generateMoveScript(fieldNameA: string, fieldNameB: string[], columnSource: any): string {
+    generateMoveScript(fieldNameA: string, fieldNameB: string | string[], columnSource: any): string {
         var self = this;
         let cols: string[] = [];
         let sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
@@ -397,8 +397,13 @@ export class ColumnDelegate implements IColumnDelegate {
             let colName: string = self.getColumnFieldName(col);
             if (colName == fieldNameA) {
                 cols.push(colName);
-                cols.push(fieldNameB);
-            } else if (colName != fieldNameB) {
+                if(_.isArray(fieldNameB)){
+                    cols.concat(fieldNameB);
+                }
+                else {
+                    cols.push(fieldNameB);
+                }
+            } else if ((_.isArray(fieldNameB ) && !_.contains(fieldNameB,colName)) || (_.isString(fieldNameB) && colName != fieldNameB)) {
                 cols.push(colName);
             }
         });

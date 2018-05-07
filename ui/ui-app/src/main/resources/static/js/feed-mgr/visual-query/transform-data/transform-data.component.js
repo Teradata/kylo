@@ -561,6 +561,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.tableRows = this.engine.getRows();
             this.tableColumns = columns;
             this.tableValidation = this.engine.getValidationResults();
+            this.updateSortIcon();
             this.updateCodeMirrorAutoComplete();
         };
         TransformDataComponent.prototype.addColumnSort = function (direction, column, query) {
@@ -569,16 +570,17 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var icon = '';
             if (directionLower == 'asc') {
                 formula = "sort(asc(\"" + column.field + "\"))";
-                icon = 'ui-grid-icon-up-dir';
+                icon = 'arrow_drop_up';
             }
             else if (directionLower == 'desc') {
                 formula = "sort(desc(\"" + column.field + "\"))";
-                icon = 'ui-grid-icon-down-dir';
+                icon = 'arrow_drop_down';
             }
             if (formula) {
+                this.wranglerDataService.sortDirection_ = directionLower;
+                this.wranglerDataService.sortIndex_ = column.index;
                 var name_1 = "Sort by " + column.displayName + " " + directionLower;
-                //TODO CLEAR PAGE CACHE
-                return this.pushFormula(formula, { formula: formula, icon: icon, name: name_1 }, query);
+                return this.pushFormula(formula, { formula: formula, icon: icon, name: name_1, sort: { direction: directionLower, columnIndex: column.index, columnName: column.field } }, query);
             }
             else {
                 var d = this.$q.defer();
@@ -768,6 +770,17 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         TransformDataComponent.prototype.updateTableState = function () {
             // Update state variable to indicate to client we are in a new state
             this.tableState = this.engine.getState().tableState;
+        };
+        TransformDataComponent.prototype.updateSortIcon = function () {
+            var columnSort = this.engine.getState().sort;
+            if (columnSort != null) {
+                this.wranglerDataService.sortDirection_ = columnSort.direction;
+                this.wranglerDataService.sortIndex_ = columnSort.columnIndex;
+            }
+            else {
+                this.wranglerDataService.sortDirection_ = null;
+                this.wranglerDataService.sortIndex_ = null;
+            }
         };
         /**
          * Refreshes the grid. Used after undo and redo.

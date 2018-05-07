@@ -338,6 +338,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
             state.context = context;
             state.fieldPolicies = this.getState().fieldPolicies;
             state.script = this.parseAcornTree(tree);
+            state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
             this.states_.push(state);
             // Clear redo states
             this.redo_ = [];
@@ -509,7 +510,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
          * @returns a new script state
          */
         QueryEngine.prototype.newState = function () {
-            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null, tableState: (new Date()).getTime() };
+            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null, tableState: (new Date()).getTime(), sort: null };
         };
         return QueryEngine;
     }());

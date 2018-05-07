@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "jquery"], function (require, exports, angular, $) {
+define(["require", "exports", "angular", "jquery", "underscore"], function (require, exports, angular, $, _) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -334,9 +334,14 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
                 var colName = self.getColumnFieldName(col);
                 if (colName == fieldNameA) {
                     cols.push(colName);
-                    cols.push(fieldNameB);
+                    if (_.isArray(fieldNameB)) {
+                        cols.concat(fieldNameB);
+                    }
+                    else {
+                        cols.push(fieldNameB);
+                    }
                 }
-                else if (colName != fieldNameB) {
+                else if ((_.isArray(fieldNameB) && !_.contains(fieldNameB, colName)) || (_.isString(fieldNameB) && colName != fieldNameB)) {
                     cols.push(colName);
                 }
             });

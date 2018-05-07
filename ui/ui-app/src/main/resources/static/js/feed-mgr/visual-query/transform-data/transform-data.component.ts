@@ -688,6 +688,9 @@ export class TransformDataComponent implements OnInit {
         this.tableRows = this.engine.getRows();
         this.tableColumns = columns;
         this.tableValidation = this.engine.getValidationResults();
+        this.updateSortIcon();
+
+
 
         this.updateCodeMirrorAutoComplete();
     }
@@ -699,16 +702,18 @@ export class TransformDataComponent implements OnInit {
         let icon = ''
         if(directionLower == 'asc') {
             formula = "sort(asc(\""+column.field+"\"))";
-            icon = 'ui-grid-icon-up-dir';
+            icon = 'arrow_drop_up';
         }
         else if(directionLower == 'desc'){
             formula = "sort(desc(\""+column.field+"\"))";
-            icon = 'ui-grid-icon-down-dir';
+            icon = 'arrow_drop_down';
         }
         if(formula) {
+            this.wranglerDataService.sortDirection_ = <"desc" | "asc">  directionLower;
+            this.wranglerDataService.sortIndex_ = column.index;
+
             let name = "Sort by " + column.displayName + " " + directionLower;
-            //TODO CLEAR PAGE CACHE
-            return this.pushFormula(formula, {formula: formula, icon: icon, name: name}, query);
+            return this.pushFormula(formula, {formula: formula, icon: icon, name: name,sort:{direction:directionLower,columnIndex:column.index,columnName:column.field}}, query);
         }
         else {
             let d = this.$q.defer();
@@ -923,6 +928,18 @@ export class TransformDataComponent implements OnInit {
     updateTableState() : void {
         // Update state variable to indicate to client we are in a new state
         this.tableState = this.engine.getState().tableState;
+    }
+
+    updateSortIcon() : void {
+        let columnSort = this.engine.getState().sort;
+        if(columnSort != null) {
+            this.wranglerDataService.sortDirection_ = <"desc" | "asc">  columnSort.direction;
+            this.wranglerDataService.sortIndex_ = columnSort.columnIndex;
+        }
+        else {
+            this.wranglerDataService.sortDirection_ = null;
+            this.wranglerDataService.sortIndex_ = null;
+        }
     }
 
     /**

@@ -432,6 +432,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         state.context = context;
         state.fieldPolicies = this.getState().fieldPolicies;
         state.script = this.parseAcornTree(tree);
+        state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
         this.states_.push(state);
 
         // Clear redo states
@@ -639,7 +640,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      * @returns a new script state
      */
     private newState(): ScriptState<T> {
-        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, tableState:(new Date()).getTime()};
+        return {columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols:null, tableState:(new Date()).getTime(), sort: null};
     }
 
 
