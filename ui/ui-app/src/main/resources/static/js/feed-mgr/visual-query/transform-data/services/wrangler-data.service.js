@@ -50,7 +50,7 @@ define(["require", "exports", "angular", "underscore", "../../wrangler/query-eng
                         return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, validationResults);
                     });
                 });
-            }, 100);
+            }, 10);
             asyncFn();
         };
         /**

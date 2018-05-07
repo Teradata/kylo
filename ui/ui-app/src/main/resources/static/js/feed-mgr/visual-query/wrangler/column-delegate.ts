@@ -389,16 +389,16 @@ export class ColumnDelegate implements IColumnDelegate {
      * Generates a script to move the column B directly to the right of column A
      * @returns {string}
      */
-    generateMoveScript(fieldNameA: string, fieldNameB: string | string[], columnSource: any): string {
+    generateMoveScript(fieldNameA: string, fieldNameB: string | string[], columnSource: any, keepFieldNameA: boolean = true): string {
         var self = this;
         let cols: string[] = [];
         let sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
         angular.forEach(sourceColumns, col => {
             let colName: string = self.getColumnFieldName(col);
             if (colName == fieldNameA) {
-                cols.push(colName);
+                if (keepFieldNameA) cols.push(colName);
                 if(_.isArray(fieldNameB)){
-                    cols.concat(fieldNameB);
+                    cols = cols.concat(fieldNameB);
                 }
                 else {
                     cols.push(fieldNameB);
@@ -445,7 +445,7 @@ export class ColumnDelegate implements IColumnDelegate {
             let newFieldName = fieldName + "_" + i;
             columns.push(`getItem(${fieldName}, ${i}).as("${newFieldName}")`);
         }
-        var formula = self.generateMoveScript(fieldName, columns,grid );
+        var formula = self.generateMoveScript(fieldName, columns, grid, false );
         self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
 
@@ -795,7 +795,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const displayName = this.getColumnDisplayName(column);
         const fieldName = this.getColumnFieldName(column);
         const pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
-        const formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.singleQuote(displayName) + "\")", column, grid);
+        const formula = this.toFormula(`split(when(isnull(${fieldName}),"").otherwise(${fieldName}), '${pattern}').as("${displayName}")`, column, grid);
         this.controller.addFunction(formula, {formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value});
     }
 

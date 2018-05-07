@@ -326,16 +326,18 @@ define(["require", "exports", "angular", "jquery", "underscore"], function (requ
          * Generates a script to move the column B directly to the right of column A
          * @returns {string}
          */
-        ColumnDelegate.prototype.generateMoveScript = function (fieldNameA, fieldNameB, columnSource) {
+        ColumnDelegate.prototype.generateMoveScript = function (fieldNameA, fieldNameB, columnSource, keepFieldNameA) {
+            if (keepFieldNameA === void 0) { keepFieldNameA = true; }
             var self = this;
             var cols = [];
             var sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
             angular.forEach(sourceColumns, function (col) {
                 var colName = self.getColumnFieldName(col);
                 if (colName == fieldNameA) {
-                    cols.push(colName);
+                    if (keepFieldNameA)
+                        cols.push(colName);
                     if (_.isArray(fieldNameB)) {
-                        cols.concat(fieldNameB);
+                        cols = cols.concat(fieldNameB);
                     }
                     else {
                         cols.push(fieldNameB);
@@ -380,7 +382,7 @@ define(["require", "exports", "angular", "jquery", "underscore"], function (requ
                 var newFieldName = fieldName + "_" + i;
                 columns.push("getItem(" + fieldName + ", " + i + ").as(\"" + newFieldName + "\")");
             }
-            var formula = self.generateMoveScript(fieldName, columns, grid);
+            var formula = self.generateMoveScript(fieldName, columns, grid, false);
             self.controller.pushFormula(formula, { formula: formula, icon: "functions", name: "Extract array" }, true, true);
         };
         /**
@@ -684,7 +686,7 @@ define(["require", "exports", "angular", "jquery", "underscore"], function (requ
             var displayName = this.getColumnDisplayName(column);
             var fieldName = this.getColumnFieldName(column);
             var pattern = "[" + StringUtils.singleQuote(value).replace(/]/g, "\\]") + "]";
-            var formula = this.toFormula("split(" + fieldName + ", '" + pattern + "').as(\"" + StringUtils.singleQuote(displayName) + "\")", column, grid);
+            var formula = this.toFormula("split(when(isnull(" + fieldName + "),\"\").otherwise(" + fieldName + "), '" + pattern + "').as(\"" + displayName + "\")", column, grid);
             this.controller.addFunction(formula, { formula: formula, icon: "call_split", name: "Split " + this.getColumnDisplayName(column) + " on " + value });
         };
         /**
