@@ -1,13 +1,5 @@
-/**
- * Include all common services/directives are are used for the kylo.opsmgr.sla module
- */
-define(['angular',
-        'ops-mgr/sla/ServiceLevelAssessmentsInitController',
-        'ops-mgr/sla/service-level-assessments',
-        'ops-mgr/sla/service-level-assessment'
-        ],function() {
-
+define(["require", "exports", "./ServiceLevelAssessmentsInitController", "./service-level-assessments", "./service-level-assessment"], function (require, exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
 });
-
-
-
+//# sourceMappingURL=module-require.js.map

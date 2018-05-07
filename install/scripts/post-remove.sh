@@ -38,25 +38,20 @@ rpmInstallDir=/opt/kylo
 echo "     2. Stopping Applications ... "
 service kylo-ui stop
 service kylo-services stop
-service kylo-spark-shell stop
 
 echo "     3. Removing service configuration "
 
 if [ "$linux_type" == "chkonfig" ]; then
     chkconfig --del kylo-ui
-    chkconfig --del kylo-spark-shell
     chkconfig --del kylo-services
 elif [ "$linux_type" == "update-rc.d" ]; then
     update-rc.d -f kylo-ui remove
-    update-rc.d -f kylo-shell remove
     update-rc.d -f kylo-spark-services remove
 fi
 rm -rf /etc/init.d/kylo-ui
 echo "         - Removed kylo-ui script '/etc/init.d/kylo-ui'"
 rm -rf /etc/init.d/kylo-services
 echo "         - Removed kylo-services script '/etc/init.d/kylo-services'"
-rm -rf /etc/init.d/kylo-spark-shell
-echo "         - Removed kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
 
 rm -rf $rpmInstallDir/setup
 
@@ -69,7 +64,6 @@ echo "         - Removed kylo-services"
 echo "     5. Deleting log folders "
 rm -rf /var/log/kylo-ui
 rm -rf /var/log/kylo-services
-rm -rf /var/log/kylo-spark-shell
 
 echo "     6. Deleting kylo-service "
 rm -rf /usr/bin/kylo-service

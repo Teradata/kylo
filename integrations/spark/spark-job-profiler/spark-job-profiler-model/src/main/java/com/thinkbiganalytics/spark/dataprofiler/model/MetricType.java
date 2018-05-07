@@ -216,6 +216,11 @@ public enum MetricType {
     /**
      * Max string (Lexical ordering) (Case-insensitive)
      */
-    MAX_STRING_ICASE
+    MAX_STRING_ICASE,
+
+    /**
+     * Histogram
+     */
+    HISTO
 
 }

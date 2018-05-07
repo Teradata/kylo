@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "rxjs/Subject"], function (require, exports, angular, Subject_1) {
+define(["require", "exports", "angular", "rxjs/Subject", "../module-name"], function (require, exports, angular, Subject_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -90,7 +90,7 @@ define(["require", "exports", "angular", "rxjs/Subject"], function (require, exp
         return DomainTypeDetailsService;
     }());
     exports.DomainTypeDetailsService = DomainTypeDetailsService;
-    angular.module(require("feed-mgr/domain-types/module-name"))
+    angular.module(module_name_1.moduleName)
         .service("DomainTypeDetailsService", DomainTypeDetailsService);
 });
 //# sourceMappingURL=details.service.js.map

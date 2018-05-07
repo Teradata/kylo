@@ -12,9 +12,9 @@ package com.thinkbiganalytics.nifi.v2.init;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -35,6 +35,7 @@ import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -56,8 +57,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "initialize", "initialization", "thinkbig"})
-@CapabilityDescription("Controls setup of a feed by routing to an initialization flow.")
+@CapabilityDescription("Controls setup of a feed by routing to an initialization or re-initialization flow.")
 public class InitializeFeed extends FeedProcessor {
+
+    public static final String REINITIALIZING_FLAG = "reinitializing";
 
     protected static final AllowableValue[] FAIL_STRATEGY_VALUES = new AllowableValue[]{
         new AllowableValue("FAIL", "Fail", "Immediately fail the flow file"),
@@ -92,9 +95,23 @@ public class InitializeFeed extends FeedProcessor {
         .expressionLanguageSupported(true)
         .build();
 
+    protected static final PropertyDescriptor CLONE_INIT_FLOWFILE = new PropertyDescriptor.Builder()
+        .name("Clone initialization flowfile")
+        .description("Indicates whether the feed initialization flow will use a flowfile that is a clone of the input flowfile, i.e. includes all content.")
+        .required(false)
+        .allowableValues(CommonProperties.BOOLEANS)
+        .defaultValue("true")
+        .build();
+
     Relationship REL_INITIALIZE = new Relationship.Builder()
         .name("Initialize")
         .description("Begin initialization")
+        .build();
+
+    Relationship REL_REINITIALIZE = new Relationship.Builder()
+        .name("Re-Initialize")
+        .description("Begin re-initialization")
+        .autoTerminateDefault(true)
         .build();
 
     private Map<String, AtomicInteger> retryCounts = Collections.synchronizedMap(new HashMap<>());
@@ -103,6 +120,18 @@ public class InitializeFeed extends FeedProcessor {
     public void scheduled(ProcessContext context) {
         super.scheduled(context);
         this.retryCounts.clear();
+    }
+
+    @Override
+    protected PropertyDescriptor getSupportedDynamicPropertyDescriptor(String propertyDescriptorName) {
+        return new PropertyDescriptor.Builder()
+            .name(propertyDescriptorName)
+            .required(false)
+            .addValidator(StandardValidators.createAttributeExpressionLanguageValidator(AttributeExpression.ResultType.STRING, true))
+            .addValidator(StandardValidators.ATTRIBUTE_KEY_PROPERTY_NAME_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .dynamic(true)
+            .build();
     }
 
     /* (non-Javadoc)
@@ -124,9 +153,15 @@ public class InitializeFeed extends FeedProcessor {
                     inProgress(context, session, inputFF);
                     break;
                 case FAILED:
-                    failed(context, session, inputFF, status.getTimestamp());
+                    failed(context, session, inputFF, status.getTimestamp(), false);
                     break;
-                default:
+                case REINITIALIZE:
+                    reinitialize(context, session, inputFF);
+                    break;
+                case REINITIALIZE_FAILED:
+                    reinitializeFailed(context, session, inputFF, status.getTimestamp());
+                    break;
+                case SUCCESS:
                     success(context, session, inputFF);
             }
         }
@@ -138,6 +173,7 @@ public class InitializeFeed extends FeedProcessor {
         list.add(FAILURE_STRATEGY);
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
+        list.add(CLONE_INIT_FLOWFILE);
     }
 
     @Override
@@ -146,18 +182,19 @@ public class InitializeFeed extends FeedProcessor {
         set.add(CommonProperties.REL_SUCCESS);
         set.add(CommonProperties.REL_FAILURE);
         set.add(REL_INITIALIZE);
+        set.add(REL_REINITIALIZE);
     }
 
     private void pending(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        beginInitialization(context, session, inputFF);
-        rejectFlowFile(session, inputFF);
+        beginInitialization(context, session, inputFF, false);
+        requeueFlowFile(session, inputFF);
     }
 
     private void inProgress(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        rejectFlowFile(session, inputFF);
+        requeueFlowFile(session, inputFF);
     }
 
-    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
+    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime, boolean reinitializing) {
         String strategy = context.getProperty(FAILURE_STRATEGY).getValue();
 
         if (strategy.equals("RETRY")) {
@@ -169,8 +206,8 @@ public class InitializeFeed extends FeedProcessor {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             } else if (failTime.plusSeconds(delay).isBefore(DateTime.now(DateTimeZone.UTC))) {
-                beginInitialization(context, session, inputFF);
-                rejectFlowFile(session, inputFF);
+                beginInitialization(context, session, inputFF, reinitializing);
+                requeueFlowFile(session, inputFF);
             } else {
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             }
@@ -179,17 +216,42 @@ public class InitializeFeed extends FeedProcessor {
         }
     }
 
+    private void reinitialize(ProcessContext context, ProcessSession session, FlowFile inputFF) {
+        beginInitialization(context, session, inputFF, true);
+        requeueFlowFile(session, inputFF);
+    }
+
+    private void reinitializeFailed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
+        failed(context, session, inputFF, failTime, true);
+    }
+
     private void success(ProcessContext context, ProcessSession session, FlowFile inputFF) {
         session.transfer(inputFF, CommonProperties.REL_SUCCESS);
     }
 
-    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF) {
+    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF, boolean reinitializing) {
         getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
-        FlowFile initFF = session.create(inputFF);
-        session.transfer(initFF, REL_INITIALIZE);
+        FlowFile initFF;
+        Relationship initRelationship;
+
+        if (context.getProperty(CLONE_INIT_FLOWFILE).asBoolean()) {
+            initFF = session.clone(inputFF);
+        } else {
+            initFF = session.create(inputFF);
+        }
+
+        if (reinitializing) {
+            boolean useReinit = context.hasConnection(REL_REINITIALIZE);
+            initRelationship = useReinit ? REL_REINITIALIZE : REL_INITIALIZE;
+        } else {
+            initRelationship = REL_INITIALIZE;
+        }
+
+        initFF = session.putAttribute(initFF, REINITIALIZING_FLAG, Boolean.valueOf(reinitializing).toString());
+        session.transfer(initFF, initRelationship);
     }
 
-    private void rejectFlowFile(ProcessSession session, FlowFile inputFF) {
+    private void requeueFlowFile(ProcessSession session, FlowFile inputFF) {
         FlowFile penalizedFF = session.penalize(inputFF);
         session.transfer(penalizedFF);
     }

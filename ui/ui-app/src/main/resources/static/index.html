@@ -42,7 +42,7 @@
   <script src="node_modules/systemjs/dist/system.js"></script>
   <script src="js/systemjs.config.js"></script>
   <script>
-    System.import("main.js");
+      System.import("main.js");
   </script>
 </head>
 <body ng-cloak layout-fill>
@@ -58,19 +58,25 @@
           <ng-md-icon icon="menu"></ng-md-icon>
         </md-button>
 
-        <ui-router-breadcrumbs style="padding-left:25px;" displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex md-truncate></ui-router-breadcrumbs>
+        <ui-router-breadcrumbs style="padding-left:25px;" displayname-property="data.displayName" template-url="js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" flex
+                               md-truncate></ui-router-breadcrumbs>
 
-        <div layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container" ng-show="mc.allowSearch">
+        <div ng-show="mc.showSearchBar() && mc.allowSearch" layout="row" layout-fill layout-align="center" flex hide-xs class="global-search-container">
           <ng-md-icon icon="search"></ng-md-icon>
           <md-input-container class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;" flex>
-            <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" class="global-search-input" placeholder='{{"views.main.search-input" | translate}}' style="color:white">
+            <input id="search-input" ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" class="global-search-input" placeholder='{{"views.main.search-input" | translate}}'
+                   style="color:white">
           </md-input-container>
-          <md-button ng-click="mc.search()">{{"views.main.search-btn" | translate}}</md-button>
+          <md-button ng-disabled="mc.searchQuery == '' || mc.searchQuery == null" ng-click="mc.search()">{{"views.main.search-btn" | translate}}</md-button>
+          <ng-md-icon ng-click="mc.endSearch()" icon="close"></ng-md-icon>
         </div>
 
         <span flex></span>
 
         <div layout="row" layout-align="start start">
+
+          <ng-md-icon id="search-bar" style="padding-right:40px" ng-show="mc.showPreSearchBar() && mc.allowSearch" ng-click="mc.initiateSearch()" icon="search"></ng-md-icon>
+
           <notification-menu></notification-menu>
           <kylo-options class="ng-isolate-scope"></kylo-options>
         </div>

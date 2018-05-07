@@ -33,7 +33,7 @@ then
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-nar.nar
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-hadoop-service-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-hadoop-service-nar.nar
 
-elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] || [[ $ver == 1.4* ]]  || [[ $ver == 1.5* ]] ;
+elif  [[ $ver == 1.2* ]] || [[ $ver == 1.3* ]] || [[ $ver == 1.4* ]]  || [[ $ver == 1.5* ]] || [[ $ver == 1.6* ]] ;
 then
    echo "Creating symlinks for NiFi version $ver compatible nars"
   ln -f -s $NIFI_HOME/data/lib/kylo-nifi-provenance-repo-v1.2-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-provenance-repo-nar.nar
@@ -72,6 +72,7 @@ fi
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-validate-cleanse-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-validate-cleanse-jar-with-dependencies.jar
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-job-profiler-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-interpreter-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
+ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-merge-table-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-merge-table-jar-with-dependencies.jar
 
 chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/kylo*.nar
 chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/app/kylo*.jar

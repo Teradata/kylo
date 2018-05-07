@@ -56,6 +56,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
     @Test
     public void accomodate() {
         final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(3);
 
         // Test with a null value
         TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
@@ -91,6 +92,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
     @Test
     public void combine() {
         final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(3);
 
         // Test when 'this' is empty
         TimestampColumnStatistics other = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
@@ -132,6 +134,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
     @Test
     public void getVerboseStatistics() {
         final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(3);
 
         // Test when empty
         TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
@@ -162,6 +165,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
     @Test
     public void writeStatistics() {
         final ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
+        profilerConfiguration.setNumberOfTopNValues(3);
 
         // Test when empty
         TimestampColumnStatistics stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
@@ -182,6 +186,7 @@ public class TimestampColumnCase2Test extends ProfilerTest {
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MIN_TIMESTAMP, metricValue=]", rows.get(11).toString());
 
         // Test with multiple values
+        stats = new TimestampColumnStatistics(DataTypes.createStructField("ts", DataTypes.TimestampType, true), profilerConfiguration);
         stats.accomodate("", 1L);
         stats.accomodate("2016-06-27 14:04:29", 1L);
         stats.accomodate("2016-06-27 14:04:30", 1L);

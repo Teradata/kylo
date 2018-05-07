@@ -206,9 +206,7 @@ var TemplatePortal = /** @class */ (function (_super) {
         var _this = _super.call(this) || this;
         _this.templateRef = template;
         _this.viewContainerRef = viewContainerRef;
-        if (context) {
-            _this.context = context;
-        }
+        _this.context = context;
         return _this;
     }
     Object.defineProperty(TemplatePortal.prototype, "origin", {

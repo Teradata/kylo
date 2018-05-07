@@ -26,6 +26,7 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
+import com.thinkbiganalytics.nifi.v2.core.feedinit.FeedInitializationChangeEventConsumer;
 import com.thinkbiganalytics.nifi.v2.core.watermark.CancelActiveWaterMarkEventConsumer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -174,8 +175,10 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             this.kyloProvenanceClientProvider = new KyloProvenanceClientProvider(client);
             
             getSpringContextService(context).ifPresent(springService -> {
-                CancelActiveWaterMarkEventConsumer consumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
-                consumer.addMetadataRecorder(this.recorder);
+                CancelActiveWaterMarkEventConsumer waterMarkConsumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
+                waterMarkConsumer.addMetadataRecorder(this.recorder);
+                FeedInitializationChangeEventConsumer initChangeConsumer = springService.getBean(FeedInitializationChangeEventConsumer.class);
+                initChangeConsumer.addMetadataRecorder(this.recorder);
             });
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
@@ -185,8 +188,10 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     @OnDisabled
     public void onDisabled(final ConfigurationContext context) {
         getSpringContextService(context).ifPresent(springService -> {
-            CancelActiveWaterMarkEventConsumer consumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
-            consumer.removeMetadataRecorder(this.recorder);
+            CancelActiveWaterMarkEventConsumer waterMarkConsumer = springService.getBean(CancelActiveWaterMarkEventConsumer.class);
+            waterMarkConsumer.removeMetadataRecorder(this.recorder);
+            FeedInitializationChangeEventConsumer initChangeConsumer = springService.getBean(FeedInitializationChangeEventConsumer.class);
+            initChangeConsumer.addMetadataRecorder(this.recorder);
         });
     }
     

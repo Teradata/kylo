@@ -40,6 +40,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -49,6 +50,7 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -148,7 +150,14 @@ public class TemplateCreationHelper {
 
         //next create the temp group
         snapshotControllerServiceReferences();
-        ProcessGroupDTO tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        ProcessGroupDTO tempGroup = null;
+        try {
+         tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        }
+        catch (NifiComponentNotFoundException e){
+            nifiObjectCache.resetTemporaryTemplateInspectionGroup();
+            tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        }
         TemplateInstance instance= instantiateFlowFromTemplate(tempGroup.getId(), templateId);
         FlowSnippetDTO snippet = instance.getFlowSnippetDTO();
         identifyNewlyCreatedControllerServiceReferences(instance);
@@ -770,6 +779,7 @@ public class TemplateCreationHelper {
         if (newProcessGroup.isSuccess()) {
             try {
                 restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity());
+
             } catch (NifiClientRuntimeException e) {
                 String errorMsg = "Unable to mark feed as " + NifiProcessUtil.PROCESS_STATE.RUNNING + ".";
                 newProcessGroup

@@ -14,7 +14,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
     /**
      * Default font.
      */
-    var DEFAULT_FONT = "10px sans-serif";
+    var DEFAULT_FONT = "10px ''SourceSansPro'";
     /**
      * HTML template for header cells.
      */
@@ -45,7 +45,25 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
              * Indicates that the tooltip should be visible.
              */
             _this.tooltipVisible = false;
-            $templateRequest(HEADER_TEMPLATE);
+            /**
+             * Indicate thate the header template has been loaded into the $templateCache
+             * @type {boolean}
+             */
+            _this.headerTemplateLoaded = false;
+            /**
+             * Array of header div HTMLElements that are waiting for the HEADER_TEMPLATE to get loaded.
+             * Once the template is loaded these elements will get filled
+             * @type {any[]}
+             */
+            _this.waitingHeaderDivs = [];
+            //Request the Header template and fill in the contents of any header divs waiting on the template.
+            $templateRequest(HEADER_TEMPLATE).then(function (response) {
+                _this.headerTemplateLoaded = true;
+                angular.forEach(_this.waitingHeaderDivs, function (headerDiv) {
+                    _this.compileHeader(headerDiv);
+                });
+                _this.waitingHeaderDivs = [];
+            });
             // Hide tooltip on scroll. Skip Angular change detection.
             window.addEventListener("scroll", function () {
                 if (_this.tooltipVisible) {
@@ -128,6 +146,13 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             enumerable: true,
             configurable: true
         });
+        VisualQueryPainterService.prototype.fillCellPending = function (cellDiv) {
+            cellDiv.textContent = "Loading...";
+            cellDiv.className = "pending";
+        };
+        VisualQueryPainterService.prototype.fillHeaderPending = function (cellDiv) {
+            // Override so it doesn't replace our angular template for column cell
+        };
         /**
          * Fills and style a cell div.
          *
@@ -135,27 +160,22 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
          * @param {VisualQueryTableCell|null} cell the cell object
          */
         VisualQueryPainterService.prototype.fillCell = function (cellDiv, cell) {
-            // Adjust padding based on column number
-            if (cell !== null && cell.column === 0) {
-                cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-                cellDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                cellDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-                cellDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            }
             // Set style
             if (cell === null) {
                 cellDiv.className = "";
             }
             else if (cell.validation) {
-                cellDiv.className = "invalid";
+                $(cellDiv).addClass("invalid");
             }
             else if (cell.value === null) {
                 cellDiv.className = "null";
             }
             else {
                 cellDiv.className = "";
+            }
+            // Adjust padding based on column number
+            if (cell !== null && cell.column === 0) {
+                cellDiv.className += " first-column ";
             }
             // Set contents
             if (cell === null) {
@@ -168,6 +188,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
                 cellDiv.textContent = cell.value;
             }
             if (cell !== null) {
+                cellDiv.className += cellDiv.className + " " + (cell.row % 2 == 0 ? "even" : "odd");
                 angular.element(cellDiv)
                     .data("column", cell.column)
                     .data("validation", cell.validation);
@@ -180,18 +201,9 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
          * @param {VisualQueryTableHeader|null} header the column header
          */
         VisualQueryPainterService.prototype.fillHeader = function (headerDiv, header) {
-            // Adjust padding based on column number
-            if (header !== null && header.index === 0) {
-                headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING_FIRST + PIXELS;
-                headerDiv.style.paddingRight = 0 + PIXELS;
-            }
-            else {
-                headerDiv.style.paddingLeft = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-                headerDiv.style.paddingRight = VisualQueryPainterService.COLUMN_PADDING + PIXELS;
-            }
             // Update scope in a separate thread
             var $scope = angular.element(headerDiv).scope();
-            if ($scope.header !== header) {
+            if (header != null && $scope.header !== header && header.delegate != undefined) {
                 $scope.availableCasts = header.delegate.getAvailableCasts();
                 $scope.availableDomainTypes = this.domainTypes;
                 $scope.domainType = header.domainTypeId ? this.domainTypes.find(function (domainType) { return domainType.id === header.domainTypeId; }) : null;
@@ -241,9 +253,16 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             // Set style attributes
             headerDiv.style.font = this.headerFont;
             headerDiv.style.lineHeight = VisualQueryPainterService.HEADER_HEIGHT + PIXELS;
-            // Load template
-            headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE);
-            this.$compile(headerDiv)(this.$scope.$new(true));
+            //if the header template is not loaded yet then fill it with Loading text.
+            // the callback on the templateRequest will compile those headers waiting
+            if (!this.headerTemplateLoaded) {
+                headerDiv.textContent = "Loading...";
+                headerDiv.className = "pending";
+                this.waitingHeaderDivs.push(headerDiv);
+            }
+            else {
+                this.compileHeader(headerDiv);
+            }
         };
         /**
          * Cleanup any events attached to the header
@@ -270,6 +289,11 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
         VisualQueryPainterService.prototype.cleanUp = function (table) {
             _super.prototype.cleanUp.call(this, table);
             angular.element(table).unbind();
+        };
+        VisualQueryPainterService.prototype.compileHeader = function (headerDiv) {
+            // Load template
+            headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE);
+            this.$compile(headerDiv)(this.$scope.$new(true));
         };
         /**
          * Hides the cell menu.
@@ -325,6 +349,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             $scope.selection = (header.delegate.dataCategory === column_delegate_1.DataCategory.STRING) ? selection.toString() : null;
             $scope.table = this.delegate;
             $scope.value = isNull ? null : cellDiv.innerText;
+            $scope.displayValue = ($scope.value.length > VisualQueryPainterService.MAX_DISPLAY_LENGTH ? $scope.value.substring(0, VisualQueryPainterService.MAX_DISPLAY_LENGTH) + "..." : $scope.value);
             // Update position
             this.menuPanel.updatePosition(this.$mdPanel.newPanelPosition()
                 .left(event.clientX + PIXELS)
@@ -387,9 +412,13 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
             }
         };
         /**
+         * Maximum display length for column context functions before they are ellipses (asthetics)
+         */
+        VisualQueryPainterService.MAX_DISPLAY_LENGTH = 25;
+        /**
          * Left and right padding for normal columns.
          */
-        VisualQueryPainterService.COLUMN_PADDING = 28;
+        VisualQueryPainterService.COLUMN_PADDING = 5;
         /**
          * Left padding for the first column.
          */
@@ -401,7 +430,7 @@ define(["require", "exports", "angular", "../../wrangler/column-delegate", "fatt
         /**
          * Height of data rows.
          */
-        VisualQueryPainterService.ROW_HEIGHT = 48;
+        VisualQueryPainterService.ROW_HEIGHT = 27;
         /**
          * Class for selected cells.
          */

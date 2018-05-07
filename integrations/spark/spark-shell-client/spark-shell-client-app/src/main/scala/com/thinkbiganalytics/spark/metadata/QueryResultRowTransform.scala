@@ -5,12 +5,13 @@ import java.util.regex.Pattern
 
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult
-import com.thinkbiganalytics.spark.util.DataTypeUtils
+import com.thinkbiganalytics.spark.service.DataSetConverterService
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorConverters
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types.StructType
 
 import scala.collection.JavaConverters._
+
 
 /** Helper for building [[TransformQueryResult]] objects from a Spark dataset. */
 object QueryResultRowTransform {
@@ -21,14 +22,14 @@ object QueryResultRowTransform {
     val FIELD_PATTERN: Pattern = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 }
 
-class QueryResultRowTransform(schema: StructType, destination: String) {
+class QueryResultRowTransform(schema: StructType, destination: String, converterService: DataSetConverterService) {
     /** Array of columns for the [[com.thinkbiganalytics.discovery.schema.QueryResultColumn]] */
     val columns: Array[DefaultQueryResultColumn] = {
         var index = 1
         schema.fields.map(field => {
             val column = new DefaultQueryResultColumn
             column.setComment(if (field.metadata.contains("comment")) field.metadata.getString("comment") else null)
-            column.setDataType(DataTypeUtils.getHiveObjectInspector(field.dataType).getTypeName)
+            column.setDataType(converterService.getHiveObjectInspector(field.dataType).getTypeName)
             column.setHiveColumnLabel(field.name)
             column.setTableName(destination)
 
@@ -60,10 +61,16 @@ class QueryResultRowTransform(schema: StructType, destination: String) {
     }
 
     /** Array of Spark SQL object to Hive object converters */
-    val converters: Array[ObjectInspectorConverters.Converter] = schema.fields.map(field => DataTypeUtils.getHiveObjectConverter(field.dataType))
+    val converters: Array[ObjectInspectorConverters.Converter] = schema.fields.map(field => converterService.getHiveObjectConverter(field.dataType))
 
     /** Coverts the specified row into a [[TransformQueryResult]] compatible object. */
     def convertRow(row: Row): util.List[Object] = {
         columns.indices.map(i => converters(i).convert(row.getAs(i))).asJava
     }
+
+   /** Coverts the specified row into a [[TransformQueryResult]] compatible object. */
+    def convertPagedRow(row: Row, columnIndices: List[Int]): util.List[Object] = {
+        columnIndices.map(i => converters(i).convert(row.getAs(i))).asJava
+    }
+
 }

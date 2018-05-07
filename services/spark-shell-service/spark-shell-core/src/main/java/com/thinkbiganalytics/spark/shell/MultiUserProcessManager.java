@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.shell;
  */
 
 import com.google.common.collect.ImmutableList;
+import com.thinkbiganalytics.UsernameCaseStrategyUtil;
 import com.thinkbiganalytics.spark.conf.model.KerberosSparkProperties;
 import com.thinkbiganalytics.spark.conf.model.SparkShellProperties;
 
@@ -100,7 +101,14 @@ public class MultiUserProcessManager extends AbstractProcessManager {
         final SparkShellProcessBuilder builder = super.createProcessBuilder(username);
         if (clientProperties.isProxyUser() && username != null) {
             refreshKerberosTicket();
-            builder.addSparkArg("--proxy-user", username + usernameSuffix);
+            String proxyUser = username;
+            //change case of the user if needed
+            String userNameCaseStrategy = clientProperties.getProxyUserCaseStrategy();
+            if(StringUtils.isNotEmpty(userNameCaseStrategy)){
+                proxyUser =UsernameCaseStrategyUtil.convertUsernameCase(username,userNameCaseStrategy);
+            }
+
+            builder.addSparkArg("--proxy-user", proxyUser + usernameSuffix);
         }
         return builder;
     }

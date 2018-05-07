@@ -1,33 +1,31 @@
-define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('SlaService', ["$http","$q","$mdToast","$mdDialog","RestUrlService",function ($http, $q, $mdToast, $mdDialog, RestUrlService) {
-
+define(["require", "exports", "angular", "underscore"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
+    // export class SlaService {
+    function SlaService($http, $q, mdToast, $mdDialog, RestUrlService) {
         var data = {
-
             getPossibleSlaMetricOptions: function () {
-
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
-
             validateSlaActionClass: function (actionClass) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
-                var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": actionClass}});
+                    console.log('ERROR ', err);
+                };
+                var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, { params: { "actionConfigClass": actionClass } });
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             validateSlaActionRule: function (rule) {
                 rule.validConfiguration = true;
@@ -49,38 +47,32 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                         }
                     }
                     ;
-
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
-                var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": rule.objectClassType}});
+                    console.log('ERROR ', err);
+                };
+                var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, { params: { "actionConfigClass": rule.objectClassType } });
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
-
             getPossibleSlaActionOptions: function () {
-
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
-
             saveFeedSla: function (feedId, serviceLevelAgreement) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http({
                     url: RestUrlService.SAVE_FEED_SLA_URL(feedId),
                     method: "POST",
@@ -90,15 +82,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     }
                 }).then(successFn, errorFn);
                 return promise;
-
             },
             saveSla: function (serviceLevelAgreement) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http({
                     url: RestUrlService.SAVE_SLA_URL,
                     method: "POST",
@@ -108,15 +99,14 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     }
                 }).then(successFn, errorFn);
                 return promise;
-
             },
             deleteSla: function (slaId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http({
                     url: RestUrlService.DELETE_SLA_URL(slaId),
                     method: "DELETE",
@@ -125,63 +115,58 @@ define(['angular','feed-mgr/module-name'], function (angular,moduleName) {
                     }
                 }).then(successFn, errorFn);
                 return promise;
-
             },
             getSlaById: function (slaId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_SLA_BY_ID_URL(slaId));
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             getSlaForEditForm: function (slaId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_SLA_AS_EDIT_FORM(slaId));
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             getFeedSlas: function (feedId) {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_FEED_SLA_URL(feedId));
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             getAllSlas: function () {
                 var successFn = function (response) {
                     return response.data;
-                }
+                };
                 var errorFn = function (err) {
-                    console.log('ERROR ', err)
-                }
+                    console.log('ERROR ', err);
+                };
                 var promise = $http.get(RestUrlService.GET_SLAS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
-
             },
             init: function () {
-
             }
-
         };
         data.init();
         return data;
-
-    }]);
+    }
+    // }
+    angular.module(moduleName).factory('SlaService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", SlaService]);
 });
+//# sourceMappingURL=SlaService.js.map

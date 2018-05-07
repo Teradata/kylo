@@ -82,7 +82,7 @@ public class JcrQueryUtil {
             try {
                 @SuppressWarnings("unchecked")
                 Iterator<Node> nodeItr = (Iterator<Node>) result.getNodes();
-                Stream<T> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, Spliterator.ORDERED), false)
+                Stream<T> stream = StreamSupport.stream(Spliterators.spliteratorUnknownSize(nodeItr, 0), false)
                                 .map(node -> JcrUtil.constructNodeObject(node, type, args));
                 
                 if (fetchSize != null) {

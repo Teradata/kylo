@@ -33,7 +33,7 @@ setVersion ${RELEASE_VERSION}
 git commit -a -m "Release $RELEASE_VERSION"
 
 git tag v$RELEASE_VERSION
-git push origin --tags
+git push origin v$RELEASE_VERSION
 
 git checkout master
 git branch -D release-candidate-$RELEASE_VERSION

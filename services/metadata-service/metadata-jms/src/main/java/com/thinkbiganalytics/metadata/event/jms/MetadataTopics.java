@@ -26,9 +26,14 @@ package com.thinkbiganalytics.metadata.event.jms;
 public interface MetadataTopics {
     
     /**
-     * Indicates changes to a data source
+     * Indicates the cancelation of a high-water mark
      */
     String CANCEL_ACTIVE_WATER_MARK = "cancelActiveWaterMark";
+    
+    /**
+     * Indicates changes to the initialization status of a feed
+     */
+    String FEED_INIT_STATUS_CHANGE = "feedInitStatusChange";
 
     /**
      * Indicates changes to a data source

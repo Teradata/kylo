@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.api.feed.security.FeedOpsAccessControlProv
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.project.security.ProjectAccessControl;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
-import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ActionsModuleBuilder;
 
@@ -76,11 +75,6 @@ public class JcrTestConfig {
     @Bean
     public FeedOperationsProvider feedOperationsProvider() {
         return Mockito.mock(FeedOperationsProvider.class);
-    }
-
-    @Bean
-    public JobScheduler jobSchedule() {
-        return Mockito.mock(JobScheduler.class);
     }
 
     @Bean

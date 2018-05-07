@@ -1,6 +1,22 @@
 define(["require", "exports", "./api/index", "./column-delegate", "./query-engine-constants"], function (require, exports, index_1, column_delegate_1, query_engine_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
+    var PageSpec = /** @class */ (function () {
+        function PageSpec(init) {
+            Object.assign(this, init);
+        }
+        PageSpec.prototype.equals = function (page) {
+            return JSON.stringify(this) === JSON.stringify(page);
+        };
+        PageSpec.emptyPage = function () {
+            return new PageSpec({ firstRow: 0, numRows: 0, firstCol: 0, numCols: 0 });
+        };
+        PageSpec.defaultPage = function () {
+            return new PageSpec({ firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000 });
+        };
+        return PageSpec;
+    }());
+    exports.PageSpec = PageSpec;
     /**
      * Provides the ability to query and transform data.
      */
@@ -144,6 +160,12 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
         QueryEngine.prototype.getFieldPolicies = function () {
             return this.getState().fieldPolicies;
         };
+        QueryEngine.prototype.getActualRows = function () {
+            return this.getState().actualRows;
+        };
+        QueryEngine.prototype.getActualCols = function () {
+            return this.getState().actualCols;
+        };
         /**
          * Gets the schema fields for the the current transformation.
          *
@@ -248,6 +270,14 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
             return this.getState().rows;
         };
         /**
+         * Gets the cols
+         *
+         * @returns the rows or {@code null} if the transformation has not been applied
+         */
+        QueryEngine.prototype.getCols = function () {
+            return this.getState().columns;
+        };
+        /**
          * Lists the names of the supported data source types.
          *
          * Used in error messages to list the supported data source types.
@@ -308,6 +338,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
             state.context = context;
             state.fieldPolicies = this.getState().fieldPolicies;
             state.script = this.parseAcornTree(tree);
+            state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
             this.states_.push(state);
             // Clear redo states
             this.redo_ = [];
@@ -393,12 +424,14 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
         /**
          * Sets the query and datasources.
          */
-        QueryEngine.prototype.setQuery = function (query, datasources) {
+        QueryEngine.prototype.setQuery = function (query, datasources, pageSpec) {
             if (datasources === void 0) { datasources = []; }
+            if (pageSpec === void 0) { pageSpec = null; }
             this.datasources_ = (datasources.length > 0) ? datasources : null;
             this.redo_ = [];
             this.source_ = this.parseQuery(query);
             this.states_ = [this.newState()];
+            this.pageSpec = pageSpec;
         };
         /**
          * Indicates if the limiting should be done before sampling.
@@ -477,7 +510,7 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
          * @returns a new script state
          */
         QueryEngine.prototype.newState = function () {
-            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null };
+            return { columns: null, context: {}, fieldPolicies: null, profile: null, rows: null, script: null, table: null, validationResults: null, actualRows: null, actualCols: null, tableState: (new Date()).getTime(), sort: null };
         };
         return QueryEngine;
     }());

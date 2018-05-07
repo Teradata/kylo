@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/index", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-column", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, http_1, angular, Observable_1, Subject_1, _, VisualQueryService_1, index_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_column_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1) {
+define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observable", "rxjs/Subject", "underscore", "../../../services/VisualQueryService", "../../wrangler/api/index", "../../wrangler/api/rest-model", "../../wrangler/query-engine", "../../wrangler/query-engine-factory.service", "./spark-column", "./spark-constants", "./spark-query-parser", "./spark-script-builder", "../../wrangler/query-engine", "rxjs/add/observable/empty", "rxjs/add/observable/fromPromise", "rxjs/add/observable/interval", "rxjs/add/operator/catch", "rxjs/add/operator/expand", "rxjs/add/operator/map", "rxjs/add/operator/mergeMap", "rxjs/add/operator/take"], function (require, exports, http_1, angular, Observable_1, Subject_1, _, VisualQueryService_1, index_1, rest_model_1, query_engine_1, query_engine_factory_service_1, spark_column_1, spark_constants_1, spark_query_parser_1, spark_script_builder_1, query_engine_2) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
@@ -27,6 +27,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             _this.RestUrlService = RestUrlService;
             _this.VisualQueryService = VisualQueryService;
             _this.$$angularInjector = $$angularInjector;
+            _this.VALID_NAME_PATTERN = /[^a-zA-Z0-9\s_]|\s/g;
             // Initialize properties
             _this.apiUrl = RestUrlService.SPARK_SHELL_SERVICE_URL;
             _this.dialog = $$angularInjector.get(index_1.DIALOG_SERVICE);
@@ -62,7 +63,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 return [
                     { name: "Aggregate", formula: "groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))" },
                     { name: "Conditional", formula: "when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)" },
-                    { name: "Pivot", formula: "groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))" },
+                    { name: "Pivot", formula: "groupBy(COLUMN).pivot(COLUMN).agg(count(COLUMN))" },
                     { name: "Window", formula: "sum(COLUMN).over(orderBy(COLUMN))" }
                 ];
             },
@@ -102,11 +103,20 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
             return column.displayName;
         };
         /**
+         * Returns valid alpha numeric name
+         * @param {string} label
+         * @return {string}
+         */
+        SparkQueryEngine.prototype.getValidHiveColumnName = function (label) {
+            return label.replace(this.VALID_NAME_PATTERN, '');
+        };
+        /**
          * Gets the schema fields for the the current transformation.
          *
          * @returns the schema fields or {@code null} if the transformation has not been applied
          */
         SparkQueryEngine.prototype.getFields = function () {
+            var self = this;
             // Get list of columns
             var columns = this.getColumns();
             if (columns === null) {
@@ -125,7 +135,8 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 else {
                     dataType = col.dataType;
                 }
-                var colDef = { name: col.hiveColumnLabel, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
+                var name = angular.isDefined(col.displayName) ? self.getValidHiveColumnName(col.displayName) : col.hiveColumnLabel;
+                var colDef = { name: name, description: col.comment, dataType: dataType, primaryKey: false, nullable: false, sampleValues: [] };
                 if (dataType === 'decimal') {
                     //parse out the precisionScale
                     var precisionScale = '20,2';
@@ -314,10 +325,18 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
          *
          * @return an observable for the response progress
          */
-        SparkQueryEngine.prototype.transform = function () {
+        SparkQueryEngine.prototype.transform = function (pageSpec, doValidate, doProfile) {
             // Build the request body
+            if (doValidate === void 0) { doValidate = true; }
+            if (doProfile === void 0) { doProfile = false; }
+            if (!pageSpec) {
+                pageSpec = query_engine_2.PageSpec.defaultPage();
+            }
             var body = {
-                "policies": this.getState().fieldPolicies
+                "policies": this.getState().fieldPolicies,
+                "pageSpec": pageSpec,
+                "doProfile": doProfile,
+                "doValidate": doValidate
             };
             var index = this.states_.length - 1;
             if (index > 0) {
@@ -349,10 +368,11 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                 // Check status
                 if (response.data.status === "PENDING") {
                     if (state.columns === null && response.data.results && response.data.results.columns) {
-                        state.columns = response.data.results.columns;
-                        state.rows = [];
-                        state.table = response.data.table;
-                        self.updateFieldPolicies(state);
+                        //Unnecessary and causes table refresh problems
+                        // state.columns = response.data.results.columns;
+                        // state.rows = [];
+                        // state.table = response.data.table;
+                        // self.updateFieldPolicies(state);
                     }
                     deferred.next(response.data.progress);
                     self.$timeout(function () {
@@ -362,7 +382,7 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                             headers: { "Content-Type": "application/json" },
                             responseType: "json"
                         }).then(successCallback, errorCallback);
-                    }, 1000, false);
+                    }, 500, false);
                     return;
                 }
                 if (response.data.status !== "SUCCESS") {
@@ -377,22 +397,24 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
                     return (column.hiveColumnLabel === "processing_dttm");
                 });
                 if (angular.isDefined(invalid)) {
-                    state.columns = [];
                     state.rows = [];
+                    state.columns = [];
                     deferred.error("Column name '" + invalid.hiveColumnLabel + "' is not supported. Please choose a different name.");
                 }
                 else if (angular.isDefined(reserved)) {
-                    state.columns = [];
                     state.rows = [];
+                    state.columns = [];
                     deferred.error("Column name '" + reserved.hiveColumnLabel + "' is reserved. Please choose a different name.");
                 }
                 else {
                     // Update state
-                    state.columns = response.data.results.columns;
                     state.profile = response.data.profile;
                     state.rows = response.data.results.rows;
                     state.table = response.data.table;
                     state.validationResults = response.data.results.validationResults;
+                    state.actualCols = response.data.actualCols;
+                    state.actualRows = response.data.actualRows;
+                    state.columns = response.data.results.columns;
                     self.updateFieldPolicies(state);
                     // Indicate observable is complete
                     deferred.complete();
@@ -440,20 +462,22 @@ define(["require", "exports", "@angular/common/http", "angular", "rxjs/Observabl
          * @param {ScriptState<string>} state
          */
         SparkQueryEngine.prototype.updateFieldPolicies = function (state) {
+            var self = this;
             if (state.fieldPolicies != null && state.fieldPolicies.length > 0) {
                 var policyMap_1 = {};
                 state.fieldPolicies.forEach(function (policy) {
                     policyMap_1[policy.name] = policy;
                 });
                 state.fieldPolicies = state.columns.map(function (column) {
-                    if (policyMap_1[column.hiveColumnLabel]) {
-                        return policyMap_1[column.hiveColumnLabel];
+                    var name = angular.isDefined(column.displayName) ? self.getValidHiveColumnName(column.displayName) : column.hiveColumnLabel;
+                    if (policyMap_1[name]) {
+                        return policyMap_1[name];
                     }
                     else {
                         return {
-                            name: column.hiveColumnLabel,
-                            fieldName: column.hiveColumnLabel,
-                            feedFieldName: column.hiveColumnLabel,
+                            name: name,
+                            fieldName: name,
+                            feedFieldName: name,
                             domainTypeId: null,
                             partition: null,
                             profile: true,

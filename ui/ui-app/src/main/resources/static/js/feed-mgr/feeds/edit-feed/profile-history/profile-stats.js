@@ -1,5 +1,7 @@
-define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, moduleName) {
-
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/feeds/edit-feed/module-name');
     var directive = function () {
         return {
             restrict: "EA",
@@ -13,35 +15,43 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             controller: "FeedProfileStatsController"
         };
     };
-
-    var controller = function ($scope, $http, $sce, PaginationDataService, FeedService, RestUrlService, HiveService, Utils, BroadcastService) {
-        var self = this;
-
-        self.data = [];
-        self.loading = true;
-        self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
-        self.model = FeedService.editFeedModel;
-        self.hideColumns = ["processing_dttm"];
-
-        self.getProfileStats = function () {
-            self.loading = true;
+    var FeedProfileStatsController = /** @class */ (function () {
+        function FeedProfileStatsController($http, FeedService, RestUrlService, HiveService, BroadcastService) {
+            this.$http = $http;
+            this.FeedService = FeedService;
+            this.RestUrlService = RestUrlService;
+            this.HiveService = HiveService;
+            this.BroadcastService = BroadcastService;
+            this.data = [];
+            this.loading = true;
+            this.processingDate = null;
+            this.model = this.FeedService.editFeedModel;
+            this.hideColumns = ["processing_dttm"];
+        }
+        FeedProfileStatsController.prototype.getProfileStats = function () {
+            var _this = this;
+            this.loading = true;
             var successFn = function (response) {
-                self.data = response.data;
-                self.loading = false;
-                BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'profile-stats');
+                _this.data = response.data;
+                _this.loading = false;
+                _this.BroadcastService.notify('PROFILE_TAB_DATA_LOADED', 'profile-stats');
             };
             var errorFn = function (err) {
-                self.loading = false;
+                _this.loading = false;
             };
-            var promise = $http.get(RestUrlService.FEED_PROFILE_STATS_URL(self.model.id), {params: {'processingdttm': self.processingdttm}});
+            var promise = this.$http.get(this.RestUrlService.FEED_PROFILE_STATS_URL(this.model.id), { params: { 'processingdttm': this.processingdttm } });
             promise.then(successFn, errorFn);
             return promise;
         };
-
-        self.getProfileStats();
-    };
-
-    angular.module(moduleName).controller('FeedProfileStatsController', ["$scope", "$http", "$sce", "PaginationDataService", "FeedService", "RestUrlService", "HiveService", "Utils",
-                                                                         "BroadcastService", controller]);
+        ;
+        FeedProfileStatsController.prototype.$onInit = function () {
+            this.processingDate = new Date(this.HiveService.getUTCTime(this.processingdttm));
+            this.getProfileStats();
+        };
+        return FeedProfileStatsController;
+    }());
+    exports.FeedProfileStatsController = FeedProfileStatsController;
+    angular.module(moduleName).controller('FeedProfileStatsController', ["$http", "FeedService", "RestUrlService", "HiveService", "BroadcastService", FeedProfileStatsController]);
     angular.module(moduleName).directive('thinkbigFeedProfileStats', directive);
 });
+//# sourceMappingURL=profile-stats.js.map

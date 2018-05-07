@@ -212,7 +212,7 @@ public class ColumnSpec {
     public String toCreateSQL(boolean strings) {
         StringBuffer sb = new StringBuffer();
         sb.append(HiveUtils.quoteIdentifier(name)).append(' ');
-        sb.append((strings ? "string" : dataType));
+        sb.append((strings ? "string" : HiveUtils.quoteDataType(dataType)));
         if (!StringUtils.isEmpty(comment)) {
             sb.append(" COMMENT ").append(HiveUtils.quoteString(comment));
         }

@@ -1,6 +1,8 @@
-define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-
-    var directive = function() {
+define(["require", "exports", "angular", "underscore", "pascalprecht.translate"], function (require, exports, angular, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/feeds/edit-feed/module-name');
+    var directive = function () {
         return {
             restrict: "EA",
             bindToController: {},
@@ -10,142 +12,206 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             },
             templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-additional-properties.html',
             controller: "FeedAdditionalPropertiesController",
-            link: function($scope, element, attrs, controller) {
+            link: function ($scope, element, attrs, controller) {
                 if ($scope.versions === undefined) {
                     $scope.versions = false;
                 }
             }
         };
     };
-
-    var FeedAdditionalPropertiesController = function($scope,$q, AccessControlService, EntityAccessControlService,FeedService, FeedTagService, FeedSecurityGroups, $filter) {
-
-        var self = this;
-        self.versions = $scope.versions;
-        /**
-         * Indicates if the feed properties may be edited.
-         * @type {boolean}
-         */
-        self.allowEdit = !self.versions;
-
-        this.model = FeedService.editFeedModel;
-        this.versionFeedModel = FeedService.versionFeedModel;
-        this.versionFeedModelDiff = FeedService.versionFeedModelDiff;
-        this.editModel = {};
-        this.editableSection = false;
-
-        this.feedTagService = FeedTagService;
-        self.tagChips = {};
-        self.tagChips.selectedItem = null;
-        self.tagChips.searchText = null;
-        this.isValid = true;
-
-        this.feedSecurityGroups = FeedSecurityGroups;
-
-        self.securityGroupChips = {};
-        self.securityGroupChips.selectedItem = null;
-        self.securityGroupChips.searchText = null;
-        self.securityGroupsEnabled = false;
-
-        FeedSecurityGroups.isEnabled().then(function(isValid) {
+    var FeedAdditionalPropertiesController = /** @class */ (function () {
+        function FeedAdditionalPropertiesController($scope, $q, AccessControlService, EntityAccessControlService, FeedService, FeedTagService, FeedSecurityGroups, $filter) {
+            this.$scope = $scope;
+            this.$q = $q;
+            this.AccessControlService = AccessControlService;
+            this.EntityAccessControlService = EntityAccessControlService;
+            this.FeedService = FeedService;
+            this.FeedTagService = FeedTagService;
+            this.FeedSecurityGroups = FeedSecurityGroups;
+            this.$filter = $filter;
+            // define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
+            this.versions = this.$scope.versions;
+            /**
+             * Indicates if the feed properties may be edited.
+             * @type {boolean}
+             */
+            this.allowEdit = !this.versions;
+            this.model = this.FeedService.editFeedModel;
+            this.versionFeedModel = this.FeedService.versionFeedModel;
+            this.versionFeedModelDiff = this.FeedService.versionFeedModelDiff;
+            this.editModel = {};
+            this.editableSection = false;
+            this.feedTagService = this.FeedTagService;
+            this.tagChips = {};
+            this.securityGroupChips = {};
+            this.isValid = true;
+            this.feedSecurityGroups = this.FeedSecurityGroups;
+            this.securityGroupsEnabled = false;
+            this.userProperties = [];
+            this.transformChip = function (chip) {
+                // If it is an object, it's already a known chip
+                if (angular.isObject(chip)) {
+                    return chip;
+                }
+                // Otherwise, create a new one
+                return { name: chip };
+            };
+            this.onEdit = function () {
+                // Determine tags value
+                var tags = angular.copy(this.FeedService.editFeedModel.tags);
+                if (tags == undefined || tags == null) {
+                    tags = [];
+                }
+                // Copy model for editing
+                this.editModel = {};
+                this.editModel.dataOwner = this.model.dataOwner;
+                this.editModel.tags = tags;
+                this.editModel.userProperties = angular.copy(this.model.userProperties);
+                this.editModel.securityGroups = angular.copy(this.FeedService.editFeedModel.securityGroups);
+                if (this.editModel.securityGroups == undefined) {
+                    this.editModel.securityGroups = [];
+                }
+            };
+            this.onCancel = function () {
+                // do nothing
+            };
+            this.onSave = function (ev) {
+                var _this = this;
+                //save changes to the model
+                this.FeedService.showFeedSavingDialog(ev, this.$filter('translate')('views.feed-additional-properties.Saving'), this.model.feedName);
+                var copy = angular.copy(this.FeedService.editFeedModel);
+                copy.tags = this.editModel.tags;
+                copy.dataOwner = this.editModel.dataOwner;
+                copy.userProperties = this.editModel.userProperties;
+                copy.securityGroups = this.editModel.securityGroups;
+                //Server may have updated value. Don't send via UI.
+                copy.historyReindexingStatus = undefined;
+                this.FeedService.saveFeedModel(copy).then(function (response) {
+                    _this.FeedService.hideFeedSavingDialog();
+                    _this.editableSection = false;
+                    //save the changes back to the model
+                    _this.model.tags = _this.editModel.tags;
+                    _this.model.dataOwner = _this.editModel.dataOwner;
+                    _this.model.userProperties = _this.editModel.userProperties;
+                    _this.model.securityGroups = _this.editModel.securityGroups;
+                    //Get the updated value from the server.
+                    _this.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
+                }, function (response) {
+                    _this.FeedService.hideFeedSavingDialog();
+                    _this.FeedService.buildErrorData(_this.model.feedName, response);
+                    _this.FeedService.showFeedErrorsDialog();
+                    //make it editable
+                    _this.editableSection = true;
+                });
+            };
+            var self = this;
+            this.tagChips.selectedItem = null;
+            this.tagChips.searchText = null;
+            this.securityGroupChips.selectedItem = null;
+            this.securityGroupChips.searchText = null;
+            FeedSecurityGroups.isEnabled().then(function (isValid) {
                 self.securityGroupsEnabled = isValid;
-            }
-
-        );
-
-        this.transformChip = function(chip) {
-            // If it is an object, it's already a known chip
-            if (angular.isObject(chip)) {
-                return chip;
-            }
-            // Otherwise, create a new one
-            return {name: chip}
-        };
-
-        $scope.$watch(function() {
-            return FeedService.editFeedModel;
-        }, function(newVal) {
-            //only update the model if it is not set yet
-            if (self.model == null) {
-                self.model = FeedService.editFeedModel;
-            }
-        });
-
-        if (self.versions) {
-            $scope.$watch(function(){
-                return FeedService.versionFeedModel;
-            },function(newVal) {
-                self.versionFeedModel = FeedService.versionFeedModel;
             });
-            $scope.$watch(function(){
-                return FeedService.versionFeedModelDiff;
-            },function(newVal) {
-                self.versionFeedModelDiff = FeedService.versionFeedModelDiff;
+            $scope.$watch(function () {
+                return FeedService.editFeedModel;
+            }, function (newVal) {
+                //only update the model if it is not set yet
+                if (self.model == null) {
+                    self.model = FeedService.editFeedModel;
+                }
+            });
+            if (self.versions) {
+                $scope.$watch(function () {
+                    return self.FeedService.versionFeedModel;
+                }, function (newVal) {
+                    self.versionFeedModel = self.FeedService.versionFeedModel;
+                });
+                $scope.$watch(function () {
+                    return self.FeedService.versionFeedModelDiff;
+                }, function (newVal) {
+                    self.versionFeedModelDiff = self.FeedService.versionFeedModelDiff;
+                    self.userProperties = [];
+                    _.each(self.versionFeedModel.userProperties, function (versionedProp) {
+                        var property = {};
+                        property.versioned = angular.copy(versionedProp);
+                        property.op = 'no-op';
+                        property.systemName = property.versioned.systemName;
+                        property.displayName = property.versioned.displayName;
+                        property.description = property.versioned.description;
+                        property.current = angular.copy(property.versioned);
+                        self.userProperties.push(property);
+                    });
+                    _.each(_.values(self.versionFeedModelDiff), function (diff) {
+                        if (diff.path.startsWith("/userProperties")) {
+                            if (diff.path.startsWith("/userProperties/")) {
+                                //individual versioned indexed action
+                                var remainder = diff.path.substring("/userProperties/".length, diff.path.length);
+                                var indexOfSlash = remainder.indexOf("/");
+                                var versionedPropIdx = remainder.substring(0, indexOfSlash > 0 ? indexOfSlash : remainder.length);
+                                if ("replace" === diff.op) {
+                                    var property = self.userProperties[versionedPropIdx];
+                                    property.op = diff.op;
+                                    var replacedPropertyName = remainder.substring(remainder.indexOf("/") + 1, remainder.length);
+                                    property.current[replacedPropertyName] = diff.value;
+                                    property[replacedPropertyName] = diff.value;
+                                }
+                                else if ("add" === diff.op) {
+                                    if (_.isArray(diff.value)) {
+                                        _.each(diff.value, function (prop) {
+                                            self.userProperties.push(self.createProperty(prop, diff.op));
+                                        });
+                                    }
+                                    else {
+                                        self.userProperties.unshift(self.createProperty(diff.value, diff.op));
+                                    }
+                                }
+                                else if ("remove" === diff.op) {
+                                    var property = self.userProperties[versionedPropIdx];
+                                    property.op = diff.op;
+                                    property.current = {};
+                                }
+                            }
+                            else {
+                                //group versioned action, can be either "add" or "remove"
+                                if ("add" === diff.op) {
+                                    if (_.isArray(diff.value)) {
+                                        _.each(diff.value, function (prop) {
+                                            self.userProperties.push(self.createProperty(prop, diff.op));
+                                        });
+                                    }
+                                    else {
+                                        self.userProperties.push(self.createProperty(diff.value, diff.op));
+                                    }
+                                }
+                                else if ("remove" === diff.op) {
+                                    _.each(self.userProperties, function (prop) {
+                                        prop.op = diff.op;
+                                        prop.current = {};
+                                    });
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+            //Apply the entity access permissions
+            $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT, self.model, AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function (access) {
+                self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
             });
         }
-
-        this.onEdit = function() {
-            // Determine tags value
-            var tags = angular.copy(FeedService.editFeedModel.tags);
-            if (tags == undefined || tags == null) {
-                tags = [];
-            }
-
-            // Copy model for editing
-            self.editModel = {};
-            self.editModel.dataOwner = self.model.dataOwner;
-            self.editModel.tags = tags;
-            self.editModel.userProperties = angular.copy(self.model.userProperties);
-
-            self.editModel.securityGroups = angular.copy(FeedService.editFeedModel.securityGroups);
-            if (self.editModel.securityGroups == undefined) {
-                self.editModel.securityGroups = [];
-            }
+        FeedAdditionalPropertiesController.prototype.createProperty = function (original, operation) {
+            var property = {};
+            property.versioned = {};
+            property.current = angular.copy(original);
+            property.systemName = property.current.systemName;
+            property.displayName = property.current.displayName;
+            property.description = property.current.description;
+            property.op = operation;
+            return property;
         };
-
-        this.onCancel = function() {
-            // do nothing
-        };
-
-        this.onSave = function(ev) {
-            //save changes to the model
-            FeedService.showFeedSavingDialog(ev, $filter('translate')('views.feed-additional-properties.Saving'), self.model.feedName);
-            var copy = angular.copy(FeedService.editFeedModel);
-
-            copy.tags = self.editModel.tags;
-            copy.dataOwner = self.editModel.dataOwner;
-            copy.userProperties = self.editModel.userProperties;
-            copy.securityGroups = self.editModel.securityGroups;
-            //Server may have updated value. Don't send via UI.
-            copy.historyReindexingStatus = undefined;
-
-            FeedService.saveFeedModel(copy).then(function(response) {
-                FeedService.hideFeedSavingDialog();
-                self.editableSection = false;
-                //save the changes back to the model
-                self.model.tags = self.editModel.tags;
-                self.model.dataOwner = self.editModel.dataOwner;
-                self.model.userProperties = self.editModel.userProperties;
-                self.model.securityGroups = self.editModel.securityGroups;
-                //Get the updated value from the server.
-                self.model.historyReindexingStatus = response.data.feedMetadata.historyReindexingStatus;
-            }, function(response) {
-                FeedService.hideFeedSavingDialog();
-                FeedService.buildErrorData(self.model.feedName, response);
-                FeedService.showFeedErrorsDialog();
-                //make it editable
-                self.editableSection = true;
-            });
-        };
-
-
-        //Apply the entity access permissions
-        $q.when(AccessControlService.hasPermission(AccessControlService.FEEDS_EDIT,self.model,AccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS)).then(function(access) {
-            self.allowEdit = !self.versions && access && !self.model.view.properties.disabled;
-        });
-
-        this.findVersionedUserProperty = function(property) {
-            var versionedProperty = _.find(self.versionFeedModel.userProperties, function(p) {
+        ;
+        FeedAdditionalPropertiesController.prototype.findVersionedUserProperty = function (property) {
+            var versionedProperty = _.find(this.versionFeedModel.userProperties, function (p) {
                 return p.systemName === property.systemName;
             });
             if (versionedProperty === undefined) {
@@ -153,15 +219,19 @@ define(['angular','feed-mgr/feeds/edit-feed/module-name', 'pascalprecht.translat
             }
             return versionedProperty;
         };
-
-        this.diff = function(path) {
-            return FeedService.diffOperation(path);
+        ;
+        FeedAdditionalPropertiesController.prototype.diff = function (path) {
+            return this.FeedService.diffOperation(path);
         };
-        this.diffCollection = function(path) {
-            return FeedService.diffCollectionOperation(path);
+        ;
+        FeedAdditionalPropertiesController.prototype.diffCollection = function (path) {
+            return this.FeedService.diffCollectionOperation(path);
         };
-    };
-
-    angular.module(moduleName).controller('FeedAdditionalPropertiesController',["$scope","$q","AccessControlService","EntityAccessControlService","FeedService","FeedTagService","FeedSecurityGroups","$filter",FeedAdditionalPropertiesController]);
+        ;
+        return FeedAdditionalPropertiesController;
+    }());
+    exports.FeedAdditionalPropertiesController = FeedAdditionalPropertiesController;
+    angular.module(moduleName).controller('FeedAdditionalPropertiesController', ["$scope", "$q", "AccessControlService", "EntityAccessControlService", "FeedService", "FeedTagService", "FeedSecurityGroups", "$filter", FeedAdditionalPropertiesController]);
     angular.module(moduleName).directive('thinkbigFeedAdditionalProperties', directive);
 });
+//# sourceMappingURL=feed-additional-properties.js.map

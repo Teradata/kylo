@@ -1,0 +1,116 @@
+<md-tabs md-dynamic-height="" md-border-bottom="">
+  <md-tab label="Categorical">
+    <md-content class="md-padding">
+      <div layout="row">
+        <div flex="70">
+          <md-table-container class="histo">
+            <table md-table>
+              <thead md-head>
+              <tr md-row>
+                <th md-column class="truncate" name="domain">Value</th>
+                <th md-column name="count">Count</th>
+                <th md-column name="frequency">%</th>
+                <th md-column name="frequency">Cum. %</th>
+              </tr>
+              </thead>
+              <tbody md-body>
+              <tr md-row
+                  ng-repeat="row in vm.data | orderBy:'-count'">
+                <td md-cell class="truncate">{{row.domain}}
+                  <span class="bar bar-success" style="width:{{row.width | number: 0}}%"></span>
+                </td>
+                <td md-cell>{{row.count}}</td>
+                <td md-cell>{{row.frequency | number:1}}</td>
+                <td md-cell>{{row.cumm | number:1}}</td>
+              </tr>
+              </tbody>
+            </table>
+          </md-table-container>
+
+        </div>
+        <div class="summary-section" flex="30" hide-xs>
+          <div style="padding-left:10px">
+            <strong>Summary</strong>
+            <table>
+              <tbody>
+              <tr ng-if="vm.showValid">
+                <th>Valid</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.validCount">0</td>
+              </tr>
+              <tr ng-if="vm.showValid">
+                <th>Invalid</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.invalidCount">0</td>
+              </tr>
+              <tr><td colspan="2">&nbsp;</td></tr>
+              <tr>
+                <th>Total</th>
+                <td class="numeric ng-binding" ng-bind="vm.totalCount">0</td>
+                <td class="numeric ng-binding">&nbsp;</td>
+              </tr>
+              <tr>
+                <th>Unique</th>
+                <td class="numeric ng-binding" ng-bind="vm.unique">0</td>
+                <td class="numeric ng-binding" ng-bind="(vm.percUnique | number: 1)+ '%'">0%</td>
+              </tr>
+              <tr ng-show="vm.emptyCount != null">
+                <th>Empty</th>
+                <td class="numeric ng-binding" ng-bind="vm.emptyCount">0</td>
+                <td class="numeric ng-binding" ng-bind="(vm.percEmpty | number: 1) + '%'">0.0%</td>
+              </tr>
+              <tr>
+                <th>Null</th>
+                <td class="numeric ng-binding" ng-bind="vm.nullCount">0</td>
+                <td class="numeric ng-binding" ng-bind="(vm.percNull | number: 1) + '%'">0.0%</td>
+              </tr>
+              <tr><td colspan="2">&nbsp;</td></tr>
+              <tr ng-show="vm.maxLen != null">
+                <th>Max Len.</th>
+                <td class="numeric ng-binding" ng-bind="vm.maxLen">0</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr ng-show="vm.minLen != null">
+                <th>Min Len.</th>
+                <td class="numeric ng-binding" ng-bind="vm.minLen">0</td>
+                <td>&nbsp;</td>
+              </tr>
+              <tr ng-show="vm.max != null">
+                <th>Max</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.max | number:4">0</td>
+              </tr>
+              <tr ng-show="vm.min != null">
+                <th>Min</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.min | number:4">0</td>
+              </tr>
+              <tr ng-show="vm.sum != null">
+                <th>Sum</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.sum | number:4">0</td>
+              </tr>
+              <tr ng-show="vm.mean != null">
+                <th>Mean</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.mean | number:4">0</td>
+              </tr>
+              <tr ng-show="vm.variance != null">
+                <th>Variance</th>
+                <td colspan="2" class="ng-binding" ng-bind="vm.variance | number:4">0</td>
+              </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </md-content>
+  </md-tab>
+  <md-tab label="Numerical" ng-disabled="vm.histo == undefined">
+    <md-content class="md-padding">
+      <column-histogram ng-if="vm.histo != undefined" chart-data="vm.histo"></column-histogram>
+    </md-content>
+  </md-tab>
+</md-tabs>
+
+
+
+
+
+
+
+

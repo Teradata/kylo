@@ -88,7 +88,7 @@ var supportsPassiveEvents;
  * @return {?}
  */
 function supportsPassiveEventListeners() {
-    if (supportsPassiveEvents == null) {
+    if (supportsPassiveEvents == null && typeof window !== 'undefined') {
         try {
             window.addEventListener('test', /** @type {?} */ ((null)), Object.defineProperty({}, 'passive', {
                 get: function () { return supportsPassiveEvents = true; }

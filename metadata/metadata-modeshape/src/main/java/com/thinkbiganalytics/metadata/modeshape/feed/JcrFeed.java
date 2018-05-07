@@ -33,6 +33,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -454,12 +455,12 @@ public class JcrFeed extends AbstractJcrAuditableSystemEntity implements Feed, A
     @Nonnull
     @Override
     public Map<String, String> getUserProperties() {
-        return JcrPropertyUtil.getUserProperties(node);
+        return getFeedDetails().map(FeedDetails::getUserProperties).orElse(new HashMap<>());
     }
 
     @Override
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+        getFeedDetails().ifPresent(d -> d.setUserProperties(userProperties, userFields));
     }
 
     @Override

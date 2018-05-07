@@ -26,4 +26,6 @@ public interface Topics {
      * This is a topic because if NiFi is clustered all cluster nodes need to get notified of the processorIds associated with streaming feeds
      */
      String NIFI_STREAMING_FEEDS_TOPIC = "kylo.nifi-streaming-feeds";
+
+    String NIFI_REMOTE_PROVENANCE_EVENT_RESPONSE_TOPIC = "kylo.nifi-remote-provenance-event.response";
 }

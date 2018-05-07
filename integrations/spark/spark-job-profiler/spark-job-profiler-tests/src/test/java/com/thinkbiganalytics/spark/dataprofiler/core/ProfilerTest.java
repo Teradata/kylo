@@ -280,7 +280,9 @@ public abstract class ProfilerTest {
                 System.out.println(r.toString());
             }
             */
-            StatisticsModel statsModel = profiler.profile(dataDF, new ProfilerConfiguration());
+            ProfilerConfiguration configuration = new ProfilerConfiguration();
+            configuration.setNumberOfTopNValues(3);
+            StatisticsModel statsModel = profiler.profile(dataDF, configuration);
             columnStatsMap = (statsModel != null) ? (Map) statsModel.getColumnStatisticsMap() : (Map<Integer, StandardColumnStatistics>) Collections.EMPTY_MAP;
         }
     }

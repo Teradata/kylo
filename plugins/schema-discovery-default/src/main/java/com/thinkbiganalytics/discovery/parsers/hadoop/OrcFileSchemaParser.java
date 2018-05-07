@@ -34,6 +34,6 @@ public class OrcFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.ORC, target);
+        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.ORC, target, new DefaultSparkCommandBuilder("orc"));
     }
 }

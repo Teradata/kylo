@@ -18,7 +18,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         /**
          * Constructs a {@code TransformDataComponent}.
          */
-        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
+        function TransformDataComponent($scope, $element, $q, $mdDialog, domainTypesService, RestUrlService, SideNavService, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService, wranglerDataService, $timeout_) {
             this.$scope = $scope;
             this.$q = $q;
             this.$mdDialog = $mdDialog;
@@ -27,6 +27,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.uiGridConstants = uiGridConstants;
             this.FeedService = FeedService;
             this.BroadcastService = BroadcastService;
+            this.wranglerDataService = wranglerDataService;
+            this.$timeout_ = $timeout_;
             //Flag to determine if we can move on to the next step
             this.isValid = false;
             //Function History
@@ -47,26 +49,21 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.isShowSampleMenu = false;
             //noinspection JSUnusedGlobalSymbols
             /**
-             * Columns for the results table.
-             * @type {Array.<Object>}
-             */
-            this.tableColumns = [];
-            //noinspection JSUnusedGlobalSymbols
-            /**
              * Configuration for the results table.
              * @type {Object}
              */
             this.tableOptions = {
-                headerFont: "700 12px Roboto, 'Helvetica Neue', sans-serif",
-                rowFont: "400 14px Roboto, 'Helvetica Neue', sans-serif"
+                headerFont: "500 13px Roboto, 'Helvetica Neue', sans-serif",
+                rowFont: "regular 13px Roboto, 'Helvetica Neue', sans-serif"
             };
-            //noinspection JSUnusedGlobalSymbols
             /**
-             * Rows for the results table.
-             * @type {Array.<Object>}
+             * Rows analyzed by the server
              */
-            this.tableRows = [];
-            this.executingQuery = false;
+            this.actualRows = null;
+            /**
+             * Cols analyzed by the server
+             */
+            this.actualCols = null;
             //Code Mirror options.  Tern Server requires it be in javascript mode
             this.codeMirrorConfig = {
                 onLoad: this.codemirrorLoaded.bind(this)
@@ -82,6 +79,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             };
             // Progress of transformation from 0 to 100
             this.queryProgress = 0;
+            this.executingQuery = false;
+            /*
+            Active query will be followed by an immediate query
+             */
+            this.chainedOperation = new column_delegate_1.ChainedOperation();
             /**
              * Method for limiting the number of results.
              */
@@ -98,6 +100,15 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              * Height offset from the top of the page.
              */
             this.heightOffset = "0";
+            /**
+             * Whether we've completed initial load?
+             * @type {boolean}
+             */
+            this.isLoaded = false;
+            /**
+             * Keeps track of running executions
+             */
+            this.executionStack = [];
             /**
              * Called when the user clicks Add on the function bar
              */
@@ -166,6 +177,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 else {
                     _this.engine.setQuery(source, _this.model.$datasources);
                 }
+                // Provide access to table for fetching pages
+                _this.wranglerDataService.asyncQuery = _this.queryOrGetState.bind(_this);
                 // Watch for changes to field policies
                 if (_this.fieldPolicies == null) {
                     _this.fieldPolicies = [];
@@ -185,7 +198,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     });
                     _this.engine.setFieldPolicies(_this.fieldPolicies);
                     if (domainTypesLoaded) {
-                        _this.query();
+                        //this.updateGrid();
                     }
                 }, true);
                 // Fetch domain types
@@ -194,8 +207,17 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     _this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
                     // Load table data
-                    _this.query();
+                    //this.updateGrid();
                 });
+                //this.updateGrid();
+                // Indicate ready
+                _this.updateTableState(); // = 0;
+                _this.tableColumns = [];
+                // Initial load will trigger query from the table model.
+                if (_this.isLoaded) {
+                    _this.query();
+                }
+                _this.isLoaded = true;
             };
             if (this.engine instanceof Promise) {
                 this.engine.then(function (queryEngine) {
@@ -237,7 +259,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 controller: "VisualQueryProfileStatsController",
                 fullscreen: true,
                 locals: {
-                    profile: self.engine.getProfile()
+                    profile: angular.copy(self.engine.getProfile()),
+                    transformController: self
                 },
                 parent: angular.element(document.body),
                 templateUrl: "js/feed-mgr/visual-query/transform-data/profile-stats/profile-stats-dialog.html"
@@ -384,81 +407,130 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         };
         ;
         /**
+         * Display error dialog
+         */
+        TransformDataComponent.prototype.showError = function (message) {
+            var self = this;
+            self.$mdDialog.show({
+                clickOutsideToClose: true,
+                controller: (_a = /** @class */ (function () {
+                        function class_1($mdDialog) {
+                            this.$mdDialog = $mdDialog;
+                            /**
+                             * Additional details about the error.
+                             */
+                            this.detailMessage = message;
+                            /**
+                             * Indicates that the detail message should be shown.
+                             */
+                            this.showDetail = false;
+                        }
+                        /**
+                         * Hides this dialog.
+                         */
+                        class_1.prototype.hide = function () {
+                            this.$mdDialog.hide();
+                        };
+                        return class_1;
+                    }()),
+                    _a.$inject = ["$mdDialog"],
+                    _a),
+                controllerAs: "dialog",
+                parent: angular.element("body"),
+                template: "\n                  <md-dialog arial-label=\"error executing the query\" style=\"max-width: 640px;\">\n                    <md-dialog-content class=\"md-dialog-content\" role=\"document\" tabIndex=\"-1\">\n                      <h2 class=\"md-title\">Error executing the query</h2>\n                      <p>There was a problem executing the query.</p>\n                      <md-button ng-if=\"!dialog.showDetail\" ng-click=\"dialog.showDetail = true\" style=\"margin: 0; padding: 0;\">Show more</md-button>\n                      <p ng-if=\"dialog.showDetail\">{{ dialog.detailMessage }}</p>\n                    </md-dialog-content>\n                    <md-dialog-actions>\n                      <md-button ng-click=\"dialog.hide()\" class=\"md-primary md-confirm-button\" md-autofocus=\"true\">Got it!</md-button>\n                    </md-dialog-actions>\n                  </md-dialog>\n                "
+            });
+            var _a;
+        };
+        /**
+         * Executes query if state changed, otherwise returns the current state
+         */
+        TransformDataComponent.prototype.queryOrGetState = function (pageSpec) {
+            var _this = this;
+            var self = this;
+            var deferred = this.$q.defer();
+            if (pageSpec.equals(this.currentPage)) {
+                this.$timeout_(function () {
+                    // Fetch the state or join with the existing execution
+                    if (self.executionStack.length > 0) {
+                        var promise = self.executionStack[self.executionStack.length - 1];
+                        promise.then(function () { return deferred.resolve(self.engine.getState()); });
+                    }
+                    else {
+                        return deferred.resolve(self.engine.getState());
+                    }
+                }, 10);
+            }
+            else {
+                self.query(true, pageSpec).then(function () {
+                    _this.currentPage = pageSpec;
+                    return deferred.resolve(self.engine.getState());
+                }).catch(function (reason) {
+                    deferred.reject(reason);
+                });
+            }
+            return deferred.promise;
+        };
+        /**
          * Query Hive using the query from the previous step. Set the Grids rows and columns.
          *
          * @return {Promise} a promise for when the query completes
          */
-        TransformDataComponent.prototype.query = function () {
+        TransformDataComponent.prototype.query = function (refresh, pageSpec, doValidate, doProfile) {
+            if (refresh === void 0) { refresh = true; }
+            if (doValidate === void 0) { doValidate = true; }
+            if (doProfile === void 0) { doProfile = false; }
             var self = this;
             var deferred = this.$q.defer();
+            var promise = deferred.promise;
+            self.executionStack.push(promise);
             //flag to indicate query is running
-            this.executingQuery = true;
-            this.queryProgress = 0;
+            this.setExecutingQuery(true);
+            this.setQueryProgress(50);
             // Query Spark shell service
             var didUpdateColumns = false;
             var successCallback = function () {
                 //mark the query as finished
-                self.executingQuery = false;
-                // Clear previous filters
-                if (typeof (self.gridApi) !== "undefined") {
-                    self.gridApi.core.clearAllFilters();
-                }
+                self.setQueryProgress(85);
+                self.setExecutingQuery(false);
                 //mark the flag to indicate Hive is loaded
                 self.hiveDataLoaded = true;
                 self.isValid = true;
                 //store the result for use in the commands
-                self.updateGrid();
+                if (refresh) {
+                    // Clear previous filters
+                    if (typeof (self.gridApi) !== "undefined") {
+                        self.gridApi.core.clearAllFilters();
+                    }
+                    self.updateGrid();
+                }
+                self.removeExecution(promise);
                 deferred.resolve();
             };
             var errorCallback = function (message) {
-                // Display error message
-                self.$mdDialog.show({
-                    clickOutsideToClose: true,
-                    controller: (_a = /** @class */ (function () {
-                            function class_1($mdDialog) {
-                                this.$mdDialog = $mdDialog;
-                                /**
-                                 * Additional details about the error.
-                                 */
-                                this.detailMessage = message;
-                                /**
-                                 * Indicates that the detail message should be shown.
-                                 */
-                                this.showDetail = false;
-                            }
-                            /**
-                             * Hides this dialog.
-                             */
-                            class_1.prototype.hide = function () {
-                                this.$mdDialog.hide();
-                            };
-                            return class_1;
-                        }()),
-                        _a.$inject = ["$mdDialog"],
-                        _a),
-                    controllerAs: "dialog",
-                    parent: angular.element("body"),
-                    template: "\n                  <md-dialog arial-label=\"error executing the query\" style=\"max-width: 640px;\">\n                    <md-dialog-content class=\"md-dialog-content\" role=\"document\" tabIndex=\"-1\">\n                      <h2 class=\"md-title\">Error executing the query</h2>\n                      <p>There was a problem executing the query.</p>\n                      <md-button ng-if=\"!dialog.showDetail\" ng-click=\"dialog.showDetail = true\" style=\"margin: 0; padding: 0;\">Show more</md-button>\n                      <p ng-if=\"dialog.showDetail\">{{ dialog.detailMessage }}</p>\n                    </md-dialog-content>\n                    <md-dialog-actions>\n                      <md-button ng-click=\"dialog.hide()\" class=\"md-primary md-confirm-button\" md-autofocus=\"true\">Got it!</md-button>\n                    </md-dialog-actions>\n                  </md-dialog>\n                "
-                });
+                self.setExecutingQuery(false);
+                self.resetAllProgress();
+                self.showError(message);
                 // Reset state
-                self.executingQuery = false;
-                self.engine.pop();
-                self.functionHistory.pop();
-                self.refreshGrid();
+                self.onUndo();
+                self.removeExecution(promise);
                 deferred.reject(message);
-                var _a;
             };
             var notifyCallback = function (progress) {
-                self.queryProgress = progress * 100;
+                //self.setQueryProgress(progress * 100);
+                /*
                 if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                     didUpdateColumns = true;
-                    self.updateGrid();
                 }
+                */
             };
-            self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
-            return deferred.promise;
+            self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
+            return promise;
         };
         ;
+        TransformDataComponent.prototype.removeExecution = function (promise) {
+            var idx = this.executionStack.indexOf(promise);
+            this.executionStack.splice(idx, 1);
+        };
         TransformDataComponent.prototype.updateGrid = function () {
             var self = this;
             //transform the result to the agGrid model
@@ -483,32 +555,46 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 });
             });
             //update the ag-grid
-            this.tableColumns = columns;
+            this.updateTableState();
+            this.actualCols = this.engine.getActualCols();
+            this.actualRows = this.engine.getActualRows();
             this.tableRows = this.engine.getRows();
+            this.tableColumns = columns;
             this.tableValidation = this.engine.getValidationResults();
+            this.updateSortIcon();
             this.updateCodeMirrorAutoComplete();
         };
-        /**
-         * Adds formulas for column filters.
-         */
-        TransformDataComponent.prototype.addFilters = function () {
-            var self = this;
-            angular.forEach(self.tableColumns, function (column) {
-                angular.forEach(column.filters, function (filter) {
-                    if (filter.term) {
-                        self.addColumnFilter(filter, column);
-                    }
-                });
-            });
+        TransformDataComponent.prototype.addColumnSort = function (direction, column, query) {
+            var formula;
+            var directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
+            var icon = '';
+            if (directionLower == 'asc') {
+                formula = "sort(asc(\"" + column.headerTooltip + "\"))";
+                icon = 'arrow_drop_up';
+            }
+            else if (directionLower == 'desc') {
+                formula = "sort(desc(\"" + column.headerTooltip + "\"))";
+                icon = 'arrow_drop_down';
+            }
+            if (formula) {
+                this.wranglerDataService.sortDirection_ = directionLower;
+                this.wranglerDataService.sortIndex_ = column.index;
+                var name_1 = "Sort by " + column.displayName + " " + directionLower;
+                return this.pushFormula(formula, { formula: formula, icon: icon, name: name_1, sort: { direction: directionLower, columnIndex: column.index, columnName: column.field } }, query);
+            }
+            else {
+                var d = this.$q.defer();
+                d.resolve({});
+                return d.promise;
+            }
         };
-        ;
         /**
          * Add formula for a column filter.
          *
          * @param {Object} filter the filter
          * @param {ui.grid.GridColumn} column the column
          */
-        TransformDataComponent.prototype.addColumnFilter = function (filter, column) {
+        TransformDataComponent.prototype.addColumnFilter = function (filter, column, query) {
             // Generate formula for filter
             var formula;
             var safeTerm = (column.delegate.dataCategory === column_delegate_1.DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
@@ -527,8 +613,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     verb = "equal to";
                     break;
                 case this.uiGridConstants.filter.CONTAINS:
-                    var query = "%" + filter.term.replace("%", "%%") + "%";
-                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
+                    var query_1 = "%" + filter.term.replace("%", "%%") + "%";
+                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query_1) + "'))";
                     verb = "containing";
                     break;
                 default:
@@ -536,7 +622,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Add formula
             var name = "Find " + column.displayName + " " + verb + " " + filter.term;
-            this.pushFormula(formula, { formula: formula, icon: filter.icon, name: name });
+            if (angular.isUndefined(query)) {
+                query = false;
+            }
+            //TODO CLEAR PAGE CACHE
+            return this.pushFormula(formula, { formula: formula, icon: filter.icon, name: name }, query);
         };
         ;
         /**
@@ -546,8 +636,35 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @param {TransformContext} context the UI context for the transformation
          */
         TransformDataComponent.prototype.addFunction = function (formula, context) {
-            this.addFilters();
-            this.pushFormula(formula, context, true);
+            return this.pushFormula(formula, context, true);
+        };
+        ;
+        /**
+         * Appends the specified formula to the current script.
+         *
+         * @param {string} formula - the formula
+         */
+        TransformDataComponent.prototype.pushFormulaToEngine = function (formula, context) {
+            // Covert to a syntax tree
+            this.ternServer.server.addFile("[doc]", formula);
+            var file = this.ternServer.server.findFile("[doc]");
+            // Add to the Spark script
+            try {
+                this.engine.push(file.ast, context);
+                return true;
+            }
+            catch (e) {
+                var alert_1 = this.$mdDialog.alert()
+                    .parent($('body'))
+                    .clickOutsideToClose(true)
+                    .title("Error executing the query")
+                    .textContent(e.message)
+                    .ariaLabel("Error executing the query")
+                    .ok("Ok");
+                this.$mdDialog.show(alert_1);
+                console.log(e);
+                return false;
+            }
         };
         ;
         /**
@@ -556,33 +673,70 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @param {string} formula - the formula
          * @param {TransformContext} context - the UI context for the transformation
          * @param {boolean} doQuery - true to immediately execute the query
+         * @param {boolean} refreshGrid - true to refresh grid
          */
-        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery) {
+        TransformDataComponent.prototype.pushFormula = function (formula, context, doQuery, refreshGrid) {
             if (doQuery === void 0) { doQuery = false; }
-            // Covert to a syntax tree
-            this.ternServer.server.addFile("[doc]", formula);
-            var file = this.ternServer.server.findFile("[doc]");
-            // Add to the Spark script
-            try {
-                this.engine.push(file.ast, context);
-            }
-            catch (e) {
-                var alert_1 = this.$mdDialog.alert()
-                    .parent($('body'))
-                    .clickOutsideToClose(true)
-                    .title("Error executing the query")
-                    .textContent(e.message)
-                    .ariaLabel("error executing the query")
-                    .ok("Got it!");
-                this.$mdDialog.show(alert_1);
-                console.log(e);
-                return;
-            }
-            // Add to function history
-            this.functionHistory.push(context);
-            if (doQuery || this.engine.getRows() === null) {
-                this.query();
-            }
+            if (refreshGrid === void 0) { refreshGrid = true; }
+            var self = this;
+            var deferred = this.$q.defer();
+            self.currentPage = query_engine_1.PageSpec.defaultPage();
+            setTimeout(function () {
+                if (self.pushFormulaToEngine(formula, context)) {
+                    // Add to function history
+                    self.functionHistory.push(context);
+                    if (doQuery || self.engine.getRows() === null) {
+                        return self.query(refreshGrid, self.currentPage).catch(function (reason) { return deferred.reject(reason); }).then(function (value) { return deferred.resolve(); });
+                    }
+                }
+                // Formula couldn't parse
+                self.resetAllProgress();
+                return deferred.reject();
+            }, 10);
+            return deferred.promise;
+        };
+        ;
+        /**
+         * Generates and displays a categorical histogram
+         *
+         * @return {Promise} a promise for when the query completes
+         */
+        TransformDataComponent.prototype.showAnalyzeColumn = function (fieldName) {
+            var self = this;
+            self.pushFormulaToEngine("select(" + fieldName + ")", {});
+            self.query(false, query_engine_1.PageSpec.emptyPage(), true, true).then(function () {
+                var profileStats = self.engine.getProfile();
+                self.engine.pop();
+                var deferred = self.$q.defer();
+                self.$mdDialog.show({
+                    controller: (_a = /** @class */ (function () {
+                            function class_2($mdDialog) {
+                                this.$mdDialog = $mdDialog;
+                                /**
+                                 * Additional details about the error.
+                                 */
+                                this.profile = profileStats;
+                                this.fieldName = fieldName;
+                            }
+                            /**
+                             * Hides this dialog.
+                             */
+                            class_2.prototype.hide = function () {
+                                self.$mdDialog.hide();
+                            };
+                            return class_2;
+                        }()),
+                        _a.$inject = ["$mdDialog"],
+                        _a),
+                    controllerAs: "dialog",
+                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                    locals: {}
+                });
+                var _a;
+            });
         };
         ;
         /**
@@ -611,9 +765,28 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
         };
         ;
         /**
+         * Update state counter so clients know that state (function stack) has changed
+         */
+        TransformDataComponent.prototype.updateTableState = function () {
+            // Update state variable to indicate to client we are in a new state
+            this.tableState = this.engine.getState().tableState;
+        };
+        TransformDataComponent.prototype.updateSortIcon = function () {
+            var columnSort = this.engine.getState().sort;
+            if (columnSort != null) {
+                this.wranglerDataService.sortDirection_ = columnSort.direction;
+                this.wranglerDataService.sortIndex_ = columnSort.columnIndex;
+            }
+            else {
+                this.wranglerDataService.sortDirection_ = null;
+                this.wranglerDataService.sortIndex_ = null;
+            }
+        };
+        /**
          * Refreshes the grid. Used after undo and redo.
          */
         TransformDataComponent.prototype.refreshGrid = function () {
+            this.updateTableState();
             var columns = this.engine.getColumns();
             var rows = this.engine.getRows();
             if (columns === null || rows === null) {
@@ -628,7 +801,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * Refreshes the table content.
          */
         TransformDataComponent.prototype.resample = function () {
-            this.addFilters();
             this.query();
         };
         //noinspection JSUnusedGlobalSymbols
@@ -675,9 +847,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @returns {Promise} signals when the save is complete
          */
         TransformDataComponent.prototype.saveToFeedModel = function () {
-            var _this = this;
             // Add unsaved filters
-            this.addFilters();
+            var _this = this;
             // Check if updates are necessary
             var feedModel = this.FeedService.createFeedModel;
             var newScript = this.engine.getFeedScript();
@@ -748,7 +919,48 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     }
                     return fieldPolicy;
                 });
+                this.engine.setFieldPolicies(this.fieldPolicies);
             }
+        };
+        /**
+         * Set the query progress
+         * @param {number} progress
+         */
+        TransformDataComponent.prototype.setQueryProgress = function (progress) {
+            if (!this.chainedOperation) {
+                this.queryProgress = progress;
+            }
+            else {
+                this.queryProgress = this.chainedOperation.fracComplete(progress);
+            }
+        };
+        /**
+         * Set whether the query is actively running
+         * @param {boolean} query
+         */
+        TransformDataComponent.prototype.setExecutingQuery = function (query) {
+            if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
+                this.executingQuery = query;
+            }
+            // Reset chained operation to default
+            if (this.executingQuery == false) {
+                this.resetAllProgress();
+            }
+        };
+        /**
+         * Indicates the active query will be followed by another in quick succession
+         * @param {ChainedOperation} chainedOperation
+         */
+        TransformDataComponent.prototype.setChainedQuery = function (chainedOp) {
+            this.chainedOperation = chainedOp;
+        };
+        /**
+         * Resets all progress to non-running
+         */
+        TransformDataComponent.prototype.resetAllProgress = function () {
+            this.chainedOperation = new column_delegate_1.ChainedOperation();
+            this.queryProgress = 0;
+            this.executingQuery = false;
         };
         __decorate([
             core_1.Input(),
@@ -770,7 +982,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             stepIndex: "@"
         },
         controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-            "WindowUnloadService", TransformDataComponent],
+            "WindowUnloadService", "WranglerDataService", "$timeout", TransformDataComponent],
         controllerAs: "$td",
         require: {
             stepperController: "^thinkbigStepper"

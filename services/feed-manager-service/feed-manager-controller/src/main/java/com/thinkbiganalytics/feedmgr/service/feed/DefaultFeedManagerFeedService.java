@@ -65,6 +65,7 @@ import com.thinkbiganalytics.metadata.api.event.feed.FeedChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
@@ -219,6 +220,12 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
     @Value("${nifi.auto.align:true}")
     private boolean nifiAutoFeedsAlignAfterSave;
 
+    /**
+     * Should we sync the Kylo metadata column descriptions over to Hive, if Hive is the target
+     */
+    @Value("${kylo.feed.mgr.hive.target.syncColumnDescriptions:true}")
+    private boolean hiveTargetSyncColumnDescriptions;
+
     @Inject
     private NiFiObjectCache niFiObjectCache;
 
@@ -310,49 +317,69 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
 
     @Override
     public FeedVersions getFeedVersions(String feedId, boolean includeContent) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            Feed.ID domainId = feedProvider.resolveId(feedId);
-
-            return feedProvider.findVersions(domainId, includeContent)
-                .map(list -> feedModelTransform.domainToFeedVersions(list, domainId))
-                .orElse((FeedVersions) null);
-        });
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                return feedProvider.findVersions(domainFeedId, includeContent)
+                    .map(list -> feedModelTransform.domainToFeedVersions(list, domainFeedId))
+                    .orElse((FeedVersions) null);
+            }, MetadataAccess.SERVICE);
+        }).orElse((FeedVersions) null);
     }
 
     @Override
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
-        return metadataAccess.read(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
-
-            Feed.ID domainFeedId = feedProvider.resolveId(feedId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
-
-            return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
-                .map(version -> feedModelTransform.domainToFeedVersion(version));
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.flatMap(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainVersionId = feedProvider.resolveVersion(versionId);
+                
+                return feedProvider.findVersion(domainFeedId, domainVersionId, includeContent)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+            }, MetadataAccess.SERVICE);
         });
     }
-    
+
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String fromVerId, String toVerId) {
+        Optional<Feed.ID> idOption = checkAccessVersions(feedId);
+        
+        return idOption.map(domainFeedId -> {
+            return metadataAccess.read(() -> {
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
+                com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
+                
+                Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+                Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
+                                .map(version -> feedModelTransform.domainToFeedVersion(version));
+                
+                return fromVer.map(from -> {
+                    return toVer.map(to -> {
+                        return feedModelTransform.generateDifference(from, to);
+                    }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            }, MetadataAccess.SERVICE);
+        }).orElseThrow(() -> new FeedNotFoundException(feedProvider.resolveId(feedId)));
+    }
+
+    private Optional<Feed.ID> checkAccessVersions(String feedId) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ACCESS_FEEDS);
             
             Feed.ID domainFeedId = feedProvider.resolveId(feedId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainFromVerId = feedProvider.resolveVersion(fromVerId);
-            com.thinkbiganalytics.metadata.api.versioning.EntityVersion.ID domainToVerId = feedProvider.resolveVersion(toVerId);
-            
-            Optional<EntityVersion> fromVer = feedProvider.findVersion(domainFeedId, domainFromVerId, true)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
-            Optional<EntityVersion> toVer = feedProvider.findVersion(domainFeedId, domainToVerId, true)
-                            .map(version -> feedModelTransform.domainToFeedVersion(version));
-            
-            return fromVer.map(from -> {
-                return toVer.map(to -> {
-                    return feedModelTransform.generateDifference(from, to);
-                }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
-            }).orElseThrow(() -> new FeedNotFoundException(domainFeedId));
+            Feed feed = feedProvider.getFeed(domainFeedId);
+    
+            if (feed != null) {
+                if (accessController.isEntityAccessControlled()) {
+                    feed.getAllowedActions().checkPermission(FeedAccessControl.ACCESS_DETAILS);
+                }
+                return Optional.of(domainFeedId);
+            } else {
+                return Optional.empty();
+            }
         });
     }
 
@@ -759,22 +786,24 @@ public class DefaultFeedManagerFeedService implements FeedManagerFeedService {
             }
 
             // Update Hive metastore
-            stopwatch.start();
-            final boolean hasHiveDestination = domainFeed.getDestinations().stream()
-                .map(FeedDestination::getDatasource)
-                .filter(DerivedDatasource.class::isInstance)
-                .map(DerivedDatasource.class::cast)
-                .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
-            if (hasHiveDestination) {
-                try {
-                    feedHiveTableService.updateColumnDescriptions(feed);
-                } catch (final DataAccessException e) {
-                    log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+            if(hiveTargetSyncColumnDescriptions) {
+                stopwatch.start();
+                final boolean hasHiveDestination = domainFeed.getDestinations().stream()
+                    .map(FeedDestination::getDatasource)
+                    .filter(DerivedDatasource.class::isInstance)
+                    .map(DerivedDatasource.class::cast)
+                    .anyMatch(datasource -> "HiveDatasource".equals(datasource.getDatasourceType()));
+                if (hasHiveDestination) {
+                    try {
+                        feedHiveTableService.updateColumnDescriptions(feed);
+                    } catch (final DataAccessException e) {
+                        log.warn("Failed to update column descriptions for feed: {}", feed.getCategoryAndFeedDisplayName(), e);
+                    }
                 }
+                stopwatch.stop();
+                log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
+                stopwatch.reset();
             }
-            stopwatch.stop();
-            log.debug("Time to update hive metastore: {} ms", stopwatch.elapsed(TimeUnit.MILLISECONDS));
-            stopwatch.reset();
 
             // Update Kylo metastore
             stopwatch.start();

@@ -19,10 +19,10 @@ const SparkDataType = {
     // Numeric types
     BYTE: new DataType("byte", "Byte"),
     SHORT: new DataType("short", "Short"),
-    INT: new DataType("int", "Int", "fa-hashtag"),
-    BIGINT: new DataType("bigint", "Bigint", "fa-hashtag"),
+    INT: new DataType("int", "Int", "exposure_zero"),
+    BIGINT: new DataType("bigint", "Bigint", "exposure_zero"),
     FLOAT: new DataType("float", "Float"),
-    DOUBLE: new DataType("double", "Double", "fa-hashtag"),
+    DOUBLE: new DataType("double", "Double", "exposure_zero"),
     DECIMAL: new DataType("decimal", "Decimal"),
 
     // Date/time types
@@ -83,18 +83,18 @@ export class SparkColumnDelegate extends ColumnDelegate {
     castTo(dataType: DataType): void {
         if (dataType === SparkDataType.BIGINT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to bigint"});
+            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to bigint"});
         }
         if (dataType === SparkDataType.DATE) {
             return this.castToDate();
         }
         if (dataType === SparkDataType.DOUBLE) {
             const formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to double"});
+            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to double"});
         }
         if (dataType === SparkDataType.INT) {
             const formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, {columns: (this.controller as any).tableColumns});
-            this.controller.addFunction(formula, {formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to int"});
+            this.controller.addFunction(formula, {formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to int"});
         }
         if (dataType === SparkDataType.STRING) {
             return this.castToString();
@@ -122,6 +122,35 @@ export class SparkColumnDelegate extends ColumnDelegate {
             default:
                 return [SparkDataType.STRING];
         }
+    }
+
+    /**
+     * Override default validate so we dont refresh teh grid
+     * @param filter
+     * @param table
+     */
+    applyFilter(header:any,filter: any, table: any) {
+       this.controller.addColumnFilter(filter,header,true)
+    }
+
+    applyFilters(header:any,filters:any[],table:any){
+        //filter out any filters that dont have anything
+        let validFilters =_.filter(filters,(filter) => {
+            return (angular.isDefined(filter.term)&& filter.term != '')
+        });
+
+        _.each(validFilters,(filter,i)=> {
+               let query = false;
+               if(i == (validFilters.length -1)){
+                   query = true;
+               }
+                this.controller.addColumnFilter(filter,header,true)
+            });
+    }
+
+
+    sortColumn(direction: string, column: any, grid: any) {
+        this.controller.addColumnSort(direction,column,true);
     }
 
     /**
@@ -229,22 +258,31 @@ export class SparkColumnDelegate extends ColumnDelegate {
     private castToTimestamp(): void {
         const sampleValue = this.getSampleValue();
 
+        // Detect ISO dates
+
         if (this.dataCategory === DataCategory.DATETIME) {
             const formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
         } else if (this.dataCategory === DataCategory.STRING) {
-            this.dialog.openDateFormat({
-                message: "Enter the pattern for parsing this column as a timestamp:",
-                pattern: "yyyy-MM-dd HH:mm:ss",
-                patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
-                title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                type: DateFormatType.STRING
-            }).subscribe(response => {
-                const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+            // If ISO date then just convert it. Otherwise, prompt.
+            if (Date.parse(sampleValue) != undefined) {
+                var script = `${this.fieldName}.cast("timestamp")`;
                 const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
-            });
+            } else {
+                this.dialog.openDateFormat({
+                    message: "Enter the pattern for parsing this column as a timestamp:",
+                    pattern: "yyyy-MM-dd HH:mm:ss",
+                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                    preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
+                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                    type: DateFormatType.STRING
+                }).subscribe(response => {
+                    const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+                    const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                    this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
+                });
+            }
         }
     }
 

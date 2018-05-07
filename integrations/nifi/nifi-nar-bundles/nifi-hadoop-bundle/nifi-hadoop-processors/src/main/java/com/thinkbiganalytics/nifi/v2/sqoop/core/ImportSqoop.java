@@ -129,6 +129,29 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         .build();
 
     /**
+     * Property to provide additional -D properties for Sqoop.  Note user needs to add the -D
+     */
+    public static final PropertyDescriptor SQOOP_SYSTEM_PROPERTIES = new PropertyDescriptor.Builder()
+        .name("Sqoop System Properties")
+        .description("Add -D properties here. Example: ' -Dsqoop.export.records.per.statement=1 '")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+    /**
+     * Property to provide any additional sqoop arguments not explicitly provided by this processor
+     */
+    public static final PropertyDescriptor SQOOP_ADDITIONAL_ARGUMENTS = new PropertyDescriptor.Builder()
+        .name("Additional Sqoop arguments")
+        .description("Add any additional arguments here:  Example '--create-hcatalog-table=true --update-mode allowinsert --update-key id '")
+        .expressionLanguageSupported(true)
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
+
+    /**
      * Property to provide the load type (full table, incremental based on last modified time field, incremental based on id field).
      */
     public static final PropertyDescriptor SOURCE_LOAD_STRATEGY = new PropertyDescriptor.Builder()
@@ -468,6 +491,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         properties.add(TARGET_COLUMN_TYPE_MAPPING);
         properties.add(SQOOP_CODEGEN_DIR);
         properties.add(SOURCESPECIFIC_SQLSERVER_SCHEMA);
+        properties.add(SQOOP_SYSTEM_PROPERTIES);
+        properties.add(SQOOP_ADDITIONAL_ARGUMENTS);
         this.properties = Collections.unmodifiableList(properties);
 
         /* Create list of relationships */
@@ -524,6 +549,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
         final String targetColumnTypeMapping = context.getProperty(TARGET_COLUMN_TYPE_MAPPING).evaluateAttributeExpressions(flowFile).getValue();
         final String sqoopCodeGenDirectory = context.getProperty(SQOOP_CODEGEN_DIR).evaluateAttributeExpressions(flowFile).getValue();
         final String sourceSpecificSqlServerSchema = context.getProperty(SOURCESPECIFIC_SQLSERVER_SCHEMA).evaluateAttributeExpressions(flowFile).getValue();
+        final String systemProperties = context.getProperty(SQOOP_SYSTEM_PROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
+        final String additionalArguments = context.getProperty(SQOOP_ADDITIONAL_ARGUMENTS).evaluateAttributeExpressions(flowFile).getValue();
 
         final String COMMAND_SHELL = "/bin/bash";
         final String COMMAND_SHELL_FLAGS = "-c";
@@ -567,6 +594,8 @@ public class ImportSqoop extends AbstractNiFiProcessor {
             .setTargetColumnTypeMapping(targetColumnTypeMapping)
             .setSqoopCodeGenDirectory(sqoopCodeGenDirectory)
             .setSourceSpecificSqlServerSchema(sourceSpecificSqlServerSchema)
+            .setSystemProperties(systemProperties)
+            .setAdditionalArguments(additionalArguments)
             .build();
 
         List<String> sqoopExecutionCommand = new ArrayList<>();

@@ -62,6 +62,15 @@ public interface NiFiProcessGroupsRestClient {
     @Nonnull
     ConnectionDTO createConnection(@Nonnull String processGroupId, @Nonnull ConnectableDTO source, @Nonnull ConnectableDTO dest);
 
+
+    /**
+     * Creates a connection
+     * @param connection
+     * @return
+     */
+    @Nonnull
+    ConnectionDTO createConnection(@Nonnull final ConnectionDTO connection);
+
     /**
      * Creates a controller service.
      *
@@ -246,4 +255,6 @@ public interface NiFiProcessGroupsRestClient {
      * @return the flow for the group
      */
     ProcessGroupFlowDTO flow(@Nonnull final String parentGroupId);
+
+    ProcessGroupStatusDTO flowStatus(@Nonnull final String parentGroupId,boolean recursive);
 }

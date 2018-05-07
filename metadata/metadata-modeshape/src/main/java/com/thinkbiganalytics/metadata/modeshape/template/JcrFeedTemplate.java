@@ -195,7 +195,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
         JcrFeed jcrFeed = (JcrFeed) feed;
         Node feedNode = jcrFeed.getNode();
 
-        return JcrPropertyUtil.addToSetProperty(this.node, FEEDS, feedNode);
+        return JcrPropertyUtil.addToSetProperty(this.node, FEEDS, feedNode, true);
     }
 
     public boolean removeFeed(Feed feed) {

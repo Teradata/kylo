@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.service;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -46,6 +46,8 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundException;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.security.FeedAccessControl;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
@@ -101,7 +103,16 @@ public class FeedManagerMetadataService implements MetadataService {
     FeedManagerFeedService feedProvider;
 
     @Inject
+    private FeedProvider domainFeedProvider;
+
+    @Inject
     LegacyNifiRestClient nifiRestClient;
+
+    /**
+     * NiFi REST client
+     */
+    @Inject
+    private NiFiRestClient nifiClient;
 
     @Inject
     MetadataAccess metadataAccess;
@@ -120,12 +131,6 @@ public class FeedManagerMetadataService implements MetadataService {
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
-
-    /**
-     * NiFi REST client
-     */
-    @Inject
-    private NiFiRestClient nifiClient;
 
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
@@ -300,6 +305,40 @@ public class FeedManagerMetadataService implements MetadataService {
         }
 
         return true;
+    }
+
+    @Override
+    @SuppressWarnings("deprecation")
+    public FeedSummary startFeed(String feedId) {
+        FeedMetadata feedMetadata = this.metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_FEEDS);
+
+            Feed.ID domainId = domainFeedProvider.resolveId(feedId);
+            Feed domainFeed = domainFeedProvider.findById(domainId);
+
+            if (domainFeed != null) {
+                domainFeed.getAllowedActions().checkPermission(FeedAccessControl.START);
+                return feedModelTransform.domainToFeedMetadata(domainFeed);
+            } else {
+                throw new FeedNotFoundException(domainId);
+            }
+        });
+
+       Optional<ProcessorDTO> feedInputProcessor = nifiClient.processGroups().findByName("root", feedMetadata.getSystemCategoryName(), false, false)
+            .flatMap(categoryGroup -> nifiClient.processGroups().findByName(categoryGroup.getId(), feedMetadata.getSystemFeedName(), false, true))
+            .map(feedGroup -> {
+                List<ProcessorDTO> inputProcessors = this.nifiRestClient.getInputProcessors(feedGroup.getId());
+                ProcessorDTO inputProcessor = NifiProcessUtil.findFirstProcessorsByTypeAndName(inputProcessors, feedMetadata.getInputProcessorType(), feedMetadata.getInputProcessorName());
+                if (inputProcessor != null) {
+                    this.nifiClient.processors().wakeUp(inputProcessor);
+                }
+                return inputProcessor;
+            });
+        if(!feedInputProcessor.isPresent()){
+            throw new RuntimeException("Unable to start Feed " + feedMetadata.getCategoryAndFeedName());
+        }
+
+        return new FeedSummary(feedMetadata);
     }
 
     public FeedSummary enableFeed(String feedId) {
@@ -486,7 +525,7 @@ public class FeedManagerMetadataService implements MetadataService {
     public Optional<EntityVersion> getFeedVersion(String feedId, String versionId, boolean includeContent) {
         return feedProvider.getFeedVersion(feedId, versionId, includeContent);
     }
-    
+
     @Nonnull
     @Override
     public EntityVersionDifference getFeedVersionDifference(String feedId, String versionId1, String versionId2) {

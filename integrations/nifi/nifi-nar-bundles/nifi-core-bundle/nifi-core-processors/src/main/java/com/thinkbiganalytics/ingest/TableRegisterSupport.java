@@ -9,9 +9,9 @@ package com.thinkbiganalytics.ingest;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,25 +24,19 @@ import com.thinkbiganalytics.hive.util.HiveUtils;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableRegisterConfiguration;
 import com.thinkbiganalytics.util.TableType;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nonnull;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 /**
  * Generates and execute SQL queries for creating tables.
@@ -87,21 +81,22 @@ public class TableRegisterSupport {
 
     /**
      * copy the columnSpecs and reset the datatypes to match that of the feed column specs
+     *
      * @param feedColumnSpecs
      * @param columnSpecs
      * @return
      */
-    protected ColumnSpec[] adjustInvalidColumnSpec(ColumnSpec[] feedColumnSpecs, ColumnSpec[] columnSpecs){
+    protected ColumnSpec[] adjustInvalidColumnSpec(ColumnSpec[] feedColumnSpecs, ColumnSpec[] columnSpecs) {
         //find the source data types from the _feed table that match these columns and replace the data types
-        Map<String,ColumnSpec> feedColumnSpecMap = Arrays.asList(feedColumnSpecs).stream().collect(Collectors.toMap(ColumnSpec::getName, Function.identity()));
-        List<ColumnSpec> invalidColumnSpecs = Arrays.asList(columnSpecs).stream().map(c->  {
-              ColumnSpec copy = new ColumnSpec(c);
-               if(StringUtils.isNotBlank(copy.getOtherColumnName()) && feedColumnSpecMap.containsKey(copy.getOtherColumnName())) {
-                   ColumnSpec feedSpec = feedColumnSpecMap.get(copy.getOtherColumnName());
-                   copy.setDataType(feedSpec.getDataType());
-                  }
-                  return copy;
-            }).collect(Collectors.toList());
+        Map<String, ColumnSpec> feedColumnSpecMap = Arrays.asList(feedColumnSpecs).stream().collect(Collectors.toMap(ColumnSpec::getName, Function.identity()));
+        List<ColumnSpec> invalidColumnSpecs = Arrays.asList(columnSpecs).stream().map(c -> {
+            ColumnSpec copy = new ColumnSpec(c);
+            if (StringUtils.isNotBlank(copy.getOtherColumnName()) && feedColumnSpecMap.containsKey(copy.getOtherColumnName())) {
+                ColumnSpec feedSpec = feedColumnSpecMap.get(copy.getOtherColumnName());
+                copy.setDataType(feedSpec.getDataType());
+            }
+            return copy;
+        }).collect(Collectors.toList());
         return invalidColumnSpecs.toArray(new ColumnSpec[invalidColumnSpecs.size()]);
     }
 
@@ -121,18 +116,17 @@ public class TableRegisterSupport {
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
     public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
+            columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
         //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
         //_valid and the final feed table should use the target schema
-        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED ) ? feedColumnSpecs : columnSpecs);
+        ColumnSpec[] useColumnSpecs = ((tableType == TableType.FEED) ? feedColumnSpecs : columnSpecs);
 
         //if invalid use the feed column specs and update the data types on the _invalid table
-        if(tableType == TableType.INVALID){
-           useColumnSpecs = adjustInvalidColumnSpec(feedColumnSpecs,columnSpecs);
+        if (tableType == TableType.INVALID) {
+            useColumnSpecs = adjustInvalidColumnSpec(feedColumnSpecs, columnSpecs);
         }
-
 
         // Register the database
         if (registerDatabase && !registerDatabase(source)) {
@@ -172,31 +166,15 @@ public class TableRegisterSupport {
         return tables;
     }
 
-    public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions) {
-
-        String tableName = TableType.PROFILE.deriveQualifiedName(source, tableEntity);
-        String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
-        String formatSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
-        String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
-        String locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, tableEntity);
-
-        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "", TableType.PROFILE.isExternal());
-        return createTable(ddl);
-    }
-
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-        columnSpecs, String tblProperties) {
+            columnSpecs, String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
-        TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
-        for (TableType tableType : tableTypes) {
+        for (TableType tableType : TableType.values()) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
                 result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
             }
-        }
-        if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {
-            result = registerProfileTable(source, tableEntity, targetFormatOptions) && result;
         }
         return result;
     }
@@ -213,12 +191,32 @@ public class TableRegisterSupport {
 
     protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions, String targetFormatOptions, String targetTableProperties,
                                TableType tableType) {
-        String tableName = tableType.deriveQualifiedName(source, entity);
-        String partitionSQL = tableType.derivePartitionSpecification(partitions);
-        String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions, feedFormatOptions);
-        String locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
-        String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
-        String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
+
+        String tableName;
+        String columnsSQL;
+        String formatOptionsSQL;
+        String partitionSQL;
+        String locationSQL;
+        String tblPropertiesSQL;
+
+        switch (tableType) {
+            case PROFILE:
+                tableName = TableType.PROFILE.deriveQualifiedName(source, entity);
+                columnsSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
+                formatOptionsSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
+                partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
+                locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, entity);
+                tblPropertiesSQL = "";
+                break;
+            default:
+                tableName = tableType.deriveQualifiedName(source, entity);
+                partitionSQL = tableType.derivePartitionSpecification(partitions);
+                columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions, feedFormatOptions);
+                locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
+                formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
+                tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
+                break;
+        }
 
         return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL, tblPropertiesSQL, tableType.isExternal());
     }
@@ -227,8 +225,8 @@ public class TableRegisterSupport {
         StringBuilder sb = new StringBuilder();
         String externalString = (external ? " EXTERNAL " : " ");
         sb.append("CREATE").append(externalString).append("TABLE IF NOT EXISTS ")
-            .append(tableName)
-            .append(" (").append(columnsSQL).append(") ");
+                .append(tableName)
+                .append(" (").append(columnsSQL).append(") ");
 
         if (!StringUtils.isEmpty(partitionSQL)) {
             sb.append(" ").append(partitionSQL);
@@ -245,7 +243,7 @@ public class TableRegisterSupport {
 
     /**
      * Drops the specified Hive table.
-     *
+     * <p>
      * <p>The identifier is expected to already be quoted, if necessary.</p>
      *
      * @param identifier the identifier for the table

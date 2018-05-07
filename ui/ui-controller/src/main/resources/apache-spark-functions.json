@@ -2430,9 +2430,9 @@
     "!sparkType": "column"
   },
   "first": {
-    "!type": "fn(e: Column) -> Column",
+    "!type": "fn(e: Column, opt_ignorenulls: boolean) -> Column",
     "!doc": "Aggregate function: returns the first value in a group.",
-    "!spark": "functions.first(%c)",
+    "!spark": "functions.first(%c%,?b)",
     "!sparkType": "column"
   },
   "grouping": {
@@ -2454,9 +2454,9 @@
     "!sparkType": "column"
   },
   "last": {
-    "!type": "fn(e: Column) -> Column",
+    "!type": "fn(e: Column, opt_ignorenulls: boolean) -> Column",
     "!doc": "Aggregate function: returns the last value in a group.",
-    "!spark": "functions.last(%c)",
+    "!spark": "functions.last(%c%,?b)",
     "!sparkType": "column"
   },
   "max": {
@@ -2534,6 +2534,12 @@
 
   "!COLLECTION_FUNCTIONS": "Functions for collections.",
 
+  "col": {
+    "!type": "fn(colName: string) -> Column",
+    "!doc": "Gets the column by name.",
+    "!spark": "new Column(%s)",
+    "!sparkType": "Column"
+  },
   "array_contains": {
     "!type": "fn(column: Column, value: Object) -> Column",
     "!doc": "Returns true if the array contain the value.",
@@ -2814,6 +2820,12 @@
     "!type": "fn(e: Column) -> Column",
     "!doc": "Computes the ceiling of the given value.",
     "!spark": "functions.ceil(%c)",
+    "!sparkType": "column"
+  },
+  "clone": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a copy of a column.",
+    "!spark": "functions.lit(%c)",
     "!sparkType": "column"
   },
   "conv": {

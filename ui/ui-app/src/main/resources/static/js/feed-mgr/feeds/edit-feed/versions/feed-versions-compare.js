@@ -59,6 +59,8 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             });
 
             var versionedFeed = FeedService.getFeedVersion(this.model.feedId, self.rightVersion).then(function(result) {
+                // console.log('current feed', FeedService.editFeedModel);
+                // console.log('versioned feed', result.entity);
                 self.rightFeed = result.entity;
                 FeedService.versionFeedModel = self.rightFeed;
                 FeedService.versionFeedModel.version = version;
@@ -71,7 +73,6 @@ define(['angular', 'feed-mgr/feeds/edit-feed/module-name'], function (angular, m
             }).catch(function(err) {
                 self.loading = false;
             });
-
         };
 
         self.loadVersions();

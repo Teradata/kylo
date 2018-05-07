@@ -24,6 +24,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }).replace(/^_/, "");
             //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
         }
+        /**
+         * A cache of the controllerservice Id to its display name.
+         * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
+         * and not the UUID of the service.
+         *
+         * @type {{}}
+         */
+        var controllerServiceDisplayCache = {};
+        var controllerServiceDisplayCachePromiseTracker = {};
         var data = {
             /**
              * The Feed model in the Create Feed Stepper
@@ -127,10 +136,10 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                         feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
                             + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                             + ' STORED AS TEXTFILE',
-                        targetFormat: null,
+                        targetFormat: 'STORED AS ORC',
                         fieldPolicies: [],
                         partitions: [],
-                        options: { compress: false, compressionFormat: null, auditLogging: true, encrypt: false, trackHistory: false },
+                        options: { compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false },
                         sourceTableIncrementalDateField: null
                     },
                     category: { id: null, name: null },
@@ -189,6 +198,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 data.createFeedModel.owner = undefined;
                 _.each(data.createFeedModel.table.tableSchema.fields, function (field) {
                     field._id = _.uniqueId();
+                });
+                _.each(data.createFeedModel.table.partitions, function (partition) {
+                    partition._id = _.uniqueId();
                 });
                 return data.createFeedModel;
             },
@@ -323,6 +335,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (policies === void 0) { policies = null; }
                 this.createFeedModel.table.tableSchema.fields = fields;
                 this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(function (field) { return _this.newTableFieldPolicy(field.name); });
+                this.createFeedModel.schemaChanged = !this.validateSchemaDidNotChange(this.createFeedModel);
             },
             /**
              * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
@@ -471,6 +484,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 if (model.cloned) {
                     model.state = null;
                 }
+                //remove the self.model.originalTableSchema if its there
+                delete model.originalTableSchema;
                 if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                     // Set feed
                     var newFields = [];
@@ -566,6 +581,22 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             hideFeedSavingDialog: function () {
                 $mdDialog.hide();
             },
+            validateSchemaDidNotChange: function (model) {
+                var valid = true;
+                //if we are editing we need to make sure we dont modify the originalTableSchema
+                if (model.id && model.originalTableSchema && model.table && model.table.tableSchema) {
+                    //if model.originalTableSchema != model.table.tableSchema  ... ERROR
+                    //mark as invalid if they dont match
+                    var origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(function (i) {
+                        return i.name + " " + i.derivedDataType;
+                    }).value().join();
+                    var updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(function (i) {
+                        return i.name + " " + i.derivedDataType;
+                    }).value().join();
+                    valid = origFields == updatedFields;
+                }
+                return valid;
+            },
             /**
              * Save the model Posting the data to the server
              * @param model
@@ -599,13 +630,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }
                 //reset the sensitive properties
                 FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
+                //post to the server to save with a custom timeout of 7 minutes.
                 var promise = $http({
                     url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                     method: "POST",
                     data: angular.toJson(copy),
                     headers: {
                         'Content-Type': 'application/json; charset=UTF-8'
-                    }
+                    },
+                    timeout: 7 * 60 * 1000
                 }).then(successFn, errorFn);
                 return deferred.promise;
             },
@@ -715,6 +748,39 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     .then(function (response) {
                     return response.data;
                 });
+            },
+            setControllerServicePropertyDisplayName: function (property) {
+                var setDisplayValue = function (property) {
+                    var cacheEntry = controllerServiceDisplayCache[property.value];
+                    if (cacheEntry != null) {
+                        property.displayValue = cacheEntry;
+                        return true;
+                    }
+                    return false;
+                };
+                if (angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService)) {
+                    if (!setDisplayValue(property)) {
+                        var entry_1 = controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                        if (entry_1 == undefined) {
+                            var promise = data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService);
+                            entry_1 = { request: promise, waitingProperties: [] };
+                            entry_1.waitingProperties.push(property);
+                            controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService] = entry_1;
+                            promise.then(function (services) {
+                                _.each(services, function (service) {
+                                    controllerServiceDisplayCache[service.id] = service.name;
+                                });
+                                _.each(entry_1.waitingProperties, function (property) {
+                                    setDisplayValue(property);
+                                });
+                                delete controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                            });
+                        }
+                        else {
+                            entry_1.waitingProperties.push(property);
+                        }
+                    }
+                }
             },
             /**
              * Finds the allowed controller services for the specified property and sets the allowable values.

@@ -30,6 +30,10 @@ public class InspectionStatus {
     private List<String> descriptions = new ArrayList<>();
     private List<String> errors = new ArrayList<>();
 
+    public InspectionStatus() {
+        //default constructor required for de-serializing response from another classloader
+    }
+
     public InspectionStatus(boolean isValid) {
         this.valid = isValid;
     }

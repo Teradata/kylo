@@ -32,7 +32,6 @@ export class ErrorHandlerInterceptor extends JhiHttpInterceptor {
     }
 
     responseIntercept(observable: Observable<Response>): Observable<Response> {
-        console.log('error handler interceptor, reponseIntercept');
         return <Observable<Response>> observable.catch((error) => {
             if (!(error.status === 401 && (error.text() === '' ||
                 (error.json().path && error.json().path.indexOf('/api/account') === 0 )))) {

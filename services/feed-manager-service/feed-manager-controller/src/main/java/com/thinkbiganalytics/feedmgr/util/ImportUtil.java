@@ -29,6 +29,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.RemoteProcessGroupInputPort;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.service.feed.importing.model.ImportFeed;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
@@ -79,6 +80,9 @@ public class ImportUtil {
             } else if (entry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 options.add(new ImportComponentOption(ImportComponent.REUSABLE_TEMPLATE, false));
             }
+            else if (entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE)) {
+                options.add(new ImportComponentOption(ImportComponent.REMOTE_INPUT_PORT, false));
+            }
             else if(entry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)){
                 options.add(new ImportComponentOption(ImportComponent.TEMPLATE_CONNECTION_INFORMATION,true));
             } else if (importType.equals(ImportType.FEED) && entry.getName().startsWith(ImportFeed.FEED_JSON_FILE)) {
@@ -119,7 +123,8 @@ public class ImportUtil {
             option.getErrorMessages().add(msg);
             return false;
         } else {
-            template.getSensitiveProperties().forEach(nifiProperty -> {
+            //validate those properties that dont require user input are supplied
+            template.getSensitiveProperties().stream().filter(p->!p.isUserEditable()).forEach(nifiProperty -> {
                 ImportProperty
                     userSuppliedValue =
                     option.getProperties().stream().filter(importFeedProperty -> nifiProperty.getProcessorId().equalsIgnoreCase(importFeedProperty.getProcessorId()) && nifiProperty.getKey()
@@ -257,6 +262,11 @@ public class ImportUtil {
                 importTemplate.setTemplateJson(zipEntryContents);
             } else if (zipEntry.getName().startsWith(ImportTemplate.NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 importTemplate.addNifiConnectingReusableTemplateXml(zipEntryContents);
+            }
+            else if (zipEntry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_REMOTE_INPUT_PORT_JSON_FILE)) {
+                String json = zipEntryContents;
+                List<RemoteProcessGroupInputPort> remoteProcessGroupInputPorts = ObjectMapperSerializer.deserialize(json, new TypeReference<List<RemoteProcessGroupInputPort>>(){});
+                importTemplate.addRemoteProcessGroupInputPorts(remoteProcessGroupInputPorts);
             }
             else if (zipEntry.getName().startsWith(ImportTemplate.REUSABLE_TEMPLATE_OUTPUT_CONNECTION_FILE)) {
                 String json = zipEntryContents;

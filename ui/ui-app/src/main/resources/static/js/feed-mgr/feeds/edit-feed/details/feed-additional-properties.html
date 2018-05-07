@@ -57,18 +57,18 @@
                 ng-if="!vm.versions"
                 properties="vm.model.userProperties"></thinkbig-property-list>
 
-            <div ng-if="vm.versions" layout="row" ng-repeat="property in vm.model.userProperties" class="feed-property">
-                <div ng-if="property.locked" layout="column" flex="25" class="property-name">
+            <div ng-if="vm.versions" layout="row" ng-repeat="(propIdx, property) in vm.userProperties" class="feed-property versions-{{property.op}}">
+                <div ng-if="property.current.locked" layout="column" flex="25" class="property-name">
                     <span>{{property.displayName}}</span>
                     <span class="hint">{{property.description}}</span>
                 </div>
-                <span ng-if="!property.locked" flex="25" class="property-name">{{property.systemName}}</span>
+                <span ng-if="!property.current.locked" flex="25" class="property-name">{{property.systemName}}</span>
 
                 <div flex>
-                    {{property.value}}
+                    {{property.current.value}}
                 </div>
                 <div flex>
-                    {{vm.findVersionedUserProperty(property).value}}
+                    {{property.versioned.value}}
                 </div>
             </div>
 

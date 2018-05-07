@@ -90,13 +90,13 @@ public class SparkFileSchemaParserServiceTest {
         Whitebox.setInternalState(service, "shellProcessManager", sparkShellProcessManager);
         Whitebox.setInternalState(service, "restClient", restClient);
 
-        Mockito.when(service.doParse(Mockito.any(InputStream.class), Mockito.any(), Mockito.any())).thenCallRealMethod();
+        Mockito.when(service.doParse(Mockito.any(InputStream.class), Mockito.any(), Mockito.any(), Mockito.any())).thenCallRealMethod();
         Mockito.when(sparkShellProcessManager.getSystemProcess()).thenReturn(null);
         Mockito.when(restClient.transform(Mockito.any(), Mockito.any())).thenReturn(transformResponse(columns));
         byte[] b = new byte[]{};
         InputStream inputStream = new ByteArrayInputStream(b);
 
-        Schema schema = service.doParse(inputStream, sparkFileType, tableSchemaType);
+        Schema schema = service.doParse(inputStream, sparkFileType, tableSchemaType, new DefaultSparkCommandBuilder(sparkFileType.name()));
         return schema;
     }
 

@@ -18,10 +18,10 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
         // Numeric types
         BYTE: new column_1.DataType("byte", "Byte"),
         SHORT: new column_1.DataType("short", "Short"),
-        INT: new column_1.DataType("int", "Int", "fa-hashtag"),
-        BIGINT: new column_1.DataType("bigint", "Bigint", "fa-hashtag"),
+        INT: new column_1.DataType("int", "Int", "exposure_zero"),
+        BIGINT: new column_1.DataType("bigint", "Bigint", "exposure_zero"),
         FLOAT: new column_1.DataType("float", "Float"),
-        DOUBLE: new column_1.DataType("double", "Double", "fa-hashtag"),
+        DOUBLE: new column_1.DataType("double", "Double", "exposure_zero"),
         DECIMAL: new column_1.DataType("decimal", "Decimal"),
         // Date/time types
         DATE: new column_1.DataType("date", "Date", "today"),
@@ -73,18 +73,18 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
         SparkColumnDelegate.prototype.castTo = function (dataType) {
             if (dataType === SparkDataType.BIGINT) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"bigint\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to bigint" });
+                this.controller.addFunction(formula, { formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to bigint" });
             }
             if (dataType === SparkDataType.DATE) {
                 return this.castToDate();
             }
             if (dataType === SparkDataType.DOUBLE) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"double\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to double" });
+                this.controller.addFunction(formula, { formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to double" });
             }
             if (dataType === SparkDataType.INT) {
                 var formula = this.toFormula(this.fieldName + ".cast(\"int\")", this.column, { columns: this.controller.tableColumns });
-                this.controller.addFunction(formula, { formula: formula, icon: "fa-hashtag", name: "Cast " + this.displayName + " to int" });
+                this.controller.addFunction(formula, { formula: formula, icon: "exposure_zero", name: "Cast " + this.displayName + " to int" });
             }
             if (dataType === SparkDataType.STRING) {
                 return this.castToString();
@@ -108,6 +108,31 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
                 default:
                     return [SparkDataType.STRING];
             }
+        };
+        /**
+         * Override default validate so we dont refresh teh grid
+         * @param filter
+         * @param table
+         */
+        SparkColumnDelegate.prototype.applyFilter = function (header, filter, table) {
+            this.controller.addColumnFilter(filter, header, true);
+        };
+        SparkColumnDelegate.prototype.applyFilters = function (header, filters, table) {
+            var _this = this;
+            //filter out any filters that dont have anything
+            var validFilters = _.filter(filters, function (filter) {
+                return (angular.isDefined(filter.term) && filter.term != '');
+            });
+            _.each(validFilters, function (filter, i) {
+                var query = false;
+                if (i == (validFilters.length - 1)) {
+                    query = true;
+                }
+                _this.controller.addColumnFilter(filter, header, true);
+            });
+        };
+        SparkColumnDelegate.prototype.sortColumn = function (direction, column, grid) {
+            this.controller.addColumnSort(direction, column, true);
         };
         /**
          * Casts this column to a date type.
@@ -208,23 +233,32 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
         SparkColumnDelegate.prototype.castToTimestamp = function () {
             var _this = this;
             var sampleValue = this.getSampleValue();
+            // Detect ISO dates
             if (this.dataCategory === column_delegate_1.DataCategory.DATETIME) {
                 var formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, { columns: this.controller.tableColumns });
                 this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp" });
             }
             else if (this.dataCategory === column_delegate_1.DataCategory.STRING) {
-                this.dialog.openDateFormat({
-                    message: "Enter the pattern for parsing this column as a timestamp:",
-                    pattern: "yyyy-MM-dd HH:mm:ss",
-                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                    preview: (sampleValue != null) ? function (format) { return _this.parseDate(sampleValue, format).map(function (date) { return moment(date).format("YYYY-MM-DD HH:mm:ss"); }); } : null,
-                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                    type: dialog_service_1.DateFormatType.STRING
-                }).subscribe(function (response) {
-                    var script = "unix_timestamp(" + _this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(_this.displayName) + "\")";
-                    var formula = _this.toFormula(script, _this.column, { columns: _this.controller.tableColumns });
-                    _this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + _this.displayName + " to timestamp" });
-                });
+                // If ISO date then just convert it. Otherwise, prompt.
+                if (Date.parse(sampleValue) != undefined) {
+                    var script = this.fieldName + ".cast(\"timestamp\")";
+                    var formula = this.toFormula(script, this.column, { columns: this.controller.tableColumns });
+                    this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp" });
+                }
+                else {
+                    this.dialog.openDateFormat({
+                        message: "Enter the pattern for parsing this column as a timestamp:",
+                        pattern: "yyyy-MM-dd HH:mm:ss",
+                        patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                        preview: (sampleValue != null) ? function (format) { return _this.parseDate(sampleValue, format).map(function (date) { return moment(date).format("YYYY-MM-DD HH:mm:ss"); }); } : null,
+                        title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                        type: dialog_service_1.DateFormatType.STRING
+                    }).subscribe(function (response) {
+                        var script = "unix_timestamp(" + _this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(_this.displayName) + "\")";
+                        var formula = _this.toFormula(script, _this.column, { columns: _this.controller.tableColumns });
+                        _this.controller.addFunction(formula, { formula: formula, icon: "access_time", name: "Cast " + _this.displayName + " to timestamp" });
+                    });
+                }
             }
         };
         /**

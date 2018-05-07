@@ -21,11 +21,10 @@ package com.thinkbiganalytics.nifi.provenance.repo;
  */
 
 import com.thinkbiganalytics.nifi.provenance.jms.ProvenanceEventJmsWriter;
+import com.thinkbiganalytics.nifi.provenance.jms.RemoteProvenanceEventJmsListener;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolderV3;
 import com.thinkbiganalytics.nifi.provenance.util.SpringApplicationContext;
 
@@ -49,8 +48,17 @@ public class JmsSender {
     List<ProvenanceEventRecordDTO> eventsToSend = null;
     List<AggregatedFeedProcessorStatistics> statsToSend = null;
     Map<String,Long> processorIdRunningFlows = new HashMap<>();
+    private boolean runningFlowsChanged;
 
-    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend, Map<String,Long> processorIdRunningFlows) {
+
+    public static class JmsSenderBuilder {
+        List<ProvenanceEventRecordDTO> eventsToSend = null;
+        List<AggregatedFeedProcessorStatistics> statsToSend = null;
+        Map<String,Long> processorIdRunningFlows = new HashMap<>();
+    }
+
+
+    public JmsSender(List<ProvenanceEventRecordDTO> eventsToSend, Collection<AggregatedFeedProcessorStatistics> statsToSend, Map<String,Long> processorIdRunningFlows, boolean runningFlowsChanged) {
         this.eventsToSend = eventsToSend;
         if (statsToSend != null) {
             this.statsToSend = new ArrayList<>(statsToSend);
@@ -58,6 +66,7 @@ public class JmsSender {
         if(processorIdRunningFlows != null){
             this.processorIdRunningFlows = processorIdRunningFlows;
         }
+        this.runningFlowsChanged = runningFlowsChanged;
     }
 
     public void run() {
@@ -78,7 +87,7 @@ public class JmsSender {
             }
 
             //if there are no events to send then send off the running flows map
-            if(eventsToSend == null && statsToSend == null )  {
+            if(runningFlowsChanged && eventsToSend == null && statsToSend == null )  {
                 log.info("Sending Running Flow counts statistics for feeds to JMS");
                 AggregatedFeedProcessorStatisticsHolderV3 statsHolder = new AggregatedFeedProcessorStatisticsHolderV3();
                 statsHolder.setProcessorIdRunningFlows(processorIdRunningFlows);
@@ -86,6 +95,9 @@ public class JmsSender {
                 statsHolder.setFeedStatistics(statsToSend);
                 getProvenanceEventActiveMqWriter().writeStats(statsHolder);
             }
+
+            //check and send remote event requests
+            getRemoteProvenanceEventJmsListener().notifyOtherNodesAboutRemoteInputPortSendEvents();
 
 
         } catch (Exception e) {
@@ -99,5 +111,13 @@ public class JmsSender {
             log.error("!!!!!!!ProvenanceEventJmsWriter is NULL !!!!!!");
         }
         return provenanceEventJmsWriter;
+    }
+
+    public RemoteProvenanceEventJmsListener getRemoteProvenanceEventJmsListener(){
+        RemoteProvenanceEventJmsListener remoteProvenanceEventJmsListener = SpringApplicationContext.getInstance().getBean(RemoteProvenanceEventJmsListener.class);
+        if (remoteProvenanceEventJmsListener == null) {
+            log.error("!!!!!!!RemoteProvenanceEventJmsListener is NULL !!!!!!");
+        }
+        return remoteProvenanceEventJmsListener;
     }
 }

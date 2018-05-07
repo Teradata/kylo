@@ -223,10 +223,12 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
-        if (hasPermission) {
-            categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
-        }
+         metadataAccess.commit(() -> {
+            boolean hasPermission = this.accessController.hasPermission(AccessController.SERVICES, FeedServicesAccessControl.ADMIN_CATEGORIES);
+            if (hasPermission) {
+                categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            }
+        });
     }
 
     @Nonnull

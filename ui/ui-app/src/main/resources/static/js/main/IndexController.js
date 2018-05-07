@@ -55,7 +55,7 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
              * The Query string for the Global Search
              * @type {string}
              */
-            this.searchQuery = '';
+            this.searchQuery = null;
             /**
              * Indicates that global searches are allowed.
              * @type {boolean}
@@ -77,9 +77,11 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
              * Search for something
              */
             this.search = function () {
-                _this.SearchService.searchQuery = _this.searchQuery;
-                if (_this.currentState.name != 'search') {
-                    _this.StateService.Search().navigateToSearch(true);
+                if (_this.searchQuery != null && _this.searchQuery.length > 0) {
+                    _this.SearchService.searchQuery = _this.searchQuery;
+                    if (_this.currentState.name != 'search') {
+                        _this.StateService.Search().navigateToSearch(true);
+                    }
                 }
             };
             /**
@@ -108,10 +110,16 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
             */
             this.$rootScope.previousState;
             this.$rootScope.currentState;
+            // to focus on input element after it appears
+            $scope.$watch(function () {
+                return document.querySelector('#search-bar:not(.ng-hide)');
+            }, function () {
+                document.getElementById('search-input').focus();
+            });
             this.$transitions.onSuccess({}, function (transition) {
                 _this.currentState = transition.to();
                 if (_this.currentState.name != 'search') {
-                    _this.searchQuery = '';
+                    _this.searchQuery = null;
                 }
                 else {
                     _this.searchQuery = _this.SearchService.searchQuery;
@@ -140,6 +148,22 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
         controller.prototype.closeSideNavList = function () {
             this.$mdSidenav('left').close();
         };
+        controller.prototype.showPreSearchBar = function () {
+            return this.searchQuery == null;
+        };
+        ;
+        controller.prototype.initiateSearch = function () {
+            this.searchQuery = '';
+        };
+        ;
+        controller.prototype.showSearchBar = function () {
+            return this.searchQuery != null;
+        };
+        ;
+        controller.prototype.endSearch = function () {
+            return this.searchQuery = null;
+        };
+        ;
         controller.prototype.showLoadingDialog = function () {
             this.loading = true;
             this.$mdDialog.show({

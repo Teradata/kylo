@@ -1,6 +1,7 @@
 import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
+import {Common} from "../../common/CommonTypes";
 
 function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToast: angular.material.IToastService, $mdDialog: angular.material.IDialogService, RestUrlService: any,
                      VisualQueryService: any, FeedCreationErrorService: any, FeedPropertyService: any, AccessControlService: any, EntityAccessControlService: any, StateService: any) {
@@ -31,6 +32,17 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         }).replace(/^_/, "")
         //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
     }
+
+    /**
+     * A cache of the controllerservice Id to its display name.
+     * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
+     * and not the UUID of the service.
+     *
+     * @type {{}}
+     */
+    let controllerServiceDisplayCache :Common.Map<string> = {};
+
+    let controllerServiceDisplayCachePromiseTracker: any = {};
 
     const data = {
 
@@ -140,10 +152,10 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     feedFormat: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\''
                     + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                     + ' STORED AS TEXTFILE',
-                    targetFormat: null,
+                    targetFormat: 'STORED AS ORC',
                     fieldPolicies: [],
                     partitions: [],
-                    options: {compress: false, compressionFormat: null, auditLogging: true, encrypt: false, trackHistory: false},
+                    options: {compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false},
                     sourceTableIncrementalDateField: null
                 },
                 category: {id: null, name: null},
@@ -202,6 +214,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             data.createFeedModel.owner = undefined;
             _.each(data.createFeedModel.table.tableSchema.fields, function(field: any) {
                 field._id = _.uniqueId();
+            });
+            _.each(data.createFeedModel.table.partitions, function(partition: any) {
+                partition._id = _.uniqueId();
             });
             return data.createFeedModel;
         },
@@ -344,6 +359,8 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         setTableFields: function (fields: any[], policies: any[] = null) {
             this.createFeedModel.table.tableSchema.fields = fields;
             this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(field => this.newTableFieldPolicy(field.name));
+
+            this.createFeedModel.schemaChanged = !this.validateSchemaDidNotChange(this.createFeedModel);
         },
         /**
          * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
@@ -507,6 +524,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             if(model.cloned){
                 model.state = null;
             }
+            //remove the self.model.originalTableSchema if its there
+            delete model.originalTableSchema;
+
 
             if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
                 // Set feed
@@ -607,6 +627,23 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         hideFeedSavingDialog: function () {
             $mdDialog.hide();
         },
+
+        validateSchemaDidNotChange:function(model:any){
+            var valid = true;
+            //if we are editing we need to make sure we dont modify the originalTableSchema
+            if(model.id && model.originalTableSchema && model.table && model.table.tableSchema) {
+                //if model.originalTableSchema != model.table.tableSchema  ... ERROR
+                //mark as invalid if they dont match
+                var origFields = _.chain(model.originalTableSchema.fields).sortBy('name').map(function (i) {
+                    return i.name + " " + i.derivedDataType;
+                }).value().join()
+                var updatedFields = _.chain(model.table.tableSchema.fields).sortBy('name').map(function (i) {
+                    return i.name + " " + i.derivedDataType;
+                }).value().join()
+                valid = origFields == updatedFields;
+            }
+            return valid
+        },
         /**
          * Save the model Posting the data to the server
          * @param model
@@ -615,6 +652,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
         saveFeedModel: function (model: any) {
             var self = this;
             self.prepareModelForSave(model);
+
             var deferred = $q.defer();
             var successFn = function (response: any) {
                 var invalidCount = 0;
@@ -648,13 +686,15 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             //reset the sensitive properties
             FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
+            //post to the server to save with a custom timeout of 7 minutes.
             var promise = $http({
                 url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                 method: "POST",
                 data: angular.toJson(copy),
                 headers: {
                     'Content-Type': 'application/json; charset=UTF-8'
-                }
+                },
+                timeout: 7*60 * 1000
             }).then(successFn, errorFn);
 
             return deferred.promise;
@@ -745,7 +785,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         getUserPropertyList: function (model: any): {key: string, value: string}[] {
             var userPropertyList: any[] = [];
-            angular.forEach(model.userProperties, function (value, key) {
+            angular.forEach(model.userProperties, function (value, key: string) {
                 if (!key.startsWith("jcr:")) {
                     userPropertyList.push({key: key, value: value});
                 }
@@ -777,6 +817,42 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 .then(function (response) {
                     return response.data;
                 });
+        },
+        setControllerServicePropertyDisplayName:function(property: any){
+
+            let setDisplayValue = (property :any) : boolean => {
+                let cacheEntry:string = controllerServiceDisplayCache[property.value];
+                if(cacheEntry != null) {
+                    property.displayValue =cacheEntry;
+                    return true;
+                }
+                return false;
+            }
+
+            if(angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService)) {
+                if (!setDisplayValue(property)) {
+
+                    let entry: any = controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                    if (entry == undefined) {
+                        let promise = data.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService);
+                        entry = {request: promise, waitingProperties: []};
+                        entry.waitingProperties.push(property);
+                        controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService] = entry;
+                        promise.then((services: any) => {
+                            _.each(services, (service: any) => {
+                                controllerServiceDisplayCache[service.id] = service.name;
+                            });
+                            _.each(entry.waitingProperties, (property) => {
+                                setDisplayValue(property);
+                            });
+                            delete controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
+                        })
+                    }
+                    else {
+                        entry.waitingProperties.push(property);
+                    }
+                }
+            }
         },
         /**
          * Finds the allowed controller services for the specified property and sets the allowable values.

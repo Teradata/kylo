@@ -27,6 +27,7 @@ import com.thinkbiganalytics.cluster.ClusterService;
 import com.thinkbiganalytics.cluster.ClusterServiceMessageReceiver;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
@@ -80,6 +81,9 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
     private MetadataAccess metadataAccess;
 
     @Inject
+    private KyloVersionProvider kyloVersionProvider;
+
+    @Inject
     private ClusterService clusterService;
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
@@ -95,27 +99,29 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
      */
     @Override
     public void run() {
-        log.info("PostMetadataConfigAction called for DefaultServiceLevelAgreementScheduler.  About to schedule the SLA's ");
-        metadataAccess.read(() -> {
-            List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+        if(kyloVersionProvider.isUpToDate()) {
+            log.info("PostMetadataConfigAction called for DefaultServiceLevelAgreementScheduler.  About to schedule the SLA's ");
+            metadataAccess.read(() -> {
+                List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
-            if (agreements != null) {
-                log.info("About to schedule {} SLA's", agreements.size());
-                for (ServiceLevelAgreement agreement : agreements) {
-                    JobIdentifier jobIdentifier = slaJobName(agreement);
-                    QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
-                    if (!scheduler.jobExists(jobIdentifier)) {
-                        scheduleServiceLevelAgreement(agreement);
-                    } else {
-                        scheduledJobNames.put(agreement.getId(), jobIdentifier.getName());
+                if (agreements != null) {
+                    log.info("About to schedule {} SLA's", agreements.size());
+                    for (ServiceLevelAgreement agreement : agreements) {
+                        JobIdentifier jobIdentifier = slaJobName(agreement);
+                        QuartzScheduler scheduler = (QuartzScheduler) jobScheduler;
+                        if (!scheduler.jobExists(jobIdentifier)) {
+                            scheduleServiceLevelAgreement(agreement);
+                        } else {
+                            scheduledJobNames.put(agreement.getId(), jobIdentifier.getName());
+                        }
                     }
+                } else {
+                    log.info("No SLA's found to schedule.");
                 }
-            } else {
-                log.info("No SLA's found to schedule.");
-            }
 
-            return null;
-        }, MetadataAccess.SERVICE);
+                return null;
+            }, MetadataAccess.SERVICE);
+        }
 
     }
 

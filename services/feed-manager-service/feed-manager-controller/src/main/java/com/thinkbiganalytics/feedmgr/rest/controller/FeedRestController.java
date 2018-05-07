@@ -103,6 +103,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -323,6 +324,19 @@ public class FeedRestController {
         }
         return Response.ok(feed).build();
     }
+    
+    @POST
+    @Path("/start/{feedId}")
+    @Produces(MediaType.TEXT_PLAIN)
+    @ApiOperation("Starts a feed.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The feed was started.", response = FeedSummary.class),
+        @ApiResponse(code = 500, message = "The feed could not be started.", response = RestResponseStatus.class)
+    })
+    public Response startFeed(@PathParam("feedId") String feedId) {
+        FeedSummary feed = getMetadataService().startFeed(feedId);
+        return Response.ok("Feed " + feed.getSystemFeedName() + " (" + feed.getId() + ") started successfully").build();
+    }
 
     @POST
     @Path("/enable/{feedId}")
@@ -374,13 +388,19 @@ public class FeedRestController {
         @ApiResponse(code = 200, message = "Returns a list of feed ids mapped to feed display names", response = Pair.class, responseContainer = "List")
     )
     public Response convertFeedIdToDisplayName(@Nonnull final List<String> feedSystemNames) {
+        Pair nullPair = new Pair(UUID.randomUUID().toString(),UUID.randomUUID().toString());
         List<Pair> names = feedSystemNames.stream().map(systemName -> {
             int dotIdx = systemName.indexOf(".");
             String categorySystemName = systemName.substring(0, dotIdx);
             String feedSystemName = systemName.substring(dotIdx + 1);
             FeedMetadata feed = getMetadataService().getFeedByName(categorySystemName, feedSystemName);
-            return new Pair(systemName, feed.getFeedName());
-        }).collect(Collectors.toList());
+            if(feed != null) {
+                return new Pair(systemName, feed.getFeedName());
+            }
+            else {
+                return nullPair;
+            }
+        }).filter(pair -> !pair.equals(nullPair)).collect(Collectors.toList());
         return Response.ok(names).build();
     }
 

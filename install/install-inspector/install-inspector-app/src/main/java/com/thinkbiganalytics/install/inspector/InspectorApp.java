@@ -23,7 +23,6 @@ package com.thinkbiganalytics.install.inspector;
 
 import com.thinkbiganalytics.install.inspector.config.ApplicationProperties;
 import com.thinkbiganalytics.install.inspector.config.DefaultProfileUtil;
-import com.thinkbiganalytics.install.inspector.inspection.IgnoredByInspectorApp;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +32,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseAutoConfiguration;
 import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.devtools.autoconfigure.DevToolsDataSourceAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.core.env.Environment;
 
@@ -43,22 +41,20 @@ import java.util.Arrays;
 import java.util.Collection;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 import io.github.jhipster.config.JHipsterConstants;
 
-@ComponentScan(excludeFilters = @ComponentScan.Filter(IgnoredByInspectorApp.class))
+@ComponentScan
 @EnableAutoConfiguration(exclude = {LiquibaseAutoConfiguration.class, HibernateJpaAutoConfiguration.class,
-                                    DataSourceAutoConfiguration.class, DevToolsDataSourceAutoConfiguration.class})
+                                    DataSourceAutoConfiguration.class})
 @EnableConfigurationProperties({ApplicationProperties.class})
 public class InspectorApp {
 
     private static final Logger log = LoggerFactory.getLogger(InspectorApp.class);
 
-    private final Environment env;
-
-    public InspectorApp(Environment env) {
-        this.env = env;
-    }
+    @Inject
+    private Environment env;
 
     @PostConstruct
     public void initApplication() {

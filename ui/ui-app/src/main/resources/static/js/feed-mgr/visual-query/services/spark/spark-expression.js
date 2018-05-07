@@ -206,6 +206,12 @@ define(["require", "exports", "../../wrangler/parse-exception", "./spark-constan
                 }
                 else {
                     literal = expression.source;
+                    var nLiteral = parseInt(expression.source);
+                    if (!isNaN(nLiteral)) {
+                        if (nLiteral < SparkExpression.SCALA_MIN_INT || nLiteral > SparkExpression.SCALA_MAX_INT) {
+                            literal = literal + "L";
+                        }
+                    }
                 }
                 return "functions.lit(" + literal + ")";
             }
@@ -296,6 +302,11 @@ define(["require", "exports", "../../wrangler/parse-exception", "./spark-constan
             }
             return "\"" + expression.source + "\"";
         };
+        /**
+         Constants that calculate the min and max value of an integer in Scala or Java
+         */
+        SparkExpression.SCALA_MIN_INT = (-1) * Math.pow(2, 31);
+        SparkExpression.SCALA_MAX_INT = Math.pow(2, 31) - 1;
         /** Regular expression for conversion strings */
         SparkExpression.FORMAT_REGEX = /%([?*,@]*)([bcdfors])/g;
         /** TernJS directive for the Spark code */

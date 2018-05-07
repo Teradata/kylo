@@ -20,7 +20,6 @@ package com.thinkbiganalytics.metadata.api.sla;
  * #L%
  */
 
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -28,9 +27,9 @@ import java.util.Set;
 
 /**
  */
-public interface FeedServiceLevelAgreementRelationship extends ExtensibleEntity {
+public interface FeedServiceLevelAgreementRelationship {
 
-    ServiceLevelAgreement getAgreement();
+    FeedServiceLevelAgreement getAgreement();
 
     Set<? extends Feed> getFeeds();
 

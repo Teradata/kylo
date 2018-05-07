@@ -68,10 +68,9 @@ public class SpringEnvironmentProperties {
                 Map<String, Object> properties = m.subMap(key, key + Character.MAX_VALUE);
                 Map<String, Object> decryptedProperties = new HashMap<>();
                 if (properties != null && !properties.isEmpty()) {
-                    properties.keySet().stream().forEach(k -> {
-                                                             decryptedProperties.put(k, env.getProperty(k));
-                                                         }
-                    );
+                    for(String k : properties.keySet()){
+                        decryptedProperties.put(k, env.getProperty(k));
+                    }
                 }
                 propertiesStartingWith.put(key, decryptedProperties);
                 return properties;
@@ -116,9 +115,9 @@ public class SpringEnvironmentProperties {
                     }
                     //decrypt
                     Map<String, Object> decryptedMap = new HashMap();
-                    map.keySet().forEach(k -> {
+                    for(String k : map.keySet()){
                         decryptedMap.put(k, env.getProperty(k));
-                    });
+                    }
 
                     properties = decryptedMap;
                 }

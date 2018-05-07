@@ -1,4 +1,7 @@
-define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/feeds/module-name');
     var directive = function ($compile, $templateRequest) {
         return {
             restrict: "EA",
@@ -12,14 +15,14 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
             link: function ($scope, element, attrs) {
                 $scope.getContentUrl = function () {
                     return $scope.templateUrl;
-                }
+                };
             }
             /*
              compile:function(element,attrs) {
              return {
              pre: function preLink($scope, iElement, iAttrs, controller) {
-
-
+    
+    
              },
              post: function postLink($scope, $element, iAttrs, controller) {
              console.log('POST COMPILE!!!! ', $scope.templateUrl)
@@ -31,17 +34,15 @@ define(['angular','feed-mgr/feeds/module-name'], function (angular,moduleName) {
              // And let Angular $compile it
              $compile(template)($scope);
              });
-
+    
              }
              }
-
+    
              }
              */
-
         };
-    }
-
+    };
     angular.module(moduleName)
         .directive('customProcessorRendering', ['$compile', '$templateRequest', directive]);
-
 });
+//# sourceMappingURL=custom-processor-rendering.js.map

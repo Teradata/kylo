@@ -24,6 +24,7 @@
     <module>spark-job-profiler</module>
     <module>spark-shell-client</module>
     <module>spark-validate-cleanse</module>
+    <module>spark-merge-table</module>
     <module>spark-job-dataquality</module>
     <module>spark-job-cleanup</module>
     <module>spark-catalog</module>

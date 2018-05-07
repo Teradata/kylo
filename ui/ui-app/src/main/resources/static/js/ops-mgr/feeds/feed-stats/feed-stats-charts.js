@@ -1,331 +1,320 @@
-define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-
-    var directive = function () {
-        return {
-            restrict: "EA",
-            scope: {},
-            bindToController: {
-                panelTitle: "@",
-                refreshIntervalTime: "@",
-                feedName: '@'
-            },
-            controllerAs: 'vm',
-            templateUrl: 'js/ops-mgr/feeds/feed-stats/feed-stats-charts.html',
-            controller: "FeedStatsChartsController",
-            link: function ($scope, element, attrs) {
-                $scope.$on('$destroy', function () {
-
-                });
-            } //DOM manipulation\}
+define(["require", "exports", "angular", "./module-name", "underscore"], function (require, exports, angular, module_name_1, _) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    //import OpsManagerFeedService from "../../services/OpsManagerFeedService";
+    //import Nvd3ChartService from "../../services/Nvd3ChartService";
+    //import {FeedStatsService} from "./FeedStatsService"
+    var d3 = require('d3');
+    var controller = /** @class */ (function () {
+        function controller($scope, $element, $http, $interval, $timeout, $q, $mdToast, ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService, $filter) {
+            this.$scope = $scope;
+            this.$element = $element;
+            this.$http = $http;
+            this.$interval = $interval;
+            this.$timeout = $timeout;
+            this.$q = $q;
+            this.$mdToast = $mdToast;
+            this.ProvenanceEventStatsService = ProvenanceEventStatsService;
+            this.FeedStatsService = FeedStatsService;
+            this.Nvd3ChartService = Nvd3ChartService;
+            this.OpsManagerFeedService = OpsManagerFeedService;
+            this.StateService = StateService;
+            this.$filter = $filter;
+            this.dataLoaded = false;
+            /** flag when processor chart is loading **/
+            this.processChartLoading = false;
+            /**
+             * the last time the data was refreshed
+             * @type {null}
+             */
+            this.lastProcessorChartRefresh = null;
+            /**
+             * last time the execution graph was refreshed
+             * @type {null}
+             */
+            this.lastFeedTimeChartRefresh = null;
+            /** flag when the feed time chart is loading **/
+            this.showFeedTimeChartLoading = false;
+            this.showProcessorChartLoading = false;
+            this.statusPieChartApi = {};
+            /**
+             * Initial Time Frame setting
+             * @type {string}
+             */
+            this.timeFrame = 'FIVE_MIN';
+            /**
+             * Array of fixed times
+             * @type {Array}
+             */
+            this.timeframeOptions = [];
+            /**
+             * last time the page was refreshed
+             * @type {null}
+             */
+            this.lastRefreshTime = null;
+            /**
+             * map of the the timeFrame value to actual timeframe object (i.e. FIVE_MIN:{timeFrameObject})
+             * @type {{}}
+             */
+            this.timeFramOptionsLookupMap = {};
+            /**
+             * The selected Time frame
+             * @type {{}}
+             */
+            this.selectedTimeFrameOptionObject = {};
+            /**
+             * Flag to enable disable auto refresh
+             * @type {boolean}
+             */
+            this.autoRefresh = true;
+            /**
+             * Flag to indicate if we are zoomed or not
+             * @type {boolean}
+             */
+            this.isZoomed = false;
+            /**
+             * Zoom helper
+             * @type {boolean}
+             */
+            this.isAtInitialZoom = true;
+            /**
+             * Difference in overall min/max time for the chart
+             * Used to help calcuate the correct xXais label (i.e. for larger time periods show Date + time, else show time
+             * @type {null}
+             */
+            this.timeDiff = null;
+            /**
+             * millis to wait after a zoom is complete to update the charts
+             * @type {number}
+             */
+            this.ZOOM_DELAY = 700;
+            /**
+             * Constant set to indicate we are not zoomed
+             * @type {number}
+             */
+            this.UNZOOMED_VALUE = -1;
+            /**
+             * After a chart is rendered it will always call the zoom function.
+             * Flag to prevent the initial zoom from triggering after refresh of the chart
+             * @type {boolean}
+             */
+            this.preventZoomChange = false;
+            /**
+             * Timeout promise to prevent zoom
+             * @type {undefined}
+             */
+            this.preventZoomPromise = undefined;
+            /**
+             * max Y value (when not zoomed)
+             * @type {number}
+             */
+            this.maxY = 0;
+            this.minY = 0;
+            /**
+             * max Y Value when zoomed
+             * @type {number}
+             */
+            this.zoomMaxY = 0;
+            this.zoomMinY = 0;
+            /**
+             * Min time frame to enable zooming.
+             * Defaults to 30 min.
+             * Anything less than this will not be zoomable
+             * @type {number}
+             */
+            this.minZoomTime = 1000 * 60 * 30;
+            /**
+             * Flag to indicate if zooming is enabled.
+             * Zooming is only enabled for this.minZoomTime or above
+             *
+             * @type {boolean}
+             */
+            this.zoomEnabled = false;
+            /**
+             * A bug in nvd3 charts exists where if the zoom is toggle to true it requires a force of the x axis when its toggled back to false upon every data refresh.
+             * this flag will be triggered when the zoom enabled changes and from then on it will manually reset the x domain when the data refreshes
+             * @type {boolean}
+             */
+            this.forceXDomain = false;
+            /**
+             * Flag to force the rendering of the chart to refresh
+             * @type {boolean}
+             */
+            this.forceChartRefresh = false;
+            this.feedChartLegendState = [];
+            this.feedChartData = [];
+            this.feedChartApi = {};
+            this.feedChartOptions = {};
+            this.processorChartApi = {};
+            this.processorChartData = [];
+            this.processorChartOptions = {};
+            this.selectedProcessorStatisticFunction = 'Average Duration';
+            /**
+             * The Feed we are looking at
+             * @type {{displayStatus: string}}
+             */
+            this.feed = {
+                displayStatus: ''
+            };
+            /**
+             * Latest summary stats
+             * @type {{}}
+             */
+            this.summaryStatsData = {};
+            this.eventSuccessKpi = {
+                value: 0,
+                icon: '',
+                color: ''
+            };
+            this.flowRateKpi = {
+                value: 0,
+                icon: 'tune',
+                color: '#1f77b4'
+            };
+            this.avgDurationKpi = {
+                value: 0,
+                icon: 'access_time',
+                color: '#1f77b4'
+            };
+            /**
+             * Errors for th error table (if any)
+             * @type {*}
+             */
+            this.feedProcessorErrorsTable = {
+                sortOrder: '-errorMessageTimestamp',
+                filter: '',
+                rowLimit: 5,
+                page: 1
+            };
+            this.showFeedTimeChartLoading = true;
+            this.showProcessorChartLoading = true;
+            this.summaryStatistics = FeedStatsService.summaryStatistics;
+            this.processorStatsFunctions = FeedStatsService.processorStatsFunctions();
+            this.feedProcessorErrors = FeedStatsService.feedProcessorErrors;
         }
-
-    };
-
-    var controller = function ($scope, $element, $http, $interval, $timeout, $q, $mdToast,ProvenanceEventStatsService, FeedStatsService, Nvd3ChartService, OpsManagerFeedService, StateService, $filter) {
-        var self = this;
-        this.dataLoaded = false;
-
-        /** flag when processor chart is loading **/
-        this.processChartLoading = false;
-
-        /**
-         * the last time the data was refreshed
-         * @type {null}
-         */
-        this.lastProcessorChartRefresh = null;
-
-        /**
-         * last time the execution graph was refreshed
-         * @type {null}
-         */
-        this.lastFeedTimeChartRefresh = null;
-
-        /** flag when the feed time chart is loading **/
-        this.showFeedTimeChartLoading = true;
-
-        this.showProcessorChartLoading = true;
-
-        this.statusPieChartApi = {};
-
-        /**
-         * Initial Time Frame setting
-         * @type {string}
-         */
-        self.timeFrame = 'FIVE_MIN';
-        /**
-         * Array of fixed times
-         * @type {Array}
-         */
-        self.timeframeOptions = [];
-        /**
-         * last time the page was refreshed
-         * @type {null}
-         */
-        self.lastRefreshTime = null;
-        /**
-         * map of the the timeFrame value to actual timeframe object (i.e. FIVE_MIN:{timeFrameObject})
-         * @type {{}}
-         */
-        self.timeFramOptionsLookupMap = {};
-        /**
-         * The selected Time frame
-         * @type {{}}
-         */
-        self.selectedTimeFrameOptionObject = {};
-        /**
-         * Flag to enable disable auto refresh
-         * @type {boolean}
-         */
-        self.autoRefresh = true;
-
-        /**
-         * Flag to indicate if we are zoomed or not
-         * @type {boolean}
-         */
-        self.isZoomed = false;
-
-        /**
-         * Zoom helper
-         * @type {boolean}
-         */
-        self.isAtInitialZoom = true;
-
-        /**
-         * Difference in overall min/max time for the chart
-         * Used to help calcuate the correct xXais label (i.e. for larger time periods show Date + time, else show time
-         * @type {null}
-         */
-        self.timeDiff = null;
-
-        /**
-         * millis to wait after a zoom is complete to update the charts
-         * @type {number}
-         */
-        var ZOOM_DELAY = 700;
-
-        /**
-         * Constant set to indicate we are not zoomed
-         * @type {number}
-         */
-        var UNZOOMED_VALUE = -1;
-
-        /**
-         * After a chart is rendered it will always call the zoom function.
-         * Flag to prevent the initial zoom from triggering after refresh of the chart
-         * @type {boolean}
-         */
-        self.preventZoomChange = false;
-
-        /**
-         * Timeout promise to prevent zoom
-         * @type {undefined}
-         */
-        self.preventZoomPromise = undefined;
-
-        /**
-         * The Min Date of data.  This will be the zoomed value if we are zooming, otherwise the min value in the dataset
-         */
-        self.minDisplayTime;
-
-        /**
-         * The max date of the data.  this will be the zoomed value if zooming otherwise the max value in the dataset
-         */
-        self.maxDisplayTime;
-
-        /**
-         * max Y value (when not zoomed)
-         * @type {number}
-         */
-        self.maxY = 0;
-
-        /**
-         * max Y Value when zoomed
-         * @type {number}
-         */
-        self.zoomMaxY = 0;
-
-        /**
-         * Min time frame to enable zooming.
-         * Defaults to 30 min.
-         * Anything less than this will not be zoomable
-         * @type {number}
-         */
-        self.minZoomTime = 1000*60*30;
-        /**
-         * Flag to indicate if zooming is enabled.
-         * Zooming is only enabled for self.minZoomTime or above
-         *
-         * @type {boolean}
-         */
-        self.zoomEnabled = false;
-
-        /**
-         * A bug in nvd3 charts exists where if the zoom is toggle to true it requires a force of the x axis when its toggled back to false upon every data refresh.
-         * this flag will be triggered when the zoom enabled changes and from then on it will manually reset the x domain when the data refreshes
-         * @type {boolean}
-         */
-        self.forceXDomain = false;
-
-        /**
-         * Flag to force the rendering of the chart to refresh
-         * @type {boolean}
-         */
-        self.forceChartRefresh = false;
-
-        /**
-         * Summary stats
-         * @type {*}
-         */
-        self.summaryStatistics = FeedStatsService.summaryStatistics;
-
-        var feedChartLegendState = [];
-        this.feedChartData = [];
-        this.feedChartApi = {};
-        this.feedChartOptions = {};
-
-        self.processorChartApi = {};
-        self.processorChartData = [];
-        self.processorChartOptions = {};
-        self.selectedProcessorStatisticFunction = 'Average Duration';
-        self.processorStatsFunctions = FeedStatsService.processorStatsFunctions();
-
-        /**
-         * The Feed we are looking at
-         * @type {{displayStatus: string}}
-         */
-        self.feed = {
-            displayStatus: ''
-        };
-
-        /**
-         * Latest summary stats
-         * @type {{}}
-         */
-        self.summaryStatsData = {};
-
-        self.eventSuccessKpi = {
-            value: 0,
-            icon: '',
-            color: ''
-        };
-
-        self.flowRateKpi = {
-            value: 0,
-            icon: 'tune',
-            color: '#1f77b4'
-        };
-
-        self.avgDurationKpi = {
-            value: 0,
-            icon: 'access_time',
-            color: '#1f77b4'
-        };
-
-        self.feedProcessorErrorsTable = {
-            sortOrder: '-errorMessageTimestamp',
-            filter: '',
-            rowLimit: 5,
-            page: 1
-        };
-
-        /**
-         * Errors for th error table (if any)
-         * @type {*}
-         */
-        self.feedProcessorErrors = FeedStatsService.feedProcessorErrors;
-
-
-        //// USER INTERACTIONS, buttons
-
-
         /**
          * When a user clicks the Refresh Button
          */
-        self.onRefreshButtonClick = function () {
-            refresh();
+        controller.prototype.onRefreshButtonClick = function () {
+            this.refresh();
         };
-
-
-        /**
-         * When a user changes the Processor drop down
-         * @type {onProcessorChartFunctionChanged}
-         */
-        self.onProcessorChartFunctionChanged = onProcessorChartFunctionChanged;
-
+        ;
         /**
          * Navigate to the Feed Manager Feed Details
          * @param ev
          */
-        self.gotoFeedDetails = function (ev) {
-            if (self.feed.feedId != undefined) {
-                StateService.FeedManager().Feed().navigateToFeedDetails(self.feed.feedId);
+        controller.prototype.gotoFeedDetails = function (ev) {
+            if (this.feed.feedId != undefined) {
+                this.StateService.FeedManager().Feed().navigateToFeedDetails(this.feed.feedId);
             }
         };
-
+        ;
         /**
          * Show detailed Errors
          */
-        self.viewNewFeedProcessorErrors = function () {
-            self.feedProcessorErrors.viewAllData();
+        controller.prototype.viewNewFeedProcessorErrors = function () {
+            this.feedProcessorErrors.viewAllData();
         };
-
-        self.toggleFeedProcessorErrorsRefresh = function (autoRefresh) {
+        ;
+        controller.prototype.toggleFeedProcessorErrorsRefresh = function (autoRefresh) {
             if (autoRefresh) {
-                self.feedProcessorErrors.viewAllData();
-                self.feedProcessorErrors.autoRefreshMessage = 'enabled';
+                this.feedProcessorErrors.viewAllData();
+                this.feedProcessorErrors.autoRefreshMessage = 'enabled';
             }
             else {
-                self.feedProcessorErrors.autoRefreshMessage = 'disabled';
+                this.feedProcessorErrors.autoRefreshMessage = 'disabled';
             }
         };
-
+        ;
         /**
          * Called when a user click on the Reset Zoom button
          */
-        self.onResetZoom = function() {
-            if(self.isZoomed) {
-                initiatePreventZoom();
-                resetZoom();
-                self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime]
-                self.feedChartOptions.chart.yDomain = [self.minY,self.maxY]
-                self.feedChartApi.refresh();
-                buildProcessorChartData();
+        controller.prototype.onResetZoom = function () {
+            if (this.isZoomed) {
+                this.initiatePreventZoom();
+                this.resetZoom();
+                this.feedChartOptions.chart.xDomain = [this.minTime, this.maxTime];
+                this.feedChartOptions.chart.yDomain = [this.minY, this.maxY];
+                this.feedChartApi.refresh();
+                this.buildProcessorChartData();
             }
-        }
-
+        };
         /**
          * prevent the initial zoom to fire in chart after reload
          */
-        function initiatePreventZoom(){
+        controller.prototype.initiatePreventZoom = function () {
+            var _this = this;
             var cancelled = false;
-            if(angular.isDefined(self.preventZoomPromise)) {
-               $timeout.cancel(self.preventZoomPromise);
-                self.preventZoomPromise = undefined;
-                cancelled =true;
+            if (angular.isDefined(this.preventZoomPromise)) {
+                this.$timeout.cancel(this.preventZoomPromise);
+                this.preventZoomPromise = undefined;
+                cancelled = true;
             }
-                    if(!self.preventZoomChange || cancelled) {
-                        self.preventZoomChange = true;
-                         self.preventZoomPromise =   $timeout(function () {
-                         self.preventZoomChange = false;
-                         self.preventZoomPromise = undefined;
-                        }, 1000);
-                    }
-        }
-
-
-
+            if (!this.preventZoomChange || cancelled) {
+                this.preventZoomChange = true;
+                this.preventZoomPromise = this.$timeout(function () {
+                    _this.preventZoomChange = false;
+                    _this.preventZoomPromise = undefined;
+                }, 1000);
+            }
+        };
+        /**
+         * Help adjust the x axis label depending on time window
+         * @param d
+         */
+        controller.prototype.timeSeriesXAxisLabel = function (d) {
+            var maxTime = 1000 * 60 * 60 * 12; //12 hrs
+            if (this.timeDiff >= maxTime) {
+                //show the date if it spans larger than maxTime
+                return d3.time.format('%Y-%m-%d %H:%M')(new Date(d));
+            }
+            else {
+                return d3.time.format('%X')(new Date(d));
+            }
+        };
+        /**
+         * Prevent zooming into a level of detail that the data doesnt allow
+         * Stats > a day are aggregated up to the nearest hour
+         * Stats > 10 hours are aggregated up to the nearest minute
+         * If a user is looking at data within the 2 time frames above, prevent the zoom to a level greater than the hour/minute
+         * @param xDomain
+         * @param yDomain
+         * @return {boolean}
+         */
+        controller.prototype.canZoom = function (xDomain, yDomain) {
+            var diff = this.maxTime - this.minTime;
+            var minX = Math.floor(xDomain[0]);
+            var maxX = Math.floor(xDomain[1]);
+            var zoomDiff = maxX - minX;
+            //everything above the day should be zoomed at the hour level
+            //everything above 10 hrs should be zoomed at the minute level
+            if (diff >= (1000 * 60 * 60 * 24)) {
+                if (zoomDiff < (1000 * 60 * 60)) {
+                    return false; //prevent zooming!
+                }
+            }
+            else if (diff >= (1000 * 60 * 60 * 10)) {
+                // zoom at minute level
+                if (zoomDiff < (1000 * 60)) {
+                    return false;
+                }
+            }
+            return true;
+        };
+        ;
         /**
          * Initialize the Charts
          */
-        function setupChartOptions() {
-            self.processorChartOptions = {
+        controller.prototype.setupChartOptions = function () {
+            var self = this;
+            this.processorChartOptions = {
                 chart: {
                     type: 'multiBarHorizontalChart',
                     height: 400,
                     margin: {
-                        top: 5, //otherwise top of numeric value is cut off
+                        top: 5,
                         right: 50,
-                        bottom: 50, //otherwise bottom labels are not visible
+                        bottom: 50,
                         left: 150
                     },
                     duration: 500,
@@ -340,9 +329,9 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translat
                     xAxis: {
                         showMaxMin: false
                     },
-                    interactiveLayer: {tooltip: {gravity: 's'}},
+                    interactiveLayer: { tooltip: { gravity: 's' } },
                     yAxis: {
-                        axisLabel: FeedStatsService.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].axisLabel,
+                        axisLabel: self.FeedStatsService.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].axisLabel,
                         tickFormat: function (d) {
                             return d3.format(',.2f')(d);
                         }
@@ -350,59 +339,10 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translat
                     valueFormat: function (d) {
                         return d3.format(',.2f')(d);
                     },
-                     noData: $filter('translate')('view.feed-stats-charts.noData')
+                    noData: self.$filter('translate')('view.feed-stats-charts.noData')
                 }
             };
-
-            /**
-             * Help adjust the x axis label depending on time window
-             * @param d
-             */
-            function timeSeriesXAxisLabel(d){
-                var maxTime = 1000*60*60*12; //12 hrs
-                if(self.timeDiff >=maxTime ){
-                    //show the date if it spans larger than maxTime
-                    return d3.time.format('%Y-%m-%d %H:%M')(new Date(d))
-                }
-                else {
-                    return d3.time.format('%X')(new Date(d))
-                }
-            }
-
-            /**
-             * Prevent zooming into a level of detail that the data doesnt allow
-             * Stats > a day are aggregated up to the nearest hour
-             * Stats > 10 hours are aggregated up to the nearest minute
-             * If a user is looking at data within the 2 time frames above, prevent the zoom to a level greater than the hour/minute
-             * @param xDomain
-             * @param yDomain
-             * @return {boolean}
-             */
-            function canZoom(xDomain, yDomain) {
-
-                var diff = self.maxTime - self.minTime;
-
-                var minX  = Math.floor(xDomain[0]);
-                var maxX = Math.floor(xDomain[1]);
-                var zoomDiff = maxX - minX;
-                //everything above the day should be zoomed at the hour level
-                //everything above 10 hrs should be zoomed at the minute level
-                if(diff >= (1000*60*60*24)){
-                    if(zoomDiff < (1000*60*60)){
-                        return false   //prevent zooming!
-                    }
-                }
-                else if(diff >= (1000*60*60*10)) {
-                    // zoom at minute level
-                    if(zoomDiff < (1000*60)){
-                        return false;
-                    }
-                }
-                return true;
-
-            }
-
-            self.feedChartOptions = {
+            this.feedChartOptions = {
                 chart: {
                     type: 'lineChart',
                     height: 450,
@@ -422,26 +362,26 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translat
                     interpolate: 'linear',
                     useVoronoi: false,
                     duration: 250,
-                    clipEdge:false,
+                    clipEdge: false,
                     useInteractiveGuideline: true,
-                    interactiveLayer: {tooltip: {gravity: 's'}},
+                    interactiveLayer: { tooltip: { gravity: 's' } },
                     valueFormat: function (d) {
-                        return d3.format(',')(parseInt(d))
+                        return d3.format(',')(parseInt(d));
                     },
                     xAxis: {
-                        axisLabel: $filter('translate')('view.feed-stats-charts.Time'),
+                        axisLabel: self.$filter('translate')('view.feed-stats-charts.Time'),
                         showMaxMin: false,
-                        tickFormat: timeSeriesXAxisLabel,
+                        tickFormat: function (d) { return self.timeSeriesXAxisLabel(d); },
                         rotateLabels: -45
                     },
                     yAxis: {
-                        axisLabel: $filter('translate')('view.feed-stats-charts.FPS'),
+                        axisLabel: this.$filter('translate')('view.feed-stats-charts.FPS'),
                         axisLabelDistance: -10
                     },
                     legend: {
                         dispatch: {
                             stateChange: function (e) {
-                                feedChartLegendState = e.disabled;
+                                self.feedChartLegendState = e.disabled;
                             }
                         }
                     },
@@ -452,536 +392,481 @@ define(['angular','ops-mgr/feeds/feed-stats/module-name', 'pascalprecht.translat
                         scaleExtent: [1, 50],
                         verticalOff: true,
                         unzoomEventType: 'dblclick.zoom',
-                        useFixedDomain:false,
-                        zoomed: function(xDomain, yDomain) {
+                        useFixedDomain: false,
+                        zoomed: function (xDomain, yDomain) {
                             //zoomed will get called initially (even if not zoomed)
                             // because of this we need to check to ensure the 'preventZoomChange' flag was not triggered after initially refreshing the dataset
-                            if(!self.preventZoomChange) {
+                            if (!self.preventZoomChange) {
                                 self.isZoomed = true;
-                                if(canZoom(xDomain,yDomain)) {
+                                if (self.canZoom(xDomain, yDomain)) {
                                     self.zoomedMinTime = Math.floor(xDomain[0]);
                                     self.zoomedMaxTime = Math.floor(xDomain[1]);
                                     self.timeDiff = self.zoomedMaxTime - self.zoomedMinTime;
                                     var max1 = Math.ceil(yDomain[0]);
                                     var max2 = Math.ceil(yDomain[1]);
                                     self.zoomMaxY = max2 > max1 ? max2 : max1;
-
                                 }
-                                return {x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1]};
+                                return { x1: self.zoomedMinTime, x2: self.zoomedMaxTime, y1: yDomain[0], y2: yDomain[1] };
                             }
                             else {
-                                return {x1: self.minTime, x2: self.maxTime, y1: self.minY, y2: self.maxY}
+                                return { x1: self.minTime, x2: self.maxTime, y1: self.minY, y2: self.maxY };
                             }
                         },
-                        unzoomed: function(xDomain, yDomain) {
-                       return  resetZoom();
-                        }
-                        },
-                    interactiveLayer: {
-                        dispatch: {
-                            elementClick: function (t, u) {}
+                        unzoomed: function (xDomain, yDomain) {
+                            return self.resetZoom();
                         }
                     },
-                    dispatch: {
-
-                    }
+                    interactiveLayer2: {
+                        dispatch: {
+                            elementClick: function (t, u) { }
+                        }
+                    },
+                    dispatch: {}
                 }
-
             };
-        }
-
+        };
         /**
          * Reset the Zoom and return the x,y values pertaining to the min/max of the complete dataset
          * @return {{x1: *, x2: (*|number|endTime|{name, fn}|Number), y1: number, y2: (number|*)}}
          */
-        function resetZoom() {
-            if(self.isZoomed) {
-                self.isZoomed = false;
-                self.zoomedMinTime = UNZOOMED_VALUE;
-                self.zoomedMaxTime = UNZOOMED_VALUE;
-                self.minDisplayTime=self.minTime;
-                self.maxDisplayTime =self.maxTime;
-                self.timeDiff = self.maxTime - self.minTime;
-                return {x1: self.minTime, x2: self.maxTime, y1: self.minY, y2: self.maxY}
+        controller.prototype.resetZoom = function () {
+            if (this.isZoomed) {
+                this.isZoomed = false;
+                this.zoomedMinTime = this.UNZOOMED_VALUE;
+                this.zoomedMaxTime = this.UNZOOMED_VALUE;
+                this.minDisplayTime = this.minTime;
+                this.maxDisplayTime = this.maxTime;
+                this.timeDiff = this.maxTime - this.minTime;
+                return { x1: this.minTime, x2: this.maxTime, y1: this.minY, y2: this.maxY };
             }
-        }
-
-
-        var changeZoom = function() {
-            self.timeDiff = self.zoomedMaxTime- self.zoomedMinTime;
-            self.autoRefresh = false;
-            self.isZoomed = true;
-            self.isAtInitialZoom = true;
-
-        //    FeedStatsService.setTimeBoundaries(self.minTime, self.maxTime);
-            buildProcessorChartData();
-            self.minDisplayTime=self.zoomedMinTime;
-            self.maxDisplayTime =self.zoomedMaxTime
-
+        };
+        controller.prototype.changeZoom = function () {
+            this.timeDiff = this.zoomedMaxTime - this.zoomedMinTime;
+            this.autoRefresh = false;
+            this.isZoomed = true;
+            this.isAtInitialZoom = true;
+            //    FeedStatsService.setTimeBoundaries(this.minTime, this.maxTime);
+            this.buildProcessorChartData();
+            this.minDisplayTime = this.zoomedMinTime;
+            this.maxDisplayTime = this.zoomedMaxTime;
             /*
-           if(self.zoomedMinTime != UNZOOMED_VALUE) {
+           if(this.zoomedMinTime != UNZOOMED_VALUE) {
                 //reset x xaxis to the zoom values
-                self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
-                var y = self.zoomMaxY > 0 ? self.zoomMaxY : self.maxY;
-                self.feedChartOptions.chart.yDomain = [0,self.maxY]
+                this.feedChartOptions.chart.xDomain = [this.zoomedMinTime,this.zoomedMaxTime]
+                var y = this.zoomMaxY > 0 ? this.zoomMaxY : this.maxY;
+                this.feedChartOptions.chart.yDomain = [0,this.maxY]
             }
             else  {
-                self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
-                self.feedChartOptions.chart.yDomain = [0,self.maxY]
+                this.feedChartOptions.chart.xDomain = [this.minTime,this.maxTime];
+                this.feedChartOptions.chart.yDomain = [0,this.maxY]
             }
-           self.feedChartApi.update();
+           this.feedChartApi.update();
 */
-
-
-
-
-
         };
-
         /**
          * Cancel the zoom timeout watcher
          */
-        function cancelPreviousOnZoomed() {
-            if (!_.isUndefined(self.changeZoomPromise)) {
-                $timeout.cancel(self.changeZoomPromise);
-                self.changeZoomPromise = undefined;
+        controller.prototype.cancelPreviousOnZoomed = function () {
+            if (!_.isUndefined(this.changeZoomPromise)) {
+                this.$timeout.cancel(this.changeZoomPromise);
+                this.changeZoomPromise = undefined;
             }
-        }
-
-
-        self.onTimeFrameChanged = function(){
-            if (!_.isUndefined(self.timeFrameOptions)) {
-                self.timeFrame = self.timeFrameOptions[Math.floor(self.timeFrameOptionIndex)].value;
-                self.displayLabel = self.timeFrame.label;
-                self.isZoomed = false;
-                self.zoomedMinTime = UNZOOMED_VALUE;
-                self.zoomedMaxTime = UNZOOMED_VALUE;
-                initiatePreventZoom();
-                onTimeFrameChanged(self.timeFrame);
-
+        };
+        controller.prototype.onTimeFrameChanged = function () {
+            if (!_.isUndefined(this.timeFrameOptions)) {
+                this.timeFrame = this.timeFrameOptions[Math.floor(this.timeFrameOptionIndex)].value;
+                this.displayLabel = this.timeFrameOptions[Math.floor(this.timeFrameOptionIndex)].label;
+                this.isZoomed = false;
+                this.zoomedMinTime = this.UNZOOMED_VALUE;
+                this.zoomedMaxTime = this.UNZOOMED_VALUE;
+                this.initiatePreventZoom();
+                this.onTimeFrameChanged2(this.timeFrame);
             }
-        }
-
-     /*   $scope.$watch(
-            //update time frame when slider is moved
-            function () {
-                return self.timeFrameOptionIndex;
-            },
-            function () {
-                if (!_.isUndefined(self.timeFrameOptions)) {
-                    self.timeFrame = self.timeFrameOptions[Math.floor(self.timeFrameOptionIndex)].value;
-                    self.displayLabel = self.timeFrame.label;
-                    self.isZoomed = false;
-                    self.zoomedMinTime = UNZOOMED_VALUE;
-                    self.zoomedMaxTime = UNZOOMED_VALUE;
-                    onTimeFrameChanged(self.timeFrame);
-                }
-            }
-        );
-        */
-
-        /**
-         * Enable/disable the refresh interval
-         */
-        $scope.$watch(
-            function () {
-                return self.autoRefresh;
-            },
-            function (newVal, oldVal) {
-                if (!self.autoRefresh) {
-                    clearRefreshInterval();
-                    //toast
-                    $mdToast.show(
-                        $mdToast.simple()
-                            .textContent('Auto refresh disabled')
-                            .hideDelay(3000)
-                    );
-                } else {
-                    setRefreshInterval();
-                    $mdToast.show(
-                        $mdToast.simple()
-                            .textContent('Auto refresh enabled')
-                            .hideDelay(3000)
-                    );
-                }
-            }
-        );
-
-        /**
-         * Watch when a zoom is active.
-         */
-        $scope.$watch(
-            function () {
-                return self.zoomedMinTime;
-            },
-            function (newVal, oldVal) {
-                if (!_.isUndefined(self.zoomedMinTime) && self.zoomedMinTime > 0) {
-                  //  if (self.isAtInitialZoom) {
-                  //      self.isAtInitialZoom = false;
-                   // } else {
-                        cancelPreviousOnZoomed();
-                        self.changeZoomPromise = $timeout(changeZoom, ZOOM_DELAY);
-                   // }
-                }
-            }
-        );
-
-        function refresh(){
+        };
+        /*   $scope.$watch(
+               //update time frame when slider is moved
+               function () {
+                   return this.timeFrameOptionIndex;
+               },
+               function () {
+                   if (!_.isUndefined(this.timeFrameOptions)) {
+                       this.timeFrame = this.timeFrameOptions[Math.floor(this.timeFrameOptionIndex)].value;
+                       this.displayLabel = this.timeFrame.label;
+                       this.isZoomed = false;
+                       this.zoomedMinTime = UNZOOMED_VALUE;
+                       this.zoomedMaxTime = UNZOOMED_VALUE;
+                       onTimeFrameChanged(this.timeFrame);
+                   }
+               }
+           );
+           */
+        controller.prototype.refresh = function () {
             var to = new Date().getTime();
-            var millis = self.timeFrameOptions[self.timeFrameOptionIndex].properties.millis;
+            var millis = this.timeFrameOptions[this.timeFrameOptionIndex].properties.millis;
             var from = to - millis;
-            self.minDisplayTime = from;
-
-            self.maxDisplayTime = to;
-
-            FeedStatsService.setTimeBoundaries(from, to);
-            buildChartData(true);
-        }
-
-
+            this.minDisplayTime = from;
+            this.maxDisplayTime = to;
+            this.FeedStatsService.setTimeBoundaries(from, to);
+            this.buildChartData(true);
+        };
+        controller.prototype.enableZoom = function () {
+            this.zoomEnabled = true;
+            this.feedChartOptions.chart.zoom.enabled = true;
+            this.forceChartRefresh = true;
+            this.forceXDomain = true;
+        };
+        controller.prototype.disableZoom = function () {
+            this.resetZoom();
+            this.zoomEnabled = false;
+            this.feedChartOptions.chart.zoom.enabled = false;
+            this.forceChartRefresh = true;
+        };
         /**
-         * When the slider is changed refresh the charts/data
-         * @param timeFrame
+         * When a user changes the Processor drop down
+         * @type {onProcessorChartFunctionChanged}
          */
-        function onTimeFrameChanged(timeFrame) {
-            if(self.isZoomed){
-                resetZoom();
-            }
-            self.isAtInitialZoom = true;
-            self.timeFrame = timeFrame;
-            var millis = self.timeFrameOptions[self.timeFrameOptionIndex].properties.millis;
-            if(millis >= self.minZoomTime){
-              enableZoom();
-            }
-            else {
-
-                disableZoom();
-            }
-            clearRefreshInterval();
-            refresh();
-
-            //disable refresh if > 30 min timeframe
-            if(millis >(1000*60*30)){
-                self.autoRefresh = false;
-            }
-            else {
-                if(!self.autoRefresh) {
-                    self.autoRefresh = true;
-                }
-                else {
-                    setRefreshInterval();
-
-                }
-            }
-
-
-        }
-
-        function enableZoom(){
-            self.zoomEnabled = true;
-            self.feedChartOptions.chart.zoom.enabled=true;
-            self.forceChartRefresh = true;
-            self.forceXDomain = true;
-
-        }
-
-        function disableZoom(){
-            resetZoom();
-            self.zoomEnabled = false;
-            self.feedChartOptions.chart.zoom.enabled=false;
-            self.forceChartRefresh = true;
-        }
-
-
-        function onProcessorChartFunctionChanged() {
-            FeedStatsService.setSelectedChartFunction(self.selectedProcessorStatisticFunction);
-            var chartData = FeedStatsService.changeProcessorChartDataFunction(self.selectedProcessorStatisticFunction);
-            self.processorChartData[0].values = chartData.data;
-            FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi, chartData.data.length, self.selectedProcessorStatisticFunction);
-        }
-
-        function buildChartData(timeIntervalChange) {
-            if (!FeedStatsService.isLoading()) {
+        controller.prototype.onProcessorChartFunctionChanged = function () {
+            this.FeedStatsService.setSelectedChartFunction(this.selectedProcessorStatisticFunction);
+            var chartData = this.FeedStatsService.changeProcessorChartDataFunction(this.selectedProcessorStatisticFunction);
+            this.processorChartData[0].values = chartData.data;
+            this.FeedStatsService.updateBarChartHeight(this.processorChartOptions, this.processorChartApi, chartData.data.length, this.selectedProcessorStatisticFunction);
+        };
+        controller.prototype.buildChartData = function (timeIntervalChange) {
+            if (!this.FeedStatsService.isLoading()) {
                 timeIntervalChange = angular.isUndefined(timeIntervalChange) ? false : timeIntervalChange;
-                self.feedTimeChartLoading = true;
-                self.processChartLoading = true;
-                buildProcessorChartData();
-                buildFeedCharts();
-                fetchFeedProcessorErrors(timeIntervalChange);
+                this.feedTimeChartLoading = true;
+                this.processChartLoading = true;
+                this.buildProcessorChartData();
+                this.buildFeedCharts();
+                this.fetchFeedProcessorErrors(timeIntervalChange);
             }
-            getFeedHealth();
-        }
-
-        function updateSuccessEventsPercentKpi() {
-            if (self.summaryStatsData.totalEvents == 0) {
-                self.eventSuccessKpi.icon = 'remove';
-                self.eventSuccessKpi.color = "#1f77b4"
-                self.eventSuccessKpi.value = "--";
+            this.getFeedHealth();
+        };
+        controller.prototype.updateSuccessEventsPercentKpi = function () {
+            if (this.summaryStatsData.totalEvents == 0) {
+                this.eventSuccessKpi.icon = 'remove';
+                this.eventSuccessKpi.color = "#1f77b4";
+                this.eventSuccessKpi.value = "--";
             }
             else {
-                var failed = self.summaryStatsData.totalEvents > 0 ? ((self.summaryStatsData.failedEvents / self.summaryStatsData.totalEvents)).toFixed(2) * 100 : 0;
+                var failed = this.summaryStatsData.totalEvents > 0 ? (this.summaryStatsData.failedEvents / this.summaryStatsData.totalEvents).toFixed(2) * 100 : 0;
                 var value = (100 - failed).toFixed(0);
                 var icon = 'offline_pin';
-                var iconColor = "#3483BA"
-
-                self.eventSuccessKpi.icon = icon;
-                self.eventSuccessKpi.color = iconColor;
-                self.eventSuccessKpi.value = value
-
+                var iconColor = "#3483BA";
+                this.eventSuccessKpi.icon = icon;
+                this.eventSuccessKpi.color = iconColor;
+                this.eventSuccessKpi.value = value;
             }
-        }
-
-        function updateFlowRateKpi() {
-            self.flowRateKpi.value = self.summaryStatistics.flowsStartedPerSecond;
-        }
-
-        function updateAvgDurationKpi() {
-            var avgMillis = self.summaryStatistics.avgFlowDurationMilis;
-            self.avgDurationKpi.value = DateTimeUtils($filter('translate')).formatMillisAsText(avgMillis,false,true);
-        }
-
-        function formatSecondsToMinutesAndSeconds(s) {   // accepts seconds as Number or String. Returns m:ss
-            return ( s - ( s %= 60 )) / 60 + (9 < s ? ':' : ':0' ) + s;
-        }
-
-        function updateSummaryKpis() {
-            updateFlowRateKpi();
-            updateSuccessEventsPercentKpi();
-            updateAvgDurationKpi();
-        }
-
-        function buildProcessorChartData() {
+        };
+        controller.prototype.updateFlowRateKpi = function () {
+            this.flowRateKpi.value = this.summaryStatistics.flowsStartedPerSecond;
+        };
+        controller.prototype.updateAvgDurationKpi = function () {
+            var avgMillis = this.summaryStatistics.avgFlowDurationMilis;
+            this.avgDurationKpi.value = DateTimeUtils(this.$filter('translate')).formatMillisAsText(avgMillis, false, true);
+        };
+        controller.prototype.formatSecondsToMinutesAndSeconds = function (s) {
+            return (s - (s %= 60)) / 60 + (9 < s ? ':' : ':0') + s;
+        };
+        controller.prototype.updateSummaryKpis = function () {
+            this.updateFlowRateKpi();
+            this.updateSuccessEventsPercentKpi();
+            this.updateAvgDurationKpi();
+        };
+        controller.prototype.buildProcessorChartData = function () {
+            var _this = this;
             var values = [];
-            self.processChartLoading = true;
+            this.processChartLoading = true;
             var minTime = undefined;
             var maxTime = undefined;
-            if(self.isZoomed && self.zoomedMinTime != UNZOOMED_VALUE) {
+            if (this.isZoomed && this.zoomedMinTime != this.UNZOOMED_VALUE) {
                 //reset x xaxis to the zoom values
-                minTime=self.zoomedMinTime;
-                maxTime =self.zoomedMaxTime
+                minTime = this.zoomedMinTime;
+                maxTime = this.zoomedMaxTime;
             }
-            $q.when(FeedStatsService.fetchProcessorStatistics(minTime,maxTime)).then(function (response) {
-                self.summaryStatsData = FeedStatsService.summaryStatistics;
-                updateSummaryKpis();
-                self.processorChartData = FeedStatsService.buildProcessorDurationChartData();
-
-                FeedStatsService.updateBarChartHeight(self.processorChartOptions, self.processorChartApi, self.processorChartData[0].values.length, self.selectedProcessorStatisticFunction);
-                self.processChartLoading = false;
-                self.lastProcessorChartRefresh = new Date().getTime();
-                self.lastRefreshTime = new Date();
+            this.$q.when(this.FeedStatsService.fetchProcessorStatistics(minTime, maxTime)).then(function (response) {
+                _this.summaryStatsData = _this.FeedStatsService.summaryStatistics;
+                _this.updateSummaryKpis();
+                _this.processorChartData = _this.FeedStatsService.buildProcessorDurationChartData();
+                _this.FeedStatsService.updateBarChartHeight(_this.processorChartOptions, _this.processorChartApi, _this.processorChartData[0].values.length, _this.selectedProcessorStatisticFunction);
+                _this.processChartLoading = false;
+                _this.lastProcessorChartRefresh = new Date().getTime();
+                _this.lastRefreshTime = new Date();
             }, function () {
-                self.processChartLoading = false;
-                self.lastProcessorChartRefresh = new Date().getTime();
+                _this.processChartLoading = false;
+                _this.lastProcessorChartRefresh = new Date().getTime();
             });
-        }
-
-        function buildFeedCharts() {
-
-            self.feedTimeChartLoading = true;
-            $q.when(FeedStatsService.fetchFeedTimeSeriesData()).then(function (feedTimeSeries) {
-
-                self.minTime = feedTimeSeries.time.startTime;
-                self.maxTime = feedTimeSeries.time.endTime;
-                self.timeDiff = self.maxTime - self.minTime;
-
+        };
+        controller.prototype.buildFeedCharts = function () {
+            var _this = this;
+            this.feedTimeChartLoading = true;
+            this.$q.when(this.FeedStatsService.fetchFeedTimeSeriesData()).then(function (feedTimeSeries) {
+                _this.minTime = feedTimeSeries.time.startTime;
+                _this.maxTime = feedTimeSeries.time.endTime;
+                _this.timeDiff = _this.maxTime - _this.minTime;
                 var chartArr = [];
                 chartArr.push({
-                    label: $filter('translate')('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item) {
-                            return item.jobsFinishedPerSecond;
+                    label: _this.$filter('translate')('view.feed-stats-charts.Completed'), color: '#3483BA', valueFn: function (item) {
+                        return item.jobsFinishedPerSecond;
                     }
                 });
                 chartArr.push({
-                    label: $filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item) {
-                            return item.jobsStartedPerSecond;
+                    label: _this.$filter('translate')('view.feed-stats-charts.Started'), area: true, color: "#F08C38", valueFn: function (item) {
+                        return item.jobsStartedPerSecond;
                     }
                 });
                 //preserve the legend selections
-                if (feedChartLegendState.length > 0) {
+                if (_this.feedChartLegendState.length > 0) {
                     _.each(chartArr, function (item, i) {
-                        item.disabled = feedChartLegendState[i];
+                        item.disabled = _this.feedChartLegendState[i];
                     });
                 }
-
-                self.feedChartData = Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'minEventTime', null,self.minTime, self.maxTime);
-                var max = Nvd3ChartService.determineMaxY(self.feedChartData);
-                if(self.isZoomed) {
-                    max = self.zoomMaxY;
+                _this.feedChartData = _this.Nvd3ChartService.toLineChartData(feedTimeSeries.raw.stats, chartArr, 'minEventTime', null, _this.minTime, _this.maxTime);
+                var max = _this.Nvd3ChartService.determineMaxY(_this.feedChartData);
+                if (_this.isZoomed) {
+                    max = _this.zoomMaxY;
                 }
-                var maxChanged =  self.maxY < max;
-                self.minY = 0;
-                self.maxY = max;
-                if(max <5){
+                var maxChanged = _this.maxY < max;
+                _this.minY = 0;
+                _this.maxY = max;
+                if (max < 5) {
                     max = 5;
                 }
-
-
-                self.feedChartOptions.chart.forceY = [0, max];
-                if (self.feedChartOptions.chart.yAxis.ticks != max) {
-                    self.feedChartOptions.chart.yDomain = [0, max];
+                _this.feedChartOptions.chart.forceY = [0, max];
+                if (_this.feedChartOptions.chart.yAxis.ticks != max) {
+                    _this.feedChartOptions.chart.yDomain = [0, max];
                     var ticks = max;
                     if (ticks > 8) {
                         ticks = 8;
                     }
-                    if(angular.isUndefined(ticks) || ticks <5){
+                    if (angular.isUndefined(ticks) || ticks < 5) {
                         ticks = 5;
                     }
-                    self.feedChartOptions.chart.yAxis.ticks = ticks;
+                    _this.feedChartOptions.chart.yAxis.ticks = ticks;
                 }
-
-                if(self.isZoomed && (self.forceXDomain == true || self.zoomedMinTime != UNZOOMED_VALUE)) {
+                if (_this.isZoomed && (_this.forceXDomain == true || _this.zoomedMinTime != _this.UNZOOMED_VALUE)) {
                     //reset x xaxis to the zoom values
-                    self.feedChartOptions.chart.xDomain = [self.zoomedMinTime,self.zoomedMaxTime]
-                    var y = self.zoomMaxY > 0 ? self.zoomMaxY : self.maxY;
-                    self.feedChartOptions.chart.yDomain = [0,y]
+                    _this.feedChartOptions.chart.xDomain = [_this.zoomedMinTime, _this.zoomedMaxTime];
+                    var y = _this.zoomMaxY > 0 ? _this.zoomMaxY : _this.maxY;
+                    _this.feedChartOptions.chart.yDomain = [0, y];
                 }
-                else  if(!self.isZoomed && self.forceXDomain){
-                    self.feedChartOptions.chart.xDomain = [self.minTime,self.maxTime];
-                    self.feedChartOptions.chart.yDomain = [0,self.maxY]
+                else if (!_this.isZoomed && _this.forceXDomain) {
+                    _this.feedChartOptions.chart.xDomain = [_this.minTime, _this.maxTime];
+                    _this.feedChartOptions.chart.yDomain = [0, _this.maxY];
                 }
-
-                initiatePreventZoom();
-                if (self.feedChartApi && self.feedChartApi.refresh  && self.feedChartApi.update) {
-                      if(maxChanged || self.forceChartRefresh ) {
-                          self.feedChartApi.refresh();
-                          self.forceChartRefresh = false;
-                      }
-                      else {
-                            self.feedChartApi.update();
-                      }
+                _this.initiatePreventZoom();
+                if (_this.feedChartApi && _this.feedChartApi.refresh && _this.feedChartApi.update) {
+                    if (maxChanged || _this.forceChartRefresh) {
+                        _this.feedChartApi.refresh();
+                        _this.forceChartRefresh = false;
+                    }
+                    else {
+                        _this.feedChartApi.update();
+                    }
                 }
-
-                self.feedTimeChartLoading = false;
-                self.lastFeedTimeChartRefresh = new Date().getTime();
+                _this.feedTimeChartLoading = false;
+                _this.lastFeedTimeChartRefresh = new Date().getTime();
             }, function () {
-                self.feedTimeChartLoading = false;
-                self.lastFeedTimeChartRefresh = new Date().getTime();
+                _this.feedTimeChartLoading = false;
+                _this.lastFeedTimeChartRefresh = new Date().getTime();
             });
-
-        }
-
+        };
         /**
          * fetch and append the errors to the FeedStatsService.feedProcessorErrors.data object
          * @param resetWindow optionally reset the feed errors to start a new array of errors in the feedProcessorErrors.data
          */
-        function fetchFeedProcessorErrors(resetWindow) {
-            self.feedProcessorErrorsLoading = true;
-            $q.when(FeedStatsService.fetchFeedProcessorErrors(resetWindow)).then(function (feedProcessorErrors) {
-                self.feedProcessorErrorsLoading = false;
+        controller.prototype.fetchFeedProcessorErrors = function (resetWindow) {
+            var _this = this;
+            this.feedProcessorErrorsLoading = true;
+            this.$q.when(this.FeedStatsService.fetchFeedProcessorErrors(resetWindow)).then(function (feedProcessorErrors) {
+                _this.feedProcessorErrorsLoading = false;
             }, function (err) {
-                self.feedProcessorErrorsLoading = false;
+                _this.feedProcessorErrorsLoading = false;
             });
-
-        }
-
+        };
         /**
          * Gets the Feed Health
          */
-        function getFeedHealth() {
+        controller.prototype.getFeedHealth = function () {
+            var _this = this;
             var successFn = function (response) {
                 if (response.data) {
                     //transform the data for UI
                     if (response.data.feedSummary) {
-                        angular.extend(self.feed, response.data.feedSummary[0]);
-                        self.feed.feedId = self.feed.feedHealth.feedId;
-                        if (self.feed.running) {
-                            self.feed.displayStatus = 'RUNNING';
+                        angular.extend(_this.feed, response.data.feedSummary[0]);
+                        _this.feed.feedId = _this.feed.feedHealth.feedId;
+                        if (_this.feed.running) {
+                            _this.feed.displayStatus = 'RUNNING';
                         }
                         else {
-                            self.feed.displayStatus = 'STOPPED';
+                            _this.feed.displayStatus = 'STOPPED';
                         }
                     }
-
                 }
-            }
+            };
             var errorFn = function (err) {
+            };
+            this.$http.get(this.OpsManagerFeedService.SPECIFIC_FEED_HEALTH_URL(this.feedName)).then(successFn, errorFn);
+        };
+        controller.prototype.clearRefreshInterval = function () {
+            if (this.refreshInterval != null) {
+                this.$interval.cancel(this.refreshInterval);
+                this.refreshInterval = null;
             }
-
-            $http.get(OpsManagerFeedService.SPECIFIC_FEED_HEALTH_URL(self.feedName)).then(successFn, errorFn);
-        }
-
-
-        function clearRefreshInterval() {
-            if (self.refreshInterval != null) {
-                $interval.cancel(self.refreshInterval);
-                self.refreshInterval = null;
-            }
-        }
-
-        function setRefreshInterval() {
-            clearRefreshInterval();
-
-            if (self.autoRefresh ) {
+        };
+        controller.prototype.setRefreshInterval = function () {
+            var _this = this;
+            this.clearRefreshInterval();
+            if (this.autoRefresh) {
                 // anything below 5 minute interval to be refreshed every 5 seconds,
                 // anything above 5 minutes to be refreshed in proportion to its time span, i.e. the longer the time span the less it is refreshed
-                var option = self.timeFramOptionsLookupMap[self.timeFrame];
+                var option = this.timeFramOptionsLookupMap[this.timeFrame];
                 if (!_.isUndefined(option)) {
                     //timeframe option will be undefined when page loads for the first time
                     var refreshInterval = option.properties.millis / 60;
-                    self.refreshIntervalTime = refreshInterval < 5000 ? 5000 : refreshInterval;
+                    this.refreshIntervalTime = refreshInterval < 5000 ? 5000 : refreshInterval;
                 }
-                if (self.refreshIntervalTime) {
-                    self.refreshInterval = $interval(function () {
-                        refresh();
-                        }, self.refreshIntervalTime
-                    );
+                if (this.refreshIntervalTime) {
+                    this.refreshInterval = this.$interval(function () {
+                        _this.refresh();
+                    }, this.refreshIntervalTime);
                 }
             }
-        }
-
-
+        };
         /**
          * Initialize the charts
          */
-        function initCharts() {
-            FeedStatsService.setFeedName(self.feedName);
-            setupChartOptions();
-            self.onRefreshButtonClick();
-            self.dataLoaded = true;
-        }
-
+        controller.prototype.initCharts = function () {
+            this.FeedStatsService.setFeedName(this.feedName);
+            this.setupChartOptions();
+            this.onRefreshButtonClick();
+            this.dataLoaded = true;
+        };
         /**
          * Fetch and load the Time slider options
          */
-        function loadTimeFrameOption() {
-            ProvenanceEventStatsService.getTimeFrameOptions().then(function (response) {
-                self.timeFrameOptions = response.data;
-                self.timeFrameOptionIndexLength = self.timeFrameOptions.length;
+        controller.prototype.loadTimeFrameOption = function () {
+            var _this = this;
+            this.ProvenanceEventStatsService.getTimeFrameOptions().then(function (response) {
+                _this.timeFrameOptions = response.data;
+                _this.timeFrameOptionIndexLength = _this.timeFrameOptions.length;
                 _.each(response.data, function (labelValue) {
-                    self.timeFramOptionsLookupMap[labelValue.value] = labelValue;
+                    _this.timeFramOptionsLookupMap[labelValue.value] = labelValue;
                 });
-                $timeout(function () {
+                _this.$timeout(function () {
                     //update initial slider position in UI
-                    self.timeFrameOptionIndex = _.findIndex(self.timeFrameOptions, function (option) {
-                        return option.value === self.timeFrame;
+                    _this.timeFrameOptionIndex = _.findIndex(_this.timeFrameOptions, function (option) {
+                        return option.value === _this.timeFrame;
                     });
-                    initCharts();
+                    _this.initCharts();
                 }, 1);
             });
-        }
-
-
-
+        };
         /**
-         * Initialize the page.  Called when first page loads to set it up
+         * When the controller is ready, initialize
          */
-        function init(){
-            loadTimeFrameOption();
+        controller.prototype.$onInit = function () {
+            var _this = this;
+            /**
+             * Enable/disable the refresh interval
+             */
+            this.$scope.$watch(function () {
+                return _this.autoRefresh;
+            }, function (newVal, oldVal) {
+                if (!_this.autoRefresh) {
+                    _this.clearRefreshInterval();
+                    //toast
+                    _this.$mdToast.show(_this.$mdToast.simple()
+                        .textContent('Auto refresh disabled')
+                        .hideDelay(3000));
+                }
+                else {
+                    _this.setRefreshInterval();
+                    _this.$mdToast.show(_this.$mdToast.simple()
+                        .textContent('Auto refresh enabled')
+                        .hideDelay(3000));
+                }
+            });
+            /**
+             * Watch when a zoom is active.
+             */
+            this.$scope.$watch(function () {
+                return _this.zoomedMinTime;
+            }, function (newVal, oldVal) {
+                if (!_.isUndefined(_this.zoomedMinTime) && _this.zoomedMinTime > 0) {
+                    //  if (this.isAtInitialZoom) {
+                    //      this.isAtInitialZoom = false;
+                    // } else {
+                    _this.cancelPreviousOnZoomed();
+                    _this.changeZoomPromise = _this.$timeout(_this.changeZoom, _this.ZOOM_DELAY);
+                    // }
+                }
+            });
+            this.$scope.$on('$destroy', function () {
+                _this.clearRefreshInterval();
+                _this.cancelPreviousOnZoomed();
+            });
+            this.loadTimeFrameOption();
+        };
+        /**
+ * When the slider is changed refresh the charts/data
+ * @param timeFrame
+ */
+        controller.prototype.onTimeFrameChanged2 = function (timeFrame) {
+            if (this.isZoomed) {
+                this.resetZoom();
+            }
+            this.isAtInitialZoom = true;
+            this.timeFrame = timeFrame;
+            var millis = this.timeFrameOptions[this.timeFrameOptionIndex].properties.millis;
+            if (millis >= this.minZoomTime) {
+                this.enableZoom();
+            }
+            else {
+                this.disableZoom();
+            }
+            this.clearRefreshInterval();
+            this.refresh();
+            //disable refresh if > 30 min timeframe
+            if (millis > (1000 * 60 * 30)) {
+                this.autoRefresh = false;
+            }
+            else {
+                if (!this.autoRefresh) {
+                    this.autoRefresh = true;
+                }
+                else {
+                    this.setRefreshInterval();
+                }
+            }
+        };
+        return controller;
+    }());
+    exports.default = controller;
+    angular.module(module_name_1.moduleName)
+        .controller('FeedStatsChartsController', ["$scope", "$element", "$http", "$interval", "$timeout", "$q", "$mdToast",
+        "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService",
+        "StateService", "$filter", controller]);
+    angular.module(module_name_1.moduleName)
+        .directive('kyloFeedStatsCharts', [
+        function () {
+            return {
+                restrict: "EA",
+                scope: {},
+                bindToController: {
+                    panelTitle: "@",
+                    refreshIntervalTime: "@",
+                    feedName: '@'
+                },
+                controllerAs: 'vm',
+                templateUrl: 'js/ops-mgr/feeds/feed-stats/feed-stats-charts.html',
+                controller: "FeedStatsChartsController",
+                link: function ($scope, element, attrs) {
+                    $scope.$on('$destroy', function () {
+                    });
+                } //DOM manipulation\}
+            };
         }
-
-        //Load the page
-        init();
-
-        $scope.$on('$destroy', function () {
-            clearRefreshInterval();
-            cancelPreviousOnZoomed();
-        });
-
-    };
-
-    angular.module(moduleName).controller('FeedStatsChartsController',
-        ["$scope", "$element", "$http", "$interval", "$timeout", "$q","$mdToast", "ProvenanceEventStatsService", "FeedStatsService", "Nvd3ChartService", "OpsManagerFeedService", "StateService", "$filter", controller]);
-
-    angular.module(moduleName)
-        .directive('kyloFeedStatsCharts', directive);
-
+    ]);
 });
+//# sourceMappingURL=feed-stats-charts.js.map

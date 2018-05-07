@@ -123,6 +123,12 @@ public interface MetadataService {
      * @throws RuntimeException            if the feed could not be deleted for any other reason
      */
     void deleteFeed(@Nonnull String feedId);
+    
+    /**
+     * Starts the feed with the specified ID as if it was triggered by it regular schedule.
+     * @param feedId the feed's ID
+     */
+    FeedSummary startFeed(String feedId);
 
     /**
      * Change the state of the feed to be {@link FeedMetadata.STATE#ENABLED}

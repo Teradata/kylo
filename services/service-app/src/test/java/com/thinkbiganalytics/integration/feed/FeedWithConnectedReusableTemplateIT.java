@@ -69,8 +69,8 @@ public class FeedWithConnectedReusableTemplateIT extends ImportConnectedReusable
     }
 
     private void assertExecutedJobs(FeedMetadata feed) throws IOException {
-        DefaultExecutedJob[] jobs = getJobs(feed.getCategoryAndFeedName().toLowerCase());
-
+        String filter =feed.getCategoryAndFeedName().toLowerCase();
+        DefaultExecutedJob[] jobs = getJobs(0,50,"-createTime",filter);
         DefaultExecutedJob ingest = Arrays.stream(jobs).findFirst().orElse(null);
         Assert.assertNotNull(ingest);
         Assert.assertEquals(ExecutionStatus.COMPLETED, ingest.getStatus());

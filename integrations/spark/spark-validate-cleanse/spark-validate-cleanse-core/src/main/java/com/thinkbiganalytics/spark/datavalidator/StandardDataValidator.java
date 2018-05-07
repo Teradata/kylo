@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,15 +59,12 @@ import static com.thinkbiganalytics.spark.datavalidator.functions.CleanseAndVali
  */
 public class StandardDataValidator implements DataValidator, Serializable {
 
-    private static final long serialVersionUID = -3320427655280582069L;
-
-    private static final Logger log = LoggerFactory.getLogger(StandardDataValidator.class);
-
     /*
     Valid validation result
      */
     public static final ValidationResult VALID_RESULT = new ValidationResult();
-
+    private static final long serialVersionUID = -3320427655280582069L;
+    private static final Logger log = LoggerFactory.getLogger(StandardDataValidator.class);
     /**
      * Column name indicate all columns.
      */
@@ -135,7 +133,9 @@ public class StandardDataValidator implements DataValidator, Serializable {
     public DataValidatorResult validateTable(@Nonnull final String databaseName, @Nonnull final String sourceTableName, @Nonnull final String targetTableName, @Nonnull final String partition,
                                              final int numPartitions, @Nonnull final Map<String, FieldPolicy> policyMap, @Nonnull final HiveContext hiveContext) {
         // Extract fields from a source table
-        StructField[] fields = resolveSchema(databaseName, targetTableName, hiveContext);
+        String definitionsTableToUse = targetTableName;
+        log.info("Constructing field policies from table definitions of '{}'", definitionsTableToUse);  // TODO: should be at debug level
+        StructField[] fields = resolveSchema(databaseName, definitionsTableToUse, hiveContext);
         FieldPolicy[] policies = resolvePolicies(fields, policyMap);
 
         String selectStmt = toSelectFields(policies);
@@ -153,7 +153,8 @@ public class StandardDataValidator implements DataValidator, Serializable {
     }
 
     @Override
-    public void saveInvalidToTable(@Nonnull final String databaseName, @Nonnull final String tableName, @Nonnull final DataValidatorResult result, @Nonnull final HiveContext hiveContext) {
+    public void saveInvalidToTable(@Nonnull final String databaseName, @Nonnull final String feedTableName, @Nonnull final String invalidTableName,
+                                   @Nonnull final DataValidatorResult result, @Nonnull final HiveContext hiveContext) {
         // Return a new rdd based for Invalid Results
         //noinspection serial
         JavaRDD<CleansedRowResult> invalidResultRDD = result.getCleansedRowResultRDD().filter(new Function<CleansedRowResult, Boolean>() {
@@ -163,11 +164,40 @@ public class StandardDataValidator implements DataValidator, Serializable {
             }
         });
 
-        final StructType invalidSchema = new StructType(resolveSchema(databaseName, tableName, hiveContext));
-        DataSet invalidDataFrame = getRows(invalidResultRDD, invalidSchema, hiveContext);
-        writeToTargetTable(invalidDataFrame, databaseName, tableName, hiveContext);
+        final StructType invalidSchema = new StructType(resolveSchema(databaseName, invalidTableName, hiveContext));
+        final StructType feedSchema = new StructType(resolveSchema(databaseName, feedTableName, hiveContext));
+        final StructType mergedSchema = cloneSchemaWithNewTypes( invalidSchema,  feedSchema);
 
-        log.info("wrote values to the invalid Table  {}", tableName);
+        DataSet invalidDataFrame = getRows(invalidResultRDD, mergedSchema, hiveContext);
+        writeToTargetTable(invalidDataFrame, databaseName, invalidTableName, hiveContext);
+
+        log.info("wrote values to the invalid Table  {}", invalidTableName);
+    }
+
+    /**
+     * Creates a new schema (StructType) by taking the fields (with their types) from the typed schema
+     * and any remaining fields from the original schema.
+     *
+     * @param originalSchema  a schema with reference columns
+     * @param typedSchema     a schema that will be used to define columns found in the originalSchema.
+     *
+     * @return a new schema
+     */
+    private StructType cloneSchemaWithNewTypes(StructType originalSchema, StructType typedSchema) {
+        Map<String, StructField> typesMap = new HashMap<>(typedSchema.fields().length);
+        for (StructField sf : typedSchema.fields()) {
+            typesMap.put(sf.name(), sf);
+        }
+
+        StructType st = new StructType();
+        for (StructField sf : originalSchema.fields()) {
+            if (typesMap.containsKey(sf.name())) {
+                st = st.add(typesMap.get(sf.name()));
+            } else {
+                st = st.add(sf);
+            }
+        }
+        return st;
     }
 
     @Override

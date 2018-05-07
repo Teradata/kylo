@@ -7,10 +7,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-define(["require", "exports", "@angular/common", "@angular/core", "@uirouter/angular", "./angular2"], function (require, exports, common_1, core_1, angular_1, angular2_1) {
+define(["require", "exports", "@angular/common", "@angular/core", "@uirouter/angular", "./angular2", "../../constants/AccessConstants"], function (require, exports, common_1, core_1, angular_1, angular2_1, AccessConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var AccessConstants = require("../../constants/AccessConstants");
     var moduleName = require("./module-name");
     var VisualQueryModule = /** @class */ (function () {
         function VisualQueryModule(injector) {
@@ -56,7 +55,7 @@ define(["require", "exports", "@angular/common", "@angular/core", "@uirouter/ang
                                     breadcrumbRoot: true,
                                     displayName: "Visual Query",
                                     module: moduleName,
-                                    permissions: AccessConstants.UI_STATES.VISUAL_QUERY.permissions
+                                    permissions: AccessConstants_1.default.UI_STATES.VISUAL_QUERY.permissions
                                 }
                             }]
                     })

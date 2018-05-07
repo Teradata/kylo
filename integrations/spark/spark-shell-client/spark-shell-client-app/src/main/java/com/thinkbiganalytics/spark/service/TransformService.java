@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.service;
  */
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
@@ -49,6 +50,7 @@ import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.repl.SparkScriptEngine;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
@@ -87,6 +89,12 @@ import scala.tools.nsc.interpreter.NamedParamClass;
 public class TransformService {
 
     private static final XLogger log = XLoggerFactory.getXLogger(TransformService.class);
+
+    /**
+     * Data set converter service
+     */
+    @Nonnull
+    private final DataSetConverterService converterService;
 
     /**
      * Data source provider factory
@@ -158,13 +166,15 @@ public class TransformService {
      * @param engine               the script engine
      * @param sparkContextService  the Spark context service
      * @param tracker              job tracker for transformations
+     * @param converterService     data set converter service
      */
     public TransformService(@Nonnull final Class<? extends TransformScript> transformScriptClass, @Nonnull final SparkScriptEngine engine, @Nonnull final SparkContextService sparkContextService,
-                            @Nonnull final JobTrackerService tracker) {
+                            @Nonnull final JobTrackerService tracker, @Nonnull final DataSetConverterService converterService) {
         this.transformScriptClass = transformScriptClass;
         this.engine = engine;
         this.sparkContextService = sparkContextService;
         this.tracker = tracker;
+        this.converterService = converterService;
     }
 
     /**
@@ -207,13 +217,13 @@ public class TransformService {
         // Execute script
         final DataSet dataSet = createShellTask(request);
         final StructType schema = dataSet.schema();
-        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet), getPolicies(request));
+        TransformResponse response = submitTransformJob(new ShellTransformStage(dataSet, converterService),request);
 
         // Build response
         if (response.getStatus() != TransformResponse.Status.SUCCESS) {
             final String table = response.getTable();
             final TransformQueryResult partialResult = new TransformQueryResult();
-            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table).columns()));
+            partialResult.setColumns(Arrays.<QueryResultColumn>asList(new QueryResultRowTransform(schema, table, converterService).columns()));
 
             response = new TransformResponse();
             response.setProgress(0.0);
@@ -321,7 +331,7 @@ public class TransformService {
         }
 
         // Execute query
-        final TransformResponse response = submitTransformJob(createSqlTask(request), getPolicies(request));
+        final TransformResponse response = submitTransformJob(createSqlTask(request), request);
         return log.exit(response);
     }
 
@@ -333,7 +343,7 @@ public class TransformService {
         log.entry(id, save);
 
         final DataSet dataSet = createShellTask(getTransformRequest(id));
-        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet)));
+        final SaveResponse response = submitSaveJob(createSaveTask(save, new ShellTransformStage(dataSet, converterService)));
         return log.exit(response);
     }
 
@@ -430,7 +440,7 @@ public class TransformService {
     @Nonnull
     private Supplier<SaveResult> createSaveTask(@Nonnull final SaveRequest request, @Nonnull final Supplier<TransformResult> transform) {
         Preconditions.checkState(hadoopFileSystem != null, "Saving is not enabled.");
-        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem), transform);
+        return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem, converterService), transform);
     }
 
     /**
@@ -551,22 +561,31 @@ public class TransformService {
      * Submits the specified task to be executed and returns the result.
      */
     @Nonnull
-    private TransformResponse submitTransformJob(@Nonnull final Supplier<TransformResult> task, @Nullable final FieldPolicy[] policies) throws ScriptException {
+    private TransformResponse submitTransformJob(final Supplier<TransformResult> task, @Nonnull final TransformRequest request) throws ScriptException {
+
+        final FieldPolicy[] policies = getPolicies(request);
+        final PageSpec pageSpec = request.getPageSpec();
+
         log.entry(task, policies);
 
         // Prepare script
         Supplier<TransformResult> result = task;
 
-        if (policies != null && policies.length > 0 && validator != null) {
-            result = Suppliers.compose(new ValidationStage(policies, validator), result);
+        if (request.isDoValidate()) {
+            if (policies != null && policies.length > 0 && validator != null) {
+                result = Suppliers.compose(new ValidationStage(policies, validator), result);
+            }
         }
-        if (profiler != null) {
-            result = Suppliers.compose(new ProfileStage(profiler), result);
+
+        if (request.isDoProfile()) {
+            if (profiler != null) {
+                result = Suppliers.compose(new ProfileStage(profiler), result);
+            }
         }
 
         // Execute script
         final String table = newTableName();
-        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table), result), engine.getSparkContext());
+        final TransformJob job = new TransformJob(table, Suppliers.compose(new ResponseStage(table, converterService, pageSpec), result), engine.getSparkContext());
         tracker.submitJob(job);
 
         // Build response

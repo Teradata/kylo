@@ -37,7 +37,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.TestMetric;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
@@ -111,8 +110,7 @@ public class ServiceLevelAgreementRestController {
     private ServiceLevelAgreementProvider provider;
     @Inject
     private FeedServiceLevelAgreementProvider feedSlaProvider;
-    @Inject
-    private JcrMetadataAccess metadata;
+
     @Inject
     private MetadataAccess metadataAccess;
     @Inject
@@ -297,7 +295,7 @@ public class ServiceLevelAgreementRestController {
     public ServiceLevelAssessment assessAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
 
-        return this.metadata.read(() -> {
+        return this.metadataAccess.read(() -> {
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID id = this.provider.resolve(idValue);
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = this.provider.getAgreement(id);
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assessment = this.assessor.assess(sla);

@@ -1,6 +1,9 @@
-define(['angular','services/module-name'], function (angular,moduleName) {
-    angular.module(moduleName).factory('HiveService', ["$q","$http","$mdDialog","$timeout","RestUrlService",function ($q, $http, $mdDialog,$timeout, RestUrlService) {
-
+define(["require", "exports", "angular", "underscore", "moment"], function (require, exports, angular, _, moment) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('feed-mgr/module-name');
+    // export class HiveService {
+    function HiveService($q, $http, $mdDialog, $timeout, RestUrlService) {
         var data = {
             refreshTableCache: function () {
                 return $http.get(RestUrlService.HIVE_SERVICE_URL + "/refreshUserHiveAccessCache");
@@ -23,8 +26,8 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                         if (schemaTables[schema] == undefined) {
                             schemaTables[schema] = [];
                         }
-                        allTables.push({schema: schema, tableName: tableName, fullName: table, fullNameLower: table.toLowerCase()});
-                    })
+                        allTables.push({ schema: schema, tableName: tableName, fullName: table, fullNameLower: table.toLowerCase() });
+                    });
                 }
                 return allTables;
             },
@@ -36,13 +39,13 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 var errorFn = function (err) {
                     self.loading = false;
                 };
-                var params = {schema: schema, table: table, refreshCache: self.refreshCache};
-                var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/tables", {params: params});
+                var params = { schema: schema, table: table, refreshCache: self.refreshCache };
+                var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/tables", { params: params });
                 promise.then(successFn, errorFn);
                 return promise;
             },
             getTablesAndColumns: function () {
-                return $http.get(RestUrlService.HIVE_SERVICE_URL + "/table-columns", {timeout: 30000});
+                return $http.get(RestUrlService.HIVE_SERVICE_URL + "/table-columns", { timeout: 30000 });
             },
             queryResult: function (query) {
                 var self = this;
@@ -50,23 +53,20 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     var successFn = function (response) {
                         var tableData = response.data;
                         return tableData;
-
-                    }
+                    };
                     var errorFn = function (err) {
                         self.loadingHiveSchemas = false;
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .parent(angular.element(document.querySelector('body')))
-                                .clickOutsideToClose(true)
-                                .title('Error executing the Query')
-                                .textContent('Error querying the data for ' + query)
-                                .ariaLabel('Error browsing the data')
-                                .ok('Got it!')
-                            //.targetEvent(ev)
+                        $mdDialog.show($mdDialog.alert()
+                            .parent(angular.element(document.querySelector('body')))
+                            .clickOutsideToClose(true)
+                            .title('Error executing the Query')
+                            .textContent('Error querying the data for ' + query)
+                            .ariaLabel('Error browsing the data')
+                            .ok('Got it!')
+                        //.targetEvent(ev)
                         );
-                    }
-
-                    var config = {params: {query: query}};
+                    };
+                    var config = { params: { query: query } };
                     var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/query-result", config);
                     promise.then(successFn, errorFn);
                     return promise;
@@ -78,24 +78,20 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     var successFn = function (response) {
                         var tableData = response.data;
                         return tableData;
-
-                    }
+                    };
                     var errorFn = function (err) {
                         self.loadingHiveSchemas = false;
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .parent(angular.element(document.querySelector('body')))
-                                .clickOutsideToClose(true)
-                                .title('Error executing the Query')
-                                .textContent('Error querying the data for ' + query)
-                                .ariaLabel('Error browsing the data')
-                                .ok('Got it!')
-                            //.targetEvent(ev)
+                        $mdDialog.show($mdDialog.alert()
+                            .parent(angular.element(document.querySelector('body')))
+                            .clickOutsideToClose(true)
+                            .title('Error executing the Query')
+                            .textContent('Error querying the data for ' + query)
+                            .ariaLabel('Error browsing the data')
+                            .ok('Got it!')
+                        //.targetEvent(ev)
                         );
-                    }
-
-                    var config = {params: {query: query}};
-
+                    };
+                    var config = { params: { query: query } };
                     var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/query", config);
                     promise.then(successFn, errorFn);
                     return promise;
@@ -107,22 +103,20 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     var successFn = function (response) {
                         var tableData = response.data;
                         return tableData;
-
-                    }
+                    };
                     var errorFn = function (err) {
                         self.loadingHiveSchemas = false;
-                        $mdDialog.show(
-                            $mdDialog.alert()
-                                .parent(angular.element(document.querySelector('body')))
-                                .clickOutsideToClose(true)
-                                .title('Cannot browse the table')
-                                .textContent('Error Browsing the data ')
-                                .ariaLabel('Error browsing the data')
-                                .ok('Got it!')
-                            //.targetEvent(ev)
+                        $mdDialog.show($mdDialog.alert()
+                            .parent(angular.element(document.querySelector('body')))
+                            .clickOutsideToClose(true)
+                            .title('Cannot browse the table')
+                            .textContent('Error Browsing the data ')
+                            .ariaLabel('Error browsing the data')
+                            .ok('Got it!')
+                        //.targetEvent(ev)
                         );
-                    }
-                    var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/browse/" + schema + "/" + table, {params: {where: whereCondition}});
+                    };
+                    var promise = $http.get(RestUrlService.HIVE_SERVICE_URL + "/browse/" + schema + "/" + table, { params: { where: whereCondition } });
                     promise.then(successFn, errorFn);
                     return promise;
                 }
@@ -135,11 +129,10 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     if (name.indexOf('.') >= 0) {
                         displayName = name.substring(name.indexOf('.') + 1);
                     }
-                    displayColumns.push(displayName)
+                    displayColumns.push(displayName);
                     columns.push(name);
                 });
                 return columns;
-
             },
             getUTCTime: function (dateStr) {
                 //If the date is 14 chars long then it is in the format of yyyyMMddHHMMSS
@@ -157,10 +150,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 }
                 else {
                     //string is timestamp in millis UTC format
-                    return new moment(parseInt(dateStr)).toDate();
+                    return moment(parseInt(dateStr)).toDate(); // TODO GREG
                 }
             },
-
             getColumnNamesForQueryResult: function (queryResult) {
                 var self = this;
                 if (queryResult != null) {
@@ -171,7 +163,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     return self.getColumnNamesForRow(row);
                 }
                 return null;
-
             },
             orderColumns: function (columns, comparator) {
                 columns.sort(comparator);
@@ -195,15 +186,13 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                             displayName = name.substring(name.indexOf('.') + 1);
                         }
                         if (hideColumns && (_.contains(hideColumns, displayName) || _.contains(hideColumns, name))) {
-
                         }
                         else {
-                            displayColumns.push(displayName)
+                            displayColumns.push(displayName);
                             columns.push(name);
                         }
                     });
                 }
-
                 data.columns = columns;
                 data.displayColumns = displayColumns;
                 data.rows = rows;
@@ -219,12 +208,10 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 if (queryResult && queryResult.data) {
                     angular.forEach(queryResult.data.columns, function (col, idx) {
                         var displayName = col.displayName;
-
                         if (hideColumns && (_.contains(hideColumns, displayName) || _.contains(hideColumns, name))) {
-
                         }
                         else {
-                            displayColumns.push(displayName)
+                            displayColumns.push(displayName);
                             columns.push({
                                 displayName: displayName,
                                 headerTooltip: col.hiveColumnLabel,
@@ -236,14 +223,11 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                         }
                     });
                 }
-
                 if (transformFn != null) {
                     angular.forEach(rows, function (row, i) {
                         transformFn(row, fields, displayColumns);
                     });
-
                 }
-
                 data.columns = columns;
                 data.rows = rows;
                 data.queryResultColumns = queryResult.data.columns;
@@ -262,23 +246,19 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                             displayName = name.substring(name.indexOf('.') + 1);
                         }
                         if (hideColumns && (_.contains(hideColumns, displayName) || _.contains(hideColumns, name))) {
-
                         }
                         else {
-                            displayColumns.push(displayName)
-                            columns.push({displayName: displayName, minWidth: 150, name: name});
+                            displayColumns.push(displayName);
+                            columns.push({ displayName: displayName, minWidth: 150, name: name });
                             fields.push(name);
                         }
                     });
                 }
-
                 if (transformFn != null) {
                     angular.forEach(rows, function (row, i) {
                         transformFn(row, fields, displayColumns);
                     });
-
                 }
-
                 data.columns = columns;
                 data.rows = rows;
                 return data;
@@ -296,23 +276,19 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                             displayName = name.substring(name.indexOf('.') + 1);
                         }
                         if (hideColumns && (_.contains(hideColumns, displayName) || _.contains(hideColumns, name))) {
-
                         }
                         else {
-                            displayColumns.push(displayName)
-                            columns.push({headerName: displayName, width: 100, field: name});
+                            displayColumns.push(displayName);
+                            columns.push({ headerName: displayName, width: 100, field: name });
                             fields.push(name);
                         }
                     });
                 }
-
                 if (transformFn != null) {
                     angular.forEach(rows, function (row, i) {
                         transformFn(row, fields, displayColumns);
                     });
-
                 }
-
                 data.columns = columns;
                 data.rows = rows;
                 return data;
@@ -324,7 +300,6 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 var displayColumns = [];
                 var pivotedData = [];
                 angular.forEach(rows, function (row, i) {
-
                     if (columns.length == 0) {
                         angular.forEach(row, function (val, name) {
                             var displayName = name;
@@ -332,34 +307,30 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                                 displayName = name.substring(name.indexOf('.') + 1);
                             }
                             if (hideColumns && (_.contains(hideColumns, displayName) || _.contains(hideColumns, name))) {
-
                             }
                             else {
-                                displayColumns.push(displayName)
+                                displayColumns.push(displayName);
                                 columns.push(name);
                             }
                         });
                     }
                     if (transformFn != null) {
-
                         transformFn(row, columns, displayColumns);
-
                     }
                     angular.forEach(displayColumns, function (displayColumn, i) {
                         row[displayColumn] = row[columns[i]];
                     });
                 });
-
                 data.columns = columns;
                 data.displayColumns = displayColumns;
                 data.rows = rows;
                 data.pivotData = null;
                 return data;
             }
-
         };
-
         return data;
-
-    }]);
+    }
+    // }
+    angular.module(moduleName).factory('HiveService', ["$q", "$http", "$mdDialog", "$timeout", "RestUrlService", HiveService]);
 });
+//# sourceMappingURL=HiveService.js.map

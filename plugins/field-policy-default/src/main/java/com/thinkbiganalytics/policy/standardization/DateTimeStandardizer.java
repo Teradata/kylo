@@ -9,9 +9,9 @@ package com.thinkbiganalytics.policy.standardization;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,11 +23,14 @@ package com.thinkbiganalytics.policy.standardization;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.utils.JodaUtils;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.IllegalInstantException;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -44,6 +47,7 @@ import java.util.TimeZone;
 public class DateTimeStandardizer implements StandardizationPolicy {
 
     private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
+
     @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY.  If converting from Unix timestamp leave empty.")
     private String inputDateFormat;
     @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
@@ -86,7 +90,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
-    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional)", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
+    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional). System Time = Kylo", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"", "ACT",
                                         "AET",
                                         "AGT",
@@ -168,13 +172,29 @@ public class DateTimeStandardizer implements StandardizationPolicy {
                 DateTime dt = inputFormatter.parseDateTime(value);
 
                 return outputFormatter.print(dt);
-
+            } catch (IllegalInstantException e) {
+                if ((inputTimezone == null && !JodaUtils.formatContainsTime(this.inputDateFormat)) &&
+                    outputFormat == OutputFormats.DATE_ONLY) {
+                    // in the case where user is not matching time in the formatString, has not specified the
+                    //    input time zone and the output format is DATE_ONLY, it is safe to retry with
+                    //    a "timezone-less" date parsing to avoid any time zone offset transition problems
+                    //    on the input date.  output date
+                    DateTime dt = LocalDate.parse(value, inputFormatter).toDateTimeAtStartOfDay();
+                    return outputFormatter.print(dt);
+                } else {
+                    // otherwise...  we can't be sure how an incoming date in time
+                    //    zone offset transition should be handled.  It is best to skip the conversion
+                    //    and hope the feed has a validator that would catch the row as invalid, so
+                    //    the problem can be addressed at the source.
+                    throw e;
+                }
             } catch (IllegalArgumentException e) {
                 log.debug("Failed to convert string [{}] to date pattern [{}], value, inputDateFormat");
             }
         }
         return value;
     }
+
 
     /**
      * Returns a time formatter for the specified timezone
@@ -239,9 +259,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
         return outputFormat;
     }
 
-    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
-
-    public Boolean accepts (Object value) {
+    public Boolean accepts(Object value) {
         return (value instanceof String);
     }
 
@@ -252,4 +270,6 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
         return value;
     }
+
+    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 }

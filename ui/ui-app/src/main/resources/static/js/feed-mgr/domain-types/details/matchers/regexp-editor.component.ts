@@ -1,5 +1,6 @@
 import {Output} from "@angular/core";
 import * as angular from "angular";
+import {moduleName} from "../../module-name";
 
 /**
  * Provides an editor for regular expressions.
@@ -188,7 +189,7 @@ export class RegExpEditorComponent {
     }
 }
 
-angular.module(require("feed-mgr/domain-types/module-name"))
+angular.module(moduleName)
     .component("regexpEditor", {
         bindings: {
             onSyntaxError: "&"

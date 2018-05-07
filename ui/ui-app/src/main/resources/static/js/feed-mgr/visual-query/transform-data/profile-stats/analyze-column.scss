@@ -1,0 +1,71 @@
+
+.column-analysis .close {
+  opacity: 0.4;
+}
+
+.column-analysis .md-title {
+  color: rgb(52, 131, 186);
+}
+
+.histo {
+  margin-top: -18px;
+  height: 300px;
+  background-attachment: scroll;
+  overflow: hidden
+}
+
+.histo:hover {
+  overflow-y: auto;
+}
+
+md-table-container.histo > table.md-table tbody.md-body > tr.md-row {
+  height: 40px;
+}
+
+span.bar {
+  display: block;
+  margin: 5px 0 0 0;
+  height: 5px;
+  background: rgb(52, 131, 186);
+}
+
+.summary-section strong {
+  display: block;
+  text-transform: uppercase;
+  color: rgb(52, 131, 186);
+  padding-left: 14px;
+}
+
+.summary-section th {
+  text-align: left;
+}
+
+.summary-section table {
+  padding: 5px;
+  border-spacing: 9px;
+}
+
+.numeric {
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  max-width: 100px;
+}
+
+.truncate {
+  max-width: 300px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+md-progress-linear.wrangler-theme .md-container {
+  opacity: 1.0;
+  background-color:transparent !important;
+}
+
+.axis path, .tick line {
+  fill: none;
+  stroke: #333;
+}

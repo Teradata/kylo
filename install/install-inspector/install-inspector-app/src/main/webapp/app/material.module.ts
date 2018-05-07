@@ -37,7 +37,7 @@ import {
     MatSnackBarModule,
     MatTableModule,
     MatToolbarModule,
-    MatCheckboxModule, MatChipsModule,
+    MatCheckboxModule, MatChipsModule, MatProgressBarModule,
 } from '@angular/material';
 
 import {ReactiveFormsModule} from '@angular/forms';
@@ -57,6 +57,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
         MatTableModule,
         MatPaginatorModule,
         MatProgressSpinnerModule,
+        MatProgressBarModule,
         MatSnackBarModule,
         MatSelectModule,
         MatOptionModule,
@@ -80,6 +81,7 @@ import {FlexLayoutModule} from '@angular/flex-layout';
         MatTableModule,
         MatPaginatorModule,
         MatProgressSpinnerModule,
+        MatProgressBarModule,
         MatSnackBarModule,
         MatSelectModule,
         MatOptionModule,

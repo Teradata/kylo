@@ -22,6 +22,7 @@ package com.thinkbiganalytics.spark.shell;
 
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
+import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
@@ -31,7 +32,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -89,10 +89,12 @@ public class JerseySparkShellRestClient implements SparkShellRestClient {
 
     @Nonnull
     @Override
-    public List<String> getDataSources(@Nonnull final SparkShellProcess process) {
-        final GenericType<List<String>> stringListType = new GenericType<List<String>>() {
-        };
-        return getClient(process).get("/api/v1/spark/shell/data-sources", Collections.emptyMap(), stringListType);
+    public DataSources getDataSources(@Nonnull final SparkShellProcess process) {
+        DataSources dataSources =
+            getClient(process).get("/api/v1/spark/shell/data-sources", Collections.emptyMap(), DataSources.class);
+
+        log.trace("{}", dataSources);
+        return dataSources;
     }
 
     @Nonnull

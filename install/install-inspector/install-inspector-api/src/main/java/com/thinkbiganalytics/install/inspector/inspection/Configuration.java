@@ -28,15 +28,13 @@ public interface Configuration {
 
     String SPRING_PROFILES_INCLUDE = "spring.profiles.include";
 
-    Path getPath();
-
-    Integer getId();
+    String getPath();
 
     String getVersion();
 
     String getBuildDate();
 
-    Object getServicesConfigLocation();
+    String getServicesConfigLocation();
 
     @JsonIgnore
     ClassLoader getServicesClassloader();
@@ -49,5 +47,9 @@ public interface Configuration {
 
     String getUiProperty(String propertyName);
 
-    <T> T getServicesBean(Class<?> contextConf, Class<T> bean);
+    void setInspections(List<Inspection> inspections);
+
+    public List<Inspection> getInspections();
+
+    public String isDevMode();
 }

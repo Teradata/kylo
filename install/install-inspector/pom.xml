@@ -13,6 +13,7 @@
   <packaging>pom</packaging>
   <modules>
     <module>install-inspector-api</module>
+    <module>install-inspector-inspections</module>
     <module>install-inspector-app</module>
   </modules>
 
@@ -21,6 +22,7 @@
       <plugin>
         <groupId>org.sonatype.plugins</groupId>
         <artifactId>nexus-staging-maven-plugin</artifactId>
+        <version>${nexus-staging-maven-plugin.version}</version>
         <configuration>
           <skipNexusStagingDeployMojo>true</skipNexusStagingDeployMojo>
         </configuration>

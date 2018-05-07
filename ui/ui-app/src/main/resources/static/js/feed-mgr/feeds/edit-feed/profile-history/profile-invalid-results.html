@@ -32,7 +32,7 @@
         </md-select>
     </md-input-container>
 
-    <md-input-container>
+    <md-input-container style="min-width: 170px">
         <label>Filter By Rule Violation</label>
         <md-select ng-model="vm.filter" ng-change="vm.onFilterChange()">
             <md-option ng-repeat="opt in vm.filterOptions track by $index" ng-value="opt">

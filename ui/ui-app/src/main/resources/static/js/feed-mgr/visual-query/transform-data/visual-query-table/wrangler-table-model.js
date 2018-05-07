@@ -18,27 +18,22 @@ define(["require", "exports", "fattable"], function (require, exports) {
             _this.data = data;
             return _this;
         }
-        /**
-         * Gets the value for the specified cell.
-         *
-         * @param {number} i the row number
-         * @param {number} j the column number
-         * @returns {VisualQueryTableCell|null} the cell object
-         */
-        WranglerTableModel.prototype.getCellSync = function (i, j) {
-            return this.data.getCellSync(i, j);
+        WranglerTableModel.prototype.getHeader = function (j, cb) {
+            cb(this.data.getHeader(j));
         };
-        /**
-         * Gets the header of the specified column.
-         *
-         * @param {number} j the column number
-         * @returns {VisualQueryTableHeader|null} the column header
-         */
-        WranglerTableModel.prototype.getHeaderSync = function (j) {
-            return this.data.getHeaderSync(j);
+        ;
+        WranglerTableModel.prototype.cellPageName = function (i, j) {
+            return this.data.cellPageName(i, j);
         };
+        WranglerTableModel.prototype.fetchCellPage = function (pageName, cb) {
+            this.data.fetchCellPage(pageName, cb);
+        };
+        WranglerTableModel.prototype.headerPageName = function (j) {
+            return this.data.headerPageName(j);
+        };
+        ;
         return WranglerTableModel;
-    }(fattable.SyncTableModel));
+    }(fattable.PagedAsyncTableModel));
     exports.WranglerTableModel = WranglerTableModel;
 });
 //# sourceMappingURL=wrangler-table-model.js.map

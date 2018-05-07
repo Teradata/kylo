@@ -40,6 +40,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -60,6 +61,8 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.nodetype.PropertyDefinitionTemplate;
 
 public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
+    
+    protected static final Pattern PREFIXED_NAME_PATTERN = Pattern.compile("^\\w*:.*");
 
     @Override
     public ID resolve(final Serializable ser) {
@@ -114,9 +117,11 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         final JcrExtensibleType.TypeId typeId = (JcrExtensibleType.TypeId) id;
         try {
             final Node typeNode = session.getNodeByIdentifier(typeId.getIdValue());
-            session.getWorkspace().getNodeTypeManager().unregisterNodeType(typeNode.getName());
-            session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeNode.getName()).remove();
-            return true;
+            final String typeName = typeNode.getName();
+            
+            session.getWorkspace().getNodeTypeManager().unregisterNodeType(typeName);
+            session.getRootNode().getNode(ExtensionsConstants.TYPES + "/" + typeName).remove();
+            return JcrExtensibleEntityProvider.cleanupDeletedType(session, typeName);
         } catch (ItemNotFoundException | NoSuchNodeTypeException | NullPointerException e) {  // KYLO-8: Ignore NPE caused by unregistering a node type
             return true;
         } catch (UnsupportedRepositoryOperationException e) {
@@ -357,12 +362,12 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
      * @throws NullPointerException if the name is {@code null}
      */
     @Nonnull
-    private String ensureTypeName(@Nullable final String name) {
+    protected String ensureTypeName(@Nullable final String name) {
         if (name == null) {
             throw new NullPointerException("Type name cannot be null");
         }
 
-        return name.matches("^\\w*:.*") ? name : JcrMetadataAccess.TBA_PREFIX + ":" + name;
+        return PREFIXED_NAME_PATTERN.matcher(name).matches() ? name : JcrMetadataAccess.TBA_PREFIX + ":" + name;
     }
 
     /**

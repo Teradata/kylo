@@ -53,10 +53,12 @@ import io.swagger.annotations.Tag;
  * A REST interface for managing domain types.
  */
 @Api(tags = "Feed Manager - Domain Types", produces = "application/json")
-@Path("/v1/feedmgr/domain-types")
+@Path(DomainTypesController.BASE)
 @Component
 @SwaggerDefinition(tags = @Tag(name = "Feed Manager - Domain Types", description = "manages domain types"))
 public class DomainTypesController {
+
+    public static final String BASE = "/v1/feedmgr/domain-types";
 
     /**
      * Ensures the user has the correct permissions.

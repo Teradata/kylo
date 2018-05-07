@@ -90,8 +90,6 @@
       <artifactId>kylo-kerberos-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>

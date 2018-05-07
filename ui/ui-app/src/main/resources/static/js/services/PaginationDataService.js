@@ -1,81 +1,83 @@
-/*
- * Service used to get/set Pagination Data, Sorting Data, and view Type on the tables
- */
-define(['angular','services/module-name'], function (angular,moduleName) {
-    return   angular.module(moduleName).service('PaginationDataService', function () {
-
-        var self = this;
-        this.data = {};
-
-        this.paginationData = function (pageName, tabName,defaultRowsPerPage) {
-            if (self.data[pageName] === undefined) {
-                if(defaultRowsPerPage == undefined) {
+define(["require", "exports", "angular"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('services/module-name');
+    var ViewType;
+    (function (ViewType) {
+        ViewType[ViewType["TABLE"] = 0] = "TABLE";
+        ViewType[ViewType["LIST"] = 1] = "LIST";
+    })(ViewType = exports.ViewType || (exports.ViewType = {}));
+    var DefaultPaginationDataService = /** @class */ (function () {
+        function DefaultPaginationDataService() {
+            this.data = {};
+        }
+        DefaultPaginationDataService.prototype.paginationData = function (pageName, tabName, defaultRowsPerPage) {
+            if (this.data[pageName] === undefined) {
+                if (defaultRowsPerPage == undefined) {
                     defaultRowsPerPage = 5;
                 }
-                self.data[pageName] = {rowsPerPage: ''+defaultRowsPerPage, tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName, total: 0}
+                this.data[pageName] = { rowsPerPage: defaultRowsPerPage, tabs: {}, filter: '', sort: '', sortDesc: false, viewType: 'list', activeTab: tabName, total: 0 };
             }
             if (tabName == undefined) {
                 tabName = pageName;
             }
-
-            if (tabName && self.data[pageName].tabs[tabName] == undefined) {
-                self.data[pageName].tabs[tabName] = {paginationId: pageName + '_' + tabName, pageInfo: {}};
+            if (tabName && this.data[pageName].tabs[tabName] == undefined) {
+                this.data[pageName].tabs[tabName] = { paginationId: pageName + '_' + tabName, pageInfo: {} };
             }
-            if (tabName && self.data[pageName].tabs[tabName].currentPage === undefined) {
-                self.data[pageName].tabs[tabName].currentPage = 1;
+            if (tabName && this.data[pageName].tabs[tabName].currentPage === undefined) {
+                this.data[pageName].tabs[tabName].currentPage = 1;
             }
-            return self.data[pageName];
-        }
-
-        this.setTotal = function (pageName, total) {
-            self.paginationData(pageName).total = total;
-        }
-
+            return this.data[pageName];
+        };
+        /**
+         * Sets the total number of items for the page
+         * @param {string} pageName
+         * @param {number} total
+         */
+        DefaultPaginationDataService.prototype.setTotal = function (pageName, total) {
+            this.paginationData(pageName).total = total;
+        };
         /**
          * Save the Options for choosing the rows per page
          * @param pageName
          * @param rowsPerPageOptions
          */
-        this.setRowsPerPageOptions = function (pageName, rowsPerPageOptions) {
-            self.paginationData(pageName).rowsPerPageOptions = rowsPerPageOptions;
-        }
-
+        DefaultPaginationDataService.prototype.setRowsPerPageOptions = function (pageName, rowsPerPageOptions) {
+            this.paginationData(pageName).rowsPerPageOptions = rowsPerPageOptions;
+        };
         /**
          * get/save the viewType
          * @param pageName
          * @param viewType
          * @returns {string|Function|*|string|string}
          */
-        this.viewType = function (pageName, viewType) {
+        DefaultPaginationDataService.prototype.viewType = function (pageName, viewType) {
             if (viewType != undefined) {
-                self.paginationData(pageName).viewType = viewType;
+                this.paginationData(pageName).viewType = viewType;
             }
-            return self.paginationData(pageName).viewType;
-        }
-
+            return this.paginationData(pageName).viewType;
+        };
         /**
          * Toggle the View Type between list and table
          * @param pageName
          */
-        this.toggleViewType = function (pageName) {
-            var viewType = self.paginationData(pageName).viewType;
+        DefaultPaginationDataService.prototype.toggleViewType = function (pageName) {
+            var viewType = this.paginationData(pageName).viewType;
             if (viewType == 'list') {
                 viewType = 'table';
             }
             else {
                 viewType = 'list';
             }
-            self.viewType(pageName, viewType);
-        }
-
+            this.viewType(pageName, viewType);
+        };
         /**
          * Store the active Tab
          * @param pageName
          * @param tabName
          */
-        this.activateTab = function (pageName, tabName) {
-            var pageData = self.paginationData(pageName, tabName);
-
+        DefaultPaginationDataService.prototype.activateTab = function (pageName, tabName) {
+            var pageData = this.paginationData(pageName, tabName);
             //deactivate the tab
             angular.forEach(pageData.tabs, function (tabData, name) {
                 tabData.active = false;
@@ -84,16 +86,15 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                     pageData.activeTab = name;
                 }
             });
-        }
-
+        };
         /**
          * get the Active Tab
          * @param pageName
          * @returns {{}}
          */
-        this.getActiveTabData = function (pageName) {
-            var activeTabData = {};
-            var pageData = self.paginationData(pageName);
+        DefaultPaginationDataService.prototype.getActiveTabData = function (pageName) {
+            var activeTabData = { paginationId: '', currentPage: 0, active: false, title: '' };
+            var pageData = this.paginationData(pageName);
             angular.forEach(pageData.tabs, function (tabData, name) {
                 if (tabData.active) {
                     activeTabData = tabData;
@@ -101,75 +102,69 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                 }
             });
             return activeTabData;
-        }
-
+        };
         /**
          * get/set the Filter componenent
          * @param pageName
          * @param value
          * @returns {string|Function|*|number}
          */
-        this.filter = function (pageName, value) {
+        DefaultPaginationDataService.prototype.filter = function (pageName, value) {
             if (value != undefined) {
-                self.paginationData(pageName).filter = value;
+                this.paginationData(pageName).filter = value;
             }
-            return self.paginationData(pageName).filter;
-        }
-
+            return this.paginationData(pageName).filter;
+        };
         /**
          * get/set the Rows Per Page
          * @param pageName
          * @param value
          * @returns {string|Function|*|number}
          */
-        this.rowsPerPage = function (pageName, value) {
+        DefaultPaginationDataService.prototype.rowsPerPage = function (pageName, value) {
             if (value != undefined) {
-                self.paginationData(pageName).rowsPerPage = value;
+                this.paginationData(pageName).rowsPerPage = value;
             }
-            return self.paginationData(pageName).rowsPerPage;
-        }
-
+            return this.paginationData(pageName).rowsPerPage;
+        };
         /**
          * get/set the active Sort
          * @param pageName
          * @param value
          * @returns {*}
          */
-        this.sort = function (pageName, value) {
+        DefaultPaginationDataService.prototype.sort = function (pageName, value) {
             if (value) {
-                self.paginationData(pageName).sort = value;
+                this.paginationData(pageName).sort = value;
                 if (value.indexOf('-') == 0) {
-                    self.paginationData(pageName).sortDesc = true;
+                    this.paginationData(pageName).sortDesc = true;
                 }
                 else {
-                    self.paginationData(pageName).sortDesc = false;
+                    this.paginationData(pageName).sortDesc = false;
                 }
             }
-            return self.paginationData(pageName).sort;
-        }
-
+            return this.paginationData(pageName).sort;
+        };
         /**
          * Check if the current sort is descending
          * @param pageName
          * @returns {boolean}
          */
-        this.isSortDescending = function (pageName) {
-            return self.paginationData(pageName).sortDesc;
-        }
-
+        DefaultPaginationDataService.prototype.isSortDescending = function (pageName) {
+            return this.paginationData(pageName).sortDesc;
+        };
         /**
          * get a unique Pagination Id for the Page and Tab
          * @param pageName
          * @param tabName
          * @returns {*|Function|string}
          */
-        this.paginationId = function (pageName, tabName) {
+        DefaultPaginationDataService.prototype.paginationId = function (pageName, tabName) {
             if (tabName == undefined) {
                 tabName = pageName;
             }
-            return self.paginationData(pageName, tabName).tabs[tabName].paginationId;
-        }
-
+            return this.paginationData(pageName, tabName).tabs[tabName].paginationId;
+        };
         /**
          * get/set the Current Page Number for a Page and Tab
          * @param pageName
@@ -177,15 +172,18 @@ define(['angular','services/module-name'], function (angular,moduleName) {
          * @param value
          * @returns {Function|*|currentPage|number}
          */
-        this.currentPage = function (pageName, tabName, value) {
+        DefaultPaginationDataService.prototype.currentPage = function (pageName, tabName, value) {
             if (tabName == undefined || tabName == null) {
                 tabName = pageName;
             }
             if (value) {
-                self.paginationData(pageName, tabName).tabs[tabName].currentPage = value;
+                this.paginationData(pageName, tabName).tabs[tabName].currentPage = value;
             }
-            return self.paginationData(pageName, tabName).tabs[tabName].currentPage;
-        }
-
-    });
+            return this.paginationData(pageName, tabName).tabs[tabName].currentPage;
+        };
+        return DefaultPaginationDataService;
+    }());
+    exports.DefaultPaginationDataService = DefaultPaginationDataService;
+    angular.module(moduleName).factory('PaginationDataService', function () { return new DefaultPaginationDataService(); });
 });
+//# sourceMappingURL=PaginationDataService.js.map

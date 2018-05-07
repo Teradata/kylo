@@ -1,6 +1,8 @@
 /**
  * A request to perform a transformation on a table.
  */
+import {PageSpec} from "../query-engine";
+
 export interface TransformRequest {
 
     /**
@@ -22,6 +24,21 @@ export interface TransformRequest {
      * Scala script with transformation
      */
     script: string;
+
+    /**
+     * If present will return data for the specified page only
+     */
+    pageSpec: PageSpec;
+
+    /**
+     * Whether to perform the profile stage
+     */
+    doProfile: boolean;
+
+    /*
+      Whether to perform the validation stage
+     */
+    doValidate: boolean;
 }
 
 /**

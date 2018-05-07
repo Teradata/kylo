@@ -20,12 +20,12 @@ package com.thinkbiganalytics.spark.shell;
  * #L%
  */
 
+import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
 
-import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -63,7 +63,7 @@ public interface SparkShellRestClient {
      * Gets the Spark data sources supported by the specified Spark Shell process.
      */
     @Nonnull
-    List<String> getDataSources(@Nonnull SparkShellProcess process);
+    DataSources getDataSources(@Nonnull SparkShellProcess process);
 
     /**
      * Fetches the status of a query running on the specified Spark Shell process.

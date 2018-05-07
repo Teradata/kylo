@@ -35,7 +35,7 @@ public class WaterMarkJmsConfiguration {
      * @return the cancel event consumer
      */
     @Bean
-    public CancelActiveWaterMarkEventConsumer cancelEventConsumer() {
+    public CancelActiveWaterMarkEventConsumer cancelActiveWaterMarkEventConsumer() {
         return new CancelActiveWaterMarkEventConsumer();
     }
 }

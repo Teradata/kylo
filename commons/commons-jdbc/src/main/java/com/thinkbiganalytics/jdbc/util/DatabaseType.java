@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jdbc.util;
 
+import org.apache.commons.lang3.Validate;
+
 /*-
  * #%L
  * thinkbig-commons-jdbc
@@ -25,6 +27,7 @@ import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -32,21 +35,23 @@ import javax.sql.DataSource;
 
 /**
  * Common DatabaseType defining some of the major databases and validationQuery strings
+ * For limiting rows see: {@link https://en.wikipedia.org/wiki/Select_(SQL)#Limiting_result_rows}
  */
 public enum DatabaseType {
-    DERBY("Apache Derby", "jdbc:derby:", "select 1"),
-    DB2("DB2", "jdbc:db2", "select 1 from sysibm.sysdummy1"),
-    FIREBIRD("Firebird", "jdbc:firebird", "select 1 from rdb$database"),
-    H2("H2", "jdbc:h2", "select 1"),
-    HSQL("HSQL Database Engine", "jdbc:hsqldb", "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS"),
-    MYSQL("MySQL", "jdbc:mysql", "select 1"),
-    ORACLE("Oracle", "jdbc:oracle", "select 1 from dual"),
-    POSTGRES("PostgreSQL", "jdbc:postgressql", "select 1"),
-    SQLITE("SQLite", "jdbc:sqlite", "select 1"),
-    SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1"),
-    SYBASE("Sybase", "jdbc:sybase", "select 1"),
-    TERADATA("Teradata", "jdbc:teradata", "select 1");
-
+    // For the preview pattern: {0}=columns, {1}=schema, {2}=table, {3}=limit
+    HIVE("Hive", "jdbc:hive2:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    DERBY("Apache Derby", "jdbc:derby:", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    DB2("DB2", "jdbc:db2", "select 1 from sysibm.sysdummy1", "SELECT {0} FROM {1}.{2} FETCH FIRST {3} ROWS ONLY"),
+    FIREBIRD("Firebird", "jdbc:firebird", "select 1 from rdb$database", "SELECT FIRST {3} {0} FROM {1}.{2}"),
+    H2("H2", "jdbc:h2", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    HSQL("HSQL Database Engine", "jdbc:hsqldb", "select 1 from INFORMATION_SCHEMA.SYSTEM_USERS", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    MYSQL("MySQL", "jdbc:mysql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    ORACLE("Oracle", "jdbc:oracle", "select 1 from dual", "SELECT {0} FROM {1}.{2} FETCH FIRST {3} ROWS ONLY"),  
+    POSTGRES("PostgreSQL", "jdbc:postgresql", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    SQLITE("SQLite", "jdbc:sqlite", "select 1", "SELECT {0} FROM {1}.{2} LIMIT {3}"),
+    SQLSERVER("Microsoft SQL Server", "jdbc:sqlserver", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
+    SYBASE("Sybase", "jdbc:sybase", "select 1", "SELECT TOP {3} {0} FROM {1}.{2}"),
+    TERADATA("Teradata", "jdbc:teradata", "select 1", "SELECT {0} FROM {1}.{2} SAMPLE {3}");
 
     private static final Map<String, DatabaseType> databaseProductNameMap;
 
@@ -82,15 +87,20 @@ public enum DatabaseType {
      * The validation Query needed to reconnect
      */
     private final String validationQuery;
+    /**
+     * The validation Query needed to reconnect
+     */
+    private final String limitFormat;
 
-    private DatabaseType(String productName, String jdbcUrlIdentifier, String validationQuery) {
-        this(productName, new String[]{jdbcUrlIdentifier}, validationQuery);
+    private DatabaseType(String productName, String jdbcUrlIdentifier, String validationQuery, String limitFormat) {
+        this(productName, new String[]{jdbcUrlIdentifier}, validationQuery, limitFormat);
     }
 
-    private DatabaseType(String productName, String[] jdbcConnectionStringIdentifiers, String validationQuery) {
+    private DatabaseType(String productName, String[] jdbcConnectionStringIdentifiers, String validationQuery, String limitFormat) {
         this.productName = productName;
         this.jdbcConnectionStringIdentifiers = jdbcConnectionStringIdentifiers;
         this.validationQuery = validationQuery;
+        this.limitFormat = limitFormat;
     }
 
     /**
@@ -157,6 +167,32 @@ public enum DatabaseType {
         } else {
             throw new MetaDataAccessException("Database Type not found for connection");
         }
+    }
+    
+    /**
+     * Produces a select query, selecting all columns, with an applied limit appropriate for the type of database.
+     * @param columns the columns to be selected
+     * @param table the table (with schema if necessary) to select
+     * @param limit the size limit
+     * @return a new query with the appropriate limiting syntax added
+     */
+    public String asLimitQuery(String schema, String table, int limit) {
+        return asLimitQuery("*", schema, table, limit);
+    }
+    
+    /**
+     * Produces a select query of the specified columns with an applied limit appropriate for the type of database.
+     * @param columns the columns to be selected
+     * @param table the table (with schema if necessary) to select
+     * @param limit the size limit
+     * @return a new query with the appropriate limiting syntax added
+     */
+    public String asLimitQuery(String columns, String schema, String table, int limit) {
+        Validate.notEmpty(columns, "select columns must not be empty");
+        Validate.notEmpty(table, "table must not be empty");
+        Validate.isTrue(limit >= 0, "Limit must be greater or equal to zero");
+        
+        return MessageFormat.format(this.limitFormat, columns, schema, table, limit);
     }
 
     /**

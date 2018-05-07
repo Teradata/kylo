@@ -9,9 +9,9 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,7 +22,6 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 
-import org.apache.nifi.web.api.dto.AboutDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -35,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
@@ -49,9 +49,18 @@ public class NifiConnectionService {
     LegacyNifiRestClient nifiRestClient;
     private AtomicBoolean isConnected = new AtomicBoolean(false);
 
+    private ScheduledExecutorService connectionCheckService;
+
     @PostConstruct
     private void init() {
         initConnectionTimer();
+    }
+
+    @PreDestroy
+    private void destroy(){
+        if(connectionCheckService != null){
+            connectionCheckService.shutdown();
+        }
     }
 
     public void subscribeConnectionListener(NifiConnectionListener connectionListener) {
@@ -59,11 +68,11 @@ public class NifiConnectionService {
     }
 
     private void notifyOnConnected() {
-        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onNiFiConnected());
+        connectionListeners.forEach(NifiConnectionListener::onNiFiConnected);
     }
 
     private void notifyOnDisconnected() {
-        connectionListeners.stream().forEach(nifiConnectionListener -> nifiConnectionListener.onNiFiDisconnected());
+        connectionListeners.forEach(NifiConnectionListener::onNiFiDisconnected);
     }
 
     /**
@@ -92,18 +101,13 @@ public class NifiConnectionService {
     }
 
     private boolean isConnected() {
-        return isConnected(false);
-    }
-
-    private boolean isConnected(boolean logException) {
         try {
-            log.debug("Attempt to check isConnection get about entity for {} ", nifiRestClient);
-            AboutDTO aboutEntity = nifiRestClient.getNiFiRestClient().about();
-            return aboutEntity != null;
+            log.trace("Attempt to check isConnected, getting About entity for {} ", nifiRestClient);
+            nifiRestClient.getNiFiRestClient().about();
+            log.trace("Successfully connected to Nifi with client {} ", nifiRestClient);
+            return true;
         } catch (Exception e) {
-            if (logException) {
-                log.error("Error assessing Nifi Connection {} ", e);
-            }
+            log.trace("Error assessing Nifi: {} ", e);
         }
         return false;
     }
@@ -111,11 +115,8 @@ public class NifiConnectionService {
 
     private void initConnectionTimer() {
         long millis = 5000L; //every 5 seconds check for a connection
-        ScheduledExecutorService service = Executors
-            .newSingleThreadScheduledExecutor();
-        service.scheduleAtFixedRate(() -> {
-            checkConnection();
-        }, millis, millis, TimeUnit.MILLISECONDS);
+        connectionCheckService = Executors.newSingleThreadScheduledExecutor();
+        connectionCheckService.scheduleAtFixedRate(this::checkConnection, millis, millis, TimeUnit.MILLISECONDS);
     }
 
 

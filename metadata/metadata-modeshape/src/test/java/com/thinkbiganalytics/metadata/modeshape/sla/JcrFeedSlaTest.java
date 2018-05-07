@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
@@ -60,18 +61,15 @@ import javax.jcr.RepositoryException;
 public class JcrFeedSlaTest {
 
     private static String FEED_SLA = "feedSla";
+    
     @Inject
-    CategoryProvider categoryProvider;
+    private CategoryProvider categoryProvider;
     @Inject
-    FeedProvider feedProvider;
+    private FeedProvider feedProvider;
     @Inject
-    ServiceLevelAgreementProvider slaProvider;
+    private ServiceLevelAgreementProvider slaProvider;
     @Inject
-    FeedServiceLevelAgreementProvider feedSlaProvider;
-    @Inject
-    private ExtensibleTypeProvider typeProvider;
-    @Inject
-    private ExtensibleEntityProvider entityProvider;
+    private FeedServiceLevelAgreementProvider feedSlaProvider;
     @Inject
     private JcrMetadataAccess metadata;
 
@@ -106,13 +104,6 @@ public class JcrFeedSlaTest {
         }, MetadataAccess.ADMIN);
     }
 
-
-    @Before
-    public void setUp() throws Exception {
-        JcrFeedServiceLevelAgreementProvider jcrFeedSlaProvider = (JcrFeedServiceLevelAgreementProvider) feedSlaProvider;
-        jcrFeedSlaProvider.createType();
-    }
-
     @Test
     public void testCreateFeedSLAEntity() {
         //create 2 feeds
@@ -120,7 +111,7 @@ public class JcrFeedSlaTest {
         Set<Feed.ID> feedIds = createFeeds(numberOfFeeds);
         final String feedSlaTitle = "My New SLA";
         final String nonFeedSlaTitle = "No Feed SLA";
-        ExtensibleEntity.ID feedSlaEntityId = createFeedSLAEntity(feedIds, feedSlaTitle);
+        ServiceLevelAgreement.ID feedSlaId = createFeedSla(feedIds, feedSlaTitle);
         ServiceLevelAgreement.ID nonFeedSla = createGenericSla(nonFeedSlaTitle);
 
         ServiceLevelAgreement.ID slaId = metadata.read(() -> {
@@ -130,19 +121,19 @@ public class JcrFeedSlaTest {
             //ASSERT everything is good
 
             //Assert query returns the correct result
-            List<ExtensibleEntity> entities = jcrFeedSlaProvider.findAllRelationships();
-            Assert.assertEquals(entities.size(), 1);
+            List<FeedServiceLevelAgreementRelationship> rels = jcrFeedSlaProvider.findAllRelationships();
+            Assert.assertEquals(rels.size(), 1);
 
             //Assert relationships are correct
-            JcrFeedServiceLevelAgreementRelationship entity = (JcrFeedServiceLevelAgreementRelationship) jcrFeedSlaProvider.getRelationship(feedSlaEntityId);
-            ServiceLevelAgreement feedSla = entity.getAgreement();
+            JcrFeedServiceLevelAgreementRelationship relationship = (JcrFeedServiceLevelAgreementRelationship) jcrFeedSlaProvider.findRelationship(feedSlaId);
+            ServiceLevelAgreement feedSla = relationship.getAgreement();
             Assert.assertNotNull(feedSla);
 
             List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
             //assert both agreements are there
             Assert.assertEquals(agreements.size(), 2);
 
-            Set<JcrFeed> feeds = entity.getPropertyAsSet(JcrFeedServiceLevelAgreementRelationship.FEEDS, JcrFeed.class);
+            Set<JcrFeed> feeds = relationship.getPropertyAsSet(JcrFeedServiceLevelAgreementRelationship.FEEDS, JcrFeed.class);
             Assert.assertEquals(feeds.size(), numberOfFeeds);
             for (JcrFeed feed : feeds) {
                 Assert.assertTrue(feedIds.contains(feed.getId()));
@@ -184,27 +175,14 @@ public class JcrFeedSlaTest {
             return feedSla.getId();
         }, MetadataAccess.SERVICE);
 
-        ExtensibleEntity entity = metadata.read(() -> {
-            ExtensibleEntity e = entityProvider.getEntity(feedSlaEntityId);
-            Set<Node> feeds = (Set<Node>) e.getPropertyAsSet(JcrFeedServiceLevelAgreementRelationship.FEEDS, Node.class);
-            Assert.assertEquals(feeds.size(), numberOfFeeds);
-            for (Node feed : feeds) {
-                try {
-                    Assert.assertTrue(feedIds.contains(feedProvider.resolveFeed(feed.getIdentifier())));
-                } catch (RepositoryException e1) {
-                    e1.printStackTrace();
-                }
-            }
-            return e;
-        }, MetadataAccess.SERVICE);
-
         //now remove the feed relationships
         boolean removedFeedRelationships = metadata.commit(() -> {
             ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
             return feedSlaProvider.removeFeedRelationships(slaId);
 
         }, MetadataAccess.SERVICE);
-
+        Assert.assertTrue(removedFeedRelationships);
+        
         //query for the feeds related to this SLA and verify there are none
         metadata.read(() -> {
             FeedServiceLevelAgreement feedServiceLevelAgreement = feedSlaProvider.findAgreement(slaId);
@@ -216,11 +194,11 @@ public class JcrFeedSlaTest {
     }
 
 
-    public ExtensibleEntity.ID createFeedSLAEntity(Set<Feed.ID> feedIdList, String title) {
+    public ServiceLevelAgreement.ID createFeedSla(Set<Feed.ID> feedIdList, String title) {
         return metadata.commit(() -> {
             ServiceLevelAgreement sla = slaProvider.builder().name(title).description(title + " DESC").build();
-            ExtensibleEntity entity = feedSlaProvider.relate(sla, feedIdList);
-            return entity.getId();
+            FeedServiceLevelAgreementRelationship fsla = feedSlaProvider.relate(sla, feedIdList);
+            return fsla.getAgreement().getId();
         }, MetadataAccess.SERVICE);
 
     }

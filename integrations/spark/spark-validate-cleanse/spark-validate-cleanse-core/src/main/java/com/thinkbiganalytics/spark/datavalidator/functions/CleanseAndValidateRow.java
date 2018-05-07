@@ -257,7 +257,13 @@ public class CleanseAndValidateRow implements Function<Row, CleansedRowResult> {
                 }
 
                 if (shouldStandardize) {
-                    Object newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
+                    Object newValue = result.getFieldValue();
+                    try {
+                        newValue = standardizationPolicy.convertRawValue(result.getFieldValue());
+                    } catch (Exception e) {
+                        log.error("Standardizer '{}' threw exception while attempting to standardize value, original value will be kept. Exception: {}",
+                                  standardizationPolicy.getClass(), e);
+                    }
 
                     //If this is the last standardizer for this field and the standardized value is returned as a String, and target column is not String, then validate and convert it to correct type
                     if (newValue != null && dataType.getConvertibleType() != newValue.getClass() && standardizerCount == processedStandardizers) {

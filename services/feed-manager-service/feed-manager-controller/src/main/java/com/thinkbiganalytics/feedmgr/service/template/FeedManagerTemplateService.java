@@ -20,6 +20,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
  * #L%
  */
 
+import com.thinkbiganalytics.feedmgr.rest.model.PortDTOWithGroupInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -111,7 +112,7 @@ public interface FeedManagerTemplateService {
      *
      * @return the Ports available in the Reusable_templates process group
      */
-    Set<PortDTO> getReusableFeedInputPorts();
+    Set<PortDTOWithGroupInfo> getReusableFeedInputPorts();
 
 
     /**

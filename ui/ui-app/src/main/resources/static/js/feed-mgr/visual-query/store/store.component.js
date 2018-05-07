@@ -78,7 +78,8 @@ define(["require", "exports", "@angular/core", "angular", "../wrangler/api/rest-
             // Get list of Spark data sources
             var sparkSourcesPromise = this.$http.get(this.RestUrlService.SPARK_SHELL_SERVICE_URL + "/data-sources")
                 .then(function (response) {
-                _this.formats = response.data.sort();
+                _this.downloadFormats = response.data["downloads"].sort();
+                _this.tableFormats = response.data["tables"].sort();
             });
             // Wait for completion
             Promise.all([kyloSourcesPromise, sparkSourcesPromise])

@@ -200,6 +200,9 @@ public class DistCopyHDFS extends AbstractHadoopProcessor {
         session.transfer(flowFile, REL_SUCCESS);
     }
 
+    @Override
+    protected void modifyConfig(ProcessContext context, Configuration config) {   }
+
     /**
      * method to construct a new DistCp object to perform the distcp
      *

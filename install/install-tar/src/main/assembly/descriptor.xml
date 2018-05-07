@@ -142,14 +142,6 @@
       </includes>
     </fileSet>
     <fileSet>
-      <directory>${project.parent.parent.basedir}/integrations/spark/spark-shell-client/spark-shell-client-app/src/main/config/rpm-build</directory>
-      <outputDirectory>kylo-services/conf</outputDirectory>
-      <fileMode>755</fileMode>
-      <includes>
-        <include>log4j-spark.properties</include>
-      </includes>
-    </fileSet>
-    <fileSet>
       <directory>${project.parent.parent.basedir}/plugins/precondition-default/target</directory>
       <outputDirectory>kylo-services/plugin</outputDirectory>
       <fileMode>755</fileMode>
@@ -437,7 +429,6 @@
         <include>start-kylo-apps.sh</include>
         <include>stop-kylo-apps.sh</include>
         <include>status-kylo-apps.sh</include>
-        <include>kylo-service</include>
       </includes>
     </fileSet>
 
@@ -473,11 +464,27 @@
     </file>
     <file>
       <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
-      <outputDirectory>lib</outputDirectory>
+      <outputDirectory>lib/install-inspector</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-api/target/kylo-install-inspector-api-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-inspections/target/kylo-install-inspector-inspections-${project.version}.jar</source>
+      <outputDirectory>lib/install-inspector/lib</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.basedir}/bin/encryptSqoopPassword.sh</source>
+      <outputDirectory>bin</outputDirectory>
+      <filtered>true</filtered>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.basedir}/setup/kylo-service</source>
       <outputDirectory>bin</outputDirectory>
       <filtered>true</filtered>
       <fileMode>755</fileMode>
@@ -681,6 +688,20 @@
     <file>
       <source>
         ${project.parent.parent.basedir}/integrations/spark/spark-validate-cleanse/spark-validate-cleanse-spark-v2/target/kylo-spark-validate-cleanse-spark-v2-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-merge-table/spark-merge-table-spark-v1/target/kylo-spark-merge-table-spark-v1-${project.version}-jar-with-dependencies.jar
+      </source>
+      <outputDirectory>setup/nifi</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>
+        ${project.parent.parent.basedir}/integrations/spark/spark-merge-table/spark-merge-table-spark-v2/target/kylo-spark-merge-table-spark-v2-${project.version}-jar-with-dependencies.jar
       </source>
       <outputDirectory>setup/nifi</outputDirectory>
       <fileMode>755</fileMode>

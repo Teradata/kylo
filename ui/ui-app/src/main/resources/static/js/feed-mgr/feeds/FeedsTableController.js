@@ -1,197 +1,187 @@
-define(['angular','feed-mgr/feeds/module-name', 'pascalprecht.translate'], function (angular,moduleName) {
-    var controller = function($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService,
-                              EntityAccessControlService, $filter) {
-
-        var self = this;
-
-        /**
-         * Indicates if feeds are allowed to be exported.
-         * @type {boolean}
-         */
-        self.allowExport = false;
-
-        self.feedData = [];
-        this.loading = false;
-
-        /**
-         * Flag to indicate the page has been loaded the first time
-         * @type {boolean}
-         */
-        var loaded = false;
-
-        this.cardTitle = $filter('translate')('views.main.feeds-title');
-
-
-        // Register Add button
-        AccessControlService.getUserAllowedActions()
-                .then(function(actionSet) {
-                    if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
-                        AddButtonService.registerAddButton("feeds", function() {
-                            FeedService.resetFeed();
-                            StateService.FeedManager().Feed().navigateToDefineFeed()
-                        });
-                    }
-                });
-
-        //Pagination DAta
-        this.pageName = "feeds";
-        this.paginationData = PaginationDataService.paginationData(this.pageName);
-        this.paginationId = 'feeds';
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
-        this.viewType = PaginationDataService.viewType(this.pageName);
-        this.sortOptions = loadSortOptions();
-
-        this.filter = PaginationDataService.filter(self.pageName);
-
-        $scope.$watch(function() {
-            return self.viewType;
-        }, function(newVal) {
-            self.onViewTypeChange(newVal);
-        })
-
-        $scope.$watch(function () {
-            return self.filter;
-        }, function (newVal, oldValue) {
-            if (newVal != oldValue || (!loaded && !self.loading)) {
-                PaginationDataService.filter(self.pageName, newVal)
-                getFeeds();
-            }
-        })
-
-        this.onViewTypeChange = function(viewType) {
-            PaginationDataService.viewType(this.pageName, self.viewType);
+define(["require", "exports", "angular", "pascalprecht.translate"], function (require, exports, angular) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var moduleName = require('./module-name');
+    var FeedsTableController = /** @class */ (function () {
+        function FeedsTableController($scope, $http, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, FeedService, StateService, $filter, EntityAccessControlService) {
+            var _this = this;
+            this.$scope = $scope;
+            this.$http = $http;
+            this.AccessControlService = AccessControlService;
+            this.RestUrlService = RestUrlService;
+            this.PaginationDataService = PaginationDataService;
+            this.TableOptionsService = TableOptionsService;
+            this.AddButtonService = AddButtonService;
+            this.FeedService = FeedService;
+            this.StateService = StateService;
+            this.$filter = $filter;
+            this.EntityAccessControlService = EntityAccessControlService;
+            this.allowExport = false;
+            this.feedData = [];
+            this.loading = false;
+            this.loaded = false;
+            this.cardTitle = "";
+            //Pagination DAta
+            this.pageName = "feeds";
+            this.paginationData = this.PaginationDataService.paginationData(this.pageName);
+            this.paginationId = 'feeds';
+            this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
+            this.viewType = this.PaginationDataService.viewType(this.pageName);
+            this.sortOptions = this.loadSortOptions();
+            this.filter = null;
+            this.feedDetails = function ($event, feed) {
+                if (feed !== undefined) {
+                    _this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
+                }
+            };
+            // Register Add button
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                    AddButtonService.registerAddButton("feeds", function () {
+                        FeedService.resetFeed();
+                        StateService.FeedManager().Feed().navigateToDefineFeed();
+                    });
+                }
+            });
+            PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+            this.filter = PaginationDataService.filter(this.pageName);
+            this.cardTitle = $filter('translate')('views.main.feeds-title');
+            $scope.$watch(function () {
+                return _this.viewType;
+            }, function (newVal) {
+                _this.onViewTypeChange(newVal);
+            });
+            $scope.$watch(function () {
+                return _this.filter;
+            }, function (newVal, oldValue) {
+                if (newVal != oldValue || (!_this.loaded && !_this.loading)) {
+                    PaginationDataService.filter(_this.pageName, newVal);
+                    _this.getFeeds();
+                }
+            });
+            // Fetch the allowed actions
+            AccessControlService.getUserAllowedActions()
+                .then(function (actionSet) {
+                _this.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
+            });
+            //rebind this controller to the onOrderChange function
+            //https://github.com/daniel-nagy/md-data-table/issues/616
+            this.onOrderChange = this.onOrderChange.bind(this);
+            this.selectedTableOption = this.selectedTableOption.bind(this);
+            this.onDataTablePaginationChange = this.onDataTablePaginationChange.bind(this);
         }
-
-        this.onOrderChange = function(order) {
-            TableOptionsService.setSortOption(self.pageName, order);
-            getFeeds();
+        FeedsTableController.prototype.onViewTypeChange = function (viewType) {
+            this.PaginationDataService.viewType(this.pageName, this.viewType);
         };
-
-        function onPaginate(page,limit){
-            PaginationDataService.currentPage(self.pageName, null, page);
-            self.currentPage = page;
+        FeedsTableController.prototype.onOrderChange = function (order) {
+            this.TableOptionsService.setSortOption(this.pageName, order);
+            this.getFeeds();
+        };
+        ;
+        FeedsTableController.prototype.onPaginate = function (page, limit) {
+            this.PaginationDataService.currentPage(this.pageName, null, page);
+            this.currentPage = page;
             //only trigger the reload if the initial page has been loaded.
             //md-data-table will call this function when the page initially loads and we dont want to have it run the query again.\
-            if (loaded) {
-                getFeeds();
+            if (this.loaded) {
+                this.getFeeds();
             }
-        }
-
-        this.onPaginationChange = function(page, limit) {
-            if(self.viewType == 'list') {
-                onPaginate(page,limit);
-            }
-
         };
-
-        this.onDataTablePaginationChange = function(page, limit) {
-            if(self.viewType == 'table') {
-                onPaginate(page,limit);
+        FeedsTableController.prototype.onPaginationChange = function (page, limit) {
+            if (this.viewType == 'list') {
+                this.onPaginate(page, limit);
             }
-
         };
-
-
-
+        ;
+        FeedsTableController.prototype.onDataTablePaginationChange = function (page, limit) {
+            if (this.viewType == 'table') {
+                this.onPaginate(page, limit);
+            }
+        };
+        ;
         /**
          * Called when a user Clicks on a table Option
          * @param option
          */
-        this.selectedTableOption = function(option) {
-            var sortString = TableOptionsService.toSortString(option);
-            var savedSort = PaginationDataService.sort(self.pageName, sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
-            TableOptionsService.setSortOption(self.pageName, sortString);
-            getFeeds();
-        }
-
+        FeedsTableController.prototype.selectedTableOption = function (option) {
+            var sortString = this.TableOptionsService.toSortString(option);
+            var savedSort = this.PaginationDataService.sort(this.pageName, sortString);
+            var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
+            this.TableOptionsService.setSortOption(this.pageName, sortString);
+            this.getFeeds();
+        };
         /**
          * Build the possible Sorting Options
          * @returns {*[]}
          */
-        function loadSortOptions() {
-            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Last Modified': 'updateDate'};
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'updateDate', 'desc');
-            TableOptionsService.initializeSortOption(self.pageName);
+        FeedsTableController.prototype.loadSortOptions = function () {
+            var options = { 'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Last Modified': 'updateDate' };
+            var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'updateDate', 'desc');
+            this.TableOptionsService.initializeSortOption(this.pageName);
             return sortOptions;
-        }
-
-        this.feedDetails = function($event, feed) {
-            if(feed !== undefined) {
-                StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);
-            }
-        }
-
-        function getFeeds() {
-            self.loading = true;
-
-            var successFn = function(response) {
-                self.loading = false;
+        };
+        FeedsTableController.prototype.getFeeds = function () {
+            var _this = this;
+            this.loading = true;
+            var successFn = function (response) {
+                _this.loading = false;
                 if (response.data) {
-                	self.feedData = populateFeeds(response.data.data);
-                	PaginationDataService.setTotal(self.pageName,response.data.recordsFiltered);
-                    loaded = true;
-                } else {
-                	self.feedData = [];
+                    _this.feedData = _this.populateFeeds(response.data.data);
+                    _this.PaginationDataService.setTotal(_this.pageName, response.data.recordsFiltered);
+                    _this.loaded = true;
                 }
-            }
-            
-            var errorFn = function(err) {
-                self.loading = false;
-                loaded = true;
-            }
-
-        	var limit = PaginationDataService.rowsPerPage(self.pageName);
-        	var start = limit == 'All' ? 0 : (limit * self.currentPage) - limit;
-        	var sort = self.paginationData.sort;
-        	var filter = self.paginationData.filter;
-            var params = {start: start, limit: limit, sort: sort, filter: filter};
-            
-            var promise = $http.get(RestUrlService.GET_FEEDS_URL, {params: params});
+                else {
+                    _this.feedData = [];
+                }
+            };
+            var errorFn = function (err) {
+                _this.loading = false;
+                _this.loaded = true;
+            };
+            var limit = this.PaginationDataService.rowsPerPage(this.pageName);
+            var start = limit == 'All' ? 0 : (limit * this.currentPage) - limit;
+            var sort = this.paginationData.sort;
+            var filter = this.paginationData.filter;
+            var params = { start: start, limit: limit, sort: sort, filter: filter };
+            var promise = this.$http.get(this.RestUrlService.GET_FEEDS_URL, { params: params });
             promise.then(successFn, errorFn);
             return promise;
-
-        }
-
-        function populateFeeds(feeds) {
-            var entityAccessControlled = AccessControlService.isEntityAccessControlled();
-        	var simpleFeedData = [];
-            
-            angular.forEach(feeds, function(feed) {
+        };
+        FeedsTableController.prototype.populateFeeds = function (feeds) {
+            var _this = this;
+            var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+            var simpleFeedData = [];
+            angular.forEach(feeds, function (feed) {
                 if (feed.state == 'ENABLED') {
-                    feed.stateIcon = 'check_circle'
-                } else {
-                    feed.stateIcon = 'block'
+                    feed.stateIcon = 'check_circle';
+                }
+                else {
+                    feed.stateIcon = 'block';
                 }
                 simpleFeedData.push({
                     templateId: feed.templateId,
                     templateName: feed.templateName,
-                    exportUrl: RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + feed.id,
+                    exportUrl: _this.RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + feed.id,
                     id: feed.id,
                     active: feed.active,
                     state: feed.state,
                     stateIcon: feed.stateIcon,
                     feedName: feed.feedName,
-                    category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
+                    category: { name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor },
                     updateDate: feed.updateDate,
-                    allowEditDetails: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
-                    allowExport: !entityAccessControlled || FeedService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
-                })
-            });
-            
-            return simpleFeedData;
-        }
-
-        // Fetch the allowed actions
-        AccessControlService.getUserAllowedActions()
-                .then(function(actionSet) {
-                    self.allowExport = AccessControlService.hasAction(AccessControlService.FEEDS_EXPORT, actionSet.actions);
+                    allowEditDetails: !entityAccessControlled || _this.FeedService.hasEntityAccess(_this.EntityAccessControlService.ENTITY_ACCESS.FEED.EDIT_FEED_DETAILS, feed),
+                    allowExport: !entityAccessControlled || _this.FeedService.hasEntityAccess(_this.EntityAccessControlService.ENTITY_ACCESS.FEED.EXPORT, feed)
                 });
-    };
-
-
-    angular.module(moduleName).controller('FeedsTableController',["$scope","$http","AccessControlService","RestUrlService","PaginationDataService","TableOptionsService","AddButtonService",
-                                                                  "FeedService","StateService", "EntityAccessControlService", "$filter", controller]);
-
+            });
+            return simpleFeedData;
+        };
+        return FeedsTableController;
+    }());
+    exports.default = FeedsTableController;
+    angular.module(moduleName)
+        .controller('FeedsTableController', ["$scope", "$http", "AccessControlService", "RestUrlService", "PaginationDataService",
+        "TableOptionsService", "AddButtonService", "FeedService", "StateService", '$filter', "EntityAccessControlService",
+        FeedsTableController]);
 });
+//# sourceMappingURL=FeedsTableController.js.map

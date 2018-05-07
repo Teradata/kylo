@@ -55,7 +55,7 @@ which chkconfig > /dev/null && echo "chkonfig" && return 0
 # ubuntu sysv
 which update-rc.d > /dev/null && echo "update-rc.d" && return 0
 echo "Couldn't recognize linux version, after installation you need to do these steps manually:"
-echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services,kylo-spark-shell} files"
+echo " * add proper header to /etc/init.d/{kylo-ui,kylo-services} files"
 echo " * set them to autostart"
 }
 
@@ -73,7 +73,6 @@ chown -R $INSTALL_USER:$INSTALL_GROUP $INSTALL_HOME
 
 pgrepMarkerKyloUi=kylo-ui-pgrep-marker
 pgrepMarkerKyloServices=kylo-services-pgrep-marker
-pgrepMarkerKyloSparkShell=kylo-spark-shell-pgrep-marker
 rpmLogDir=$LOG_DIRECTORY_LOCATION
 
 echo "    - Install kylo-ui application"
@@ -369,8 +368,6 @@ echo "   - Added service 'kylo-services'"
 
 echo "    - Completed kylo-services install"
 
-echo "    - Install kylo-spark-shell application"
-
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 #!/bin/bash
 
@@ -414,101 +411,6 @@ spark-submit --master local --conf spark.driver.userClassPathFirst=true --class 
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell-with-debug.sh
-echo "   - Created kylo-spark-shell script '$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh'"
-
-# header of the service file depends on system used
-if [ "$linux_type" == "chkonfig" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
-#! /bin/sh
-# chkconfig: 345 98 20
-# description: kylo-spark-shell
-# processname: kylo-spark-shell
-EOF
-elif [ "$linux_type" == "update-rc.d" ]; then
-cat << EOF > /etc/init.d/kylo-spark-shell
-#! /bin/sh
-### BEGIN INIT INFO
-# Provides:          kylo-spark-shell
-# Required-Start:    $local_fs $network $named $time $syslog
-# Required-Stop:     $local_fs $network $named $time $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Description:       kylo-spark-shell
-### END INIT INFO
-EOF
-fi
-
-cat << EOF >> /etc/init.d/kylo-spark-shell
-stdout_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.out"
-stderr_log="$LOG_DIRECTORY_LOCATION/kylo-spark-shell/std.err"
-RUN_AS_USER=$INSTALL_USER
-
-start() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
-      then
-        echo Already running.
-      else
-        echo Starting kylo-spark-shell ...
-        su - \$RUN_AS_USER -c "$INSTALL_HOME/kylo-services/bin/run-kylo-spark-shell.sh >> \$stdout_log 2>> \$stderr_log" &
-    fi
-}
-
-stop() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
-      then
-        echo Stopping kylo-spark-shell ...
-        pkill -f $pgrepMarkerKyloSparkShell
-      else
-        echo Already stopped.
-    fi
-}
-
-status() {
-    if pgrep -f $pgrepMarkerKyloSparkShell >/dev/null 2>&1
-      then
-          echo Running.  Here are the related processes:
-          pgrep -lf $pgrepMarkerKyloSparkShell
-      else
-        echo Stopped.
-    fi
-}
-
-case "\$1" in
-    start)
-        start
-    ;;
-    stop)
-        stop
-    ;;
-    status)
-        status
-    ;;
-    restart)
-       echo "Restarting kylo-spark-shell"
-       stop
-       sleep 2
-       start
-       echo "kylo-spark-shell started"
-    ;;
-esac
-exit 0
-EOF
-chmod +x /etc/init.d/kylo-spark-shell
-echo "   - Created kylo-spark-shell script '/etc/init.d/kylo-spark-shell'"
-
-if [ "$linux_type" == "chkonfig" ]; then
-    chkconfig --add kylo-spark-shell
-    chkconfig kylo-spark-shell on
-elif [ "$linux_type" == "update-rc.d" ]; then
-    update-rc.d kylo-spark-shell defaults
-fi
-echo "   - Added service 'kylo-spark-shell'"
-
-mkdir -p $rpmLogDir/kylo-spark-shell/
-echo "   - Created Log folder $rpmLogDir/kylo-spark-shell/"
-
-
-echo "    - Completed kylo-spark-shell install"
 
 {
 echo "    - Create an RPM Removal script at: $INSTALL_HOME/remove-kylo.sh"
@@ -530,7 +432,7 @@ chmod 755 $rpmLogDir/kylo*
 chown $INSTALL_USER:$INSTALL_GROUP $rpmLogDir/kylo*
 
 # Setup kylo-service command
-cp $INSTALL_HOME/kylo-service /usr/bin/kylo-service
+cp $INSTALL_HOME/bin/kylo-service /usr/bin/kylo-service
 chown root:root /usr/bin/kylo-service
 chmod 755 /usr/bin/kylo-service
 
