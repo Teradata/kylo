@@ -62,10 +62,12 @@ import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Component
-@Path("/v1/catalog/dataset")
+@Path(DataSetController.BASE)
 public class DataSetController {
 
     private static final XLogger log = XLoggerFactory.getXLogger(DataSetController.class);
+
+    public static final String BASE = "/v1/catalog/dataset";
 
     private static final MessageSource MESSAGES;
 

@@ -116,7 +116,7 @@ public class CatalogFileManager {
      */
     @Value("${catalog.uploads.permission:#{null}}")
     public void setPermission(@Nullable final String permission) {
-        this.permission = new FsPermission(permission);
+        this.permission = (permission != null) ? new FsPermission(permission) : null;
     }
 
     /**
