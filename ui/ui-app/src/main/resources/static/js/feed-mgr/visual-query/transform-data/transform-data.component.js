@@ -569,11 +569,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
             var icon = '';
             if (directionLower == 'asc') {
-                formula = "sort(asc(\"" + column.field + "\"))";
+                formula = "sort(asc(\"" + column.headerTooltip + "\"))";
                 icon = 'arrow_drop_up';
             }
             else if (directionLower == 'desc') {
-                formula = "sort(desc(\"" + column.field + "\"))";
+                formula = "sort(desc(\"" + column.headerTooltip + "\"))";
                 icon = 'arrow_drop_down';
             }
             if (formula) {

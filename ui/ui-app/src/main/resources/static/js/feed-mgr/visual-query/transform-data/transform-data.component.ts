@@ -701,11 +701,11 @@ export class TransformDataComponent implements OnInit {
         let directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
         let icon = ''
         if(directionLower == 'asc') {
-            formula = "sort(asc(\""+column.field+"\"))";
+            formula = "sort(asc(\""+column.headerTooltip+"\"))";
             icon = 'arrow_drop_up';
         }
         else if(directionLower == 'desc'){
-            formula = "sort(desc(\""+column.field+"\"))";
+            formula = "sort(desc(\""+column.headerTooltip+"\"))";
             icon = 'arrow_drop_down';
         }
         if(formula) {
