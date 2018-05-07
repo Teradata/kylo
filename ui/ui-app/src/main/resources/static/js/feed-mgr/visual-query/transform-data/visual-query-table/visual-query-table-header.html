@@ -94,9 +94,13 @@
             <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
               <md-input-container>
                 <label style="left:12px">{{ filter.label }}</label>
-                <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(filter, table)">
+                <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
               </md-input-container>
+
           </md-menu-item>
+          <md-button ng-click="header.delegate.applyFilters(header,header.delegate.filters, table)">
+            Apply
+          </md-button>
         </md-menu-content>
       </md-menu>
     </md-menu-item>

@@ -780,6 +780,7 @@ export class ColumnDelegate implements IColumnDelegate {
         grid.refresh();
     }
 
+
     /**
      * Splits the specified column on the specified value.
      *
@@ -881,15 +882,36 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Validates the specified filter.
      *
+     * @param {Object} the column to apply the filter to
      * @param {Object} filter the filter to be validated
      * @param {VisualQueryTable} table the visual query table
      */
-    validateFilter(filter: any, table: any) {
+    validateFilter(header:any,filter: any, table: any ) {
         if (filter.term == "") {
             filter.term = null;
         } else {
             delete filter.regex;
         }
+    }
+
+    /**
+     * Apply a list of filters to a given column(header)
+     * @param header
+     * @param {any[]} filters
+     * @param table
+     */
+    applyFilters(header:any,filters:any[],table:any){
+        table.onRowsChange();
+        table.refreshRows();
+    }
+
+    /**
+     * Apply a list single filter to a given column(header)
+     * @param header
+     * @param filter
+     * @param table
+     */
+    applyFilter(header:any,filter: any, table: any){
         table.onRowsChange();
         table.refreshRows();
     }

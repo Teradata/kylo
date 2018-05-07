@@ -762,16 +762,23 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
         /**
          * Validates the specified filter.
          *
+         * @param {Object} the column to apply the filter to
          * @param {Object} filter the filter to be validated
          * @param {VisualQueryTable} table the visual query table
          */
-        ColumnDelegate.prototype.validateFilter = function (filter, table) {
+        ColumnDelegate.prototype.validateFilter = function (header, filter, table) {
             if (filter.term == "") {
                 filter.term = null;
             }
             else {
                 delete filter.regex;
             }
+        };
+        ColumnDelegate.prototype.applyFilters = function (header, filters, table) {
+            table.onRowsChange();
+            table.refreshRows();
+        };
+        ColumnDelegate.prototype.applyFilter = function (header, filter, table) {
             table.onRowsChange();
             table.refreshRows();
         };

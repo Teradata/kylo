@@ -142,7 +142,7 @@ export class VisualQueryTable {
             this.dataService.state = this.tableState;
             this.dataService.columns_ = this.columns;
             this.onColumnsChange();
-            this.onRowsChange();
+          //  this.onRowsChange();
             this.refresh();
             this.lastState = this.tableState;
         });
@@ -417,48 +417,10 @@ export class VisualQueryTable {
             this.rows.forEach((row, index) => row.push(index));
         }
 
-        // Filter rows
-        this.rows = _.filter(this.rows, function (row) {
-            return _.every(self.columns, function (column: any, index) {
-                return _.every(column.filters, function (filter: any) {
-                    if (angular.isUndefined(filter.term) || filter.term === null) {
-                        return true;
-                    } else if (filter.condition === self.uiGridConstants_.filter.CONTAINS) {
-                        if (angular.isUndefined(filter.regex)) {
-                            filter.regex = new RegExp(filter.term);
-                        }
-                        return filter.regex.test(row[index]);
-                    } else if (filter.condition === self.uiGridConstants_.filter.LESS_THAN) {
-                        return row[index] < filter.term;
-                    } else if (filter.condition === self.uiGridConstants_.filter.GREATER_THAN) {
-                        return row[index] > filter.term;
-                    } else if (filter.condition === self.uiGridConstants_.filter.EXACT) {
-                        if (angular.isUndefined(filter.regex)) {
-                            filter.regex = new RegExp("^" + filter.term + "$");
-                        }
-                        return filter.regex.test(row[index]);
-                    } else {
-                        return false;
-                    }
-                });
-            });
-        });
+        //sorts and filters are now applied server side
 
-        // Sort rows
-        if (angular.isNumber(this.dataService.sortIndex_) && this.dataService.sortIndex_ < this.dataService.columns_.length) {
-            const column = this.dataService.sortIndex_;
-            const lessThan = (this.dataService.sortDirection_ === (VisualQueryTable as any).ASC) ? -1 : 1;
-            const greaterThan = -lessThan;
-
-            this.rows.sort(function (a, b) {
-                if (a[column] === b[column]) {
-                    return 0;
-                } else {
-                    return (a[column] < b[column]) ? lessThan : greaterThan;
-                }
-            });
-        }
     }
+
 
 
 }
