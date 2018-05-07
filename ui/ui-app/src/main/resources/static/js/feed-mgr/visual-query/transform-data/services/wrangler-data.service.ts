@@ -92,7 +92,7 @@ export class WranglerDataService {
      */
     getCell(i: number, j: number, rows: object[][], validationResults : TransformValidationResult[][]): any {
         const column: any = this.columns_[j];
-        if (column != undefined && i >= 0 && i < rows.length) {
+        if (column != undefined && i >= 0 && rows && i < rows.length) {
 
             const validation = (validationResults != null && i < validationResults.length && validationResults[i] != null)
                 ? validationResults[i].filter(result => {

@@ -9,10 +9,10 @@ define(["require", "exports", "./api/index", "./column-delegate", "./query-engin
             return JSON.stringify(this) === JSON.stringify(page);
         };
         PageSpec.emptyPage = function () {
-            return new PageSpec({ firstRow: 0, firstCol: 0, numCols: 0, numRows: 0 });
+            return new PageSpec({ firstRow: 0, numRows: 0, firstCol: 0, numCols: 0 });
         };
         PageSpec.defaultPage = function () {
-            return new PageSpec({ firstRow: 0, firstCol: 0, numCols: 1000, numRows: 64 });
+            return new PageSpec({ firstRow: 0, numRows: 64, firstCol: 0, numCols: 1000 });
         };
         return PageSpec;
     }());

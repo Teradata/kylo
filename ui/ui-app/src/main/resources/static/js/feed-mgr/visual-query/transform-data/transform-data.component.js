@@ -647,6 +647,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             if (refreshGrid === void 0) { refreshGrid = true; }
             var self = this;
             var deferred = this.$q.defer();
+            self.currentPage = query_engine_1.PageSpec.defaultPage();
             setTimeout(function () {
                 if (self.pushFormulaToEngine(formula, context)) {
                     // Add to function history

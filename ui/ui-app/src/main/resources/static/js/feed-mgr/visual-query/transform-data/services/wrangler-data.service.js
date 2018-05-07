@@ -66,7 +66,7 @@ define(["require", "exports", "angular", "underscore", "../../wrangler/query-eng
          */
         WranglerDataService.prototype.getCell = function (i, j, rows, validationResults) {
             var column = this.columns_[j];
-            if (column != undefined && i >= 0 && i < rows.length) {
+            if (column != undefined && i >= 0 && rows && i < rows.length) {
                 var validation = (validationResults != null && i < validationResults.length && validationResults[i] != null)
                     ? validationResults[i].filter(function (result) {
                         return (result.field === column.displayName);

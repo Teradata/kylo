@@ -779,7 +779,7 @@ export class TransformDataComponent implements OnInit {
     pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
         const self = this;
         const deferred = this.$q.defer();
-
+        self.currentPage = PageSpec.defaultPage();
         setTimeout(function () {
             if (self.pushFormulaToEngine(formula, context)) {
                 // Add to function history

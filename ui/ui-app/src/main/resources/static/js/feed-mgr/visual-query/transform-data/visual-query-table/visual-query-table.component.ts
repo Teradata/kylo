@@ -138,11 +138,13 @@ export class VisualQueryTable {
 
         /* Watch on columns indicating model changed */
         $scope_.$watchCollection(() => this.columns, () => {
+
             this.dataService.state = this.tableState;
             this.dataService.columns_ = this.columns;
             this.onColumnsChange();
             this.onRowsChange();
             this.refresh();
+            this.lastState = this.tableState;
         });
 
         $scope_.$watch(() => this.options ? this.options.headerFont : null, () => painter.headerFont = this.options.headerFont);
@@ -197,7 +199,7 @@ export class VisualQueryTable {
     /**
      * Redraws the table.
      */
-    refresh() {
+    refresh() : void {
 
         // Skip if table not initialized
         if (this.table_ === null) {
@@ -234,9 +236,20 @@ export class VisualQueryTable {
             this.painter.hideTooltip();
         }
 
+        var scrollPosition = this.savePosition();
+        this.table_.setup();
+        this.restorePosition(scrollPosition);
+    }
+
+    restorePosition(sp: ScrollPosition) {
+        var ourTable : any  = (this.table_ as any);
+        ourTable.scroll.setScrollXY(sp.left, sp.top);
+    }
+
+    savePosition() : ScrollPosition {
         // Preserve scroll position
-        var priorScrollLeft : number;
-        var priorScrollTop : number;
+        var priorScrollLeft : number = 0;
+        var priorScrollTop : number = 0;
 
         var ourTable : any  = (this.table_ as any);
         if (!angular.isUndefined(ourTable.scroll)) {
@@ -255,13 +268,12 @@ export class VisualQueryTable {
                 priorScrollTop = scrollBar.scrollTop;
             }
 
+            // If scrolling we will preserve both, if transformation we will only keep left position
+            if (this.tableState !== this.lastState) {
+                priorScrollTop = 0;
+            }
         }
-
-        this.table_.setup();
-
-        if (!angular.isUndefined(priorScrollLeft)) {
-            ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
-        }
+        return { left: priorScrollLeft, top: priorScrollTop};
     }
 
     /**
@@ -451,18 +463,9 @@ export class VisualQueryTable {
 
 }
 
-export class ColumnModelChange {
-    constructor(oldValue: object[], newValue: object[] ) {
-        if (oldValue == null) {
-
-        }
-
-        // was new element inserted mid?  stay
-        // was new element appended?    scroll right
-        // was element removed?   stay
-        // row change? Fewer    scroll top?
-
-    }
+export class ScrollPosition {
+    left: number;
+    top: number;
 }
 
 angular.module(moduleName).directive("visualQueryTable", function () {

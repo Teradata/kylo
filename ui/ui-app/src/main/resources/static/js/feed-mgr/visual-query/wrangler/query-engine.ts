@@ -26,11 +26,11 @@ export class PageSpec {
     }
 
     static emptyPage() : PageSpec {
-        return new PageSpec({ firstRow:0, firstCol: 0, numCols: 0, numRows:0 });
+        return new PageSpec({ firstRow:0, numRows: 0, firstCol: 0, numCols: 0 });
     }
 
     static defaultPage() : PageSpec {
-        return new PageSpec({ firstRow:0, firstCol: 0, numCols: 1000, numRows:64 });
+        return new PageSpec({ firstRow:0, numRows:64, firstCol: 0, numCols: 1000 });
     }
 }
 

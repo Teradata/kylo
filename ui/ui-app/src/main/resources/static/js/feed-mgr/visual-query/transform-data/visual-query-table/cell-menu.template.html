@@ -10,7 +10,7 @@
   <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selection }}</md-button>
   </md-menu-item>
-  <md-menu-item ng-if="selection !== null">
+  <md-menu-item ng-if="selection !== null && selection.length > 0">
     <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selection }}</md-button>
   </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>

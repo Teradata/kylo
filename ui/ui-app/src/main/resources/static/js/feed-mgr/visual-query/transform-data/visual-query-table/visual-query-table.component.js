@@ -66,6 +66,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 _this.onColumnsChange();
                 _this.onRowsChange();
                 _this.refresh();
+                _this.lastState = _this.tableState;
             });
             $scope_.$watch(function () { return _this.options ? _this.options.headerFont : null; }, function () { return painter.headerFont = _this.options.headerFont; });
             $scope_.$watch(function () { return _this.options ? _this.options.rowFont : null; }, function () { return painter.rowFont = _this.options.rowFont; });
@@ -138,9 +139,18 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 // Rebuild table
                 this.painter.hideTooltip();
             }
+            var scrollPosition = this.savePosition();
+            this.table_.setup();
+            this.restorePosition(scrollPosition);
+        };
+        VisualQueryTable.prototype.restorePosition = function (sp) {
+            var ourTable = this.table_;
+            ourTable.scroll.setScrollXY(sp.left, sp.top);
+        };
+        VisualQueryTable.prototype.savePosition = function () {
             // Preserve scroll position
-            var priorScrollLeft;
-            var priorScrollTop;
+            var priorScrollLeft = 0;
+            var priorScrollTop = 0;
             var ourTable = this.table_;
             if (!angular.isUndefined(ourTable.scroll)) {
                 var ratioX = 0;
@@ -154,11 +164,12 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                     priorScrollLeft = scrollBar.scrollLeft;
                     priorScrollTop = scrollBar.scrollTop;
                 }
+                // If scrolling we will preserve both, if transformation we will only keep left position
+                if (this.tableState !== this.lastState) {
+                    priorScrollTop = 0;
+                }
             }
-            this.table_.setup();
-            if (!angular.isUndefined(priorScrollLeft)) {
-                ourTable.scroll.setScrollXY(priorScrollLeft, priorScrollTop);
-            }
+            return { left: priorScrollLeft, top: priorScrollTop };
         };
         /**
          * Refreshes the contents of rows.
@@ -339,18 +350,12 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
         return VisualQueryTable;
     }());
     exports.VisualQueryTable = VisualQueryTable;
-    var ColumnModelChange = /** @class */ (function () {
-        function ColumnModelChange(oldValue, newValue) {
-            if (oldValue == null) {
-            }
-            // was new element inserted mid?  stay
-            // was new element appended?    scroll right
-            // was element removed?   stay
-            // row change? Fewer    scroll top?
+    var ScrollPosition = /** @class */ (function () {
+        function ScrollPosition() {
         }
-        return ColumnModelChange;
+        return ScrollPosition;
     }());
-    exports.ColumnModelChange = ColumnModelChange;
+    exports.ScrollPosition = ScrollPosition;
     angular.module(moduleName).directive("visualQueryTable", function () {
         return {
             bindToController: {
