@@ -241,6 +241,12 @@
       </exclusions>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-catalog-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- Kerberos Ticket Renewer -->
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
