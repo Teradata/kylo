@@ -3,14 +3,6 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
     var CategoryDetailsController = /** @class */ (function () {
-        /**
-         * Manages the Category Details page for creating and editing categories.
-         *
-         * @param $scope the application model
-         * @param $transition$ the URL parameters
-         * @param CategoriesService the category service
-         * @constructor
-         */
         function CategoryDetailsController($scope, $transition$, $q, CategoriesService, accessControlService) {
             var _this = this;
             this.$scope = $scope;
@@ -80,9 +72,22 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
                 });
             }
         };
+        /**
+         * Manages the Category Details page for creating and editing categories.
+         *
+         * @param $scope the application model
+         * @param $transition$ the URL parameters
+         * @param CategoriesService the category service
+         * @constructor
+         */
+        CategoryDetailsController.$inject = ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService"];
         return CategoryDetailsController;
     }());
     exports.CategoryDetailsController = CategoryDetailsController;
-    angular.module(moduleName).controller('CategoryDetailsController', ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService", CategoryDetailsController]);
+    angular.module(moduleName).component('CategoryDetailsController', {
+        controller: CategoryDetailsController,
+        controllerAs: "vm",
+        templateUrl: 'js/feed-mgr/categories/category-details.html'
+    });
 });
 //# sourceMappingURL=category-details.js.map

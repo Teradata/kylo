@@ -64,9 +64,14 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
             this.StateService.FeedManager().Category().navigateToCategoryDetails(category.id);
         };
         ;
+        CategoriesController.$inject = ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService"];
         return CategoriesController;
     }());
     exports.CategoriesController = CategoriesController;
-    angular.module(moduleName).controller('CategoriesController', ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService", CategoriesController]);
+    angular.module(moduleName).component('CategoriesController', {
+        controller: CategoriesController,
+        controllerAs: "vm",
+        templateUrl: 'js/feed-mgr/categories/categories.html'
+    });
 });
 //# sourceMappingURL=CategoriesController.js.map

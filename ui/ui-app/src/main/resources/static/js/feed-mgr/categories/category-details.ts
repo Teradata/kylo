@@ -26,6 +26,7 @@ export class CategoryDetailsController {
      * @param CategoriesService the category service
      * @constructor
      */
+    static readonly $inject = ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService"];
     constructor(private $scope: any, private $transition$: any, private $q: any
         , private CategoriesService: any, private accessControlService: AccessControlService) {
 
@@ -88,4 +89,9 @@ export class CategoryDetailsController {
     }
 
 }
-angular.module(moduleName).controller('CategoryDetailsController', ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService", CategoryDetailsController]);
+angular.module(moduleName).component('CategoryDetailsController', {
+ 
+    controller: CategoryDetailsController,
+    controllerAs: "vm",
+    templateUrl: 'js/feed-mgr/categories/category-details.html'
+});

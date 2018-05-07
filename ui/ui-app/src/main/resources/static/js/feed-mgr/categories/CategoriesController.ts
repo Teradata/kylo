@@ -22,6 +22,8 @@ export class CategoriesController {
     */
     searchQuery: string = "";
 
+    static readonly $inject = ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService"];
+
     /**
      * Displays a list of categories.
      *
@@ -70,5 +72,9 @@ export class CategoriesController {
     };
 
 }
-angular.module(moduleName).controller('CategoriesController', ["$scope", "AccessControlService", "AddButtonService", "CategoriesService", "StateService", CategoriesController]);
+angular.module(moduleName).component('CategoriesController',  {
+    controller: CategoriesController,
+    controllerAs: "vm",
+    templateUrl: 'js/feed-mgr/categories/categories.html'   
+});
 
