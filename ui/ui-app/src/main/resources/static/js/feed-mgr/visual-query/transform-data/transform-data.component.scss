@@ -1,5 +1,7 @@
 @import "../../../../../../../../node_modules/@angular/material/theming";
 
+
+
 thinkbig-visual-query-transform {
 
 
@@ -108,7 +110,7 @@ thinkbig-visual-query-transform {
   /*
 Override spacing for context menu
  */
-  md-menu-content.md-kylo-theme md-menu-item {
+  md-menu-content.md-kylo-theme md-menu-item  {
     font-size: 14px;
     height: 36px;
   }
@@ -118,4 +120,13 @@ Override spacing for context menu
     opacity:1.0;
   }
 
+}
+
+/**
+  Override toolbar buttons
+   */
+.visual-query-column-menu .md-button  {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
 }

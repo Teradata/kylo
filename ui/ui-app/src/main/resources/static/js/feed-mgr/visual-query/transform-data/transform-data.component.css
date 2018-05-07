@@ -202,3 +202,14 @@ thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indete
   background-color: transparent !important;
   opacity: 1;
 }
+
+/**
+  Override toolbar buttons
+   */
+.visual-query-column-menu .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}
+
+/*# sourceMappingURL=transform-data.component.css.map */
