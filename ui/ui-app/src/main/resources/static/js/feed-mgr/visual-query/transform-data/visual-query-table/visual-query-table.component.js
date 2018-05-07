@@ -64,7 +64,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
                 _this.dataService.state = _this.tableState;
                 _this.dataService.columns_ = _this.columns;
                 _this.onColumnsChange();
-                _this.onRowsChange();
+                //  this.onRowsChange();
                 _this.refresh();
                 _this.lastState = _this.tableState;
             });
@@ -292,51 +292,7 @@ define(["require", "exports", "angular", "jquery", "underscore", "./visual-query
             if (this.rows && this.rows.length > 0 && this.rows[0].length === this.columns.length) {
                 this.rows.forEach(function (row, index) { return row.push(index); });
             }
-            // Filter rows
-            this.rows = _.filter(this.rows, function (row) {
-                return _.every(self.columns, function (column, index) {
-                    return _.every(column.filters, function (filter) {
-                        if (angular.isUndefined(filter.term) || filter.term === null) {
-                            return true;
-                        }
-                        else if (filter.condition === self.uiGridConstants_.filter.CONTAINS) {
-                            if (angular.isUndefined(filter.regex)) {
-                                filter.regex = new RegExp(filter.term);
-                            }
-                            return filter.regex.test(row[index]);
-                        }
-                        else if (filter.condition === self.uiGridConstants_.filter.LESS_THAN) {
-                            return row[index] < filter.term;
-                        }
-                        else if (filter.condition === self.uiGridConstants_.filter.GREATER_THAN) {
-                            return row[index] > filter.term;
-                        }
-                        else if (filter.condition === self.uiGridConstants_.filter.EXACT) {
-                            if (angular.isUndefined(filter.regex)) {
-                                filter.regex = new RegExp("^" + filter.term + "$");
-                            }
-                            return filter.regex.test(row[index]);
-                        }
-                        else {
-                            return false;
-                        }
-                    });
-                });
-            });
-            // Sort rows
-            if (angular.isNumber(this.dataService.sortIndex_) && this.dataService.sortIndex_ < this.dataService.columns_.length) {
-                var column_1 = this.dataService.sortIndex_;
-                var lessThan_1 = (this.dataService.sortDirection_ === VisualQueryTable.ASC) ? -1 : 1;
-                var greaterThan_1 = -lessThan_1;
-                this.rows.sort(function (a, b) {
-                    if (a[column_1] === b[column_1]) {
-                        return 0;
-                    }
-                    else {
-                        return (a[column_1] < b[column_1]) ? lessThan_1 : greaterThan_1;
-                    }
-                });
-            }
+            //sorts and filters are now applied server side
         };
         VisualQueryTable.$inject = ["$scope", "$element", "$timeout", "VisualQueryPainterService", "WranglerDataService", "WranglerTableService", "uiGridConstants", "$window"];
         /**

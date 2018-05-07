@@ -692,19 +692,30 @@ export class TransformDataComponent implements OnInit {
         this.updateCodeMirrorAutoComplete();
     }
 
-    /**
-     * Adds formulas for column filters.
-     */
-    addFilters() {
-        const self = this;
-        angular.forEach(self.tableColumns, function (column) {
-            angular.forEach(column.filters, function (filter) {
-                if (filter.term) {
-                    self.addColumnFilter(filter, column);
-                }
-            });
-        });
-    };
+    addColumnSort(direction:string,column:any,query?:boolean) : IPromise<any> {
+        let formula;
+
+        let directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
+        let icon = ''
+        if(directionLower == 'asc') {
+            formula = "sort(asc(\""+column.field+"\"))";
+            icon = 'ui-grid-icon-up-dir';
+        }
+        else if(directionLower == 'desc'){
+            formula = "sort(desc(\""+column.field+"\"))";
+            icon = 'ui-grid-icon-down-dir';
+        }
+        if(formula) {
+            let name = "Sort by " + column.displayName + " " + directionLower;
+            //TODO CLEAR PAGE CACHE
+            return this.pushFormula(formula, {formula: formula, icon: icon, name: name}, query);
+        }
+        else {
+            let d = this.$q.defer();
+            d.resolve({});
+            return d.promise;
+        }
+    }
 
     /**
      * Add formula for a column filter.
@@ -712,7 +723,7 @@ export class TransformDataComponent implements OnInit {
      * @param {Object} filter the filter
      * @param {ui.grid.GridColumn} column the column
      */
-    addColumnFilter(filter: any, column: any) {
+    addColumnFilter(filter: any, column: any, query ?:boolean) : IPromise<any> {
         // Generate formula for filter
         let formula;
         let safeTerm = (column.delegate.dataCategory === DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
@@ -746,7 +757,12 @@ export class TransformDataComponent implements OnInit {
 
         // Add formula
         let name = "Find " + column.displayName + " " + verb + " " + filter.term;
-        this.pushFormula(formula, {formula: formula, icon: filter.icon, name: name});
+
+        if (angular.isUndefined(query)){
+            query = false;
+        }
+        //TODO CLEAR PAGE CACHE
+       return this.pushFormula(formula, {formula: formula, icon: filter.icon, name: name},query);
     };
 
     /**
@@ -756,7 +772,6 @@ export class TransformDataComponent implements OnInit {
      * @param {TransformContext} context the UI context for the transformation
      */
     addFunction(formula: any, context: any) : IPromise<any> {
-        this.addFilters();
         return this.pushFormula(formula, context, true);
     };
 
@@ -930,7 +945,6 @@ export class TransformDataComponent implements OnInit {
      * Refreshes the table content.
      */
     resample() {
-        this.addFilters();
         this.query();
     }
 
@@ -979,7 +993,6 @@ export class TransformDataComponent implements OnInit {
      */
     private saveToFeedModel() {
         // Add unsaved filters
-        this.addFilters();
 
         // Check if updates are necessary
         let feedModel = this.FeedService.createFeedModel;

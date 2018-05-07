@@ -110,6 +110,31 @@ define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/c
             }
         };
         /**
+         * Override default validate so we dont refresh teh grid
+         * @param filter
+         * @param table
+         */
+        SparkColumnDelegate.prototype.applyFilter = function (header, filter, table) {
+            this.controller.addColumnFilter(filter, header, true);
+        };
+        SparkColumnDelegate.prototype.applyFilters = function (header, filters, table) {
+            var _this = this;
+            //filter out any filters that dont have anything
+            var validFilters = _.filter(filters, function (filter) {
+                return (angular.isDefined(filter.term) && filter.term != '');
+            });
+            _.each(validFilters, function (filter, i) {
+                var query = false;
+                if (i == (validFilters.length - 1)) {
+                    query = true;
+                }
+                _this.controller.addColumnFilter(filter, header, true);
+            });
+        };
+        SparkColumnDelegate.prototype.sortColumn = function (direction, column, grid) {
+            this.controller.addColumnSort(direction, column, true);
+        };
+        /**
          * Casts this column to a date type.
          */
         SparkColumnDelegate.prototype.castToDate = function () {

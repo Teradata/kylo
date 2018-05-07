@@ -370,13 +370,12 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
                     count = (row[idx_1] != null && row[idx_1].length > count ? row[idx_1].length : count);
                 });
             }
-            var columns = self.toColumnArray(grid.columns, fieldName);
-            //var i=0;
+            var columns = [];
             for (var i = 0; i < count; i++) {
                 var newFieldName = fieldName + "_" + i;
                 columns.push("getItem(" + fieldName + ", " + i + ").as(\"" + newFieldName + "\")");
             }
-            var formula = "select(" + columns.join(",");
+            var formula = self.generateMoveScript(fieldName, columns, grid);
             self.controller.pushFormula(formula, { formula: formula, icon: "functions", name: "Extract array" }, true, true);
         };
         /**
@@ -389,7 +388,7 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
             var fieldName = self.getColumnFieldName(column);
             var newFieldName = fieldName + "_indexed";
             var formula = "StringIndexer().setInputCol(\"" + fieldName + "\").setOutputCol(\"" + newFieldName + "\").run(select(" + fieldName + "))";
-            var moveFormula = self.generateMoveScript(fieldName, newFieldName, grid);
+            var moveFormula = self.generateMoveScript(fieldName, [newFieldName], grid);
             // Two part conversion
             var chainedOp = new ChainedOperation(2);
             self.controller.setChainedQuery(chainedOp);
@@ -762,16 +761,35 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
         /**
          * Validates the specified filter.
          *
+         * @param {Object} the column to apply the filter to
          * @param {Object} filter the filter to be validated
          * @param {VisualQueryTable} table the visual query table
          */
-        ColumnDelegate.prototype.validateFilter = function (filter, table) {
+        ColumnDelegate.prototype.validateFilter = function (header, filter, table) {
             if (filter.term == "") {
                 filter.term = null;
             }
             else {
                 delete filter.regex;
             }
+        };
+        /**
+         * Apply a list of filters to a given column(header)
+         * @param header
+         * @param {any[]} filters
+         * @param table
+         */
+        ColumnDelegate.prototype.applyFilters = function (header, filters, table) {
+            table.onRowsChange();
+            table.refreshRows();
+        };
+        /**
+         * Apply a list single filter to a given column(header)
+         * @param header
+         * @param filter
+         * @param table
+         */
+        ColumnDelegate.prototype.applyFilter = function (header, filter, table) {
             table.onRowsChange();
             table.refreshRows();
         };

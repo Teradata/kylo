@@ -563,27 +563,36 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             this.tableValidation = this.engine.getValidationResults();
             this.updateCodeMirrorAutoComplete();
         };
-        /**
-         * Adds formulas for column filters.
-         */
-        TransformDataComponent.prototype.addFilters = function () {
-            var self = this;
-            angular.forEach(self.tableColumns, function (column) {
-                angular.forEach(column.filters, function (filter) {
-                    if (filter.term) {
-                        self.addColumnFilter(filter, column);
-                    }
-                });
-            });
+        TransformDataComponent.prototype.addColumnSort = function (direction, column, query) {
+            var formula;
+            var directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
+            var icon = '';
+            if (directionLower == 'asc') {
+                formula = "sort(asc(\"" + column.field + "\"))";
+                icon = 'ui-grid-icon-up-dir';
+            }
+            else if (directionLower == 'desc') {
+                formula = "sort(desc(\"" + column.field + "\"))";
+                icon = 'ui-grid-icon-down-dir';
+            }
+            if (formula) {
+                var name_1 = "Sort by " + column.displayName + " " + directionLower;
+                //TODO CLEAR PAGE CACHE
+                return this.pushFormula(formula, { formula: formula, icon: icon, name: name_1 }, query);
+            }
+            else {
+                var d = this.$q.defer();
+                d.resolve({});
+                return d.promise;
+            }
         };
-        ;
         /**
          * Add formula for a column filter.
          *
          * @param {Object} filter the filter
          * @param {ui.grid.GridColumn} column the column
          */
-        TransformDataComponent.prototype.addColumnFilter = function (filter, column) {
+        TransformDataComponent.prototype.addColumnFilter = function (filter, column, query) {
             // Generate formula for filter
             var formula;
             var safeTerm = (column.delegate.dataCategory === column_delegate_1.DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
@@ -602,8 +611,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     verb = "equal to";
                     break;
                 case this.uiGridConstants.filter.CONTAINS:
-                    var query = "%" + filter.term.replace("%", "%%") + "%";
-                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query) + "'))";
+                    var query_1 = "%" + filter.term.replace("%", "%%") + "%";
+                    formula = "filter(like(" + column.field + ", '" + StringUtils.quote(query_1) + "'))";
                     verb = "containing";
                     break;
                 default:
@@ -611,7 +620,11 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             }
             // Add formula
             var name = "Find " + column.displayName + " " + verb + " " + filter.term;
-            this.pushFormula(formula, { formula: formula, icon: filter.icon, name: name });
+            if (angular.isUndefined(query)) {
+                query = false;
+            }
+            //TODO CLEAR PAGE CACHE
+            return this.pushFormula(formula, { formula: formula, icon: filter.icon, name: name }, query);
         };
         ;
         /**
@@ -621,7 +634,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @param {TransformContext} context the UI context for the transformation
          */
         TransformDataComponent.prototype.addFunction = function (formula, context) {
-            this.addFilters();
             return this.pushFormula(formula, context, true);
         };
         ;
@@ -776,7 +788,6 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * Refreshes the table content.
          */
         TransformDataComponent.prototype.resample = function () {
-            this.addFilters();
             this.query();
         };
         //noinspection JSUnusedGlobalSymbols
@@ -823,9 +834,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
          * @returns {Promise} signals when the save is complete
          */
         TransformDataComponent.prototype.saveToFeedModel = function () {
-            var _this = this;
             // Add unsaved filters
-            this.addFilters();
+            var _this = this;
             // Check if updates are necessary
             var feedModel = this.FeedService.createFeedModel;
             var newScript = this.engine.getFeedScript();

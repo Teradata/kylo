@@ -125,6 +125,35 @@ export class SparkColumnDelegate extends ColumnDelegate {
     }
 
     /**
+     * Override default validate so we dont refresh teh grid
+     * @param filter
+     * @param table
+     */
+    applyFilter(header:any,filter: any, table: any) {
+       this.controller.addColumnFilter(filter,header,true)
+    }
+
+    applyFilters(header:any,filters:any[],table:any){
+        //filter out any filters that dont have anything
+        let validFilters =_.filter(filters,(filter) => {
+            return (angular.isDefined(filter.term)&& filter.term != '')
+        });
+
+        _.each(validFilters,(filter,i)=> {
+               let query = false;
+               if(i == (validFilters.length -1)){
+                   query = true;
+               }
+                this.controller.addColumnFilter(filter,header,true)
+            });
+    }
+
+
+    sortColumn(direction: string, column: any, grid: any) {
+        this.controller.addColumnSort(direction,column,true);
+    }
+
+    /**
      * Casts this column to a date type.
      */
     private castToDate(): void {

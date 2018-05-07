@@ -389,7 +389,7 @@ export class ColumnDelegate implements IColumnDelegate {
      * Generates a script to move the column B directly to the right of column A
      * @returns {string}
      */
-    generateMoveScript(fieldNameA: string, fieldNameB: string, columnSource: any): string {
+    generateMoveScript(fieldNameA: string, fieldNameB: string[], columnSource: any): string {
         var self = this;
         let cols: string[] = [];
         let sourceColumns = (columnSource.columns ? columnSource.columns : columnSource);
@@ -435,14 +435,12 @@ export class ColumnDelegate implements IColumnDelegate {
                 count = (row[idx] != null && row[idx].length > count ? row[idx].length : count)
             });
         }
-        var columns = self.toColumnArray(grid.columns, fieldName);
-        //var i=0;
+        var columns = []
         for (let i = 0; i < count; i++) {
             let newFieldName = fieldName + "_" + i;
             columns.push(`getItem(${fieldName}, ${i}).as("${newFieldName}")`);
         }
-        var formula = `select(${columns.join(",")}`;
-
+        var formula = self.generateMoveScript(fieldName, columns,grid );
         self.controller.pushFormula(formula, {formula: formula, icon: "functions", name: "Extract array"}, true, true);
     }
 
@@ -458,7 +456,7 @@ export class ColumnDelegate implements IColumnDelegate {
         const fieldName = self.getColumnFieldName(column);
         const newFieldName = fieldName + "_indexed";
         const formula = `StringIndexer().setInputCol("${fieldName}").setOutputCol("${newFieldName}").run(select(${fieldName}))`;
-        const moveFormula = self.generateMoveScript(fieldName, newFieldName, grid);
+        const moveFormula = self.generateMoveScript(fieldName, [newFieldName], grid);
 
         // Two part conversion
         let chainedOp: ChainedOperation = new ChainedOperation(2);
@@ -780,6 +778,7 @@ export class ColumnDelegate implements IColumnDelegate {
         grid.refresh();
     }
 
+
     /**
      * Splits the specified column on the specified value.
      *
@@ -881,15 +880,36 @@ export class ColumnDelegate implements IColumnDelegate {
     /**
      * Validates the specified filter.
      *
+     * @param {Object} the column to apply the filter to
      * @param {Object} filter the filter to be validated
      * @param {VisualQueryTable} table the visual query table
      */
-    validateFilter(filter: any, table: any) {
+    validateFilter(header:any,filter: any, table: any ) {
         if (filter.term == "") {
             filter.term = null;
         } else {
             delete filter.regex;
         }
+    }
+
+    /**
+     * Apply a list of filters to a given column(header)
+     * @param header
+     * @param {any[]} filters
+     * @param table
+     */
+    applyFilters(header:any,filters:any[],table:any){
+        table.onRowsChange();
+        table.refreshRows();
+    }
+
+    /**
+     * Apply a list single filter to a given column(header)
+     * @param header
+     * @param filter
+     * @param table
+     */
+    applyFilter(header:any,filter: any, table: any){
         table.onRowsChange();
         table.refreshRows();
     }
