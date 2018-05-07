@@ -175,6 +175,11 @@ export class TransformDataComponent implements OnInit {
     isLoaded: boolean = false;
 
     /**
+     * Keeps track of running executions
+     */
+    executionStack: IPromise<any>[] = [];
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
@@ -562,7 +567,14 @@ export class TransformDataComponent implements OnInit {
         const deferred : IDeferred<ScriptState<any>> = this.$q.defer();
         if (pageSpec.equals(this.currentPage)) {
             this.$timeout_(() => {
-                return deferred.resolve(self.engine.getState());
+                // Fetch the state or join with the existing execution
+                if (self.executionStack.length > 0) {
+                    var promise = self.executionStack[self.executionStack.length-1];
+                    promise.then( () => { return deferred.resolve(self.engine.getState()) });
+                } else {
+                    return deferred.resolve(self.engine.getState());
+                }
+
             },10);
         } else {
             self.query(true, pageSpec).then( ()=> {
@@ -583,6 +595,9 @@ export class TransformDataComponent implements OnInit {
      query(refresh : boolean = true, pageSpec ?: PageSpec, doValidate : boolean = true, doProfile : boolean = false) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
+
+        const promise = deferred.promise;
+        self.executionStack.push(promise);
 
         //flag to indicate query is running
         this.setExecutingQuery(true);
@@ -608,6 +623,7 @@ export class TransformDataComponent implements OnInit {
                 }
                 self.updateGrid();
             }
+            self.removeExecution(promise);
             deferred.resolve();
         };
         const errorCallback = function (message: string) {
@@ -617,6 +633,7 @@ export class TransformDataComponent implements OnInit {
 
             // Reset state
             self.onUndo();
+            self.removeExecution(promise);
             deferred.reject(message);
         };
         const notifyCallback = function (progress: number) {
@@ -629,8 +646,13 @@ export class TransformDataComponent implements OnInit {
         };
 
         self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
-        return deferred.promise;
+        return  promise;
     };
+
+    private removeExecution(promise : IPromise<any>) : void {
+        var idx = this.executionStack.indexOf(promise);
+        this.executionStack.splice(idx,1);
+    }
 
     private updateGrid() {
         const self = this;

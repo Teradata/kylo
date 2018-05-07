@@ -106,6 +106,10 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
              */
             this.isLoaded = false;
             /**
+             * Keeps track of running executions
+             */
+            this.executionStack = [];
+            /**
              * Called when the user clicks Add on the function bar
              */
             this.onAddFunction = function () {
@@ -446,7 +450,14 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             var deferred = this.$q.defer();
             if (pageSpec.equals(this.currentPage)) {
                 this.$timeout_(function () {
-                    return deferred.resolve(self.engine.getState());
+                    // Fetch the state or join with the existing execution
+                    if (self.executionStack.length > 0) {
+                        var promise = self.executionStack[self.executionStack.length - 1];
+                        promise.then(function () { return deferred.resolve(self.engine.getState()); });
+                    }
+                    else {
+                        return deferred.resolve(self.engine.getState());
+                    }
                 }, 10);
             }
             else {
@@ -470,6 +481,8 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
             if (doProfile === void 0) { doProfile = false; }
             var self = this;
             var deferred = this.$q.defer();
+            var promise = deferred.promise;
+            self.executionStack.push(promise);
             //flag to indicate query is running
             this.setExecutingQuery(true);
             this.setQueryProgress(50);
@@ -490,6 +503,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                     }
                     self.updateGrid();
                 }
+                self.removeExecution(promise);
                 deferred.resolve();
             };
             var errorCallback = function (message) {
@@ -498,6 +512,7 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 self.showError(message);
                 // Reset state
                 self.onUndo();
+                self.removeExecution(promise);
                 deferred.reject(message);
             };
             var notifyCallback = function (progress) {
@@ -509,9 +524,13 @@ define(["require", "exports", "@angular/core", "angular", "jquery", "underscore"
                 */
             };
             self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
-            return deferred.promise;
+            return promise;
         };
         ;
+        TransformDataComponent.prototype.removeExecution = function (promise) {
+            var idx = this.executionStack.indexOf(promise);
+            this.executionStack.splice(idx, 1);
+        };
         TransformDataComponent.prototype.updateGrid = function () {
             var self = this;
             //transform the result to the agGrid model
