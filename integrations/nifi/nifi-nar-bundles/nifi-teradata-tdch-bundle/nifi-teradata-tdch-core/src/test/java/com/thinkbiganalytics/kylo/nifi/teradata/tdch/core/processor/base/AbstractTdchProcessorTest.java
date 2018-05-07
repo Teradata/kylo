@@ -58,7 +58,7 @@ public class AbstractTdchProcessorTest {
     @Test
     public void testControllerServiceConfiguration() throws InitializationException {
         final String TDCH_JAR_BASE = "src/test/resources/usr/lib/tdch/1.5/lib";
-        final String TDCH_JAR_PATH = TDCH_JAR_BASE + "/valid/teradata-connector-1.5.2.jar";
+        final String TDCH_JAR_PATH = TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v1.txt";
         final String COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR = "src/test/resources/usr/hdp/current_v_2_5/hive-client/conf";
 
         final String HDP_HIVE_CLIENT_LIB_BASE = "src/test/resources/usr/hdp/current_v_2_5/hive-client/lib";
