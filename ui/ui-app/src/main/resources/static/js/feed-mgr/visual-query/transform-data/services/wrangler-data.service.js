@@ -45,11 +45,7 @@ define(["require", "exports", "angular", "underscore", "../../wrangler/query-eng
                 })).then(function (result) {
                     _this.state = result.tableState;
                     var rows = result.rows;
-                    var validationResults = angular.copy(result.validationResults);
-                    // Align validation results to page. Temporary - until we page validation results on server
-                    if (validationResults != null && validationResults.length > firstRow) {
-                        validationResults = validationResults.slice(firstRow, validationResults.length - 1);
-                    }
+                    var validationResults = result.validationResults;
                     cb(function (i, j) {
                         return self.getCell(i - I * PAGE_ROWS, j - J * PAGE_COLS, rows, validationResults);
                     });

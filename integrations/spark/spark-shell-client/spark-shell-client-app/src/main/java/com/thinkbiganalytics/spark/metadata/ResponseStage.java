@@ -27,6 +27,7 @@ import com.thinkbiganalytics.spark.model.TransformResult;
 import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.TransformQueryResult;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.rest.model.TransformValidationResult;
 import com.thinkbiganalytics.spark.service.DataSetConverterService;
 
 import jline.internal.Preconditions;
@@ -130,8 +131,10 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
         List<QueryResultColumn> allColumns = result.getColumns();
         List<List<Object>> rows;
         List<QueryResultColumn> columnSelection;
+        CalculatedPage rowPage = null;
+
         if (pageSpec != null) {
-            final CalculatedPage rowPage = new CalculatedPage(allRows.size(), pageSpec.getFirstRow(), pageSpec.getNumRows());
+            rowPage = new CalculatedPage(allRows.size(), pageSpec.getFirstRow(), pageSpec.getNumRows());
             final CalculatedPage colPage = new CalculatedPage(allColumns.size(), pageSpec.getFirstCol(), pageSpec.getNumCols());
 
             List<Row> rowSelection = toRowSelection(allRows, rowPage);
@@ -152,14 +155,13 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
                     return (row != null) ? rowTransform.convertRow(row) : null;
                 }
             });
-
         }
 
         // Build the query result
         final TransformQueryResult queryResult = new TransformQueryResult();
         queryResult.setColumns(columnSelection);
         queryResult.setRows(rows);
-        queryResult.setValidationResults(result.getValidationResults());
+        queryResult.setValidationResults(toPagedValidation(rowPage, result.getValidationResults()));
 
         // Build the response
         final TransformResponse response = new TransformResponse();
@@ -170,6 +172,15 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
         response.setActualCols(allColumns.size());
         response.setActualRows(allRows.size());
         return response;
+    }
+
+    private List<List<TransformValidationResult>> toPagedValidation(CalculatedPage rowPage, List<List<TransformValidationResult>> validationResults) {
+
+        if (rowPage == null) return validationResults;
+        if (validationResults != null && validationResults.size() >= rowPage.actualEnd) {
+            return validationResults.subList(rowPage.startIndex, rowPage.actualEnd);
+        }
+        return null;
     }
 
 }
