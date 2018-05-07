@@ -19,16 +19,19 @@ export class AlertDetailsDirectiveController implements ng.IComponentController{
     alertData: any; //The alert details. {Object}
     alertId: any;
     static readonly $inject=["$scope","$http","$mdDialog","AccessControlService","OpsManagerRestUrlService"];
+    ngOnInit(){
+            this.loadAlert(this.alertId); // Fetch alert details
+            this.accessControlService.getUserAllowedActions() // Fetch allowed permissions
+                        .then((actionSet: any) =>{
+                            this.allowAdmin = this.accessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
+                        });
+    }
     constructor(private $scope: angular.IScope,
                 private $http: angular.IHttpService,
                 private $mdDialog: angular.material.IDialogService ,
                 private accessControlService: AccessControlService,
                 private OpsManagerRestUrlService: OpsManagerRestUrlService){
-                this.loadAlert(this.alertId); // Fetch alert details
-                accessControlService.getUserAllowedActions() // Fetch allowed permissions
-                        .then((actionSet: any) =>{
-                            this.allowAdmin = accessControlService.hasAction(AccessConstants.OPERATIONS_ADMIN, actionSet.actions);
-                        });
+                this.ngOnInit();
     }// end of constructor
          /**
          * Gets the class for the specified state.
@@ -209,25 +212,28 @@ export class EventDialogController implements ng.IComponentController{
                 private OpsManagerRestUrlService: OpsManagerRestUrlService, //the REST URL service
                 private alert: any //the alert to update
                 ){
-        $scope.saving = false; //Indicates that this update is currently being saved  {boolean}
-        $scope.state = (alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
+        this.ngOnInit();
+    }
+    ngOnInit(){
+        this.$scope.saving = false; //Indicates that this update is currently being saved  {boolean}
+        this.$scope.state = (this.alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
         /**
          * Closes this dialog and discards any changes.
          */
-        $scope.closeDialog = ()=> {
-            $mdDialog.hide(false);
+        this.$scope.closeDialog = ()=> {
+           this.$mdDialog.hide(false);
         };
         /**
          * Saves this update and closes this dialog.
          */
-        $scope.saveDialog = ()=> {
-            $scope.saving = true;
-            var event = {state: $scope.state, description: $scope.description, clear: false};
-            $http.post(OpsManagerRestUrlService.ALERT_DETAILS_URL(alert.id), event)
+        this.$scope.saveDialog = ()=> {
+            this.$scope.saving = true;
+            var event = {state: this.$scope.state, description: this.$scope.description, clear: false};
+            this.$http.post(this.OpsManagerRestUrlService.ALERT_DETAILS_URL(this.alert.id), event)
                 .then(()=> {
-                    $mdDialog.hide(true);
+                    this.$mdDialog.hide(true);
                 }, () =>{
-                    $scope.saving = false;
+                    this.$scope.saving = false;
                 });
         };
     }
@@ -237,6 +243,9 @@ export class AlertDetailsController implements ng.IComponentController{
     alertId: any;
     $transition$: Transition;
     constructor(){
+        this.ngOnInit();
+    }
+    ngOnInit(){
         this.alertId = this.$transition$.params().alertId;
     }
 }
@@ -269,5 +278,5 @@ angular.module(moduleName).directive("tbaAlertDetails",
             }
         ]);
 angular.module(moduleName).component("eventDialogController", { 
-        controller: EventDialogController,
+        controller: EventDialogController
     });

@@ -3,7 +3,6 @@ import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import AccessControlService from "../../services/AccessControlService";
-
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -12,90 +11,77 @@ import AccessControlService from "../../services/AccessControlService";
  * @type {{}}
  */
 let controllerServiceDisplayCache :Common.Map<string> = {};
-
 let controllerServiceDisplayCachePromiseTracker: any = {};
 
 export class FeedService {
-    data: any;
-    constructor(private $http: angular.IHttpService,
-        private $q: angular.IQService,
-        private $mdToast: angular.material.IToastService,
-        private $mdDialog: angular.material.IDialogService,
-        private RestUrlService: any,
-        private VisualQueryService: any,
-        private FeedCreationErrorService: any,
-        private FeedPropertyService: any,
-        private accessControlService: AccessControlService,
-        private EntityAccessControlService: any,
-        private StateService: any) {
-        this.data = {
-            /**
-             * The Feed model in the Create Feed Stepper
-             */
-            createFeedModel: {},
-            /**
-             * The Feed Model that is being Edited when a user clicks on a Feed Details
-             */
-            editFeedModel: {},
-            /**
-             * Feed model for comparison with editFeedModel in Versions tab
-             */
-            versionFeedModel: {},
-            /**
-             * Difference between editFeedModel and versionFeedModel
-             */
-            versionFeedModelDiff: [],
-            /**
-             * The initial CRON expression used when a user selects Cron for the Schedule option
-             */
-            DEFAULT_CRON: "0 0 12 1/1 * ? *",
+   //data: any= {
+        /**
+         * The Feed model in the Create Feed Stepper
+         */
+        createFeedModel:any= {};
+        /**
+         * The Feed Model that is being Edited when a user clicks on a Feed Details
+         */
+        editFeedModel:any= {};
+        /**
+         * Feed model for comparison with editFeedModel in Versions tab
+         */
+        versionFeedModel:any= {};
+        /**
+         * Difference between editFeedModel and versionFeedModel
+         */
+        versionFeedModelDiff:any= [];
+        /**
+         * The initial CRON expression used when a user selects Cron for the Schedule option
+         */
+        DEFAULT_CRON:any= "0 0 12 1/1 * ? *";
 
-            /**
-             * In the Data Processing section these are the available Strategies a user can choose when defining the feed
-             */
-            mergeStrategies: [
-                { name: 'Sync', type: 'SYNC', hint: 'Replace table content', disabled: false },
-                { name: 'Rolling sync', type: 'ROLLING_SYNC', hint: 'Replace content in matching partitions' },
-                { name: 'Merge', type: 'MERGE', hint: 'Insert all rows', disabled: false },
-                { name: 'Dedupe and merge', type: 'DEDUPE_AND_MERGE', hint: 'Insert rows ignoring duplicates', disabled: false },
-                { name: 'Merge using primary key', type: 'PK_MERGE', hint: 'Upsert using primary key' }
-            ],
+        /**
+         * In the Data Processing section these are the available Strategies a user can choose when defining the feed
+         */
+        mergeStrategies:any= [
+            { name: 'Sync', type: 'SYNC', hint: 'Replace table content', disabled: false },
+            { name: 'Rolling sync', type: 'ROLLING_SYNC', hint: 'Replace content in matching partitions' },
+            { name: 'Merge', type: 'MERGE', hint: 'Insert all rows', disabled: false },
+            { name: 'Dedupe and merge', type: 'DEDUPE_AND_MERGE', hint: 'Insert rows ignoring duplicates', disabled: false },
+            { name: 'Merge using primary key', type: 'PK_MERGE', hint: 'Upsert using primary key' }
+        ];
 
-            /**
-             * The available Target Format options
-             */
-            targetFormatOptions: [{ label: "ORC", value: 'STORED AS ORC' },
-            { label: "PARQUET", value: 'STORED AS PARQUET' },
-            { label: "AVRO", value: 'STORED AS AVRO' },
-            {
-                label: "TEXTFILE",
-                value: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
-                    + ' STORED AS'
-                    + ' TEXTFILE'
-            },
-            { label: "RCFILE", value: 'ROW FORMAT SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" STORED AS RCFILE' }],
-            /**
-             * The available Compression options for a given targetFormat {@see this#targetFormatOptions}
-             */
-            compressionOptions: { "ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY'], "AVRO": ['NONE'] },
+        /**
+         * The available Target Format options
+         */
+        targetFormatOptions:any= [{ label: "ORC", value: 'STORED AS ORC' },
+        { label: "PARQUET", value: 'STORED AS PARQUET' },
+        { label: "AVRO", value: 'STORED AS AVRO' },
+        {
+            label: "TEXTFILE",
+            value: 'ROW FORMAT SERDE \'org.apache.hadoop.hive.serde2.OpenCSVSerde\' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
+                + ' STORED AS'
+                + ' TEXTFILE'
+        },
+        { label: "RCFILE", value: 'ROW FORMAT SERDE "org.apache.hadoop.hive.serde2.columnar.ColumnarSerDe" STORED AS RCFILE' }];
+        /**
+         * The available Compression options for a given targetFormat {@see this#targetFormatOptions}
+         */
+        compressionOptions:any= { "ORC": ['NONE', 'SNAPPY', 'ZLIB'], "PARQUET": ['NONE', 'SNAPPY'], "AVRO": ['NONE'] };
 
-            /**
-             * Standard data types for column definitions
-             */
-            columnDefinitionDataTypes: ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'],
+        /**
+         * Standard data types for column definitions
+         */
+        columnDefinitionDataTypes:any= ['string', 'int', 'bigint', 'tinyint', 'decimal', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
 
             /**
              * Returns an array of all the compression options regardless of the {@code targetFormat}
              * (i.e. ['NONE','SNAPPY','ZLIB']
              * @returns {Array}
              */
-            allCompressionOptions: function () {
+            allCompressionOptions= function () {
                 let arr: any[] = [];
                 _.each(this.compressionOptions, function (options: any) {
                     arr = _.union(arr, options);
                 });
                 return arr;
-            },
+            };
             /**
              * Returns the feed object model for creating a new feed
              *
@@ -106,7 +92,7 @@ export class FeedService {
              *     null, auditLogging: boolean, encrypt: boolean, trackHistory: boolean}, sourceTableIncrementalDateField: null}, category: {id: null, name: null}, dataOwner: string, tags: Array,
              *     reusableFeed: boolean, dataTransformation: {chartViewModel: null, dataTransformScript: null, sql: null, states: Array}, userProperties: Array}}
              */
-            getNewCreateFeedModel: function () {
+            getNewCreateFeedModel= function () {
                 return {
                     id: null,
                     versionName: null,
@@ -185,8 +171,8 @@ export class FeedService {
                         }
                     }
                 } as any;
-            },
-            cloneFeed: function () {
+            };
+            cloneFeed= function () {
                 //copy the feed
                 this.data.createFeedModel = angular.copy(this.data.editFeedModel);
                 this.data.createFeedModel.id = null;
@@ -202,22 +188,22 @@ export class FeedService {
                     partition._id = _.uniqueId();
                 });
                 return this.data.createFeedModel;
-            },
+            }
             /**
              * Called when starting a new feed.
              * This will return the default model and also reset the Query Builder and Error service
              */
-            newCreateFeed: function () {
+            newCreateFeed= function () {
                 this.createFeedModel = this.getNewCreateFeedModel();
-                VisualQueryService.resetModel();
-                FeedCreationErrorService.reset();
-            },
+                this.VisualQueryService.resetModel();
+                this.FeedCreationErrorService.reset();
+            }
             /**
              * Updates a Feed with another model.
              * The model that is passed in will update the currently model being edited ({@code this.editFeedModel})
              * @param feedModel
              */
-            updateFeed: function (feedModel: any) {
+            updateFeed= function (feedModel: any) {
                 var self = this;
                 this.editFeedModel.totalPreSteps = 0;
                 this.editFeedModel.inputProcessorName = null;
@@ -228,7 +214,7 @@ export class FeedService {
 
                 //set the field name to the policy name attribute
                 if (this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
-                    angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy, i) {
+                    angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy: any, i: any) {
                         var field = self.editFeedModel.table.tableSchema.fields[i];
                         if (field != null && field != undefined) {
                             policy.name = field.name;
@@ -243,34 +229,34 @@ export class FeedService {
                 var defaultView = self.getNewCreateFeedModel().view;
                 this.editFeedModel.view = defaultView;
 
-            },
+            }
             /**
              * Shows the Feed Error Dialog
              * @returns {*}
              */
-            showFeedErrorsDialog: function () {
-                return FeedCreationErrorService.showErrorDialog();
-            },
+            showFeedErrorsDialog= function () {
+                return this.FeedCreationErrorService.showErrorDialog();
+            }
             /**
              * Adds a Nifi Exception error to the Feed Error dialog
              * @param name
              * @param nifiFeed
              */
-            buildErrorData: function (name: any, response: any) {
-                FeedCreationErrorService.buildErrorData(name, response);
-            },
+            buildErrorData= function (name: any, response: any) {
+                this.FeedCreationErrorService.buildErrorData(name, response);
+            }
             /**
              * Check to see if there are any errors added to the Error Dialog
              * @returns {*}
              */
-            hasFeedCreationErrors: function () {
-                return FeedCreationErrorService.hasErrors();
-            },
+            hasFeedCreationErrors= function () {
+                return this.FeedCreationErrorService.hasErrors();
+            }
 
             /**
              * Resets the Create feed ({@code this.createFeedModel}) object
              */
-            resetFeed: function () {
+            resetFeed= function () {
                 //get the new model and its keys
                 var newFeedObj = this.getNewCreateFeedModel();
                 var keys = _.keys(newFeedObj)
@@ -281,18 +267,17 @@ export class FeedService {
 
                 //find those that have been added and delete them
                 var extraKeys = _.difference(modelKeys, keys);
-                _.each(extraKeys, function (key) {
+                _.each(extraKeys, function (key: any) {
                     delete createFeedModel[key];
                 })
 
+                this.VisualQueryService.resetModel();
+                this.FeedCreationErrorService.reset();
+            }
 
-                VisualQueryService.resetModel();
-                FeedCreationErrorService.reset();
-            },
-
-            getDataTypeDisplay: function (columnDef: any) {
+            getDataTypeDisplay= function (columnDef: any) {
                 return columnDef.precisionScale != null ? columnDef.derivedDataType + "(" + columnDef.precisionScale + ")" : columnDef.derivedDataType;
-            },
+            }
 
             /**
              * returns the Object used for creating the destination schema for each Field
@@ -301,7 +286,7 @@ export class FeedService {
              * @returns {{name: string, description: string, dataType: string, precisionScale: null, dataTypeDisplay: Function, primaryKey: boolean, nullable: boolean, createdTracker: boolean,
              *     updatedTracker: boolean, sampleValues: Array, selectedSampleValue: string, isValid: Function, _id: *}}
              */
-            newTableFieldDefinition: function () {
+            newTableFieldDefinition= function () {
                 var newField: any = {
                     name: '',
                     description: '',
@@ -325,7 +310,7 @@ export class FeedService {
                     _id: _.uniqueId()
                 };
                 return newField;
-            },
+            }
             /**
              * Returns the object used for creating Data Processing policies on a given field
              * This is used in the Data Processing step
@@ -333,22 +318,22 @@ export class FeedService {
              * @param fieldName
              * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
              */
-            newTableFieldPolicy: function (fieldName: any): any {
+            newTableFieldPolicy= function (fieldName: any): any {
                 return { name: fieldName || '', partition: null, profile: true, standardization: null, validation: null };
-            },
+            }
             /**
              * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
              */
-            setTableFields: function (fields: any[], policies: any[] = null) {
+            setTableFields= function (fields: any[], policies: any[] = null) {
                 this.createFeedModel.table.tableSchema.fields = fields;
                 this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(field => this.newTableFieldPolicy(field.name));
-            },
+            }
             /**
              * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
              */
-            syncTableFieldPolicyNames: function () {
+            syncTableFieldPolicyNames= function () {
                 var self = this;
-                angular.forEach(self.createFeedModel.table.tableSchema.fields, function (columnDef, index) {
+                angular.forEach(self.createFeedModel.table.tableSchema.fields, function (columnDef: any, index: any) {
                     //update the the policy
                     var inArray = index < self.createFeedModel.table.tableSchema.fields.length && index >= 0;
                     if (inArray) {
@@ -369,18 +354,18 @@ export class FeedService {
                 while (self.createFeedModel.table.fieldPolicies.length > self.createFeedModel.table.tableSchema.fields.length) {
                     self.createFeedModel.table.fieldPolicies.splice(self.createFeedModel.table.tableSchema.fields.length, 1);
                 }
-            },
+            }
             /**
              * return true/false if there is a PK defined for the incoming set of {@code feedModel.table.tableSchema.fields
                  * @param fields
                  * @returns {boolean}
              */
-            hasPrimaryKeyDefined: function (feedModel: any) {
+            hasPrimaryKeyDefined= function (feedModel: any) {
                 var firstPk = _.find(feedModel.table.tableSchema.fields, function (field: any) {
                     return field.primaryKey
                 });
                 return firstPk != null && firstPk != undefined;
-            },
+            }
 
             /**
              * enable/disable the PK Merge strategy enforcing a PK column set.
@@ -390,7 +375,7 @@ export class FeedService {
              * @param strategies
              * @returns {boolean}
              */
-            enableDisablePkMergeStrategy: function (feedModel: any, strategies: any) {
+            enableDisablePkMergeStrategy= function (feedModel: any, strategies: any) {
                 var pkStrategy = _.find(strategies, function (strategy: any) {
                     return strategy.type == 'PK_MERGE'
                 });
@@ -412,12 +397,12 @@ export class FeedService {
                     return true;
                 }
 
-            },
+            }
 
             /**
              * return true/false if there is a
              */
-            enableDisableRollingSyncMergeStrategy: function (feedModel: any, strategies: any) {
+            enableDisableRollingSyncMergeStrategy= function (feedModel: any, strategies: any) {
                 var rollingSyncStrategy = _.find(strategies, function (strategy: any) {
                     return strategy.type == 'ROLLING_SYNC';
                 });
@@ -433,64 +418,64 @@ export class FeedService {
                 } else {
                     return true;
                 }
-            },
+            }
 
-            updateEnabledMergeStrategy: function (feedModel: any, strategies: any) {
+            updateEnabledMergeStrategy= function (feedModel: any, strategies: any) {
                 this.enableDisablePkMergeStrategy(feedModel, strategies);
                 this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
-            },
+            }
 
-            hasPartitions: function (feedModel: any) {
+            hasPartitions= function (feedModel: any) {
                 return feedModel.table.partitions != null
                     && feedModel.table.partitions != undefined
                     && feedModel.table.partitions.length > 0;
-            },
+            }
 
             /**
              * This will clear the Table Schema resetting the method, fields, and policies
              */
-            clearTableData: function () {
+            clearTableData= function () {
 
                 //this.createFeedModel.table.method = 'MANUAL';
                 this.createFeedModel.table.tableSchema.fields = [];
                 this.createFeedModel.table.fieldPolicies = [];
                 this.createFeedModel.table.existingTableName = null;
-            },
+            }
             /**
              * In the stepper when a feeds step is complete and validated it will change the Step # icon to a Check circle
              */
-            updateEditModelStateIcon: function () {
+            updateEditModelStateIcon= function () {
                 if (this.editFeedModel.state == 'ENABLED') {
                     this.editFeedModel.stateIcon = 'check_circle'
                 }
                 else {
                     this.editFeedModel.stateIcon = 'block'
                 }
-            },
+            }
             /**
              * Initialize this object by creating a new empty {@see this#createFeedModel} object
              */
-            init: function () {
+            init= function () {
                 this.newCreateFeed();
-            },
+            }
             /**
              * Before the model is saved to the server this will be called to make any changes
              * @see this#saveFeedModel
              * @param model
              */
-            prepareModelForSave: function (model: any) {
+            prepareModelForSave= function (model: any) {
                 var properties: any[] = [];
 
                 if (model.inputProcessor != null) {
-                    angular.forEach(model.inputProcessor.properties, function (property) {
-                        FeedPropertyService.initSensitivePropertyForSaving(property)
+                    angular.forEach(model.inputProcessor.properties, function (property: any) {
+                        this.FeedPropertyService.initSensitivePropertyForSaving(property)
                         properties.push(property);
                     });
                 }
 
-                angular.forEach(model.nonInputProcessors, function (processor) {
-                    angular.forEach(processor.properties, function (property) {
-                        FeedPropertyService.initSensitivePropertyForSaving(property)
+                angular.forEach(model.nonInputProcessors, function (processor: any) {
+                    angular.forEach(processor.properties, function (property: any) {
+                        this.FeedPropertyService.initSensitivePropertyForSaving(property)
                         properties.push(property);
                     });
                 });
@@ -500,7 +485,7 @@ export class FeedService {
                 model.properties = properties;
 
                 //prepare access control changes if any
-                EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+                this.EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
 
                 if (model.cloned) {
                     model.state = null;
@@ -513,7 +498,7 @@ export class FeedService {
                     var newPolicies: any[] = [];
                     var feedFields: any[] = [];
                     var sourceFields: any[] = [];
-                    angular.forEach(model.table.tableSchema.fields, function (columnDef, idx) {
+                    angular.forEach(model.table.tableSchema.fields, function (columnDef: any, idx: any) {
                         var policy = model.table.fieldPolicies[idx];
                         var sourceField = angular.copy(columnDef);
                         var feedField = angular.copy(columnDef);
@@ -573,15 +558,15 @@ export class FeedService {
                      }
                      */
                 }
-            },
+            }
             /**
              * Show a dialog indicating that the feed is saving
              * @param ev
              * @param message
              * @param feedName
              */
-            showFeedSavingDialog: function (ev: any, message: any, feedName: any) {
-                $mdDialog.show({
+            showFeedSavingDialog= function (ev: any, message: any, feedName: any) {
+                this.$mdDialog.show({
                     controller: 'FeedSavingDialogController',
                     templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html',
                     parent: angular.element(document.body),
@@ -598,34 +583,30 @@ export class FeedService {
                     }, function () {
                         //cancelled the dialog
                     });
-            },
+            }
             /**
              * Hide the Feed Saving Dialog
              */
-            hideFeedSavingDialog: function () {
-                $mdDialog.hide();
-            },
+            hideFeedSavingDialog= function () {
+                this.$mdDialog.hide();
+            }
             /**
              * Save the model Posting the data to the server
              * @param model
              * @returns {*}
              */
-            saveFeedModel: function (model: any) {
+            saveFeedModel= function (model: any) {
                 var self = this;
                 self.prepareModelForSave(model);
-                var deferred = $q.defer();
+                var deferred = this.$q.defer();
                 var successFn = function (response: any) {
                     var invalidCount = 0;
-
                     if (response.data && response.data.success) {
-
                         //update the feed versionId and internal id upon save
                         model.id = response.data.feedMetadata.id;
                         model.versionName = response.data.feedMetadata.versionName;
-
-
-                        $mdToast.show(
-                            $mdToast.simple()
+                        this.$mdToast.show(
+                            this.$mdToast.simple()
                                 .textContent('Feed successfully saved')
                                 .hideDelay(3000)
                         );
@@ -644,10 +625,10 @@ export class FeedService {
                     copy.registeredTemplate = undefined;
                 }
                 //reset the sensitive properties
-                FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
+                this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
-                var promise = $http({
-                    url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
+                var promise = this.$http({
+                    url: this.RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                     method: "POST",
                     data: angular.toJson(copy),
                     headers: {
@@ -656,40 +637,39 @@ export class FeedService {
                 }).then(successFn, errorFn);
 
                 return deferred.promise;
-            },
+            }
             /**
              * Call out to the server to get the System Name for a passed in name
              * @param feedName
              * @returns {HttpPromise}
              */
-            getSystemName: function (feedName: any) {
+            getSystemName= function (feedName: any) {
 
-                return $http.get(RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
+                return this.$http.get(this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
 
-            },
+            }
             /**
              * Call out to the server to get info on whether feed history data reindexing is configured in Kylo
              * @returns {HttpPromise}
              */
-            isKyloConfiguredForFeedHistoryDataReindexing: function () {
-                return $http.get(RestUrlService.FEED_HISTORY_CONFIGURED);
+            isKyloConfiguredForFeedHistoryDataReindexing= function () {
+                return this.$http.get(this.RestUrlService.FEED_HISTORY_CONFIGURED);
             }
-            ,
             /**
              * When creating a Feed find the First Column/Field that matches the given name
              * @param name
              * @returns {*|{}}
              */
-            getColumnDefinitionByName: function (name: any) {
+            getColumnDefinitionByName= function (name: any) {
                 return _.find(this.createFeedModel.table.tableSchema.fields, function (columnDef: any) {
                     return columnDef.name == name;
                 });
-            },
+            }
             /**
              * Call the server to return a list of Feed Names
              * @returns {HttpPromise}
              */
-            getFeedSummary: function () {
+            getFeedSummary= function () {
 
                 var successFn = function (response: any) {
                     return response.data;
@@ -697,15 +677,15 @@ export class FeedService {
                 var errorFn = function (err: any) {
 
                 }
-                var promise = $http.get(RestUrlService.GET_FEED_NAMES_URL);
+                var promise = this.$http.get(this.RestUrlService.GET_FEED_NAMES_URL);
                 promise.then(successFn, errorFn);
                 return promise;
-            },
+            }
             /**
              * Call the server to return a list of Feed Names
              * @returns {HttpPromise}
              */
-            getFeedNames: function () {
+            getFeedNames= function () {
 
                 var successFn = function (response: any) {
                     return response.data;
@@ -713,15 +693,15 @@ export class FeedService {
                 var errorFn = function (err: any) {
 
                 }
-                var promise = $http.get(RestUrlService.OPS_MANAGER_FEED_NAMES);
+                var promise =this.$http.get(this.RestUrlService.OPS_MANAGER_FEED_NAMES);
                 promise.then(successFn, errorFn);
                 return promise;
-            },
+            }
             /**
              * Call the server to get a list of all the available Preconditions that can be used when saving/scheduling the feed
              * @returns {HttpPromise}
              */
-            getPossibleFeedPreconditions: function () {
+            getPossibleFeedPreconditions= function () {
 
                 var successFn = function (response: any) {
                     return response.data;
@@ -729,11 +709,10 @@ export class FeedService {
                 var errorFn = function (err: any) {
                     console.log('ERROR ', err)
                 }
-                var promise = $http.get(RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
+                var promise = this.$http.get(this.RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
-
-            },
+            }
 
             /**
              * Gets the list of user properties for the specified feed.
@@ -741,15 +720,15 @@ export class FeedService {
              * @param {Object} model the feed model
              * @return {Array.<{key: string, value: string}>} the list of user properties
              */
-            getUserPropertyList: function (model: any): { key: string, value: string }[] {
+            getUserPropertyList= function (model: any): { key: string, value: string }[] {
                 var userPropertyList: any[] = [];
-                angular.forEach(model.userProperties, function (value, key: string) {
+                angular.forEach(model.userProperties, function (value: any, key: string) {
                     if (!key.startsWith("jcr:")) {
                         userPropertyList.push({ key: key, value: value });
                     }
                 });
                 return userPropertyList;
-            },
+            }
 
             /**
              * Gets the user fields for a new feed.
@@ -757,12 +736,12 @@ export class FeedService {
              * @param {string} categoryId the category id
              * @returns {Promise} for the user fields
              */
-            getUserFields: function (categoryId: string): angular.IPromise<any> {
-                return $http.get(RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
+            getUserFields= function (categoryId: string): angular.IPromise<any> {
+                return this.$http.get(this.RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
             /**
              * Gets the controller services of the specified type.
@@ -770,13 +749,13 @@ export class FeedService {
              * @param {string} type a type class
              * @returns {Array}
              */
-            getAvailableControllerServices: function (type: string): angular.IPromise<any> {
-                return $http.get(RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
+            getAvailableControllerServices= function (type: string): angular.IPromise<any> {
+                return this.$http.get(this.RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
-        setControllerServicePropertyDisplayName:function(property: any){
+            }
+        setControllerServicePropertyDisplayName=function(property: any){
 
             let setDisplayValue = (property :any) : boolean => {
                 let cacheEntry:string = controllerServiceDisplayCache[property.value];
@@ -800,7 +779,7 @@ export class FeedService {
                             _.each(services, (service: any) => {
                                 controllerServiceDisplayCache[service.id] = service.name;
                             });
-                            _.each(entry.waitingProperties, (property) => {
+                            _.each(entry.waitingProperties, (property: any) => {
                                 setDisplayValue(property);
                             });
                             delete controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
@@ -811,13 +790,13 @@ export class FeedService {
                     }
                 }
             }
-        },
+        }
             /**
              * Finds the allowed controller services for the specified property and sets the allowable values.
              *
              * @param {Object} property the property to be updated
              */
-            findControllerServicesForProperty: function (property: any) {
+            findControllerServicesForProperty= function (property: any) {
                 // Show progress indicator
                 property.isLoading = true;
 
@@ -833,52 +812,51 @@ export class FeedService {
                         // Hide progress indicator
                         property.isLoading = false;
                     });
-            },
+            }
 
-            getFeedByName: function (feedName: string) {
-                var deferred = $q.defer();
-                $http.get(RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
+            getFeedByName= function (feedName: string) {
+                var deferred = this.$q.defer();
+                this.$http.get(this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
                     .then(function (response: any) {
                         var feedResponse = response.data;
                         return deferred.resolve(feedResponse);
                     });
                 return deferred.promise;
-            },
+            }
 
             /**
              * Gets the list of available Hive partition functions.
              *
              * @returns {Array.<string>} list of function names
              */
-            getPartitionFunctions: function () {
-                return $http.get(RestUrlService.PARTITION_FUNCTIONS_URL)
+            getPartitionFunctions= function () {
+                return this.$http.get(this.RestUrlService.PARTITION_FUNCTIONS_URL)
                     .then(function (response: any) {
                         return response.data;
                     });
-            },
+            }
 
-
-            getFeedVersions: function (feedId: string) {
+            getFeedVersions= function (feedId: string) {
                 var successFn = function (response: any) {
                     return response.data;
                 }
                 var errorFn = function (err: any) {
                     console.log('ERROR ', err)
                 }
-                return $http.get(RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
-            },
+                return this.$http.get(this.RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+            }
 
-            getFeedVersion: function (feedId: string, versionId: string) {
+            getFeedVersion= function (feedId: string, versionId: string) {
                 var successFn = function (response: any) {
                     return response.data;
                 }
                 var errorFn = function (err: any) {
                     console.log('ERROR ', err)
                 }
-                return $http.get(RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
-            },
+                return this.$http.get(this.RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+            }
 
-            diffFeedVersions: function (feedId: string, versionId1: string, versionId2: string) {
+            diffFeedVersions= function (feedId: string, versionId1: string, versionId2: string) {
                 var successFn = function (response: any) {
                     return response.data;
 
@@ -886,8 +864,8 @@ export class FeedService {
                 var errorFn = function (err: any) {
                     console.log('ERROR ', err)
                 }
-                return $http.get(RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
-            },
+                return this.$http.get(this.RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+            }
 
             /**
              * check if the user has access on an entity
@@ -895,12 +873,12 @@ export class FeedService {
              * @param entity the entity to check. if its undefined it will use the current feed in the model
              * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().when()
              */
-            hasEntityAccess: function (permissionsToCheck: any, entity: any) {
+            hasEntityAccess= function (permissionsToCheck: any, entity: any) {
                 if (entity == undefined) {
                     entity = this.data.model;
                 }
-                return accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
-            },
+                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.FEED);
+            }
 
             /**
              * Applies the specified domain type to the specified field.
@@ -909,7 +887,7 @@ export class FeedService {
              * @param {FieldPolicy} policy the field policy to be updated
              * @param {DomainType} domainType the domain type be be applies
              */
-            setDomainTypeForField: function (field: any, policy: any, domainType: DomainType) {
+            setDomainTypeForField = function (field: any, policy: any, domainType: DomainType) {
                 policy.$currentDomainType = domainType;
                 policy.domainTypeId = domainType.id;
 
@@ -929,17 +907,17 @@ export class FeedService {
                     policy.standardization = angular.copy(domainType.fieldPolicy.standardization);
                     policy.validation = angular.copy(domainType.fieldPolicy.validation);
                 }
-            },
+            }
             /**
              * Returns operation of the difference at given path for versioned feed
              * @param path current diff model
              * @returns {string} operation type, e.g. add, remove, update, no-change
              */
-            diffOperation: function (path: any) {
+            diffOperation= function (path: any) {
                 return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
-            },
+            }
 
-            diffCollectionOperation: function (path: any) {
+            diffCollectionOperation= function (path: any) {
                 const self = this;
                 if (this.versionFeedModelDiff) {
                     if (this.versionFeedModelDiff[path]) {
@@ -955,28 +933,38 @@ export class FeedService {
                     }
                 }
                 return 'no-change';
-            },
+            }
 
-            joinVersionOperations: function (op1: any, op2: any) {
+            joinVersionOperations= function (op1: any, op2: any) {
                 const opLevels = { 'no-change': 0, 'add': 1, 'remove': 1, 'replace': 2 };
                 if (opLevels[op1] === opLevels[op2] && op1 !== 'no-change') {
                     return 'replace';
                 }
                 return opLevels[op1] > opLevels[op2] ? op1 : op2;
-            },
+            }
 
-            resetVersionFeedModel: function () {
+            resetVersionFeedModel= function () {
                 this.versionFeedModel = {};
                 this.versionFeedModelDiff = {};
             }
+        //}
 
-
-        };
-        this.data.init();
-
-        return this.data;
+static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "VisualQueryService", "FeedCreationErrorService", "FeedPropertyService", "AccessControlService",
+        "EntityAccessControlService", "StateService"];
+    constructor(private $http: angular.IHttpService,
+        private $q: angular.IQService,
+        private $mdToast: angular.material.IToastService,
+        private $mdDialog: angular.material.IDialogService,
+        private RestUrlService: any,
+        private VisualQueryService: any,
+        private FeedCreationErrorService: any,
+        private FeedPropertyService: any,
+        private accessControlService: AccessControlService,
+        private EntityAccessControlService: any,
+        private StateService: any) {
+        this.init();
+        //return this.data;
     }// constructor terminating here
-
 
     trim(str: string) {
         return str.replace(/^\s+|\s+$/g, "");
@@ -1010,6 +998,7 @@ export class FeedService {
  * The Controller used for the Feed Saving Dialog
  */
 export class FeedSavingDialogController {
+    static readonly $inject = ["$scope", "$mdDialog", "message", "feedName"];
     constructor(private $scope: any,
         private $mdDialog: angular.material.IDialogService,
         private message: string,
@@ -1027,6 +1016,5 @@ export class FeedSavingDialogController {
     }
 }
 angular.module(require("feed-mgr/module-name"))
-    .factory('FeedService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "VisualQueryService", "FeedCreationErrorService", "FeedPropertyService", "AccessControlService",
-        "EntityAccessControlService", "StateService", FeedService])
-    .controller('FeedSavingDialogController', ["$scope", "$mdDialog", "message", "feedName", FeedSavingDialogController]);
+.service('FeedService',FeedService)
+.controller('FeedSavingDialogController', FeedSavingDialogController);

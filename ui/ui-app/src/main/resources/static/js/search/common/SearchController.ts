@@ -133,7 +133,7 @@ constructor(private $scope: angular.IScope,
                     this.CategoriesService.getCategoryById(this.cleanValue(result.feedCategoryId))
                                           .then((category1: any)=> {
                                                 category = category1;
-                                                this.FeedService.data.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
+                                                this.FeedService.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
                                                                 .then((feed1: any) =>{
                                                                     feed = feed1;
                                                                     this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);

@@ -156,12 +156,16 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
                     }
                 });
             };
-            this.loadAlert(this.alertId); // Fetch alert details
-            accessControlService.getUserAllowedActions() // Fetch allowed permissions
-                .then(function (actionSet) {
-                _this.allowAdmin = accessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
-            });
+            this.ngOnInit();
         } // end of constructor
+        AlertDetailsDirectiveController.prototype.ngOnInit = function () {
+            var _this = this;
+            this.loadAlert(this.alertId); // Fetch alert details
+            this.accessControlService.getUserAllowedActions() // Fetch allowed permissions
+                .then(function (actionSet) {
+                _this.allowAdmin = _this.accessControlService.hasAction(AccessConstants_1.default.OPERATIONS_ADMIN, actionSet.actions);
+            });
+        };
         AlertDetailsDirectiveController.$inject = ["$scope", "$http", "$mdDialog", "AccessControlService", "OpsManagerRestUrlService"];
         return AlertDetailsDirectiveController;
     }());
@@ -187,36 +191,43 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
             this.$mdDialog = $mdDialog;
             this.OpsManagerRestUrlService = OpsManagerRestUrlService;
             this.alert = alert; //the alert to update
-            $scope.saving = false; //Indicates that this update is currently being saved  {boolean}
-            $scope.state = (alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
+            this.ngOnInit();
+        }
+        EventDialogController.prototype.ngOnInit = function () {
+            var _this = this;
+            this.$scope.saving = false; //Indicates that this update is currently being saved  {boolean}
+            this.$scope.state = (this.alert.state === "HANDLED") ? "HANDLED" : "IN_PROGRESS"; //The new state for the alert{string}
             /**
              * Closes this dialog and discards any changes.
              */
-            $scope.closeDialog = function () {
-                $mdDialog.hide(false);
+            this.$scope.closeDialog = function () {
+                _this.$mdDialog.hide(false);
             };
             /**
              * Saves this update and closes this dialog.
              */
-            $scope.saveDialog = function () {
-                $scope.saving = true;
-                var event = { state: $scope.state, description: $scope.description, clear: false };
-                $http.post(OpsManagerRestUrlService.ALERT_DETAILS_URL(alert.id), event)
+            this.$scope.saveDialog = function () {
+                _this.$scope.saving = true;
+                var event = { state: _this.$scope.state, description: _this.$scope.description, clear: false };
+                _this.$http.post(_this.OpsManagerRestUrlService.ALERT_DETAILS_URL(_this.alert.id), event)
                     .then(function () {
-                    $mdDialog.hide(true);
+                    _this.$mdDialog.hide(true);
                 }, function () {
-                    $scope.saving = false;
+                    _this.$scope.saving = false;
                 });
             };
-        }
+        };
         EventDialogController.$inject = ["$scope", "$http", "$mdDialog", "OpsManagerRestUrlService", "alert"];
         return EventDialogController;
     }());
     exports.EventDialogController = EventDialogController;
     var AlertDetailsController = /** @class */ (function () {
         function AlertDetailsController() {
-            this.alertId = this.$transition$.params().alertId;
+            this.ngOnInit();
         }
+        AlertDetailsController.prototype.ngOnInit = function () {
+            this.alertId = this.$transition$.params().alertId;
+        };
         return AlertDetailsController;
     }());
     exports.AlertDetailsController = AlertDetailsController;
@@ -247,7 +258,7 @@ define(["require", "exports", "angular", "../module-name", "../../constants/Acce
         }
     ]);
     angular.module(module_name_1.moduleName).component("eventDialogController", {
-        controller: EventDialogController,
+        controller: EventDialogController
     });
 });
 //# sourceMappingURL=AlertDetailsController.js.map

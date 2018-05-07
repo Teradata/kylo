@@ -115,7 +115,7 @@ define(["require", "exports", "angular", "../module-name", "../module", "../modu
                     this.CategoriesService.getCategoryById(this.cleanValue(result.feedCategoryId))
                         .then(function (category1) {
                         category = category1;
-                        _this.FeedService.data.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
+                        _this.FeedService.getFeedByName(category.systemName + "." + (result.feedSystemName.replace('[', '').replace(']', '')))
                             .then(function (feed1) {
                             feed = feed1;
                             _this.StateService.FeedManager().Feed().navigateToFeedDetails(feed.id);

@@ -56,26 +56,19 @@ export class AlertsTableController implements ng.IComponentController{
 
 static readonly $inject = ["$scope","$http","$q","TableOptionsService","PaginationDataService","StateService",
     "TabService","OpsManagerRestUrlService"];
-constructor(private $scope: angular.IScope,
-            private $http: angular.IHttpService,
-            private $q: angular.IQService,
-            private TableOptionsService: DefaultTableOptionsService,
-            private PaginationDataService: DefaultPaginationDataService, 
-            private StateService: StateService,
-            private TabService: TabService,
-            private OpsManagerRestUrlService: OpsManagerRestUrlService){
-         this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'alerts';
+    ngOnInit(){
+        this.pageName = angular.isDefined(this.pageName) ? this.pageName : 'alerts';
         //Page State
         this.loading = true;
         this.showProgress = true;
         //Pagination and view Type (list or table)
-        this.paginationData = PaginationDataService.paginationData(this.pageName);
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
-        this.viewType = PaginationDataService.viewType(this.pageName);
+        this.paginationData = this.PaginationDataService.paginationData(this.pageName);
+        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', '100']);
+        this.viewType = this.PaginationDataService.viewType(this.pageName);
         //Setup the Tabs
         this.tabNames = ['All', 'INFO', 'WARNING', 'MINOR', 'MAJOR', 'CRITICAL', 'FATAL'];
-        this.tabs = TabService.registerTabs(this.pageName, this.tabNames, this.paginationData.activeTab);
-        this.tabMetadata = TabService.metadata(this.pageName);
+        this.tabs = this.TabService.registerTabs(this.pageName, this.tabNames, this.paginationData.activeTab);
+        this.tabMetadata = this.TabService.metadata(this.pageName);
         this.sortOptions = this.loadSortOptions();
         this.PAGE_DIRECTION = {forward: 'f', backward: 'b', none: 'n'};
         this.additionalMenuOptions = this.loadAdditionalMenuOptions();
@@ -91,6 +84,16 @@ constructor(private $scope: angular.IScope,
 
         this.alertStates = [{label:'ALL'},{label:'HANDLED'},UNHANDLED_FILTER]
         this.initAlertTypes();
+    }
+constructor(private $scope: angular.IScope,
+            private $http: angular.IHttpService,
+            private $q: angular.IQService,
+            private TableOptionsService: DefaultTableOptionsService,
+            private PaginationDataService: DefaultPaginationDataService, 
+            private StateService: StateService,
+            private TabService: TabService,
+            private OpsManagerRestUrlService: OpsManagerRestUrlService){
+this.ngOnInit();
 
         $scope.$watch(() =>{
             return this.filter;
