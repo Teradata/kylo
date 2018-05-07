@@ -876,7 +876,7 @@ define(["require", "exports", "angular", "jquery"], function (require, exports, 
                 transforms.push({ description: 'Rescale using standard deviation', icon: 'functions', name: 'Rescale using std dev', operation: self.rescaleStdDevColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean', operation: self.rescaleMeanColumn }, { description: 'Rescale using mean', icon: 'functions', name: 'Rescale using mean and std dev', operation: self.rescaleBothMethodsColumn }, { description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax });
             }
             else if (dataCategory === DataCategory.ARRAY) {
-                transforms.push({ icon: 'call_split', name: 'Explode', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array' }, { description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems });
+                transforms.push({ icon: 'call_split', name: 'Explode to rows', operation: 'explode' }, { description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array' }, { description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems });
             }
             else if (dataCategory === DataCategory.BINARY) {
                 transforms.push({ icon: '#', name: 'CRC32', operation: 'crc32' }, { icon: '#', name: 'MD5', operation: 'md5' }, { icon: '#', name: 'SHA1', operation: 'sha1' }, { icon: '#', name: 'SHA2', operation: 'sha2' });

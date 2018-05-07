@@ -1028,8 +1028,8 @@ export class ColumnDelegate implements IColumnDelegate {
                 {description: 'Rescale min/max between 0-1', icon: 'functions', name: 'Rescale min/max between 0-1', operation: self.rescaleMinMax}
             );
         } else if (dataCategory === DataCategory.ARRAY) {
-            transforms.push({icon: 'call_split', name: 'Explode', operation: 'explode'},
-                {description: 'Sort', icon: 'sort', name: 'Sort Array', operation: 'sort_array'},
+            transforms.push({icon: 'call_split', name: 'Explode to rows', operation: 'explode'},
+                {description: 'Sort', icon: 'sort', name: 'Sort array', operation: 'sort_array'},
                 {description: 'Extract to columns', icon: 'call_split', name: 'Extract to columns', operation: self.extractArrayItems}
             );
         }
