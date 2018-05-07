@@ -95,10 +95,8 @@
           <md-menu-item ng-repeat="filter in header.delegate.filters">
             <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
               <md-input-container md-no-float>
-                <label style="left:12px">{{ filter.label }}</label>
-                <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
+                <input placeholder="{{ filter.label }}" type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
               </md-input-container>
-
           </md-menu-item>
           <md-button class="md-raised" ng-click="header.delegate.applyFilters(header,header.delegate.filters, table)">
           {{"views.query-table-header.filter-apply" | translate}}
