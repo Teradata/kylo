@@ -1,14 +1,14 @@
-define(["require", "exports", "angular", "./module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../../services/AccessControlService", "./module-name"], function (require, exports, angular, AccessControlService_1, module_name_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RegisteredTemplatesController = /** @class */ (function () {
-        function RegisteredTemplatesController($scope, $http, $mdDialog, $q, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
+        function RegisteredTemplatesController($scope, $http, $mdDialog, $q, accessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
             this.$mdDialog = $mdDialog;
             this.$q = $q;
-            this.AccessControlService = AccessControlService;
+            this.accessControlService = accessControlService;
             this.RestUrlService = RestUrlService;
             this.PaginationDataService = PaginationDataService;
             this.TableOptionsService = TableOptionsService;
@@ -40,9 +40,9 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             this.loading = true;
             this.cardTitle = 'Templates';
             // Register Add button
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                if (_this.AccessControlService.hasAction(_this.AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                if (_this.accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_IMPORT, actionSet.actions)) {
                     _this.AddButtonService.registerAddButton("registered-templates", function () {
                         _this.RegisterTemplateService.resetModel();
                         _this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
@@ -73,10 +73,10 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             });
             this.getRegisteredTemplates();
             // Fetch the allowed actions
-            this.AccessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
-                _this.allowEdit = _this.AccessControlService.hasAction(_this.AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                _this.allowExport = _this.AccessControlService.hasAction(_this.AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                _this.allowEdit = _this.accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_EDIT, actionSet.actions);
+                _this.allowExport = _this.accessControlService.hasAction(AccessControlService_1.default.TEMPLATES_EXPORT, actionSet.actions);
             });
         };
         RegisteredTemplatesController.prototype.onViewTypeChange = function (viewType) {
@@ -122,7 +122,7 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             var _this = this;
             if (this.allowEdit && template != undefined) {
                 this.RegisterTemplateService.resetModel();
-                this.$q.when(this.RegisterTemplateService.hasEntityAccess([this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then(function (hasAccess) {
+                this.$q.when(this.RegisterTemplateService.hasEntityAccess([AccessControlService_1.default.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then(function (hasAccess) {
                     if (hasAccess) {
                         _this.StateService.FeedManager().Template().navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
                     }
@@ -141,9 +141,9 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
             var successFn = function (response) {
                 _this.loading = false;
                 if (response.data) {
-                    var entityAccessControlled = _this.AccessControlService.isEntityAccessControlled();
+                    var entityAccessControlled = _this.accessControlService.isEntityAccessControlled();
                     angular.forEach(response.data, function (template) {
-                        template.allowExport = !entityAccessControlled || _this.RegisterTemplateService.hasEntityAccess(_this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
+                        template.allowExport = !entityAccessControlled || _this.RegisterTemplateService.hasEntityAccess(AccessControlService_1.default.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
                         template.exportUrl = _this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                     });
                 }

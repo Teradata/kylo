@@ -1,4 +1,5 @@
 import * as angular from 'angular';
+import AccessControlService from "../../services/AccessControlService";
 import {moduleName} from "./module-name";
 import {ListTableView} from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;
@@ -60,16 +61,16 @@ export class RegisteredTemplatesController {
     static $inject = ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService"];
 
     constructor(private $scope: any, private $http: any, private $mdDialog: any, private $q: any
-        , private AccessControlService: any, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
+        , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
         , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: any, private RegisterTemplateService: any) {
 
         this.loading = true;
         this.cardTitle = 'Templates';
 
         // Register Add button
-        this.AccessControlService.getUserAllowedActions()
+        this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                if (this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
                     this.AddButtonService.registerAddButton("registered-templates", () =>{
                         this.RegisterTemplateService.resetModel();
                         this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
@@ -109,10 +110,10 @@ export class RegisteredTemplatesController {
         this.getRegisteredTemplates();
 
         // Fetch the allowed actions
-        this.AccessControlService.getUserAllowedActions()
+        this.accessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
-                this.allowEdit = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_EDIT, actionSet.actions);
-                this.allowExport = this.AccessControlService.hasAction(this.AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                this.allowEdit = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
+                this.allowExport = this.accessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
             });
 
     }
@@ -164,7 +165,7 @@ export class RegisteredTemplatesController {
         if (this.allowEdit && template != undefined) {
             this.RegisterTemplateService.resetModel();
 
-            this.$q.when(this.RegisterTemplateService.hasEntityAccess([this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then((hasAccess: boolean) => {
+            this.$q.when(this.RegisterTemplateService.hasEntityAccess([AccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE], template)).then((hasAccess: boolean) => {
                 if (hasAccess) {
                     this.StateService.FeedManager().Template().navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
                 }
@@ -183,9 +184,9 @@ export class RegisteredTemplatesController {
         let successFn = (response: angular.IHttpResponse<any>) => {
             this.loading = false;
             if (response.data) {
-                var entityAccessControlled = this.AccessControlService.isEntityAccessControlled();
+                var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
                 angular.forEach(response.data, (template) => {
-                    template.allowExport = !entityAccessControlled || this.RegisterTemplateService.hasEntityAccess(this.AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
+                    template.allowExport = !entityAccessControlled || this.RegisterTemplateService.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.EXPORT, template);
                     template.exportUrl = this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                 });
             }
