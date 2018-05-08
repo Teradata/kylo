@@ -1,0 +1,10 @@
+ng-md-icon {
+  color: #707070;
+  fill: currentColor; }
+
+.connectors-empty {
+  height: 100%; }
+  .connectors-empty ng-md-icon {
+    height: 96px;
+    margin: 0;
+    width: 96px; }

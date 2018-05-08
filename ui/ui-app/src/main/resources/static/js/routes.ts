@@ -771,6 +771,12 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
                }]
            }
         });
+
+        $stateProvider.state({
+            name: 'explorer.**',
+            url: '/explorer',
+            loadChildren: 'feed-mgr/explorer/explorer.module#ExplorerModule'
+        });
     }
 
 runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: any, $q: any,

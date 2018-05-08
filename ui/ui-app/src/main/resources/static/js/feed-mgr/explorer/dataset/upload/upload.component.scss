@@ -1,0 +1,45 @@
+@import "../../../../../../../../../node_modules/@angular/material/theming";
+
+.drop-zone {
+  background-color: rgba(147, 147, 147, 0.5);
+}
+
+.drop-zone-empty {
+  align-items: center;
+  padding-bottom: 16px;
+  padding-top: 16px;
+
+  ng-md-icon[icon=fa-file] {
+    position: relative;
+  }
+  ng-md-icon[icon=fa-folder] {
+    position: relative;
+    left: -32px;
+  }
+  p {
+    margin-top: 50px;
+    text-align: center;
+  }
+}
+
+.drop-zone-list {
+  width: 100%;
+
+  ng-md-icon {
+    color: #707070;
+  }
+}
+
+.icon-pending {
+  fill: mat-color($mat-amber, 600);
+}
+.icon-success {
+  fill: mat-color($mat-green, 600);
+}
+
+.file-size {
+  min-width: 100px;
+  padding-left: 16px;
+  padding-right: 16px;
+  text-align: right;
+}

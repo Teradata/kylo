@@ -19,6 +19,7 @@
     "@angular/common": "~5.1",
     "@angular/compiler": "~5.1",
     "@angular/core": "~5.1",
+    "@angular/flex-layout": "^5.0.0-beta.14",
     "@angular/forms": "~5.1",
     "@angular/http": "~5.1",
     "@angular/material": "~5.1",
@@ -27,6 +28,7 @@
     "@angular/router": "~5.1",
     "@angular/upgrade": "~5.1",
     "@covalent/core": "~1.0.0",
+    "@covalent/dynamic-forms": "^1.0.0",
     "@uirouter/angular-hybrid": "3.1.8",
     "angular": "1.6.7",
     "angular-translate": "^2.17.0",
@@ -51,6 +53,7 @@
     "@types/jquery": "^2.0.49",
     "@types/oclazyload": "0.0.32",
     "@types/requirejs": "~2.1.31",
+    "@types/systemjs": "^0.19.33",
     "@types/ui-grid": "0.0.40",
     "@types/underscore": "^1.8.8",
     "angular-mocks": "1.6.2",
@@ -62,6 +65,7 @@
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-html-reporter": "^0.2.2",
     "lite-server": "^2.3.0",
+    "node-sass": "^4.9.0",
     "typescript": "~2.5"
   }
 }

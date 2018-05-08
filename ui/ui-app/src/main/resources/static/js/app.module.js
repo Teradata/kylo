@@ -4,7 +4,7 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-define(["require", "exports", "@angular/core", "@angular/platform-browser", "@angular/platform-browser/animations", "@angular/upgrade/static", "@uirouter/angular", "@uirouter/angular-hybrid", "./common/common.module", "./services/services.module", "routes"], function (require, exports, core_1, platform_browser_1, animations_1, static_1, angular_1, angular_hybrid_1, common_module_1, services_module_1) {
+define(["require", "exports", "@angular/common/http", "@angular/core", "@angular/flex-layout", "@angular/platform-browser", "@angular/platform-browser/animations", "@angular/upgrade/static", "@covalent/core/loading", "@uirouter/angular", "@uirouter/angular-hybrid", "./common/common.module", "./services/services.module", "routes"], function (require, exports, http_1, core_1, flex_layout_1, platform_browser_1, animations_1, static_1, loading_1, angular_1, angular_hybrid_1, common_module_1, services_module_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var KyloModule = /** @class */ (function () {
@@ -18,6 +18,9 @@ define(["require", "exports", "@angular/core", "@angular/platform-browser", "@an
                 imports: [
                     platform_browser_1.BrowserModule,
                     animations_1.BrowserAnimationsModule,
+                    loading_1.CovalentLoadingModule,
+                    flex_layout_1.FlexLayoutModule,
+                    http_1.HttpClientModule,
                     common_module_1.KyloCommonModule,
                     services_module_1.KyloServicesModule,
                     angular_1.UIRouterModule,

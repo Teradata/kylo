@@ -1,8 +1,12 @@
-define(["require", "exports", "angular", "app"], function (require, exports, angular) {
+define(["require", "exports", "@covalent/core/loading", "@uirouter/core", "angular", "app"], function (require, exports, loading_1, core_1, angular) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
-    var controller = /** @class */ (function () {
-        function controller($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
+    /**
+     * Identifier for state loader mask of TdLoadingService
+     */
+    var STATE_LOADER = "stateLoader";
+    var IndexController = /** @class */ (function () {
+        function IndexController($scope, $http, $location, $timeout, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, $transitions, $$angularInjector, $mdDialog, StateService, SearchService, SideNavService, AccessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$http = $http;
@@ -17,15 +21,16 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
             this.$element = $element;
             this.$rootScope = $rootScope;
             this.$transitions = $transitions;
+            this.$$angularInjector = $$angularInjector;
             this.$mdDialog = $mdDialog;
             this.StateService = StateService;
             this.SearchService = SearchService;
             this.SideNavService = SideNavService;
             this.AccessControlService = AccessControlService;
             /**
-         * Time to wait before initializing the loading dialog
-         * @type {number}
-         */
+             * Time to wait before initializing the loading dialog
+             * @type {number}
+             */
             this.LOADING_DIALOG_WAIT_TIME = 100;
             /**
                  * Function to toggle the left nav
@@ -116,28 +121,18 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
             }, function () {
                 document.getElementById('search-input').focus();
             });
-            this.$transitions.onSuccess({}, function (transition) {
-                _this.currentState = transition.to();
-                if (_this.currentState.name != 'search') {
-                    _this.searchQuery = null;
-                }
-                else {
-                    _this.searchQuery = _this.SearchService.searchQuery;
-                }
-                _this.$rootScope.previousState = transition.from().name;
-                _this.$rootScope.currentState = transition.to().name;
-                //hide the loading dialog
-                if (!_this.AccessControlService.isFutureState(_this.currentState.name)) {
-                    if (_this.loadingTimeout != null) {
-                        _this.$timeout.cancel(_this.loadingTimeout);
-                        _this.loadingTimeout = null;
-                    }
-                    if (_this.loading) {
-                        _this.loading = false;
-                        _this.$mdDialog.hide();
-                    }
-                }
+            // Create state loading bar
+            this.loadingService = $$angularInjector.get(loading_1.TdLoadingService);
+            this.loadingService.create({
+                name: STATE_LOADER,
+                mode: loading_1.LoadingMode.Indeterminate,
+                type: loading_1.LoadingType.Linear,
+                color: "accent"
             });
+            // Listen for state transitions
+            this.$transitions.onCreate({}, this.onTransitionStart.bind(this));
+            this.$transitions.onSuccess({}, this.onTransitionSuccess.bind(this));
+            this.$transitions.onError({}, this.onTransitionError.bind(this));
             // Fetch the allowed actions
             this.AccessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
@@ -145,26 +140,26 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
                     .hasAction(_this.AccessControlService.GLOBAL_SEARCH_ACCESS, actionSet.actions);
             });
         }
-        controller.prototype.closeSideNavList = function () {
+        IndexController.prototype.closeSideNavList = function () {
             this.$mdSidenav('left').close();
         };
-        controller.prototype.showPreSearchBar = function () {
+        IndexController.prototype.showPreSearchBar = function () {
             return this.searchQuery == null;
         };
         ;
-        controller.prototype.initiateSearch = function () {
+        IndexController.prototype.initiateSearch = function () {
             this.searchQuery = '';
         };
         ;
-        controller.prototype.showSearchBar = function () {
+        IndexController.prototype.showSearchBar = function () {
             return this.searchQuery != null;
         };
         ;
-        controller.prototype.endSearch = function () {
+        IndexController.prototype.endSearch = function () {
             return this.searchQuery = null;
         };
         ;
-        controller.prototype.showLoadingDialog = function () {
+        IndexController.prototype.showLoadingDialog = function () {
             this.loading = true;
             this.$mdDialog.show({
                 templateUrl: 'js/main/loading-dialog.html',
@@ -173,11 +168,63 @@ define(["require", "exports", "angular", "app"], function (require, exports, ang
                 fullscreen: true
             });
         };
-        return controller;
+        /**
+         * Called when transitioning to a new state.
+         */
+        IndexController.prototype.onTransitionStart = function (transition) {
+            var _this = this;
+            if (this.stateLoaderTimeout == null) {
+                this.stateLoaderTimeout = setTimeout(function () { return _this.loadingService.register(STATE_LOADER); }, 250);
+            }
+        };
+        /**
+         * Called when the transition was successful.
+         */
+        IndexController.prototype.onTransitionSuccess = function (transition) {
+            // Clear state loading bar. Ignore parent states as child states will load next.
+            if (!transition.to().name.endsWith(".**")) {
+                clearTimeout(this.stateLoaderTimeout);
+                this.stateLoaderTimeout = null;
+                this.loadingService.resolveAll(STATE_LOADER);
+            }
+            // Clear search query on "search" state
+            this.currentState = transition.to();
+            if (this.currentState.name != 'search') {
+                this.searchQuery = null;
+            }
+            else {
+                this.searchQuery = this.SearchService.searchQuery;
+            }
+            this.$rootScope.previousState = transition.from().name;
+            this.$rootScope.currentState = transition.to().name;
+            //hide the loading dialog
+            if (!this.AccessControlService.isFutureState(this.currentState.name)) {
+                if (this.loadingTimeout != null) {
+                    this.$timeout.cancel(this.loadingTimeout);
+                    this.loadingTimeout = null;
+                }
+                if (this.loading) {
+                    this.loading = false;
+                    this.$mdDialog.hide();
+                }
+            }
+        };
+        /**
+         * Called when the transition failed.
+         */
+        IndexController.prototype.onTransitionError = function (transition) {
+            // Clear state loading bar. Ignore parent states (type is SUPERSEDED) as child states will load next.
+            if (transition.error().type !== core_1.RejectType.SUPERSEDED) {
+                clearTimeout(this.stateLoaderTimeout);
+                this.stateLoaderTimeout = null;
+                this.loadingService.resolveAll(STATE_LOADER);
+            }
+        };
+        return IndexController;
     }());
-    exports.controller = controller;
+    exports.IndexController = IndexController;
     angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-        "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-        controller]);
+        "$rootScope", "$transitions", "$$angularInjector", "$mdDialog", "StateService", "SearchService", "SideNavService",
+        "AccessControlService", IndexController]);
 });
 //# sourceMappingURL=IndexController.js.map

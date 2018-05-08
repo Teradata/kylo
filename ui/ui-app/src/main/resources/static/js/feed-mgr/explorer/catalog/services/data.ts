@@ -1,0 +1,74 @@
+// TODO file for testing
+
+import {Connector} from "../models/connector";
+
+export const connectors: Connector[] = [
+    {
+        title: "SQL Source",
+        tabs: [{label: "Connection", sref: ".connection"}],
+        template: {
+            format: "jdbc"
+        }
+    }, {
+        title: "Amazon S3",
+        icon: "amazon",
+        tabs: [{label: "Files", sref: ".browse"}],
+        template: {
+            options: {
+                "spark.hadoop.fs.s3n.awsAccessKeyId": "AKIAJKUF3ZBHTNZ42UTQ",
+                "spark.hadoop.fs.s3n.awsSecretAccessKey": "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"
+            },
+            paths: ["s3n://"]
+        }
+    }, {
+        title: "Kafka",
+        icon: "kafka",
+        template: {
+            format: "org.apache.spark.sql.kafka010.KafkaSourceProvider",
+            jars: ["file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar", "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"],
+            options: {
+                "kafka.bootstrap.servers": "localhost:9092"
+            }
+        }
+    }, {
+        title: "File Upload",
+        icon: "file_upload",
+        tabs: [{label: "Files", sref: ".upload"}]
+    }, {
+        title: "HDFS",
+        icon: "hadoop",
+        tabs: [{label: "Files", sref: ".browse"}],
+        template: {
+            paths: ["hdfs://"]
+        }
+    }, {
+        title: "Teradata",
+        color: "orange-700",
+        tabs: [{label: "Connection", sref: ".connection"}],
+        template: {
+            format: "jdbc",
+            jars: ["file:/opt/nifi/mysql/tdgssconfig.jar;file:/opt/nifi/mysql/terajdbc4.jar"],
+            options: {
+                "driver": "com.teradata.jdbc.TeraDriver",
+                "url": "jdbc:teradata://34.211.12.96",
+                "user": "dbc",
+                "password": "0Teradata$"
+            }
+        }
+    }, {
+        title: "Google Cloud Storage",
+        icon: "google",
+        tabs: [{label: "Files", sref: ".browse"}],
+        template: {
+            jars: ["file:/opt/nifi/mysql/gcs-connector-latest-hadoop2.jar"],
+            options: {
+                "spark.hadoop.google.cloud.auth.service.account.email": "drive-952@freastro.iam.gserviceaccount.com",
+                "spark.hadoop.google.cloud.auth.service.account.keyfile": "/opt/nifi/mysql/freastro-e330d4b6b80b.p12"
+            },
+            paths: ["gcs://"]
+        }
+    }, {
+        title: "Hive",
+        tabs: [{label: "Table", sref: ".table"}]
+    }
+];

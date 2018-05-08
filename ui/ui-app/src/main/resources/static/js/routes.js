@@ -722,6 +722,11 @@ define(["require", "exports", "./common/module-require", "@uirouter/angular", "k
                         }]
                 }
             });
+            $stateProvider.state({
+                name: 'explorer.**',
+                url: '/explorer',
+                loadChildren: 'feed-mgr/explorer/explorer.module#ExplorerModule'
+            });
         };
         Route.prototype.runFn = function ($rootScope, $state, $location, $transitions, $timeout, $q, $uiRouter, AccessControlService, AngularModuleExtensionService) {
             //initialize the access control
