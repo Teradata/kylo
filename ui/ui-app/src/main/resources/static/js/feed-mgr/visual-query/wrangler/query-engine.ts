@@ -1,5 +1,6 @@
 import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
+import * as angular from "angular";
 
 import {DIALOG_SERVICE} from "./api/index";
 import {SaveRequest, SaveResponse} from "./api/rest-model";

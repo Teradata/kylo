@@ -1,5 +1,7 @@
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
+import * as angular from "angular";
 import * as moment from "moment";
+import * as _ from "underscore";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
 import "rxjs/add/operator/catch";

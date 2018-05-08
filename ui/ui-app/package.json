@@ -4,8 +4,13 @@
   "private": true,
   "description": "kylo",
   "scripts": {
-    "build": "tsc -p src/main/resources/static/tsconfig.app.json",
-    "start": "tsc -p src/main/resources/static/tsconfig.app.json && concurrently \"tsc -p src/main/resources/static -w\" \"lite-server -c src/main/resources/static/bs-config.js\"",
+    "build:ts": "tsc -p src/main/resources/static",
+    "watch:ts": "npm run build:ts -- -w",
+    "build:scss": "node-sass --source-map=true -r --output=target/classes/static src/main/resources/static",
+    "watch:scss": "npm run build:scss -- -w",
+    "build": "npm run build:ts && npm run build:scss",
+    "serve": "lite-server -c src/main/resources/static/bs-config.js",
+    "start": "npm run build & npm run watch:ts & npm run watch:scss & npm run serve",
     "reinstall": "rm -rf node_modules tmp deploy dist && npm i",
     "test": "karma start karma.conf.js",
     "test:watch": "tsc -p src/main/resources/static/tsconfig.app.json && concurrently \"tsc -p src/main/resources/static/tsconfig.spec.json -w\" \"karma start karma.conf.js\""
@@ -62,6 +67,7 @@
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-html-reporter": "^0.2.2",
     "lite-server": "^2.3.0",
+    "node-sass": "^4.9.0",
     "npm-cli": "^0.1.0",
     "typescript": "~2.5"
   }
