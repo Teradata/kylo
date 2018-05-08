@@ -113,6 +113,8 @@ const moduleName = require('feed-mgr/module-name');
             return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
         }
 
+        this.REMOTE_PROCESS_GROUP_AWARE = self.TEMPLATES_BASE_URL+"/remote-process-group/status";
+
         this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
 

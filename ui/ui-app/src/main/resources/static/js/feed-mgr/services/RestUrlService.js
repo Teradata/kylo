@@ -86,6 +86,7 @@ define(["require", "exports", "angular"], function (require, exports, angular) {
         this.DELETE_REGISTERED_TEMPLATE_URL = function (templateId) {
             return self.GET_REGISTERED_TEMPLATES_URL + "/" + templateId + "/delete";
         };
+        this.REMOTE_PROCESS_GROUP_AWARE = self.TEMPLATES_BASE_URL + "/remote-process-group/status";
         this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/reusable-input-ports";
         this.ROOT_INPUT_PORTS = this.ROOT + "/proxy/v1/feedmgr/nifi/root-input-ports";
         this.CONFIGURATION_PROPERTIES_URL = this.ROOT + "/proxy/v1/feedmgr/nifi/configuration/properties";

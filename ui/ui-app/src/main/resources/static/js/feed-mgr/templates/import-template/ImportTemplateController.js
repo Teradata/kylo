@@ -72,12 +72,6 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              */
             this.importComponentOptions = {};
             /**
-             * boolean to indicate if nifi is clustered.
-             * If it is the remoteProcessGroupOption will be exposed when importing reusable templates
-             * @type {boolean}
-             */
-            this.nifiClustered = false;
-            /**
              * Flag to indicate the user needs to provide ports before uploading
              * @type {boolean}
              */
@@ -147,7 +141,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              * Flag to see if we should check and use remote input ports.
              * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
              */
-            this.remoteInputPortsCheckEnabled = true;
+            this.remoteProcessGroupAware = false;
             /**
              * Called when a user changes a import option for overwriting
              */
@@ -165,7 +159,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
             var _this = this;
             this.indexImportOptions();
             this.setDefaultImportOptions();
-            this.setNiFiClustered();
+            this.checkRemoteProcessGroupAware();
             /**
              * Watch when the file changes
              */
@@ -522,15 +516,11 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
         /**
          * Determine if we are clustered and if so set the flag to show the 'remote input port' options
          */
-        ImportTemplateController.prototype.setNiFiClustered = function () {
+        ImportTemplateController.prototype.checkRemoteProcessGroupAware = function () {
             var _this = this;
-            if (this.remoteInputPortsCheckEnabled) {
-                this.$http.get(this.RestUrlService.NIFI_STATUS).then(function (response) {
-                    if (response.data.clustered) {
-                        _this.nifiClustered = true;
-                    }
-                });
-            }
+            this.$http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).then(function (response) {
+                _this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
+            });
         };
         /**
          * Index the import options  in a map by their type

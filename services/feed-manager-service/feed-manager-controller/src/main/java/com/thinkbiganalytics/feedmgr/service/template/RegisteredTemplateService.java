@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.api.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.template.security.TemplateAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.model.NiFiRemoteProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -49,6 +50,7 @@ import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.AccessControlException;
 import java.security.Principal;
@@ -95,6 +97,9 @@ public class RegisteredTemplateService {
 
     @Inject
     private RegisteredTemplateCache registeredTemplateCache;
+
+    @Value("${kylo.template.remote-process-groups.enabled:false}")
+    private boolean remoteProcessGroupsEnabledd;
 
     /**
      * Checks the current security context has been granted permission to perform the specified action(s)
@@ -812,4 +817,9 @@ public class RegisteredTemplateService {
     }
 
 
+
+    public boolean isRemoteProcessGroupsEnabled(){
+        final NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
+        return remoteProcessGroupsEnabledd || clusterSummary.getClustered();
+    }
 }
