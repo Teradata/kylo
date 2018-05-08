@@ -268,12 +268,11 @@ const moduleName = require('feed-mgr/module-name');
                 },
                 categories: new Array(),
                 querySearch: function (query:any) {
-
                     var self = this;
                     var deferred = $q.defer();
                     if (self.categories.length == 0) {
                         loadAll().then(function (response:any) {
-                            this.loading = false;
+                            self.loading = false;
                             if (query) {
                                 var results = response.filter(createFilterFor(query))
                                 deferred.resolve(results);
@@ -282,7 +281,7 @@ const moduleName = require('feed-mgr/module-name');
                                 deferred.resolve(response);
                             }
                         }, function (err:any) {
-                            this.loading = false;
+                            self.loading = false;
                         });
                     }
                     else {
