@@ -204,7 +204,7 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
             //set the initial processor flag for the heading to print
             var lastProcessorId = null;
             _.each(arr, function (property, i) {
-                if (lastProcessorId == null || property.processor.id != lastProcessorId) {
+                if ((angular.isUndefined(property.hidden) || property.hidden == false) && (lastProcessorId == null || property.processor.id != lastProcessorId)) {
                     property.firstProperty = true;
                     propertiesAndProcessors.processors.push(property.processor);
                     property.processor.topIndex = i;
@@ -212,7 +212,9 @@ define(["require", "exports", "angular", "underscore", "pascalprecht.translate"]
                 else {
                     property.firstProperty = false;
                 }
-                lastProcessorId = property.processor.id;
+                if (!property.hidden) {
+                    lastProcessorId = property.processor.id;
+                }
             });
             return propertiesAndProcessors;
         };
