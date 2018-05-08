@@ -62,6 +62,7 @@
     "karma-jasmine": "^1.1.1",
     "karma-jasmine-html-reporter": "^0.2.2",
     "lite-server": "^2.3.0",
+    "npm-cli": "^0.1.0",
     "typescript": "~2.5"
   }
 }
