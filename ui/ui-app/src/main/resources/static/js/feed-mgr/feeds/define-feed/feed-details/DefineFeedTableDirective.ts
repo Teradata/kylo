@@ -964,6 +964,7 @@ export class DefineFeedTableController {
                 //set the feedFormat property
                 self.model.table.feedFormat = responseData.hiveFormat;
                 self.model.table.structured = responseData.structured;
+                self.model.table.feedTblProperties = responseData.serdeTableProperties;
                 if (self.schemaParser.allowSkipHeader) {
                     self.model.allowSkipHeaderOption = true;
                     self.model.options.skipHeader = true;

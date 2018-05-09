@@ -158,6 +158,25 @@ public class RegisterFeedTablesTest {
     }
 
     /**
+     * Verify XML feed table with custom table properties
+     */
+    @Test
+    public void testXMLTable() throws Exception {
+        // Test with all properties
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, TableType.FEED.toString());
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id_|string\nauthor|string\nprice|string");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (\"column.xpath.price\" = \"/book/price/text()\", "
+                                                               + "     \"column.xpath.id\" = \"/book/@id\",\"column.xpath.author\" = \"/book/author/text()\") stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
+        runner.setProperty(IngestProperties.FEED_TBLPROPERTIES, "tblproperties ( \"xmlinput.start\" = \"<book \",\"xmlinput.end\"   = \"</book>\")");
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "demo", "metadata.systemFeedName", "xml_test_001"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+    }
+
+
+    /**
      * Verify registering tables with some pre-existing.
      */
     @Test

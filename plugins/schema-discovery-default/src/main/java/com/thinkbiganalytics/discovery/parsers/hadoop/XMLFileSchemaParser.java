@@ -27,15 +27,32 @@ import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
-import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Stack;
 
-//@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"})
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
+
+@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"})
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
@@ -45,11 +62,74 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.XML, target, new XMLCommandBuilder(rowTag));
-        schema.setStructured(true);
+        File tempFile = null;
+        HiveTableSchema schema = null;
+
+        // We use Spark to derive the column types but then generate a Hive compatible schema which requires the XPaths for the Hive schema
+        // Store the file so we can access it twice
+        try {
+            tempFile = streamToFile(is);
+
+            LOG.debug("tempFile created {}", tempFile.getAbsolutePath());
+
+            // Now build the serde and properties for the Hive schema
+            HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
+            String paths = StringUtils.join(hiveParse.columnPaths.values(), ",");
+            String serde = String.format("row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (%s) stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' "
+                                  + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'",paths);
+
+            LOG.debug("XML serde {}", serde);
+
+            // Parse using Spark
+            try (InputStream fis = new FileInputStream(tempFile)) {
+                schema = (HiveTableSchema) getSparkParserService().doParse(fis, SparkFileSchemaParserService.SparkFileType.XML, target, new XMLCommandBuilder(hiveParse.getStartTag()));
+            }
+
+            schema.setStructured(true);
+
+            LOG.info("XML Spark parser discoverd {} fields", schema.getFields().size());
+
+            schema.setHiveFormat(serde);
+            String xmlStart = hiveParse.startTag + (hiveParse.startTagHasAttributes ? " " : ">");
+            String xmlEnd = hiveParse.startTag;
+            schema.setSerdeTableProperties(String.format("tblproperties ( \"xmlinput.start\" = \"<%s\", \"xmlinput.end\" = \"</%s>\")", xmlStart, xmlEnd));
+
+            LOG.info("properties", schema.getProperties());
+        } catch (Exception e) {
+            LOG.error("Failed to parse XML", e);
+            if (e instanceof IOException) {
+                throw (IOException)e;
+            } else {
+                throw new IOException("Failed to generate schema for XML", e);
+            }
+        } finally {
+           if (tempFile != null) tempFile.delete();
+        }
         return schema;
     }
 
+    protected HiveXMLSchemaHandler parseForHive(File xmlFile) throws Exception {
+
+        HiveXMLSchemaHandler handler = new HiveXMLSchemaHandler(rowTag);
+        SAXParserFactory parserFactory = SAXParserFactory.newInstance();
+        parserFactory.setNamespaceAware(false);
+        SAXParser saxParser = parserFactory.newSAXParser();
+        saxParser.parse(xmlFile, handler);
+        return handler;
+    }
+
+    protected static File streamToFile(InputStream is) throws IOException {
+        final File tempFile = File.createTempFile("kylo-parser", "xml");
+        try (FileOutputStream out = new FileOutputStream(tempFile)) {
+            IOUtils.copyLarge(is, out);
+        }
+        return tempFile;
+
+    }
+
+    /**
+     * Build Spark script for parsing XML
+     */
     static class XMLCommandBuilder implements SparkCommandBuilder {
 
         String xmlRowTag;
@@ -76,10 +156,132 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
         this.rowTag = rowTag;
     }
 
-    public static void main(String[] args) {
+    static class HiveXMLSchemaHandler extends DefaultHandler {
 
-        XMLCommandBuilder builder = new XMLCommandBuilder("tagName");
-        System.out.println(builder.build("/file.xml"));
+        /**
+         * Starting tag
+         */
+        private String startTag;
+
+        /**
+         * Whether the start tag has been visited
+         */
+        boolean startTagFound;
+
+        /**
+         * Whether the startTag has any attributes
+         */
+        boolean startTagHasAttributes;
+
+        /**
+         * Whether to continue processing tags or ignore
+         */
+        private boolean stopProcessing;
+
+        /**
+         * Tracks the element stack
+         */
+        private Stack<String> elementStack = new Stack<>();
+
+        /**
+         * Columns and the corresponding xpath expression
+         */
+        private Map<String, String> columnPaths = new HashMap<>();
+
+        private String lastQName;
+
+        public HiveXMLSchemaHandler(String startTag) {
+            this.startTag = startTag;
+        }
+
+        public String getStartTag() {
+            return startTag;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            // Skip processing until we find start tag
+            if (!stopProcessing) {
+
+                // If startTag is not specified grab the first element
+                if (StringUtils.isEmpty(startTag) || startTag.equals(qName)) {
+                    this.startTagFound = true;
+                    this.startTag = qName;
+                    this.startTagHasAttributes = attributes.getLength() > 0;
+                }
+                if (startTagFound) {
+                    // Track last visible name to determine if we are dealing with nested elements or simple text
+                    this.lastQName = qName;
+                    elementStack.push(qName);
+                    if (!columnPaths.containsKey(qName) && elementStack.size() < 2) {
+                        storeAttributePaths(attributes);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+
+            if (qName.equals(startTag)) {
+                this.stopProcessing = true;
+            }
+
+            if (!stopProcessing && this.startTagFound) {
+                // Only add unique names
+                if (!columnPaths.containsKey(qName) && elementStack.size() <= 2) {
+                    String ext = ((lastQName.equals(qName)) ? "/text()" : "/*");
+                    String path = String.format("\"column.xpath.%s\" = \"%s%s\"", qName, currentXPath(), ext);
+                    addPath(qName, path);
+                }
+                elementStack.pop();
+            }
+        }
+
+        @Override
+        public void startPrefixMapping(String prefix, String uri) throws SAXException {
+            super.startPrefixMapping(prefix, uri);
+        }
+
+        @Override
+        public void endPrefixMapping(String prefix) throws SAXException {
+            super.endPrefixMapping(prefix);
+        }
+
+        public void endDocument() throws SAXException {
+            // only process data
+        }
+
+        private String getAttributeName(String qName) {
+            return "_" + qName;
+        }
+
+        private void addPath(String columnName, String path) {
+            this.columnPaths.put(columnName, path);
+        }
+
+        private void storeAttributePaths(Attributes attributes) {
+            String xPath = currentXPath();
+            if (attributes != null && attributes.getLength() > 0) {
+                for (int i = 0; i < attributes.getLength(); i++) {
+                    String attributeName = getAttributeName(attributes.getQName(i));
+                    String path = String.format("\"column.xpath.%s\" = \"%s/@%s\"", attributeName, xPath, attributes.getQName(i));
+                    addPath(attributeName, path);
+                }
+            }
+        }
+
+        private String currentXPath() {
+            int size = this.elementStack.size();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < size; i++) {
+                sb.append("/" + this.elementStack.get(i));
+            }
+            return sb.toString();
+        }
+
     }
 
+
 }
+

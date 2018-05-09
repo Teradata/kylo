@@ -155,8 +155,17 @@ public interface IngestProperties extends CommonProperties {
 
     PropertyDescriptor TARGET_TBLPROPERTIES = new PropertyDescriptor.Builder()
         .name("Target Table Properties")
-        .description("TblProperties clause generally specificying the compression option")
+        .description("TblProperties clause generally specifying the compression option")
         .defaultValue("${metadata.table.targetTblProperties}")
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    PropertyDescriptor FEED_TBLPROPERTIES = new PropertyDescriptor.Builder()
+        .name("Feed Table Properties")
+        .description("TblProperties clause for feed table serde")
+        .defaultValue("${metadata.table.feedTblProperties}")
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();

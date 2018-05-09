@@ -110,13 +110,13 @@ public class TableRegisterSupport {
      * @param targetFormatOptions   the format for the target table
      * @param partitions            the partitions for the target table
      * @param columnSpecs           the columns for the table
-     * @param targetTableProperties the properties for the target table
+     * @param feedTableProperties       the properties for the table (feed or target only)
      * @param tableType             the type of table
      * @param registerDatabase      {@code true} to create the database if it does not exist, or {@code false} to require an existing database
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
     public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-            columnSpecs, String targetTableProperties, TableType tableType, boolean registerDatabase) {
+            columnSpecs, String feedTableProperties, String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
         //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
@@ -133,8 +133,10 @@ public class TableRegisterSupport {
             return false;
         }
 
+        String tableProperties = tablePropertiesForType(tableType, feedTableProperties, targetTableProperties);
+
         // Register the table
-        String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
+        String ddl = createDDL(source, tableEntity, useColumnSpecs, partitions, feedFormatOptions, targetFormatOptions, tableProperties, tableType);
         return createTable(ddl);
     }
 
@@ -166,14 +168,45 @@ public class TableRegisterSupport {
         return tables;
     }
 
+    /**
+     * Derive the STORED AS clause for the table
+     *
+     * @param rawSpecification    the clause for the raw specification
+     * @param targetSpecification the target specification
+     */
+    public String formatOptionsForType(TableType tableType, String rawSpecification, String targetSpecification) {
+
+        switch (tableType) {
+            case FEED:
+                return rawSpecification;
+            default:
+                return targetSpecification;
+        }
+    }
+
+    private String tablePropertiesForType(TableType tableType, String feedTableProperties, String targetTableProperties) {
+        String tblProperties = "";
+        switch (tableType) {
+            case FEED:
+                tblProperties = feedTableProperties;
+                break;
+            case MASTER:
+                tblProperties = targetTableProperties;
+                break;
+            default:
+                break;
+        }
+        return tblProperties;
+    }
+
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-            columnSpecs, String tblProperties) {
+            columnSpecs, String feedTblProperties, String targetTblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
         for (TableType tableType : TableType.values()) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
+                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTblProperties, targetTblProperties, tableType, false) && result;
             }
         }
         return result;
@@ -189,21 +222,21 @@ public class TableRegisterSupport {
         return "CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(source);
     }
 
-    protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions, String targetFormatOptions, String targetTableProperties,
+    protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions,String targetFormatOptions,
+                               String tableProperties,
                                TableType tableType) {
 
         String tableName;
         String columnsSQL;
-        String formatOptionsSQL;
         String partitionSQL;
         String locationSQL;
         String tblPropertiesSQL;
+        String formatOptionsSQL = formatOptionsForType(tableType, feedFormatOptions, targetFormatOptions);
 
         switch (tableType) {
             case PROFILE:
                 tableName = TableType.PROFILE.deriveQualifiedName(source, entity);
                 columnsSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
-                formatOptionsSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
                 partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
                 locationSQL = TableType.PROFILE.deriveLocationSpecification(config.pathForTableType(TableType.PROFILE), source, entity);
                 tblPropertiesSQL = "";
@@ -213,15 +246,15 @@ public class TableRegisterSupport {
                 partitionSQL = tableType.derivePartitionSpecification(partitions);
                 columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions, feedFormatOptions);
                 locationSQL = tableType.deriveLocationSpecification(config.pathForTableType(tableType), source, entity);
-                formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
-                tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
+                tblPropertiesSQL = tableType.deriveTableProperties(tableProperties);
                 break;
         }
 
         return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL, tblPropertiesSQL, tableType.isExternal());
     }
 
-    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL, boolean external) {
+    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL,  String tablePropertiesSQL,
+                               boolean external) {
         StringBuilder sb = new StringBuilder();
         String externalString = (external ? " EXTERNAL " : " ");
         sb.append("CREATE").append(externalString).append("TABLE IF NOT EXISTS ")
@@ -235,8 +268,8 @@ public class TableRegisterSupport {
             sb.append(" ").append(formatOptionsSQL);
         }
         sb.append(locationSQL);
-        if (!StringUtils.isEmpty(targetTablePropertiesSQL)) {
-            sb.append(" ").append(targetTablePropertiesSQL);
+        if (!StringUtils.isEmpty(tablePropertiesSQL)) {
+            sb.append(" ").append(tablePropertiesSQL);
         }
         return sb.toString();
     }
