@@ -1,4 +1,4 @@
-define(["require", "exports", "./api/index", "./column-delegate", "./query-engine-constants"], function (require, exports, index_1, column_delegate_1, query_engine_constants_1) {
+define(["require", "exports", "angular", "./api/index", "./column-delegate", "./query-engine-constants"], function (require, exports, angular, index_1, column_delegate_1, query_engine_constants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var PageSpec = /** @class */ (function () {

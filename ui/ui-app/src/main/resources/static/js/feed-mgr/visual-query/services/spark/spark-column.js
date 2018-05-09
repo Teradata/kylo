@@ -8,7 +8,7 @@ var __extends = (this && this.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
-define(["require", "exports", "moment", "rxjs/Observable", "../../wrangler/api/column", "../../wrangler/api/services/dialog.service", "../../wrangler/column-delegate", "rxjs/add/observable/empty", "rxjs/add/observable/of", "rxjs/add/operator/catch", "rxjs/add/operator/map"], function (require, exports, moment, Observable_1, column_1, dialog_service_1, column_delegate_1) {
+define(["require", "exports", "moment", "angular", "underscore", "rxjs/Observable", "../../wrangler/api/column", "../../wrangler/api/services/dialog.service", "../../wrangler/column-delegate", "rxjs/add/observable/empty", "rxjs/add/observable/of", "rxjs/add/operator/catch", "rxjs/add/operator/map"], function (require, exports, moment, angular, _, Observable_1, column_1, dialog_service_1, column_delegate_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     /**
