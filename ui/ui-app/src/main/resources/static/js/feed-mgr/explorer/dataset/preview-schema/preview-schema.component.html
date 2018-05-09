@@ -1,0 +1,23 @@
+<form fxLayout="column" fxLayoutAlign="start start">
+  <mat-tab-group *ngIf="raw != null">
+    <mat-tab label="Preview">
+      <td-data-table [data]="data" [columns]="columns" [style.height.px]="200"></td-data-table>
+    </mat-tab>
+    <mat-tab label="Raw">
+      <div style="background-color: #bbb; border: 1px solid #666" [innerHtml]="raw"></div>
+    </mat-tab>
+  </mat-tab-group>
+  <mat-form-field>
+    <mat-select name="format" placeholder="Format" [(ngModel)]="format">
+      <mat-option value="csv">CSV</mat-option>
+      <mat-option value="orc">ORC</mat-option>
+    </mat-select>
+  </mat-form-field>
+  <div *ngIf="format == 'csv'" fxLayout="column" fxLayoutAlign="start">
+    <mat-form-field>
+      <input id="delimiter" name="delimiter" placeholder="Delimiter" matInput type="text" [(ngModel)]="delimiter">
+    </mat-form-field>
+    <mat-slide-toggle name="header" [(checked)]="header">Header</mat-slide-toggle>
+  </div>
+  <button mat-raised-button color="primary" (click)="update()">Preview</button>
+</form>
