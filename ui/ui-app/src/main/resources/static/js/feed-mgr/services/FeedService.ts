@@ -519,6 +519,11 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             }
             copy.properties = properties;
 
+            //clear the extra UI only properties
+            copy.inputProcessor = null
+            copy.nonInputProcessors = null
+
+
             //prepare access control changes if any
             EntityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
 
@@ -593,8 +598,6 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 if (copy.table.feedTableSchema == undefined) {
                     copy.table.feedTableSchema = {name: null, fields: []};
                 }
-                return copy;
-
 
                 //remove any extra columns in the policies
                 /*
@@ -603,6 +606,13 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                  }
                  */
             }
+            if (copy.registeredTemplate) {
+                copy.registeredTemplate = undefined;
+            }
+
+            return copy;
+
+
         },
         /**
          * Show a dialog indicating that the feed is saving
@@ -659,7 +669,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         saveFeedModel: function (model: any) {
             var self = this;
-           let copy = self.prepareModelForSave(model);
+            let copy = self.prepareModelForSave(model);
+            //reset the sensitive properties
+            FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
             var deferred = $q.defer();
             var successFn = function (response: any) {
@@ -687,11 +699,6 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             var errorFn = function (err: any) {
                 deferred.reject(err);
             }
-            if (copy.registeredTemplate) {
-                copy.registeredTemplate = undefined;
-            }
-            //reset the sensitive properties
-            FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
 
             //post to the server to save with a custom timeout of 7 minutes.
             var promise = $http({
