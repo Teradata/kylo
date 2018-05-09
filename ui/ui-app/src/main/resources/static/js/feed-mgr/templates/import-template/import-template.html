@@ -195,7 +195,7 @@
               </div>
             </md-input-container>
 
-              <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" ng-if="vm.reusableTemplateImportOption.shouldImport && vm.nifiClustered">
+              <md-input-container class="condensed-no-float md-block layout-padding-bottom" flex="50" ng-if="vm.reusableTemplateImportOption.shouldImport && vm.remoteProcessGroupAware">
                 <md-checkbox ng-model="vm.remoteProcessGroupImportOption.shouldImport" aria-label="Make available for Remote Process Groups">
                  Remote Process Group Aware
                 </md-checkbox>
@@ -316,7 +316,7 @@
               <div ng-if="vm.importResult.remoteProcessGroupInputPortNames.length ==0">
                 Please select at least one input port to be available to remote process groups.
                 <br/>
-                If you dont wish to expose your template to remote process groups uncheck <i>Make Available for Remote Process Groups</i> option above
+                If you dont wish to expose your template to remote process groups uncheck <i>Remote Process Group Aware</i> option above
               </div>
 
                 <md-input-container>

@@ -39,7 +39,7 @@ public class StandardTdchConnectionServiceTest {
 
     private static final Logger log = LoggerFactory.getLogger(StandardTdchConnectionServiceTest.class);
     private static final String TDCH_JAR_BASE = "src/test/resources/usr/lib/tdch/1.5/lib";
-    private static final String TDCH_JAR_PATH = TDCH_JAR_BASE + "/valid/teradata-connector-1.5.2.jar";
+    private static final String TDCH_JAR_PATH = TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v1.txt";
     private static final String COMMON_HDP_CDH_HIVE_CLIENT_CONF_DIR = "src/test/resources/usr/hdp/current_v_2_5/hive-client/conf";
 
     private static final String HDP_HIVE_CLIENT_LIB_BASE = "src/test/resources/usr/hdp/current_v_2_5/hive-client/lib";
@@ -170,32 +170,32 @@ public class StandardTdchConnectionServiceTest {
         runner.assertValid(standardTdchConnectionService);
 
         //TDCH Jar Path
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/some-connector.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/some-connector.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
         runner.assertNotValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-1.5.4.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v2.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
         runner.assertValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/teradata-jdbc-con-1.5.2.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/teradata-jdbc-con-dummy-1.5.2.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
         runner.assertNotValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-1.5.2.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v1.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
         runner.assertValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/teradata-connector-1.5.6.not-exist.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/invalid/teradata-connector-v3.not-exist.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertFalse(validationResult.isValid());
         runner.assertNotValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-1.5.4.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v2.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
         runner.assertValid(standardTdchConnectionService);
@@ -205,7 +205,7 @@ public class StandardTdchConnectionServiceTest {
         Assert.assertFalse(validationResult.isValid());
         runner.assertNotValid(standardTdchConnectionService);
 
-        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-1.5.4.jar");
+        validationResult = runner.setProperty(standardTdchConnectionService, StandardTdchConnectionService.TDCH_JAR_PATH, TDCH_JAR_BASE + "/valid/teradata-connector-dummy-v2.txt");
         Assert.assertEquals(StandardTdchConnectionService.TDCH_JAR_PATH.getDisplayName(), validationResult.getSubject());
         Assert.assertTrue(validationResult.isValid());
         runner.assertValid(standardTdchConnectionService);

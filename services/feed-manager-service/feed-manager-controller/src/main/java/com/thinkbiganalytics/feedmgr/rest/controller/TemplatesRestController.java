@@ -21,6 +21,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
  */
 
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.cache.NifiFlowCache;
@@ -39,6 +40,7 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceDefinition;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NiFiClusterSummary;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
@@ -50,11 +52,13 @@ import com.thinkbiganalytics.security.rest.model.RoleMembershipChange;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange.ChangeType;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.Principal;
 import java.util.ArrayList;
@@ -128,6 +132,7 @@ public class TemplatesRestController {
     private MetadataService getMetadataService() {
         return metadataService;
     }
+
 
 
     /**
@@ -605,7 +610,18 @@ public class TemplatesRestController {
                         .map(m -> Response.ok(m).build())
                         .orElseThrow(() -> new WebApplicationException("A template with the given ID does not exist: " + templateIdStr, Status.NOT_FOUND));
     }
-    
+
+
+    @GET
+    @Path("/remote-process-group/status")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets information regarding if the template registration should allow the user to select input ports to be 'remote process group aware'")
+
+    public Response getRemoteProcessGroupAwareStatus() {
+
+        return Response.ok(ImmutableMap.of( "remoteProcessGroupAware",registeredTemplateService.isRemoteProcessGroupsEnabled())).build();
+    }
+
 
     @POST
     @Path("/registered/{templateId}/roles")

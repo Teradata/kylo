@@ -56,7 +56,7 @@ export class directive implements ng.IDirective {
                 links.push({sref: "explorer", type: "link", icon: "find_in_page", text: "Explorer"});
                 links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                 links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
-                links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
+                links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.TABLES.permissions});
                 addExtensionLinks(MENU_KEY.FEED_MGR, links);
                 var menu = ({type:'toggle', 
                         text: this.$filter('translate')('views.main.feed-manage'),

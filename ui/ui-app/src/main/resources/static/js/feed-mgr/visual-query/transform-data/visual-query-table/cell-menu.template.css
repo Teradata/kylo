@@ -1,6 +1,0 @@
-.truncate .md-button {
-  max-width: 350px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
-}
