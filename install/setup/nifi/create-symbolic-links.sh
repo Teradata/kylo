@@ -11,6 +11,7 @@ then
 fi
 
 ln -f -s $NIFI_HOME/data/lib/kylo-nifi-elasticsearch-v1-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-elasticsearch-nar.nar
+ln -f -s $NIFI_HOME/data/lib/kylo-nifi-teradata-tdch-nar-*.nar $NIFI_HOME/current/lib/kylo-nifi-teradata-tdch-nar.nar
 
 ##find the nifi version to copy the correct nar versions
 
