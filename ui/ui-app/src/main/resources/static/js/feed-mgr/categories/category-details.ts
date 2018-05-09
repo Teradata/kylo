@@ -1,10 +1,13 @@
+import {Transition} from "@uirouter/core";
 import * as angular from 'angular';
-import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
+
 const moduleName = require('feed-mgr/categories/module-name');
 
 
 export class CategoryDetailsController {
+
+    public $transition$: Transition;
 
     /**
     * Indicates if the category is currently being loaded.
@@ -26,9 +29,8 @@ export class CategoryDetailsController {
      * @param CategoriesService the category service
      * @constructor
      */
-    static readonly $inject = ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService"];
-    constructor(private $scope: any, private $transition$: any, private $q: any
-        , private CategoriesService: any, private accessControlService: AccessControlService) {
+    static readonly $inject = ["$scope", "$q", "CategoriesService", "AccessControlService"];
+    constructor(private $scope: any, private $q: any, private CategoriesService: any, private accessControlService: AccessControlService) {
 
 
         this.model = {};
@@ -44,13 +46,20 @@ export class CategoryDetailsController {
             },
             true
         );
+    }
+
+    ngOnInit() {
         // Load the list of categories
-        if (CategoriesService.categories.length === 0) {
-            CategoriesService.reload().then(this.onLoad);
+        if (this.CategoriesService.categories.length === 0) {
+            this.CategoriesService.reload().then(() => this.onLoad());
         } else {
             this.onLoad();
         }
         this.checkAccessControl();
+    }
+
+    $onInit() {
+        this.ngOnInit();
     }
 
     getIconColorStyle(iconColor: any) {
@@ -89,8 +98,10 @@ export class CategoryDetailsController {
     }
 
 }
-angular.module(moduleName).component('CategoryDetailsController', {
- 
+angular.module(moduleName).component('categoryDetailsController', {
+    bindings: {
+        $transition$: "<"
+    },
     controller: CategoryDetailsController,
     controllerAs: "vm",
     templateUrl: 'js/feed-mgr/categories/category-details.html'

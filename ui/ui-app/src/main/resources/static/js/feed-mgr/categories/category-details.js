@@ -3,10 +3,9 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
     Object.defineProperty(exports, "__esModule", { value: true });
     var moduleName = require('feed-mgr/categories/module-name');
     var CategoryDetailsController = /** @class */ (function () {
-        function CategoryDetailsController($scope, $transition$, $q, CategoriesService, accessControlService) {
+        function CategoryDetailsController($scope, $q, CategoriesService, accessControlService) {
             var _this = this;
             this.$scope = $scope;
-            this.$transition$ = $transition$;
             this.$q = $q;
             this.CategoriesService = CategoriesService;
             this.accessControlService = accessControlService;
@@ -25,15 +24,21 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
                     _this.checkAccessControl();
                 }
             }, true);
+        }
+        CategoryDetailsController.prototype.ngOnInit = function () {
+            var _this = this;
             // Load the list of categories
-            if (CategoriesService.categories.length === 0) {
-                CategoriesService.reload().then(this.onLoad);
+            if (this.CategoriesService.categories.length === 0) {
+                this.CategoriesService.reload().then(function () { return _this.onLoad(); });
             }
             else {
                 this.onLoad();
             }
             this.checkAccessControl();
-        }
+        };
+        CategoryDetailsController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
         CategoryDetailsController.prototype.getIconColorStyle = function (iconColor) {
             return { 'fill': iconColor };
         };
@@ -80,11 +85,14 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
          * @param CategoriesService the category service
          * @constructor
          */
-        CategoryDetailsController.$inject = ["$scope", "$transition$", "$q", "CategoriesService", "AccessControlService"];
+        CategoryDetailsController.$inject = ["$scope", "$q", "CategoriesService", "AccessControlService"];
         return CategoryDetailsController;
     }());
     exports.CategoryDetailsController = CategoryDetailsController;
-    angular.module(moduleName).component('CategoryDetailsController', {
+    angular.module(moduleName).component('categoryDetailsController', {
+        bindings: {
+            $transition$: "<"
+        },
         controller: CategoryDetailsController,
         controllerAs: "vm",
         templateUrl: 'js/feed-mgr/categories/category-details.html'

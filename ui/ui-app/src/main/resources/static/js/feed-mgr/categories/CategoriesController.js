@@ -68,7 +68,7 @@ define(["require", "exports", "angular", "../../services/AccessControlService"],
         return CategoriesController;
     }());
     exports.CategoriesController = CategoriesController;
-    angular.module(moduleName).component('CategoriesController', {
+    angular.module(moduleName).component('categoriesController', {
         controller: CategoriesController,
         controllerAs: "vm",
         templateUrl: 'js/feed-mgr/categories/categories.html'

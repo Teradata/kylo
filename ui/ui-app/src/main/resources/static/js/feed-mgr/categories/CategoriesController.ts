@@ -72,7 +72,7 @@ export class CategoriesController {
     };
 
 }
-angular.module(moduleName).component('CategoriesController',  {
+angular.module(moduleName).component('categoriesController',  {
     controller: CategoriesController,
     controllerAs: "vm",
     templateUrl: 'js/feed-mgr/categories/categories.html'   
