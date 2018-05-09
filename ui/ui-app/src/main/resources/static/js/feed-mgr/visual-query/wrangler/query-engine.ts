@@ -1,5 +1,3 @@
-import * as angular from 'angular';
-import * as _ from "underscore";
 import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import * as angular from "angular";
