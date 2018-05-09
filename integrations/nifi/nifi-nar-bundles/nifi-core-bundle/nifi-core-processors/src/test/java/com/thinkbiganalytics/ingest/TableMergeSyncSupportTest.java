@@ -146,7 +146,7 @@ public class TableMergeSyncSupportTest {
     /**
      * Tests if HDFS location is correct
      */
-    public void checkSyncLocationHDFS() throws Exception {
+    public void testSyncLocationHDFS() throws Exception {
         // This the check id the schema pre and after a sync is the same
         String describePre = extractTableDirectory(sourceSchema, sourceTable);
 
