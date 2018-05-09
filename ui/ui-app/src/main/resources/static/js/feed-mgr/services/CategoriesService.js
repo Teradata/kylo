@@ -260,7 +260,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var deferred = $q.defer();
                 if (self.categories.length == 0) {
                     loadAll().then(function (response) {
-                        this.loading = false;
+                        self.loading = false;
                         if (query) {
                             var results = response.filter(createFilterFor(query));
                             deferred.resolve(results);
@@ -269,7 +269,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                             deferred.resolve(response);
                         }
                     }, function (err) {
-                        this.loading = false;
+                        self.loading = false;
                     });
                 }
                 else {

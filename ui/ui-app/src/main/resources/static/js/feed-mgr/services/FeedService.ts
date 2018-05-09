@@ -499,54 +499,54 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         prepareModelForSave: function (model: any) {
             var properties: any[] = [];
+            var copy = angular.copy(model);
 
-            if (model.inputProcessor != null) {
-                angular.forEach(model.inputProcessor.properties, function (property) {
+            if (copy.inputProcessor != null) {
+                angular.forEach(copy.inputProcessor.properties, function (property) {
                     FeedPropertyService.initSensitivePropertyForSaving(property)
                     properties.push(property);
                 });
             }
 
-            angular.forEach(model.nonInputProcessors, function (processor) {
+            angular.forEach(copy.nonInputProcessors, function (processor) {
                 angular.forEach(processor.properties, function (property) {
                     FeedPropertyService.initSensitivePropertyForSaving(property)
                     properties.push(property);
                 });
             });
-            if(model.inputProcessor) {
-                model.inputProcessorName = model.inputProcessor.name;
+            if(copy.inputProcessor) {
+                copy.inputProcessorName = copy.inputProcessor.name;
             }
-            model.properties = properties;
+            copy.properties = properties;
 
             //prepare access control changes if any
-            EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+            EntityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
 
-            if(model.cloned){
-                model.state = null;
+            if(copy.cloned){
+                copy.state = null;
             }
             //remove the self.model.originalTableSchema if its there
-            delete model.originalTableSchema;
+            delete copy.originalTableSchema;
 
-
-            if (model.table && model.table.fieldPolicies && model.table.tableSchema && model.table.tableSchema.fields) {
+            if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
                 // Set feed
 
                 var newFields: any[] = [];
                 var newPolicies: any[] = [];
                 var feedFields: any[] = [];
                 var sourceFields: any[] = [];
-                angular.forEach(model.table.tableSchema.fields, function (columnDef, idx) {
-                    var policy = model.table.fieldPolicies[idx];
+                angular.forEach(copy.table.tableSchema.fields, function (columnDef, idx) {
+                    var policy = copy.table.fieldPolicies[idx];
                     var sourceField = angular.copy(columnDef);
                     var feedField = angular.copy(columnDef);
 
                     sourceField.name = columnDef.origName;
                     sourceField.derivedDataType = columnDef.origDataType;
                     // structured files must use the original names
-                    if (model.table.structured == true) {
+                    if (copy.table.structured == true) {
                         feedField.name = columnDef.origName;
                         feedField.derivedDataType = columnDef.origDataType;
-                    } else if (model.table.method == 'EXISTING_TABLE') {
+                    } else if (copy.table.method == 'EXISTING_TABLE') {
                         sourceField.name = columnDef.origName;
                     }
                     if (angular.isDefined(policy)) {
@@ -555,37 +555,45 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     }
 
                     if (!columnDef.deleted) {
+                        //remove sample values
+                        columnDef.sampleValues = null;
+                        columnDef.history = null;
                         newFields.push(columnDef);
                         if (angular.isDefined(policy)) {
                             newPolicies.push(policy);
                         }
+                        sourceField.sampleValues = null;
+                        sourceField.history = null;
+                        feedField.sampleValues = null;
+                        feedField.history = null;
                         sourceFields.push(sourceField);
                         feedFields.push(feedField);
 
                     } else {
                         // For files the feed table must contain all the columns from the source even if unused in the target
-                        if (model.table.method == 'SAMPLE_FILE') {
+                        if (copy.table.method == 'SAMPLE_FILE') {
                             feedFields.push(feedField);
-                        } else if (model.table.method == 'EXISTING_TABLE' && model.table.sourceTableIncrementalDateField == sourceField.name) {
+                        } else if (copy.table.method == 'EXISTING_TABLE' && copy.table.sourceTableIncrementalDateField == sourceField.name) {
                             feedFields.push(feedField);
                             sourceFields.push(sourceField);
                         }
                     }
                 });
-                model.table.fieldPolicies = newPolicies;
-                model.table.tableSchema.fields = newFields;
+                copy.table.fieldPolicies = newPolicies;
+                copy.table.tableSchema.fields = newFields;
 
-                if (model.table.sourceTableSchema == undefined) {
-                    model.table.sourceTableSchema = {name: null, tableSchema: null, fields: []};
+                if (copy.table.sourceTableSchema == undefined) {
+                    copy.table.sourceTableSchema = {name: null, tableSchema: null, fields: []};
                 }
                 //only set the sourceFields if its the first time creating this feed
-                if (model.id == null) {
-                    model.table.sourceTableSchema.fields = sourceFields;
-                    model.table.feedTableSchema.fields = feedFields;
+                if (copy.id == null) {
+                    copy.table.sourceTableSchema.fields = sourceFields;
+                    copy.table.feedTableSchema.fields = feedFields;
                 }
-                if (model.table.feedTableSchema == undefined) {
-                    model.table.feedTableSchema = {name: null, fields: []};
+                if (copy.table.feedTableSchema == undefined) {
+                    copy.table.feedTableSchema = {name: null, fields: []};
                 }
+                return copy;
 
 
                 //remove any extra columns in the policies
@@ -651,7 +659,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          */
         saveFeedModel: function (model: any) {
             var self = this;
-            self.prepareModelForSave(model);
+           let copy = self.prepareModelForSave(model);
 
             var deferred = $q.defer();
             var successFn = function (response: any) {
@@ -679,7 +687,6 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             var errorFn = function (err: any) {
                 deferred.reject(err);
             }
-            var copy = angular.copy(model);
             if (copy.registeredTemplate) {
                 copy.registeredTemplate = undefined;
             }
