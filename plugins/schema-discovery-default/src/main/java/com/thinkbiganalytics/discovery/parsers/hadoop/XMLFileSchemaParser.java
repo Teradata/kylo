@@ -87,14 +87,14 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             schema.setStructured(true);
 
-            LOG.info("XML Spark parser discoverd {} fields", schema.getFields().size());
+            LOG.debug("XML Spark parser discoverd {} fields", schema.getFields().size());
 
             schema.setHiveFormat(serde);
             String xmlStart = hiveParse.startTag + (hiveParse.startTagHasAttributes ? " " : ">");
             String xmlEnd = hiveParse.startTag;
             schema.setSerdeTableProperties(String.format("tblproperties ( \"xmlinput.start\" = \"<%s\", \"xmlinput.end\" = \"</%s>\")", xmlStart, xmlEnd));
 
-            LOG.info("properties", schema.getProperties());
+            LOG.debug("properties", schema.getProperties());
         } catch (Exception e) {
             LOG.error("Failed to parse XML", e);
             if (e instanceof IOException) {

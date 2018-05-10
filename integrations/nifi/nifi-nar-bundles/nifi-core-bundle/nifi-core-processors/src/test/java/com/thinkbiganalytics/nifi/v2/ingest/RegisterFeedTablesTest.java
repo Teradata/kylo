@@ -121,7 +121,7 @@ public class RegisterFeedTablesTest {
 
         // Test with all properties
         runner.setProperty(IngestProperties.PARTITION_SPECS, "year|int");
-        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE");
         runner.setProperty(IngestProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
         runner.setProperty(IngestProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
@@ -136,7 +136,7 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).executeQuery("show tables like 'artists*'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies`.`artists_feed` (`id` string, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE "
+                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE "
                                                         + "LOCATION '/model.db/movies/artists/feed'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "

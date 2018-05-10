@@ -190,10 +190,8 @@ public class TableRegisterSupport {
             case FEED:
                 tblProperties = feedTableProperties;
                 break;
-            case MASTER:
-                tblProperties = targetTableProperties;
-                break;
             default:
+                tblProperties = tableType.deriveTableProperties(targetTableProperties);
                 break;
         }
         return tblProperties;

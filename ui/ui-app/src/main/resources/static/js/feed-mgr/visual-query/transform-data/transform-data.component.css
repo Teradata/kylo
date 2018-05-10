@@ -1,0 +1,210 @@
+/**
+ * Applies styles for users in high contrast mode. Note that this only applies
+ * to Microsoft browsers. Chrome can be included by checking for the `html[hc]`
+ * attribute, however Chrome handles high contrast differently.
+ */
+/* Theme for the ripple elements.*/
+/* stylelint-disable material/no-prefixes */
+/* stylelint-enable */
+thinkbig-visual-query-transform {
+  /** Tooltip */
+  /**
+    Override toolbar buttons
+     */
+  /*
+  Override spacing for context menu
+   */
+}
+thinkbig-visual-query-transform md-sidenav.md-locked-open:not(.collapsed) {
+  max-width: 257px;
+  min-width: 257px;
+  width: 257px;
+}
+thinkbig-visual-query-transform md-toolbar.md-kylo-theme:not(.md-menu-toolbar) {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 1px -1px rgba(0, 0, 0, 0.2), 0 1px 1px 0 rgba(0, 0, 0, 0.14), 0 1px 3px 0 rgba(0, 0, 0, 0.12);
+  color: rgba(0, 0, 0, 0.87);
+  padding: 0 16px;
+  width: 100%;
+  z-index: 1;
+}
+thinkbig-visual-query-transform .formula-editor {
+  font-size: 14px;
+  letter-spacing: normal;
+}
+thinkbig-visual-query-transform .visual-query-function-history md-list-item > md-icon:first-child {
+  margin-right: 16px;
+}
+thinkbig-visual-query-transform .visual-query-function-history md-list-item > p {
+  /*margin-right: 40px;*/
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+thinkbig-visual-query-transform .visual-query-function-history md-list-item > button.md-button.md-secondary-container.md-icon-button {
+  margin-right: -22px;
+}
+thinkbig-visual-query-transform .visual-query-sample-menu {
+  background-color: white;
+  border: 1px solid grey;
+  left: 114px;
+  min-width: 300px;
+  padding: 0 16px 12px 16px;
+  position: absolute;
+  top: 0;
+  transition: all linear 0.2s;
+  z-index: 9999;
+}
+thinkbig-visual-query-transform .visual-query-sample-menu.ng-hide {
+  opacity: 0;
+}
+thinkbig-visual-query-transform thinkbig-step-buttons {
+  padding-bottom: 0;
+  padding-left: inherit;
+  padding-right: 0;
+  padding-top: 0;
+}
+thinkbig-visual-query-transform visual-query-table {
+  position: absolute;
+  top: 0;
+  /* Column headers */
+  /* Column menu button */
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div {
+  padding: 0 5px 0 0;
+  text-overflow: ellipsis;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 13px;
+  border-bottom: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.odd {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.invalid {
+  background-color: #ffcdd2 !important;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.null {
+  background-color: #f5f5f5;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-viewport > div.selected {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container {
+  border-bottom: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.54);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-right: 1px solid lightgray;
+  display: flex;
+  justify-content: space-between;
+  background: white;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div:first-child {
+  padding-left: 24px;
+  padding-right: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport > div {
+  padding-left: 5px;
+  padding-right: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-separator {
+  cursor: col-resize;
+  display: block;
+  padding-left: 0;
+  width: 1px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-header-container .fattable-viewport .header-value {
+  padding-top: 10px;
+  display: block;
+  padding-left: 0;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div {
+  letter-spacing: 0.01em;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .fattable-body-container .fattable-viewport > div.first-column {
+  letter-spacing: 0.01em;
+  padding-left: 24px;
+  padding-right: 5px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-label {
+  color: steelblue;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-header-cell-title {
+  color: black;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button {
+  padding: 0;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button > .md-button.md-icon-button {
+  height: inherit;
+  line-height: inherit;
+  padding: 0 6px;
+  font-size: 13px;
+}
+thinkbig-visual-query-transform visual-query-table .ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  display: inline-block;
+  height: 23px;
+  margin: auto;
+}
+thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-domain-type {
+  line-height: inherit;
+  position: absolute;
+  right: 46px;
+  top: 1px;
+}
+thinkbig-visual-query-transform visual-query-table .kylo-visual-query-table-menu-content {
+  max-height: 352px;
+}
+thinkbig-visual-query-transform .md-tooltip.visual-query-tooltip {
+  height: auto;
+  overflow: visible;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+thinkbig-visual-query-transform .md-tooltip.visual-query-tooltip ul {
+  color: #ffcdd2;
+  margin: 0;
+  padding-left: 20px;
+}
+thinkbig-visual-query-transform .md-kylo-powerui .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}
+thinkbig-visual-query-transform md-menu-content.md-kylo-theme md-menu-item {
+  font-size: 14px;
+  height: 36px;
+}
+thinkbig-visual-query-transform md-progress-linear.md-kylo-theme.wrangler-indeterminate-theme .md-container {
+  background-color: transparent !important;
+  opacity: 1;
+}
+
+/**
+  Override toolbar buttons
+   */
+.visual-query-column-menu .md-button {
+  min-height: 27px;
+  line-height: 27px;
+  font-size: 12px;
+}
