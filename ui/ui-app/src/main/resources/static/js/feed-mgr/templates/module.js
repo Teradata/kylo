@@ -13,9 +13,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 params: {},
                 views: {
                     'content': {
-                        templateUrl: 'js/feed-mgr/templates/registered-templates.html',
-                        controller: 'RegisteredTemplatesController',
-                        controllerAs: 'vm'
+                        component: "registeredTemplatesController"
                     }
                 },
                 resolve: {
@@ -32,9 +30,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 url: '/register-new-template',
                 views: {
                     'content': {
-                        templateUrl: 'js/feed-mgr/templates/new-template/register-new-template.html',
-                        controller: 'RegisterNewTemplateController',
-                        controllerAs: 'vm'
+                        component: "registerNewTemplateController"
                     }
                 },
                 resolve: {

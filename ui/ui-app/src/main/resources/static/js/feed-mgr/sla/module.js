@@ -17,9 +17,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/feed-mgr/sla/service-level-agreements-view.html',
-                        controller: "ServiceLevelAgreementInitController",
-                        controllerAs: "vm"
+                        component: "serviceLevelAgreementInitComponent"
                     }
                 },
                 resolve: {

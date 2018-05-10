@@ -30,6 +30,14 @@ define(["require", "exports", "angular", "../../services/AccessControlService", 
              */
             this.registeredTemplates = [];
             /**
+             * boolean indicating loading
+             */
+            this.loading = true;
+            /**
+             * the title of the card
+             */
+            this.cardTitle = "Templates";
+            /**
              * The unique page name for the PaginationDataService
              */
             this.pageName = "registered-templates";
@@ -37,8 +45,22 @@ define(["require", "exports", "angular", "../../services/AccessControlService", 
              * The unique id for the PaginationData
              */
             this.paginationId = 'registered-templates';
-            this.loading = true;
-            this.cardTitle = 'Templates';
+            this.$scope.$watch(function () {
+                return _this.viewType;
+            }, function (newVal) {
+                _this.onViewTypeChange(newVal);
+            });
+            this.$scope.$watch(function () {
+                return _this.filter;
+            }, function (newVal) {
+                _this.PaginationDataService.filter(_this.pageName, newVal);
+            });
+        }
+        /**
+         * Initialize the controller and properties
+         */
+        RegisteredTemplatesController.prototype.ngOnInit = function () {
+            var _this = this;
             // Register Add button
             this.accessControlService.getUserAllowedActions()
                 .then(function (actionSet) {
@@ -50,27 +72,11 @@ define(["require", "exports", "angular", "../../services/AccessControlService", 
                 }
             });
             this.paginationData = this.PaginationDataService.paginationData(this.pageName);
-            PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-            this.currentPage = PaginationDataService.currentPage(this.pageName) || 1;
-            this.viewType = PaginationDataService.viewType(this.pageName);
+            this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+            this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
+            this.viewType = this.PaginationDataService.viewType(this.pageName);
             this.sortOptions = this.loadSortOptions();
-            this.filter = PaginationDataService.filter(this.pageName);
-        }
-        /**
-         * Initialize the controller and properties
-         */
-        RegisteredTemplatesController.prototype.ngOnInit = function () {
-            var _this = this;
-            this.$scope.$watch(function () {
-                return _this.viewType;
-            }, function (newVal) {
-                _this.onViewTypeChange(newVal);
-            });
-            this.$scope.$watch(function () {
-                return _this.filter;
-            }, function (newVal) {
-                _this.PaginationDataService.filter(_this.pageName, newVal);
-            });
+            this.filter = this.PaginationDataService.filter(this.pageName);
             this.getRegisteredTemplates();
             // Fetch the allowed actions
             this.accessControlService.getUserAllowedActions()
@@ -169,6 +175,10 @@ define(["require", "exports", "angular", "../../services/AccessControlService", 
         return RegisteredTemplatesController;
     }());
     exports.RegisteredTemplatesController = RegisteredTemplatesController;
-    angular.module(module_name_1.moduleName).controller('RegisteredTemplatesController', RegisteredTemplatesController);
+    angular.module(module_name_1.moduleName).component('registeredTemplatesController', {
+        templateUrl: 'js/feed-mgr/templates/registered-templates.html',
+        controller: RegisteredTemplatesController,
+        controllerAs: 'vm'
+    });
 });
 //# sourceMappingURL=RegisteredTemplatesController.js.map

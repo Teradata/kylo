@@ -1,7 +1,7 @@
 import * as angular from 'angular';
 import AccessControlService from "../../services/AccessControlService";
-import {moduleName} from "./module-name";
-import {ListTableView} from "../../services/ListTableViewTypes";
+import { moduleName } from "./module-name";
+import { ListTableView } from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;
 import SortOption = ListTableView.SortOption;
 
@@ -24,11 +24,11 @@ export class RegisteredTemplatesController {
     /**
      * boolean indicating loading
      */
-    loading: boolean;
+    loading: boolean = true;
     /**
      * the title of the card
      */
-    cardTitle: string;
+    cardTitle: string = "Templates";
     /**
      * The unique page name for the PaginationDataService
      */
@@ -64,36 +64,6 @@ export class RegisteredTemplatesController {
         , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
         , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: any, private RegisterTemplateService: any) {
 
-        this.loading = true;
-        this.cardTitle = 'Templates';
-
-        // Register Add button
-        this.accessControlService.getUserAllowedActions()
-            .then((actionSet: any) => {
-                if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
-                    this.AddButtonService.registerAddButton("registered-templates", () =>{
-                        this.RegisterTemplateService.resetModel();
-                        this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
-                    });
-                }
-            });
-
-
-        this.paginationData = this.PaginationDataService.paginationData(this.pageName);
-
-        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
-        this.currentPage = PaginationDataService.currentPage(this.pageName) || 1;
-        this.viewType = PaginationDataService.viewType(this.pageName);
-        this.sortOptions = this.loadSortOptions();
-        this.filter = PaginationDataService.filter(this.pageName);
-    }
-
-    /**
-     * Initialize the controller and properties
-     */
-    ngOnInit() {
-
-
         this.$scope.$watch(() => {
             return this.viewType;
         }, (newVal: any) => {
@@ -105,6 +75,32 @@ export class RegisteredTemplatesController {
         }, (newVal: any) => {
             this.PaginationDataService.filter(this.pageName, newVal)
         });
+    }
+
+    /**
+     * Initialize the controller and properties
+     */
+    ngOnInit() {
+
+        // Register Add button
+        this.accessControlService.getUserAllowedActions()
+            .then((actionSet: any) => {
+                if (this.accessControlService.hasAction(AccessControlService.TEMPLATES_IMPORT, actionSet.actions)) {
+                    this.AddButtonService.registerAddButton("registered-templates", () => {
+                        this.RegisterTemplateService.resetModel();
+                        this.StateService.FeedManager().Template().navigateToRegisterNewTemplate();
+                    });
+                }
+            });
+
+
+        this.paginationData = this.PaginationDataService.paginationData(this.pageName);
+
+        this.PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50']);
+        this.currentPage = this.PaginationDataService.currentPage(this.pageName) || 1;
+        this.viewType = this.PaginationDataService.viewType(this.pageName);
+        this.sortOptions = this.loadSortOptions();
+        this.filter = this.PaginationDataService.filter(this.pageName);
 
 
         this.getRegisteredTemplates();
@@ -149,7 +145,7 @@ export class RegisteredTemplatesController {
      * @returns {*[]}
      */
     loadSortOptions() {
-        var options = {'Template': 'templateName', 'Last Modified': 'updateDate'};
+        var options = { 'Template': 'templateName', 'Last Modified': 'updateDate' };
         var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'templateName', 'asc');
         this.TableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;
@@ -215,4 +211,10 @@ export class RegisteredTemplatesController {
 
 }
 
-angular.module(moduleName).controller('RegisteredTemplatesController', RegisteredTemplatesController);
+angular.module(moduleName).component('registeredTemplatesController', {
+
+    templateUrl: 'js/feed-mgr/templates/registered-templates.html',
+    controller: RegisteredTemplatesController,
+    controllerAs: 'vm'
+
+});
