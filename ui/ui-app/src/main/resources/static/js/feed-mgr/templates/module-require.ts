@@ -4,7 +4,7 @@ import "kylo-common";
 import "ment-io";
 import "../services/RegisterTemplateServiceFactory";
 import "./RegisteredTemplatesController";
-import "./RegisterNewTemplateController";
+import "./new-template/RegisterNewTemplateController";
 import "./template-order/template-order";
 import "./template-stepper/processor-properties/processor-properties";
 import "./template-stepper/processor-properties/derived-expression";
