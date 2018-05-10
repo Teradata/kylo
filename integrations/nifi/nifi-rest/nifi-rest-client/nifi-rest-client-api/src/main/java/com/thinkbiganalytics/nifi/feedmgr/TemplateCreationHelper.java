@@ -378,8 +378,9 @@ public class TemplateCreationHelper {
 
         mergedControllerServices = map;
         //merge back in the map of old cs id to the good root cs id
-        mergedControllerServices.putAll(templateInstance.getCreatedScopeToRootMap().entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getId(), e -> e.getValue())));
-
+        if(templateInstance != null) {
+            mergedControllerServices.putAll(templateInstance.getCreatedScopeToRootMap().entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getId(), e -> e.getValue())));
+        }
         //validate
         //Create a map of the Controller Service Name to list of matching services
 
