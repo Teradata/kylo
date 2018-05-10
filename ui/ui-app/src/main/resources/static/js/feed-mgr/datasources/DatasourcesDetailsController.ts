@@ -289,6 +289,7 @@ export class DatasourcesDetailsController {
                     );
                     return savedModel;
                 }, function (err:any) {
+                    self.isDetailsEditable = true;
                     $mdDialog.hide()
                     $mdDialog.show(
                         $mdDialog.alert()
