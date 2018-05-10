@@ -66,9 +66,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template.html',
-                    controller:'RegisterTemplateController',
-                    controllerAs:'vm'
+                    component : "registerTemplateController"
                 }
             },
             resolve: {

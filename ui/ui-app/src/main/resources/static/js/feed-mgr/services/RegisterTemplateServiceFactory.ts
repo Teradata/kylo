@@ -1037,18 +1037,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         }
         return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.TEMPLATE);
     }
-
-    static factory() {
-        let instance = ($http: angular.IHttpService, $q: angular.IQService, $mdDialog: angular.material.IDialogService, RestUrlService: any
-            , FeedInputProcessorOptionsFactory: any, FeedDetailsProcessorRenderingHelper: any
-            , FeedPropertyService: FeedPropertyService, AccessControlService: any
-            , EntityAccessControlService: any, $filter: angular.IFilterService) =>
-             new RegisterTemplateServiceFactory($http, $q, $mdDialog, RestUrlService, FeedInputProcessorOptionsFactory, FeedDetailsProcessorRenderingHelper, FeedPropertyService, AccessControlService, EntityAccessControlService, $filter);
-
-
-        return instance;
-    }
 }
 
 
-angular.module(moduleName).factory('RegisterTemplateService',  RegisterTemplateServiceFactory.factory());
+angular.module(moduleName).service('RegisterTemplateService',  RegisterTemplateServiceFactory);

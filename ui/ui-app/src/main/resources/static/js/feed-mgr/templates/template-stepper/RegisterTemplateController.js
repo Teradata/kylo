@@ -2,10 +2,9 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var RegisterTemplateController = /** @class */ (function () {
-        function RegisterTemplateController($scope, $transition$, $http, $mdToast, $q, RegisterTemplateService, StateService, AccessControlService, BroadcastService) {
+        function RegisterTemplateController($scope, $http, $mdToast, $q, RegisterTemplateService, StateService, AccessControlService, BroadcastService) {
             var _this = this;
             this.$scope = $scope;
-            this.$transition$ = $transition$;
             this.$http = $http;
             this.$mdToast = $mdToast;
             this.$q = $q;
@@ -13,31 +12,15 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
             this.StateService = StateService;
             this.AccessControlService = AccessControlService;
             this.BroadcastService = BroadcastService;
-            this.init = function () {
-                _this.loading = true;
-                //Wait for the properties to come back before allowing the user to go to the next step
-                _this.RegisterTemplateService.loadTemplateWithProperties(_this.registeredTemplateId, _this.nifiTemplateId).then(function (response) {
-                    _this.loading = false;
-                    _this.RegisterTemplateService.warnInvalidProcessorNames();
-                    _this.$q.when(_this.RegisterTemplateService.checkTemplateAccess()).then(function (response) {
-                        if (!response.isValid) {
-                            //PREVENT access
-                        }
-                        _this.allowAccessControl = response.allowAccessControl;
-                        _this.allowAdmin = response.allowAdmin;
-                        _this.allowEdit = response.allowEdit;
-                        _this.updateAccessControl();
-                        _this.BroadcastService.notify("REGISTERED_TEMPLATE_LOADED", "LOADED");
-                    });
-                }, function (err) {
-                    _this.loading = false;
-                    _this.RegisterTemplateService.resetModel();
-                    _this.allowAccessControl = false;
-                    _this.allowAdmin = false;
-                    _this.allowEdit = false;
-                    _this.updateAccessControl();
-                });
-            };
+            this.allowAccessControl = false;
+            this.allowAdmin = false;
+            this.allowEdit = false;
+            /**
+            * The Stepper Controller set after initialized
+            * @type {null}
+            */
+            this.stepperController = null;
+            this.loading = true;
             this.updateAccessControl = function () {
                 if (!_this.allowAccessControl && _this.stepperController) {
                     //deactivate the access control step
@@ -61,33 +44,49 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                 }
                 _this.updateAccessControl();
             };
-            /**
-             * Reference to the RegisteredTemplate Kylo id passed when editing a template
-             * @type {null|*}
-             */
-            this.registeredTemplateId = $transition$.params().registeredTemplateId || null;
-            /**
-             * Reference to the NifiTemplate Id. Used if kylo id above is not present
-             * @type {null|*}
-             */
-            this.nifiTemplateId = $transition$.params().nifiTemplateId || null;
-            /**
-             * The model being edited/created
-             */
-            this.model = RegisterTemplateService.model;
-            this.allowAccessControl = false;
-            this.allowAdmin = false;
-            this.allowEdit = false;
-            /**
-             * The Stepper Controller set after initialized
-             * @type {null}
-             */
-            this.stepperController = null;
-            this.init();
+            this.registeredTemplateId = this.$transition$.params().registeredTemplateId || null;
+            this.nifiTemplateId = this.$transition$.params().nifiTemplateId || null;
+            this.model = this.RegisterTemplateService.model;
         }
+        RegisterTemplateController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        RegisterTemplateController.prototype.ngOnInit = function () {
+            var _this = this;
+            //Wait for the properties to come back before allowing the user to go to the next step
+            this.RegisterTemplateService.loadTemplateWithProperties(this.registeredTemplateId, this.nifiTemplateId).then(function (response) {
+                _this.loading = false;
+                _this.RegisterTemplateService.warnInvalidProcessorNames();
+                _this.$q.when(_this.RegisterTemplateService.checkTemplateAccess()).then(function (response) {
+                    if (!response.isValid) {
+                        //PREVENT access
+                    }
+                    _this.allowAccessControl = response.allowAccessControl;
+                    _this.allowAdmin = response.allowAdmin;
+                    _this.allowEdit = response.allowEdit;
+                    _this.updateAccessControl();
+                    _this.BroadcastService.notify("REGISTERED_TEMPLATE_LOADED", "LOADED");
+                });
+            }, function (err) {
+                _this.loading = false;
+                _this.RegisterTemplateService.resetModel();
+                _this.allowAccessControl = false;
+                _this.allowAdmin = false;
+                _this.allowEdit = false;
+                _this.updateAccessControl();
+            });
+        };
+        RegisterTemplateController.$inject = ["$scope", "$http", "$mdToast", "$q", "RegisterTemplateService", "StateService", "AccessControlService", "BroadcastService"];
         return RegisterTemplateController;
     }());
     exports.RegisterTemplateController = RegisterTemplateController;
-    angular.module(module_name_1.moduleName).controller('RegisterTemplateController', ["$scope", "$transition$", "$http", "$mdToast", "$q", "RegisterTemplateService", "StateService", "AccessControlService", "BroadcastService", RegisterTemplateController]);
+    angular.module(module_name_1.moduleName).component('registerTemplateController', {
+        bindings: {
+            $transition$: '<'
+        },
+        templateUrl: 'js/feed-mgr/templates/template-stepper/register-template.html',
+        controller: RegisterTemplateController,
+        controllerAs: 'vm'
+    });
 });
 //# sourceMappingURL=RegisterTemplateController.js.map
