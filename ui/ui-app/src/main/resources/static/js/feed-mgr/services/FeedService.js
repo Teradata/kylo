@@ -12,6 +12,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
     var controllerServiceDisplayCachePromiseTracker = {};
     var FeedService = /** @class */ (function () {
         function FeedService($http, $q, $mdToast, $mdDialog, RestUrlService, VisualQueryService, FeedCreationErrorService, FeedPropertyService, accessControlService, EntityAccessControlService, StateService) {
+            var _this = this;
             this.$http = $http;
             this.$q = $q;
             this.$mdToast = $mdToast;
@@ -82,7 +83,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             this.allCompressionOptions = function () {
                 var arr = [];
-                _.each(this.compressionOptions, function (options) {
+                _.each(_this.compressionOptions, function (options) {
                     arr = _.union(arr, options);
                 });
                 return arr;
@@ -111,7 +112,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     nonInputProcessors: [],
                     properties: [],
                     securityGroups: [],
-                    schedule: { schedulingPeriod: this.DEFAULT_CRON, schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 },
+                    schedule: { schedulingPeriod: _this.DEFAULT_CRON, schedulingStrategy: 'CRON_DRIVEN', concurrentTasks: 1 },
                     defineTable: false,
                     allowPreconditions: false,
                     dataTransformationFeed: false,
@@ -179,29 +180,29 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             };
             this.cloneFeed = function () {
                 //copy the feed
-                this.data.createFeedModel = angular.copy(this.data.editFeedModel);
-                this.data.createFeedModel.id = null;
-                this.data.createFeedModel.cloned = true;
-                this.data.createFeedModel.clonedFrom = this.data.createFeedModel.feedName;
-                this.data.createFeedModel.feedName += "_copy";
-                this.data.createFeedModel.systemFeedName += "_copy";
-                this.data.createFeedModel.owner = undefined;
-                _.each(this.data.createFeedModel.table.tableSchema.fields, function (field) {
+                _this.createFeedModel = angular.copy(_this.editFeedModel);
+                _this.createFeedModel.id = null;
+                _this.createFeedModel.cloned = true;
+                _this.createFeedModel.clonedFrom = _this.createFeedModel.feedName;
+                _this.createFeedModel.feedName += "_copy";
+                _this.createFeedModel.systemFeedName += "_copy";
+                _this.createFeedModel.owner = undefined;
+                _.each(_this.createFeedModel.table.tableSchema.fields, function (field) {
                     field._id = _.uniqueId();
                 });
-                _.each(this.data.createFeedModel.table.partitions, function (partition) {
+                _.each(_this.createFeedModel.table.partitions, function (partition) {
                     partition._id = _.uniqueId();
                 });
-                return this.data.createFeedModel;
+                return _this.createFeedModel;
             };
             /**
              * Called when starting a new feed.
              * This will return the default model and also reset the Query Builder and Error service
              */
             this.newCreateFeed = function () {
-                this.createFeedModel = this.getNewCreateFeedModel();
-                this.VisualQueryService.resetModel();
-                this.FeedCreationErrorService.reset();
+                _this.createFeedModel = _this.getNewCreateFeedModel();
+                _this.VisualQueryService.resetModel();
+                _this.FeedCreationErrorService.reset();
             };
             /**
              * Updates a Feed with another model.
@@ -209,17 +210,16 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @param feedModel
              */
             this.updateFeed = function (feedModel) {
-                var self = this;
-                this.editFeedModel.totalPreSteps = 0;
-                this.editFeedModel.inputProcessorName = null;
-                this.editFeedModel.usedByFeeds = [];
-                this.editFeedModel.description = '';
-                this.editFeedModel.inputProcessor = null;
-                angular.extend(this.editFeedModel, feedModel);
+                _this.editFeedModel.totalPreSteps = 0;
+                _this.editFeedModel.inputProcessorName = null;
+                _this.editFeedModel.usedByFeeds = [];
+                _this.editFeedModel.description = '';
+                _this.editFeedModel.inputProcessor = null;
+                angular.extend(_this.editFeedModel, feedModel);
                 //set the field name to the policy name attribute
-                if (this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
-                    angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy, i) {
-                        var field = self.editFeedModel.table.tableSchema.fields[i];
+                if (_this.editFeedModel.table != null && _this.editFeedModel.table.fieldPolicies != null) {
+                    angular.forEach(_this.editFeedModel.table.fieldPolicies, function (policy, i) {
+                        var field = _this.editFeedModel.table.tableSchema.fields[i];
                         if (field != null && field != undefined) {
                             policy.name = field.name;
                             policy.derivedDataType = field.derivedDataType;
@@ -229,15 +229,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     });
                 }
                 //add in the view states
-                var defaultView = self.getNewCreateFeedModel().view;
-                this.editFeedModel.view = defaultView;
+                var defaultView = _this.getNewCreateFeedModel().view;
+                _this.editFeedModel.view = defaultView;
             };
             /**
              * Shows the Feed Error Dialog
              * @returns {*}
              */
             this.showFeedErrorsDialog = function () {
-                return this.FeedCreationErrorService.showErrorDialog();
+                return _this.FeedCreationErrorService.showErrorDialog();
             };
             /**
              * Adds a Nifi Exception error to the Feed Error dialog
@@ -259,18 +259,18 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             this.resetFeed = function () {
                 //get the new model and its keys
-                var newFeedObj = this.getNewCreateFeedModel();
+                var newFeedObj = _this.getNewCreateFeedModel();
                 var keys = _.keys(newFeedObj);
-                var createFeedModel = angular.extend(this.createFeedModel, newFeedObj);
+                var createFeedModel = angular.extend(_this.createFeedModel, newFeedObj);
                 //get the create model and its keys
-                var modelKeys = _.keys(this.createFeedModel);
+                var modelKeys = _.keys(_this.createFeedModel);
                 //find those that have been added and delete them
                 var extraKeys = _.difference(modelKeys, keys);
                 _.each(extraKeys, function (key) {
                     delete createFeedModel[key];
                 });
-                this.VisualQueryService.resetModel();
-                this.FeedCreationErrorService.reset();
+                _this.VisualQueryService.resetModel();
+                _this.FeedCreationErrorService.reset();
             };
             this.getDataTypeDisplay = function (columnDef) {
                 return columnDef.precisionScale != null ? columnDef.derivedDataType + "(" + columnDef.precisionScale + ")" : columnDef.derivedDataType;
@@ -321,16 +321,15 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
              */
             this.setTableFields = function (fields, policies) {
-                var _this = this;
                 if (policies === void 0) { policies = null; }
-                this.createFeedModel.table.tableSchema.fields = fields;
-                this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(function (field) { return _this.newTableFieldPolicy(field.name); });
+                _this.createFeedModel.table.tableSchema.fields = fields;
+                _this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(function (field) { return _this.newTableFieldPolicy(field.name); });
             };
             /**
              * Ensure that the Table Schema has a Field Policy for each of the fields and that their indices are matching.
              */
             this.syncTableFieldPolicyNames = function () {
-                var self = this;
+                var self = _this;
                 angular.forEach(self.createFeedModel.table.tableSchema.fields, function (columnDef, index) {
                     //update the the policy
                     var inArray = index < self.createFeedModel.table.tableSchema.fields.length && index >= 0;
@@ -378,7 +377,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 });
                 var selectedStrategy = feedModel.table.targetMergeStrategy;
                 if (pkStrategy) {
-                    if (!this.hasPrimaryKeyDefined(feedModel)) {
+                    if (!_this.hasPrimaryKeyDefined(feedModel)) {
                         pkStrategy.disabled = true;
                     }
                     else {
@@ -401,7 +400,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 });
                 var selectedStrategy = feedModel.table.targetMergeStrategy;
                 if (rollingSyncStrategy) {
-                    rollingSyncStrategy.disabled = !this.hasPartitions(feedModel);
+                    rollingSyncStrategy.disabled = !_this.hasPartitions(feedModel);
                 }
                 if (rollingSyncStrategy && selectedStrategy == rollingSyncStrategy.type) {
                     return !rollingSyncStrategy.disabled;
@@ -411,8 +410,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }
             };
             this.updateEnabledMergeStrategy = function (feedModel, strategies) {
-                this.enableDisablePkMergeStrategy(feedModel, strategies);
-                this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
+                _this.enableDisablePkMergeStrategy(feedModel, strategies);
+                _this.enableDisableRollingSyncMergeStrategy(feedModel, strategies);
             };
             this.hasPartitions = function (feedModel) {
                 return feedModel.table.partitions != null
@@ -424,26 +423,26 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             this.clearTableData = function () {
                 //this.createFeedModel.table.method = 'MANUAL';
-                this.createFeedModel.table.tableSchema.fields = [];
-                this.createFeedModel.table.fieldPolicies = [];
-                this.createFeedModel.table.existingTableName = null;
+                _this.createFeedModel.table.tableSchema.fields = [];
+                _this.createFeedModel.table.fieldPolicies = [];
+                _this.createFeedModel.table.existingTableName = null;
             };
             /**
              * In the stepper when a feeds step is complete and validated it will change the Step # icon to a Check circle
              */
             this.updateEditModelStateIcon = function () {
-                if (this.editFeedModel.state == 'ENABLED') {
-                    this.editFeedModel.stateIcon = 'check_circle';
+                if (_this.editFeedModel.state == 'ENABLED') {
+                    _this.editFeedModel.stateIcon = 'check_circle';
                 }
                 else {
-                    this.editFeedModel.stateIcon = 'block';
+                    _this.editFeedModel.stateIcon = 'block';
                 }
             };
             /**
              * Initialize this object by creating a new empty {@see this#createFeedModel} object
              */
             this.init = function () {
-                this.newCreateFeed();
+                _this.newCreateFeed();
             };
             /**
              * Before the model is saved to the server this will be called to make any changes
@@ -454,13 +453,13 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var properties = [];
                 if (model.inputProcessor != null) {
                     angular.forEach(model.inputProcessor.properties, function (property) {
-                        this.FeedPropertyService.initSensitivePropertyForSaving(property);
+                        _this.FeedPropertyService.initSensitivePropertyForSaving(property);
                         properties.push(property);
                     });
                 }
                 angular.forEach(model.nonInputProcessors, function (processor) {
                     angular.forEach(processor.properties, function (property) {
-                        this.FeedPropertyService.initSensitivePropertyForSaving(property);
+                        _this.FeedPropertyService.initSensitivePropertyForSaving(property);
                         properties.push(property);
                     });
                 });
@@ -469,7 +468,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 }
                 model.properties = properties;
                 //prepare access control changes if any
-                this.EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+                _this.EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
                 if (model.cloned) {
                     model.state = null;
                 }
@@ -544,7 +543,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @param feedName
              */
             this.showFeedSavingDialog = function (ev, message, feedName) {
-                this.$mdDialog.show({
+                _this.$mdDialog.show({
                     controller: 'FeedSavingDialogController',
                     templateUrl: 'js/feed-mgr/feeds/edit-feed/details/feed-saving-dialog.html',
                     parent: angular.element(document.body),
@@ -566,7 +565,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * Hide the Feed Saving Dialog
              */
             this.hideFeedSavingDialog = function () {
-                this.$mdDialog.hide();
+                _this.$mdDialog.hide();
             };
             /**
              * Save the model Posting the data to the server
@@ -574,9 +573,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {*}
              */
             this.saveFeedModel = function (model) {
-                var self = this;
+                var self = _this;
                 self.prepareModelForSave(model);
-                var deferred = this.$q.defer();
+                var deferred = _this.$q.defer();
                 var successFn = function (response) {
                     var invalidCount = 0;
                     if (response.data && response.data.success) {
@@ -600,9 +599,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     copy.registeredTemplate = undefined;
                 }
                 //reset the sensitive properties
-                this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
-                var promise = this.$http({
-                    url: this.RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
+                _this.FeedPropertyService.initSensitivePropertiesForEditing(model.properties);
+                var promise = _this.$http({
+                    url: _this.RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
                     method: "POST",
                     data: angular.toJson(copy),
                     headers: {
@@ -617,14 +616,14 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {HttpPromise}
              */
             this.getSystemName = function (feedName) {
-                return this.$http.get(this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
+                return _this.$http.get(_this.RestUrlService.GET_SYSTEM_NAME, { params: { name: feedName } });
             };
             /**
              * Call out to the server to get info on whether feed history data reindexing is configured in Kylo
              * @returns {HttpPromise}
              */
             this.isKyloConfiguredForFeedHistoryDataReindexing = function () {
-                return this.$http.get(this.RestUrlService.FEED_HISTORY_CONFIGURED);
+                return _this.$http.get(_this.RestUrlService.FEED_HISTORY_CONFIGURED);
             };
             /**
              * When creating a Feed find the First Column/Field that matches the given name
@@ -632,7 +631,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {*|{}}
              */
             this.getColumnDefinitionByName = function (name) {
-                return _.find(this.createFeedModel.table.tableSchema.fields, function (columnDef) {
+                return _.find(_this.createFeedModel.table.tableSchema.fields, function (columnDef) {
                     return columnDef.name == name;
                 });
             };
@@ -646,7 +645,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
                 var errorFn = function (err) {
                 };
-                var promise = this.$http.get(this.RestUrlService.GET_FEED_NAMES_URL);
+                var promise = _this.$http.get(_this.RestUrlService.GET_FEED_NAMES_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
@@ -660,7 +659,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 };
                 var errorFn = function (err) {
                 };
-                var promise = this.$http.get(this.RestUrlService.OPS_MANAGER_FEED_NAMES);
+                var promise = _this.$http.get(_this.RestUrlService.OPS_MANAGER_FEED_NAMES);
                 promise.then(successFn, errorFn);
                 return promise;
             };
@@ -675,7 +674,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var errorFn = function (err) {
                     console.log('ERROR ', err);
                 };
-                var promise = this.$http.get(this.RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
+                var promise = _this.$http.get(_this.RestUrlService.GET_POSSIBLE_FEED_PRECONDITIONS_URL);
                 promise.then(successFn, errorFn);
                 return promise;
             };
@@ -701,7 +700,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {Promise} for the user fields
              */
             this.getUserFields = function (categoryId) {
-                return this.$http.get(this.RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
+                return _this.$http.get(_this.RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
                     .then(function (response) {
                     return response.data;
                 });
@@ -713,7 +712,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {Array}
              */
             this.getAvailableControllerServices = function (type) {
-                return this.$http.get(this.RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
+                return _this.$http.get(_this.RestUrlService.LIST_SERVICES_URL("root"), { params: { type: type } })
                     .then(function (response) {
                     return response.data;
                 });
@@ -731,7 +730,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     if (!setDisplayValue(property)) {
                         var entry_1 = controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService];
                         if (entry_1 == undefined) {
-                            var promise = this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService);
+                            var promise = _this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService);
                             entry_1 = { request: promise, waitingProperties: [] };
                             entry_1.waitingProperties.push(property);
                             controllerServiceDisplayCachePromiseTracker[property.propertyDescriptor.identifiesControllerService] = entry_1;
@@ -760,7 +759,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 // Show progress indicator
                 property.isLoading = true;
                 // Fetch the list of controller services
-                this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
+                _this.getAvailableControllerServices(property.propertyDescriptor.identifiesControllerService)
                     .then(function (services) {
                     // Update the allowable values
                     property.isLoading = false;
@@ -773,8 +772,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 });
             };
             this.getFeedByName = function (feedName) {
-                var deferred = this.$q.defer();
-                this.$http.get(this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
+                var deferred = _this.$q.defer();
+                _this.$http.get(_this.RestUrlService.FEED_DETAILS_BY_NAME_URL(feedName))
                     .then(function (response) {
                     var feedResponse = response.data;
                     return deferred.resolve(feedResponse);
@@ -787,7 +786,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {Array.<string>} list of function names
              */
             this.getPartitionFunctions = function () {
-                return this.$http.get(this.RestUrlService.PARTITION_FUNCTIONS_URL)
+                return _this.$http.get(_this.RestUrlService.PARTITION_FUNCTIONS_URL)
                     .then(function (response) {
                     return response.data;
                 });
@@ -799,7 +798,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var errorFn = function (err) {
                     console.log('ERROR ', err);
                 };
-                return this.$http.get(this.RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
+                return _this.$http.get(_this.RestUrlService.FEED_VERSIONS_URL(feedId)).then(successFn, errorFn);
             };
             this.getFeedVersion = function (feedId, versionId) {
                 var successFn = function (response) {
@@ -808,7 +807,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var errorFn = function (err) {
                     console.log('ERROR ', err);
                 };
-                return this.$http.get(this.RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
+                return _this.$http.get(_this.RestUrlService.FEED_VERSION_ID_URL(feedId, versionId)).then(successFn, errorFn);
             };
             this.diffFeedVersions = function (feedId, versionId1, versionId2) {
                 var successFn = function (response) {
@@ -817,7 +816,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 var errorFn = function (err) {
                     console.log('ERROR ', err);
                 };
-                return this.$http.get(this.RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
+                return _this.$http.get(_this.RestUrlService.FEED_VERSIONS_DIFF_URL(feedId, versionId1, versionId2)).then(successFn, errorFn);
             };
             /**
              * check if the user has access on an entity
@@ -827,9 +826,9 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              */
             this.hasEntityAccess = function (permissionsToCheck, entity) {
                 if (entity == undefined) {
-                    entity = this.data.model;
+                    // entity = this.model; @Greg model is not defined anywhere inside this service what is it?
                 }
-                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.FEED);
+                return _this.accessControlService.hasEntityAccess(permissionsToCheck, entity, _this.EntityAccessControlService.entityRoleTypes.FEED);
             };
             /**
              * Applies the specified domain type to the specified field.
@@ -849,7 +848,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                     if (angular.isString(domainType.field.derivedDataType) && domainType.field.derivedDataType.length > 0) {
                         field.derivedDataType = domainType.field.derivedDataType;
                         field.precisionScale = domainType.field.precisionScale;
-                        field.dataTypeDisplay = this.data.getDataTypeDisplay(field);
+                        field.dataTypeDisplay = _this.getDataTypeDisplay(field);
                     }
                 }
                 if (angular.isObject(domainType.fieldPolicy)) {
@@ -863,17 +862,17 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @returns {string} operation type, e.g. add, remove, update, no-change
              */
             this.diffOperation = function (path) {
-                return this.versionFeedModelDiff && this.versionFeedModelDiff[path] ? this.versionFeedModelDiff[path].op : 'no-change';
+                return _this.versionFeedModelDiff && _this.versionFeedModelDiff[path] ? _this.versionFeedModelDiff[path].op : 'no-change';
             };
             this.diffCollectionOperation = function (path) {
-                var self = this;
-                if (this.versionFeedModelDiff) {
-                    if (this.versionFeedModelDiff[path]) {
-                        return this.versionFeedModelDiff[path].op;
+                var self = _this;
+                if (_this.versionFeedModelDiff) {
+                    if (_this.versionFeedModelDiff[path]) {
+                        return _this.versionFeedModelDiff[path].op;
                     }
                     else {
                         var patch_1 = { op: 'no-change' };
-                        _.each(_.values(this.versionFeedModelDiff), function (p) {
+                        _.each(_.values(_this.versionFeedModelDiff), function (p) {
                             if (p.path.startsWith(path + "/")) {
                                 patch_1.op = self.joinVersionOperations(patch_1.op, p.op);
                             }
@@ -891,8 +890,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
                 return opLevels[op1] > opLevels[op2] ? op1 : op2;
             };
             this.resetVersionFeedModel = function () {
-                this.versionFeedModel = {};
-                this.versionFeedModelDiff = {};
+                _this.versionFeedModel = {};
+                _this.versionFeedModelDiff = {};
             };
             this.init();
             //return this.data;
@@ -930,17 +929,18 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
      */
     var FeedSavingDialogController = /** @class */ (function () {
         function FeedSavingDialogController($scope, $mdDialog, message, feedName) {
+            var _this = this;
             this.$scope = $scope;
             this.$mdDialog = $mdDialog;
             this.message = message;
             this.feedName = feedName;
             $scope.feedName = feedName;
             $scope.message = message;
-            $scope.hide = function () {
-                $mdDialog.hide();
+            this.$scope.hide = function () {
+                _this.$mdDialog.hide();
             };
-            $scope.cancel = function () {
-                $mdDialog.cancel();
+            this.$scope.cancel = function () {
+                _this.$mdDialog.cancel();
             };
         }
         FeedSavingDialogController.$inject = ["$scope", "$mdDialog", "message", "feedName"];

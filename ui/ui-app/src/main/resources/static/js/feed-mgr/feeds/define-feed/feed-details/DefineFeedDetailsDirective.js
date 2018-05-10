@@ -19,6 +19,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
              * @type {{}}
              */
             this.feedDetailsForm = {};
+            this.inputProcessors = [];
             this.inputProcessorId = null;
             /**
              * counter holding the number of times the user changes to a different input
@@ -102,8 +103,7 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             var _this = this;
             if (angular.isDefined(this.model.cloned) && this.model.cloned == true) {
                 this.RegisterTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
-                var inputProcessors = this.model.inputProcessors;
-                this.inputProcessors = _.sortBy(inputProcessors, 'name');
+                this.inputProcessors = _.sortBy(this.model.inputProcessors, 'name');
                 // Find controller services
                 _.chain(this.inputProcessors.concat(this.model.nonInputProcessors))
                     .pluck("properties")
@@ -115,9 +115,8 @@ define(["require", "exports", "angular", "underscore"], function (require, expor
             }
             else {
                 this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
-                var inputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
                 //sort them by name
-                this.inputProcessors = _.sortBy(inputProcessors, 'name');
+                this.inputProcessors = _.sortBy(this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true), 'name');
                 this.model.allowPreconditions = template.allowPreconditions;
                 this.model.nonInputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
             }

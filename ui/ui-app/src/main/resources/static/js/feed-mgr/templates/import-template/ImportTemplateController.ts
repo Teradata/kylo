@@ -1,11 +1,11 @@
-import {moduleName} from "../module-name";
+import { moduleName } from "../module-name";
 import * as angular from "angular";
 
 import * as _ from "underscore";
-import {ImportComponentType} from "../../services/ImportService";
-import {Import} from "../../services/ImportComponentOptionTypes";
-import {Common} from "../../../common/CommonTypes";
-import {OnInit} from "@angular/core";
+import { ImportComponentType } from "../../services/ImportService";
+import { Import } from "../../services/ImportComponentOptionTypes";
+import { Common } from "../../../common/CommonTypes";
+import { OnInit } from "@angular/core";
 import ImportComponentOption = Import.ImportComponentOption;
 import RemoteProcessInputPort = Import.RemoteProcessInputPort;
 import ImportTemplateResult = Import.ImportTemplateResult;
@@ -204,26 +204,14 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Flag to see if we should check and use remote input ports.
      * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
      */
-    remoteInputPortsCheckEnabled :boolean = true;
-
-    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
-
-    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
-        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private RegisterTemplateService: any) {
+    remoteInputPortsCheckEnabled: boolean = true;
 
 
-        this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
-
-        this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
-
-        this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
-
-        this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
-
-        this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
-
-
+    /**
+     * When the controller is ready, initialize
+     */
+    $onInit() {
+        this.ngOnInit();
     }
 
     /**
@@ -234,10 +222,19 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.indexImportOptions();
         this.setDefaultImportOptions();
         this.setNiFiClustered();
+    }
+
+    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
+
+    constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
+        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
+        , private RegisterTemplateService: any) {
+
+
+
         /**
          * Watch when the file changes
          */
-        var self = this;
         this.$scope.$watch(() => {
             return this.templateFile;
         }, (newVal: any, oldValue: any) => {
@@ -260,6 +257,17 @@ export class ImportTemplateController implements ng.IController, OnInit {
             }
 
         });
+        this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+
+        this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+
+        this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+
+        this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
+
+        this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
+
+
     }
 
     /**
@@ -295,7 +303,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
              * Map of errors by type after this upload
              * @type {{FATAL: any[]; WARN: any[]}}
              */
-            let errorMap: any = {"FATAL": [], "WARN": []};
+            let errorMap: any = { "FATAL": [], "WARN": [] };
 
             //reassign the options back from the response data
             let importComponentOptions = responseData.importOptions.importComponentOptions;
@@ -325,7 +333,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
                         if (inputPortsResponse.data) {
                             angular.forEach(inputPortsResponse.data, (port, i) => {
                                 var disabled = angular.isUndefined(port.destinationProcessGroupName) || (angular.isDefined(port.destinationProcessGroupName) && port.destinationProcessGroupName != '' && port.destinationProcessGroupName == processGroupName);
-                                this.inputPortList.push({label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled});
+                                this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName, disabled: disabled });
                                 this.connectionMap[port.name] = port;
                             });
                         }
@@ -353,51 +361,51 @@ export class ImportTemplateController implements ng.IController, OnInit {
             }
 
 
-                if (responseData.templateResults.errors) {
-                    angular.forEach(responseData.templateResults.errors, (processor) => {
-                        if (processor.validationErrors) {
-                            angular.forEach(processor.validationErrors, (error: any) => {
-                                var copy: any = {};
-                                angular.extend(copy, error);
-                                angular.extend(copy, processor);
-                                copy.validationErrors = null;
-                                errorMap[error.severity].push(copy);
-                                count++;
-                            });
-                        }
-                    });
+            if (responseData.templateResults.errors) {
+                angular.forEach(responseData.templateResults.errors, (processor) => {
+                    if (processor.validationErrors) {
+                        angular.forEach(processor.validationErrors, (error: any) => {
+                            var copy: any = {};
+                            angular.extend(copy, error);
+                            angular.extend(copy, processor);
+                            copy.validationErrors = null;
+                            errorMap[error.severity].push(copy);
+                            count++;
+                        });
+                    }
+                });
 
-                    this.errorMap = errorMap;
-                    this.errorCount = count;
-                }
-                if(!this.additionalInputNeeded) {
-                    if (count == 0) {
-                        this.showReorderList = responseData.zipFile;
-                        this.importResultIcon = "check_circle";
-                        this.importResultIconColor = "#009933";
-                        if (responseData.zipFile == true) {
-                            this.message = "Successfully imported and registered the template " + responseData.templateName;
-                        }
-                        else {
-                            this.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
-                        }
-                        this.resetImportOptions();
+                this.errorMap = errorMap;
+                this.errorCount = count;
+            }
+            if (!this.additionalInputNeeded) {
+                if (count == 0) {
+                    this.showReorderList = responseData.zipFile;
+                    this.importResultIcon = "check_circle";
+                    this.importResultIconColor = "#009933";
+                    if (responseData.zipFile == true) {
+                        this.message = "Successfully imported and registered the template " + responseData.templateName;
                     }
                     else {
-                        if (responseData.success) {
-                            this.resetImportOptions();
-                            this.showReorderList = responseData.zipFile;
-                            this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
-                            this.importResultIcon = "warning";
-                            this.importResultIconColor = "#FF9901";
-                        }
-                        else {
-                            this.importResultIcon = "error";
-                            this.importResultIconColor = "#FF0000";
-                            this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
-                        }
+                        this.message = "Successfully imported the template " + responseData.templateName + " into Nifi"
+                    }
+                    this.resetImportOptions();
+                }
+                else {
+                    if (responseData.success) {
+                        this.resetImportOptions();
+                        this.showReorderList = responseData.zipFile;
+                        this.message = "Successfully imported " + (responseData.zipFile == true ? "and registered " : "") + " the template " + responseData.templateName + " but some errors were found. Please review these errors";
+                        this.importResultIcon = "warning";
+                        this.importResultIconColor = "#FF9901";
+                    }
+                    else {
+                        this.importResultIcon = "error";
+                        this.importResultIconColor = "#FF0000";
+                        this.message = "Unable to import " + (responseData.zipFile == true ? "and register " : "") + " the template " + responseData.templateName + ".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
                     }
                 }
+            }
 
 
             this.uploadInProgress = false;
@@ -472,7 +480,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     this.uploadProgress = response.data.percentComplete;
                 }
             }, (err: any) => {
-                //  self.uploadStatusMessages = [];
             });
         }, 500);
     }
@@ -647,7 +654,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
     setNiFiClustered(): void {
-        if(this.remoteInputPortsCheckEnabled) {
+        if (this.remoteInputPortsCheckEnabled) {
             this.$http.get(this.RestUrlService.NIFI_STATUS).then((response: angular.IHttpResponse<any>) => {
                 if (response.data.clustered) {
                     this.nifiClustered = true;
@@ -692,16 +699,10 @@ export class ImportTemplateController implements ng.IController, OnInit {
         this.connectionMap = {};
 
     }
-
-
-    /**
-     * When the controller is ready, initialize
-     */
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
-
 }
 
-angular.module(moduleName).controller('ImportTemplateController', ImportTemplateController);
+angular.module(moduleName).component('importTemplateController', {
+    templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
+    controller: ImportTemplateController,
+    controllerAs: 'vm'
+});

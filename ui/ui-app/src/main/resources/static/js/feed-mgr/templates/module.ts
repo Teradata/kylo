@@ -105,9 +105,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl:  'js/feed-mgr/templates/import-template/import-template.html',
-                    controller:'ImportTemplateController',
-                    controllerAs:'vm'
+                    component : 'importTemplateController'
                 }
             },
             resolve: {

@@ -3,6 +3,7 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
     Object.defineProperty(exports, "__esModule", { value: true });
     var ImportTemplateController = /** @class */ (function () {
         function ImportTemplateController($scope, $http, $interval, $timeout, $mdDialog, FileUpload, RestUrlService, ImportService, RegisterTemplateService) {
+            var _this = this;
             this.$scope = $scope;
             this.$http = $http;
             this.$interval = $interval;
@@ -152,24 +153,9 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
              * Called when a user changes a import option for overwriting
              */
             this.onOverwriteSelectOptionChanged = this.ImportService.onOverwriteSelectOptionChanged;
-            this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
-            this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
-            this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
-            this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
-            this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
-        }
-        /**
-         * Initialize the controller and properties
-         */
-        ImportTemplateController.prototype.ngOnInit = function () {
-            var _this = this;
-            this.indexImportOptions();
-            this.setDefaultImportOptions();
-            this.setNiFiClustered();
             /**
              * Watch when the file changes
              */
-            var self = this;
             this.$scope.$watch(function () {
                 return _this.templateFile;
             }, function (newVal, oldValue) {
@@ -191,6 +177,25 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                     _this.resetImportOptions();
                 }
             });
+            this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+            this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+            this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+            this.templateConnectionInfoImportOption = this.ImportService.newTemplateConnectionInfoImportOption();
+            this.remoteProcessGroupImportOption = this.ImportService.newRemoteProcessGroupImportOption();
+        }
+        /**
+         * When the controller is ready, initialize
+         */
+        ImportTemplateController.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        /**
+         * Initialize the controller and properties
+         */
+        ImportTemplateController.prototype.ngOnInit = function () {
+            this.indexImportOptions();
+            this.setDefaultImportOptions();
+            this.setNiFiClustered();
         };
         /**
          * Called when a user uploads a template
@@ -369,7 +374,6 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
                         _this.uploadProgress = response.data.percentComplete;
                     }
                 }, function (err) {
-                    //  self.uploadStatusMessages = [];
                 });
             }, 500);
         };
@@ -557,16 +561,14 @@ define(["require", "exports", "../module-name", "angular", "underscore", "../../
             this.inputPortList = [];
             this.connectionMap = {};
         };
-        /**
-         * When the controller is ready, initialize
-         */
-        ImportTemplateController.prototype.$onInit = function () {
-            this.ngOnInit();
-        };
         ImportTemplateController.$inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
         return ImportTemplateController;
     }());
     exports.ImportTemplateController = ImportTemplateController;
-    angular.module(module_name_1.moduleName).controller('ImportTemplateController', ImportTemplateController);
+    angular.module(module_name_1.moduleName).component('importTemplateController', {
+        templateUrl: 'js/feed-mgr/templates/import-template/import-template.html',
+        controller: ImportTemplateController,
+        controllerAs: 'vm'
+    });
 });
 //# sourceMappingURL=ImportTemplateController.js.map

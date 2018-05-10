@@ -58,9 +58,10 @@ export class RegisteredTemplatesController {
      */
     filter: string;
 
+
     static $inject = ["$scope", "$http", "$mdDialog", "$q", "AccessControlService", "RestUrlService", "PaginationDataService", "TableOptionsService", "AddButtonService", "StateService", "RegisterTemplateService"];
 
-    constructor(private $scope: any, private $http: any, private $mdDialog: any, private $q: any
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $q: angular.IQService
         , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
         , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: any, private RegisterTemplateService: any) {
 
@@ -76,7 +77,12 @@ export class RegisteredTemplatesController {
             this.PaginationDataService.filter(this.pageName, newVal)
         });
     }
-
+    /**
+     * When the controller is ready, initialize
+     */
+    $onInit() {
+        this.ngOnInit();
+    }
     /**
      * Initialize the controller and properties
      */
@@ -114,17 +120,17 @@ export class RegisteredTemplatesController {
 
     }
 
-    onViewTypeChange(viewType: string) {
+    onViewTypeChange = (viewType: string) => {
         this.PaginationDataService.viewType(this.pageName, this.viewType);
     }
 
 
-    onOrderChange(order: string) {
+    onOrderChange = (order: string) => {
         this.PaginationDataService.sort(this.pageName, order);
         this.TableOptionsService.setSortOption(this.pageName, order);
     };
 
-    onPaginationChange(page: number, limit: number) {
+    onPaginationChange = (page: number, limit: number) => {
         this.PaginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
@@ -133,18 +139,18 @@ export class RegisteredTemplatesController {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption(option: SortOption) {
+    selectedTableOption = (option: SortOption)  => {
         var sortString = this.TableOptionsService.toSortString(option);
         this.PaginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
         this.TableOptionsService.setSortOption(this.pageName, sortString);
-    }
+    };
 
     /**
      * Build the possible Sorting Options
      * @returns {*[]}
      */
-    loadSortOptions() {
+    loadSortOptions = () => {
         var options = { 'Template': 'templateName', 'Last Modified': 'updateDate' };
         var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'templateName', 'asc');
         this.TableOptionsService.initializeSortOption(this.pageName);
@@ -157,7 +163,7 @@ export class RegisteredTemplatesController {
      * @param event
      * @param template
      */
-    templateDetails(event: angular.IAngularEvent, template: any) {
+    templateDetails = (event: angular.IAngularEvent, template: any) =>{
         if (this.allowEdit && template != undefined) {
             this.RegisterTemplateService.resetModel();
 
@@ -175,7 +181,7 @@ export class RegisteredTemplatesController {
         }
     };
 
-    getRegisteredTemplates(): angular.IPromise<any> {
+    getRegisteredTemplates = (): angular.IPromise<any> =>{
 
         let successFn = (response: angular.IHttpResponse<any>) => {
             this.loading = false;
@@ -198,17 +204,9 @@ export class RegisteredTemplatesController {
 
     }
 
-    exportTemplate(event: angular.IAngularEvent, template: any) {
+    exportTemplate = (event: angular.IAngularEvent, template: any) => {
         var promise = this.$http.get(this.RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id);
     }
-
-    /**
-     * When the controller is ready, initialize
-     */
-    $onInit(): void {
-        this.ngOnInit();
-    }
-
 }
 
 angular.module(moduleName).component('registeredTemplatesController', {

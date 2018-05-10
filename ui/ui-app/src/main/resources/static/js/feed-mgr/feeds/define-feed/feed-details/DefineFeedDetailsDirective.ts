@@ -32,7 +32,7 @@ export class DefineFeedDetailsController {
     stepNumber: number;
     model: any;
 
-    inputProcessors: any;
+    inputProcessors: any = [];
 
     inputProcessorId: any = null;
 
@@ -153,8 +153,7 @@ export class DefineFeedDetailsController {
     initializeProperties(template: any) {
         if (angular.isDefined(this.model.cloned) && this.model.cloned == true) {
             this.RegisterTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
-            var inputProcessors = this.model.inputProcessors;
-            this.inputProcessors = _.sortBy(inputProcessors, 'name')
+            this.inputProcessors = _.sortBy(this.model.inputProcessors, 'name')
             // Find controller services
             _.chain(this.inputProcessors.concat(this.model.nonInputProcessors))
                 .pluck("properties")
@@ -166,9 +165,8 @@ export class DefineFeedDetailsController {
 
         } else {
             this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
-            var inputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true);
             //sort them by name
-            this.inputProcessors = _.sortBy(inputProcessors, 'name')
+            this.inputProcessors = _.sortBy(this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true), 'name')
 
             this.model.allowPreconditions = template.allowPreconditions;
 
