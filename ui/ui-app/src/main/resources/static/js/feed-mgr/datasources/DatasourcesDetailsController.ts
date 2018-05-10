@@ -289,6 +289,7 @@ export class DatasourcesDetailsController {
                     );
                     return savedModel;
                 }, function (err:any) {
+                    self.isDetailsEditable = true;
                     $mdDialog.hide()
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -307,7 +308,13 @@ export class DatasourcesDetailsController {
          */
         self.validate = function () {
             if (angular.isDefined(self.datasourceDetailsForm["datasourceName"])) {
-                self.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]));
+                let isNew = angular.isUndefined(self.model) || angular.isUndefined(self.model.id);
+                let unique = true;
+                if(isNew|| (!isNew && self.model.name.toLowerCase() != self.editModel.name.toLowerCase())) {
+                    unique = angular.isUndefined(self.existingDatasourceNames[self.editModel.name.toLowerCase()]);
+                }
+                self.datasourceDetailsForm["datasourceName"].$setValidity("notUnique", unique);
+
             }
         };
 
@@ -358,23 +365,24 @@ export class DatasourcesDetailsController {
             self.loading = false;
         }
 
-        // Watch for changes to data source name
-        $scope.$watch(function () {
-            return self.editModel.name;
-        }, function () {
-            if (_.isEmpty(self.existingDatasourceNames)) {
-                DatasourcesService.findAll()
-                    .then(function (datasources:any) {
-                        self.existingDatasourceNames = {};
-                        angular.forEach(datasources, function (datasource) {
-                            self.existingDatasourceNames[datasource.name.toLowerCase()] = true;
-                        });
-                    })
-                    .then(self.validate);
-            } else {
-                self.validate();
-            }
-        });
+    }
+
+    /**
+     * Watch for changes on the datasource name
+     */
+    onDatasourceNameChange(){
+        if (_.isEmpty(this.existingDatasourceNames)) {
+           this.DatasourcesService.findAll()
+                .then((datasources:any) => {
+                    this.existingDatasourceNames = {};
+                    angular.forEach(datasources, (datasource) =>{
+                        this.existingDatasourceNames[datasource.name.toLowerCase()] = true;
+                    });
+                })
+                .then(this.validate);
+        } else {
+            this.validate();
+        }
     }
 
 
