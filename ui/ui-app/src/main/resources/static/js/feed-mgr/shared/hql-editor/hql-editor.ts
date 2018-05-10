@@ -72,7 +72,7 @@ export class HqlEditorController {
 
         var self = this;
         var init = function() {
-            getTable();
+           // getTable();
             if (self.defaultSchemaName == undefined) {
                 self.defaultSchemaName = null;
             }
@@ -145,6 +145,8 @@ export class HqlEditorController {
                 return expression;
             }
         }
+/*
+  Remove table autocomplete feature
 
         function getTable() {
             self.loadingHiveSchemas = true;
@@ -179,6 +181,7 @@ export class HqlEditorController {
             promise.then(successFn, errorFn);
             return promise;
         }
+        */
 
         this.query = function() {
             this.executingQuery = true;
