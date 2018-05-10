@@ -39,4 +39,11 @@ public class AbstractSparkFileSchemaParser {
         return parserService;
     }
 
+    /**
+     * Set spark service for unit testing
+     */
+    protected void setSparkParserService(SparkFileSchemaParserService service) {
+        this.parserService = service;
+    }
+
 }

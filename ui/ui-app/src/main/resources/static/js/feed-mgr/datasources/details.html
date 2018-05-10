@@ -10,7 +10,7 @@
     </header-section>
     <body-section>
       <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="!vm.isNew()" on-save-edit="vm.onDetailsSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                               editable="vm.isDetailsEditable" is-valid="vm.datasourceForm.$valid" allow-edit="vm.allowEdit">
+                               editable="vm.isDetailsEditable" is-valid="vm.datasourceDetailsForm.$valid" allow-edit="vm.allowEdit">
         <readonly-section>
           <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Name</span>
@@ -53,11 +53,11 @@
           </div>
         </readonly-section>
         <editable-section>
-          <ng-form name="vm.datasourceForm">
+          <ng-form name="vm.datasourceDetailsForm">
             <md-input-container class="md-block">
               <label>Name</label>
-              <input required ng-model="vm.editModel.name" name="datasourceName"/>
-              <div ng-messages="vm.datasourceForm.datasourceName.$error" md-auto-hide="false">
+              <input required ng-model="vm.editModel.name" name="datasourceName" ng-model-options="{ debounce: 500 }" ng-change="vm.onDatasourceNameChange()"/>
+              <div ng-messages="vm.datasourceDetailsForm.datasourceName.$error" md-auto-hide="false">
                 <div ng-message="required">Required.</div>
                 <div ng-message="notUnique">This name is already used.</div>
               </div>
@@ -95,7 +95,7 @@
 
             <md-input-container class="md-block" style="padding-top: 0">
               <div layout="row" layout-align="start center">
-                <md-button ng-disabled="!vm.datasourceForm.$valid" class="md-primary" ng-click="vm.testConnection()" style="margin-left: 0">Test Connection</md-button>
+                <md-button ng-disabled="!vm.datasourceDetailsForm.$valid" class="md-primary" ng-click="vm.testConnection()" style="margin-left: 0">Test Connection</md-button>
                 <div ng-if="vm.testConnectionResult && !vm.testConnectionResult.status" style="color: rgb(221,44,0);">{{vm.testConnectionResult.msg}}</div>
                 <ng-md-icon ng-if="vm.testConnectionResult.status" icon="check" size="30" style="margin: inherit; margin-top: -10px; fill: green"></ng-md-icon>
               </div>

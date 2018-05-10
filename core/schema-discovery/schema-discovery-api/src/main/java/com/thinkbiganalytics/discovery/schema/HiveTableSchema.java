@@ -53,5 +53,16 @@ public interface HiveTableSchema extends TableSchema {
      */
     void setStructured(boolean binary);
 
+    /**
+     * Custom serde table properties
+     */
+    void setSerdeTableProperties(String tblProperties);
+
+    /**
+     * Returns serde table properties
+     */
+    String getSerdeTableProperties();
+
+
 
 }

@@ -153,6 +153,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                     + ' WITH SERDEPROPERTIES ( \'separatorChar\' = \',\' ,\'escapeChar\' = \'\\\\\' ,\'quoteChar\' = \'"\')'
                     + ' STORED AS TEXTFILE',
                     targetFormat: 'STORED AS ORC',
+                    feedTblProperties: '',
                     fieldPolicies: [],
                     partitions: [],
                     options: {compress: false, compressionFormat: 'NONE', auditLogging: true, encrypt: false, trackHistory: false},

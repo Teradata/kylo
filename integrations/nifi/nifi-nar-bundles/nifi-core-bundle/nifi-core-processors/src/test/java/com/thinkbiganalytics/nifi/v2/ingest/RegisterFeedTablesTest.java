@@ -121,7 +121,7 @@ public class RegisterFeedTablesTest {
 
         // Test with all properties
         runner.setProperty(IngestProperties.PARTITION_SPECS, "year|int");
-        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE");
         runner.setProperty(IngestProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
         runner.setProperty(IngestProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
@@ -136,7 +136,7 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).executeQuery("show tables like 'artists*'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies`.`artists_feed` (`id` string, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE "
+                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE "
                                                         + "LOCATION '/model.db/movies/artists/feed'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
@@ -156,6 +156,25 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
     }
+
+    /**
+     * Verify XML feed table with custom table properties
+     */
+    @Test
+    public void testXMLTable() throws Exception {
+        // Test with all properties
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, TableType.FEED.toString());
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id_|string\nauthor|string\nprice|string");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (\"column.xpath.price\" = \"/book/price/text()\", "
+                                                               + "     \"column.xpath.id\" = \"/book/@id\",\"column.xpath.author\" = \"/book/author/text()\") stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
+        runner.setProperty(IngestProperties.FEED_TBLPROPERTIES, "tblproperties ( \"xmlinput.start\" = \"<book \",\"xmlinput.end\"   = \"</book>\")");
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "demo", "metadata.systemFeedName", "xml_test_001"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+    }
+
 
     /**
      * Verify registering tables with some pre-existing.

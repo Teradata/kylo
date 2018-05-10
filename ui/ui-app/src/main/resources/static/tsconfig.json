@@ -10,10 +10,11 @@
     "noImplicitAny": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "sourceMap": true,
     "suppressImplicitAnyIndexErrors": true,
     "target": "es5",
     "typeRoots": ["../../../../node_modules/@types"],
-    "outDir": "../../../../target/classes/static"
+    "outDir": "../../../../target/classes/static",
+    "sourceMap": true,
+    "sourceRoot": "/"
   }
 }
