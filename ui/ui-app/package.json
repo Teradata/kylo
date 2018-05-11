@@ -5,7 +5,7 @@
   "description": "kylo",
   "scripts": {
     "build:ts": "tsc -p src/main/resources/static/tsconfig.json",
-    "watch:ts": "npm run build:ts:dev -- -w",
+    "watch:ts": "npm run build:ts -- -w",
     "build:scss": "node-sass --source-map=true -r --output=target/classes/static src/main/resources/static",
     "watch:scss": "npm run build:scss -- -w",
     "build": "npm run build:ts && npm run build:scss",
