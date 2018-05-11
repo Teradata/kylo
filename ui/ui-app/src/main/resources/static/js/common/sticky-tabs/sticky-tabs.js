@@ -1,4 +1,4 @@
-define(["require", "exports", "angular", "../module-name"], function (require, exports, angular, module_name_1) {
+define(["require", "exports", "angular", "../module-name", "../../services/BroadcastConstants"], function (require, exports, angular, module_name_1, BroadcastConstants_1) {
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     angular.module(module_name_1.moduleName).directive("stickyTabs", ["$window", "$compile", "BroadcastService", function ($window, $compile, BroadcastService) {
@@ -25,7 +25,7 @@ define(["require", "exports", "angular", "../module-name"], function (require, e
                     angular.element($window).on("resize.stickytab", function () {
                         resize();
                     });
-                    BroadcastService.subscribe($scope, BroadcastConstants.CONTENT_WINDOW_RESIZED, onContentWindowResized);
+                    BroadcastService.subscribe($scope, BroadcastConstants_1.default.CONTENT_WINDOW_RESIZED, onContentWindowResized);
                     function onContentWindowResized() {
                         resize();
                     }

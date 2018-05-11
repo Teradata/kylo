@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 
-declare const BroadcastConstants: any;
+import BroadcastConstants from "../../services/BroadcastConstants";
 
 angular.module(moduleName).directive("stickyTabs",
   ["$window","$compile","BroadcastService", ($window, $compile, BroadcastService) => {
