@@ -18,6 +18,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
  * limitations under the License.
  * #L%
  */
+
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -57,13 +59,12 @@ public class RemoteProcessGroupValidator {
     private RemoteProcessGroupValidation validation;
     private TemplateConnectionUtil templateConnectionUtil;
 
-    public RemoteProcessGroupValidator(LegacyNifiRestClient restClient, TemplateConnectionUtil templateConnectionUtil,List<NifiProperty> modifiedProperties){
+    public RemoteProcessGroupValidator(LegacyNifiRestClient restClient, TemplateConnectionUtil templateConnectionUtil, List<NifiProperty> modifiedProperties) {
         this.restClient = restClient;
         this.templateConnectionUtil = templateConnectionUtil;
         this.modifiedProperties = modifiedProperties;
         validation = new RemoteProcessGroupValidation();
     }
-
 
 
     /**
@@ -77,20 +78,25 @@ public class RemoteProcessGroupValidator {
         validation = new RemoteProcessGroupValidation();
         Map<String, RemoteProcessGroupDTO> remoteProcessGroupMap = new HashMap<>();
         Map<String, EnhancedRemoteProcessGroupPortDTO> remoteInputPortsById = new HashMap<>();
+        Map<String, EnhancedRemoteProcessGroupPortDTO> remoteInputPortsByName = new HashMap<>();
 
         feedProcessGroup.getContents().getRemoteProcessGroups().stream().forEach(remoteProcessGroup -> {
             remoteProcessGroupMap.putIfAbsent(remoteProcessGroup.getId(), remoteProcessGroup);
             remoteProcessGroup.getContents().getInputPorts().stream().forEach(inputPort -> {
                 remoteInputPortsById.putIfAbsent(inputPort.getId(), new EnhancedRemoteProcessGroupPortDTO(inputPort, remoteProcessGroup));
+                remoteInputPortsByName.putIfAbsent(inputPort.getName(), new EnhancedRemoteProcessGroupPortDTO(inputPort, remoteProcessGroup));
             });
         });
 
-        Map<String,UpdatedConnection> remoteProcessGroupConnections =
+        //Map of the old connection id to this connectoin object
+        Map<String, UpdatedConnection> remoteProcessGroupConnections =
             feedProcessGroup.getContents().getConnections().stream()
                 .filter(connectionDTO -> connectionDTO.getDestination().getType().equalsIgnoreCase(NifiConstants.REMOTE_INPUT_PORT))
-                .map(conn -> new UpdatedConnection(conn))
-                .collect(Collectors.toMap(conn->conn.getOldConnection().getId(), conn->conn));
-
+                .map(conn -> {
+                    UpdatedConnection connection = new UpdatedConnection(conn, remoteInputPortsById.get(conn.getDestination().getId()));
+                    return connection;
+                })
+                .collect(Collectors.toMap(conn -> conn.getOldConnection().getId(), conn -> conn));
 
         //if the user changed the targetUri  or targetUris then we need to:
         // 1. create a new remote process group with the same parameters as this one
@@ -98,13 +104,25 @@ public class RemoteProcessGroupValidator {
         // 3. reset the connection to this process group id
         // 4. notify the NiFiFlowCache of the update (or it might happe implicitly)
 
-        checkAndCreateNewRemoteProcessGroup(remoteProcessGroupConnections,remoteProcessGroupMap);
-
+        checkAndCreateNewRemoteProcessGroup(remoteProcessGroupConnections, remoteProcessGroupMap);
 
         if (!remoteProcessGroupConnections.isEmpty() && validation.isValid()) {
 
-            List<RemoteProcessGroupConnectionDTO> updatedConnections = updateConnectionData(remoteProcessGroupConnections,remoteInputPortsById);
-            updateConnectionsInNiFi(updatedConnections);
+            Collection<String> authIssues = new HashSet<String>();
+            for (UpdatedConnection updatedConnection : remoteProcessGroupConnections.values()) {
+                if (updatedConnection.getRemoteProcessGroupDTO().getRemoteProcessGroup().getAuthorizationIssues() != null && !updatedConnection.getRemoteProcessGroupDTO().getRemoteProcessGroup()
+                    .getAuthorizationIssues().isEmpty()) {
+                    authIssues.addAll(updatedConnection.getRemoteProcessGroupDTO().getRemoteProcessGroup().getAuthorizationIssues());
+                }
+            }
+
+            if (!authIssues.isEmpty()) {
+                //invalidate the group
+                remoteInputPortsByName.values().stream().forEach(enhancedRemoteProcessGroupPortDTO -> enhancedRemoteProcessGroupPortDTO.invalidate(authIssues));
+            }
+
+            validateConnectionData(remoteProcessGroupConnections, remoteInputPortsByName);
+            updateConnectionsInNiFi(remoteProcessGroupConnections.values());
 
             remoteProcessGroupConnections.values().stream()
                 .filter(conn -> conn.isNewlyCreatedConnection())
@@ -119,7 +137,9 @@ public class RemoteProcessGroupValidator {
                 });
             //delete the entity.getRemoteProcessGroups matching the id
             //add in the newly created remote process group
-            List<RemoteProcessGroupDTO>removedGroups =feedProcessGroup.getContents().getRemoteProcessGroups().stream().filter(rpg->validation.getRemovedRemoteProcessGroupIds().contains(rpg.getId())).collect(Collectors.toList());
+            List<RemoteProcessGroupDTO>
+                removedGroups =
+                feedProcessGroup.getContents().getRemoteProcessGroups().stream().filter(rpg -> validation.getRemovedRemoteProcessGroupIds().contains(rpg.getId())).collect(Collectors.toList());
             feedProcessGroup.getContents().getRemoteProcessGroups().removeAll(removedGroups);
             feedProcessGroup.getContents().getRemoteProcessGroups().addAll(validation.getCreatedRemoteProcessGroups());
 
@@ -127,62 +147,38 @@ public class RemoteProcessGroupValidator {
         return validation;
     }
 
-    /**
-     * Update the connections changing the destination remote input port id with the valid id for this nifi instance
-     * @return the list of updated connections
-     */
-    private List<RemoteProcessGroupConnectionDTO> updateConnectionData(Map<String,UpdatedConnection> remoteProcessGroupConnections, Map<String, EnhancedRemoteProcessGroupPortDTO> remoteInputPortsById ){
-        List<RemoteProcessGroupConnectionDTO> updatedConnections = new ArrayList<>();
+    private void validateConnectionData(Map<String, UpdatedConnection> remoteProcessGroupConnections, Map<String, EnhancedRemoteProcessGroupPortDTO> remoteInputPortsByName) {
         ControllerEntity details = restClient.getNiFiRestClient().siteToSite().details();
-        Map<String, PortDTO> siteToSitePortByIdMap = details.getController().getInputPorts().stream()
-            .collect(Collectors.toMap(port -> port.getId(), port -> port));
         Map<String, PortDTO> siteToSitePortByNameMap = details.getController().getInputPorts().stream()
             .collect(Collectors.toMap(port -> port.getName(), port -> port));
 
-        //Update the destination Id for the new connection to match the remote input port id
         remoteProcessGroupConnections.values().stream().forEach(conn -> {
-            String destinationId = conn.getOldConnection().getDestination().getId();
             String destinationName = conn.getOldConnection().getDestination().getName();
-            EnhancedRemoteProcessGroupPortDTO remoteProcessGroupPortDTO = remoteInputPortsById.get(destinationId);
+            EnhancedRemoteProcessGroupPortDTO remoteProcessGroupPortDTO = conn.getRemoteProcessGroupDTO();
 
             if (remoteProcessGroupPortDTO != null) {
-                RemoteProcessGroupConnectionDTO connection = new RemoteProcessGroupConnectionDTO(conn, remoteProcessGroupPortDTO);
-
-                if (!siteToSitePortByIdMap.containsKey(remoteProcessGroupPortDTO.getId())) {
-                    //find by name
-                    PortDTO siteToSiteNamedPort = siteToSitePortByNameMap.get(destinationName);
-                    if (siteToSiteNamedPort != null) {
-                        //update the connection
-                        conn.getNewConnection().getDestination().setId(siteToSiteNamedPort.getId());
-                        updatedConnections.add(connection);
-                    } else {
-                        validation.addNonExistentConnection(conn.getOldConnection());
-                    }
-                } else if (remoteProcessGroupPortDTO == null) {
+                if (!siteToSitePortByNameMap.containsKey(remoteProcessGroupPortDTO.getName())) {
                     validation.addNonExistentConnection(conn.getOldConnection());
                 }
+            } else {
+                validation.addNonExistentConnection(conn.getOldConnection());
             }
         });
-        return updatedConnections;
     }
 
-    /**
-     * Creates or updates the Connection in NiFi
-     * @param updatedConnections
-     */
-    private void updateConnectionsInNiFi(List<RemoteProcessGroupConnectionDTO> updatedConnections){
+
+    private void updateConnectionsInNiFi(Collection<UpdatedConnection> updatedConnections) {
         updatedConnections.stream().forEach(remoteProcessGroupConnection -> {
-                updateRemoteConnection(remoteProcessGroupConnection, validation, 0);
+            updateRemoteConnection(remoteProcessGroupConnection, validation, 0);
         });
     }
 
 
-
-    private RemoteProcessGroupDTO copyRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO){
+    private RemoteProcessGroupDTO copyRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO) {
         RemoteProcessGroupDTO copy = new RemoteProcessGroupDTO();
         try {
-            BeanUtils.copyProperties(copy,remoteProcessGroupDTO);
-        }catch (Exception e){
+            BeanUtils.copyProperties(copy, remoteProcessGroupDTO);
+        } catch (Exception e) {
 
         }
         return copy;
@@ -190,14 +186,14 @@ public class RemoteProcessGroupValidator {
 
     /**
      * If we are modifying targetUris we need to delete the RemoteProcessGroup (and connections) and recreate the Remote Process Group with the new target Uri
+     *
      * @param remoteProcessGroupConnections the connection map connecting to the remote process groups
-     * @param remoteProcessGroupMap the map of remote process groups
+     * @param remoteProcessGroupMap         the map of remote process groups
      */
-    private void checkAndCreateNewRemoteProcessGroup( Map<String,UpdatedConnection> remoteProcessGroupConnections, Map<String, RemoteProcessGroupDTO> remoteProcessGroupMap)
-    {
-      Map<String,List<NifiProperty>> updatedRemoteProcessGroupProperties = findPropertiesRequiringNewRemoteProcessGroupGroupedByRemoteProcessGroupid();
+    private void checkAndCreateNewRemoteProcessGroup(Map<String, UpdatedConnection> remoteProcessGroupConnections, Map<String, RemoteProcessGroupDTO> remoteProcessGroupMap) {
+        Map<String, List<NifiProperty>> updatedRemoteProcessGroupProperties = findPropertiesRequiringNewRemoteProcessGroupGroupedByRemoteProcessGroupid();
 
-        if(!updatedRemoteProcessGroupProperties.isEmpty()) {
+        if (!updatedRemoteProcessGroupProperties.isEmpty()) {
 
             for (Map.Entry<String, List<NifiProperty>> entry : updatedRemoteProcessGroupProperties.entrySet()) {
                 String id = entry.getKey();
@@ -224,7 +220,9 @@ public class RemoteProcessGroupValidator {
                     //make the new connections
                     remoteProcessGroupConnections.values().stream().forEach(c -> {
                         c.getNewConnection().setId(null);
+                        c.getNewConnection().getDestination().setId(null);
                         c.getNewConnection().getDestination().setGroupId(newRemoteProcessGroup.get().getId());
+                        c.updateRemoteProcessGroup(newRemoteProcessGroup.get());
                     });
 
                 } else {
@@ -237,7 +235,7 @@ public class RemoteProcessGroupValidator {
 
     }
 
-    private Map<String,List<NifiProperty>> findPropertiesRequiringNewRemoteProcessGroupGroupedByRemoteProcessGroupid(){
+    private Map<String, List<NifiProperty>> findPropertiesRequiringNewRemoteProcessGroupGroupedByRemoteProcessGroupid() {
         Map<String, List<NifiProperty>> updatedRemoteProcessGroupProperties = new HashMap<>();
         modifiedProperties.stream()
             .filter(p -> p.getProcessorType().equalsIgnoreCase("REMOTE_PROCESS_GROUP")
@@ -258,42 +256,67 @@ public class RemoteProcessGroupValidator {
      * @param retryCount                      the number of retries already attempted for this connection
      * @return true if successful, false if not.  The Validation object will also be populated with the validation information
      */
-    private boolean updateRemoteConnection(RemoteProcessGroupConnectionDTO remoteProcessGroupConnectionDTO, RemoteProcessGroupValidation validation, int retryCount) {
+    private boolean updateRemoteConnection(UpdatedConnection updatedConnection, RemoteProcessGroupValidation validation, int retryCount) {
         //ensure we are not attempting to authorize
         //TODO pull timeouts to configurable parameters
         boolean success = false;
         final int sleepTimeMillis = templateConnectionUtil.getRemoteProcessGroupSleepTime();
         final int maxAttempts = templateConnectionUtil.getRemoteProcessGroupMaxAttempts();
-        ConnectionDTO connectionDTO = remoteProcessGroupConnectionDTO.getUpdatedConnection().getNewConnection();
-        if(connectionDTO.getId() == null){
+        ConnectionDTO connectionDTO = updatedConnection.getNewConnection();
+        //fetch RPG
+        //http://localhost:8079/nifi-api/remote-process-groups/4d883118-0163-1000-9638-372a2ff95da7
+        //look in contents/input-ports
+        //get the id of that input port (it will be different than the on on the root
+        //set the destination to that id
+        if (updatedConnection.getRemoteProcessGroupDTO().hasRemoteProcessGroupAuthorizationIssues() || updatedConnection.getRemoteProcessGroupDTO().getRemoteProcessGroup().getInputPortCount() == 0) {
+            //wait
+            log.info("Authorization issue found when attempting to update Remote Process Group Port connection for {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(), retryCount);
+            if (retryCount <= maxAttempts) {
+                Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
+                Optional<RemoteProcessGroupDTO>
+                    remoteProcessGroupDTO =
+                    restClient.getNiFiRestClient().remoteProcessGroups().findById(updatedConnection.getRemoteProcessGroupDTO().getRemoteProcessGroup().getId());
+                if (remoteProcessGroupDTO.isPresent()) {
+                    updatedConnection.updateRemoteProcessGroup(remoteProcessGroupDTO.get());
+                    retryCount++;
+                    return updateRemoteConnection(updatedConnection, validation, retryCount);
+                } else {
+                    validation.addInvalidConnection(connectionDTO);
+                    success = false;
+                }
+            } else {
+                validation.addInvalidConnection(connectionDTO);
+                success = false;
+            }
+        } else if (connectionDTO.getId() == null) {
             try {
                 ConnectionDTO
                     connection = new ConnectionDTO();
-                    connection.setSource(connectionDTO.getSource());
-                    connection.setDestination(connectionDTO.getDestination());
-                    connection.setParentGroupId(connectionDTO.getParentGroupId());
+                connection.setSource(connectionDTO.getSource());
+                connection.setDestination(connectionDTO.getDestination());
+                connection.setParentGroupId(connectionDTO.getParentGroupId());
 
                 connection.setSelectedRelationships(new HashSet<>());
-                 connection.getSelectedRelationships().add("success");
-                 connection.setName(StringUtils.isNotBlank(connectionDTO.getName())? connectionDTO.getName() : (connectionDTO.getSource().getName() +" - "+connectionDTO.getDestination().getName()));
-                 connection = restClient.getNiFiRestClient().processGroups().createConnection(connection);
+                connection.getSelectedRelationships().add("success");
+                connection
+                    .setName(StringUtils.isNotBlank(connectionDTO.getName()) ? connectionDTO.getName() : (connectionDTO.getSource().getName() + " - " + connectionDTO.getDestination().getName()));
+                connection = restClient.getNiFiRestClient().processGroups().createConnection(connection);
                 if (connection != null) {
-                    remoteProcessGroupConnectionDTO.getUpdatedConnection().setNewConnection(connection);
-                    remoteProcessGroupConnectionDTO.getUpdatedConnection().setUpdated(true);
+                    updatedConnection.setNewConnection(connection);
+                    updatedConnection.setUpdated(true);
                     success = true;
-                }
-                else {
+                } else {
                     success = false;
                 }
-            }catch (Exception e) {
-                log.info("Error found attempting to create the new connection to the Remote Process Group for {} in Parent Process Group: {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(), connectionDTO.getParentGroupId(), retryCount);
+            } catch (Exception e) {
+                log.info("Error found attempting to create the new connection to the Remote Process Group for {} in Parent Process Group: {}.  Retry Attempt: {} ",
+                         connectionDTO.getDestination().getName(), connectionDTO.getParentGroupId(), retryCount);
 
                 if (retryCount <= maxAttempts) {
                     Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
                     retryCount++;
-                    return  updateRemoteConnection(remoteProcessGroupConnectionDTO,validation,retryCount);
-                }
-                else {
+                    return updateRemoteConnection(updatedConnection, validation, retryCount);
+                } else {
                     //unable to create new connection
                     validation.addInvalidConnection(connectionDTO);
                     success = false;
@@ -301,47 +324,24 @@ public class RemoteProcessGroupValidator {
             }
 
         } else {
-            if (remoteProcessGroupConnectionDTO.hasRemoteProcessGroupAuthorizationIssues() || remoteProcessGroupConnectionDTO.getRemoteProcessGroup().getInputPortCount() == 0) {
-                //wait
-                log.info("Authorization issue found when attempting to update Remote Process Group Port connection for {}.  Retry Attempt: {} ", connectionDTO.getDestination().getName(), retryCount);
-                if (retryCount <= maxAttempts) {
-                    Uninterruptibles.sleepUninterruptibly(sleepTimeMillis, TimeUnit.MILLISECONDS);
-                    Optional<RemoteProcessGroupDTO>
-                        remoteProcessGroupDTO =
-                        restClient.getNiFiRestClient().remoteProcessGroups().findById(remoteProcessGroupConnectionDTO.getRemoteProcessGroup().getId());
-                    if (remoteProcessGroupDTO.isPresent()) {
-                        remoteProcessGroupConnectionDTO.updateRemoteProcessGroupDTO(remoteProcessGroupDTO.get());
-                        retryCount++;
-                        return updateRemoteConnection(remoteProcessGroupConnectionDTO, validation, retryCount);
-                    } else {
-                        validation.addInvalidConnection(connectionDTO);
-                        success = false;
-                    }
+            log.info("Updating Remote Process Group Port connection for {} ", connectionDTO.getDestination().getName());
+            try {
+                Optional<ConnectionDTO> connection = restClient.getNiFiRestClient().connections().update(connectionDTO);
+                if (connection.isPresent()) {
+                    validation.addUpdatedConnection(connection.get());
+                    success = true;
                 } else {
                     validation.addInvalidConnection(connectionDTO);
                     success = false;
                 }
-            } else {
-                log.info("Updating Remote Process Group Port connection for {} ", connectionDTO.getDestination().getName());
-                try {
-                    Optional<ConnectionDTO> updatedConnection = restClient.getNiFiRestClient().connections().update(connectionDTO);
-                    if (updatedConnection.isPresent()) {
-                        validation.addUpdatedConnection(updatedConnection.get());
-                        success = true;
-                    } else {
-                        validation.addInvalidConnection(connectionDTO);
-                        success = false;
-                    }
-                } catch (Exception e) {
-                    validation.addInvalidConnection(connectionDTO);
-                    success = false;
-                }
+            } catch (Exception e) {
+                validation.addInvalidConnection(connectionDTO);
+                success = false;
             }
         }
         return success;
 
     }
-
 
 
     public static class RemoteProcessGroupValidation {
@@ -394,10 +394,11 @@ public class RemoteProcessGroupValidator {
             return unableToUpdateNewInstance;
         }
 
-        public void addNewRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO){
+        public void addNewRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO) {
             createdRemoteProcessGroups.add(remoteProcessGroupDTO);
         }
-        public void addDeletedRemoteProcessGroupId(String remoteProcessGroupId){
+
+        public void addDeletedRemoteProcessGroupId(String remoteProcessGroupId) {
             removedRemoteProcessGroupIds.add(remoteProcessGroupId);
         }
 
@@ -445,7 +446,13 @@ public class RemoteProcessGroupValidator {
 
     }
 
-    private class EnhancedRemoteProcessGroupPortDTO {
+    private static class EnhancedRemoteProcessGroupPortDTO {
+
+        private static RemoteProcessGroupPortDTO UNDEFINED_PORT = new RemoteProcessGroupPortDTO();
+
+        static {
+            UNDEFINED_PORT.setId("UNDEFINED");
+        }
 
         private RemoteProcessGroupPortDTO port;
         private RemoteProcessGroupDTO remoteProcessGroup;
@@ -453,6 +460,19 @@ public class RemoteProcessGroupValidator {
         public EnhancedRemoteProcessGroupPortDTO(RemoteProcessGroupPortDTO port, RemoteProcessGroupDTO remoteProcessGroup) {
             this.port = port;
             this.remoteProcessGroup = remoteProcessGroup;
+        }
+
+        public EnhancedRemoteProcessGroupPortDTO(RemoteProcessGroupDTO remoteProcessGroup) {
+            this.port = UNDEFINED_PORT;
+            this.remoteProcessGroup = remoteProcessGroup;
+        }
+
+        public boolean isPortUndefined() {
+            return this.port.equals(UNDEFINED_PORT);
+        }
+
+        public void setPort(RemoteProcessGroupPortDTO port) {
+            this.port = port;
         }
 
         public RemoteProcessGroupPortDTO getPort() {
@@ -480,47 +500,19 @@ public class RemoteProcessGroupValidator {
                 this.remoteProcessGroup = remoteProcessGroupDTO;
             }
         }
-    }
 
-    private class RemoteProcessGroupConnectionDTO {
-
-        private UpdatedConnection updatedConnection;
-        private EnhancedRemoteProcessGroupPortDTO enhancedRemoteProcessGroupPortDTO;
-
-        public RemoteProcessGroupConnectionDTO(UpdatedConnection updatedConnection, EnhancedRemoteProcessGroupPortDTO enhancedRemoteProcessGroupPortDTO) {
-            this.updatedConnection = updatedConnection;
-            this.enhancedRemoteProcessGroupPortDTO = enhancedRemoteProcessGroupPortDTO;
+        public void invalidate(Collection<String> authIssues) {
+            getRemoteProcessGroup().setAuthorizationIssues(authIssues);
         }
 
-        public UpdatedConnection getUpdatedConnection() {
-            return updatedConnection;
-        }
-
-        public void updateNewConnection(ConnectionDTO newConnection){
-            updatedConnection.setNewConnection(newConnection);
-        }
-
-        public EnhancedRemoteProcessGroupPortDTO getEnhancedRemoteProcessGroupPortDTO() {
-            return enhancedRemoteProcessGroupPortDTO;
-        }
-
-        public RemoteProcessGroupDTO getRemoteProcessGroup() {
-            return enhancedRemoteProcessGroupPortDTO.getRemoteProcessGroup();
-        }
-
-        public boolean hasRemoteProcessGroupAuthorizationIssues() {
-            return enhancedRemoteProcessGroupPortDTO.hasRemoteProcessGroupAuthorizationIssues();
-        }
-
-        public void updateRemoteProcessGroupDTO(RemoteProcessGroupDTO remoteProcessGroupDTO) {
-            this.enhancedRemoteProcessGroupPortDTO.updateRemoteProcessGroupDTO(remoteProcessGroupDTO);
-        }
     }
 
 
     private class UpdatedConnection {
+
         private ConnectionDTO oldConnection;
         private ConnectionDTO newConnection;
+        private EnhancedRemoteProcessGroupPortDTO remoteProcessGroupDTO;
         private boolean updated;
 
         public boolean isUpdated() {
@@ -531,12 +523,13 @@ public class RemoteProcessGroupValidator {
             this.updated = updated;
         }
 
-        public boolean isNewlyCreatedConnection(){
+        public boolean isNewlyCreatedConnection() {
             return newConnection != null && newConnection.getId() != null && !newConnection.getId().equalsIgnoreCase(oldConnection.getId());
         }
 
-        public UpdatedConnection(ConnectionDTO oldConnection) {
+        public UpdatedConnection(ConnectionDTO oldConnection, EnhancedRemoteProcessGroupPortDTO remoteProcessGroupDTO) {
             this.oldConnection = oldConnection;
+            this.remoteProcessGroupDTO = remoteProcessGroupDTO;
             newConnectionFromOld();
         }
 
@@ -555,7 +548,8 @@ public class RemoteProcessGroupValidator {
         public void setNewConnection(ConnectionDTO newConnection) {
             this.newConnection = newConnection;
         }
-        private ConnectableDTO copyyConnectable(ConnectableDTO connectableDTO){
+
+        private ConnectableDTO copyyConnectable(ConnectableDTO connectableDTO) {
             ConnectableDTO connectable = new ConnectableDTO();
             connectable.setId(connectableDTO.getId());
             connectable.setGroupId(connectableDTO.getGroupId());
@@ -565,7 +559,7 @@ public class RemoteProcessGroupValidator {
             return connectable;
         }
 
-        public ConnectionDTO newConnectionFromOld(){
+        public ConnectionDTO newConnectionFromOld() {
             ConnectionDTO newConnection = new ConnectionDTO();
             newConnection.setId(oldConnection.getId());
             newConnection.setName(oldConnection.getName());
@@ -575,6 +569,26 @@ public class RemoteProcessGroupValidator {
             newConnection.setSelectedRelationships(oldConnection.getSelectedRelationships());
             this.newConnection = newConnection;
             return newConnection;
+        }
+
+        public EnhancedRemoteProcessGroupPortDTO getRemoteProcessGroupDTO() {
+            return remoteProcessGroupDTO;
+        }
+
+
+        public void updateRemoteProcessGroup(RemoteProcessGroupDTO remoteProcessGroupDTO) {
+            this.remoteProcessGroupDTO.updateRemoteProcessGroupDTO(remoteProcessGroupDTO);
+            if (remoteProcessGroupDTO.getInputPortCount() > 0) {
+                RemoteProcessGroupPortDTO
+                    newPort =
+                    remoteProcessGroupDTO.getContents().getInputPorts().stream().filter(port -> port.getName().equalsIgnoreCase(this.getOldConnection().getDestination().getName())).findFirst()
+                        .orElse(null);
+                if (newPort != null) {
+                    getNewConnection().getDestination().setId(newPort.getId());
+                    getNewConnection().getDestination().setGroupId(remoteProcessGroupDTO.getId());
+                    this.remoteProcessGroupDTO.setPort(newPort);
+                }
+            }
         }
     }
 
