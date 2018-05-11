@@ -77,13 +77,14 @@ public class FileMetadataScalaScriptGenerator {
                   + "}\n"
                   + "})\n");
 
-        sb.append(" var fileMetadataDf = unionedFileMetadataDf.select(col(\"mimeType\"),col(\"encoding\"),"
+        sb.append("var fileMetadataDf = unionedFileMetadataDf.select(col(\"mimeType\"),col(\"encoding\"),"
                   + "when(col(\"properties\")(\"headerCount\").isNotNull,col(\"properties\")(\"headerCount\")).otherwise(lit(\"0\")).as(\"headerCount\")"
                   + ",when(col(\"properties\")(\"delimiter\").isNotNull,col(\"properties\")(\"delimiter\")).otherwise(lit(\"\")).as(\"delimiter\")"
                   + ",when(col(\"properties\")(\"rowTag\").isNotNull,col(\"properties\")(\"rowTag\")).otherwise(lit(\"\")).as(\"rowTag\")"
                   + ",col(\"properties\").as(\"properties\")"
                   + ",col(\"resource\"))\n");
-        sb.append("fileMetadataDf");
+        sb.append("val df = fileMetadataDf\n");
+        sb.append("df\n");
 
         return sb.toString();
 

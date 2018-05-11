@@ -315,7 +315,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             })
             // Wait for save to complete
             .expand(response => {
-                if (response.data.status === SaveResponseStatus.PENDING) {
+                if (response.data.status === SaveResponseStatus.PENDING || response.data.status === SaveResponseStatus.LIVY_PENDING) {
                     return Observable.interval(1000)
                         .take(1)
                         .mergeMap(() => this.$http<SaveResponse>({

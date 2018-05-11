@@ -1,0 +1,13 @@
+{
+  "code": "import org.apache.spark.sql._\nvar df = sqlContext.sql(\"SELECT tbl10.`venueid`, tbl10.`venuename`, tbl10.`venuecity`, tbl10.`venuestate`, tbl10.`venueseats`, tbl10.`processing_dttm` AS `venues_processing_dttm` FROM `concerts`.`venues` tbl10 LIMIT 1\")\ndf = df.limit(1000)\nvar df0 = df; df0.cache().registerTempTable( \"ae36ea4a387340ecb47caefabdcc6e03\" )\n\nval (startCol, stopCol) = (0, 1000);\nval lastCol = df.columns.length - 1\nval dfStartCol = if( lastCol >= startCol ) startCol else lastCol\nval dfStopCol = if( lastCol >= stopCol) stopCol else lastCol\ndf = df.select( dfStartCol to dfStopCol map df.columns map col: _*)\n\nval (startRow, stopRow) = (0, 64);\nval dfRows = List( df.schema.json, df.rdd.zipWithIndex.filter( pair => pair._2>= startRow  && pair._2<= stopRow)\n    .map(_._1).collect.map(x => x.toSeq) )\nval dfRowsAsJson = mapper.writeValueAsString(dfRows)\n%json dfRowsAsJson\n",
+  "id": 2,
+  "output": {
+    "data": {
+      "application/json": "[\"{\\\"type\\\":\\\"struct\\\",\\\"fields\\\":[{\\\"name\\\":\\\"venueid\\\",\\\"type\\\":\\\"integer\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}},{\\\"name\\\":\\\"venuename\\\",\\\"type\\\":\\\"string\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}},{\\\"name\\\":\\\"venuecity\\\",\\\"type\\\":\\\"string\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}},{\\\"name\\\":\\\"venuestate\\\",\\\"type\\\":\\\"string\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}},{\\\"name\\\":\\\"venueseats\\\",\\\"type\\\":\\\"integer\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}},{\\\"name\\\":\\\"venues_processing_dttm\\\",\\\"type\\\":\\\"string\\\",\\\"nullable\\\":true,\\\"metadata\\\":{}}]}\",[[1,\"Toyota Park\",\"Bridgeview\",\"IL\",0,\"1520786524754\"]]]"
+    },
+    "execution_count": 2,
+    "status": "ok"
+  },
+  "progress": 1.0,
+  "state": "available"
+}

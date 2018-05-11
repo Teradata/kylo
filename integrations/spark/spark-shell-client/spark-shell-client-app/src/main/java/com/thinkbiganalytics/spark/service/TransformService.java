@@ -507,7 +507,7 @@ public class TransformService {
      * Creates a new save task.
      */
     @Nonnull
-    private Supplier<SaveResult> createSaveTask(@Nonnull final SaveRequest request, @Nonnull final Supplier<TransformResult> transform) {
+    public Supplier<SaveResult> createSaveTask(@Nonnull final SaveRequest request, @Nonnull final Supplier<TransformResult> transform) {
         Preconditions.checkState(hadoopFileSystem != null, "Saving is not enabled.");
         return Suppliers.compose(new SaveDataSetStage(request, hadoopFileSystem, converterService), transform);
     }
@@ -621,7 +621,7 @@ public class TransformService {
      * Submits the specified task for saving a transformation and returns the result.
      */
     @Nonnull
-    private SaveResponse submitSaveJob(@Nonnull final Supplier<SaveResult> task) {
+    public SaveResponse submitSaveJob(@Nonnull final Supplier<SaveResult> task) {
         log.entry(task);
 
         // Execute script

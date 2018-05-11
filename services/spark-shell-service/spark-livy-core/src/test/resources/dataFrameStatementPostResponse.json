@@ -1,0 +1,134 @@
+{
+  "code": "import org.apache.spark.sql._\nval d = sqlContext.sql(\"SELECT tbl10.`venueid`, tbl10.`venuename`, tbl10.`venuecity`, tbl10.`venuestate`, tbl10.`venueseats`, tbl10.`processing_dttm` AS `venues_processing_dttm` FROM `concerts`.`venues` tbl10\")\nval e = d.take(2)\n%json e\n",
+  "id": 4,
+  "output": {
+    "data": {
+      "application/json": [
+        {
+          "schema": [
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venueid",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuename",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuecity",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuestate",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venueseats",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venues_processing_dttm",
+              "nullable": true
+            }
+          ],
+          "values": [
+            1,
+            "Toyota Park",
+            "Bridgeview",
+            "IL",
+            0,
+            "1520786524754"
+          ]
+        },
+        {
+          "schema": [
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venueid",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuename",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuecity",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venuestate",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venueseats",
+              "nullable": true
+            },
+            {
+              "dataType": {},
+              "metadata": {
+                "map": {}
+              },
+              "name": "venues_processing_dttm",
+              "nullable": true
+            }
+          ],
+          "values": [
+            2,
+            "Columbus Crew Stadium",
+            "Columbus",
+            "OH",
+            0,
+            "1520786524754"
+          ]
+        }
+      ]
+    },
+    "execution_count": 4,
+    "status": "ok"
+  },
+  "progress": 1.0,
+  "state": "available"
+}

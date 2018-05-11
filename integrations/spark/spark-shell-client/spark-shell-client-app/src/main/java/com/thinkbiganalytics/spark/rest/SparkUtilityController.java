@@ -26,6 +26,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.spark.service.SparkLocatorService;
 
+import com.thinkbiganalytics.spark.service.SparkUtilityService;
 import org.apache.spark.sql.sources.DataSourceRegister;
 import org.springframework.context.ApplicationContext;
 
@@ -49,21 +50,12 @@ import io.swagger.annotations.ApiResponse;
  */
 @Path("/api/v1/spark/shell")
 public class SparkUtilityController {
-
     /**
      * Spark locator service
      */
-    @Context
-    public SparkLocatorService sparkLocatorService;
-
     @Resource
-    public List<String> downloadsDatasourceExcludes;
+    private SparkUtilityService sparkUtilityService;
 
-    @Resource
-    public List<String> tablesDatasourceExcludes;
-
-    @Inject
-    public ApplicationContext ctx;
 
     /**
      * Returns the data sources available to Spark.
@@ -74,32 +66,7 @@ public class SparkUtilityController {
     @ApiOperation("Finds Spark data sources")
     @ApiResponse(code = 200, message = "List of Spark data sources.", response = String.class, responseContainer = "List")
     public Response getDataSources() {
-        FluentIterable<String> fi = FluentIterable.from(sparkLocatorService.getDataSources())
-            .transform(new Function<DataSourceRegister, String>() {
-                @Nullable
-                @Override
-                public String apply(@Nullable final DataSourceRegister input) {
-                    return input != null ? input.shortName() : null;
-                }
-            });
-
-        final List<String> tablesDatasourceExcludes = (List<String>)ctx.getBean("tablesDatasourceExcludes");
-        final List<String> tableSources = fi.filter(new Predicate<String>() {
-            @Override
-            public boolean apply(@Nullable String input) {
-                return ! tablesDatasourceExcludes.contains(input);
-            }
-        }).toList();
-
-        final List<String> downloadsDatasourceExcludes = (List<String>)ctx.getBean("downloadsDatasourceExcludes");
-        final List<String> downloadSources = fi.filter(new Predicate<String>() {
-            @Override
-            public boolean apply(@Nullable String input) {
-                return ! downloadsDatasourceExcludes.contains(input);
-            }
-        }).toList();
-
-        return Response.ok(ImmutableMap.of("tables", tableSources, "downloads", downloadSources)).build();
+        return Response.ok(sparkUtilityService).build();
     }
 
 }

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,24 +22,11 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 
 import com.thinkbiganalytics.spark.dataprofiler.ProfilerConfiguration;
 import com.thinkbiganalytics.spark.dataprofiler.StatisticsModel;
-import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.DateColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.DoubleColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.FloatColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.IntegerColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.LongColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.ShortColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.StandardColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.StringColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.columns.UnsupportedColumnStatistics;
-import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
+import com.thinkbiganalytics.spark.dataprofiler.columns.*;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
+import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
-
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.SQLContext;
@@ -48,10 +35,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.annotation.Nonnull;
 
 @Configuration
 public class ProfilerApp {

@@ -182,6 +182,23 @@
       <scope>provided</scope>
     </dependency>
 
+    <!-- Livy Support -->
+    <dependency>
+      <groupId>com.fasterxml.jackson.module</groupId>
+      <artifactId>jackson-module-scala_${scala.binary.version}</artifactId>
+      <version>${jackson.scala.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-reflect</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
     <!-- Testing dependencies -->
     <dependency>
       <groupId>org.mockito</groupId>

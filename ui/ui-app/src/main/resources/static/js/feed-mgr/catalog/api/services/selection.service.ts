@@ -141,7 +141,7 @@ export class SelectionService {
     private lastPath: Map<string, any> = new Map<string, any>();
     private selectionStrategy: SelectionStrategy = new DefaultSelectionStrategy()
         .withPolicy(new DefaultSelectionPolicy())
-        .withPolicy(new SingleSelectionPolicy())
+//okI daremailm        .withPolicy(new SingleSelectionPolicy())
         .withPolicy(new BlockParentObjectSelectionPolicy());
 
     /**

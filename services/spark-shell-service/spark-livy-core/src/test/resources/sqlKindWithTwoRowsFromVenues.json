@@ -1,0 +1,73 @@
+{
+  "code": "SELECT tbl10.`venueid`, tbl10.`venuename`, tbl10.`venuecity`, tbl10.`venuestate`, tbl10.`venueseats`, tbl10.`processing_dttm` AS `venues_processing_dttm` FROM `concerts`.`venues` tbl10 LIMIT 2\n",
+  "id": 1,
+  "output": {
+    "data": {
+      "application/json": {
+        "data": [
+          [
+            1,
+            "Toyota Park",
+            "Bridgeview",
+            "IL",
+            0,
+            "1520786524754"
+          ],
+          [
+            2,
+            "Columbus Crew Stadium",
+            "Columbus",
+            "OH",
+            0,
+            "1520786524754"
+          ]
+        ],
+        "schema": {
+          "fields": [
+            {
+              "metadata": {},
+              "name": "venueid",
+              "nullable": true,
+              "type": "integer"
+            },
+            {
+              "metadata": {},
+              "name": "venuename",
+              "nullable": true,
+              "type": "string"
+            },
+            {
+              "metadata": {},
+              "name": "venuecity",
+              "nullable": true,
+              "type": "string"
+            },
+            {
+              "metadata": {},
+              "name": "venuestate",
+              "nullable": true,
+              "type": "string"
+            },
+            {
+              "metadata": {},
+              "name": "venueseats",
+              "nullable": true,
+              "type": "integer"
+            },
+            {
+              "metadata": {},
+              "name": "venues_processing_dttm",
+              "nullable": true,
+              "type": "string"
+            }
+          ],
+          "type": "struct"
+        }
+      }
+    },
+    "execution_count": 1,
+    "status": "ok"
+  },
+  "progress": 1.0,
+  "state": "available"
+}

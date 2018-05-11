@@ -127,7 +127,7 @@ public class SparkScriptEngine extends ScriptEngine {
             @Override
             public SparkContext call() {
                 log.info("Creating spark context with spark conf {}", conf);
-                return new SparkContext(conf);
+                return SparkContext.getOrCreate(conf);
             }
         });
     }

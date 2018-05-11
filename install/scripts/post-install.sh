@@ -227,6 +227,11 @@ cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
+export HADOOP_CONF_DIR=\${HADOOP_CONF_DIR:-/etc/hadoop/conf}
+if ! [ -f \$HADOOP_CONF_DIR/core-site.xml ]; then
+  >&2 echo "Unable to locate core-site.xml.  Please define HADOOP_CONF_DIR for kylo service account"
+  exit 1
+fi
 export KYLO_SPRING_PROFILES_OPTS=
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
@@ -240,13 +245,19 @@ then
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
-java \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
+java \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -cp \$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 cat << EOF > $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
 #!/bin/bash
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export KYLO_SERVICES_OPTS=-Xmx768m
+export HADOOP_CONF_DIR=\${HADOOP_CONF_DIR:-/etc/hadoop/conf}
+if ! [ -f \$HADOOP_CONF_DIR/core-site.xml ]; then
+  >&2 echo "Unable to locate core-site.xml.  Please define HADOOP_CONF_DIR for kylo service account"
+  exit 1
+fi
+
 [ -f $INSTALL_HOME/encrypt.key ] && export ENCRYPT_KEY="\$(cat $INSTALL_HOME/encrypt.key)"
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
 PROFILES=\$(grep ^spring.profiles. $INSTALL_HOME/kylo-services/conf/application.properties)
@@ -260,7 +271,7 @@ then
  KYLO_NIFI_PROFILE="nifi-v1.2"
 fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
-java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
+java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp \$HADOOP_CONF_DIR:$INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services.sh
 chmod +x $INSTALL_HOME/kylo-services/bin/run-kylo-services-with-debug.sh
