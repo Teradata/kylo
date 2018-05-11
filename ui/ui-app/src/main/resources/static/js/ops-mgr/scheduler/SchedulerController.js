@@ -2,15 +2,15 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     var controller = /** @class */ (function () {
-        function controller($scope, $interval, $timeout, $http, $location, HttpService, Utils, accessControlService) {
+        function controller($scope, $interval, $timeout, $http, $location, httpService, utils, accessControlService) {
             var _this = this;
             this.$scope = $scope;
             this.$interval = $interval;
             this.$timeout = $timeout;
             this.$http = $http;
             this.$location = $location;
-            this.HttpService = HttpService;
-            this.Utils = Utils;
+            this.httpService = httpService;
+            this.utils = utils;
             this.accessControlService = accessControlService;
             /**
               * Time to query for the jobs
@@ -69,6 +69,16 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
              * @type {boolean}
              */
             this.allowAdmin = false;
+            this.ngOnInit = function () {
+                // Fetch the allowed actions
+                _this.accessControlService.getUserAllowedActions()
+                    .then(function (actionSet) {
+                    _this.allowAdmin = _this.accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
+                });
+                _this.clearSchedulerDetails();
+                _this.fetchJobs();
+                _this.fetchSchedulerDetails();
+            };
             /**
           * Fetch the metadata about the scheduler and populate the this.schedulerDetails object
           * @param metadata
@@ -76,7 +86,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
             this.populateSchedulerDetails = function (metadata) {
                 if (metadata.runningSince) {
                     this.schedulerDetails['startTime'] = moment(metadata.runningSince).format('MM/DD/YYYY hh:mm:ss a');
-                    this.schedulerDetails["upTime"] = this.Utils.dateDifference(metadata.runningSince, new Date().getTime());
+                    this.schedulerDetails["upTime"] = this.utils.dateDifference(metadata.runningSince, new Date().getTime());
                 }
                 else {
                     this.schedulerDetails['startTime'] = "N/A";
@@ -252,7 +262,7 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
                 }
                 else {
                     if (job.nextFireTime != null && job.nextFireTime != undefined) {
-                        var timeFromNow = this.Utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
+                        var timeFromNow = this.utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
                         if (timeFromNow < 45000) {
                             if (timeFromNow < 15000) {
                                 job.nextFireTimeString = "in a few seconds";
@@ -352,21 +362,10 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
                     }
                 });
             };
-            this.init = function () {
-                // Fetch the allowed actions
-                _this.accessControlService.getUserAllowedActions()
-                    .then(function (actionSet) {
-                    _this.allowAdmin = _this.accessControlService.hasAction(AccessControlService_1.default.OPERATIONS_ADMIN, actionSet.actions);
-                });
-                _this.clearSchedulerDetails();
-                _this.fetchJobs();
-                _this.fetchSchedulerDetails();
-            };
             this.refresh = function () {
                 _this.fetchSchedulerDetails();
                 _this.fetchJobs();
             };
-            this.init();
             $scope.$on('$destroy', function () {
                 if (_this.fetchJobsTimeout) {
                     $timeout.cancel(_this.fetchJobsTimeout);
@@ -375,10 +374,17 @@ define(["require", "exports", "angular", "./module-name", "underscore", "moment"
                 _this.destroyed = true;
             });
         }
+        controller.prototype.$onInit = function () {
+            this.ngOnInit();
+        };
+        controller.$inject = ["$scope", "$interval", "$timeout", "$http", "$location", "HttpService", "Utils", "AccessControlService"];
         return controller;
     }());
     exports.controller = controller;
-    angular.module(module_name_1.moduleName).controller('SchedulerController', ["$scope", "$interval", "$timeout", "$http", "$location",
-        "HttpService", "Utils", "AccessControlService", controller]);
+    angular.module(module_name_1.moduleName).component("schedulerController", {
+        controller: controller,
+        controllerAs: "vm",
+        templateUrl: "js/ops-mgr/scheduler/scheduler.html"
+    });
 });
 //# sourceMappingURL=SchedulerController.js.map

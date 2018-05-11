@@ -61,9 +61,10 @@ define(["require", "exports", "angular", "./module-name", "jquery"], function (r
             };
             return data;
         }
+        BroadcastService.$inject = ["$rootScope", "$timeout"];
         return BroadcastService;
     }());
     exports.default = BroadcastService;
-    angular.module(module_name_1.moduleName).factory('BroadcastService', ["$rootScope", "$timeout", BroadcastService]);
+    angular.module(module_name_1.moduleName).service('BroadcastService', BroadcastService);
 });
 //# sourceMappingURL=broadcast-service.js.map

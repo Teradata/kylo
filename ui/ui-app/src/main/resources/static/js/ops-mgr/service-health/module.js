@@ -14,7 +14,7 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 url: '/service-health',
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/service-health/service-health.html'
+                        component: "tbaServiceHealth",
                     }
                 },
                 resolve: {
@@ -33,9 +33,8 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/service-health/service-detail.html',
-                        controller: "ServiceHealthDetailsController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/ops-mgr/service-health/service-detail.html',
+                        component: "serviceHealthDetailsController",
                     }
                 },
                 resolve: {
@@ -53,9 +52,8 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 },
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/service-health/service-component-detail.html',
-                        controller: "ServiceComponentHealthDetailsController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/ops-mgr/service-health/service-component-detail.html',
+                        component: "serviceComponentHealthDetailsController",
                     }
                 },
                 resolve: {

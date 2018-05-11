@@ -21,7 +21,8 @@ class ModuleFactory  {
             url:'/service-health',
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/service-health/service-health.html'
+                    component:"tbaServiceHealth",
+                    // templateUrl: 'js/ops-mgr/service-health/service-health.html'
                 }
             },
             resolve: {
@@ -40,9 +41,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/service-health/service-detail.html',
-                    controller:"ServiceHealthDetailsController",
-                    controllerAs:"vm"
+                    // templateUrl: 'js/ops-mgr/service-health/service-detail.html',
+                    component:"serviceHealthDetailsController",
+                    // controllerAs:"vm"
                 }
             },
             resolve: {
@@ -60,9 +61,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/service-health/service-component-detail.html',
-                    controller:"ServiceComponentHealthDetailsController",
-                    controllerAs:"vm"
+                    // templateUrl: 'js/ops-mgr/service-health/service-component-detail.html',
+                    component:"serviceComponentHealthDetailsController",
+                    // controllerAs:"vm"
                 }
             },
             resolve: {

@@ -14,9 +14,8 @@ define(["require", "exports", "angular", "./module-name", "../../kylo-utils/Lazy
                 url: '/scheduler',
                 views: {
                     'content': {
-                        templateUrl: 'js/ops-mgr/scheduler/scheduler.html',
-                        controller: "SchedulerController",
-                        controllerAs: "vm"
+                        // templateUrl: 'js/ops-mgr/scheduler/scheduler.html',
+                        component: "schedulerController",
                     }
                 },
                 resolve: {

@@ -183,6 +183,6 @@ define(["require", "exports", "angular", "./module-name"], function (require, ex
         return DefaultPaginationDataService;
     }());
     exports.DefaultPaginationDataService = DefaultPaginationDataService;
-    angular.module(module_name_1.moduleName).factory('PaginationDataService', function () { return new DefaultPaginationDataService(); });
+    angular.module(module_name_1.moduleName).service('PaginationDataService', DefaultPaginationDataService);
 });
 //# sourceMappingURL=PaginationDataService.js.map

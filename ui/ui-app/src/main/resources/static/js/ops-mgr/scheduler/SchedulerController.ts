@@ -3,13 +3,15 @@ import {moduleName} from "./module-name";
 import * as _ from 'underscore';
 import * as moment from "moment";
 import AccessControlService from '../../services/AccessControlService';
+import HttpService from "../../services/HttpService";
+import Utils from "../../services/Utils";
 
 export class controller implements ng.IComponentController{
        /**
          * Time to query for the jobs
          * @type {number}
          */
-        refreshInterval: any = 3000;
+        refreshInterval: number = 3000;
 
         /**
          * A map of the jobKey to job
@@ -73,16 +75,35 @@ export class controller implements ng.IComponentController{
          */
         allowAdmin: boolean = false;
 
-      constructor(private $scope: any,
-                private $interval: any,
-                private $timeout: any,
-                private $http: any,
-                private $location: any,
-                private HttpService: any,
-                private Utils: any,
-                private accessControlService: AccessControlService){
-                    this.init();
+        static readonly $inject =["$scope","$interval","$timeout","$http","$location", "HttpService","Utils","AccessControlService"];
 
+        $onInit() {
+            this.ngOnInit();
+        }
+
+        ngOnInit=()=>{
+
+            // Fetch the allowed actions
+            this.accessControlService.getUserAllowedActions()
+                .then((actionSet: any)=>{
+                    this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
+                });
+
+
+            this.clearSchedulerDetails();
+            this.fetchJobs();
+            this.fetchSchedulerDetails();
+        }
+
+        constructor(private $scope: IScope,
+                private $interval: angular.IIntervalService,
+                private $timeout: angular.ITimeoutService,
+                private $http: angular.IHttpService,
+                private $location: angular.ILocationService,
+                private httpService: HttpService,
+                private utils: Utils,
+                private accessControlService: AccessControlService){
+                    
                     $scope.$on('$destroy', ()=> {
                         if(this.fetchJobsTimeout) {
                             $timeout.cancel(this.fetchJobsTimeout);
@@ -101,7 +122,7 @@ export class controller implements ng.IComponentController{
 
             if(metadata.runningSince) {
                 this.schedulerDetails['startTime'] = moment(metadata.runningSince).format('MM/DD/YYYY hh:mm:ss a');
-                this.schedulerDetails["upTime"] =  this.Utils.dateDifference(metadata.runningSince,new Date().getTime());
+                this.schedulerDetails["upTime"] =  this.utils.dateDifference(metadata.runningSince,new Date().getTime());
             }
             else {
                 this.schedulerDetails['startTime'] = "N/A";
@@ -292,7 +313,7 @@ export class controller implements ng.IComponentController{
             else {
                 if (job.nextFireTime != null && job.nextFireTime != undefined) {
 
-                var timeFromNow = this.Utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
+                var timeFromNow = this.utils.dateDifferenceMs(new Date().getTime(), job.nextFireTime);
                 if (timeFromNow < 45000) {
                     if (timeFromNow < 15000) {
                         job.nextFireTimeString = "in a few seconds";
@@ -403,20 +424,6 @@ var jobMap: any = {};
             });
         };
 
-        init=()=>{
-
-            // Fetch the allowed actions
-            this.accessControlService.getUserAllowedActions()
-                .then((actionSet: any)=>{
-                    this.allowAdmin = this.accessControlService.hasAction(AccessControlService.OPERATIONS_ADMIN, actionSet.actions);
-                });
-
-
-            this.clearSchedulerDetails();
-            this.fetchJobs();
-            this.fetchSchedulerDetails();
-        }
-
         refresh=()=>{
             this.fetchSchedulerDetails();
             this.fetchJobs();
@@ -425,8 +432,9 @@ var jobMap: any = {};
     
 }
 
+angular.module(moduleName).component("schedulerController", {
+    controller: controller,
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/scheduler/scheduler.html"
+});
 
-
- angular.module(moduleName).controller('SchedulerController', 
-                                        ["$scope","$interval","$timeout","$http","$location",
-                                        "HttpService","Utils","AccessControlService",controller]);

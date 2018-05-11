@@ -12,6 +12,9 @@ import {moduleName} from './module-name';
 import "jquery";
 
 export default class BroadcastService{
+
+static readonly $inject = ["$rootScope", "$timeout"];
+
 constructor (private $rootScope: any,
              private $timeout: any){
         /**
@@ -74,4 +77,4 @@ constructor (private $rootScope: any,
 }
 
 
-angular.module(moduleName).factory('BroadcastService', ["$rootScope", "$timeout",BroadcastService]);
+angular.module(moduleName).service('BroadcastService', BroadcastService);

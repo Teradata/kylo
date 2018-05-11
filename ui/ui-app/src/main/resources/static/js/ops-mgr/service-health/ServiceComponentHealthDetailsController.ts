@@ -1,6 +1,9 @@
 import * as angular from "angular";
 import {moduleName} from "./module-name";
 import ServicesStatusData from "../services/ServicesStatusService";
+import {Transition} from "@uirouter/core";
+import {DefaultTableOptionsService} from "../../services/TableOptionsService";
+import {DefaultPaginationDataService} from "../../services/PaginationDataService";
 
 export class controller implements ng.IComponentController{
 
@@ -10,44 +13,54 @@ export class controller implements ng.IComponentController{
         loading: boolean = true;
         showProgress: boolean = true;
         component: any = {alerts:[]};
-        totalAlerts: any = 0;
+        totalAlerts: number = 0;
         componentName : any;
         serviceName: any;
 
         //Pagination and view Type (list or table)
         paginationData: any;
-        viewType: any;
-        currentPage: any;
+        viewType: string;
+        currentPage: number;
         filter: any;
         sortOptions: any;
         service: any;
         
-constructor(private $scope: any,
-            private $http: any,
-            private $filter: any,
-            private $transition$: any,
-            private $interval: any,
-            private $timeout: any,
-            private $q: any,
-            private ServicesStatusData: any,
-            private TableOptionsService: any,
-            private PaginationDataService: any){
+        $transition$: Transition;
+        static readonly $inject = ["$scope","$http","$filter","$interval","$timeout","$q","ServicesStatusData","TableOptionsService","PaginationDataService"];
+        
+        $onInit() {
+            this.ngOnInit();
+        }
+        
+        ngOnInit() {
 
             this.pageName = 'service-component-details';
             this.cardTitle = 'Service Component Alerts';
-            this.componentName= $transition$.params().componentName;
-            this.serviceName = $transition$.params().serviceName;
-            this.paginationData = PaginationDataService.paginationData(this.pageName);
-            PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
-            this.viewType = PaginationDataService.viewType(this.pageName);
-            this.currentPage = PaginationDataService.currentPage(this.pageName)||1;
-            this.filter = PaginationDataService.filter(this.pageName);
+            this.componentName= this.$transition$.params().componentName;
+            this.serviceName = this.$transition$.params().serviceName;
+            this.paginationData = this.paginationDataService.paginationData(this.pageName);
+            this.paginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50']);
+            this.viewType = this.paginationDataService.viewType(this.pageName);
+            this.currentPage = this.paginationDataService.currentPage(this.pageName)||1;
+            this.filter = this.paginationDataService.filter(this.pageName);
             this.sortOptions = this.loadSortOptions();
-            this.service = ServicesStatusData.services[this.serviceName];
+            this.service = this.ServicesStatusData.services[this.serviceName];
 
             if(this.service){
                 this.component = this.service.componentMap[this.componentName];
             };
+
+        }
+
+        constructor(private $scope: IScope,
+            private $http: angular.IHttpService,
+            private $filter: angular.IFilterService,
+            private $interval: angular.IIntervalService,
+            private $timeout: angular.ITimeoutService,
+            private $q: angular.IQService,
+            private ServicesStatusData: any,
+            private tableOptionsService: DefaultTableOptionsService,
+            private paginationDataService: DefaultPaginationDataService){
 
             $scope.$watch(()=>{return ServicesStatusData.services;}
                                 ,(newVal:  any)=> {
@@ -66,21 +79,21 @@ constructor(private $scope: any,
         }// end of constructor
 
         paginationId = function(){
-            return this.PaginationDataService.paginationId(this.pageName);
+            return this.paginationDataService.paginationId(this.pageName);
         }
 
         onViewTypeChange = (viewType: any) =>{
-            this.PaginationDataService.viewType(this.pageName, this.viewType);
+            this.paginationDataService.viewType(this.pageName, this.viewType);
         }
 
         //Tab Functions
         onOrderChange = (order: any) =>{
-            this.PaginationDataService.sort(this.pageName,order);
-            this.TableOptionsService.setSortOption(this.pageName,order);
+            this.paginationDataService.sort(this.pageName,order);
+            this.tableOptionsService.setSortOption(this.pageName,order);
         };
 
         onPaginationChange = (page: any, limit: any) =>{
-            this.PaginationDataService.currentPage(this.pageName,null,page);
+            this.paginationDataService.currentPage(this.pageName,null,page);
             this.currentPage = page;
         };
 
@@ -92,8 +105,8 @@ constructor(private $scope: any,
         loadSortOptions= function() {
             var options = {'Component Name':'componentName','Alert':'alert','Update Date':'latestAlertTimestamp'};
 
-            var sortOptions = this.TableOptionsService.newSortOptions(this.pageName,options,'latestAlertTimestamp','asc');
-            this.TableOptionsService.initializeSortOption(this.pageName);
+            var sortOptions = this.tableOptionsService.newSortOptions(this.pageName,options,'latestAlertTimestamp','asc');
+            this.tableOptionsService.initializeSortOption(this.pageName);
             return sortOptions;
 
         }
@@ -103,16 +116,20 @@ constructor(private $scope: any,
          * @param option
          */
         selectedTableOption = (option: any) =>{
-            var sortString = this.TableOptionsService.toSortString(option);
-            var savedSort = this.PaginationDataService.sort(this.pageName, sortString);
-            var updatedOption = this.TableOptionsService.toggleSort(this.pageName, option);
-            this.TableOptionsService.setSortOption(this.pageName, sortString);
+            var sortString = this.tableOptionsService.toSortString(option);
+            var savedSort = this.paginationDataService.sort(this.pageName, sortString);
+            var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
+            this.tableOptionsService.setSortOption(this.pageName, sortString);
         }
 }
 
- angular.module(moduleName)
-        .controller('ServiceComponentHealthDetailsController',
-                                        ["$scope","$http","$filter","$transition$","$interval",
-                                        "$timeout","$q","ServicesStatusData","TableOptionsService",
-                                        "PaginationDataService",controller]);
+angular.module(moduleName).component("serviceComponentHealthDetailsController", {
+    controller: controller,
+    bindings: {
+        $transition$: "<"
+    },
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/service-health/service-component-detail.html"
+});
+
 

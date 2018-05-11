@@ -204,4 +204,4 @@ export class DefaultPaginationDataService implements PaginationDataService{
     }
 }
 
-angular.module(moduleName).factory('PaginationDataService', () => new DefaultPaginationDataService());
+angular.module(moduleName).service('PaginationDataService', DefaultPaginationDataService);
