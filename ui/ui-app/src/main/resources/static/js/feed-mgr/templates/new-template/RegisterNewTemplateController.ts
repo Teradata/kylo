@@ -2,6 +2,8 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../module-name";
 import AccessControlService from '../../../services/AccessControlService';
+import StateService from '../../../services/StateService';
+import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 
 
 export class RegisterNewTemplateController {
@@ -53,7 +55,7 @@ export class RegisterNewTemplateController {
      * @param StateService
      */
     static readonly $inject = ["$scope", "AccessControlService", "StateService", "RegisterTemplateService"];
-    constructor(private $scope: IScope, private accessControlService: AccessControlService, private StateService: any, private RegisterTemplateService: any) {
+    constructor(private $scope: IScope, private accessControlService: AccessControlService, private stateService: StateService, private registerTemplateService: RegisterTemplateServiceFactory) {
 
         
     }
@@ -61,16 +63,16 @@ export class RegisterNewTemplateController {
          * Creates a new Feed Manager template from a NiFi template.
          */
     createFromNifi() {
-        this.RegisterTemplateService.resetModel();
-        this.StateService.FeedManager().Template().navigateToRegisterNifiTemplate();
+        this.registerTemplateService.resetModel();
+        this.stateService.FeedManager().Template().navigateToRegisterNifiTemplate();
     }
 
     /**
      * Imports a Feed Manager template from a file.
      */
     importFromFile() {
-        this.RegisterTemplateService.resetModel();
-        this.StateService.FeedManager().Template().navigateToImportTemplate();
+        this.registerTemplateService.resetModel();
+        this.stateService.FeedManager().Template().navigateToImportTemplate();
     }
 
 }

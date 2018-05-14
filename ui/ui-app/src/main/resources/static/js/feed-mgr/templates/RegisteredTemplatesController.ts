@@ -4,6 +4,8 @@ import { moduleName } from "./module-name";
 import { ListTableView } from "../../services/ListTableViewTypes";
 import PaginationData = ListTableView.PaginationData;
 import SortOption = ListTableView.SortOption;
+import StateService from '../../services/StateService';
+import { RegisterTemplateServiceFactory } from '../services/RegisterTemplateServiceFactory';
 
 export class RegisteredTemplatesController {
 
@@ -63,7 +65,7 @@ export class RegisteredTemplatesController {
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $q: angular.IQService
         , private accessControlService: AccessControlService, private RestUrlService: any, private PaginationDataService: ListTableView.PaginationDataService
-        , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: any, private RegisterTemplateService: any) {
+        , private TableOptionsService: ListTableView.TableOptionService, private AddButtonService: any, private StateService: StateService, private RegisterTemplateService: RegisterTemplateServiceFactory) {
 
         this.$scope.$watch(() => {
             return this.viewType;

@@ -3,6 +3,8 @@ import * as _ from "underscore";
 import { moduleName } from "../../module-name";
 import { Common } from "../../../../common/CommonTypes";
 import LabelValue = Common.LabelValue;
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import StateService from '../../../../services/StateService';
 
 
 export class RegisterCompleteRegistrationController {
@@ -74,14 +76,14 @@ export class RegisterCompleteRegistrationController {
 
     static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
 
-    constructor(private $scope: any, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private StateService: any, private RegisterTemplateService: any, private EntityAccessControlService: any) {
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
+        , private stateService: StateService, private RegisterTemplateService: any, private EntityAccessControlService: any) {
 
 
         /**
          * The Template Model
          */
-        this.model = RegisterTemplateService.model;
+        this.model = this.RegisterTemplateService.model;
 
         //set the step number
         this.stepNumber = parseInt(this.stepIndex) + 1
@@ -313,7 +315,7 @@ export class RegisterCompleteRegistrationController {
                     .textContent(message)
                     .hideDelay(3000)
             );
-            this.StateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, this.model, null);
+            this.stateService.FeedManager().Template().navigateToRegisterTemplateComplete(message, this.model, null);
         }
         let errorFn = (response: any) => {
             this.$mdDialog.hide();

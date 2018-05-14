@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../module-name";
+import { RegisterTemplateServiceFactory } from '../../services/RegisterTemplateServiceFactory';
 
 
 export class TemplateOrderController {
@@ -18,7 +19,7 @@ export class TemplateOrderController {
     }
     ngOnInit() {
         //order list
-        this.RegisterTemplateService.getRegisteredTemplates().then(function (response: any) {
+        this.registerTemplateService.getRegisteredTemplates().then(function (response: any) {
             //order by .order
             var templates = _.sortBy(response.data, 'order');
             if (this.addAsNew && (this.templateId == null || this.templateId == undefined)) {
@@ -38,7 +39,7 @@ export class TemplateOrderController {
     }
 
     static readonly $inject = ["$http", "$mdToast", "RestUrlService", "RegisterTemplateService"];
-    constructor(private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private RestUrlService: any, private RegisterTemplateService: any) {
+    constructor(private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory) {
 
     }
     saveOrder() {

@@ -719,13 +719,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         }
     }
 
-    accessDeniedDialog($filter: angular.IFilterService): void {
+    accessDeniedDialog(): void {
         this.$mdDialog.show(
             this.$mdDialog.alert()
                 .clickOutsideToClose(true)
-                .title($filter('translate')('views.main.registerService-accessDenied'))
-                .textContent($filter('translate')('views.main.registerService-accessDenied2'))
-                .ariaLabel($filter('translate')('views.main.registerService-accessDenied3'))
+                .title(this.$filter('translate')('views.main.registerService-accessDenied'))
+                .textContent(this.$filter('translate')('views.main.registerService-accessDenied2'))
+                .ariaLabel(this.$filter('translate')('views.main.registerService-accessDenied3'))
                 .ok("OK")
         );
     }
@@ -734,7 +734,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     /**
      * Check access to the current template returning a promise object resovled to {allowEdit:{true/false},allowAdmin:{true,false},isValid:{true/false}}
      */
-    checkTemplateAccess(model: any): angular.IPromise<AccessControl.EntityAccessCheck> {
+    checkTemplateAccess(model?: any): angular.IPromise<AccessControl.EntityAccessCheck> {
         if (model == undefined) {
             model = this.model;
         }
@@ -761,7 +761,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             if (!result.isValid) {
                 if (!accessAllowed) {
                     model.errorMessage = "Access Denied.  You are unable to edit the template. ";
-                    this.accessDeniedDialog(this.$filter);
+                    this.accessDeniedDialog();
                 }
                 else {
                     model.errorMessage = "Unable to proceed";
@@ -778,7 +778,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * Returns a promise
      * @returns {*}
      */
-    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName: string): angular.IPromise<any> {
+    loadTemplateWithProperties(registeredTemplateId: string, nifiTemplateId: string, templateName?: string): angular.IPromise<any> {
         var isValid = true;
 
 
@@ -1033,7 +1033,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @param entity the entity to check. if its undefined it will use the current template in the model
      * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
      */
-    hasEntityAccess(permissionsToCheck: any, entity: any): boolean {
+    hasEntityAccess(permissionsToCheck: any, entity?: any): boolean {
         if (entity == undefined) {
             entity = this.model;
         }

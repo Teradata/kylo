@@ -2,6 +2,10 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../../module-name";
 import AccessControlService from '../../../../services/AccessControlService';
+import { StateService } from '@uirouter/core';
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import BroadcastService from '../../../../services/broadcast-service';
+import { UiComponentsService } from '../../../services/UiComponentsService';
 
 
 export class RegisterSelectTemplateController {
@@ -50,13 +54,13 @@ export class RegisterSelectTemplateController {
 
     static readonly $inject = ["$scope", "$http", "$mdDialog", "$mdToast", "$timeout", "$q", "$state", "RestUrlService", "RegisterTemplateService", "StateService",
         "AccessControlService", "EntityAccessControlService", "UiComponentsService", "AngularModuleExtensionService", "BroadcastService"];
-    constructor(private $scope: any, private $http: any, private $mdDialog: any, private $mdToast: any, private $timeout: any
-        , private $q: any, private $state: any, private RestUrlService: any, private RegisterTemplateService: any, private StateService: any
-        , private accessControlService: AccessControlService, private EntityAccessControlService: any, private UiComponentsService: any
-        , private AngularModuleExtensionService: any, private BroadcastService: any) {
+    constructor(private $scope: any, private $http: angular.IHttpService, private $mdDialog: angular.material.IDialogService, private $mdToast: angular.material.IToastService, private $timeout: angular.ITimeoutService
+        , private $q: angular.IQService, private $state: StateService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory, private StateService: any
+        , private accessControlService: AccessControlService, private EntityAccesControlService: any, private uiComponentsService: UiComponentsService
+        , private AngularModuleExtensionService: any, private broadcastService: BroadcastService) {
 
 
-        this.model = RegisterTemplateService.model;
+        this.model = this.registerTemplateService.model;
 
         this.registeredTemplateId = this.model.id;
         this.nifiTemplateId = this.model.nifiTemplateId;
@@ -71,7 +75,7 @@ export class RegisterSelectTemplateController {
          * @type {Array.<TemplateTableOption>}
          */
         this.templateTableOptions = [{ type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table' }];
-        UiComponentsService.getTemplateTableOptions()
+        this.uiComponentsService.getTemplateTableOptions()
             .then((templateTableOptions: any) => {
                 Array.prototype.push.apply(this.templateTableOptions, templateTableOptions);
             });
@@ -79,7 +83,7 @@ export class RegisterSelectTemplateController {
         /**
          * Get notified when a already registered template is selected and loaded from the previous screen
          */
-        BroadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
+        this.broadcastService.subscribe($scope, "REGISTERED_TEMPLATE_LOADED", this.onRegisteredTemplateLoaded());
 
         $scope.$watch(() => {
             return this.model.loading;
@@ -125,9 +129,9 @@ export class RegisterSelectTemplateController {
         if (selectedTemplate != null && selectedTemplate != undefined) {
             templateName = selectedTemplate.name;
         }
-        this.RegisterTemplateService.loadTemplateWithProperties(null, this.nifiTemplateId, templateName).then((response: any) => {
-            this.RegisterTemplateService.warnInvalidProcessorNames();
-            this.$q.when(this.RegisterTemplateService.checkTemplateAccess()).then((accessResponse: any) => {
+        this.registerTemplateService.loadTemplateWithProperties(null, this.nifiTemplateId, templateName).then((response: any) => {
+            this.registerTemplateService.warnInvalidProcessorNames();
+            this.$q.when(this.registerTemplateService.checkTemplateAccess()).then((accessResponse: any) => {
                 this.isValid = accessResponse.isValid;
                 this.allowAdmin = accessResponse.allowAdmin;
                 this.allowEdit = accessResponse.allowEdit;
@@ -151,7 +155,7 @@ export class RegisterSelectTemplateController {
 
 
         }, (err: any) => {
-            this.RegisterTemplateService.resetModel();
+            this.registerTemplateService.resetModel();
             this.errorMessage = (angular.isDefined(err.data) && angular.isDefined(err.data.message)) ? err.data.message : "An Error was found loading this template.  Please ensure you have access to edit this template."
             this.loadingTemplate = false;
             this.hideProgress();
@@ -160,13 +164,13 @@ export class RegisterSelectTemplateController {
 
     disableTemplate = () => {
         if (this.model.id) {
-            this.RegisterTemplateService.disableTemplate(this.model.id)
+            this.registerTemplateService.disableTemplate(this.model.id)
         }
     }
 
     enableTemplate = () => {
         if (this.model.id) {
-            this.RegisterTemplateService.enableTemplate(this.model.id)
+            this.registerTemplateService.enableTemplate(this.model.id)
         }
     }
 
@@ -190,7 +194,7 @@ export class RegisterSelectTemplateController {
     deleteTemplate = () => {
         if (this.model.id) {
 
-            this.RegisterTemplateService.deleteTemplate(this.model.id).then((response: any) => {
+            this.registerTemplateService.deleteTemplate(this.model.id).then((response: any) => {
                 if (response.data && response.data.status == 'success') {
                     this.model.state = "DELETED";
 
@@ -199,7 +203,7 @@ export class RegisterSelectTemplateController {
                             .textContent('Successfully deleted the template ')
                             .hideDelay(3000)
                     );
-                    this.RegisterTemplateService.resetModel();
+                    this.registerTemplateService.resetModel();
                     this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
                 }
                 else {
@@ -291,7 +295,7 @@ export class RegisterSelectTemplateController {
     getTemplates = () => {
         this.fetchingTemplateList = true;
         this.showProgress();
-        this.RegisterTemplateService.getTemplates().then((response: any) => {
+        this.registerTemplateService.getTemplates().then((response: any) => {
             this.templates = response.data;
             this.fetchingTemplateList = false;
             this.matchNiFiTemplateIdWithModel();
