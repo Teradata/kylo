@@ -1,6 +1,9 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../../module-name";
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import { UiComponentsService } from '../../../services/UiComponentsService';
+import { FeedService } from '../../../services/FeedService';
 
 export class RegisterProcessorPropertiesController {
 
@@ -42,20 +45,20 @@ export class RegisterProcessorPropertiesController {
         "$location", "$window", "RestUrlService", "RegisterTemplateService",
         "FeedService", "UiComponentsService"];
 
-    constructor(private $scope: IScope, private $element: any, private $http: any, private $q: angular.IQService, private $mdToast: angular.material.IToastService
-        , private $location: any, private $window: any, private RestUrlService: any, private RegisterTemplateService: any
-        , private FeedService: any, private UiComponentsService: any) {
+    constructor(private $scope: IScope, private $element: any, private $http: angular.IHttpService, private $q: angular.IQService, private $mdToast: angular.material.IToastService
+        , private $location: angular.ILocationService, private $window: angular.IWindowService, private RestUrlService: any, private registerTemplateService: RegisterTemplateServiceFactory
+        , private feedService: FeedService, private uiComponentsService: UiComponentsService) {
 
-        this.model = RegisterTemplateService.model;
+        this.model = registerTemplateService.model;
 
 
-        this.availableExpressionProperties = RegisterTemplateService.propertyList;
+        this.availableExpressionProperties = registerTemplateService.propertyList;
 
 
         this.expressionProperties = this.availableExpressionProperties;
 
         $scope.$watch(() => {
-            return this.RegisterTemplateService.codemirrorTypes;
+            return this.registerTemplateService.codemirrorTypes;
         }, (newVal: any) => {
             this.initializeRenderTypes();
         })
@@ -71,13 +74,13 @@ export class RegisterProcessorPropertiesController {
         $scope.$watch(() => {
             return this.model.templateTableOption;
         }, () => {
-            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(RegisterTemplateService.propertyList)) {
-                UiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
+            if (this.model.templateTableOption !== "NO_TABLE" && angular.isArray(this.registerTemplateService.propertyList)) {
+                this.uiComponentsService.getTemplateTableOptionMetadataProperties(this.model.templateTableOption)
                     .then((tableOptionMetadataProperties: any) => {
-                        this.availableExpressionProperties = RegisterTemplateService.propertyList.concat(tableOptionMetadataProperties);
+                        this.availableExpressionProperties = this.registerTemplateService.propertyList.concat(tableOptionMetadataProperties);
                     });
             } else {
-                this.availableExpressionProperties = RegisterTemplateService.propertyList;
+                this.availableExpressionProperties = this.registerTemplateService.propertyList;
             }
         });
     };
@@ -131,7 +134,7 @@ export class RegisterProcessorPropertiesController {
         _.chain(this.allProperties).filter((property: any) => {
             return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
         })
-            .each(this.FeedService.findControllerServicesForProperty);
+            .each(this.feedService.findControllerServicesForProperty);
 
 
         this.processors = this.model[processorsKey];
@@ -149,7 +152,7 @@ export class RegisterProcessorPropertiesController {
         });
 
         //sort them by processor name and property key
-        var propertiesAndProcessors = this.RegisterTemplateService.sortPropertiesForDisplay(selectedProperties);
+        var propertiesAndProcessors = this.registerTemplateService.sortPropertiesForDisplay(selectedProperties);
         this.allProperties = propertiesAndProcessors.properties;
         this.processors = propertiesAndProcessors.processors;
     }
@@ -192,7 +195,7 @@ export class RegisterProcessorPropertiesController {
 
 
     initializeRenderTypes = () => {
-        angular.forEach(this.RegisterTemplateService.codemirrorTypes, (label: any, type: any) => {
+        angular.forEach(this.registerTemplateService.codemirrorTypes, (label: any, type: any) => {
             this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
         });
     }

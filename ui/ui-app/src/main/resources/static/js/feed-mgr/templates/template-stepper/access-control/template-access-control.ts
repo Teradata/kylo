@@ -1,6 +1,8 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { moduleName } from "../../module-name";
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import AccessControlService from '../../../../services/AccessControlService';
 
 
 export class TemplateAccessControlController {
@@ -15,13 +17,13 @@ export class TemplateAccessControlController {
     allowEdit: boolean = false;
 
     static readonly $inject = ["$scope", "RegisterTemplateService", "AccessControlService", "EntityAccessControlService"];
-    constructor(private $scope: IScope, private RegisterTemplateService: any, private AccessControlService: any, private EntityAccessControlService: any) {
+    constructor(private $scope: IScope, private registerTemplateService: RegisterTemplateServiceFactory, private accessControlService: AccessControlService, private EntityAccessControlService: any) {
 
-        this.model = RegisterTemplateService.model;
+        this.model = this.registerTemplateService.model;
 
 
         //allow edit if the user has ability to change permissions on the entity if its an existing registered template, or if it is new
-        if (this.model.id && RegisterTemplateService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.CHANGE_TEMPLATE_PERMISSIONS)) {
+        if (this.model.id && this.registerTemplateService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.CHANGE_TEMPLATE_PERMISSIONS)) {
             this.allowEdit = true;
         }
         else {
