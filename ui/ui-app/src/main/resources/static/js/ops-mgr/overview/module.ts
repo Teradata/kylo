@@ -31,9 +31,9 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/ops-mgr/overview/overview.html',
-                    controller:"OverviewController",
-                    controllerAs:"vm"
+                    // templateUrl: 'js/ops-mgr/overview/overview.html',
+                    component:"overviewController",
+                    // controllerAs:"vm"
                 }
             },
             resolve: {

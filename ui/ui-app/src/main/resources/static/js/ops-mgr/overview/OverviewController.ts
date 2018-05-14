@@ -3,6 +3,7 @@ import {moduleName} from "./module-name";
 import OpsManagerDashboardService from "../services/OpsManagerDashboardService";
 import OpsManagerRestUrlService from "../services/OpsManagerRestUrlService";
 import AccessControlService from "../../services/AccessControlService";
+import HttpService from "../../services/HttpService";
 
 export default class OverviewController implements ng.IComponentController{
 allowed: boolean;
@@ -21,14 +22,16 @@ MAX_RESET_REFRESH_INTERVALS: number;
 startRefreshTime: any;
 response: any;
 start: any;
-constructor(private $scope: any,
-        private $mdDialog: any,
-        private $interval: any,
-        private $timeout: any,
-        private accessControlService: AccessControlService,
-        private HttpService: any,
-        private OpsManagerDashboardService: any){
-            /**
+
+static readonly $inject = ["$scope","$mdDialog","$interval","$timeout","AccessControlService","HttpService","OpsManagerDashboardService"];
+
+$onInit() {
+    this.ngOnInit();
+}
+
+ngOnInit() {
+
+    /**
              * Indicates that the user is allowed to access the Operations Manager.
              * @type {boolean}
              */
@@ -46,24 +49,14 @@ constructor(private $scope: any,
             this.refreshInterval = 5000;
             this.interval= null;
 
-            // Stop polling on destroy
-            $scope.$on("$destroy", ()=> {
-                HttpService.cancelPendingHttpRequests();
-                if(this.interval != null){
-                    $interval.cancel(this.interval);
-                    this.interval = null;
-                }
-
-            });
-
             // Fetch allowed permissions
-            accessControlService.getUserAllowedActions()
+            this.accessControlService.getUserAllowedActions()
                     .then((actionSet: any)=> {
-                        if (accessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
+                        if (this.accessControlService.hasAction(AccessControlService.OPERATIONS_MANAGER_ACCESS, actionSet.actions)) {
                             this.allowed = true;
                         } else {
-                            $mdDialog.show(
-                                    $mdDialog.alert()
+                            this.$mdDialog.show(
+                                this.$mdDialog.alert()
                                     .clickOutsideToClose(true)
                                     .title("Access Denied")
                                     .textContent("You do not have access to the Operations Manager.")
@@ -108,7 +101,28 @@ constructor(private $scope: any,
 
             this.startRefreshTime = null;
 
-            this.init();
+            this.OpsManagerDashboardService.fetchDashboard();
+            this.setDashboardRefreshInterval();
+
+}
+constructor(private $scope: IScope,
+            private $mdDialog: angular.material.IDialogService,
+            private $interval: angular.IIntervalService,
+            private $timeout: angular.ITimeoutService,
+            private accessControlService: AccessControlService,
+            private httpService: HttpService,
+            private OpsManagerDashboardService: any){
+
+            // Stop polling on destroy
+            this.$scope.$on("$destroy", ()=> {
+                this.httpService.cancelPendingHttpRequests();
+                if(this.interval != null){
+                    this.$interval.cancel(this.interval);
+                    this.interval = null;
+                }
+
+            });
+            
         }// end of constructor
 
     /**
@@ -152,27 +166,20 @@ constructor(private $scope: any,
     setDashboardRefreshInterval=()=> {
         this.interval = this.$interval( ()=> {
             var start = new Date().getTime();
-            if (!this.OpsManagerDashboardService.isFetchingDashboard()) {
-                //only fetch if we are not fetching
-                this.startRefreshTime = new Date().getTime();
-                this.OpsManagerDashboardService.fetchDashboard().then((response: any)=> {
-                    //checkAndAlignDataWithRefreshInterval();
-                });
-            }
+            // if (!this.OpsManagerDashboardService.isFetchingDashboard()) {
+            //     //only fetch if we are not fetching
+            //     this.startRefreshTime = new Date().getTime();
+            //     this.OpsManagerDashboardService.fetchDashboard().then((response: any)=> {
+            //         //checkAndAlignDataWithRefreshInterval();
+            //     });
+            // }
         }, this.refreshInterval);
     }
 
-     init=()=>{
-        this.OpsManagerDashboardService.fetchDashboard();
-        this.setDashboardRefreshInterval();
-
-
-    }
-
-
 }
 
-angular.module(moduleName)
-.controller("OverviewController", 
-            ["$scope","$mdDialog","$interval","$timeout",
-            "AccessControlService","HttpService","OpsManagerDashboardService",OverviewController]);
+angular.module(moduleName).component("overviewController",{
+    controller: OverviewController,
+    controllerAs: "vm",
+    templateUrl: "js/ops-mgr/overview/overview.html"
+});
