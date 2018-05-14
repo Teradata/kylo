@@ -166,13 +166,13 @@ constructor(private $scope: IScope,
     setDashboardRefreshInterval=()=> {
         this.interval = this.$interval( ()=> {
             var start = new Date().getTime();
-            // if (!this.OpsManagerDashboardService.isFetchingDashboard()) {
-            //     //only fetch if we are not fetching
-            //     this.startRefreshTime = new Date().getTime();
-            //     this.OpsManagerDashboardService.fetchDashboard().then((response: any)=> {
-            //         //checkAndAlignDataWithRefreshInterval();
-            //     });
-            // }
+            if (!this.OpsManagerDashboardService.isFetchingDashboard()) {
+                //only fetch if we are not fetching
+                this.startRefreshTime = new Date().getTime();
+                this.OpsManagerDashboardService.fetchDashboard().then((response: any)=> {
+                    //checkAndAlignDataWithRefreshInterval();
+                });
+            }
         }, this.refreshInterval);
     }
 
