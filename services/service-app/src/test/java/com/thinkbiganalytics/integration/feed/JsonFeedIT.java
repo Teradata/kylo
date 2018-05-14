@@ -40,6 +40,7 @@ import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
@@ -56,11 +57,13 @@ public class JsonFeedIT extends FeedITBase{
     private static final int VALID_RESULTS = 7;
 
     @Test
+    @Ignore //until Riaz is back
     public void testJsonDataIngestFeed() throws Exception {
         dataIngestFeedBase();
     }
 
     @Test
+    @Ignore //until Riaz is back
     public void testJsonEditFeed() throws Exception {
         editFeed();
     }
