@@ -1,35 +1,36 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import {moduleName} from "../../module-name";
+import { IAugmentedJQuery } from '@angular/upgrade/static/src/common/angular1';
+import {Input} from "@angular/core";
 
-var directive = function (RegisterTemplateService:any) {
-    return {
-        restrict: "A",
-        scope: {
-            ngModel:'='
-        },
-        link: function ($scope:any, $element:any, attrs:any, controller:any) {
+export class DerivedExpressionController {
+    
+    @Input()
+    public ngModel: string;
+    
+    static readonly $inject = ["$scope","$element","RegisterTemplateService"];
 
-            $scope.$watch(
-                'ngModel',
-                function (newValue:any) {
-                    if(newValue != null) {
-                        var derivedValue = RegisterTemplateService.deriveExpression(newValue,true)
-                        $element.html(derivedValue);
-                    }
-                    else {
-                        $element.html('');
-                    }
-                });
+    constructor(private $scope: IScope,private $element: angular.IAugmentedJQuery,private RegisterTemplateService:any){
+       
+        $scope.$watch(
+            'ngModel',
+            (newValue:any) => {
+                if(newValue != null) {
+                    var derivedValue = this.RegisterTemplateService.deriveExpression(newValue,true)
+                    this.$element.html(derivedValue);
+                }
+                else {
+                    this.$element.html('');
+                }
+            });
 
-
-
-        }
-
-    };
+    }
 }
 
-
-
-angular.module(moduleName)
-    .directive('thinkbigDerivedExpression',['RegisterTemplateService', directive]);
+angular.module(moduleName).component('thinkbigDerivedExpression',{
+    bindings : {
+        ngModel : "="
+    },
+    controller : DerivedExpressionController
+});

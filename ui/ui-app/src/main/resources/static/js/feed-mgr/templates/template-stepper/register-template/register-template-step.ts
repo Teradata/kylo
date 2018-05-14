@@ -440,7 +440,6 @@ export class RegisterTemplateCompleteController {
     gotIt() {
         this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
     }
-
 }
 
 angular.module(moduleName).component("registerTemplateCompleteController", {
