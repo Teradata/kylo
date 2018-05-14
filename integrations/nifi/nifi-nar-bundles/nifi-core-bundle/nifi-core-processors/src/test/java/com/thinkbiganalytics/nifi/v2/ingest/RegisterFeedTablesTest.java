@@ -23,6 +23,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
+import com.thinkbiganalytics.util.TableType;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.processor.exception.ProcessException;
@@ -104,11 +105,11 @@ public class RegisterFeedTablesTest {
                                                         + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE "
                                                         + "LOCATION '/model.db/movies/artists/feed'");
         inOrder.verify(thriftService.statement).close();
+        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
+                + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/model.db/movies/artists/valid'");
+        inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_invalid` (`id` string, `first_name` string, `last_name` string, dlp_reject_reason string "
                                                         + ")   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/model.db/movies/artists/invalid'");
-        inOrder.verify(thriftService.statement).close();
-        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/model.db/movies/artists/valid'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists` (`id` int, `first_name` string, `last_name` string, processing_dttm string)  STORED AS ORC "
                                                         + "LOCATION '/app/warehouse/movies/artists'");
@@ -120,7 +121,7 @@ public class RegisterFeedTablesTest {
 
         // Test with all properties
         runner.setProperty(IngestProperties.PARTITION_SPECS, "year|int");
-        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE");
         runner.setProperty(IngestProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
         runner.setProperty(IngestProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
@@ -135,15 +136,15 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).executeQuery("show tables like 'artists*'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE EXTERNAL TABLE IF NOT EXISTS `movies`.`artists_feed` (`id` string, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE "
+                                                        + "PARTITIONED BY (`processing_dttm` string)  ROW FORMAT DELIMITED LINES TERMINATED BY '\\n' STORED AS TEXTFILE "
                                                         + "LOCATION '/model.db/movies/artists/feed'");
+        inOrder.verify(thriftService.statement).close();
+        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
+                + "PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/valid' "
+                + "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_invalid` (`id` string, `first_name` string, `last_name` string, dlp_reject_reason string "
                                                         + ")   PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/invalid' "
-                                                        + "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
-        inOrder.verify(thriftService.statement).close();
-        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  STORED AS PARQUET LOCATION '/model.db/movies/artists/valid' "
                                                         + "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
         inOrder.verify(thriftService.statement).close();
         inOrder.verify(thriftService.statement)
@@ -155,6 +156,25 @@ public class RegisterFeedTablesTest {
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
     }
+
+    /**
+     * Verify XML feed table with custom table properties
+     */
+    @Test
+    public void testXMLTable() throws Exception {
+        // Test with all properties
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, TableType.FEED.toString());
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id_|string\nauthor|string\nprice|string");
+        runner.setProperty(IngestProperties.FEED_FORMAT_SPECS, "row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (\"column.xpath.price\" = \"/book/price/text()\", "
+                                                               + "     \"column.xpath.id\" = \"/book/@id\",\"column.xpath.author\" = \"/book/author/text()\") stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
+        runner.setProperty(IngestProperties.FEED_TBLPROPERTIES, "tblproperties ( \"xmlinput.start\" = \"<book \",\"xmlinput.end\"   = \"</book>\")");
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "demo", "metadata.systemFeedName", "xml_test_001"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+    }
+
 
     /**
      * Verify registering tables with some pre-existing.
@@ -292,12 +312,12 @@ public class RegisterFeedTablesTest {
             + "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE LOCATION '/var/ingest/movies/artists/feed'");
         inOrder.verify(thriftService.statement).close();
 
-        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_invalid` (`id` string, `first_name` string, `last_name` string, dlp_reject_reason string"
-                                                        + " )   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/invalid'");
+        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
+                + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/valid'");
         inOrder.verify(thriftService.statement).close();
 
-        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_valid` (`id` int, `first_name` string, `last_name` string)   "
-                                                        + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/valid'");
+        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_invalid` (`id` string, `first_name` string, `last_name` string, dlp_reject_reason string"
+                                                        + " )   PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/ingest/movies/artists/invalid'");
         inOrder.verify(thriftService.statement).close();
 
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists` (`id` int, `first_name` string, `last_name` string, processing_dttm string)  STORED AS ORC "
@@ -306,6 +326,31 @@ public class RegisterFeedTablesTest {
 
         inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   "
                                                         + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/profile/movies/artists/profile'");
+        inOrder.verify(thriftService.statement).close();
+        inOrder.verifyNoMoreInteractions();
+    }
+
+    /**
+     * Verify registering only a profile table.
+     */
+    @Test
+    public void testRegisterOnlyProfileTableWithConfig() throws Exception {
+        runner.setProperty(IngestProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
+
+        runner.setProperty(RegisterFeedTables.TABLE_TYPE, TableType.PROFILE.toString());
+        runner.enqueue(new byte[0], ImmutableMap
+                .of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists", "hive.ingest.root", "/var/ingest", "hive.profile.root", "/var/profile/",
+                        "hive.master.root", "/master"));
+        runner.run();
+
+        Assert.assertEquals(0, runner.getFlowFilesForRelationship(IngestProperties.REL_FAILURE).size());
+        Assert.assertEquals(1, runner.getFlowFilesForRelationship(IngestProperties.REL_SUCCESS).size());
+
+        final InOrder inOrder = Mockito.inOrder(thriftService.statement);
+        inOrder.verify(thriftService.statement).execute("CREATE DATABASE IF NOT EXISTS `movies`");
+        inOrder.verify(thriftService.statement).close();
+        inOrder.verify(thriftService.statement).execute("CREATE TABLE IF NOT EXISTS `movies`.`artists_profile` ( `columnname` string,`metrictype` string,`metricvalue` string)   "
+                + "PARTITIONED BY (`processing_dttm` string)  STORED AS ORC LOCATION '/var/profile/movies/artists/profile'");
         inOrder.verify(thriftService.statement).close();
         inOrder.verifyNoMoreInteractions();
     }

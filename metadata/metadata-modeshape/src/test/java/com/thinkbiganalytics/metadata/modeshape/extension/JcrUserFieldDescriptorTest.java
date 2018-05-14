@@ -9,9 +9,9 @@ package com.thinkbiganalytics.metadata.modeshape.extension;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,18 +20,158 @@ package com.thinkbiganalytics.metadata.modeshape.extension;
  * #L%
  */
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
+import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedTestConfig;
+import com.thinkbiganalytics.metadata.modeshape.feed.FeedTestUtil;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.nodetype.PropertyDefinition;
 
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, FeedTestConfig.class})
+@ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape"})
 public class JcrUserFieldDescriptorTest {
+
+    @Inject
+    private FeedTestUtil feedTestUtil;
+
+    @Inject
+    private JcrMetadataAccess metadataAccess;
+
+    @Inject
+    private FeedProvider feedProvider;
+
+    @Inject
+    private CategoryProvider categoryProvider;
+
+    @Test
+    public void testFeedCreateAndRemove() {
+        Set<UserFieldDescriptor> descriptors = new HashSet<>();
+
+        FeedManagerUserFieldDescriptor descriptor1 = new FeedManagerUserFieldDescriptor();
+        descriptor1.setSystemName("property1");
+        descriptor1.setDisplayName("Property1");
+        descriptor1.setDescription(" desc for property1");
+        descriptor1.setOrder(1);
+        descriptor1.setRequired(true);
+
+        descriptors.add(descriptor1);
+
+        FeedManagerUserFieldDescriptor descriptor2 = new FeedManagerUserFieldDescriptor();
+        descriptor2.setSystemName("property2");
+        descriptor2.setDisplayName("Property2");
+        descriptor2.setDescription(" desc for property2");
+        descriptor2.setOrder(2);
+        descriptor2.setRequired(false);
+
+        descriptors.add(descriptor2);
+
+        metadataAccess.commit(() -> {
+            feedProvider.setUserFields(descriptors);
+        }, MetadataAccess.ADMIN);
+
+        Set<UserFieldDescriptor> feedManagerFieldDescriptors = metadataAccess.read(() -> {
+            return transformFieldDescriptors(feedProvider.getUserFields());
+        }, MetadataAccess.ADMIN);
+
+        Assert.assertTrue(feedManagerFieldDescriptors.size() == 2);
+
+        //now try to delete the first one
+        feedManagerFieldDescriptors.removeIf(descriptor -> descriptor.getOrder() == 1);
+        Assert.assertTrue(feedManagerFieldDescriptors.size() == 1);
+
+        metadataAccess.commit(() -> {
+            feedProvider.setUserFields(feedManagerFieldDescriptors);
+        }, MetadataAccess.ADMIN);
+
+        Set<UserFieldDescriptor> finalDescriptors = metadataAccess.read(() -> feedProvider.getUserFields(), MetadataAccess.ADMIN);
+        Assert.assertTrue(finalDescriptors.size() == 1);
+
+    }
+
+
+    @Test
+    public void testCategoryCreateAndRemove() {
+        Set<UserFieldDescriptor> descriptors = new HashSet<>();
+
+        FeedManagerUserFieldDescriptor descriptor1 = new FeedManagerUserFieldDescriptor();
+        descriptor1.setSystemName("property1");
+        descriptor1.setDisplayName("Property1");
+        descriptor1.setDescription(" desc for property1");
+        descriptor1.setOrder(1);
+        descriptor1.setRequired(true);
+
+        descriptors.add(descriptor1);
+
+        FeedManagerUserFieldDescriptor descriptor2 = new FeedManagerUserFieldDescriptor();
+        descriptor2.setSystemName("property2");
+        descriptor2.setDisplayName("Property2");
+        descriptor2.setDescription(" desc for property2");
+        descriptor2.setOrder(2);
+        descriptor2.setRequired(false);
+
+        descriptors.add(descriptor2);
+
+        metadataAccess.commit(() -> {
+            categoryProvider.setUserFields(descriptors);
+        }, MetadataAccess.ADMIN);
+
+        Set<UserFieldDescriptor> feedManagerFieldDescriptors = metadataAccess.read(() -> {
+            return transformFieldDescriptors(categoryProvider.getUserFields());
+        }, MetadataAccess.ADMIN);
+
+        Assert.assertTrue(feedManagerFieldDescriptors.size() == 2);
+
+        //now try to delete the first one
+        feedManagerFieldDescriptors.removeIf(descriptor -> descriptor.getOrder() == 1);
+        Assert.assertTrue(feedManagerFieldDescriptors.size() == 1);
+
+        metadataAccess.commit(() -> {
+            categoryProvider.setUserFields(feedManagerFieldDescriptors);
+        }, MetadataAccess.ADMIN);
+
+        Set<UserFieldDescriptor> finalDescriptors = metadataAccess.read(() -> categoryProvider.getUserFields(), MetadataAccess.ADMIN);
+        Assert.assertTrue(finalDescriptors.size() == 1);
+
+    }
+
+
+    private Set<UserFieldDescriptor> transformFieldDescriptors(Set<UserFieldDescriptor> descriptors) {
+        return descriptors.stream().map(f ->
+                                        {
+                                            FeedManagerUserFieldDescriptor d = new FeedManagerUserFieldDescriptor();
+                                            d.setSystemName(f.getSystemName());
+                                            d.setDisplayName(f.getDisplayName());
+                                            d.setDescription(f.getDescription());
+                                            d.setOrder(f.getOrder());
+                                            d.setRequired(f.isRequired());
+                                            return d;
+                                        }).collect(Collectors.toSet());
+    }
 
     /**
      * Verify getting the description
@@ -128,5 +268,63 @@ public class JcrUserFieldDescriptorTest {
         final JcrUserFieldDescriptor userField = new JcrUserFieldDescriptor(Mockito.mock(Node.class), property);
         Assert.assertEquals("testProp", userField.getSystemName());
         Assert.assertEquals("碼標準萬國碼/1.1/?name=%20", userField.getSystemName());
+    }
+
+
+    private static class FeedManagerUserFieldDescriptor implements UserFieldDescriptor {
+
+        private String description;
+        private String displayName;
+        private String systemName;
+        private int order;
+        private boolean required;
+
+        @Nullable
+        @Override
+        public String getDescription() {
+            return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
+        }
+
+        @Nullable
+        @Override
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public void setDisplayName(String displayName) {
+            this.displayName = displayName;
+        }
+
+        @Nonnull
+        @Override
+        public String getSystemName() {
+            return systemName;
+        }
+
+        public void setSystemName(String systemName) {
+            this.systemName = systemName;
+        }
+
+        @Override
+        public int getOrder() {
+            return order;
+        }
+
+        public void setOrder(int order) {
+            this.order = order;
+        }
+
+        @Override
+        public boolean isRequired() {
+            return required;
+        }
+
+        public void setRequired(boolean required) {
+            this.required = required;
+        }
     }
 }

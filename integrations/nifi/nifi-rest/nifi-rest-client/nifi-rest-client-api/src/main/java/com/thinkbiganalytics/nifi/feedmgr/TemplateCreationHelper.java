@@ -9,9 +9,9 @@ package com.thinkbiganalytics.nifi.feedmgr;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -40,7 +40,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.nifi.rest.support.NifiRemoteProcessGroupUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
@@ -50,13 +49,11 @@ import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorConfigDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.RemoteProcessGroupDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -96,7 +93,7 @@ public class TemplateCreationHelper {
 
     private Map<String, List<ControllerServiceDTO>> serviceNameMap = new HashMap<>();
 
-    private Map<String, List<ControllerServiceDTO>> enabledServiceNameMap  = new HashMap<>();
+    private Map<String, List<ControllerServiceDTO>> enabledServiceNameMap = new HashMap<>();
 
 
     private Set<ControllerServiceDTO> newlyCreatedControllerServices;
@@ -109,12 +106,11 @@ public class TemplateCreationHelper {
         this.nifiObjectCache = new NiFiObjectCache();
     }
 
-    public TemplateCreationHelper(LegacyNifiRestClient restClient,NiFiObjectCache nifiObjectCache) {
+    public TemplateCreationHelper(LegacyNifiRestClient restClient, NiFiObjectCache nifiObjectCache) {
         this.restClient = restClient;
         this.nifiRestClient = restClient.getNiFiRestClient();
         this.nifiObjectCache = nifiObjectCache;
     }
-
 
 
     public static String getVersionedProcessGroupName(String name) {
@@ -122,7 +118,7 @@ public class TemplateCreationHelper {
     }
 
     public static String getVersionedProcessGroupName(String name, String versionIdentifier) {
-        return NifiTemplateNameUtil.getVersionedProcessGroupName(name,versionIdentifier);
+        return NifiTemplateNameUtil.getVersionedProcessGroupName(name, versionIdentifier);
     }
 
     public static String parseVersionedProcessGroupName(String name) {
@@ -145,20 +141,18 @@ public class TemplateCreationHelper {
      * @return the process group holding this template
      */
     public ProcessGroupDTO createTemporaryTemplateFlow(@Nonnull final String templateId) {
-        ProcessGroupDTO temporaryTemplateInspectionGroup =  nifiObjectCache.getOrCreateTemporaryTemplateInspectionGroup();
-
+        ProcessGroupDTO temporaryTemplateInspectionGroup = nifiObjectCache.getOrCreateTemporaryTemplateInspectionGroup();
 
         //next create the temp group
         snapshotControllerServiceReferences();
         ProcessGroupDTO tempGroup = null;
         try {
-         tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
-        }
-        catch (NifiComponentNotFoundException e){
+            tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+        } catch (NifiComponentNotFoundException e) {
             nifiObjectCache.resetTemporaryTemplateInspectionGroup();
-            tempGroup =   nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
+            tempGroup = nifiRestClient.processGroups().create(temporaryTemplateInspectionGroup.getId(), "template_" + System.currentTimeMillis());
         }
-        TemplateInstance instance= instantiateFlowFromTemplate(tempGroup.getId(), templateId);
+        TemplateInstance instance = instantiateFlowFromTemplate(tempGroup.getId(), templateId);
         FlowSnippetDTO snippet = instance.getFlowSnippetDTO();
         identifyNewlyCreatedControllerServiceReferences(instance);
         tempGroup.setContents(snippet);
@@ -207,7 +201,7 @@ public class TemplateCreationHelper {
 
                 // Map old ID to new ID
                 idMap.put(oldId, rootId);
-                instance.movedScopedControllerService(groupControllerService,newRootService);
+                instance.movedScopedControllerService(groupControllerService, newRootService);
             });
 
         // Set properties on root controller services
@@ -328,41 +322,38 @@ public class TemplateCreationHelper {
         }
         java.util.function.Predicate<ControllerServiceDTO> matchingServiceFilter = (cs) -> map.containsKey(cs.getId()) || serviceNameMap.containsKey(cs.getName());
 
-        List<ControllerServiceDTO> matchingControllerServices =  newlyCreatedControllerServices.stream().filter(matchingServiceFilter).collect(Collectors.toList());
+        List<ControllerServiceDTO> matchingControllerServices = newlyCreatedControllerServices.stream().filter(matchingServiceFilter).collect(Collectors.toList());
 
         List<ControllerServiceDTO> unmatchedServices = newlyCreatedControllerServices.stream().filter(matchingServiceFilter.negate()).collect(Collectors.toList());
 
         //if the service has additional propertyDescriptors that identify other services we need to fetch the service by its id.
         if (unmatchedServices != null && !unmatchedServices.isEmpty()) {
-          Map<String,ControllerServiceDTO> updatedServices =unmatchedServices.stream().map(serviceToAdd -> {
-              //if the service has additional propertyDescriptors that identify other services we need to fetch the service by its id
-                if(serviceToAdd.getDescriptors() != null && serviceToAdd.getDescriptors().values().stream().anyMatch(propertyDescriptorDTO -> StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService()))) {
+            Map<String, ControllerServiceDTO> updatedServices = unmatchedServices.stream().map(serviceToAdd -> {
+                //if the service has additional propertyDescriptors that identify other services we need to fetch the service by its id
+                if (serviceToAdd.getDescriptors() != null && serviceToAdd.getDescriptors().values().stream()
+                    .anyMatch(propertyDescriptorDTO -> StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService()))) {
                     try {
                         Optional<ControllerServiceDTO> cs = restClient.getNiFiRestClient().controllerServices().findById(serviceToAdd.getId());
-                        if(cs.isPresent()){
+                        if (cs.isPresent()) {
                             return cs.get();
-                        }
-                        else {
+                        } else {
                             return serviceToAdd;
                         }
-                    }
-                    catch(Exception e){
+                    } catch (Exception e) {
                         return serviceToAdd;
                     }
-                }
-                else {
+                } else {
                     return serviceToAdd;
                 }
 
 
-        }).collect(Collectors.toMap(service -> service.getId(), service -> service));
-                map.putAll(updatedServices);
-             //update the core item
+            }).collect(Collectors.toMap(service -> service.getId(), service -> service));
+            map.putAll(updatedServices);
+            //update the core item
             newlyCreatedControllerServices = newlyCreatedControllerServices.stream().map(controllerServiceDTO -> {
-                if(map.containsKey(controllerServiceDTO.getId())){
+                if (map.containsKey(controllerServiceDTO.getId())) {
                     return updatedServices.get(controllerServiceDTO.getId());
-                }
-                else {
+                } else {
                     return controllerServiceDTO;
                 }
             }).collect(Collectors.toSet());
@@ -373,7 +364,7 @@ public class TemplateCreationHelper {
         if (matchingControllerServices != null && !matchingControllerServices.isEmpty()) {
             for (ControllerServiceDTO serviceToDelete : matchingControllerServices) {
                 try {
-                    if(templateInstance != null ) {
+                    if (templateInstance != null) {
                         templateInstance.addDeletedServiceMapping(serviceToDelete.getId(), serviceNameMap.get(serviceToDelete.getName()));
                     }
                     restClient.deleteControllerService(serviceToDelete.getId());
@@ -386,20 +377,23 @@ public class TemplateCreationHelper {
         }
 
         mergedControllerServices = map;
-
+        //merge back in the map of old cs id to the good root cs id
+        if(templateInstance != null) {
+            mergedControllerServices.putAll(templateInstance.getCreatedScopeToRootMap().entrySet().stream().collect(Collectors.toMap(e -> e.getKey().getId(), e -> e.getValue())));
+        }
         //validate
         //Create a map of the Controller Service Name to list of matching services
 
-        this.serviceNameMap =mergedControllerServices.values().stream()
+        this.serviceNameMap = mergedControllerServices.values().stream()
             .collect(Collectors.groupingBy(cs -> cs.getName()));
 
-        this.enabledServiceNameMap =mergedControllerServices.values().stream()
+        this.enabledServiceNameMap = mergedControllerServices.values().stream()
             .filter(cs -> NifiProcessUtil.SERVICE_STATE.ENABLED.name().equalsIgnoreCase(cs.getState()))
             .collect(Collectors.groupingBy(cs -> cs.getName()));
 
     }
 
-    private boolean hasMatchingService(Map<String,List<ControllerServiceDTO>> nameMap, String name){
+    private boolean hasMatchingService(Map<String, List<ControllerServiceDTO>> nameMap, String name) {
         return nameMap.containsKey(name) && !nameMap.get(name).isEmpty();
     }
 
@@ -426,10 +420,12 @@ public class TemplateCreationHelper {
                                 if (matchingValue != null) {
                                     String name = matchingValue.getDisplayName();
                                     String
-                                        validControllerServiceId = hasMatchingService(enabledServiceNameMap,name) ? enabledServiceNameMap.get(name).get(0).getId()
-                                                                                                      : hasMatchingService(serviceNameMap, name) ? serviceNameMap.get(name).get(0).getId() : null;
+                                        validControllerServiceId = hasMatchingService(enabledServiceNameMap, name) ? enabledServiceNameMap.get(name).get(0).getId()
+                                                                                                                   : hasMatchingService(serviceNameMap, name) ? serviceNameMap.get(name).get(0).getId()
+                                                                                                                                                              : null;
 
-                                    if (StringUtils.isNotBlank(validControllerServiceId) && ( v.isRequired() || !v.isRequired() &&  StringUtils.isNotBlank(processorDTO.getConfig().getProperties().get(k)))) {
+                                    if (StringUtils.isNotBlank(validControllerServiceId) && (v.isRequired() || !v.isRequired() && StringUtils
+                                        .isNotBlank(processorDTO.getConfig().getProperties().get(k)))) {
                                         processorDTO.getConfig().getProperties().put(k, validControllerServiceId);
                                         updatedProcessorProperties.put(k, validControllerServiceId);
                                         if (!updatedProcessors.contains(processorDTO)) {
@@ -440,12 +436,12 @@ public class TemplateCreationHelper {
                             }
                         }
                         //if we havent made a match attempt to see if the cs was removed
-                        if(!updatedProcessorProperties.containsKey(k) && !idsMatch && instance != null) {
+                        if (!updatedProcessorProperties.containsKey(k) && !idsMatch && instance != null) {
                             String value = processorDTO.getConfig().getProperties().get(k);
                             //find the correct reference from that was removed due to a matching service
-                            ControllerServiceDTO controllerServiceDTO = instance.findMatchingControllerServoce(value);
-                            if(controllerServiceDTO != null) {
-                                    updatedProcessorProperties.put(k, controllerServiceDTO.getId());
+                            ControllerServiceDTO controllerServiceDTO = instance.findMatchingControllerService(value);
+                            if (controllerServiceDTO != null) {
+                                updatedProcessorProperties.put(k, controllerServiceDTO.getId());
                             }
                         }
                     }
@@ -466,8 +462,8 @@ public class TemplateCreationHelper {
         }
         //update the data back in the processors list
         if (!updatedProcessors.isEmpty()) {
-            Map<String,ProcessorDTO> updatedMap = updatedProcessors.stream().collect(Collectors.toMap(p->p.getId(),p -> p));
-          return  processors.stream().map(p ->  updatedMap.containsKey(p.getId()) ? updatedMap.get(p.getId()) : p).collect(Collectors.toList());
+            Map<String, ProcessorDTO> updatedMap = updatedProcessors.stream().collect(Collectors.toMap(p -> p.getId(), p -> p));
+            return processors.stream().map(p -> updatedMap.containsKey(p.getId()) ? updatedMap.get(p.getId()) : p).collect(Collectors.toList());
         }
 
         return processors;
@@ -476,11 +472,11 @@ public class TemplateCreationHelper {
 
 
     public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors, TemplateInstance templateInstance) {
-        return updateControllerServiceReferences(processors, null,templateInstance);
+        return updateControllerServiceReferences(processors, null, templateInstance);
     }
 
     public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors) {
-        return updateControllerServiceReferences(processors, null,null);
+        return updateControllerServiceReferences(processors, null, null);
     }
 
     /**
@@ -493,7 +489,7 @@ public class TemplateCreationHelper {
     public List<NifiProperty> updateControllerServiceReferences(List<ProcessorDTO> processors, Map<String, String> controllerServiceProperties, TemplateInstance instance) {
 
         try {
-          processors =  reassignControllerServiceIds(processors, instance);
+            processors = reassignControllerServiceIds(processors, instance);
 
             //merge the snapshotted services with the newly created ones and update respective processors in the newly created flow
             final Map<String, ControllerServiceDTO> enabledServices = new HashMap<>();
@@ -603,11 +599,13 @@ public class TemplateCreationHelper {
             // Sort allowed values by priority
             .sorted((a, b) -> {
                 final String propertyValue = property.getValue();
+                final String secondaryValue = allServices.containsKey(propertyValue) ? allServices.get(propertyValue).getId() : "";
                 final String value1 = a.getValue();
                 final String value2 = b.getValue();
                 return ComparisonChain.start()
                     // 1. Matches property value
                     .compareTrueFirst(value1.equals(propertyValue), value2.equals(propertyValue))
+                    .compareTrueFirst(value1.equals(secondaryValue), value2.equals(secondaryValue))
                     // 2. Service is enabled
                     .compareTrueFirst(enabledServices.containsKey(value1), enabledServices.containsKey(value2))
                     // 3. Similar service is enabled
@@ -676,9 +674,11 @@ public class TemplateCreationHelper {
      */
     private List<ConnectionDTO> deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
         // Get the list of incoming connections coming from some source to this process group
-          List<ConnectionDTO> deletedConnections = new ArrayList<>();
+        List<ConnectionDTO> deletedConnections = new ArrayList<>();
 
-        final Set<ConnectionDTO> connectionsEntity = nifiObjectCache.isCacheConnections() ? nifiObjectCache.getConnections(processGroup.getParentGroupId()) : restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+        final Set<ConnectionDTO>
+            connectionsEntity =
+            nifiObjectCache.isCacheConnections() ? nifiObjectCache.getConnections(processGroup.getParentGroupId()) : restClient.getProcessGroupConnections(processGroup.getParentGroupId());
 
         if (connectionsEntity == null) {
             return deletedConnections;
@@ -720,7 +720,7 @@ public class TemplateCreationHelper {
                 throw new NifiClientRuntimeException("Error deleting the connection " + connection.getId() + " with source " + source + " and destination " + destination + ".");
             }
         }
-        nifiObjectCache.removeConnections(processGroup.getParentGroupId(),removedConnections);
+        nifiObjectCache.removeConnections(processGroup.getParentGroupId(), removedConnections);
         return deletedConnections;
     }
 
@@ -736,10 +736,9 @@ public class TemplateCreationHelper {
         versionedProcessGroup.setProcessGroupPriorToVersioning(processGroup);
         versionedProcessGroup.setProcessGroupName(processGroup.getName());
 
+        List<ProcessorDTO> inputProcessorsPriorToDisabling = restClient.disableAllInputProcessors(processGroup.getId());
 
-       List<ProcessorDTO> inputProcessorsPriorToDisabling = restClient.disableAllInputProcessors(processGroup.getId());
-
-       versionedProcessGroup.setInputProcessorsPriorToDisabling(inputProcessorsPriorToDisabling);
+        versionedProcessGroup.setInputProcessorsPriorToDisabling(inputProcessorsPriorToDisabling);
 
         log.info("Disabled Inputs for {} ", processGroup.getName());
         //attempt to stop all processors
@@ -751,8 +750,8 @@ public class TemplateCreationHelper {
         }
         //delete input connections
         try {
-          List<ConnectionDTO> deletedConnections=  deleteInputPortConnections(processGroup);
-          versionedProcessGroup.setDeletedInputPortConnections(deletedConnections);
+            List<ConnectionDTO> deletedConnections = deleteInputPortConnections(processGroup);
+            versionedProcessGroup.setDeletedInputPortConnections(deletedConnections);
 
         } catch (NifiClientRuntimeException e) {
             log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName(), e);
@@ -760,7 +759,7 @@ public class TemplateCreationHelper {
                                                                     + "in NiFi and try again."));
         }
 
-        String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName(),versionIdentifier);
+        String versionedProcessGroupName = getVersionedProcessGroupName(processGroup.getName(), versionIdentifier);
         versionedProcessGroup.setVersionedProcessGroupName(versionedProcessGroupName);
 
         //rename the feedGroup to be name+timestamp
@@ -771,8 +770,6 @@ public class TemplateCreationHelper {
 
         return versionedProcessGroup;
     }
-
-
 
 
     public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {

@@ -1,115 +1,163 @@
-
 import * as angular from 'angular';
 import * as _ from "underscore";
+import {ImportComponentType} from "../../services/ImportService";
+import {Import} from "../../services/ImportComponentOptionTypes";
+import {Common} from "../../../common/CommonTypes";
+import ImportComponentOption = Import.ImportComponentOption;
+import ImportService = Import.ImportService;
+import Map = Common.Map;
+
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class ImportFeedController {
-    feedFile:any;
-    fileName:any;
-    uploadInProgress:boolean;
-    validationErrors:boolean;
-    uploadKey:any;
-    uploadStatusMessages:any;
-    uploadStatusCheck:any;
-    uploadProgress:number;
-    additionalInputNeeded:boolean;
-    disableFeedUponImport:boolean;
-    importComponentOptions:any;
-    feedDataImportOption:any;
-    templateDataImportOption:any;
-    nifiTemplateImportOption:any;
-    reusableTemplateImportOption:any;
-    userDatasourcesOption:any;
-    onOverwriteSelectOptionChanged:any;
-    importFeedForm:any;
-    availableDatasources:any;
-    importResult:any;
-    importResultIcon:any;
-    importResultIconColor:any;
-    errorMap:any;
-    errorCount:any;
-    categorySelectedItemChange:any;
-    categorySearchTextChanged:any;
-    categoriesService:any;
-    model:any;
-    importFeed:any;
-    categorySearchText:any;
-    message:any;
 
-    constructor(private $scope:any, private $http:any, private $interval:any, private $timeout:any
-        , private $mdDialog:any, private FileUpload:any, private RestUrlService:any
-        , private FeedCreationErrorService:any, private CategoriesService:any
-        , private ImportService:any, private DatasourcesService:any, private $filter:any) {
+    /**
+     * The file to upload
+     * @type {null}
+     */
+    feedFile: any = null;
+    /**
+     * the name of the file to upload
+     * @type {string}
+     */
+    fileName: string = null;
 
-        /**
-         * reference to the controller
-         * @type {controller}
-         */
-        var self = this;
+    /**
+     * flag if uploading
+     * @type {boolean}
+     */
+    uploadInProgress: boolean = false;
+    /**
+     * Flag to indicate the upload produced validation errors
+     * @type {boolean}
+     */
+    validationErrors: boolean = false;
 
-        /**
-         * The file to upload
-         * @type {null}
-         */
-        this.feedFile = null;
-        /**
-         * the name of the file to upload
-         * @type {null}
-         */
-        this.fileName = null;
+    /**
+     * unique key to track upload status
+     * @type {string}
+     */
+    uploadKey: string = null;
+    /**
+     * Status of the current upload
+     * @type {Array}
+     */
+    uploadStatusMessages: string[] = [];
 
-        /**
-         * flag if uploading
-         * @type {boolean}
-         */
-        this.uploadInProgress = false;
+    /**
+     * handle on the $interval object to cancel later
+     * @type {null}
+     */
+    uploadStatusCheck: angular.IPromise<any> = undefined;
 
-        /**
-         * Flag to indicate the upload produced validation errors
-         * @type {boolean}
-         */
-        this.validationErrors = false;
+    /**
+     * Percent upload complete
+     * @type {number}
+     */
+    uploadProgress: number = 0;
 
-        /**
-         * unique key to track upload status
-         * @type {null}
-         */
-        this.uploadKey = null;
+    /**
+     * Flag to indicate additional properties exist and a header show be shown for template options
+     */
+    additionalInputNeeded: boolean = false;
+    /**
+     * flag to force the feed to be DISABLED upon importing
+     * @type {boolean}
+     */
+    disableFeedUponImport: boolean = false;
+    /**
+     * All the importOptions that will be uploaded
+     * @type {{}}
+     */
+    importComponentOptions: Map<ImportComponentOption> = {};
+    /**
+     * Feed ImportOptions
+     */
+    feedDataImportOption: ImportComponentOption;
+    /**
+     * Registered Template import options
+     */
+    templateDataImportOption: ImportComponentOption;
+    /**
+     * NiFi template options
+     */
+    nifiTemplateImportOption: ImportComponentOption;
+    /**
+     * Reusable template options
+     */
+    reusableTemplateImportOption: ImportComponentOption;
+    /**
+     * User data sources options
+     */
+    userDatasourcesOption: ImportComponentOption;
 
-        /**
-         * Status of the current upload
-         * @type {Array}
-         */
-        this.uploadStatusMessages = [];
+    /**
+     * Any required feed fields
+     */
+    feedUserFieldsImportOption: ImportComponentOption;
 
-        /**
-         * handle on the $interval object to cancel later
-         * @type {null}
-         */
-        this.uploadStatusCheck = undefined;
+    /**
+     * Any Required Category fields
+     */
+    categoryUserFieldsImportOption: ImportComponentOption;
 
-        /**
-         * Percent upload complete
-         * @type {number}
-         */
-        this.uploadProgress = 0;
+    /**
+     * The angular Form for validation
+     * @type {{}}
+     */
+    importFeedForm: any = {};
+    /**
+     * List of available data sources.
+     * @type {Array.<JdbcDatasource>}
+     */
+    availableDatasources: any = [];
 
-        /**
-         * Flag to indicate additional properties exist and a header show be shown for template options
-         */
-        this.additionalInputNeeded = false;
+    importResult: any;
+    /**
+     * The icon for the result
+     */
+    importResultIcon: string = "check_circle";
 
-        /**
-         * flag to force the feed to be DISABLED upon importing
-         * @type {boolean}
-         */
-        this.disableFeedUponImport = false;
+    /**
+     * the color of the icon
+     */
+    importResultIconColor: string = "#009933";
+    /**
+     * Any additional errors
+     */
+    errorMap: any = null;
+    /**
+     * the number of errors after an import
+     */
+    errorCount: number = 0;
 
-        /**
-         * All the importOptions that will be uploaded
-         * @type {{}}
-         */
-        this.importComponentOptions = {};
+
+    /**
+     * The category model for autocomplete
+     * @type {{category: {}}}
+     */
+    categoryModel: any = {
+        category: {}
+    }
+
+    /**
+     * When the category auto complete changes
+     */
+    categorySearchText: string;
+
+    /**
+     * Message after upload
+     */
+    message: string;
+
+
+    static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "FeedCreationErrorService", "CategoriesService", "ImportService", "DatasourcesService", "$filter"];
+
+    constructor(private $scope: any, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
+        , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any
+        , private FeedCreationErrorService: any, private categoriesService: any
+        , private ImportService: ImportService, private DatasourcesService: any, private $filter: angular.IFilterService) {
+
 
         /**
          * Feed ImportOptions
@@ -136,348 +184,316 @@ export class ImportFeedController {
          */
         this.userDatasourcesOption = ImportService.newUserDatasourcesImportOption();
 
-        /**
-         * Called when a user changes a import option for overwriting
-         */
-        this.onOverwriteSelectOptionChanged = ImportService.onOverwriteSelectOptionChanged;
+        this.feedUserFieldsImportOption = ImportService.newFeedUserFieldsImportOption();
 
-        /**
-         * The angular Form for validation
-         * @type {{}}
-         */
-        this.importFeedForm = {};
+        this.categoryUserFieldsImportOption = ImportService.newFeedCategoryUserFieldsImportOption();
 
-        /**
-         * List of available data sources.
-         * @type {Array.<JdbcDatasource>}
-         */
-        self.availableDatasources = [];
+    }
 
+    $onInit(): void {
+        this.ngOnInit();
+    }
 
+    /**
+     * Initialize the Controller
+     */
+    ngOnInit(): void {
+        this.indexImportOptions();
+        this.setDefaultImportOptions();
 
-        self.importResult = null;
-        self.importResultIcon = "check_circle";
-        self.importResultIconColor = "#009933";
-
-        self.errorMap = null;
-        self.errorCount = 0;
-
-        self.categorySelectedItemChange = selectedItemChange;
-        self.categorySearchTextChanged = searchTextChange;
-        self.categoriesService = CategoriesService;
-
-
-        self.model = {
-            category: {}
-        };
-
-
-        this.importFeed = function () {
-            //reset flags
-            self.uploadInProgress = true;
-            self.importResult = null;
-
-            var file = self.feedFile;
-            var uploadUrl = RestUrlService.ADMIN_IMPORT_FEED_URL;
-
-            var successFn = function (response:any) {
-                var responseData = response.data;
-                //reassign the options back from the response data
-                var importComponentOptions = responseData.importOptions.importComponentOptions;
-                //map the options back to the object map
-                updateImportOptions(importComponentOptions);
-
-                if(!responseData.valid){
-                    //Validation Error.  Additional Input is needed by the end user
-                    self.additionalInputNeeded = true;
-/*
-                    if(self.showTemplateOptions == false ) {
-                       var show = (self.templateDataImportOption.overwriteSelectValue == 'true' || self.templateDataImportOption.overwriteSelectValue == 'false' ) || (self.templateDataImportOption.errorMessages != null && self.templateDataImportOption.errorMessages.length >0);
-                       if(show) {
-                           //if this is the first time we show the options, set the overwrite flag to be empty
-                           self.templateDataImportOption.overwriteSelectValue = '';
-                       }
-                        self.showTemplateOptions = show;
-                    }
-
-                    if(self.showReusableTemplateOptions == false) {
-                        self.showReusableTemplateOptions = (self.reusableTemplateImportOption.overwriteSelectValue == 'true' || self.reusableTemplateImportOption.overwriteSelectValue == 'false' )|| (self.reusableTemplateImportOption.errorMessages != null && self.reusableTemplateImportOption.errorMessages.length >0);
-                    }
-                    */
-
-                }
-                else {
-
-                    var count = 0;
-                    var errorMap:any = {"FATAL": [], "WARN": []};
-                    self.importResult = responseData;
-                    //if(responseData.templateResults.errors) {
-                    if (responseData.template.controllerServiceErrors) {
-                        //angular.forEach(responseData.templateResults.errors, function (processor) {
-                        angular.forEach(responseData.template.controllerServiceErrors, function (processor:any) {
-                            if (processor.validationErrors) {
-                                angular.forEach(processor.validationErrors, function (error:any) {
-                                    var copy:any = {};
-                                    angular.extend(copy, error);
-                                    angular.extend(copy, processor);
-                                    copy.validationErrors = null;
-                                    errorMap[error.severity].push(copy);
-                                    count++;
-                                });
-                            }
-                        });
-
-                    }
-                    if (responseData.nifiFeed == null || responseData.nifiFeed == undefined) {
-                        errorMap["FATAL"].push({message: "Unable to import feed"});
-                    }
-                    if (responseData.nifiFeed && responseData.nifiFeed) {
-                        count += FeedCreationErrorService.parseNifiFeedErrors(responseData.nifiFeed, errorMap);
-                    }
-                    self.errorMap = errorMap;
-                    self.errorCount = count;
-
-                    var feedName = responseData.feedName != null ? responseData.feedName : "";
-
-                    if (count == 0) {
-                        self.importResultIcon = "check_circle";
-                        self.importResultIconColor = "#009933";
-
-                        self.message = $filter('translate')('views.ImportFeedController.succes') + feedName + ".";
-
-                        resetImportOptions();
-
-                    }
-                    else {
-                        if (responseData.success) {
-                            resetImportOptions();
-
-                            self.message = "Successfully imported and registered the feed " + feedName + " but some errors were found. Please review these errors";
-                            self.importResultIcon = "warning";
-                            self.importResultIconColor = "#FF9901";
-                               }
-                        else {
-                            self.importResultIcon = "error";
-                            self.importResultIconColor = "#FF0000";
-                            self.message = $filter('translate')('views.ImportFeedController.error2');
-                        }
-                    }
-                }
-
-                self.uploadInProgress = false;
-                stopUploadStatus(1000);
-            }
-            var errorFn = function (response:any) {
-                var data = response.data
-                //reset the flags
-                self.importResult = {};
-                self.uploadInProgress = false;
-
-                //set error indicators and messages
-                self.importResultIcon = "error";
-                self.importResultIconColor = "#FF0000";
-                var msg = $filter('translate')('views.ImportFeedController.error');
-                if(data.developerMessage){
-                    msg += data.developerMessage;
-                }
-                self.message = msg;
-                stopUploadStatus(1000);
-            }
-
-
-            if (angular.isDefined(self.categorySearchText) && self.categorySearchText != null && self.categorySearchText != "" && self.model.category.systemName == null) {
-                //error the category has text in it, but not selected
-                //attempt to get it
-                var category = CategoriesService.findCategoryByName(self.categorySearchText);
-                if (category != null) {
-                    self.model.category = category;
-                }
-            }
-
-            //build up the options from the Map and into the array for uploading
-            var importComponentOptions = ImportService.getImportOptionsForUpload(self.importComponentOptions);
-
-            //generate a new upload key for status tracking
-            self.uploadKey = ImportService.newUploadKey();
-
-            var params = {
-                uploadKey : self.uploadKey,
-                categorySystemName: angular.isDefined(self.model.category.systemName) && self.model.category.systemName != null ? self.model.category.systemName : "",
-                disableFeedUponImport:self.disableFeedUponImport,
-                importComponents:angular.toJson(importComponentOptions)
-            };
-
-
-            startUploadStatus();
-            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
-
-        };
-
-        function searchTextChange(text:any) {
-        }
-        function selectedItemChange(item:any) {
-            if(item != null && item != undefined) {
-                self.model.category.name = item.name;
-                self.model.category.id = item.id;
-                self.model.category.systemName = item.systemName;
-            }
-            else {
-                self.model.category.name = null;
-                self.model.category.id = null;
-                self.model.category.systemName = null;
-            }
-        }
-
-
-
-        /**
-         * Set the default values for the import options
-         */
-        function setDefaultImportOptions(){
-            self.nifiTemplateImportOption.continueIfExists = true;
-          //  self.reusableTemplateImportOption.userAcknowledged = false;
-            //it is assumed with a feed you will be importing the template with the feed
-            self.templateDataImportOption.userAcknowledged=true;
-            self.feedDataImportOption.continueIfExists=false;
-        }
-
-        function indexImportOptions(){
-            var arr = [self.feedDataImportOption,self.templateDataImportOption,self.nifiTemplateImportOption,self.reusableTemplateImportOption];
-            self.importComponentOptions = _.indexBy(arr,'importComponent')
-        }
-
-        /**
-         * Initialize the Controller
-         */
-        function init() {
-            indexImportOptions();
-            setDefaultImportOptions();
-
-            // Get the list of data sources
-            DatasourcesService.findAll()
-                .then(function (datasources:any) {
-                    self.availableDatasources = datasources;
-                });
-        }
-
-        /**
-         * Reset the options back to their orig. state
-         */
-        function resetImportOptions(){
-            self.importComponentOptions = {};
-
-            self.feedDataImportOption = ImportService.newFeedDataImportOption();
-
-            self.templateDataImportOption = ImportService.newTemplateDataImportOption();
-
-            self.nifiTemplateImportOption = ImportService.newNiFiTemplateImportOption();
-
-            self.reusableTemplateImportOption = ImportService.newReusableTemplateImportOption();
-
-            self.userDatasourcesOption = ImportService.newUserDatasourcesImportOption();
-
-            indexImportOptions();
-            setDefaultImportOptions();
-
-            self.additionalInputNeeded = false;
-            self.disableFeedUponImport = false;
-
-        }
-
-        /**
-         *
-         * @param importOptionsArr array of importOptions
-         */
-        function updateImportOptions(importOptionsArr:any){
-            var map = _.indexBy(importOptionsArr,'importComponent');
-            _.each(importOptionsArr, function(option:any) {
-                if(option.userAcknowledged){
-                    option.overwriteSelectValue = ""+option.overwrite;
-                }
-
-                if(option.importComponent == ImportService.importComponentTypes.FEED_DATA){
-                    self.feedDataImportOption= option;
-                }
-                else if(option.importComponent == ImportService.importComponentTypes.TEMPLATE_DATA){
-                    self.templateDataImportOption= option;
-                }
-                else if(option.importComponent == ImportService.importComponentTypes.REUSABLE_TEMPLATE){
-                    self.reusableTemplateImportOption= option;
-                }
-                else if(option.importComponent == ImportService.importComponentTypes.NIFI_TEMPLATE){
-                    self.nifiTemplateImportOption= option;
-                } else if (option.importComponent === ImportService.importComponentTypes.USER_DATASOURCES) {
-                    self.userDatasourcesOption = option;
-                }
-                self.importComponentOptions[option.importComponent] = option;
-            });
-        }
-
-        /**
-         * Stop the upload status check,
-         * @param delay wait xx millis before stopping (allows for the last status to be queried)
-         */
-        function stopUploadStatus(delay:any){
-
-            function stopStatusCheck(){
-                self.uploadProgress = 0;
-                if (angular.isDefined(self.uploadStatusCheck)) {
-                    $interval.cancel(self.uploadStatusCheck);
-                    self.uploadStatusCheck = undefined;
-                }
-            }
-
-            if(delay != undefined) {
-                $timeout(function(){
-                    stopStatusCheck();
-                },delay)
-            }
-            else {
-                stopStatusCheck();
-            }
-
-        }
-
-        /**
-         * starts the upload status check
-         */
-        function startUploadStatus(){
-            stopUploadStatus(undefined);
-            self.uploadStatusMessages =[];
-           self.uploadStatusCheck = $interval(function() {
-                //poll for status
-                $http.get(RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(self.uploadKey)).then(function(response:any) {
-                    if(response && response.data && response.data != null) {
-                        self.uploadStatusMessages = response.data.messages;
-                        self.uploadProgress = response.data.percentComplete;
-                    }
-                }, function(err:any){
-                  //  self.uploadStatusMessages = [];
-                });
-            },500);
-        }
-
-
-        $scope.$watch(function () {
-            return self.feedFile;
-        }, function (newVal:any,oldValue:any) {
+        this.$scope.$watch(() => {
+            return this.feedFile;
+        }, (newVal: any, oldValue: any) => {
             if (newVal != null) {
-                self.fileName = newVal.name;
+                this.fileName = newVal.name;
             }
             else {
-                self.fileName = null;
+                this.fileName = null;
             }
             //reset them if changed
-            if(newVal != oldValue){
-                resetImportOptions();
+            if (newVal != oldValue) {
+                this.resetImportOptions();
             }
         })
 
-        init();
+        // Get the list of data sources
+        this.DatasourcesService.findAll()
+            .then((datasources: any) => {
+                this.availableDatasources = datasources;
+            });
+    }
 
-    };
 
-    
+    /**
+     * Called when a user changes a import option for overwriting
+     */
+    onOverwriteSelectOptionChanged = this.ImportService.onOverwriteSelectOptionChanged;
+
+
+    importFeed(): void {
+        //reset flags
+        this.uploadInProgress = true;
+        this.importResult = null;
+
+        var file = this.feedFile;
+        var uploadUrl = this.RestUrlService.ADMIN_IMPORT_FEED_URL;
+
+        var successFn = (response: any) => {
+            var responseData = response.data;
+            //reassign the options back from the response data
+            var importComponentOptions = responseData.importOptions.importComponentOptions;
+            //map the options back to the object map
+            this.updateImportOptions(importComponentOptions);
+
+            if (!responseData.valid) {
+                //Validation Error.  Additional Input is needed by the end user
+                this.additionalInputNeeded = true;
+            }
+            else {
+                var count = 0;
+                var errorMap: any = {"FATAL": [], "WARN": []};
+                this.importResult = responseData;
+                //if(responseData.templateResults.errors) {
+                if (responseData.template.controllerServiceErrors) {
+                    //angular.forEach(responseData.templateResults.errors, function (processor) {
+                    angular.forEach(responseData.template.controllerServiceErrors, (processor: any) => {
+                        if (processor.validationErrors) {
+                            angular.forEach(processor.validationErrors, function (error: any) {
+                                let copy: any = {};
+                                angular.extend(copy, error);
+                                angular.extend(copy, processor);
+                                copy.validationErrors = null;
+                                this.errorMap[error.severity].push(copy);
+                                count++;
+                            });
+                        }
+                    });
+
+                }
+                if (responseData.nifiFeed == null || responseData.nifiFeed == undefined) {
+                    this.errorMap["FATAL"].push({message: "Unable to import feed"});
+                }
+                if (responseData.nifiFeed && responseData.nifiFeed) {
+                    count += this.FeedCreationErrorService.parseNifiFeedErrors(responseData.nifiFeed, errorMap);
+                }
+                this.errorMap = errorMap;
+                this.errorCount = count;
+
+                var feedName = responseData.feedName != null ? responseData.feedName : "";
+
+                if (count == 0) {
+                    this.importResultIcon = "check_circle";
+                    this.importResultIconColor = "#009933";
+
+                    this.message = this.$filter('translate')('views.ImportFeedController.succes') + feedName + ".";
+
+                    this.resetImportOptions();
+
+                }
+                else {
+                    if (responseData.success) {
+                        this.resetImportOptions();
+
+                        this.message = "Successfully imported and registered the feed " + feedName + " but some errors were found. Please review these errors";
+                        this.importResultIcon = "warning";
+                        this.importResultIconColor = "#FF9901";
+                    }
+                    else {
+                        this.importResultIcon = "error";
+                        this.importResultIconColor = "#FF0000";
+                        this.message = this.$filter('translate')('views.ImportFeedController.error2');
+                    }
+                }
+            }
+
+            this.uploadInProgress = false;
+            this.stopUploadStatus(1000);
+        }
+        var errorFn = (response: any) => {
+            var data = response.data
+            //reset the flags
+            this.importResult = {};
+            this.uploadInProgress = false;
+
+            //set error indicators and messages
+            this.importResultIcon = "error";
+            this.importResultIconColor = "#FF0000";
+            var msg = this.$filter('translate')('views.ImportFeedController.error');
+            if (data.developerMessage) {
+                msg += data.developerMessage;
+            }
+            this.message = msg;
+            this.stopUploadStatus(1000);
+        }
+
+
+        if (angular.isDefined(this.categorySearchText) && this.categorySearchText != null && this.categorySearchText != "" && this.categoryModel.category.systemName == null) {
+            //error the category has text in it, but not selected
+            //attempt to get it
+            let category = this.categoriesService.findCategoryByName(this.categorySearchText);
+            if (category != null) {
+                this.categoryModel.category = category;
+            }
+        }
+
+        //build up the options from the Map and into the array for uploading
+        var importComponentOptions = this.ImportService.getImportOptionsForUpload(this.importComponentOptions);
+
+        //generate a new upload key for status tracking
+        this.uploadKey = this.ImportService.newUploadKey();
+
+        var params = {
+            uploadKey: this.uploadKey,
+            categorySystemName: angular.isDefined(this.categoryModel.category.systemName) && this.categoryModel.category.systemName != null ? this.categoryModel.category.systemName : "",
+            disableFeedUponImport: this.disableFeedUponImport,
+            importComponents: angular.toJson(importComponentOptions)
+        };
+
+
+        this.startUploadStatus();
+        this.FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
+
+    }
+
+    categorySearchTextChanged(text: any): void {
+    }
+
+    categorySelectedItemChange(item: any) {
+        if (item != null && item != undefined) {
+            this.categoryModel.category.name = item.name;
+            this.categoryModel.category.id = item.id;
+            this.categoryModel.category.systemName = item.systemName;
+        }
+        else {
+            this.categoryModel.category.name = null;
+            this.categoryModel.category.id = null;
+            this.categoryModel.category.systemName = null;
+        }
+    }
+
+
+    /**
+     * Set the default values for the import options
+     */
+    private setDefaultImportOptions(): void {
+        this.nifiTemplateImportOption.continueIfExists = true;
+        //  this.reusableTemplateImportOption.userAcknowledged = false;
+        //it is assumed with a feed you will be importing the template with the feed
+        this.templateDataImportOption.userAcknowledged = true;
+        this.feedDataImportOption.continueIfExists = false;
+    }
+
+    private indexImportOptions(): void {
+        var arr = [this.feedDataImportOption, this.templateDataImportOption, this.nifiTemplateImportOption, this.reusableTemplateImportOption, this.categoryUserFieldsImportOption, this.feedUserFieldsImportOption];
+        this.importComponentOptions = _.indexBy(arr, 'importComponent')
+    }
+
+
+    /**
+     * Reset the options back to their orig. state
+     */
+    private resetImportOptions(): void {
+        this.importComponentOptions = {};
+
+        this.feedDataImportOption = this.ImportService.newFeedDataImportOption();
+
+        this.templateDataImportOption = this.ImportService.newTemplateDataImportOption();
+
+        this.nifiTemplateImportOption = this.ImportService.newNiFiTemplateImportOption();
+
+        this.reusableTemplateImportOption = this.ImportService.newReusableTemplateImportOption();
+
+        this.userDatasourcesOption = this.ImportService.newUserDatasourcesImportOption();
+
+        this.feedUserFieldsImportOption = this.ImportService.newFeedUserFieldsImportOption();
+
+        this.categoryUserFieldsImportOption = this.ImportService.newFeedCategoryUserFieldsImportOption();
+
+        this.indexImportOptions();
+        this.setDefaultImportOptions();
+
+        this.additionalInputNeeded = false;
+        this.disableFeedUponImport = false;
+
+    }
+
+    /**
+     *
+     * @param importOptionsArr array of importOptions
+     */
+    private updateImportOptions(importOptionsArr: ImportComponentOption[]): void {
+        var map = _.indexBy(importOptionsArr, 'importComponent');
+        _.each(importOptionsArr, (option: any) => {
+            if (option.userAcknowledged) {
+                option.overwriteSelectValue = "" + option.overwrite;
+            }
+
+            if (option.importComponent == ImportComponentType.FEED_DATA) {
+                this.feedDataImportOption = option;
+            } else if (option.importComponent == ImportComponentType.TEMPLATE_DATA) {
+                this.templateDataImportOption = option;
+            } else if (option.importComponent == ImportComponentType.REUSABLE_TEMPLATE) {
+                this.reusableTemplateImportOption = option;
+            } else if (option.importComponent == ImportComponentType.NIFI_TEMPLATE) {
+                this.nifiTemplateImportOption = option;
+            } else if (option.importComponent === ImportComponentType.USER_DATASOURCES) {
+                this.userDatasourcesOption = option;
+            } else if (option.importComponent === ImportComponentType.FEED_CATEGORY_USER_FIELDS) {
+                this.categoryUserFieldsImportOption = option;
+            } else if (option.importComponent === ImportComponentType.FEED_USER_FIELDS) {
+                this.feedUserFieldsImportOption = option;
+            }
+            this.importComponentOptions[option.importComponent] = option;
+        });
+    }
+
+    /**
+     * Stop the upload status check,
+     * @param delay wait xx millis before stopping (allows for the last status to be queried)
+     */
+    private stopUploadStatus(delay: any): void {
+
+        let stopStatusCheck = () => {
+            this.uploadProgress = 0;
+            if (angular.isDefined(this.uploadStatusCheck)) {
+                this.$interval.cancel(this.uploadStatusCheck);
+                this.uploadStatusCheck = undefined;
+            }
+        }
+
+        if (delay != undefined) {
+            this.$timeout(() => {
+                stopStatusCheck();
+            }, delay)
+        }
+        else {
+            stopStatusCheck();
+        }
+
+    }
+
+    /**
+     * starts the upload status check
+     */
+    private startUploadStatus(): void {
+        this.stopUploadStatus(undefined);
+        this.uploadStatusMessages = [];
+        this.uploadStatusCheck = this.$interval(() => {
+            //poll for status
+            this.$http.get(this.RestUrlService.ADMIN_UPLOAD_STATUS_CHECK(this.uploadKey)).then((response: angular.IHttpResponse<any>) => {
+                if (response && response.data && response.data != null) {
+                    this.uploadStatusMessages = response.data.messages;
+                    this.uploadProgress = response.data.percentComplete;
+                }
+            }, (err: any) => {
+                //  this.uploadStatusMessages = [];
+            });
+        }, 500);
+    }
+
+
 }
-angular.module(moduleName).controller('ImportFeedController', ["$scope","$http","$interval","$timeout","$mdDialog","FileUpload","RestUrlService","FeedCreationErrorService","CategoriesService","ImportService","DatasourcesService", "$filter",ImportFeedController]);
+
+
+angular.module(moduleName).controller('ImportFeedController', ImportFeedController);
 

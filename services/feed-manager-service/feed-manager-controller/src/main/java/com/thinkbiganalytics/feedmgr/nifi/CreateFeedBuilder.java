@@ -585,6 +585,11 @@ public class CreateFeedBuilder {
         // Update cached type
         if (input != null) {
             inputProcessorType = input.getType();
+            if(inputProcessorName == null){
+                //if we found the input and the feed metadata didnt have it then reassign it.
+                inputProcessorName = input.getName();
+                feedMetadata.setInputProcessorName(inputProcessorName);
+            }
         }
 
         return input;

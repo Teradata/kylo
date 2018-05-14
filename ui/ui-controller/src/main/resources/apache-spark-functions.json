@@ -2534,6 +2534,12 @@
 
   "!COLLECTION_FUNCTIONS": "Functions for collections.",
 
+  "col": {
+    "!type": "fn(colName: string) -> Column",
+    "!doc": "Gets the column by name.",
+    "!spark": "new Column(%s)",
+    "!sparkType": "Column"
+  },
   "array_contains": {
     "!type": "fn(column: Column, value: Object) -> Column",
     "!doc": "Returns true if the array contain the value.",

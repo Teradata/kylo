@@ -19,8 +19,6 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * limitations under the License.
  * #L%
  */
-
-
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
@@ -76,12 +74,12 @@ public class SparkFileSchemaParserService {
     /**
      * Delegate to spark shell service to load the file into a temporary table and loading it
      */
-    public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType) throws IOException {
+    public Schema doParse(InputStream inputStream, SparkFileType fileType, TableSchemaType tableSchemaType, SparkCommandBuilder commandBuilder) throws IOException {
 
         File tempFile = toFile(inputStream);
         try {
             SparkShellProcess shellProcess = shellProcessManager.getSystemProcess();
-            TransformResponse response = restClient.transform(shellProcess, createTransformRequest(tempFile, fileType));
+            TransformResponse response = restClient.transform(shellProcess, createTransformRequest(tempFile, fileType, commandBuilder));
             while (response.getStatus() != TransformResponse.Status.SUCCESS) {
                 if (response.getStatus() == TransformResponse.Status.ERROR) {
                     throw new IOException("Failed to process data [" + response.getMessage() + "]");
@@ -107,13 +105,13 @@ public class SparkFileSchemaParserService {
     }
     // Port: 8450
 
-    private TransformRequest createTransformRequest(File localFile, SparkFileType fileType) {
+    private TransformRequest createTransformRequest(File localFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) {
         TransformRequest transformRequest = new TransformRequest();
-        transformRequest.setScript(toScript(localFile, fileType));
+        transformRequest.setScript(toScript(localFile, fileType, commandBuilder));
         return transformRequest;
     }
 
-    private String toScript(File localFile, SparkFileType fileType) {
+    private String toScript(File localFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) {
         String path = "file://" + localFile.getAbsolutePath();
         // IDE testing:
         //path = "file:///var/sample/signups.orc";
@@ -121,27 +119,8 @@ public class SparkFileSchemaParserService {
         StringBuffer sb = new StringBuffer();
         sb.append("import sqlContext.implicits._\n");
         sb.append("import org.apache.spark.sql._\n");
-
-        String method;
-        switch (fileType) {
-            case AVRO:
-                method = "avro";
-                sb.append("import com.databricks.spark.avro._\n");
-                sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
-                break;
-            case JSON:
-                method = "json";
-                break;
-            case PARQUET:
-                method = "parquet";
-                break;
-            case ORC:
-                method = "orc";
-                break;
-            default:
-                throw new UnsupportedOperationException("Type not supported [" + fileType + "]");
-        }
-        sb.append(String.format("sqlContext.read.%s(\"%s\").limit(10).toDF()", method, path));
+        sb.append(commandBuilder.build(path));
+        log.info("Script {}",sb.toString());
         return sb.toString();
     }
 
@@ -215,6 +194,6 @@ public class SparkFileSchemaParserService {
     }
 
     public enum SparkFileType {
-        PARQUET, AVRO, JSON, ORC
+        PARQUET, AVRO, JSON, ORC, XML
     }
 }

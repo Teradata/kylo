@@ -31,6 +31,8 @@ public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSc
 
     private String hiveFormat;
 
+    private String tblProperties;
+
     private Boolean structured = false;
 
     @Override
@@ -51,6 +53,16 @@ public class DefaultHiveSchema extends DefaultTableSchema implements HiveTableSc
     @Override
     public void setStructured(boolean structured) {
         this.structured = true;
+    }
+
+    @Override
+    public void setSerdeTableProperties(String tblProperties) {
+        this.tblProperties = tblProperties;
+    }
+
+    @Override
+    public String getSerdeTableProperties() {
+        return this.tblProperties;
     }
 }
 

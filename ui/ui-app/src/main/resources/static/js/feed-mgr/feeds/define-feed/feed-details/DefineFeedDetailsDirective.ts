@@ -203,6 +203,7 @@ export class DefineFeedDetailsController {
             .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
 
         this.loading = false;
+        this.model.isStream = template.isStream;
         this.validate();
     }
 

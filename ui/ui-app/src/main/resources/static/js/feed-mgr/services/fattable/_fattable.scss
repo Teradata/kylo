@@ -1,0 +1,125 @@
+.fattable-viewport {
+  > div {
+    padding: 0 5px 0 0;
+    text-overflow: ellipsis;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: 13px;
+    border-bottom: 1px solid rgb(230, 230, 230);
+    border-right: 1px solid rgb(230, 230, 230);
+  }
+
+  > div.odd {
+    background-color: rgba(0, 0, 0, 0.01);
+  }
+
+  > div.invalid {
+    background-color: #ffcdd2 !important;
+  }
+
+  > div.null {
+    background-color: #f5f5f5;
+  }
+
+  > div.selected {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+
+}
+
+.fattable-header-container {
+  border-bottom: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+
+  .fattable-viewport {
+
+    > div {
+      font-size: 13px;
+      color: rgba(0, 0, 0, 0.54);
+      letter-spacing: .02em;
+      white-space: nowrap;
+      border-right: 1px solid lightgray;
+      display: flex;
+      justify-content: space-between;
+      background: white;
+    }
+
+    > div:first-child {
+      padding-left: 24px;
+      padding-right: 0;
+    }
+
+    > div {
+      padding-left: 5px;
+      padding-right: 0;
+    }
+
+    .header-separator {
+      cursor: col-resize;
+      display: block;
+      padding-left: 0;
+      width: 1px;
+    }
+
+    .header-value {
+      padding-top: 10px;
+      display: block;
+      padding-left: 0;
+    }
+  }
+}
+
+
+.fattable-body-container .fattable-viewport {
+
+  > div {
+    letter-spacing: .01em;
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+
+  > div.first-column {
+    letter-spacing: .01em;
+    padding-left: 24px;
+    padding-right: 5px;
+  }
+}
+
+/* Column headers */
+.ui-grid-header-cell-label {
+  color: steelblue;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ui-grid-header-cell-title {
+  color: black;
+}
+
+/* Column menu button */
+.ui-grid-column-menu-button {
+  padding: 0;
+
+  > .md-button.md-icon-button {
+    height: inherit;
+    line-height: inherit;
+    padding: 0 6px;
+    font-size: 13px;
+  }
+
+   .ui-grid-icon-angle-down {
+    display: inline-block;
+    height: 23px;
+    margin: auto;
+  }
+}
+
+

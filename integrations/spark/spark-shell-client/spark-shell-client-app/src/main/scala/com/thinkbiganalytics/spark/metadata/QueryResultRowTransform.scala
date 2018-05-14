@@ -12,6 +12,7 @@ import org.apache.spark.sql.types.StructType
 
 import scala.collection.JavaConverters._
 
+
 /** Helper for building [[TransformQueryResult]] objects from a Spark dataset. */
 object QueryResultRowTransform {
     /** Prefix for display names that are different from the field name */
@@ -66,4 +67,10 @@ class QueryResultRowTransform(schema: StructType, destination: String, converter
     def convertRow(row: Row): util.List[Object] = {
         columns.indices.map(i => converters(i).convert(row.getAs(i))).asJava
     }
+
+   /** Coverts the specified row into a [[TransformQueryResult]] compatible object. */
+    def convertPagedRow(row: Row, columnIndices: List[Int]): util.List[Object] = {
+        columnIndices.map(i => converters(i).convert(row.getAs(i))).asJava
+    }
+
 }

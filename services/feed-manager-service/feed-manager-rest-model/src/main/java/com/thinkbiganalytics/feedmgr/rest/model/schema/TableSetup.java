@@ -75,6 +75,8 @@ public class TableSetup {
     private TableOptions options;
     @MetadataField(description = "Hive Row Format String for the Feed Table (example: ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS\n  TEXTFILE ")
     private String feedFormat;
+    @MetadataField(description = "Feed Hive table properties properties string (i.e.  tblproperties(\"orc.compress\"=\"SNAPPY\") ")
+    private String feedTblProperties;
     @MetadataField(description = "Format of the Destination Table storage. Supported Values are: [STORED AS PARQUET, STORED AS ORC]")
     private String targetFormat;
     @MetadataField(description = "Destination Hive Table Properties string (i.e.  tblproperties(\"orc.compress\"=\"SNAPPY\") ")
@@ -617,4 +619,8 @@ public class TableSetup {
     public void setTargetSourceFieldMap(Map<String, String> targetSourceFieldMap) {
         this.targetSourceFieldMap = targetSourceFieldMap;
     }
+
+    public String getFeedTblProperties() { return feedTblProperties; }
+
+    public void setFeedTblProperties(String feedTblProperties) { this.feedTblProperties = feedTblProperties; }
 }

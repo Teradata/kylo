@@ -15,8 +15,10 @@ const moduleName = require('feed-mgr/module-name');
          */
         initSensitivePropertyForEditing(property:Property):void{
             if(property.sensitive && !this.isMasked(property.value)){
-                property.encryptedValue = property.value;
-                property.value = '******';
+                    property.encryptedValue = property.value;
+                if(property.value != null) {
+                    property.value = '******';
+                }
             }
         };
         /**

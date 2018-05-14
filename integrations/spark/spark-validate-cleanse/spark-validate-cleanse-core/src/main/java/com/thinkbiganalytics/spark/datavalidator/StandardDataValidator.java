@@ -133,7 +133,9 @@ public class StandardDataValidator implements DataValidator, Serializable {
     public DataValidatorResult validateTable(@Nonnull final String databaseName, @Nonnull final String sourceTableName, @Nonnull final String targetTableName, @Nonnull final String partition,
                                              final int numPartitions, @Nonnull final Map<String, FieldPolicy> policyMap, @Nonnull final HiveContext hiveContext) {
         // Extract fields from a source table
-        StructField[] fields = resolveSchema(databaseName, sourceTableName, hiveContext);
+        String definitionsTableToUse = targetTableName;
+        log.info("Constructing field policies from table definitions of '{}'", definitionsTableToUse);  // TODO: should be at debug level
+        StructField[] fields = resolveSchema(databaseName, definitionsTableToUse, hiveContext);
         FieldPolicy[] policies = resolvePolicies(fields, policyMap);
 
         String selectStmt = toSelectFields(policies);

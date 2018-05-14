@@ -165,6 +165,19 @@ export class DefineFeedDataProcessingController {
         else {
             this.compressionOptions = ['NONE'];
         }
+        
+        if(format.indexOf('OpenCSVSerde')>=0){
+            //warn the user that their schema will be switched to strings
+
+            this.$mdDialog.show(
+                this.$mdDialog.alert()
+                    .clickOutsideToClose(true)
+                    .title('Target Schema will be modified')
+                    .htmlContent("Warning.  This format will change your target schema. <br/>All field data types will all be converted to  'string'. <br/>Choose a different type if you wish to preserve your defined schema.")
+                    .ariaLabel('Modifying Target Schema')
+                    .ok('Got it!')
+            );
+    }
     };
     findProperty(key: any) {
         return _.find(this.model.inputProcessor.properties, (property: any) =>{

@@ -234,14 +234,8 @@ public class StringColumnStatistics extends StandardColumnStatistics {
         percEmptyValues = ((double) emptyCount / totalCount) * 100;
     }
 
-
-    /**
-     * Write statistics for output result table
-     */
     @Override
-    public List<OutputRow> getStatistics() {
-        final List<OutputRow> rows = new ArrayList<>();
-
+    public void populateStatistics(List<OutputRow> rows) {
         writeStatisticsCommon(rows);
 
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_LENGTH), String.valueOf(maxLength)));
@@ -254,9 +248,7 @@ public class StringColumnStatistics extends StandardColumnStatistics {
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_CASE), String.valueOf(maxStringCase)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_ICASE), String.valueOf(minStringICase)));
         rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_ICASE), String.valueOf(maxStringICase)));
-        return rows;
     }
-
 
     /**
      * Print statistics to console

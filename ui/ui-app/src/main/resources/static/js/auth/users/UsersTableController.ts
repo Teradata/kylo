@@ -193,4 +193,3 @@ angular.module(moduleName)
         controllerAs: "vm",
         templateUrl: "js/auth/users/users-table.html"
     });
-

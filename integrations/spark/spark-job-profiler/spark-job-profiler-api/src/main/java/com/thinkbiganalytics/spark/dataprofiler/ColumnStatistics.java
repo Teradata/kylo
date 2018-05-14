@@ -33,4 +33,5 @@ public interface ColumnStatistics {
      * Gets the statistics.
      */
     List<OutputRow> getStatistics();
+
 }

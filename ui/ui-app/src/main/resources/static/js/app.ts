@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import * as lazyLoad from "./kylo-utils/LazyLoadUtil";
 import * as _ from "underscore";
-const SVGMorpheus = require("../bower_components/svg-morpheus/source/js/svg-morpheus");
+const SVGMorpheus = require("../bower_components/svg-morpheus/compile/minified/svg-morpheus");
 //declare const SVGMorpheus: any;
 declare const d3:any;
 import * as moment from "moment";

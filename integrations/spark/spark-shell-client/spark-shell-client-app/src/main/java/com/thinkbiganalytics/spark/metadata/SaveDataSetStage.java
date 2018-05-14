@@ -26,6 +26,7 @@ import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.model.SaveResult;
 import com.thinkbiganalytics.spark.model.TransformResult;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.service.DataSetConverterService;
 

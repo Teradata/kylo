@@ -1,0 +1,100 @@
+.fattable {
+  position: relative;
+  top: 0;
+  /* Column headers */
+  /* Column menu button */
+}
+.fattable .fattable-viewport > div {
+  padding: 0 5px 0 0;
+  text-overflow: ellipsis;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  vertical-align: middle;
+  white-space: nowrap;
+  font-size: 13px;
+  border-bottom: 1px solid #e6e6e6;
+  border-right: 1px solid #e6e6e6;
+}
+.fattable .fattable-viewport > div.odd {
+  background-color: rgba(0, 0, 0, 0.01);
+}
+.fattable .fattable-viewport > div.invalid {
+  background-color: #ffcdd2 !important;
+}
+.fattable .fattable-viewport > div.null {
+  background-color: #f5f5f5;
+}
+.fattable .fattable-viewport > div.selected {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  user-select: text;
+}
+.fattable .fattable-header-container {
+  border-bottom: 1px solid lightgray;
+  border-top: 1px solid lightgray;
+}
+.fattable .fattable-header-container .fattable-viewport > div {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.54);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  border-right: 1px solid lightgray;
+  display: flex;
+  justify-content: space-between;
+  background: white;
+}
+.fattable .fattable-header-container .fattable-viewport > div:first-child {
+  padding-left: 24px;
+  padding-right: 0;
+}
+.fattable .fattable-header-container .fattable-viewport > div {
+  padding-left: 5px;
+  padding-right: 0;
+}
+.fattable .fattable-header-container .fattable-viewport .header-separator {
+  cursor: col-resize;
+  display: block;
+  padding-left: 0;
+  width: 1px;
+}
+.fattable .fattable-header-container .fattable-viewport .header-value {
+  padding-top: 10px;
+  display: block;
+  padding-left: 0;
+}
+.fattable .fattable-body-container .fattable-viewport > div {
+  letter-spacing: 0.01em;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+.fattable .fattable-body-container .fattable-viewport > div.first-column {
+  letter-spacing: 0.01em;
+  padding-left: 24px;
+  padding-right: 5px;
+}
+.fattable .ui-grid-header-cell-label {
+  color: steelblue;
+  margin-right: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fattable .ui-grid-header-cell-title {
+  color: black;
+}
+.fattable .ui-grid-column-menu-button {
+  padding: 0;
+}
+.fattable .ui-grid-column-menu-button > .md-button.md-icon-button {
+  height: inherit;
+  line-height: inherit;
+  padding: 0 6px;
+  font-size: 13px;
+}
+.fattable .ui-grid-column-menu-button .ui-grid-icon-angle-down {
+  display: inline-block;
+  height: 23px;
+  margin: auto;
+}

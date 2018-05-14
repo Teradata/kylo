@@ -46,6 +46,7 @@ declare namespace Templates {
         displayName?:string;
         displayValue?:string;
         propertyDescriptor?:any;
+        hidden?:false;
 
     }
 

@@ -195,7 +195,7 @@ const moduleName = require('feed-mgr/module-name');
                     var deferred = this.$q.defer();
                     if (self.categories.length == 0) {
                         this.loadAll().then((response:any)=>{
-                            this.loading = false;
+                            self.loading = false;
                             if (query) {
                                 var results = response.filter(this.createFilterFor(query))
                                 deferred.resolve(results);
@@ -204,7 +204,7 @@ const moduleName = require('feed-mgr/module-name');
                                 deferred.resolve(response);
                             }
                         }, (err:any)=> {
-                            this.loading = false;
+                            self.loading = false;
                         });
                     }
                     else {

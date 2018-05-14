@@ -110,12 +110,6 @@ export class ImportTemplateController implements ng.IController, OnInit {
      */
     remoteProcessGroupImportOption: ImportComponentOption;
 
-    /**
-     * boolean to indicate if nifi is clustered.
-     * If it is the remoteProcessGroupOption will be exposed when importing reusable templates
-     * @type {boolean}
-     */
-    nifiClustered: boolean = false;
 
     /**
      * Flag to indicate the user needs to provide ports before uploading
@@ -204,7 +198,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
      * Flag to see if we should check and use remote input ports.
      * This will be disabled until all of the Remte Input port and Remote Process Groups have been completed.
      */
-    remoteInputPortsCheckEnabled: boolean = true;
+    remoteProcessGroupAware :boolean = false;
 
 
     /**
@@ -221,7 +215,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
         this.indexImportOptions();
         this.setDefaultImportOptions();
-        this.setNiFiClustered();
+        this.checkRemoteProcessGroupAware();
     }
 
     static $inject = ["$scope", "$http", "$interval", "$timeout", "$mdDialog", "FileUpload", "RestUrlService", "ImportService", "RegisterTemplateService"];
@@ -653,14 +647,10 @@ export class ImportTemplateController implements ng.IController, OnInit {
     /**
      * Determine if we are clustered and if so set the flag to show the 'remote input port' options
      */
-    setNiFiClustered(): void {
-        if (this.remoteInputPortsCheckEnabled) {
-            this.$http.get(this.RestUrlService.NIFI_STATUS).then((response: angular.IHttpResponse<any>) => {
-                if (response.data.clustered) {
-                    this.nifiClustered = true;
-                }
+   private checkRemoteProcessGroupAware(): void {
+            this.$http.get(this.RestUrlService.REMOTE_PROCESS_GROUP_AWARE).then((response: angular.IHttpResponse<any>) => {
+                    this.remoteProcessGroupAware = response.data.remoteProcessGroupAware;
             });
-        }
     }
 
 

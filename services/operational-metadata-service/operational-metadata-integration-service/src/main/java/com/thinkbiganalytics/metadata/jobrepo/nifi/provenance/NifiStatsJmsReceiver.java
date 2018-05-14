@@ -48,6 +48,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessor
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsV2;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStatsV2;
+import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.QuartzScheduler;
@@ -223,9 +224,11 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
         if (feedProcessorId != null && feedName == null) {
             feedName = provenanceEventFeedUtil.getFeedName(feedProcessorId);
         }
+        if(StringUtils.isNotBlank(feedName)){
+            feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
+        }
         return feedName;
     }
-
     /**
      * Ensure the cache and NiFi are up, or if not ensure the data exists in the NiFi cache to be processed
      *
@@ -504,7 +507,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
     private void ensureStreamingJobExecutionRecord(NifiFeedProcessorStats stats) {
         if(stats.getJobsStarted() >0 || stats.getJobsFinished() >0) {
             OpsManagerFeed feed = provenanceEventFeedUtil.getFeed(stats.getFeedName());
-            if(feed.isStream()) {
+            if(feed != null && feed.isStream()) {
                 ProvenanceEventRecordDTO event = new ProvenanceEventRecordDTO();
                 event.setEventId(stats.getMaxEventId());
                 event.setEventTime(stats.getMinEventTime().getMillis());
@@ -523,7 +526,7 @@ public class NifiStatsJmsReceiver implements ClusterServiceMessageReceiver {
                 List<ProvenanceEventRecordDTO> events = new ArrayList<>();
                 events.add(event);
                 holder.setEvents(events);
-                log.info("Ensuring Streaming Feed Event: {} has a respective JobExecution record ",event);
+                log.debug("Ensuring Streaming Feed Event: {} has a respective JobExecution record ",event);
                 provenanceEventReceiver.receiveEvents(holder);
             }
         }

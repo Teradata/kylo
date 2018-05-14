@@ -157,6 +157,18 @@ export class DefineFeedTableController {
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', () =>{
             this.syncFeedsColumns();
             this.validate(undefined);
+            if(angular.isDefined(this.model.schemaChanged) && this.model.schemaChanged == true){
+                this.isValid = false;
+                this.$mdDialog.show(
+                    this.$mdDialog.alert()
+                        .parent(angular.element(document.body))
+                        .clickOutsideToClose(true)
+                        .title('Table Schema Changed')
+                        .htmlContent('The table schema no longer matches the schema previously defined. <br/><br/> This is invalid.  If you wish to modify the underlying schema <br/> (i.e. change some column names and/or types) please clone<br/> the feed as a new feed instead.')
+                        .ariaLabel('Table Schema Changed ')
+                        .ok('Got it!')
+                );
+            }
             this.calcTableState();
             this.expandSchemaPanel();
         });
@@ -274,6 +286,7 @@ export class DefineFeedTableController {
                 //set the feedFormat property
                 this.model.table.feedFormat = responseData.hiveFormat;
                 this.model.table.structured = responseData.structured;
+                this.model.table.feedTblProperties = responseData.serdeTableProperties;
                 if (this.schemaParser.allowSkipHeader) {
                     this.model.allowSkipHeaderOption = true;
                     this.model.options.skipHeader = true;

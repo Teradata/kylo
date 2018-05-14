@@ -1,4 +1,5 @@
 import {IPromise} from "angular";
+import {PageSpec} from "./index";
 
 export interface ColumnController {
 
@@ -25,6 +26,24 @@ export interface ColumnController {
      */
     pushFormula(formula: any, context: any, doQuery?: boolean, refreshGrid?:boolean): IPromise<{}>;
 
+    /**
+     * Adds the column filter to the grid
+     * @param filter
+     * @param column
+     */
+    addColumnFilter(filter: any, column: any, query ?: boolean) :IPromise<{}>;
+
+    /**
+     *
+     * @param {string} direction
+     * @param column
+     * @param {boolean} query
+     * @return {angular.IPromise<any>}
+     */
+    addColumnSort(direction:string,column:any,query?:boolean) : IPromise<{}>;
+
+
+
     showAnalyzeColumn(fieldName: string) : any;
 
     /**
@@ -34,4 +53,14 @@ export interface ColumnController {
      * @param domainTypeId - the domain type id
      */
     setDomainType(columnIndex: number, domainTypeId: string): void;
+
+    /**
+     * Perform the latest query
+     * @param {boolean} true if refresh refresh the table
+     * @param {PageSpec} pageSpec specifies the number of rows and columns to return
+     * @param {boolean} doValidate whether to perform the validate stage
+     * @param {boolean} doProfile whether to perform the profile stage
+     * @returns {angular.IPromise<any>}
+     */
+    query(refresh ?: boolean, pageSpec ?: PageSpec, doValidate ?: boolean, doProfile ?: boolean) : IPromise<any>;
 }

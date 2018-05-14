@@ -39,7 +39,6 @@ import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplat
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementActionTemplateProvider;
 import com.thinkbiganalytics.metadata.api.sla.ServiceLevelAgreementDescriptionProvider;
 import com.thinkbiganalytics.metadata.jpa.common.JpaVelocityTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -85,7 +84,7 @@ public class DefaultServiceLevelAgreementService implements ServicesApplicationS
     @Inject
     FeedServiceLevelAgreementProvider feedSlaProvider;
     @Inject
-    JcrMetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
     @Inject
     ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
     @Inject

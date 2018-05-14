@@ -21,6 +21,7 @@ package com.thinkbiganalytics.metadata.sla;
  */
 
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -41,7 +42,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
     private static final Logger LOG = LoggerFactory.getLogger(JpaJcrServiceLevelAgreementChecker.class);
 
     @Inject
-    JcrMetadataAccess jcrMetadataAccess;
+    MetadataAccess metadataAccess;
 
     /**
      * Runs the assessment provider on the provided agreement and acts accordingly.
@@ -54,7 +55,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
     protected boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
         boolean shouldAlert = false;
         try {
-            shouldAlert = jcrMetadataAccess.read(() -> {
+            shouldAlert = metadataAccess.read(() -> {
                 // Get the last assessment that was created for this SLA (if any).
                 ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
                 boolean alert = false;
@@ -68,7 +69,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
                     alert = !assessment.getResult().equals(AssessmentResult.SUCCESS);
                 }
                 return alert;
-            });
+            },MetadataAccess.SERVICE);
         } catch (Exception e) {
             LOG.error("Error checking shouldAlert for {}. {} ", agreement.getName(), e.getMessage(), e);
         }

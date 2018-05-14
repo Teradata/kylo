@@ -308,4 +308,3 @@ angular.module(moduleName)
         templateUrl: "js/auth/users/user-details/user-details.html"
     });    
 //.controller('UserDetailsController', ["$scope","$mdDialog","$mdToast","$transition$","AccessControlService","UserService","StateService",UserDetailsController]);
-

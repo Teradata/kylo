@@ -50,12 +50,22 @@ span.bar {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-  max-width: 110px;
+  max-width: 100px;
 }
 
 .truncate {
-  max-width: 330px;
+  max-width: 300px;
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+}
+
+md-progress-linear.wrangler-theme .md-container {
+  opacity: 1.0;
+  background-color:transparent !important;
+}
+
+.axis path, .tick line {
+  fill: none;
+  stroke: #333;
 }

@@ -30,12 +30,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "JSON", allowSkipHeader = true, description = "Supports JSON formatted files.", tags = {"JSON"})
+@SchemaParser(name = "JSON", allowSkipHeader = false, description = "Supports JSON formatted files.", tags = {"JSON"})
 public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target);
+        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target, new DefaultSparkCommandBuilder("json"));
         schema.setStructured(true);
         schema.setHiveFormat("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
 

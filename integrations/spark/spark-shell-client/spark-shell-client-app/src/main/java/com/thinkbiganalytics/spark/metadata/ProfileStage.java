@@ -61,6 +61,7 @@ public class ProfileStage implements Function<TransformResult, TransformResult> 
         // Profile data set
         ProfilerConfiguration profilerConfiguration = new ProfilerConfiguration();
         profilerConfiguration.setNumberOfTopNValues(50);
+        profilerConfiguration.setBins(35);
         final StatisticsModel dataStats = profiler.profile(result.getDataSet(), profilerConfiguration);
 
         // Add stats to result

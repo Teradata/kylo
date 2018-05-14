@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
@@ -53,7 +54,7 @@ import javax.jcr.query.QueryResult;
 public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
     @Inject
-    private JcrExtensibleTypeProvider typeProvider;
+    private ExtensibleTypeProvider typeProvider;
     
     protected static boolean cleanupDeletedType(Session session, String typeName) {
         try {
@@ -161,7 +162,7 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
 
     public List<ExtensibleEntity> getEntities(String typeName) {
-        String qualifiedName = this.typeProvider.ensureTypeName(typeName);
+        String qualifiedName =((JcrExtensibleTypeProvider)this.typeProvider).ensureTypeName(typeName);
         List<ExtensibleEntity> list = new ArrayList<>();
         Session session = getSession();
 
@@ -188,7 +189,7 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
      * restricting to a specific jcr extension type
      */
     public List<? extends ExtensibleEntity> findEntitiesMatchingProperty(String typeName, String propName, Object value) {
-        String qualifiedName = this.typeProvider.ensureTypeName(typeName);
+        String qualifiedName = ((JcrExtensibleTypeProvider)this.typeProvider).ensureTypeName(typeName);
         HashMap<String, String> params = new HashMap<>();
         String query = "SELECT * FROM [" + qualifiedName + "] as t WHERE t.[" + propName + "] = $v";
         params.put("v", value.toString());

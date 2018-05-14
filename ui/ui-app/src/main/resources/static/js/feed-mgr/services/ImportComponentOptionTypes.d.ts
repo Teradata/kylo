@@ -13,8 +13,9 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
         REUSABLE_TEMPLATE = "REUSABLE_TEMPLATE",
         REMOTE_INPUT_PORT = "REMOTE_INPUT_PORT",
         USER_DATASOURCES = "USER_DATASOURCES",
-        TEMPLATE_CONNECTION_INFORMATION = "TEMPLATE_CONNECTION_INFORMATION"
-
+        TEMPLATE_CONNECTION_INFORMATION = "TEMPLATE_CONNECTION_INFORMATION",
+        FEED_CATEGORY_USER_FIELDS = "FEED_CATEGORY_USER_FIELDS",
+        FEED_USER_FIELDS = "FEED_USER_FIELDS" 
     }
 
 
@@ -108,6 +109,10 @@ import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo
         newNiFiTemplateImportOption(): ImportComponentOption;
 
         newUserDatasourcesImportOption(): ImportComponentOption;
+
+        newFeedUserFieldsImportOption(): ImportComponentOption;
+        
+        newFeedCategoryUserFieldsImportOption():ImportComponentOption;
 
         newUploadKey(): string;
 

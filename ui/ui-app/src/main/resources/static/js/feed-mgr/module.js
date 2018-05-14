@@ -18,7 +18,7 @@ define([
                     'js/feed-mgr/shared/cron-expression-preview/cron-expression-preview.css',
                     'js/feed-mgr/shared/apply-domain-type/apply-table-domain-types.component.css',
                     "bower_components/fattable/fattable.css",
-                    'js/feed-mgr/services/fattable/fattable.css'
+                    'js/feed-mgr/services/fattable/fattable-service.css'
             ], serie: true
         })
     }]);

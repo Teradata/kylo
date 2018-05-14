@@ -1,3 +1,5 @@
+<link rel="stylesheet" href="js/feed-mgr/visual-query/transform-data/visual-query-table/cell-menu.template.css"/>
+
 <md-menu-content class="md-kylo-theme" role="menu">
   <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.findRowsContaining(selection, header)">Find rows containing {{ selection }}</md-button>
@@ -8,7 +10,7 @@
   <md-menu-item ng-if="selection && value !== null">
     <md-button ng-click="header.delegate.splitOn(selection, header, table)">Split on {{ selection }}</md-button>
   </md-menu-item>
-  <md-menu-item ng-if="value !== null">
+  <md-menu-item ng-if="selection !== null && selection.length > 0">
     <md-button ng-click="header.delegate.stripValueContaining(selection, header, table)">Strip {{ selection }}</md-button>
   </md-menu-item>
   <md-menu-divider ng-if="selection && value !== null"></md-menu-divider>

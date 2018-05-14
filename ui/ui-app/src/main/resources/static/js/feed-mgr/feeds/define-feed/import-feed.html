@@ -80,7 +80,7 @@
             <div layout="row">
               <div layout="column" flex>
                 <div layout="row" class="feed import category">
-                  <md-autocomplete flex ng-disabled="vm.model.id != null"
+                  <md-autocomplete flex ng-disabled="vm.categoryModel.id != null"
                                    md-input-name="category"
                                    md-selected-item="vm.category"
                                    md-search-text-change="vm.categorySearchTextChanged(vm.categorySearchText)"
@@ -247,7 +247,33 @@
                     </div>
                   </div>
 
+                <div ng-if="vm.feedUserFieldsImportOption.properties && vm.feedUserFieldsImportOption.properties.length >0 " flex layout="column">
+                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
 
+                  <div ng-repeat="prop in vm.feedUserFieldsImportOption.properties" layout="column" layout-align="start start">
+                    <div layout="row" flex layout-fill>
+                      <md-input-container>
+                        <label>{{prop.displayName}}</label>
+                        <input type="text" ng-model="prop.propertyValue" autocomplete="new-password" name="{{prop.inputName}}">
+                        <span class="hint">{{prop.description}}</span>
+                      </md-input-container>
+                    </div>
+                  </div>
+                </div>
+
+                <div ng-if="vm.categoryUserFieldsImportOption.properties && vm.categoryUserFieldsImportOption.properties.length >0 " flex layout="column">
+                  <div class="layout-padding-bottom">{{"views.ipmort_feed.padding_bottom" | translate}}</div>
+
+                  <div ng-repeat="prop in vm.categoryUserFieldsImportOption.properties" layout="column" layout-align="start start">
+                    <div layout="row" flex layout-fill>
+                      <md-input-container>
+                        <label>{{prop.displayName}}</label>
+                        <input type="text" ng-model="prop.propertyValue" autocomplete="new-password" name="{{prop.inputName}}">
+                        <span class="hint">{{prop.description}}</span>
+                      </md-input-container>
+                    </div>
+                  </div>
+                </div>
 
 
               </div>

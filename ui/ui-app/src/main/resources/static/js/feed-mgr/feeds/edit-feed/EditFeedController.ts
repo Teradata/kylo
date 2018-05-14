@@ -55,6 +55,8 @@ export class EditFeedController {
                 self.model = response.data;
                 self.model.loaded = true;
                 FeedService.createFeedModel = self.model;
+                //copy over the originalSchema
+                self.model.originalTableSchema = angular.copy(self.model.table.tableSchema);
 
                 // Determine table option
                 if (self.model.registeredTemplate.templateTableOption === null) {

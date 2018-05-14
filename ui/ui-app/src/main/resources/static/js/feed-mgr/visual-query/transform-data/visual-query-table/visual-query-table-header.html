@@ -1,13 +1,13 @@
 <div class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" style="padding: 0;">
   <span class="ui-grid-header-cell-label">
-    <span class="ui-grid-header-cell-title">{{ header.displayName }}<md-tooltip>{{ header.headerTooltip }}</md-tooltip></span>
-    <span ng-if="header.dataType" style="display: block;">{{ header.dataType }}</span>
+    <span class="ui-grid-header-cell-title">{{ header.displayName || 'Loading'}}<md-tooltip>{{ header.headerTooltip || 'Loading'}}</md-tooltip></span>
+    <span ng-if="header.dataType" style="display: block;">{{ header.dataType || ''}}</span>
   </span>
   <span>
     <i ng-class="{'ui-grid-icon-up-dir': header.sort.direction == 'asc', 'ui-grid-icon-down-dir': header.sort.direction == 'desc', 'ui-grid-icon-blank': header.sort.direction == null}"></i>
   </span>
 </div>
-<span ng-if="domainType" class="kylo-visual-query-table-domain-type">
+<span ng-if="domainType && domainType != null" class="kylo-visual-query-table-domain-type">
   <ng-md-icon icon="{{ domainType.icon }}" ng-style="{'fill': domainType.iconColor}"></ng-md-icon>
   <md-tooltip>{{ domainType.title }}</md-tooltip>
 </span>
@@ -31,11 +31,13 @@
         <i class="ui-grid-icon-sort-alt-down">&nbsp;</i> {{"views.query-table-header.sort-descending" | translate}}
       </md-button>
     </md-menu-item>
+    <!--
     <md-menu-item ng-if="header.sort.direction != null">
       <md-button ng-click="header.delegate.removeSort(header, table)">
         <i class="ui-grid-icon-cancel">&nbsp;</i> {{"views.query-table-header.remove-sort" | translate}}
       </md-button>
     </md-menu-item>
+    -->
     <md-menu-item>
       <md-button ng-click="header.delegate.hideColumn(header, table)">
         <i class="material-icons">remove_circle</i> {{"views.query-table-header.hide-column" | translate}}
@@ -92,11 +94,13 @@
         <md-menu-content class="visual-query-column-menu visual-query-filter-menu">
           <md-menu-item ng-repeat="filter in header.delegate.filters">
             <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{ filter.icon }}</i>
-              <md-input-container>
-                <label style="left:12px">{{ filter.label }}</label>
-                <input type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(filter, table)">
+              <md-input-container md-no-float>
+                <input placeholder="{{ filter.label }}" type="text" ng-model="filter.term" ng-change="header.delegate.validateFilter(header,filter, table)" >
               </md-input-container>
           </md-menu-item>
+          <md-button class="md-raised" ng-click="header.delegate.applyFilters(header,header.delegate.filters, table)">
+          {{"views.query-table-header.filter-apply" | translate}}
+          </md-button>
         </md-menu-content>
       </md-menu>
     </md-menu-item>

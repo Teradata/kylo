@@ -1,16 +1,17 @@
 import {Input, OnInit} from "@angular/core";
 import * as angular from "angular";
+import {IDeferred, IPromise} from "angular";
 import * as $ from "jquery";
 import * as _ from "underscore";
 
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
-import {DomainType} from "../../services/DomainTypesService.d";
-import {DomainTypesService} from "../../services/DomainTypesService";
-import {DataCategory} from "../wrangler/column-delegate";
+import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
+import {ChainedOperation, DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
-import {QueryEngine} from "../wrangler/query-engine";
-import {IPromise} from "angular";
+import {PageSpec, QueryEngine} from "../wrangler/query-engine";
+import {WranglerDataService} from "./services/wrangler-data.service";
+import {ScriptState} from "../wrangler";
 
 declare const CodeMirror: any;
 
@@ -68,7 +69,9 @@ export class TransformDataComponent implements OnInit {
      * Columns for the results table.
      * @type {Array.<Object>}
      */
-    tableColumns: any = [];
+    tableColumns: any[];
+
+    validationResults: TransformValidationResult[][];
 
     //noinspection JSUnusedGlobalSymbols
     /**
@@ -85,9 +88,28 @@ export class TransformDataComponent implements OnInit {
      * Rows for the results table.
      * @type {Array.<Object>}
      */
-    tableRows: object[] = [];
+    tableRows: object[][];
 
-    executingQuery: boolean = false;
+    /**
+     * History state token for client to track state changes
+     */
+    tableState: number;
+
+    /**
+     * Last page requested
+     */
+    currentPage: PageSpec;
+
+    /**
+     * Rows analyzed by the server
+     */
+    actualRows : number = null;
+
+    /**
+     * Cols analyzed by the server
+     */
+    actualCols : number = null;
+
     //Code Mirror options.  Tern Server requires it be in javascript mode
     codeMirrorConfig: object = {
         onLoad: this.codemirrorLoaded.bind(this)
@@ -104,6 +126,13 @@ export class TransformDataComponent implements OnInit {
 
     // Progress of transformation from 0 to 100
     queryProgress: number = 0;
+
+    executingQuery: boolean = false;
+
+    /*
+    Active query will be followed by an immediate query
+     */
+    chainedOperation : ChainedOperation = new ChainedOperation();
 
     gridApi: any;
 
@@ -140,11 +169,22 @@ export class TransformDataComponent implements OnInit {
     tableValidation: TransformValidationResult[][];
 
     /**
+     * Whether we've completed initial load?
+     * @type {boolean}
+     */
+    isLoaded: boolean = false;
+
+    /**
+     * Keeps track of running executions
+     */
+    executionStack: IPromise<any>[] = [];
+
+    /**
      * Constructs a {@code TransformDataComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $q: angular.IQService, private $mdDialog: angular.material.IDialogService,
                 private domainTypesService: DomainTypesService, private RestUrlService: any, SideNavService: any, private uiGridConstants: any, private FeedService: any, private BroadcastService: any,
-                StepperService: any, WindowUnloadService: WindowUnloadService) {
+                StepperService: any, WindowUnloadService: WindowUnloadService, private wranglerDataService: WranglerDataService, private $timeout_: angular.ITimeoutService) {
         //Listen for when the next step is active
         BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, this.onStepChange.bind(this));
 
@@ -159,6 +199,7 @@ export class TransformDataComponent implements OnInit {
 
         // Invalidate when SQL changes
         const self = this;
+
         $scope.$watch(
             function () {
                 return (typeof self.model === "object") ? self.model.sql : null;
@@ -170,6 +211,7 @@ export class TransformDataComponent implements OnInit {
                 }
             }
         );
+
     }
 
     $onInit(): void {
@@ -220,6 +262,9 @@ export class TransformDataComponent implements OnInit {
                 this.engine.setQuery(source, this.model.$datasources);
             }
 
+            // Provide access to table for fetching pages
+            this.wranglerDataService.asyncQuery = this.queryOrGetState.bind(this);
+
             // Watch for changes to field policies
             if (this.fieldPolicies == null) {
                 this.fieldPolicies = [];
@@ -240,19 +285,30 @@ export class TransformDataComponent implements OnInit {
                 });
                 this.engine.setFieldPolicies(this.fieldPolicies);
                 if (domainTypesLoaded) {
-                    this.query();
+                    //this.updateGrid();
                 }
             }, true);
 
             // Fetch domain types
             this.domainTypesService.findAll()
-                .then((domainTypes: any)=> {
+                .then((domainTypes: any) => {
                     this.domainTypes = domainTypes;
                     domainTypesLoaded = true;
 
                     // Load table data
-                    this.query();
+                    //this.updateGrid();
                 });
+
+            //this.updateGrid();
+            // Indicate ready
+            this.updateTableState(); // = 0;
+            this.tableColumns = [];
+
+            // Initial load will trigger query from the table model.
+            if (this.isLoaded) {
+                this.query();
+            }
+            this.isLoaded = true;
         };
 
         if (this.engine instanceof Promise) {
@@ -504,61 +560,99 @@ export class TransformDataComponent implements OnInit {
     }
 
     /**
+     * Executes query if state changed, otherwise returns the current state
+     */
+    queryOrGetState(pageSpec : PageSpec) : IPromise<ScriptState<any>> {
+        var self = this;
+        const deferred : IDeferred<ScriptState<any>> = this.$q.defer();
+        if (pageSpec.equals(this.currentPage)) {
+            this.$timeout_(() => {
+                // Fetch the state or join with the existing execution
+                if (self.executionStack.length > 0) {
+                    var promise = self.executionStack[self.executionStack.length-1];
+                    promise.then( () => { return deferred.resolve(self.engine.getState()) });
+                } else {
+                    return deferred.resolve(self.engine.getState());
+                }
+
+            },10);
+        } else {
+            self.query(true, pageSpec).then( ()=> {
+                this.currentPage = pageSpec;
+                return deferred.resolve(self.engine.getState());
+            }).catch( (reason)=> {
+                deferred.reject(reason);
+            });
+        }
+        return deferred.promise;
+    }
+
+    /**
      * Query Hive using the query from the previous step. Set the Grids rows and columns.
      *
      * @return {Promise} a promise for when the query completes
      */
-    query(refresh : boolean = true) : IPromise<any> {
+     query(refresh : boolean = true, pageSpec ?: PageSpec, doValidate : boolean = true, doProfile : boolean = false) : IPromise<any> {
         const self = this;
         const deferred = this.$q.defer();
 
+        const promise = deferred.promise;
+        self.executionStack.push(promise);
+
         //flag to indicate query is running
-        this.executingQuery = true;
-        this.queryProgress = 0;
+        this.setExecutingQuery(true);
+        this.setQueryProgress(50);
 
         // Query Spark shell service
         let didUpdateColumns = false;
 
         const successCallback = function () {
             //mark the query as finished
-            self.executingQuery = false;
-
-            // Clear previous filters
-            if (typeof(self.gridApi) !== "undefined") {
-                self.gridApi.core.clearAllFilters();
-            }
+            self.setQueryProgress(85);
+            self.setExecutingQuery(false);
 
             //mark the flag to indicate Hive is loaded
             self.hiveDataLoaded = true;
             self.isValid = true;
 
             //store the result for use in the commands
-            if (refresh) self.updateGrid();
-
+            if (refresh) {
+                // Clear previous filters
+                if (typeof(self.gridApi) !== "undefined") {
+                    self.gridApi.core.clearAllFilters();
+                }
+                self.updateGrid();
+            }
+            self.removeExecution(promise);
             deferred.resolve();
         };
         const errorCallback = function (message: string) {
+            self.setExecutingQuery(false);
+            self.resetAllProgress();
             self.showError(message);
 
             // Reset state
-            self.executingQuery = false;
-            self.engine.pop();
-            self.functionHistory.pop();
-            if (refresh) self.refreshGrid();
-
+            self.onUndo();
+            self.removeExecution(promise);
             deferred.reject(message);
         };
         const notifyCallback = function (progress: number) {
-            self.queryProgress = progress * 100;
+            //self.setQueryProgress(progress * 100);
+            /*
             if (self.engine.getColumns() !== null && !didUpdateColumns && self.ternServer !== null) {
                 didUpdateColumns = true;
-                if (refresh) self.updateGrid();
             }
+            */
         };
 
-        self.engine.transform().subscribe(notifyCallback, errorCallback, successCallback);
-        return deferred.promise;
+        self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
+        return  promise;
     };
+
+    private removeExecution(promise : IPromise<any>) : void {
+        var idx = this.executionStack.indexOf(promise);
+        this.executionStack.splice(idx,1);
+    }
 
     private updateGrid() {
         const self = this;
@@ -588,26 +682,45 @@ export class TransformDataComponent implements OnInit {
         });
 
         //update the ag-grid
-        this.tableColumns = columns;
+        this.updateTableState();
+        this.actualCols = this.engine.getActualCols();
+        this.actualRows = this.engine.getActualRows();
         this.tableRows = this.engine.getRows();
+        this.tableColumns = columns;
         this.tableValidation = this.engine.getValidationResults();
+        this.updateSortIcon();
+
+
 
         this.updateCodeMirrorAutoComplete();
     }
 
-    /**
-     * Adds formulas for column filters.
-     */
-    addFilters() {
-        const self = this;
-        angular.forEach(self.tableColumns, function (column) {
-            angular.forEach(column.filters, function (filter) {
-                if (filter.term) {
-                    self.addColumnFilter(filter, column);
-                }
-            });
-        });
-    };
+    addColumnSort(direction:string,column:any,query?:boolean) : IPromise<any> {
+        let formula;
+
+        let directionLower = angular.isDefined(direction) ? direction.toLowerCase() : '';
+        let icon = ''
+        if(directionLower == 'asc') {
+            formula = "sort(asc(\""+column.headerTooltip+"\"))";
+            icon = 'arrow_drop_up';
+        }
+        else if(directionLower == 'desc'){
+            formula = "sort(desc(\""+column.headerTooltip+"\"))";
+            icon = 'arrow_drop_down';
+        }
+        if(formula) {
+            this.wranglerDataService.sortDirection_ = <"desc" | "asc">  directionLower;
+            this.wranglerDataService.sortIndex_ = column.index;
+
+            let name = "Sort by " + column.displayName + " " + directionLower;
+            return this.pushFormula(formula, {formula: formula, icon: icon, name: name,sort:{direction:directionLower,columnIndex:column.index,columnName:column.field}}, query);
+        }
+        else {
+            let d = this.$q.defer();
+            d.resolve({});
+            return d.promise;
+        }
+    }
 
     /**
      * Add formula for a column filter.
@@ -615,7 +728,7 @@ export class TransformDataComponent implements OnInit {
      * @param {Object} filter the filter
      * @param {ui.grid.GridColumn} column the column
      */
-    addColumnFilter(filter: any, column: any) {
+    addColumnFilter(filter: any, column: any, query ?:boolean) : IPromise<any> {
         // Generate formula for filter
         let formula;
         let safeTerm = (column.delegate.dataCategory === DataCategory.NUMERIC) ? filter.term : "'" + StringUtils.quote(filter.term) + "'";
@@ -649,7 +762,12 @@ export class TransformDataComponent implements OnInit {
 
         // Add formula
         let name = "Find " + column.displayName + " " + verb + " " + filter.term;
-        this.pushFormula(formula, {formula: formula, icon: filter.icon, name: name});
+
+        if (angular.isUndefined(query)){
+            query = false;
+        }
+        //TODO CLEAR PAGE CACHE
+       return this.pushFormula(formula, {formula: formula, icon: filter.icon, name: name},query);
     };
 
     /**
@@ -659,7 +777,6 @@ export class TransformDataComponent implements OnInit {
      * @param {TransformContext} context the UI context for the transformation
      */
     addFunction(formula: any, context: any) : IPromise<any> {
-        this.addFilters();
         return this.pushFormula(formula, context, true);
     };
 
@@ -685,8 +802,8 @@ export class TransformDataComponent implements OnInit {
                 .clickOutsideToClose(true)
                 .title("Error executing the query")
                 .textContent(e.message)
-                .ariaLabel("error executing the query")
-                .ok("Got it!");
+                .ariaLabel("Error executing the query")
+                .ok("Ok");
             this.$mdDialog.show(alert);
             console.log(e);
             return false;
@@ -704,16 +821,18 @@ export class TransformDataComponent implements OnInit {
     pushFormula(formula: any, context: any, doQuery : boolean = false, refreshGrid : boolean = true) : IPromise<{}> {
         const self = this;
         const deferred = this.$q.defer();
-
+        self.currentPage = PageSpec.defaultPage();
         setTimeout(function () {
             if (self.pushFormulaToEngine(formula, context)) {
                 // Add to function history
                 self.functionHistory.push(context);
 
                 if (doQuery || self.engine.getRows() === null) {
-                    return self.query(refreshGrid).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
+                    return self.query(refreshGrid, self.currentPage).catch(reason => deferred.reject(reason)).then(value => deferred.resolve());
                 }
             }
+            // Formula couldn't parse
+            self.resetAllProgress();
             return deferred.reject();
         },10);
 
@@ -729,40 +848,45 @@ export class TransformDataComponent implements OnInit {
 
         const self = this;
 
-        let profileStats = this.engine.getProfile();
+        self.pushFormulaToEngine(`select(${fieldName})`, {});
+        self.query(false, PageSpec.emptyPage(), true, true).then( function() {
 
-        const deferred = this.$q.defer();
+                let profileStats = self.engine.getProfile();
+                self.engine.pop();
+                const deferred = self.$q.defer();
 
-        self.$mdDialog.show({
+                self.$mdDialog.show({
 
-            controller: class {
+                    controller: class {
 
-                /**
-                 * Additional details about the error.
-                 */
-                profile = profileStats;
-                fieldName = fieldName;
+                        /**
+                         * Additional details about the error.
+                         */
+                        profile = profileStats;
+                        fieldName = fieldName;
 
-                static readonly $inject = ["$mdDialog"];
+                        static readonly $inject = ["$mdDialog"];
 
-                constructor(private $mdDialog: angular.material.IDialogService) {
+                        constructor(private $mdDialog: angular.material.IDialogService) {
 
-                }
+                        }
 
-                /**
-                 * Hides this dialog.
-                 */
-                hide() {
-                    this.$mdDialog.hide();
-                }
-            },
-            controllerAs: "dialog",
-            templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
-            parent: angular.element(document.body),
-            clickOutsideToClose: false,
-            fullscreen: false,
-            locals: {
-            }
+                        /**
+                         * Hides this dialog.
+                         */
+                        hide() {
+                            self.$mdDialog.hide();
+                        }
+                    },
+                    controllerAs: "dialog",
+                    templateUrl: 'js/feed-mgr/visual-query/transform-data/profile-stats/analyze-column-dialog.html',
+                    parent: angular.element(document.body),
+                    clickOutsideToClose: false,
+                    fullscreen: false,
+                    locals: {
+                    }
+                });
+
         });
 
     };
@@ -799,9 +923,31 @@ export class TransformDataComponent implements OnInit {
     };
 
     /**
+     * Update state counter so clients know that state (function stack) has changed
+     */
+    updateTableState() : void {
+        // Update state variable to indicate to client we are in a new state
+        this.tableState = this.engine.getState().tableState;
+    }
+
+    updateSortIcon() : void {
+        let columnSort = this.engine.getState().sort;
+        if(columnSort != null) {
+            this.wranglerDataService.sortDirection_ = <"desc" | "asc">  columnSort.direction;
+            this.wranglerDataService.sortIndex_ = columnSort.columnIndex;
+        }
+        else {
+            this.wranglerDataService.sortDirection_ = null;
+            this.wranglerDataService.sortIndex_ = null;
+        }
+    }
+
+    /**
      * Refreshes the grid. Used after undo and redo.
      */
     refreshGrid() {
+
+        this.updateTableState();
         let columns = this.engine.getColumns();
         let rows = this.engine.getRows();
 
@@ -816,7 +962,6 @@ export class TransformDataComponent implements OnInit {
      * Refreshes the table content.
      */
     resample() {
-        this.addFilters();
         this.query();
     }
 
@@ -865,7 +1010,6 @@ export class TransformDataComponent implements OnInit {
      */
     private saveToFeedModel() {
         // Add unsaved filters
-        this.addFilters();
 
         // Check if updates are necessary
         let feedModel = this.FeedService.createFeedModel;
@@ -939,10 +1083,53 @@ export class TransformDataComponent implements OnInit {
                 if (index === columnIndex) {
                     this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
                 }
-
                 return fieldPolicy;
             });
+            this.engine.setFieldPolicies(this.fieldPolicies);
         }
+    }
+
+    /**
+     * Set the query progress
+     * @param {number} progress
+     */
+    setQueryProgress(progress : number) {
+        if (!this.chainedOperation) {
+            this.queryProgress = progress;
+        } else {
+            this.queryProgress = this.chainedOperation.fracComplete(progress);
+        }
+    }
+
+    /**
+     * Set whether the query is actively running
+     * @param {boolean} query
+     */
+    setExecutingQuery(query : boolean) {
+        if ((query == true && !this.executingQuery) || (!this.chainedOperation || this.chainedOperation.isLastStep())) {
+            this.executingQuery = query;
+        }
+        // Reset chained operation to default
+        if (this.executingQuery == false) {
+            this.resetAllProgress();
+        }
+    }
+
+    /**
+     * Indicates the active query will be followed by another in quick succession
+     * @param {ChainedOperation} chainedOperation
+     */
+    setChainedQuery(chainedOp : ChainedOperation) {
+        this.chainedOperation = chainedOp;
+    }
+
+    /**
+     * Resets all progress to non-running
+     */
+    resetAllProgress() {
+        this.chainedOperation = new ChainedOperation();
+        this.queryProgress = 0;
+        this.executingQuery = false;
     }
 }
 
@@ -955,7 +1142,7 @@ angular.module(moduleName).component("thinkbigVisualQueryTransform", {
         stepIndex: "@"
     },
     controller: ["$scope", "$element", "$q", "$mdDialog", "DomainTypesService", "RestUrlService", "SideNavService", "uiGridConstants", "FeedService", "BroadcastService", "StepperService",
-        "WindowUnloadService", TransformDataComponent],
+        "WindowUnloadService", "WranglerDataService", "$timeout", TransformDataComponent],
     controllerAs: "$td",
     require: {
         stepperController: "^thinkbigStepper"

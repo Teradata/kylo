@@ -1,11 +1,12 @@
 import {HttpClient, HttpErrorResponse} from "@angular/common/http";
 import * as moment from "moment";
+import * as angular from 'angular';
+import * as _ from "underscore";
 import "rxjs/add/observable/empty";
 import "rxjs/add/observable/of";
 import "rxjs/add/operator/catch";
 import "rxjs/add/operator/map";
 import {Observable} from "rxjs/Observable";
-
 import {DateFormatResponse} from "../../wrangler/api";
 import {DataType} from "../../wrangler/api/column";
 import {DateFormatType, DateFormatUnit, DialogService} from "../../wrangler/api/services/dialog.service";
@@ -125,6 +126,35 @@ export class SparkColumnDelegate extends ColumnDelegate {
     }
 
     /**
+     * Override default validate so we dont refresh teh grid
+     * @param filter
+     * @param table
+     */
+    applyFilter(header:any,filter: any, table: any) {
+       this.controller.addColumnFilter(filter,header,true)
+    }
+
+    applyFilters(header:any,filters:any[],table:any){
+        //filter out any filters that dont have anything
+        let validFilters =_.filter(filters,(filter) => {
+            return (angular.isDefined(filter.term)&& filter.term != '')
+        });
+
+        _.each(validFilters,(filter,i)=> {
+               let query = false;
+               if(i == (validFilters.length -1)){
+                   query = true;
+               }
+                this.controller.addColumnFilter(filter,header,true)
+            });
+    }
+
+
+    sortColumn(direction: string, column: any, grid: any) {
+        this.controller.addColumnSort(direction,column,true);
+    }
+
+    /**
      * Casts this column to a date type.
      */
     private castToDate(): void {
@@ -229,22 +259,31 @@ export class SparkColumnDelegate extends ColumnDelegate {
     private castToTimestamp(): void {
         const sampleValue = this.getSampleValue();
 
+        // Detect ISO dates
+
         if (this.dataCategory === DataCategory.DATETIME) {
             const formula = this.toFormula("unix_timestamp(" + this.fieldName + ")", this.column, {columns: (this.controller as any).tableColumns});
             this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
         } else if (this.dataCategory === DataCategory.STRING) {
-            this.dialog.openDateFormat({
-                message: "Enter the pattern for parsing this column as a timestamp:",
-                pattern: "yyyy-MM-dd HH:mm:ss",
-                patternHint: "See java.text.SimpleDateFormat for pattern letters.",
-                preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
-                title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
-                type: DateFormatType.STRING
-            }).subscribe(response => {
-                const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+            // If ISO date then just convert it. Otherwise, prompt.
+            if (Date.parse(sampleValue) != undefined) {
+                var script = `${this.fieldName}.cast("timestamp")`;
                 const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
                 this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
-            });
+            } else {
+                this.dialog.openDateFormat({
+                    message: "Enter the pattern for parsing this column as a timestamp:",
+                    pattern: "yyyy-MM-dd HH:mm:ss",
+                    patternHint: "See java.text.SimpleDateFormat for pattern letters.",
+                    preview: (sampleValue != null) ? format => this.parseDate(sampleValue, format).map(date => moment(date).format("YYYY-MM-DD HH:mm:ss")) : null,
+                    title: "Convert " + this.dataType.toLowerCase() + " to timestamp",
+                    type: DateFormatType.STRING
+                }).subscribe(response => {
+                    const script = "unix_timestamp(" + this.fieldName + ", \"" + StringUtils.quote(response.pattern) + "\").as(\"" + StringUtils.quote(this.displayName) + "\")";
+                    const formula = this.toFormula(script, this.column, {columns: (this.controller as any).tableColumns});
+                    this.controller.addFunction(formula, {formula: formula, icon: "access_time", name: "Cast " + this.displayName + " to timestamp"});
+                });
+            }
         }
     }
 

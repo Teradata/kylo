@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
  * Test to load multiple feeds in a loop
  */
 @Ignore
-public class FeedLoadTest extends FeedIT {
+public abstract class FeedLoadTest extends FeedITBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedLoadTest.class);
 

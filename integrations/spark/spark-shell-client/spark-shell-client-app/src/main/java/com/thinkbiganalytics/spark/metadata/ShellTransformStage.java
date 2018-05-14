@@ -24,6 +24,7 @@ import com.google.common.base.Supplier;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.spark.DataSet;
 import com.thinkbiganalytics.spark.model.TransformResult;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.service.DataSetConverterService;
 
 import org.apache.spark.storage.StorageLevel;
