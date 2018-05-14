@@ -375,7 +375,9 @@ export class RegisterCompleteRegistrationController {
         //hide any dialogs
         this.$mdDialog.hide();
         this.$mdDialog.show({
-            controller: ["$scope", "templateName", RegistrationInProgressDialogController],
+            controller: ["$scope", "templateName", ($scope, templateName) => {
+                $scope.templateName = templateName;
+            }],
             templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-inprogress-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: false,
@@ -394,7 +396,16 @@ export class RegisterCompleteRegistrationController {
     showErrorDialog(message: any) {
 
         this.$mdDialog.show({
-            controller: ["$scope", "$mdDialog", "nifiTemplateId", "templateName", "message", RegistrationErrorDialogController],
+            controller: ["$scope", "$mdDialog", "nifiTemplateId", "templateName", "message",
+                ($scope: any, $mdDialog: any, nifiTemplateId: any, templateName: any, message: any) => {
+                    $scope.nifiTemplateId = nifiTemplateId;
+                    $scope.templateName = templateName;
+                    $scope.message = message;
+
+                    $scope.gotIt = function () {
+                        $mdDialog.cancel();
+                    };
+                }],
             templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-error-dialog.html',
             parent: angular.element(document.body),
             clickOutsideToClose: true,
@@ -437,18 +448,3 @@ angular.module(moduleName).component("registerTemplateCompleteController", {
     controller: RegisterTemplateCompleteController,
     controllerAs: 'vm'
 });
-
-function RegistrationErrorDialogController($scope: any, $mdDialog: any, nifiTemplateId: any, templateName: any, message: any) {
-    $scope.nifiTemplateId = nifiTemplateId;
-    $scope.templateName = templateName;
-    $scope.message = message;
-
-    $scope.gotIt = function () {
-        $mdDialog.cancel();
-    };
-}
-
-function RegistrationInProgressDialogController($scope: any, templateName: any) {
-
-    $scope.templateName = templateName;
-}
