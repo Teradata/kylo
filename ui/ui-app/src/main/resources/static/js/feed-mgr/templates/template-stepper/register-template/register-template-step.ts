@@ -1,24 +1,9 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "../../module-name";
-import {Common} from "../../../../common/CommonTypes";
+import { moduleName } from "../../module-name";
+import { Common } from "../../../../common/CommonTypes";
 import LabelValue = Common.LabelValue;
 
-
-var directive = function () {
-    return {
-        restrict: "EA",
-        bindToController: {
-            stepIndex: '@'
-        },
-        scope: {},
-        controllerAs: 'vm',
-        templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html',
-        controller: "RegisterCompleteRegistrationController",
-        link: function ($scope: any, element: any, attrs: any, controller: any) {
-        }
-    };
-};
 
 export class RegisterCompleteRegistrationController {
 
@@ -84,7 +69,7 @@ export class RegisterCompleteRegistrationController {
      */
     inputPortList: LabelValue[] = [];
 
-    remoteProcessGroupValidation: any = {validatingPorts:true, valid:false, invalidMessage:null};
+    remoteProcessGroupValidation: any = { validatingPorts: true, valid: false, invalidMessage: null };
 
 
     static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
@@ -102,7 +87,7 @@ export class RegisterCompleteRegistrationController {
         this.stepNumber = parseInt(this.stepIndex) + 1
     }
 
-    onInit() {
+    ngOnInit() {
         /**
          * Initialize the connections and flow data
          */
@@ -112,9 +97,9 @@ export class RegisterCompleteRegistrationController {
          */
         this.validateRemoteInputPort();
 
-        this.$scope.$watch( ()=> {
+        this.$scope.$watch(() => {
             return this.model.nifiTemplateId;
-        },  (newVal: any) => {
+        }, (newVal: any) => {
             if (newVal != null) {
                 this.registrationSuccess = false;
             }
@@ -122,7 +107,7 @@ export class RegisterCompleteRegistrationController {
     }
 
     $onInit() {
-        this.onInit();
+        this.ngOnInit();
     }
 
     /**
@@ -205,7 +190,7 @@ export class RegisterCompleteRegistrationController {
                 this.RegisterTemplateService.fetchRootInputPorts().then((response: angular.IHttpResponse<any>) => {
                     if (response && response.data) {
                         let matchingPort = _.find(response.data, function (port: any) {
-                           return  port.name == remoteInputPortProperty.value;
+                            return port.name == remoteInputPortProperty.value;
                         });
                         if (matchingPort != undefined) {
                             //VALID
@@ -214,8 +199,8 @@ export class RegisterCompleteRegistrationController {
                         else {
                             //INVALID
                             this.remoteProcessGroupValidation.valid = false;
-                            this.remoteProcessGroupValidation.invalidMessage = "The Remote Input Port defined for this Remote Process Group, <b>"+remoteInputPortProperty.value+"</b> does not exist.<br/>" +
-                                "You need to register a reusable template with this '<b>"+remoteInputPortProperty.value+"</b>' input port and check the box 'Remote Process Group Aware' when registering to make it available to this template. ";
+                            this.remoteProcessGroupValidation.invalidMessage = "The Remote Input Port defined for this Remote Process Group, <b>" + remoteInputPortProperty.value + "</b> does not exist.<br/>" +
+                                "You need to register a reusable template with this '<b>" + remoteInputPortProperty.value + "</b>' input port and check the box 'Remote Process Group Aware' when registering to make it available to this template. ";
                         }
                         this.remoteProcessGroupValidation.validatingPorts = false;
                     }
@@ -246,8 +231,8 @@ export class RegisterCompleteRegistrationController {
                 // Update connectionMap and inputPortList
                 this.inputPortList = [];
                 if (response.data) {
-                    angular.forEach(response.data, (port, i)=> {
-                        this.inputPortList.push({label: port.name, value: port.name, description: port.destinationProcessGroupName});
+                    angular.forEach(response.data, (port, i) => {
+                        this.inputPortList.push({ label: port.name, value: port.name, description: port.destinationProcessGroupName });
                         this.connectionMap[port.name] = port;
                     });
                 }
@@ -288,7 +273,7 @@ export class RegisterCompleteRegistrationController {
      * Called when the user clicks to change the icon
      */
     showIconPicker(): void {
-        var iconModel: any = {icon: this.model.icon.title, iconColor: this.model.icon.color};
+        var iconModel: any = { icon: this.model.icon.title, iconColor: this.model.icon.color };
         iconModel.name = this.model.templateName;
 
         this.$mdDialog.show({
@@ -425,9 +410,33 @@ export class RegisterCompleteRegistrationController {
 
 }
 
-angular.module(moduleName).controller("RegisterCompleteRegistrationController", RegisterCompleteRegistrationController);
-angular.module(moduleName).controller("RegisterTemplateCompleteController", ["StateService", RegisterTemplateCompleteController]);
-angular.module(moduleName).directive("thinkbigRegisterCompleteRegistration", directive);
+angular.module(moduleName).component("thinkbigRegisterCompleteRegistration", {
+    bindings: {
+        stepIndex: '@'
+    },
+    controllerAs: 'vm',
+    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-step.html',
+    controller: RegisterCompleteRegistrationController,
+
+});
+
+export class RegisterTemplateCompleteController {
+
+    static readonly $inject = ["StateService"];
+    constructor(private StateService: any) {
+
+    }
+    gotIt() {
+        this.StateService.FeedManager().Template().navigateToRegisteredTemplates();
+    }
+
+}
+
+angular.module(moduleName).component("registerTemplateCompleteController", {
+    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
+    controller: RegisterTemplateCompleteController,
+    controllerAs: 'vm'
+});
 
 function RegistrationErrorDialogController($scope: any, $mdDialog: any, nifiTemplateId: any, templateName: any, message: any) {
     $scope.nifiTemplateId = nifiTemplateId;
@@ -443,12 +452,3 @@ function RegistrationInProgressDialogController($scope: any, templateName: any) 
 
     $scope.templateName = templateName;
 }
-
-function RegisterTemplateCompleteController(StateService: any) {
-
-    this.gotIt = function () {
-        StateService.FeedManager().Template().navigateToRegisteredTemplates();
-    }
-
-}
-

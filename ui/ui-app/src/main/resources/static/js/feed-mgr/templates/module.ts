@@ -86,9 +86,7 @@ class ModuleFactory  {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/templates/template-stepper/register-template/register-template-complete.html',
-                    controller:'RegisterTemplateCompleteController',
-                    controllerAs:'vm'
+                    component : "registerTemplateCompleteController"
                 }
             },
             data: {
