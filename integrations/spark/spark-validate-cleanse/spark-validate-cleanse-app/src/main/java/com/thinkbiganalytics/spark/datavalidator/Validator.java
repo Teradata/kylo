@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
+import com.thinkbiganalytics.hive.util.HiveUtils;
+
 /*-
  * #%L
  * kylo-spark-validate-cleanse-app
@@ -21,6 +23,8 @@ package com.thinkbiganalytics.spark.datavalidator;
  */
 
 import com.thinkbiganalytics.policy.FieldPolicy;
+import com.thinkbiganalytics.spark.DataSet;
+import com.thinkbiganalytics.spark.SparkContextService;
 import com.thinkbiganalytics.spark.policy.FieldPolicyLoader;
 
 import org.apache.commons.lang.StringUtils;
