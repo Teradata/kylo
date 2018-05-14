@@ -127,6 +127,7 @@ export class DefineFeedTableController {
     isSchemaPanelExpanded:any;
     onPartitionNameChange:any;
     addColumn:any;
+    addComplexDataTypes:any;
 
     constructor(private $rootScope:any, private $scope:any, private $http:any, private $timeout:any, private $mdToast:any, private $filter:any, private $mdDialog:any
         , private $mdExpansionPanel:any, private RestUrlService:any, private FeedService:any, private FileUpload:any, private BroadcastService:any, private Utils:any, private FeedTagService:any,
@@ -195,6 +196,9 @@ export class DefineFeedTableController {
             // console.log("$scope.$evalAsync");
             self.calcTableState();
             if (self.model.table.tableSchema.fields && self.model.table.tableSchema.fields.length > 0) {
+                if(self.model.dataTransformationFeed){
+                    self.addComplexDataTypes();
+                }
                 self.syncFeedsColumns();
                 self.calcTableState();
                 self.expandSchemaPanel();
@@ -219,6 +223,7 @@ export class DefineFeedTableController {
                         .ok('Got it!')
                 );
             }
+            self.addComplexDataTypes();
             self.calcTableState();
             self.expandSchemaPanel();
         }
@@ -934,6 +939,16 @@ export class DefineFeedTableController {
         }
         else {
             self.expandSchemaPanel();
+        }
+
+        this.addComplexDataTypes = function(){
+            self.availableDefinitionDataTypes = FeedService.columnDefinitionDataTypes.slice();
+            angular.forEach(self.model.table.tableSchema.fields, function (field) {
+                // add exotic data type to available columns if needed
+                if ($.inArray(field.derivedDataType, self.availableDefinitionDataTypes) == -1) {
+                    self.availableDefinitionDataTypes.push(field.derivedDataType);
+                }
+            });
         }
 
         this.uploadSampleFile = function () {
