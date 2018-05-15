@@ -48,7 +48,7 @@ import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true)
+@SchemaParser(name = "XML (Simple)", allowSkipHeader = false, description = "Supports Simple XML formatted files.", tags = {"XML"}, usesSpark = true)
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
