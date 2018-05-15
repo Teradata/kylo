@@ -22,7 +22,7 @@
     text-decoration: line-through;
   }
 </style>
-<ng-form name="vm.defineFeedTableForm">
+<ng-form name="vm.tableForm.defineFeedTableForm">
   <div layout="row">
     <card-layout body-css="md-padding" flex="70">
       <header-section>
@@ -234,7 +234,7 @@
                                 {{field.name}}
                               </md-option>
                             </md-select>
-                            <div ng-messages="vm.defineFeedTableForm['partition_sourceField'+partition._id].$error" md-auto-hide="false">
+                            <div ng-messages="vm.tableForm.defineFeedTableForm['partition_sourceField'+partition._id].$error" md-auto-hide="false">
                               <div ng-message="required">Source field is required</div>
                             </div>
                           </md-input-container>
@@ -247,7 +247,7 @@
                                 {{formula}}()
                               </md-option>
                             </md-select>
-                            <div ng-messages="vm.defineFeedTableForm['partition_formula'+partition._id].$error" md-auto-hide="false">
+                            <div ng-messages="vm.tableForm.defineFeedTableForm['partition_formula'+partition._id].$error" md-auto-hide="false">
                               <div ng-message="required">Partition formula is required</div>
                             </div>
                           </md-input-container>
@@ -259,7 +259,7 @@
                             <input ng-model="partition.field" placeholder="Partition Name" ng-disabled="partition.formula == 'val'" required name="partition_name{{partition._id}}"
                                    ng-change="vm.onPartitionNameChange(partition)" ng-pattern="/^[a-zA-Z0-9_-\s]*$/"/>
 
-                            <div ng-messages="vm.defineFeedTableForm['partition_name'+partition._id].$error" md-auto-hide="false">
+                            <div ng-messages="vm.tableForm.defineFeedTableForm['partition_name'+partition._id].$error" md-auto-hide="false">
                               <div ng-message="required">Partition name is required</div>
                               <div ng-message="notUnique">Partition name must not match a field name unless using the val() formula</div>
                               <div ng-message="pattern">Partition name cannot contain special characters</div>
@@ -375,7 +375,7 @@
 
         <md-input-container class="md-block layout-padding-top-bottom flex-gt-xs" flex-gt-xs>
           <label class="label-small md-container-ignore">Tags</label>
-          <md-chips ng-model="vm.selectedColumn.tags" md-autocomplete-snap md-transform-chip="vm.transformChip($chip)" md-require-match="false">
+          <md-chips ng-model="vm.selectedColumn.tags" md-autocomplete-snap md-transform-chip="vm.transformTagChip($chip)" md-require-match="false">
             <md-autocomplete md-selected-item="vm.tagChips.selectedItem" md-search-text="vm.tagChips.searchText" md-items="item in vm.feedTagService.querySearch(tagChips.searchText)"
                              md-item-text="item.name" placeholder="Add a Tag">
               <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>

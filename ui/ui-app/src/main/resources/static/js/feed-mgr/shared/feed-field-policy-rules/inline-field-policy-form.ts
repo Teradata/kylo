@@ -23,6 +23,9 @@ var directive = function (FieldPolicyRuleOptionsFactory:any, PolicyInputFormServ
             $scope.policyForm = {};
             $scope.loadingPolicies = true;
             $scope.options = [];
+            $scope.ruleType = null;
+            $scope.skipChangeHandler = false;
+
             FieldPolicyRuleOptionsFactory.getOptionsForType($scope.policyParameter).then(function (response:any) {
                 var currentFeedValue = null;
                 var results = [];
@@ -34,12 +37,20 @@ var directive = function (FieldPolicyRuleOptionsFactory:any, PolicyInputFormServ
                 $scope.options = PolicyInputFormService.groupPolicyOptions(results, currentFeedValue);
                 ruleTypesAvailable();
 
-                if ($scope.defaultValue) {
+
+                if ($scope.defaultValue && (angular.isUndefined($scope.field) || $scope.field == null)) {
                     var defaultOption = $scope.options.filter(function (v:any) { return (v.name == $scope.defaultValue); })
                     if (defaultOption.length > 0) {
                         $scope.ruleType = $scope.field = defaultOption[0];
                         $scope.onRuleTypeChange();
                     }
+                }
+                else if(angular.isDefined($scope.field)){
+                    $scope.skipChangeHandler = true;
+                    $scope.ruleType = $scope.field
+                //    PolicyInputFormService.updatePropertyIndex(rule);
+                    $scope.showAdvancedOptions = ($scope.field.properties && $scope.field.properties.length > 0);
+
                 }
 
                 //$scope.ngModel = $scope.field = rule;
@@ -62,18 +73,22 @@ var directive = function (FieldPolicyRuleOptionsFactory:any, PolicyInputFormServ
                 $scope.expandAdvancedOptions = !$scope.expandAdvancedOptions;
             }
 
-            $scope.ruleType = null;
+
             $scope.onRuleTypeChange = function () {
                 $scope.expandAdvancedOptions = false;
                 $scope.showAdvancedOptions = false;
                 if ($scope.ruleType != null) {
-                    var rule = angular.copy($scope.ruleType);
-                    rule.groups = PolicyInputFormService.groupProperties(rule);
-                    PolicyInputFormService.updatePropertyIndex(rule);
-                    //make all rules editable
-                    rule.editable = true;
-                    $scope.ngModel = $scope.field = rule;
-                    $scope.showAdvancedOptions = (rule.properties && rule.properties.length > 0);
+                    if( !$scope.skipChangeHandler) {
+                        var rule = angular.copy($scope.ruleType);
+                        rule.groups = PolicyInputFormService.groupProperties(rule);
+                        PolicyInputFormService.updatePropertyIndex(rule);
+                        //make all rules editable
+                        rule.editable = true;
+                        $scope.ngModel = $scope.field = rule;
+
+                    }
+                    $scope.showAdvancedOptions = ($scope.ruleType.properties && $scope.ruleType.properties.length > 0);
+                    $scope.skipChangeHandler = false;
                 }
                 else {
                     $scope.field = null;
