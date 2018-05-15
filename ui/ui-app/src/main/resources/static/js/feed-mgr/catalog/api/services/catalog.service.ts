@@ -8,7 +8,6 @@ import {Connector} from "../models/connector";
 import {DataSet} from "../models/dataset";
 import {ConnectorType} from '../models/connectorType';
 import {connectors} from "./data";
-import {connectorTypes} from "./data";
 
 // TODO testing only
 function uuidv4() {
@@ -41,7 +40,7 @@ export class CatalogService {
      */
     getConnectorTypes(): Observable<ConnectorType[]> {
         console.log('getConnectorTypes');
-        return ArrayObservable.of(connectorTypes);
+        return this.http.get<Connector[]>("/proxy/v1/catalog/connector");
     }
 
     /**
