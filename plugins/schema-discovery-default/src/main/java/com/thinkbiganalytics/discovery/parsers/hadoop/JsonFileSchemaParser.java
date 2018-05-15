@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -30,16 +30,23 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "JSON", allowSkipHeader = false, description = "Supports JSON formatted files.", tags = {"JSON"})
+@SchemaParser(name = "JSON", allowSkipHeader = false, description = "Supports JSON formatted files.", tags = {"JSON"}, usesSpark = true)
 public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.JSON, target, new DefaultSparkCommandBuilder("json"));
+        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, getSparkFileType(), target, getSparkSchemaDetectionCommandBuilder());
         schema.setStructured(true);
-        schema.setHiveFormat("ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
+        schema.setHiveFormat(
+            "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
 
         return schema;
     }
+
+    @Override
+    public SparkFileType getSparkFileType() {
+        return SparkFileType.JSON;
+    }
+
 
 }

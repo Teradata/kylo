@@ -20,7 +20,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-public class DefaultSparkCommandBuilder implements SparkCommandBuilder {
+public class DefaultSparkCommandBuilder extends AbstractSparkCommandBuilder {
 
     private String method;
 
@@ -28,8 +28,16 @@ public class DefaultSparkCommandBuilder implements SparkCommandBuilder {
         this.method = method;
     }
 
+    public DefaultSparkCommandBuilder(String dataframeVariable, Integer limit, String method) {
+        super(dataframeVariable, limit);
+        this.method = method;
+    }
+
     @Override
     public String build(String pathToFile) {
-        return String.format("sqlContext.read.%s(\"%s\").limit(10).toDF()", method, pathToFile);
+        StringBuilder sb = new StringBuilder();
+        appendDataFrameScript(sb, method, pathToFile);
+        return sb.toString();
+
     }
 }

@@ -42,4 +42,15 @@ export interface FeedDataTransformation {
      * Internal representation of script in query engine.
      */
     states: object;
+
+    /**
+     * the local file if selected
+     */
+    sampleFile?:string;
+
+    /**
+     * Flag to indicate the sampleFile changed and a new query is needed
+     * @type {boolean}
+     */
+    sampleFileChanged?: boolean;
 }

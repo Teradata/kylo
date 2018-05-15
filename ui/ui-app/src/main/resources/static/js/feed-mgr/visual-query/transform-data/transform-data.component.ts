@@ -36,6 +36,7 @@ export class TransformDataComponent implements OnInit {
 
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
+
     //The SQL String from the previous step
     sql: string;
     //The sql model passed over from the previous step
@@ -993,13 +994,17 @@ export class TransformDataComponent implements OnInit {
     private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
         const self = this;
         const thisIndex = parseInt(this.stepIndex);
+        //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
+        let localFileChanged = this.model.$selectedDatasourceId == "FILE" && this.model.sampleFileChanged
+
         if (changedSteps.oldStep === thisIndex) {
             this.saveToFeedModel().then(function () {
                 // notify those that the data is loaded/updated
                 self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
-        } else if (changedSteps.newStep === thisIndex && this.sql == null) {
+        } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
             this.ngOnInit();
+            this.model.sampleFileChanged = false;
         }
     }
 

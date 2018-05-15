@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.rest.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,9 @@ package com.thinkbiganalytics.discovery.rest.controller;
 import com.thinkbiganalytics.discovery.FileParserFactory;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
+import com.thinkbiganalytics.discovery.parser.SchemaParser;
+import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -41,15 +44,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -70,6 +72,55 @@ public class SchemaDiscoveryRestController {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
+
+
+    /**
+     * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
+     *
+     * @param parserDescriptor  metadata about how the file should be parsed
+     * @param dataFrameVariable the name of the dataframe variable in the generate spark code
+     * @param limit             a number indicating how many rows the script should limit the output
+     * @param fileInputStream   the file
+     * @param fileMetaData      metadata about the file
+     * @return an object including the name of the file on disk and the generated spark script
+     */
+    @POST
+    @Path("/spark/sample-file")
+    @Consumes(MediaType.MULTIPART_FORM_DATA)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Determines the schema of the provided file.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the spark script that parses the sample file.", response = Schema.class),
+                      @ApiResponse(code = 500, message = "The schema could not be determined.", response = RestResponseStatus.class)
+                  })
+    public Response uploadFileSpark(@FormDataParam("parser") String parserDescriptor,
+                                    @FormDataParam("dataFrameVariable") @DefaultValue("df") String dataFrameVariable,
+                                    @FormDataParam("limit") @DefaultValue("100") Integer limit,
+                                    @FormDataParam("file") InputStream fileInputStream,
+                                    @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
+
+        SampleFileSparkScript sampleFileSparkScript = null;
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        try {
+            SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
+            FileSchemaParser p = transformer.fromUiModel(descriptor);
+            SparkFileSchemaParser sparkFileSchemaParser = (SparkFileSchemaParser) p;
+            sparkFileSchemaParser.setDataFrameVariable(dataFrameVariable);
+            sparkFileSchemaParser.setLimit(100);
+            sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(fileInputStream);
+        } catch (IOException e) {
+            throw new WebApplicationException(e.getMessage());
+        } catch (PolicyTransformException e) {
+            log.warn("Failed to convert parser", e);
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"), e);
+        }
+
+        if (sampleFileSparkScript == null) {
+            log.warn("Failed to convert parser");
+            throw new InternalServerErrorException(STRINGS.getString("discovery.transformError"));
+        }
+        return Response.ok(sampleFileSparkScript).build();
+    }
 
     @POST
     @Path("/hive/sample-file")
@@ -114,6 +165,27 @@ public class SchemaDiscoveryRestController {
         for (FileSchemaParser parser : parsers) {
             SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
             descriptors.add(descriptor);
+        }
+        return Response.ok(descriptors).build();
+    }
+
+    @GET
+    @Path("/spark-file-parsers")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the available file parsers.")
+    @ApiResponses(
+        @ApiResponse(code = 200, message = "Returns the file parsers.", response = SchemaParserDescriptor.class, responseContainer = "List")
+    )
+    public Response getSparkFileParsers() {
+        List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
+        List<SchemaParserDescriptor> descriptors = new ArrayList<>();
+        SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
+        for (FileSchemaParser parser : parsers) {
+            SchemaParser schemaParserAnnotation = (parser.getClass().getAnnotation(SchemaParser.class));
+            if (schemaParserAnnotation.usesSpark()) {
+                SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
+                descriptors.add(descriptor);
+            }
         }
         return Response.ok(descriptors).build();
     }

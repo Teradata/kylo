@@ -1,6 +1,7 @@
 import {Injector} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import * as angular from "angular";
+import * as _ from "underscore";
 
 import {DIALOG_SERVICE} from "./api/index";
 import {SaveRequest, SaveResponse} from "./api/rest-model";
@@ -33,6 +34,22 @@ export class PageSpec {
     static defaultPage() : PageSpec {
         return new PageSpec({ firstRow:0, numRows:64, firstCol: 0, numCols: 1000 });
     }
+}
+
+export interface SampleFile{
+    /**
+     * the name of the file uploaded
+     */
+    originalFileName:string;
+    /**
+     * The absolute path of the file after the server used in the script
+     */
+    fileLocation:string;
+    /**
+     * the script returned from the server
+     */
+    script:string;
+
 }
 
 /**
@@ -80,6 +97,9 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     protected source_: string;
 
+
+    protected sampleFile: SampleFile;
+
     /**
      * List of states.
      */
@@ -118,6 +138,14 @@ export abstract class QueryEngine<T> implements WranglerEngine {
      */
     get useNativeDataType(): boolean {
         return true;
+    }
+
+    getSampleFile(){
+        return this.sampleFile;
+    }
+
+    setSampleFile(file:SampleFile){
+        this.sampleFile = file;
     }
 
     /**

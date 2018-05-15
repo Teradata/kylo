@@ -155,6 +155,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
      */
     private nativeDataSourceIds: string[] = [];
 
+    private fileDataSource : UserDatasource = {id:"FILE",name:"Local File", description:"Local File",type:"File"}
+
     /**
      * Constructs a {@code BuildQueryComponent}.
      */
@@ -233,6 +235,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             })
             .then((datasources: UserDatasource[]) => {
                 self.availableDatasources = datasources;
+                //add in the File data source
+                self.availableDatasources.push(this.fileDataSource);
                 if (self.model.$selectedDatasourceId == null) {
                     self.model.$selectedDatasourceId = datasources[0].id;
                 }
@@ -245,6 +249,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
                 self.loadingPage = false;
             });
     }
+
 
     /**
      * Initialize the key bindings.

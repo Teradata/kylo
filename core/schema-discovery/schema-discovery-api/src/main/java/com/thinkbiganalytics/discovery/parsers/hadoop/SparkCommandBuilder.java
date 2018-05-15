@@ -2,7 +2,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 /*-
  * #%L
- * thinkbig-schema-discovery-default
+ * thinkbig-schema-discovery-api
  * %%
  * Copyright (C) 2017 ThinkBig Analytics
  * %%
@@ -20,7 +20,6 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
-
 /**
  * Generates the spark command to parse the file
  */
@@ -28,9 +27,11 @@ public interface SparkCommandBuilder {
 
     /**
      * Build the spark command
+     *
      * @param pathToFile path to the file to parse
      * @return the spark command
      */
     String build(String pathToFile);
+
 
 }
