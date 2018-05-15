@@ -11,13 +11,13 @@
       <md-progress-circular md-mode="indeterminate" md-diameter="80"></md-progress-circular>
     </div>
     <div layout="row" layout-align="center start" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
-      <md-input-container style="right: 16px;" flex="5">
+      <md-input-container style="right: 16px;" flex="15">
         <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="!$bq.canChangeDatasource()">
           <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
         </md-select>
         <div class="hint">Data Source</div>
       </md-input-container>
-      <div  ng-if="$bq.model.$selectedDatasourceId != 'FILE' " flex="50" layout="row" class="layout-padding-top">
+      <div  ng-if="$bq.model.$selectedDatasourceId != 'FILE' " flex="40" layout="row" class="layout-padding-top">
       <div flex layout="column">
         <md-autocomplete
             md-input-id="tables-auto-complete"
