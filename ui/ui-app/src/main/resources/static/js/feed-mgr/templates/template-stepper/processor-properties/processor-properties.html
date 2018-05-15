@@ -214,7 +214,7 @@
         </header-section>
 
         <body-section style="padding-left:25px;">
-            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()">
+            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()" style="margin-left:-9px">
                 Show only selected
             </md-checkbox>
             <md-subheader class="md-primary left-aligned layout-padding-left">Jump to a group</md-subheader>
@@ -223,7 +223,7 @@
                      layout-align="start start" layout="column" md-item-size="30">
 
                 <div md-virtual-repeat="processor in vm.processors " >
-                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;" >
+                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >
                     {{processor.name}}
                     </md-button>
                     <md-divider ng-if="!$last"></md-divider>
