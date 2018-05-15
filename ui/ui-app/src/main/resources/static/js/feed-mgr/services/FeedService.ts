@@ -2,6 +2,9 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
+import {TableColumnDefinition} from "./model/TableColumnDefinition";
+import {TableFieldPolicy} from "./model/TableFieldPolicy";
+
 
 function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToast: angular.material.IToastService, $mdDialog: angular.material.IDialogService, RestUrlService: any,
                      VisualQueryService: any, FeedCreationErrorService: any, FeedPropertyService: any, AccessControlService: any, EntityAccessControlService: any, StateService: any) {
@@ -142,7 +145,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
                 allowPreconditions: false,
                 dataTransformationFeed: false,
                 table: {
-                    tableSchema: {name: null, fields: []},
+                    tableSchema: {name: null, fields:[]},
                     sourceTableSchema: {name: null, tableSchema: null, fields: []},
                     feedTableSchema: {name: null, fields: []},
                     method: 'SAMPLE_FILE',
@@ -308,8 +311,8 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             FeedCreationErrorService.reset();
         },
 
-        getDataTypeDisplay: function (columnDef: any) {
-            return columnDef.precisionScale != null ? columnDef.derivedDataType + "(" + columnDef.precisionScale + ")" : columnDef.derivedDataType;
+        getDataTypeDisplay: function (columnDef: TableColumnDefinition) {
+            return columnDef.getDataTypeDisplay();
         },
 
         /**
@@ -319,30 +322,8 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          * @returns {{name: string, description: string, dataType: string, precisionScale: null, dataTypeDisplay: Function, primaryKey: boolean, nullable: boolean, createdTracker: boolean,
          *     updatedTracker: boolean, sampleValues: Array, selectedSampleValue: string, isValid: Function, _id: *}}
          */
-        newTableFieldDefinition: function () {
-            var newField: any = {
-                name: '',
-                description: '',
-                derivedDataType: 'string',
-                precisionScale: null,
-                dataTypeDisplay: '',
-                primaryKey: false,
-                nullable: false,
-                createdTracker: false,
-                updatedTracker: false,
-                sampleValues: [],
-                selectedSampleValue: '',
-                tags: [],
-                validationErrors: {
-                    name: {},
-                    precision: {}
-                },
-                isValid: function () {
-                    return this.name != '' && this.derivedDataType != '';
-                },
-                _id: _.uniqueId()
-            };
-            return newField;
+        newTableFieldDefinition: function () : TableColumnDefinition {
+            return new TableColumnDefinition();
         },
         /**
          * Returns the object used for creating Data Processing policies on a given field
@@ -351,8 +332,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          * @param fieldName
          * @returns {{name: (*|string), partition: null, profile: boolean, standardization: null, validation: null}}
          */
-        newTableFieldPolicy: function (fieldName: any): any {
-            return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
+        newTableFieldPolicy: function (fieldName: string): TableFieldPolicy {
+            return new TableFieldPolicy(fieldName);
+           // return {name: fieldName || '', partition: null, profile: true, standardization: null, validation: null};
         },
         /**
          * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
@@ -533,6 +515,9 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
             }
             //remove the self.model.originalTableSchema if its there
             delete copy.originalTableSchema;
+
+            //delete the fileParser options
+            delete copy.schemaParser;
 
             if (copy.table && copy.table.fieldPolicies && copy.table.tableSchema && copy.table.tableSchema.fields) {
                 // Set feed
@@ -737,7 +722,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          * @param name
          * @returns {*|{}}
          */
-        getColumnDefinitionByName: function (name: any) {
+        getColumnDefinitionByName: function (name: string): TableColumnDefinition {
             return _.find(this.createFeedModel.table.tableSchema.fields, function (columnDef: any) {
                 return columnDef.name == name;
             });
@@ -966,7 +951,7 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          * @param {FieldPolicy} policy the field policy to be updated
          * @param {DomainType} domainType the domain type be be applies
          */
-        setDomainTypeForField: function (field: any, policy: any, domainType: DomainType) {
+        setDomainTypeForField: function (field: TableColumnDefinition, policy: TableFieldPolicy, domainType: DomainType) {
             policy.$currentDomainType = domainType;
             policy.domainTypeId = domainType.id;
 

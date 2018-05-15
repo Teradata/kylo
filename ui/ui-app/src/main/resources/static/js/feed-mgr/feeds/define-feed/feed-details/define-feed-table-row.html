@@ -32,7 +32,7 @@
           md-icon icon="warning" class="layout-margin-right-5"
           size="10"
           style="width: 10px; height: 10px"></ng-md-icon>
-      <div>{{vm.errorMessage(columnDef)}}</div>
+      <div>{{columnDef.validate()}}</div>
     </div>
     <md-tooltip
         class="tooltip-multi-line"
@@ -58,7 +58,7 @@
           {{dataType}}
         </md-option>
       </md-select>
-      <div ng-messages="vm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
+      <div ng-messages="vm.tableForm.defineFeedTableForm['datatype_'+columnDef._id].$error" md-auto-hide="false">
         <div ng-message="required">Data type is required</div>
       </div>
     </md-input-container>
