@@ -64,7 +64,7 @@
     </div>
   </div>
   <div layout="row" layout-align="end center" ng-hide="!$bq.advancedMode" style="padding-top: 20px; padding-bottom: 20px">
-    <md-input-container style="margin-left: 16px;" ng-if="$bq.advancedMode == true">
+    <md-input-container style="margin-left: 16px;" ng-if="$bq.advancbedMode == true">
       <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source">
         <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id" ng-if="datasource.id != 'FILE' ">{{datasource.name}}</md-option>
       </md-select>
