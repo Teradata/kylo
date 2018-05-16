@@ -17,7 +17,7 @@ import {FileManagerService} from "./services/file-manager.service";
     ],
     providers: [
         CatalogService,
-        FileManagerService
+        FileManagerService,
     ]
 })
 export class CatalogApiModule {

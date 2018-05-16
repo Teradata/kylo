@@ -1,6 +1,56 @@
 // TODO file for testing
 
 import {Connector} from "../models/connector";
+import {ConnectorType} from '../models/connectorType';
+
+export const connectorTypes: ConnectorType[] = [
+    {
+        title: "SQL Source",
+        type: "jdbc",
+        tabs: [{label: "Connection", sref: ".connection"}],
+    },
+    {
+        title: "Amazon S3",
+        type: "s3",
+        icon: "amazon",
+        tabs: [{label: "Files", sref: ".browse"}],
+    },
+    {
+        title: "Kafka",
+        type: "kafka",
+        icon: "kafka",
+    },
+    {
+        title: "File Upload",
+        type: "file-upload",
+        icon: "file_upload",
+        tabs: [{label: "Files", sref: ".upload"}]
+    },
+    {
+        title: "HDFS",
+        type: "hdfs",
+        icon: "hadoop",
+        tabs: [{label: "Files", sref: ".browse"}],
+    },
+    {
+        title: "Teradata",
+        type: "jdbc",
+        color: "orange-700",
+        tabs: [{label: "Connection", sref: ".connection"}],
+    },
+    {
+        title: "Google Cloud Storage",
+        type: "gcs",
+        icon: "google",
+        tabs: [{label: "Files", sref: ".browse"}],
+    },
+    {
+        title: "Hive",
+        type: "hive",
+        tabs: [{label: "Table", sref: ".table"}]
+    }
+];
+
 
 export const connectors: Connector[] = [
     {

@@ -1,4 +1,4 @@
-import {Component, Input} from "@angular/core";
+import {Component, Injector, Input} from "@angular/core";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
@@ -36,7 +36,19 @@ export class ConnectorsComponent {
      */
     searchTerm: string;
 
-    constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loading: TdLoadingService, private state: StateService) {
+    constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loading: TdLoadingService,
+                private state: StateService, private $$angularInjector: Injector) {
+        // Register Add button
+        let accessControlService = $$angularInjector.get("AccessControlService");
+        let addButtonService = $$angularInjector.get("AddButtonService");
+        accessControlService.getUserAllowedActions()
+            .then(function (actionSet:any) {
+                if (accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions)) {
+                    addButtonService.registerAddButton("catalog", function () {
+                        state.go(".connector-types")
+                    });
+                }
+            });
     }
 
     public ngOnInit() {

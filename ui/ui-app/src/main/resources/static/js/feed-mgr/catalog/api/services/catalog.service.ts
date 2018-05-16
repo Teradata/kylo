@@ -6,7 +6,9 @@ import {ErrorObservable} from "rxjs/observable/ErrorObservable";
 
 import {Connector} from "../models/connector";
 import {DataSet} from "../models/dataset";
+import {ConnectorType} from '../models/connectorType';
 import {connectors} from "./data";
+import {connectorTypes} from "./data";
 
 // TODO testing only
 function uuidv4() {
@@ -35,7 +37,15 @@ export class CatalogService {
     }
 
     /**
-     * Gets the list of connectors.
+     * Gets the list of available connector types, e.g. s3, hdfs, hive, jdbc, kafka etc.
+     */
+    getConnectorTypes(): Observable<ConnectorType[]> {
+        console.log('getConnectorTypes');
+        return ArrayObservable.of(connectorTypes);
+    }
+
+    /**
+     * Gets the list of connectors (data sources), i.e. instances of configured connector type's, e.g. specific s3/hdfs location, kafka on certain port
      */
     getConnectors(): Observable<Connector[]> {
         return ArrayObservable.of(connectors);

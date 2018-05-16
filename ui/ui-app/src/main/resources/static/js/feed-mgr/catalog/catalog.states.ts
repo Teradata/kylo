@@ -1,9 +1,12 @@
 import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {catchError} from "rxjs/operators/catchError";
+import {finalize} from "rxjs/operators/finalize";
 
 import {CatalogService} from "./api/services/catalog.service";
 import {DatasetComponent} from "./dataset/dataset.component";
 import {CatalogComponent} from "./catalog.component";
+import {ConnectorTypesComponent} from './connector-types/connector-types.component';
+import {TdLoadingService} from '@covalent/core/loading';
 
 export const catalogStates: Ng2StateDeclaration[] = [
     {
@@ -21,6 +24,24 @@ export const catalogStates: Ng2StateDeclaration[] = [
             breadcrumbRoot: true,
             displayName: "Catalog"
         }
+    },
+    {
+        name: "catalog.connector-types",
+        url: "/connector-types",
+        component: ConnectorTypesComponent,
+        resolve: [
+            {
+                token: "connectorTypes",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    loading.register(ConnectorTypesComponent.LOADER);
+                    return catalog.getConnectorTypes()
+                        .pipe(finalize(() => loading.resolve(ConnectorTypesComponent.LOADER)))
+                        .pipe(catchError(() => state.go("catalog")))
+                        .toPromise();
+                }
+            }
+        ]
     },
     {
         name: "catalog.dataset",
