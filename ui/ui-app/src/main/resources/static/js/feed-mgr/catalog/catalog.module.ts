@@ -14,20 +14,20 @@ import {CovalentSearchModule} from "@covalent/core/search";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../common/common.module";
-import {CatalogModule} from "./catalog/catalog.module";
+import {CatalogApiModule} from "./api/catalog-api.module";
 import {ConnectorsComponent} from "./connectors/connectors.component";
 import {DatasetComponent} from "./dataset/dataset.component";
-import {ExplorerComponent} from "./explorer.component";
-import {explorerStates} from "./explorer.states";
+import {CatalogComponent} from "./catalog.component";
+import {catalogStates} from "./catalog.states";
 
 @NgModule({
     declarations: [
         ConnectorsComponent,
         DatasetComponent,
-        ExplorerComponent,
+        CatalogComponent,
     ],
     imports: [
-        CatalogModule,
+        CatalogApiModule,
         CommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
@@ -41,8 +41,8 @@ import {explorerStates} from "./explorer.states";
         MatListModule,
         MatTabsModule,
         MatToolbarModule,
-        UIRouterModule.forChild({states: explorerStates})
+        UIRouterModule.forChild({states: catalogStates})
     ]
 })
-export class ExplorerModule {
+export class CatalogModule {
 }

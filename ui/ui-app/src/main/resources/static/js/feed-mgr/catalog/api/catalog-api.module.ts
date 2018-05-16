@@ -20,5 +20,5 @@ import {FileManagerService} from "./services/file-manager.service";
         FileManagerService
     ]
 })
-export class CatalogModule {
+export class CatalogApiModule {
 }

@@ -12,8 +12,8 @@ interface RemoteFile {
 // TODO https://teradata-corp.slack.com/archives/C4G9S3L4Q/p1524003641000293?thread_ts=1524003072.000184&cid=C4G9S3L4Q
 @Component({
     selector: "remote-files",
-    styleUrls: ["js/feed-mgr/explorer/files/remote-files.component.css"],
-    templateUrl: "js/feed-mgr/explorer/files/remote-files.component.html"
+    styleUrls: ["js/feed-mgr/catalog/files/remote-files.component.css"],
+    templateUrl: "js/feed-mgr/catalog/files/remote-files.component.html"
 })
 export class RemoteFilesComponent implements OnInit {
 

@@ -1,5 +1,5 @@
 import {Subscription} from "rxjs/Subscription";
-import {DataSetFile} from "../../../catalog/models/dataset-file";
+import {DataSetFile} from "../../../api/models/dataset-file";
 
 export class FileUpload {
 

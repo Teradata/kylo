@@ -1,17 +1,17 @@
 import {Ng2StateDeclaration, StateService} from "@uirouter/angular";
 import {catchError} from "rxjs/operators/catchError";
 
-import {CatalogService} from "./catalog/services/catalog.service";
+import {CatalogService} from "./api/services/catalog.service";
 import {DatasetComponent} from "./dataset/dataset.component";
-import {ExplorerComponent} from "./explorer.component";
+import {CatalogComponent} from "./catalog.component";
 
-export const explorerStates: Ng2StateDeclaration[] = [
+export const catalogStates: Ng2StateDeclaration[] = [
     {
-        name: "explorer",
-        url: "/explorer",
+        name: "catalog",
+        url: "/catalog",
         views: {
             "content": {
-                component: ExplorerComponent
+                component: CatalogComponent
             }
         },
         resolve: [
@@ -19,11 +19,11 @@ export const explorerStates: Ng2StateDeclaration[] = [
         ],
         data: {
             breadcrumbRoot: true,
-            displayName: "Explorer"
+            displayName: "Catalog"
         }
     },
     {
-        name: "explorer.dataset",
+        name: "catalog.dataset",
         url: "/:dataSetId",
         component: DatasetComponent,
         resolve: [
@@ -32,20 +32,20 @@ export const explorerStates: Ng2StateDeclaration[] = [
                 deps: [CatalogService, StateService],
                 resolveFn: (catalog: CatalogService, state: StateService) => {
                     return catalog.getDataSet(state.transition.params().dataSetId)
-                        .pipe(catchError(() => state.go("explorer")))
+                        .pipe(catchError(() => state.go("catalog")))
                         .toPromise();
                 }
             }
         ]
     },
     {
-        name: "explorer.dataset.preview.**",
+        name: "catalog.dataset.preview.**",
         url: "/preview",
-        loadChildren: "feed-mgr/explorer/dataset/preview-schema/preview-schema.module#PreviewSchemaModule"
+        loadChildren: "feed-mgr/catalog/dataset/preview-schema/preview-schema.module#PreviewSchemaModule"
     },
     {
-        name: "explorer.dataset.upload.**",
+        name: "catalog.dataset.upload.**",
         url: "/upload",
-        loadChildren: "feed-mgr/explorer/dataset/upload/upload.module#UploadModule"
+        loadChildren: "feed-mgr/catalog/dataset/upload/upload.module#UploadModule"
     }
 ];

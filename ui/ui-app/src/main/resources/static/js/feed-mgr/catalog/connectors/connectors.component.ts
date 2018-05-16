@@ -5,16 +5,16 @@ import {TdLoadingService} from "@covalent/core/loading";
 import {StateService} from "@uirouter/angular";
 import {finalize} from "rxjs/operators/finalize";
 
-import {Connector} from "../catalog/models/connector";
-import {CatalogService} from "../catalog/services/catalog.service";
+import {Connector} from "../api/models/connector";
+import {CatalogService} from "../api/services/catalog.service";
 
 /**
  * Displays the available connectors and creates new data sets.
  */
 @Component({
-    selector: "explorer-connectors",
-    styleUrls: ["js/feed-mgr/explorer/connectors/connectors.component.css"],
-    templateUrl: "js/feed-mgr/explorer/connectors/connectors.component.html"
+    selector: "catalog-connectors",
+    styleUrls: ["js/feed-mgr/catalog/connectors/connectors.component.css"],
+    templateUrl: "js/feed-mgr/catalog/connectors/connectors.component.html"
 })
 export class ConnectorsComponent {
 

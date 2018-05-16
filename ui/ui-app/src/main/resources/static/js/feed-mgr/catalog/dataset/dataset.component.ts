@@ -1,15 +1,15 @@
 import {Component, Input, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 
-import {ConnectorTab} from "../catalog/models/connector-tab";
-import {DataSet} from "../catalog/models/dataset";
+import {ConnectorTab} from "../api/models/connector-tab";
+import {DataSet} from "../api/models/dataset";
 
 /**
  * Displays tabs for configuring a data set (or connection).
  */
 @Component({
     selector: "explorer-dataset",
-    templateUrl: "js/feed-mgr/explorer/dataset/dataset.component.html"
+    templateUrl: "js/feed-mgr/catalog/dataset/dataset.component.html"
 })
 export class DatasetComponent implements OnInit {
 

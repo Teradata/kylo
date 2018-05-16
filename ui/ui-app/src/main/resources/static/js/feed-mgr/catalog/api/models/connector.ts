@@ -3,6 +3,8 @@ import {DataSetTemplate} from "./dataset-template";
 
 export interface Connector {
 
+    type?: string;
+
     color?: string;
 
     hidden?: boolean;

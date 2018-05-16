@@ -10,7 +10,7 @@ import {CovalentFileModule} from "@covalent/core/file";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../../../common/common.module";
-import {CatalogModule} from "../../catalog/catalog.module";
+import {CatalogApiModule} from "../../api/catalog-api.module";
 import {UploadComponent} from "./upload.component";
 import {uploadStates} from "./upload.states";
 
@@ -22,7 +22,7 @@ import {uploadStates} from "./upload.states";
         UploadComponent
     ],
     imports: [
-        CatalogModule,
+        CatalogApiModule,
         CommonModule,
         CovalentFileModule,
         FlexLayoutModule,

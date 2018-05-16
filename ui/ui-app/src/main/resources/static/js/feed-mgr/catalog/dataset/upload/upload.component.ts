@@ -2,8 +2,8 @@ import {HttpErrorResponse, HttpEvent, HttpEventType} from "@angular/common/http"
 import {Component, Input, OnInit, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 
-import {DataSetFile} from "../../catalog/models/dataset-file";
-import {FileManagerService} from "../../catalog/services/file-manager.service";
+import {DataSetFile} from "../../api/models/dataset-file";
+import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
 import {UploadDataSet} from "./models/upload-dataset";
 
@@ -12,8 +12,8 @@ import {UploadDataSet} from "./models/upload-dataset";
  */
 @Component({
     selector: "local-files",
-    styleUrls: ["js/feed-mgr/explorer/dataset/upload/upload.component.css"],
-    templateUrl: "js/feed-mgr/explorer/dataset/upload/upload.component.html"
+    styleUrls: ["js/feed-mgr/catalog/dataset/upload/upload.component.css"],
+    templateUrl: "js/feed-mgr/catalog/dataset/upload/upload.component.html"
 })
 export class UploadComponent implements OnInit {
 

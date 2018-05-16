@@ -226,71 +226,71 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             }
         });
 
-        $stateProvider.state({
-            name: 'catalog.**',
-            url: '/catalog',
-            lazyLoad: (transition: any)=> {
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('catalog');
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading catalog data sources ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas.**',
-            url: '/catalog/{datasource}/schemas',
-            params: {
-                datasource: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas', transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading schemas ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas-schema.**',
-            url: '/catalog/{datasource}/schemas/{schema}',
-            params: {
-                datasource: null,
-                schema: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas-schema', transition.params());
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading tables ", err);
-                    return err;
-                });
-            }
-        }).state({
-            name: 'schemas-schema-table.**',
-            url: '/catalog/{datasource}/schemas/{schema}/{tableName}',
-            params: {
-                datasource: null,
-                schema: null,
-                tableName: null
-            },
-            lazyLoad: (transition: any)=>{
-                transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
-                    //upon success go back to the state
-                    $stateProvider.stateService.go('schemas-schema-table', transition.params())
-                    return args;
-                }, function error(err: any) {
-                    console.log("Error loading table ", err);
-                    return err;
-                });
-            }
-        });
+        // $stateProvider.state({
+        //     name: 'catalog.**',
+        //     url: '/catalog',
+        //     lazyLoad: (transition: any)=> {
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('catalog');
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading catalog data sources ", err);
+        //             return err;
+        //         });
+        //     }
+        // }).state({
+        //     name: 'schemas.**',
+        //     url: '/catalog/{datasource}/schemas',
+        //     params: {
+        //         datasource: null
+        //     },
+        //     lazyLoad: (transition: any)=>{
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('schemas', transition.params());
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading schemas ", err);
+        //             return err;
+        //         });
+        //     }
+        // }).state({
+        //     name: 'schemas-schema.**',
+        //     url: '/catalog/{datasource}/schemas/{schema}',
+        //     params: {
+        //         datasource: null,
+        //         schema: null
+        //     },
+        //     lazyLoad: (transition: any)=>{
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('schemas-schema', transition.params());
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading tables ", err);
+        //             return err;
+        //         });
+        //     }
+        // }).state({
+        //     name: 'schemas-schema-table.**',
+        //     url: '/catalog/{datasource}/schemas/{schema}/{tableName}',
+        //     params: {
+        //         datasource: null,
+        //         schema: null,
+        //         tableName: null
+        //     },
+        //     lazyLoad: (transition: any)=>{
+        //         transition.injector().get('$ocLazyLoad').load('feed-mgr/tables/module').then(function success(args: any) {
+        //             //upon success go back to the state
+        //             $stateProvider.stateService.go('schemas-schema-table', transition.params())
+        //             return args;
+        //         }, function error(err: any) {
+        //             console.log("Error loading table ", err);
+        //             return err;
+        //         });
+        //     }
+        // });
 
         $stateProvider.state({
             name: 'users.**',
@@ -773,9 +773,9 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
         $stateProvider.state({
-            name: 'explorer.**',
-            url: '/explorer',
-            loadChildren: 'feed-mgr/explorer/explorer.module#ExplorerModule'
+            name: 'catalog.**',
+            url: '/catalog',
+            loadChildren: 'feed-mgr/catalog/catalog.module#CatalogModule'
         });
     }
 

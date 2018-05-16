@@ -1,16 +1,16 @@
 import {Component, Input} from "@angular/core";
 
-import {Connector} from "./catalog/models/connector";
+import {Connector} from "./api/models/connector";
 
 @Component({
     template: `
       <td-layout>
         <ui-view>
-          <explorer-connectors [connectors]="connectors"></explorer-connectors>
+          <catalog-connectors [connectors]="connectors"></catalog-connectors>
         </ui-view>
       </td-layout>`
 })
-export class ExplorerComponent {
+export class CatalogComponent {
 
     @Input()
     public connectors: Connector[];
