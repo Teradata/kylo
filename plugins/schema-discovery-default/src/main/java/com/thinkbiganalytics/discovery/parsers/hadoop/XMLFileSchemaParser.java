@@ -48,7 +48,7 @@ import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-@SchemaParser(name = "XML (Simple)", allowSkipHeader = false, description = "Supports Simple XML formatted files.", tags = {"XML"}, usesSpark = true)
+@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports Simple XML formatted files.", tags = {"XML"}, usesSpark = true)
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
@@ -74,6 +74,8 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
             String serde = String.format("row format serde 'com.ibm.spss.hive.serde2.xml.XmlSerDe' with serdeproperties (%s) stored as inputformat 'com.ibm.spss.hive.serde2.xml.XmlInputFormat' "
                                          + "outputformat 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'", paths);
 
+            // Set rowTag if it was derived by the SAX parse
+            this.rowTag = hiveParse.getStartTag();
             LOG.debug("XML serde {}", serde);
 
             // Parse using Spark
