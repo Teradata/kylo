@@ -110,6 +110,10 @@ public class SparkFileSchemaParserService {
 
     public SampleFileSparkScript getSparkScript(InputStream inputStream, SparkFileType fileType, SparkCommandBuilder commandBuilder) throws IOException {
         File tempFile = toFile(inputStream);
+       return getSparkScript(tempFile,fileType,commandBuilder);
+    }
+
+    public SampleFileSparkScript getSparkScript(File tempFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) throws IOException {
         String script = toScript(tempFile, fileType, commandBuilder);
         SampleFileSparkScript sparkScript = new SampleFileSparkScript(tempFile.getPath(), script);
         return sparkScript;
