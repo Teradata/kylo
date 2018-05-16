@@ -47,5 +47,10 @@ export const catalogStates: Ng2StateDeclaration[] = [
         name: "catalog.dataset.upload.**",
         url: "/upload",
         loadChildren: "feed-mgr/catalog/dataset/upload/upload.module#UploadModule"
+    },
+    {
+        name: "catalog.dataset.browse.**",
+        url: "/browse",
+        loadChildren: "feed-mgr/catalog/dataset/files/remote-files.module#RemoteFilesModule"
     }
 ];

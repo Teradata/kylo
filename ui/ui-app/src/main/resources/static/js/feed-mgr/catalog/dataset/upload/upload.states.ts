@@ -4,7 +4,7 @@ import {UploadComponent} from "./upload.component";
 
 export const uploadStates: Ng2StateDeclaration[] = [
     {
-        name: "explorer.dataset.upload",
+        name: "catalog.dataset.upload",
         url: "/upload",
         component: UploadComponent
     }
