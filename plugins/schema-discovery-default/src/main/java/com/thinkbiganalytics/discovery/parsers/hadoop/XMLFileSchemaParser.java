@@ -83,7 +83,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             schema.setStructured(true);
 
-            LOG.debug("XML Spark parser discoverd {} fields", schema.getFields().size());
+            LOG.debug("XML Spark parser discovered {} fields", schema.getFields().size());
 
             schema.setHiveFormat(serde);
             String xmlStart = hiveParse.startTag + (hiveParse.startTagHasAttributes ? " " : ">");

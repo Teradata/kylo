@@ -127,8 +127,8 @@ public class SparkFileSchemaParserService {
         //path = "file:///var/sample/signups.orc";
         //path = "file:///var/sample/HiveGroup.parquet";
         StringBuffer sb = new StringBuffer();
-        sb.append("import sqlContext.implicits._\n");
-        sb.append("import org.apache.spark.sql._\n");
+        //sb.append("import sqlContext.implicits._\n");
+        //sb.append("import org.apache.spark.sql._\n");
         sb.append(commandBuilder.build(path));
         log.info("Script {}", sb.toString());
         return sb.toString();
