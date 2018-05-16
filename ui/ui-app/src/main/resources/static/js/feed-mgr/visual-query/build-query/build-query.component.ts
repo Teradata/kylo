@@ -135,7 +135,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
     /**
      * Controller for parent stepper component.
      */
-    stepperController: object;
+    stepperController: any;
 
     /**
      * Autocomplete for the table selector.
@@ -333,6 +333,36 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.onDeleteSelectedCallback.bind(this));
     }
 
+    onDatasourceChange(){
+        this.tablesAutocomplete.searchText = '';
+
+        if(this.model.$selectedDatasourceId == 'FILE'){
+            //warn if the user has other items
+            if(this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length >0) ){
+                //WARN if you upload a file you will loose your other data
+                this.$mdDialog.show(
+                    this.$mdDialog.confirm()
+                        .parent($("body"))
+                        .clickOutsideToClose(true)
+                        .title("Upload a local file")
+                        .textContent("If you switch and upload a local file you will loose your other data sources. Are you sure you want to continue?")
+                        .ariaLabel("Upload local file or stay in visual editor?")
+                        .ok("Continue")
+                        .cancel("Cancel"))
+                        .then(() => {
+                            this.chartViewModel.nodes= [];
+                            this.model.chartViewModel = null;
+                        },() => {
+                            this.model.$selectedDatasourceId = this.availableDatasources[0].id;
+                        });
+
+            }
+        }
+        else {
+            this.model.sampleFile = null;
+        }
+    }
+
     /**
      * Called after a user Adds a table to fetch the Columns and datatypes.
      * @param schema - the schema name
@@ -362,6 +392,8 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             this.model.chartViewModel = null;
             this.model.datasourceIds = this.nativeDataSourceIds.indexOf(this.model.$selectedDatasourceId) < 0 ? [this.model.$selectedDatasourceId] : [];
             this.model.$datasources = this.DatasourcesService.filterArrayByIds(this.model.$selectedDatasourceId, this.availableDatasources);
+        } else if (this.model.$selectedDatasourceId =='FILE'){
+          this.isValid = angular.isDefined(this.model.sampleFile);
         } else if (this.chartViewModel.nodes != null) {
             this.isValid = (this.chartViewModel.nodes.length > 0);
 
@@ -656,6 +688,12 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             });
     };
 
+    onFileUploaded(){
+        let step = this.stepperController.getStep(this.stepIndex)
+        //TODO transition to next step
+
+    }
+
     // -----------------
     // Angular Callbacks
     // -----------------
@@ -682,7 +720,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
 
         // Allow for SQL editing
-        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null) {
+        if (this.model.chartViewModel == null && typeof this.model.sql !== "undefined" && this.model.sql !== null && (angular.isUndefined(this.model.sampleFile) || this.model.sampleFile == null)) {
             this.advancedMode = true;
             this.advancedModeText = "Visual Mode";
         } else {

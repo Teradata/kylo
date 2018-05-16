@@ -12,6 +12,7 @@ import {TransformValidationResult} from "../wrangler/model/transform-validation-
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {ScriptState} from "../wrangler";
+import {SparkConstants} from "../services/spark/spark-constants";
 
 declare const CodeMirror: any;
 
@@ -260,7 +261,9 @@ export class TransformDataComponent implements OnInit {
                 this.engine.setState(this.model.states);
                 this.functionHistory = this.engine.getHistory();
             } else {
-                this.engine.setQuery(source, this.model.$datasources);
+                    this.engine.setQuery(source, this.model.$datasources);
+                    this.functionHistory = this.engine.getHistory();
+
             }
 
             // Provide access to table for fetching pages
@@ -988,18 +991,29 @@ export class TransformDataComponent implements OnInit {
         return (this.engine && this.engine.canRedo) ? this.engine.canRedo() : false;
     };
 
+    isUsingSampleFile(){
+        //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
+        return this.model.$selectedDatasourceId == "FILE"
+    }
+
+    isSampleFileChanged(){
+        return this.isUsingSampleFile()  && this.model.sampleFileChanged;
+    }
+
     /**
      * Update the feed model when changing from this transform step to a different step
      */
     private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
         const self = this;
         const thisIndex = parseInt(this.stepIndex);
-        //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
-        let localFileChanged = this.model.$selectedDatasourceId == "FILE" && this.model.sampleFileChanged
+
+       let localFileChanged = this.isSampleFileChanged();
 
         if (changedSteps.oldStep === thisIndex) {
             this.saveToFeedModel().then(function () {
                 // notify those that the data is loaded/updated
+                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+            },function(){
                 self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
         } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {

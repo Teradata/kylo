@@ -78,8 +78,6 @@ public class TableMergeApp {
         } catch (Exception e) {
             log.error("Failed to perform validation: {}", e.toString(), e);
             throw e;
-        } finally {
-            sparkContext.stop();
         }
     }
 

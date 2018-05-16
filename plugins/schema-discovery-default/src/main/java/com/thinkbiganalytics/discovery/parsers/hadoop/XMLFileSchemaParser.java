@@ -21,6 +21,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  */
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parsers.csv.CSVFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
@@ -111,6 +112,19 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     @Override
     public SparkFileType getSparkFileType() {
         return SparkFileType.XML;
+    }
+
+    @Override
+    public SampleFileSparkScript getSparkScript(InputStream is) throws IOException {
+        File tempFile = streamToFile(is);
+        try {
+            HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
+            rowTag = hiveParse.getStartTag();
+        }catch (Exception e) {
+            // unable to parse the file to get the row tag.
+            //it will use the default getRowTag()
+        }
+        return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkScriptCommandBuilder());
     }
 
     @Override

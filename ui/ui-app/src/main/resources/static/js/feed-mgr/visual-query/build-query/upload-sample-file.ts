@@ -2,8 +2,7 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {Input, OnDestroy, OnInit} from "@angular/core";
 
-import {QueryEngine} from "../wrangler/query-engine";
-import {SampleFile} from "../wrangler/query-engine";
+import {QueryEngine,SampleFile} from "../wrangler/query-engine";
 import {SparkConstants} from "../services/spark/spark-constants";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
 
@@ -11,7 +10,7 @@ const moduleName: string = require("feed-mgr/visual-query/module-name");
 
 export class UploadSampleFile implements  OnInit {
 
-    sampleFile: any;
+    sampleFile: File;
 
     uploadBtnDisabled:boolean;
 
@@ -33,21 +32,34 @@ export class UploadSampleFile implements  OnInit {
     @Input()
     engine: QueryEngine<any>;
 
+    public onFileUploaded:() => any;
+
     static readonly $inject = ["$scope", "$http", "$timeout","$mdToast", "$mdDialog", "FileUpload","RestUrlService"];
 
     constructor(private $scope:any, private $http:any, private $timeout:any, private $mdToast:any,private $mdDialog:any,private fileUpload:any, private restUrlService:any){
 
+
+        $scope.$watch(() =>{
+            return this.sampleFile
+        },(newVal:File, oldVal:File) => {
+            if((angular.isUndefined(newVal) || newVal == null) || angular.isUndefined(this.model.sampleFile) || (angular.isDefined(newVal) && angular.isDefined(oldVal) && newVal.name != oldVal.name)){
+                this.isValid = false;
+            }
+            else {
+                this.isValid = true;
+            }
+        })
     }
 
     $onInit () {
-this.ngOnInit();
+        this.ngOnInit();
     }
 
     ngOnInit(){
 
         if(angular.isDefined(this.model.sampleFile)){
-            this.isValid = true;
-            this.sampleFile = this.model.sampleFile;
+            this.sampleFile = this.model.sampleFile.localFileObject;
+            this.schemaParser = this.model.sampleFile.schemaParser;
         }
     }
 
@@ -76,17 +88,21 @@ this.ngOnInit();
         if (this.schemaParser) {
             params = {parser: JSON.stringify(this.schemaParser),dataFrameVariable:SparkConstants.DATA_FRAME_VARIABLE,limit:100};
         }
+
         let uploadUrl = this.restUrlService.UPLOAD_SPARK_SAMPLE_FILE;
         var successFn =  (response:any) =>{
-            // console.log("loaded schema");
             var responseData = response.data;
             this.hideProgress();
             this.uploadBtnDisabled = false;
             let fileLocation :string = responseData.fileLocation;
             let script:string = responseData.script;
-            this.engine.setSampleFile({originalFileName:file,fileLocation:fileLocation,script:script});
+            let serverSampleFile = <SampleFile>{fileLocation:fileLocation,script:script,localFileName:file.name, localFileObject:file,schemaParser:angular.copy(this.schemaParser)};
+            this.engine.setSampleFile(serverSampleFile);
             this.isValid = true;
-            this.model.sampleFile = file;
+            this.model.sampleFile = serverSampleFile;
+            if(angular.isDefined(this.onFileUploaded)){
+                this.onFileUploaded();
+            }
         };
         var errorFn =  (data:any) => {
             this.model.sampleFile = null;
@@ -107,7 +123,8 @@ angular.module(moduleName).component("kyloUploadSampleFile", {
     bindings: {
         model:"=",
         engine: "=",
-        isValid: "="
+        isValid: "=",
+        onFileUploaded: "&?"
     },
     controller: UploadSampleFile,
     controllerAs: "vm",

@@ -2,8 +2,8 @@ import * as angular from "angular";
 import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
-import {TableColumnDefinition} from "./model/TableColumnDefinition";
-import {TableFieldPolicy} from "./model/TableFieldPolicy";
+import {TableColumnDefinition} from "../model/TableColumnDefinition";
+import {TableFieldPolicy} from "../model/TableFieldPolicy";
 
 
 function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToast: angular.material.IToastService, $mdDialog: angular.material.IDialogService, RestUrlService: any,
@@ -340,8 +340,19 @@ function FeedService($http: angular.IHttpService, $q: angular.IQService, $mdToas
          * For a given list of incoming Table schema fields ({@see this#newTableFieldDefinition}) it will create a new FieldPolicy object ({@see this#newTableFieldPolicy} for it
          */
         setTableFields: function (fields: any[], policies: any[] = null) {
-            this.createFeedModel.table.tableSchema.fields = fields;
-            this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : fields.map(field => this.newTableFieldPolicy(field.name));
+            //ensure the fields are of type TableColumnDefinition
+          let newFields =  _.map(fields,(field) => {
+                if(!field['classType'] || field['classType'] != 'TableColumnDefinition' ){
+                    let columnDef = new TableColumnDefinition();
+                    angular.extend(columnDef,field);
+                    return columnDef;
+                }
+                else {
+                    return field;
+                }
+            })
+            this.createFeedModel.table.tableSchema.fields = newFields;
+            this.createFeedModel.table.fieldPolicies = (policies != null && policies.length > 0) ? policies : newFields.map(field => this.newTableFieldPolicy(field.name));
 
             this.createFeedModel.schemaChanged = !this.validateSchemaDidNotChange(this.createFeedModel);
         },

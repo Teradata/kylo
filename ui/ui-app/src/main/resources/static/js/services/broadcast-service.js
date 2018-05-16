@@ -16,6 +16,8 @@ define(['angular','services/module-name','jquery'], function (angular,moduleName
          */
         var waitingEvents = {};
 
+        var subscribers = {};
+
         var data = {
             /**
              * notify subscribers of this event passing an optional data object and optional wait time (millis)
@@ -43,7 +45,14 @@ define(['angular','services/module-name','jquery'], function (angular,moduleName
              */
             subscribe: function (scope, event, callback) {
                 var handler = $rootScope.$on(event, callback);
-                scope.$on('$destroy', handler);
+                if(subscribers[event] == undefined){
+                    subscribers[event] = 0;
+                }
+                subscribers[event] +=1;
+                scope.$on('$destroy', function(){
+                    handler();
+                    subscribers[event] -= 1;
+                });
             },
             /**
              * Subscribe to some event
