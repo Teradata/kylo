@@ -12,7 +12,7 @@
     </div>
     <div layout="row" layout-align="center start" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
       <md-input-container style="right: 16px;" flex="15">
-        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="!$bq.canChangeDatasource()">
+        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.onDatasourceChange()" ng-disabled="!$bq.canChangeDatasource()">
           <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
         </md-select>
         <div class="hint">Data Source</div>
@@ -57,7 +57,7 @@
       <md-button ng-click="$bq.onAddTable()" class="md-raised md-accent" ng-disabled="!$bq.tablesAutocomplete.selectedTable">Add Table</md-button>
       <md-button ng-click="$bq.toggleAdvancedMode()" class="md-raised" ng-disabled="$bq.error != null">Edit SQL</md-button>
       </div>
-      <kylo-upload-sample-file model="$bq.model" engine="$bq.engine" is-valid="$bq.isValid" ng-if="$bq.model.$selectedDatasourceId == 'FILE'"></kylo-upload-sample-file>
+      <kylo-upload-sample-file model="$bq.model" engine="$bq.engine" is-valid="$bq.isValid" on-file-uploaded="$bq.onFileUploaded()" ng-if="$bq.model.$selectedDatasourceId == 'FILE'"></kylo-upload-sample-file>
       <span flex-auto layout-align="end center">
       <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}" style="margin-top:-8px"></thinkbig-step-buttons>
     </span>

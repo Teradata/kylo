@@ -1,7 +1,9 @@
 import * as angular from "angular";
 import * as _ from "underscore";
-import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
-import {Common} from "../../../common/CommonTypes";
+import {DomainType, DomainTypesService} from "../services/DomainTypesService";
+import {Common} from "../../common/CommonTypes";
+import {SchemaField} from "./schema-field"
+
 
 export class ColumnDefinitionHistoryRecord {
     name: string;
@@ -9,7 +11,6 @@ export class ColumnDefinitionHistoryRecord {
     createdTracker: boolean;
     primaryKey: boolean;
     deleted: boolean;
-    dataType: string;
     derivedDataType: string;
     precisionScale: string;
     origName:string
@@ -52,11 +53,13 @@ export interface ValidationMessages {
 }
 
 
-export class TableColumnDefinition {
+export class TableColumnDefinition extends SchemaField {
 
     private static NAME_PATTERN: RegExp = /^[a-zA-Z0-9_\s\)\(-]*$/;
     private static PRECISION_SCALE_PATTERN: RegExp = /^\d+,\d+$/;
     private static MAX_COLUMN_LENGTH: number = 767;
+
+    classType:string = 'TableColumnDefinition'
 
     /**
      * Vaidate message types
@@ -75,12 +78,6 @@ export class TableColumnDefinition {
         }
     };
 
-
-    /**
-     * The target name of the field
-     * @type {string}
-     */
-    name: string = '';
     /**
      * the original name of the field.
      */
@@ -90,38 +87,7 @@ export class TableColumnDefinition {
      */
     origDataType: string;
 
-    /**
-     * the target datatype without precision
-     * example int, string, decimal
-     */
-    dataType: string;
-    /**
-     * the target datatype with precision
-     * example: decimal(10,2)
-     */
-    derivedDataType: string;
 
-    /**
-     * the target datatype precision
-     * example 10,2
-     */
-    precisionScale: string;
-
-    /**
-     * if the field is an update date
-     * @type {boolean}
-     */
-    updatedTracker: boolean = false;
-    /**
-     * if the field is a create date
-     * @type {boolean}
-     */
-    createdTracker: boolean = false;
-    /**
-     * if the field is a primary key
-     * @type {boolean}
-     */
-    primaryKey: boolean = false;
     /**
      * if the field has been deleted
      * @type {boolean}
@@ -144,20 +110,10 @@ export class TableColumnDefinition {
     validationErrors: ColumnDefinitionValidationError;
 
     /**
-     * an array of sample values
-     * @type {any[]}
-     */
-    sampleValues: any[] = [];
-    /**
      * the selected sample value
      */
-    selectedSampleValue: '';
+    selectedSampleValue:string = '';
 
-    /**
-     * column tags
-     * @type {any[]}
-     */
-    tags: any[] = [];
 
     /**
      * do we allow domain type name conflicts
@@ -165,6 +121,9 @@ export class TableColumnDefinition {
     $allowDomainTypeConflict:boolean;
 
     constructor() {
+        super();
+        this.name = '';
+        this._id = _.uniqueId();
         this.validationErrors = new ColumnDefinitionValidationError();
     }
 
@@ -195,7 +154,6 @@ export class TableColumnDefinition {
             this.origName = this.name;
             this.origDataType = this.derivedDataType;
             this.deleted = false;
-            this._id = _.uniqueId();
             this.history = [];
             this.dataTypeDisplay = this.getDataTypeDisplay();
             this.addHistoryItem();

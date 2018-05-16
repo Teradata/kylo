@@ -1,6 +1,6 @@
 import * as angular from "angular";
 import * as _ from "underscore";
-import {DomainType} from "../../services/DomainTypesService";
+import {DomainType} from "../services/DomainTypesService";
 
 export class TableFieldPolicy {
     /**

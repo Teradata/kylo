@@ -38,18 +38,14 @@ export class PageSpec {
 
 export interface SampleFile{
     /**
-     * the name of the file uploaded
-     */
-    originalFileName:string;
-    /**
-     * The absolute path of the file after the server used in the script
+     * the file
      */
     fileLocation:string;
+
     /**
-     * the script returned from the server
+     * Generated script from the server
      */
     script:string;
-
 }
 
 /**

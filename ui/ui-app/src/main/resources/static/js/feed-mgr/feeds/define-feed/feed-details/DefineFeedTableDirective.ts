@@ -22,9 +22,9 @@ import * as angular from 'angular';
 import * as _ from "underscore";
 import {Common} from "../../../../common/CommonTypes";
 import {DomainType, DomainTypesService} from "../../../services/DomainTypesService";
-import {TableColumnDefinition} from "../../../services/model/TableColumnDefinition";
-import {TableFieldPartition} from "../../../services/model/TableFieldPartition";
-import {TableFieldPolicy} from "../../../services/model/TableFieldPolicy";
+import {TableColumnDefinition} from "../../../model/TableColumnDefinition";
+import {TableFieldPartition} from "../../../model/TableFieldPartition";
+import {TableFieldPolicy} from "../../../model/TableFieldPolicy";
 
 
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
@@ -33,10 +33,10 @@ var directive = function () {
     return {
         restrict: "EA",
         bindToController: {
-            canRemoveFields: "=?",
+            canRemoveFields: "<?",
             stepIndex: '@',
-            tableLocked: "=?",
-            typeLocked: "=?"
+            tableLocked: "<?",
+            dataTypeLocked: "<?typeLocked"
         },
         scope: {},
         require: ['thinkbigDefineFeedTable', '^thinkbigStepper'],
@@ -335,10 +335,9 @@ export class DefineFeedTableController {
 
     expansionPanelHelper: ExpansionPanelHelper;
 
-    tableLocked: boolean = false;
-    dataTypeLocked: boolean = false;
-    canRemoveFields: boolean = true;
-    typeLocked: boolean = false;
+    tableLocked: boolean;
+    dataTypeLocked: boolean;
+    canRemoveFields: boolean;
 
 
     tableForm: TableForm;
@@ -352,15 +351,15 @@ export class DefineFeedTableController {
         this.expansionPanelHelper = new ExpansionPanelHelper((this.$mdExpansionPanel));
 
         this.model = feedService.createFeedModel;
-        this.availableDefinitionDataTypes = feedService.columnDefinitionDataTypes.slice();
+        this.addComplexDataTypes()
         this.tableForm = new TableForm(this.model);
 
         domainTypesService.findAll().then((domainTypes: DomainType[]) => {
             this.availableDomainTypes = domainTypes;
         });
         this.ensurePartitionData();
+        broadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', this.onDataTransformSchemaLoaded.bind(this));
 
-        broadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', this.onDataTransformSchemaLoaded);
 
 
         var invalidColumnsWatch = $scope.$watch(() => {
@@ -436,32 +435,27 @@ export class DefineFeedTableController {
         }
 
 
-        this.$scope.$evalAsync(() => {
+       // this.$scope.$evalAsync(() => {
             this.calcTableState();
             if (this.model.table.tableSchema.fields && this.model.table.tableSchema.fields.length > 0) {
                 if (this.model.dataTransformationFeed) {
                     this.addComplexDataTypes();
                 }
                 this.syncFeedsColumns();
-                this.calcTableState();
                 this.expansionPanelHelper.expandSchemaPanel();
+            }else {
+                if (!this.model.dataTransformationFeed) {
+                    this.expansionPanelHelper.expandChooseMethodPanel();
+                }
             }
-        });
 
-
-        // choose to expand the choose method initially if no fields have been defined yet
-        if (this.model.table.tableSchema.fields.length == 0) {
-            this.expansionPanelHelper.expandChooseMethodPanel();
-        }
-        else {
-            this.expansionPanelHelper.expandSchemaPanel();
-        }
 
         // Retrieve partition formulas
         this.feedService.getPartitionFunctions()
             .then((functions: any) => {
                 this.partitionFormulas = functions;
             });
+
 
         this.isValid = this.tableForm.validate(undefined);
 
@@ -516,7 +510,6 @@ export class DefineFeedTableController {
     };
 
     undoColumn(index: number) {
-        // console.log("undoColumn");
         var columnDef = <TableColumnDefinition> this.model.table.tableSchema.fields[index];
         columnDef.history.pop();
         let prevValue = columnDef.history[columnDef.history.length - 1];
@@ -532,7 +525,6 @@ export class DefineFeedTableController {
      * @param index
      */
     removeColumn(index: number) {
-        // console.log("removeColumn");
         var columnDef = <TableColumnDefinition> this.model.table.tableSchema.fields[index];
         columnDef.deleteColumn();
 
@@ -605,7 +597,7 @@ export class DefineFeedTableController {
         }
 
         // Ensure tags is an array
-        if (!angular.isArray(selectedColumn.tags)) {
+        if (angular.isUndefined(selectedColumn.tags) ) {
             selectedColumn.tags = [];
         }
     };
@@ -922,9 +914,12 @@ export class DefineFeedTableController {
                     .ok('Got it!')
             );
         }
-        this.addComplexDataTypes();
-        this.calcTableState();
-        this.expansionPanelHelper.expandSchemaPanel();
+            this.addComplexDataTypes();
+            this.calcTableState();
+            this.expansionPanelHelper.expandSchemaPanel();
+
+        this.isValid = this.tableForm.validate(undefined);
+
     }
 
     /**
@@ -932,7 +927,7 @@ export class DefineFeedTableController {
      */
     private calcTableState() {
         this.tableLocked = angular.isDefined(this.tableLocked) && (this.tableLocked == true );
-        this.dataTypeLocked = angular.isDefined(this.dataTypeLocked) && (this.typeLocked == true );
+        this.dataTypeLocked = angular.isDefined(this.dataTypeLocked) && (this.dataTypeLocked == true );
         this.canRemoveFields = angular.isUndefined(this.canRemoveFields) || this.canRemoveFields === true ;
         this.showMethodPanel = (this.model.table.method != 'EXISTING_TABLE');
     }

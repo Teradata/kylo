@@ -1,7 +1,7 @@
 import * as angular from "angular";
 import * as _ from "underscore";
-import {DomainType} from "../../services/DomainTypesService";
-import {Common} from "../../../common/CommonTypes";
+import {DomainType} from "../services/DomainTypesService";
+import {Common} from "../../common/CommonTypes";
 import {TableColumnDefinition} from "./TableColumnDefinition";
 
 export class TableFieldPartition {

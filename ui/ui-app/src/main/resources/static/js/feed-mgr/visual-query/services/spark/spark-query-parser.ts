@@ -31,8 +31,10 @@ export class SparkQueryParser extends QueryParser {
     protected fromSql(sql: string, datasources: UserDatasource[]): string {
         if (datasources != null && datasources.length !== 1) {
             throw new Error("Not valid datasources: " + datasources);
+        } else if( datasources != null && datasources.length >0 && datasources[0].id === SparkConstants.USER_FILE_DATASOURCE) {
+            return "";
         } else if (datasources == null || datasources.length === 0 || datasources[0].id === SparkConstants.HIVE_DATASOURCE) {
-            return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
+                return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = sqlContext.sql(\"" + StringUtils.escapeScala(sql) + "\")\n";
         } else {
             let subquery = "(" + sql + ") AS KYLO_SPARK_QUERY";
             return "var " + SparkConstants.DATA_FRAME_VARIABLE + " = " + DATASOURCE_PROVIDER + ".getTableFromDatasource(\"" + StringUtils.escapeScala(subquery) + "\", \""
