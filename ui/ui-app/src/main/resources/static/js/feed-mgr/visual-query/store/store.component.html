@@ -81,80 +81,84 @@
 
           <thinkbig-property-list-editor ng-if="$st.destination" properties="$st.properties" is-valid="$st.isValid"></thinkbig-property-list-editor>
 
+          <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="$st.destination == 'DOWNLOAD'">
+            <md-button style="text-align:left" ng-click="$st.showOptionsInfo()" class="md-primary md-link">View available properties</md-button>
+          </div>
+
           <md-input-container ng-if="$st.destination == 'TABLE'">
-            <label>Save mode</label>
-            <md-select name="mode" ng-model="$st.target.mode" placeholder="Mode" required>
-              <md-option value="Append">Append to existing data</md-option>
-              <md-option value="ErrorIfExists">Fail if table exists</md-option>
-              <md-option value="Ignore">Skip existing table</md-option>
-              <md-option value="Overwrite">Overwrite existing table</md-option>
-            </md-select>
-            <div ng-messages="$st.form.mode.$error" ng-if="$st.form.mode.$touched">
-              <div ng-message="required">Required</div>
-            </div>
-          </md-input-container>
+           <label>Save mode</label>
+           <md-select name="mode" ng-model="$st.target.mode" placeholder="Mode" required>
+             <md-option value="Append">Append to existing data</md-option>
+             <md-option value="ErrorIfExists">Fail if table exists</md-option>
+             <md-option value="Ignore">Skip existing table</md-option>
+             <md-option value="Overwrite">Overwrite existing table</md-option>
+           </md-select>
+           <div ng-messages="$st.form.mode.$error" ng-if="$st.form.mode.$touched">
+             <div ng-message="required">Required</div>
+           </div>
+         </md-input-container>
 
-        </div>
-      </ng-form>
+       </div>
+     </ng-form>
 
-      <thinkbig-step-buttons can-continue="$st.form.$valid" step-index="{{::$st.stepIndex}}" final-step="Save" on-click-final-button="$st.save()"></thinkbig-step-buttons>
-    </body-section>
-  </card-layout>
-
-
+     <thinkbig-step-buttons can-continue="$st.form.$valid" step-index="{{::$st.stepIndex}}" final-step="Save" on-click-final-button="$st.save()"></thinkbig-step-buttons>
+   </body-section>
+ </card-layout>
 
 
-  <card-layout body-css="md-padding" ng-if="$st.showSaveResultsCard()">
-    <header-section>
-      <div class="card-title"><span ng-if="$st.isSaved()">Saved your data</span> <span ng-if="!$st.isSaved()">Processing your request</span> </div>
-    </header-section>
-    <body-section md-content>
-
-      <div ng-if="$st.isSavingFile()" layout="column"  layout-align="start center" layout-fill class="layout-padding-bottom ">
-        <span class="md-subhead">Your request is being processed.</span>
-        <span>Your file will be ready shortly.  You can leave this page and continue to work within Kylo.</span>
-        <span>You will be notified at the top right of Kylo once your request is complete.</span>
-      </div>
-
-      <div ng-if="$st.isSavingTable()" layout="column" layout-align="start center" layout-fill class="layout-padding-bottom ">
-        <span class="md-subhead">Your request is being processed.</span>
-        <span>You can leave this page and continue to work within Kylo.</span>
-        <span>You will be notified at the top right of Kylo once your request is complete.</span>
-      </div>
-
-      <div ng-if="$st.isSavedTable()" layout="column" layout-align="start center" layout-fill class="layout-padding-bottom ">
-        <span class="md-subhead">Your table is now available.</span>
-      </div>
-
-      <div ng-if="$st.downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
-        <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>
-        <div layout="column" flex>
-          <div style="font-weight:500;line-height:24px;">Download Ready</div>
-          <div style="line-height:20px;">The file is ready to be downloaded.</div>
-        </div>
-        <md-button ng-click="$st.download()">Download</md-button>
-      </div>
 
 
-      <div layout="column" layout-align="center center" layout-fill class="layout-padding-top-20">
-        <div class="md-subhead" ">Additional Options </div>
-        <div layout="row" class="layout-padding-bottom" style="cursor:pointer;outline:none;" ng-click="$st.downloadAgainAs()">
-          <ng-md-icon icon="insert_drive_file" size="50" style="fill:#3782B8;"></ng-md-icon>
-          <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Download as another format</span>
-        </div>
-        <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="$st.modifyTransformation()">
-          <ng-md-icon icon="settings_backup_restore" size="50" style="fill:#3782B8;"></ng-md-icon>
-          <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Modify your transformation</span>
-        </div>
-        <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="$st.exit()">
-          <ng-md-icon icon="exit_to_app" size="50" style="fill:#3782B8;"></ng-md-icon>
-          <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Exit Visual Query</span>
-        </div>
+ <card-layout body-css="md-padding" ng-if="$st.showSaveResultsCard()">
+   <header-section>
+     <div class="card-title"><span ng-if="$st.isSaved()">Saved your data</span> <span ng-if="!$st.isSaved()">Processing your request</span> </div>
+   </header-section>
+   <body-section md-content>
 
-      </div>
+     <div ng-if="$st.isSavingFile()" layout="column"  layout-align="start center" layout-fill class="layout-padding-bottom ">
+       <span class="md-subhead">Your request is being processed.</span>
+       <span>Your file will be ready shortly.  You can leave this page and continue to work within Kylo.</span>
+       <span>You will be notified at the top right of Kylo once your request is complete.</span>
+     </div>
 
-    </body-section>
-  </card-layout>
+     <div ng-if="$st.isSavingTable()" layout="column" layout-align="start center" layout-fill class="layout-padding-bottom ">
+       <span class="md-subhead">Your request is being processed.</span>
+       <span>You can leave this page and continue to work within Kylo.</span>
+       <span>You will be notified at the top right of Kylo once your request is complete.</span>
+     </div>
+
+     <div ng-if="$st.isSavedTable()" layout="column" layout-align="start center" layout-fill class="layout-padding-bottom ">
+       <span class="md-subhead">Your table is now available.</span>
+     </div>
+
+     <div ng-if="$st.downloadUrl != null" style="color:#4caf50;background-color:rgba(76,175,80,.1);margin:0 auto;min-height:52px;padding:0 20px;" layout="row">
+       <ng-md-icon icon="file_download" style="margin-right:20px;"></ng-md-icon>
+       <div layout="column" flex>
+         <div style="font-weight:500;line-height:24px;">Download Ready</div>
+         <div style="line-height:20px;">The file is ready to be downloaded.</div>
+       </div>
+       <md-button ng-click="$st.download()">Download</md-button>
+     </div>
+
+
+     <div layout="column" layout-align="center center" layout-fill class="layout-padding-top-20">
+       <div class="md-subhead" ">Additional Options </div>
+       <div layout="row" class="layout-padding-bottom" style="cursor:pointer;outline:none;" ng-click="$st.downloadAgainAs()">
+         <ng-md-icon icon="insert_drive_file" size="50" style="fill:#3782B8;"></ng-md-icon>
+         <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Download as another format</span>
+       </div>
+       <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="$st.modifyTransformation()">
+         <ng-md-icon icon="settings_backup_restore" size="50" style="fill:#3782B8;"></ng-md-icon>
+         <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Modify your transformation</span>
+       </div>
+       <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="$st.exit()">
+         <ng-md-icon icon="exit_to_app" size="50" style="fill:#3782B8;"></ng-md-icon>
+         <span class="md-subhead" style="padding-top:40px;padding-left:30px;">Exit Visual Query</span>
+       </div>
+
+     </div>
+
+   </body-section>
+ </card-layout>
 
 
 
