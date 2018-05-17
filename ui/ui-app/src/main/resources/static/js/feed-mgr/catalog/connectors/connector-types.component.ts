@@ -4,32 +4,31 @@ import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
 import {StateService} from "@uirouter/angular";
 
-import {Connector} from "../api/models/connector";
 import {CatalogService} from "../api/services/catalog.service";
-import {ConnectorType} from '../api/models/connectorType';
+import {Connector} from '../api/models/connector';
 
 /**
  * Displays the available connectors and creates new data sets.
  */
 @Component({
     selector: "explorer-connector-types",
-    styleUrls: ["js/feed-mgr/catalog/connector-types/connector-types.component.css"],
-    templateUrl: "js/feed-mgr/catalog/connector-types/connector-types.component.html"
+    styleUrls: ["js/feed-mgr/catalog/connectors/connector-types.component.css"],
+    templateUrl: "js/feed-mgr/catalog/connectors/connector-types.component.html"
 })
-export class ConnectorTypesComponent {
+export class ConnectorsComponent {
 
-    static LOADER = "ConnectorTypesComponent.LOADER";
+    static LOADER = "ConnectorsComponent.LOADER";
 
     /**
      * List of available connectors
      */
-    @Input("connectorTypes")
-    public availableConnectorTypes: ConnectorType[];
+    @Input("connectors")
+    public availableConnectorTypes: Connector[];
 
     /**
      * Filtered list of connectors to display
      */
-    filteredConnectorTypes: ConnectorType[];
+    filteredConnectorTypes: Connector[];
 
     /**
      * Search term for filtering connectors
@@ -52,9 +51,9 @@ export class ConnectorTypesComponent {
     /**
      * Creates a new data set from the specified connector.
      */
-    selectConnectorType(connector: Connector) {
-        console.log('selectConnectorType');
-        this.state.go(".connectors", {connectorType: connector.type});
+    selectConnector(connector: Connector) {
+        console.log('selectConnector');
+        this.state.go(".new-datasource", {connectorId: connector.id});
     }
 
     /**

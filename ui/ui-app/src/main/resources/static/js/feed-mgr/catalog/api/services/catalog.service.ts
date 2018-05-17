@@ -2,12 +2,11 @@ import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
 import {ArrayObservable} from "rxjs/observable/ArrayObservable";
-import {ErrorObservable} from "rxjs/observable/ErrorObservable";
 
-import {Connector} from "../models/connector";
+import {DataSource} from "../models/datasource";
 import {DataSet} from "../models/dataset";
-import {ConnectorType} from '../models/connectorType';
-import {connectors} from "./data";
+import {Connector} from '../models/connector';
+import {dataSources} from "./data";
 
 // TODO testing only
 function uuidv4() {
@@ -25,36 +24,38 @@ export class CatalogService {
     constructor(private http: HttpClient) {
     }
 
-    createDataSet(connector: Connector): Observable<DataSet> {
+    createDataSet(dataSource: DataSource): Observable<DataSet> {
         const dataSet: DataSet = {
             id: uuidv4(),
-            connector: connector,
-            connectorId: connector.id ? connector.id : connector.title
+            datasource: dataSource,
+            connectorId: dataSource.connector.id ? dataSource.connector.id : dataSource.title
         };
-        this.dataSets[dataSet.id] = dataSet;
+        this.dataSets[dataSource.id] = dataSet;
         return ArrayObservable.of(dataSet);
     }
 
     /**
-     * Gets the list of available connector types, e.g. s3, hdfs, hive, jdbc, kafka etc.
+     * Gets the list of available connectors, e.g. s3, hdfs, hive, jdbc, kafka etc.
      */
-    getConnectorTypes(): Observable<ConnectorType[]> {
-        console.log('getConnectorTypes');
+    getConnectors(): Observable<Connector[]> {
+        console.log('getConnectors');
         return this.http.get<Connector[]>("/proxy/v1/catalog/connector");
     }
 
     /**
-     * Gets the list of connectors (data sources), i.e. instances of configured connector type's, e.g. specific s3/hdfs location, kafka on certain port
+     * Gets the list of data sources, i.e. instances of configured connectors, e.g. specific s3/hdfs location, kafka on certain port
      */
-    getConnectors(): Observable<Connector[]> {
-        return ArrayObservable.of(connectors);
+    getDataSources(): Observable<DataSource[]> {
+        return ArrayObservable.of(dataSources);
     }
 
-    getDataSet(dataSetId: string): Observable<DataSet> {
-        if (this.dataSets[dataSetId]) {
-            return ArrayObservable.of(this.dataSets[dataSetId]);
+    getDataSet(datasourceId: string): Observable<DataSet> {
+        let dataSet = this.dataSets[datasourceId];
+        if (dataSet) {
+            return ArrayObservable.of(dataSet);
         } else {
-            return ErrorObservable.create("Not found");
+            const dataSource = dataSources.find(datasource => datasource.id === datasourceId);
+            return this.createDataSet(dataSource);
         }
     }
 }

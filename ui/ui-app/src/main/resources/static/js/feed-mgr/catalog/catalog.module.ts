@@ -15,16 +15,16 @@ import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../common/common.module";
 import {CatalogApiModule} from "./api/catalog-api.module";
-import {ConnectorsComponent} from "./connectors/connectors.component";
+import {DataSourcesComponent} from "./datasources/datasources.component";
 import {DatasetComponent} from "./dataset/dataset.component";
 import {CatalogComponent} from "./catalog.component";
 import {catalogStates} from "./catalog.states";
-import {ConnectorTypesComponent} from './connector-types/connector-types.component';
+import {ConnectorsComponent} from './connectors/connector-types.component';
 
 @NgModule({
     declarations: [
+        DataSourcesComponent,
         ConnectorsComponent,
-        ConnectorTypesComponent,
         DatasetComponent,
         CatalogComponent,
     ],

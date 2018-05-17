@@ -1,64 +1,67 @@
 // TODO file for testing
 
-import {Connector} from "../models/connector";
-import {ConnectorType} from '../models/connectorType';
+import {DataSource} from "../models/datasource";
+// import {Connector} from '../models/connector';
 
-export const connectorTypes: ConnectorType[] = [
-    {
-        title: "SQL Source",
-        type: "jdbc",
-        tabs: [{label: "Connection", sref: ".connection"}],
-    },
-    {
-        title: "Amazon S3",
-        type: "s3",
-        icon: "amazon",
-        tabs: [{label: "Files", sref: ".browse"}],
-    },
-    {
-        title: "Kafka",
-        type: "kafka",
-        icon: "kafka",
-    },
-    {
-        title: "File Upload",
-        type: "file-upload",
-        icon: "file_upload",
-        tabs: [{label: "Files", sref: ".upload"}]
-    },
-    {
-        title: "HDFS",
-        type: "hdfs",
-        icon: "hadoop",
-        tabs: [{label: "Files", sref: ".browse"}],
-    },
-    {
-        title: "Teradata",
-        type: "jdbc",
-        color: "orange-700",
-        tabs: [{label: "Connection", sref: ".connection"}],
-    },
-    {
-        title: "Google Cloud Storage",
-        type: "gcs",
-        icon: "google",
-        tabs: [{label: "Files", sref: ".browse"}],
-    },
-    {
-        title: "Hive",
-        type: "hive",
-        tabs: [{label: "Table", sref: ".table"}]
-    }
-];
+// export const connectorTypes: Connector[] = [
+//     {
+//         title: "SQL Source",
+//         dataSourcePlugin: "jdbc",
+//         tabs: [{label: "Connection", sref: ".connection"}],
+//     },
+//     {
+//         title: "Amazon S3",
+//         dataSourcePlugin: "s3",
+//         icon: "amazon",
+//         tabs: [{label: "Files", sref: ".browse"}],
+//     },
+//     {
+//         title: "Kafka",
+//         dataSourcePlugin: "kafka",
+//         icon: "kafka",
+//     },
+//     {
+//         title: "File Upload",
+//         dataSourcePlugin: "file-upload",
+//         icon: "file_upload",
+//         tabs: [{label: "Files", sref: ".upload"}]
+//     },
+//     {
+//         title: "HDFS",
+//         dataSourcePlugin: "hdfs",
+//         icon: "hadoop",
+//         tabs: [{label: "Files", sref: ".browse"}],
+//     },
+//     {
+//         title: "Teradata",
+//         dataSourcePlugin: "jdbc",
+//         color: "orange-700",
+//         tabs: [{label: "Connection", sref: ".connection"}],
+//     },
+//     {
+//         title: "Google Cloud Storage",
+//         dataSourcePlugin: "gcs",
+//         icon: "google",
+//         tabs: [{label: "Files", sref: ".browse"}],
+//     },
+//     {
+//         title: "Hive",
+//         dataSourcePlugin: "hive",
+//         tabs: [{label: "Table", sref: ".table"}]
+//     }
+// ];
 
 
-export const connectors: Connector[] = [
+export const dataSources: DataSource[] = [
     {
         id: "1",
         title: "Gregs Amazon S3",
-        type: "s3",
-        icon: "amazon",
-        tabs: [{label: "Files", sref: ".browse"}],
+        connector: {
+            title: "Amazon S3",
+            dataSourcePlugin: "s3",
+            icon: "amazon",
+            tabs: [{label: "Files", sref: ".browse"}],
+        },
         template: {
             options: {
                 "spark.hadoop.fs.s3n.awsAccessKeyId": "",
@@ -70,9 +73,12 @@ export const connectors: Connector[] = [
     {
         id: "2",
         title: "Ruslans Amazon S3",
-        type: "s3",
-        icon: "amazon",
-        tabs: [{label: "Files", sref: ".browse"}],
+        connector: {
+            title: "Amazon S3",
+            dataSourcePlugin: "s3",
+            icon: "amazon",
+            tabs: [{label: "Files", sref: ".browse"}],
+        },
         template: {
             options: {
                 "spark.hadoop.fs.s3n.awsAccessKeyId": "",
@@ -84,8 +90,11 @@ export const connectors: Connector[] = [
     {
         id: "3",
         title: "Localhost:9092",
-        type: "kafka",
-        icon: "kafka",
+        connector: {
+            title: "Kafka",
+            dataSourcePlugin: "kafka",
+            icon: "kafka",
+        },
         template: {
             format: "org.apache.spark.sql.kafka010.KafkaSourceProvider",
             jars: ["file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar", "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"],
@@ -97,8 +106,11 @@ export const connectors: Connector[] = [
     {
         id: "4",
         title: "Localhost:9093",
-        type: "kafka",
-        icon: "kafka",
+        connector: {
+            title: "Kafka",
+            dataSourcePlugin: "kafka",
+            icon: "kafka",
+        },
         template: {
             format: "org.apache.spark.sql.kafka010.KafkaSourceProvider",
             jars: ["file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar", "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"],
@@ -110,23 +122,32 @@ export const connectors: Connector[] = [
     {
         id: "5",
         title: "File Upload /var/dropzone",
-        type: "file-upload",
-        icon: "file_upload",
-        tabs: [{label: "Files", sref: ".upload"}]
+        connector: {
+            title: "File Upload",
+            dataSourcePlugin: "file-upload",
+            icon: "file_upload",
+            tabs: [{label: "Files", sref: ".upload"}]
+        }
     },
     {
         id: "6",
         title: "File Upload /opt/kylo/kylo-ui/config",
-        type: "file-upload",
-        icon: "file_upload",
-        tabs: [{label: "Files", sref: ".upload"}]
+        connector: {
+            title: "File Upload",
+            dataSourcePlugin: "file-upload",
+            icon: "file_upload",
+            tabs: [{label: "Files", sref: ".upload"}]
+        }
     },
     {
         id: "7",
         title: "Ruslans HDFS home",
-        type: "hdfs",
-        icon: "hadoop",
-        tabs: [{label: "Files", sref: ".browse"}],
+        connector:    {
+            title: "HDFS",
+            dataSourcePlugin: "hdfs",
+            icon: "hadoop",
+            tabs: [{label: "Files", sref: ".browse"}],
+        },
         template: {
             paths: ["hdfs://users/ruslans"]
         }
@@ -134,9 +155,12 @@ export const connectors: Connector[] = [
     {
         id: "8",
         title: "Spark logs",
-        type: "hdfs",
-        icon: "hadoop",
-        tabs: [{label: "Files", sref: ".browse"}],
+        connector:    {
+            title: "HDFS",
+            dataSourcePlugin: "hdfs",
+            icon: "hadoop",
+            tabs: [{label: "Files", sref: ".browse"}],
+        },
         template: {
             paths: ["hdfs://users/spark/logs"]
         }
@@ -144,9 +168,12 @@ export const connectors: Connector[] = [
     {
         id: "9",
         title: "Teradata Database 1",
-        type: "jdbc",
-        color: "orange-700",
-        tabs: [{label: "Connection", sref: ".connection"}],
+        connector:    {
+            title: "Teradata",
+            dataSourcePlugin: "jdbc",
+            color: "orange-700",
+            tabs: [{label: "Connection", sref: ".connection"}],
+        },
         template: {
             format: "jdbc",
             jars: ["file:/opt/nifi/mysql/tdgssconfig.jar;file:/opt/nifi/mysql/terajdbc4.jar"],
@@ -161,9 +188,12 @@ export const connectors: Connector[] = [
     {
         id: "10",
         title: "Teradata Database 2",
-        type: "jdbc",
-        color: "orange-700",
-        tabs: [{label: "Connection", sref: ".connection"}],
+        connector:    {
+            title: "Teradata",
+            dataSourcePlugin: "jdbc",
+            color: "orange-700",
+            tabs: [{label: "Connection", sref: ".connection"}],
+        },
         template: {
             format: "jdbc",
             jars: ["file:/opt/nifi/mysql/tdgssconfig.jar;file:/opt/nifi/mysql/terajdbc4.jar"],
@@ -178,9 +208,12 @@ export const connectors: Connector[] = [
     {
         id: "11",
         title: "Greg's google storage",
-        type: "gcs",
-        icon: "google",
-        tabs: [{label: "Files", sref: ".browse"}],
+        connector:    {
+            title: "Google Cloud Storage",
+            dataSourcePlugin: "gcs",
+            icon: "google",
+            tabs: [{label: "Files", sref: ".browse"}],
+        },
         template: {
             jars: ["file:/opt/nifi/mysql/gcs-connector-latest-hadoop2.jar"],
             options: {

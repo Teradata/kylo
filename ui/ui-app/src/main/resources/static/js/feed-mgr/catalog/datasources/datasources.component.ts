@@ -5,31 +5,31 @@ import {TdLoadingService} from "@covalent/core/loading";
 import {StateService} from "@uirouter/angular";
 import {finalize} from "rxjs/operators/finalize";
 
-import {Connector} from "../api/models/connector";
+import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";
 
 /**
- * Displays the available connectors and creates new data sets.
+ * Displays the available datasources
  */
 @Component({
-    selector: "catalog-connectors",
-    styleUrls: ["js/feed-mgr/catalog/connectors/connectors.component.css"],
-    templateUrl: "js/feed-mgr/catalog/connectors/connectors.component.html"
+    selector: "catalog-datasources",
+    styleUrls: ["js/feed-mgr/catalog/datasources/datasources.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasources/datasources.component.html"
 })
-export class ConnectorsComponent {
+export class DataSourcesComponent {
 
-    static readonly LOADER = "connectorsLoader";
+    static readonly LOADER = "DataSourcesComponent.LOADER";
 
     /**
      * List of available connectors
      */
-    @Input("connectors")
-    public availableConnectors: Connector[];
+    @Input("datasources")
+    public availableDatasources: DataSource[];
 
     /**
      * Filtered list of connectors to display
      */
-    filteredConnectors: Connector[];
+    filteredDatasources: DataSource[];
 
     /**
      * Search term for filtering connectors
@@ -45,7 +45,7 @@ export class ConnectorsComponent {
             .then(function (actionSet:any) {
                 if (accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions)) {
                     addButtonService.registerAddButton("catalog", function () {
-                        state.go(".connector-types")
+                        state.go(".connectors")
                     });
                 }
             });
@@ -61,25 +61,18 @@ export class ConnectorsComponent {
     }
 
     /**
-     * Creates a new data set from the specified connector.
+     * Creates a new data set from the specified datasource.
      */
-    selectConnector(connector: Connector) {
-        this.loading.register(ConnectorsComponent.LOADER);
-        this.catalog.createDataSet(connector)
-            .pipe(finalize(() => this.loading.resolve(ConnectorsComponent.LOADER)))
-            .subscribe(
-                dataSet => this.state.go(".dataset", {dataSetId: dataSet.id}),
-                () => this.dialog.openAlert({message: "The connector is not available"})
-            );
+    selectDatasource(datasource: DataSource) {
+        this.state.go(".dataset", {datasourceId: datasource.id});
     }
 
     /**
-     * Updates filteredConnectors by filtering availableConnectors.
+     * Updates filteredDatasources by filtering availableDatasources.
      */
     private filter() {
-        let filteredConnectors = this.availableConnectors.filter(connector => connector.hidden !== true);
-        filteredConnectors = this.dataTable.filterData(filteredConnectors, this.searchTerm, true);
+        let filteredConnectors = this.dataTable.filterData(this.availableDatasources, this.searchTerm, true);
         filteredConnectors = this.dataTable.sortData(filteredConnectors, "title");
-        this.filteredConnectors = filteredConnectors;
+        this.filteredDatasources = filteredConnectors;
     }
 }

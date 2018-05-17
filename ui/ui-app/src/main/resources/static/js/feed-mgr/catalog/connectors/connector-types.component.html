@@ -5,7 +5,7 @@
       <mat-divider></mat-divider>
       <mat-nav-list>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredConnectorTypes">
-          <mat-list-item matRipple class="cursor-pointer" (click)="selectConnectorType(item)">
+          <mat-list-item matRipple class="cursor-pointer" (click)="selectConnector(item)">
             <ng-md-icon mat-list-icon class="icon-component" [icon]="item.icon ? item.icon : 'fa-database'" [ngClass]="item.color ? 'tc-'+item.color : null"></ng-md-icon>
             <h4 mat-line>{{item.title}}</h4>
           </mat-list-item>

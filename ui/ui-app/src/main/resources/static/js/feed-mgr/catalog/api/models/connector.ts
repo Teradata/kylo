@@ -1,21 +1,21 @@
 import {ConnectorTab} from "./connector-tab";
-import {DataSetTemplate} from "./dataset-template";
+import {DataSetTemplate} from './dataset-template';
 
+/**
+ * Connector describes a how one can connect to a data source, e.g.
+ * what input is required to connect to S3, JDBC, Kafka, Hive, etc
+ */
 export interface Connector {
 
-    type?: string;
+    id: string;
 
-    color?: string;
-
-    hidden?: boolean;
+    title: string;
 
     icon?: string;
 
-    id?: string;
+    color?: string;
 
     tabs?: ConnectorTab[],
 
-    template?: DataSetTemplate;
-
-    title: string;
+    template: DataSetTemplate
 }
