@@ -1,36 +1,35 @@
 import * as angular from 'angular';
+
 import * as _ from "underscore";
-import {moduleName} from "../../module-name";
-import { IAugmentedJQuery } from '@angular/upgrade/static/src/common/angular1';
-import {Input} from "@angular/core";
 
-export class DerivedExpressionController {
-    
-    @Input()
-    public ngModel: string;
-    
-    static readonly $inject = ["$scope","$element","RegisterTemplateService"];
+import { moduleName } from "../../module-name";
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 
-    constructor(private $scope: IScope,private $element: angular.IAugmentedJQuery,private RegisterTemplateService:any){
-       
-        $scope.$watch(
-            'ngModel',
-            (newValue:any) => {
-                if(newValue != null) {
-                    var derivedValue = this.RegisterTemplateService.deriveExpression(newValue,true)
-                    this.$element.html(derivedValue);
-                }
-                else {
-                    this.$element.html('');
-                }
-            });
 
-    }
+
+var directive = function (RegisterTemplateService: RegisterTemplateServiceFactory) {
+
+    return {
+        restrict: "A",
+        scope: {
+            ngModel: '='
+        },
+        link: function ($scope: any, $element: any, attrs: any, controller: any) {
+            $scope.$watch(
+                'ngModel',
+                function (newValue: any) {
+                    if (newValue != null) {
+                        var derivedValue = RegisterTemplateService.deriveExpression(newValue, true)
+                        $element.html(derivedValue);
+                    }
+                    else {
+                        $element.html('');
+                    }
+                });
+        }
+    };
 }
+angular.module(moduleName)
 
-angular.module(moduleName).component('thinkbigDerivedExpression',{
-    bindings : {
-        ngModel : "="
-    },
-    controller : DerivedExpressionController
-});
+    .directive('thinkbigDerivedExpression', ['RegisterTemplateService', directive]);
+
