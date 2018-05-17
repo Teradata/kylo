@@ -15,7 +15,7 @@ import {DataSource} from '../api/models/datasource';
 })
 export class DatasourceComponent implements OnInit {
 
-    static readonly LOADER = "DataSourceComponent.LOADER";
+    static readonly LOADER = "DatasourceComponent.LOADER";
 
     /**
      * Data set to be configured

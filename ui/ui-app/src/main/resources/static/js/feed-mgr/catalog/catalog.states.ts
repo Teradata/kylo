@@ -77,7 +77,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
                     let datasourceId = state.transition.params().datasourceId;
                     console.log('resolving data source for id ' + datasourceId);
                     return catalog.getDataSource(datasourceId)
-                        .pipe(finalize(() => this.loading.resolve(DatasourceComponent.LOADER)))
+                        .pipe(finalize(() => loading.resolve(DatasourceComponent.LOADER)))
                         .pipe(catchError(() => state.go("catalog")))
                         .toPromise();
                 }
