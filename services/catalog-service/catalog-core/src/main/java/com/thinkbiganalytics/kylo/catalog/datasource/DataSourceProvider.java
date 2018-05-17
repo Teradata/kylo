@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.kylo.catalog.connector;
+package com.thinkbiganalytics.kylo.catalog.datasource;
 
 /*-
  * #%L
@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.connector;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.stereotype.Component;
@@ -42,38 +43,38 @@ import javax.annotation.Nonnull;
  * Provides access to {@link Connector} objects.
  */
 @Component
-public class ConnectorProvider {
+public class DataSourceProvider {
 
     /**
      * Maps id to connector
      */
     @Nonnull
-    private final Map<String, Connector> connectors;
+    private final Map<String, DataSource> datasources;
 
     /**
      * Constructs a {@code ConnectorProvider}.
      */
-    public ConnectorProvider() throws IOException {
-        final String connectorsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-connectors.json"), StandardCharsets.UTF_8);
-        final List<Connector> connectorList = ObjectMapperSerializer.deserialize(connectorsJson, new TypeReference<List<Connector>>() {
+    public DataSourceProvider() throws IOException {
+        final String connectorsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-datasources.json"), StandardCharsets.UTF_8);
+        final List<DataSource> connectorList = ObjectMapperSerializer.deserialize(connectorsJson, new TypeReference<List<DataSource>>() {
         });
-        connectors = connectorList.stream()
-            .collect(Collectors.toMap(Connector::getId, Function.identity()));
+        datasources = connectorList.stream()
+            .collect(Collectors.toMap(DataSource::getId, Function.identity()));
     }
 
     /**
      * Gets the connector with the specified id.
      */
     @Nonnull
-    public Optional<Connector> getConnector(@Nonnull final String id) {
-        return Optional.ofNullable(connectors.get(id));
+    public Optional<DataSource> getDataSource(@Nonnull final String id) {
+        return Optional.ofNullable(datasources.get(id));
     }
 
     /**
      * Gets the list of available connectors.
      */
     @Nonnull
-    public List<Connector> getConnectors() {
-        return new ArrayList<>(connectors.values());
+    public List<DataSource> getDataSources() {
+        return new ArrayList<>(datasources.values());
     }
 }

@@ -63,6 +63,7 @@ export class DataSourcesComponent {
      * Creates a new data set from the specified datasource.
      */
     selectDatasource(datasource: DataSource) {
+        console.log('select data source');
         this.state.go(".datasource", {datasourceId: datasource.id});
     }
 

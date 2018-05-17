@@ -73,9 +73,11 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 token: "datasource",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
-                    loading.register(DataSourcesComponent.LOADER);
-                    return catalog.getDataSource(state.transition.params().datasourceId)
-                        .pipe(finalize(() => this.loading.resolve(DataSourcesComponent.LOADER)))
+                    loading.register(DatasourceComponent.LOADER);
+                    let datasourceId = state.transition.params().datasourceId;
+                    console.log('resolving data source for id ' + datasourceId);
+                    return catalog.getDataSource(datasourceId)
+                        .pipe(finalize(() => this.loading.resolve(DatasourceComponent.LOADER)))
                         .pipe(catchError(() => state.go("catalog")))
                         .toPromise();
                 }

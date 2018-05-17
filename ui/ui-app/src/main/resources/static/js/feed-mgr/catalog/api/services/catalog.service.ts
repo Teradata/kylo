@@ -1,11 +1,9 @@
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
-import {ArrayObservable} from "rxjs/observable/ArrayObservable";
 
 import {DataSource} from "../models/datasource";
 import {Connector} from '../models/connector';
-import {dataSources} from "./data";
 
 @Injectable()
 export class CatalogService {
@@ -31,11 +29,10 @@ export class CatalogService {
      * Gets the list of data sources, i.e. instances of configured connectors, e.g. specific s3/hdfs location, kafka on certain port
      */
     getDataSources(): Observable<DataSource[]> {
-        return ArrayObservable.of(dataSources);
+        return this.http.get<DataSource>("/proxy/v1/catalog/datasource");
     }
 
     getDataSource(datasourceId: string): Observable<DataSource> {
-        // return this.http.get<DataSource>("/proxy/v1/catalog/datasource", {params: {"datasourceId": datasourceId}});
-        return ArrayObservable.of(dataSources.find(datasource => datasource.id === datasourceId));
+        return this.http.get<DataSource>("/proxy/v1/catalog/datasource/" + datasourceId);
     }
 }

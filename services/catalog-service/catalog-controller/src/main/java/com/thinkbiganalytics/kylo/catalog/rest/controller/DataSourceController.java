@@ -20,12 +20,13 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
+import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.springframework.context.MessageSource;
@@ -35,12 +36,12 @@ import org.springframework.web.servlet.support.RequestContextUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -70,7 +71,35 @@ public class DataSourceController {
     }
 
     @Inject
+    DataSourceProvider datasourceProvider;
+
+    @Inject
     private HttpServletRequest request;
+
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists all configured data sources")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "List of all configured data sources", response = DataSetFile.class, responseContainer = "List"),
+                      @ApiResponse(code = 500, message = "Failed to list data sources", response = RestResponseStatus.class)
+                  })
+    public Response listDatasources() {
+        return Response.ok(datasourceProvider.getDataSources()).build();
+    }
+
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Gets the data source by id")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Gets the data source by id", response = DataSetFile.class, responseContainer = "List"),
+                      @ApiResponse(code = 404, message = "Data source was not found", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Failed to get data source", response = RestResponseStatus.class)
+                  })
+    public Response getDatasource(@PathParam("id") final String datasourceId) {
+        final DataSource dataSource = datasourceProvider.getDataSource(datasourceId).orElseThrow(() -> new BadRequestException(getMessage("notFound")));
+        return Response.ok(dataSource).build();
+    }
 
     @GET
     @Path("{id}/browse")
@@ -81,7 +110,7 @@ public class DataSourceController {
                       @ApiResponse(code = 404, message = "Datasource does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
                   })
-    public Response getUploads(@PathParam("id") @UUID final String dataSourceId, @QueryParam("path") String path) {
+    public Response listFiles(@PathParam("id") @UUID final String dataSourceId, @QueryParam("path") String path) {
         log.entry(dataSourceId);
 
         final List<DataSetFile> files;
