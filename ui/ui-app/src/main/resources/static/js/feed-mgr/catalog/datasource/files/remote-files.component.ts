@@ -2,6 +2,8 @@ import {HttpClient} from "@angular/common/http";
 import {Component, Input, OnInit} from "@angular/core";
 import {ITdDataTableColumn, TdDataTableService} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
+import {DatePipe} from '@angular/common';
+import {FileSizePipe} from '../../api/pipes/file-size.pipe';
 
 interface RemoteFile {
     name: string;
@@ -21,11 +23,14 @@ export class RemoteFilesComponent implements OnInit {
     @Input()
     public datasource: DataSource;
 
+    FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new FileSizePipe().transform(v);
+    DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
+
     columns: ITdDataTableColumn[] = [
-        {name: "isDirectory", label: "", width: 48},
+        {name: "directory", label: "", width: 48},
         {name: "name", label: "Name", sortable: true},
-        {name: "length", label: "Size", numeric: true, sortable: true, format: (v: number) => "4.0 KB"},
-        {name: "modification_time", label: "Last modified", sortable: true}
+        {name: "length", label: "Size", numeric: true, sortable: true, format: this.FILE_SIZE_FORMAT},
+        {name: "modificationTime", label: "Last modified", sortable: true, format: this.DATE_FORMAT}
     ];
 
     files: RemoteFile[] = [];
