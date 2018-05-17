@@ -63,7 +63,7 @@ export class TableFieldPartition {
             this.formula = 'val';
         }
         if (this.formula != 'val') {
-            if (this.sourceField != null && (this.field == null || this.field == '' || this.field == this.sourceField + "_")) {
+            if (this.sourceField != null && (this.field == null || this.field == '' || this.field == this.sourceField || this.field == this.sourceField + "_")) {
                 this.field = this.sourceField + "_" + this.formula;
             }
         }
