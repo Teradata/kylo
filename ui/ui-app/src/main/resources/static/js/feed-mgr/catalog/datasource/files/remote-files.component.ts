@@ -5,9 +5,10 @@ import {DataSource} from '../../api/models/datasource';
 
 interface RemoteFile {
     name: string;
-    isDirectory: boolean;
+    directory: boolean;
     length: number;
-    modification_time: Date;
+    modificationTime: Date;
+    path: string;
 }
 
 @Component({
@@ -33,7 +34,7 @@ export class RemoteFilesComponent implements OnInit {
 
     filteredTotal = 0;
 
-    private path: string;
+    path: string;
 
     pageSize = 50;
 
@@ -45,6 +46,10 @@ export class RemoteFilesComponent implements OnInit {
     public ngOnInit(): void {
         console.log('on init');
         this.path = this.datasource.paths[0];
+        this.browse();
+    }
+
+    browse() {
         this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
@@ -52,10 +57,11 @@ export class RemoteFilesComponent implements OnInit {
             });
     }
 
-    rowClick(event: any): void {
-        if (event.row.isDirectory) {
-            this.path += event.row.name + "/";
-            this.ngOnInit();
+    rowClick(file: RemoteFile): void {
+        console.log("row click, row=" + file.name);
+        if (file.directory) {
+            this.path += "/" + file.name;
+            this.browse();
         }
     }
 

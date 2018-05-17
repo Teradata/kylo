@@ -28,7 +28,7 @@ public class DataSetFile {
     /**
      * Indicates this is a directory
      */
-    private Boolean isDirectory;
+    private Boolean directory;
 
     /**
      * Size of the file (in bytes)
@@ -51,11 +51,11 @@ public class DataSetFile {
     private String path;
 
     public Boolean isDirectory() {
-        return isDirectory;
+        return directory;
     }
 
     public void setDirectory(Boolean directory) {
-        isDirectory = directory;
+        this.directory = directory;
     }
 
     public Long getLength() {
