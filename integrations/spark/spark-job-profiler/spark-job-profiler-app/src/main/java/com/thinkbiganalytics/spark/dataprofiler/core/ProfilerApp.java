@@ -55,8 +55,12 @@ import javax.annotation.Nonnull;
 
 @Configuration
 public class ProfilerApp {
-    
-    @Bean
+
+    /*
+        https://spark.apache.org/docs/1.6.0/api/java/org/apache/spark/SparkContext.html#stop()
+        https://spark.apache.org/docs/2.0.2/api/java/org/apache/spark/SparkContext.html#stop()
+    */
+    @Bean(destroyMethod = "stop")
     @Scope("prototype")
     public SparkContext sparkContext(final ProfilerConfiguration profilerConfiguration) {
         SparkConf conf = new SparkConf();
