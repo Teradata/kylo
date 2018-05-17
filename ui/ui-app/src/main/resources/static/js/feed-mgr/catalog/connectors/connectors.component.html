@@ -1,7 +1,7 @@
 <ng-container *ngIf="availableConnectors.length > 0">
   <ng-container *tdLoading="'connectorTypesLoader'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
     <mat-card>
-      <td-search-box placeholder="Search connector types" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
+      <td-search-box placeholder="Search connectors" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
       <mat-divider></mat-divider>
       <mat-nav-list>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredConnectors">
