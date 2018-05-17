@@ -20,11 +20,13 @@ import {DatasetComponent} from "./dataset/dataset.component";
 import {CatalogComponent} from "./catalog.component";
 import {catalogStates} from "./catalog.states";
 import {ConnectorsComponent} from './connectors/connectors.component';
+import {ConnectorComponent} from './connector/connector.component';
 
 @NgModule({
     declarations: [
         DataSourcesComponent,
         ConnectorsComponent,
+        ConnectorComponent,
         DatasetComponent,
         CatalogComponent,
     ],

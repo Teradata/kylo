@@ -44,6 +44,6 @@ export class DatasetComponent implements OnInit {
         this.tabs.push({label: "Preview", sref: ".preview"});
 
         // Go to the first tab
-        this.state.go(this.tabs[0].sref);
+        this.state.go(this.tabs[0].sref, null, {location: "replace"});
     }
 }

@@ -51,7 +51,8 @@ export class ConnectorsComponent {
      * Creates a new data set from the specified connector.
      */
     selectConnector(connector: Connector) {
-        this.state.go(".new-datasource", {connectorId: connector.id});
+        console.log("select connector, id=" + connector.id);
+        this.state.go("catalog.new-datasource", {connectorId: connector.id});
     }
 
     /**

@@ -38,8 +38,14 @@ export class CatalogService {
      * Gets the list of available connectors, e.g. s3, hdfs, hive, jdbc, kafka etc.
      */
     getConnectors(): Observable<Connector[]> {
-        console.log('getConnectors');
         return this.http.get<Connector[]>("/proxy/v1/catalog/connector");
+    }
+
+    /**
+     * Gets connector by id
+     */
+    getConnector(connectorId: string): Observable<Connector> {
+        return this.http.get<Connector>("/proxy/v1/catalog/connector", {params: {"connectorId": connectorId}});
     }
 
     /**

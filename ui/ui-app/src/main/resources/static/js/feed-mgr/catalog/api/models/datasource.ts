@@ -7,7 +7,5 @@ export interface DataSource {
 
     connector: Connector,
 
-    template?: DataSetTemplate;
-
     title: string;
 }

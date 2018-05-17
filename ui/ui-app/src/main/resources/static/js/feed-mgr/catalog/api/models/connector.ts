@@ -17,5 +17,5 @@ export interface Connector {
 
     tabs?: ConnectorTab[],
 
-    template: DataSetTemplate
+    template?: DataSetTemplate
 }

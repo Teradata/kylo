@@ -8,6 +8,7 @@ import {CatalogComponent} from "./catalog.component";
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
 import {DataSourcesComponent} from './datasources/datasources.component';
+import {ConnectorComponent} from './connector/connector.component';
 
 export const catalogStates: Ng2StateDeclaration[] = [
     {
@@ -44,27 +45,28 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         ]
     },
-    // {
-    //     name: "catalog.new-datasource",
-    //     url: "/datasource/:connectorId",
-    //     component: ConnectorsComponent,
-    //     resolve: [
-    //         {
-    //             token: "connectors",
-    //             deps: [CatalogService, StateService, TdLoadingService],
-    //             resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
-    //                 loading.register(ConnectorsComponent.LOADER);
-    //                 return catalog.getConnectors()
-    //                     .pipe(finalize(() => loading.resolve(ConnectorsComponent.LOADER)))
-    //                     .pipe(catchError(() => state.go("catalog")))
-    //                     .toPromise();
-    //             }
-    //         }
-    //     ]
-    // },
+    {
+        name: "catalog.new-datasource",
+        url: "/connectors/:connectorId",
+        component: ConnectorComponent,
+        resolve: [
+            {
+                token: "connector",
+                deps: [CatalogService, StateService, TdLoadingService],
+                resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    console.log('resolving connector for id=' + state.transition.params().connectorId);
+                    loading.register(ConnectorComponent.LOADER);
+                    return catalog.getConnector(state.transition.params().connectorId)
+                        .pipe(finalize(() => loading.resolve(ConnectorComponent.LOADER)))
+                        .pipe(catchError(() => state.go("catalog.connectors")))
+                        .toPromise();
+                }
+            }
+        ]
+    },
     {
         name: "catalog.dataset",
-        url: "/:datasourceId",
+        url: "/datasource/:datasourceId",
         component: DatasetComponent,
         resolve: [
             {
