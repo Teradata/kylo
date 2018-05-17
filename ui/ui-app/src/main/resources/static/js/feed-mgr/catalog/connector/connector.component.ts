@@ -32,7 +32,7 @@ export class ConnectorComponent {
      * Creates a new datasource for this Connector
      */
     createDatasource() {
-        const datasourceId = 1; //post new datasource, get its id
-        this.state.go("catalog.dataset", {datasourceId: datasourceId});
+        const datasourceId = "0001125d-8250-49d7-b38c-71b1393a5000"; //post new datasource, get its id
+        this.state.go("catalog.datasource", {datasourceId: datasourceId});
     }
 }
