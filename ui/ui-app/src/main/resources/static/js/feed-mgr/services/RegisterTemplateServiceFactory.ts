@@ -20,13 +20,14 @@
 
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {Dictionary} from "underscore";
+import { Dictionary } from "underscore";
 import 'pascalprecht.translate';
-import {Templates} from "./TemplateTypes";
-import {FeedPropertyService} from "./FeedPropertyService";
-import {Common} from "../../common/CommonTypes";
-import {AccessControl} from "../../services/AccessControl";
-import {RegisteredTemplateService} from "./RegisterTemplateService";
+import { Templates } from "./TemplateTypes";
+import { FeedPropertyService } from "./FeedPropertyService";
+import { Common } from "../../common/CommonTypes";
+import { AccessControl } from "../../services/AccessControl";
+import { RegisteredTemplateService } from "./RegisterTemplateService";
+
 
 const moduleName = require('feed-mgr/module-name');
 import Property = Templates.Property;
@@ -36,6 +37,7 @@ import Processor = Templates.Processor;
 import MetadataProperty = Templates.MetadataProperty;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
 import AccessControlService from '../../services/AccessControlService';
+import { EmptyTemplate, ExtendedTemplate, SaveAbleTemplate } from '../model/template-models';
 
 export class RegisterTemplateServiceFactory implements RegisteredTemplateService {
 
@@ -75,21 +77,21 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      */
     customPropertyRendering: string[] = ["metadata.table.targetFormat", "metadata.table.feedFormat"];
 
-    codemirrorTypes: Common.Map<string> = null;
+    public codemirrorTypes: Common.Map<string> = null;
 
     /**
      * Avaliable types that a user can select for property rendering
      */
-    propertyRenderTypes: PropertyRenderType[] = [{type: 'text', 'label': 'Text'}, {type: 'password', 'label': 'Password'}, {type: 'number', 'label': 'Number', codemirror: false},
-        {type: 'textarea', 'label': 'Textarea', codemirror: false}, {type: 'select', label: 'Select', codemirror: false},
-        {type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false}];
+    propertyRenderTypes: PropertyRenderType[] = [{ type: 'text', 'label': 'Text' }, { type: 'password', 'label': 'Password' }, { type: 'number', 'label': 'Number', codemirror: false },
+    { type: 'textarea', 'label': 'Textarea', codemirror: false }, { type: 'select', label: 'Select', codemirror: false },
+    { type: 'checkbox-custom', 'label': 'Checkbox', codemirror: false }];
 
-    trueFalseRenderTypes: PropertyRenderType[] = [{type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false},
-        {type: 'select', label: 'Select', codemirror: false}]
+    trueFalseRenderTypes: PropertyRenderType[] = [{ type: 'checkbox-true-false', 'label': 'Checkbox', codemirror: false },
+    { type: 'select', label: 'Select', codemirror: false }]
 
 
-    selectRenderType: PropertyRenderType[] = [{type: 'select', 'label': 'Select', codemirror: false},
-        {type: 'radio', label: 'Radio Button', codemirror: false}]
+    selectRenderType: PropertyRenderType[] = [{ type: 'select', 'label': 'Select', codemirror: false },
+    { type: 'radio', label: 'Radio Button', codemirror: false }]
 
     codeMirrorRenderTypes: any[] = []
 
@@ -101,44 +103,16 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 
     configurationPropertyMap: Common.Map<string> = {};
 
-    model: any = null;
+    model: ExtendedTemplate = null;
 
-    emptyModel: any = {
-        id: null,
-        nifiTemplateId: null,
-        templateName: '',
-        description: '',
-        processors: [],
-        inputProperties: [],
-        additionalProperties: [],
-        inputProcessors: [],
-        nonInputProcessors: [],
-        defineTable: true,
-        allowPreconditions: false,
-        dataTransformation: false,
-        reusableTemplate: false,
-        needsReusableTemplate: false,
-        ports: [],
-        reusableTemplateConnections: [],  //[{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}]
-        icon: {title: null, color: null},
-        state: 'NOT REGISTERED',
-        updateDate: null,
-        feedsCount: 0,
-        registeredDatasources: [],
-        isStream: false,
-        validTemplateProcessorNames: true,
-        roleMemberships: [],
-        owner: null,
-        roleMembershipsUpdated: false
-    }
 
     newModel() {
-        this.model = angular.copy(this.emptyModel);
+        this.model = angular.extend(new EmptyTemplate());
     }
 
     resetModel() {
-        angular.extend(this.model, this.emptyModel);
-        this.model.icon = {title: null, color: null}
+        angular.extend(this.model, new EmptyTemplate());
+        this.model.icon = { title: null, color: null }
     }
 
     /**
@@ -155,30 +129,29 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * Gets the model object with attributes setup for the backend when saving a template
      * @return {{properties: any; id; description; defineTable: true | any | boolean; allowPreconditions: false | any | boolean; dataTransformation: false | any | {chartViewModel: null; datasourceIds: null; datasources: null; dataTransformScript: null; sql: null; states: Array} | {chartViewModel; datasourceIds; datasources; dataTransformScript; sql; states}; nifiTemplateId: any | string; templateName; icon; iconColor; reusableTemplate: false | any; needsReusableTemplate: false | any; reusableTemplateConnections: [] | any | Import.ReusableTemplateConnectionInfo[]; state; isStream: false | any; roleMemberships: [] | any | Array; owner; roleMembershipsUpdated: false | any; templateTableOption: any; timeBetweenStartingBatchJobs: any}}
      */
-    getModelForSave() {
-        return {
-            properties: this.getSelectedProperties(),
-            id: this.model.id,
-            description: this.model.description,
-            defineTable: this.model.defineTable,
-            allowPreconditions: this.model.allowPreconditions,
-            dataTransformation: this.model.dataTransformation,
-            nifiTemplateId: this.model.nifiTemplateId,
-            templateName: this.model.templateName,
-            icon: this.model.icon.title,
-            iconColor: this.model.icon.color,
-            reusableTemplate: this.model.reusableTemplate,
-            needsReusableTemplate: this.model.needsReusableTemplate,
-            reusableTemplateConnections: this.model.reusableTemplateConnections,
-            state: this.model.state,
-            isStream: this.model.isStream,
-            roleMemberships: this.model.roleMemberships,
-            owner: this.model.owner,
-            roleMembershipsUpdated: this.model.roleMembershipsUpdated,
-            templateTableOption: this.model.templateTableOption,
-            timeBetweenStartingBatchJobs: this.model.timeBetweenStartingBatchJobs
-
-        }
+    getModelForSave(): SaveAbleTemplate {
+        var saveAbleTemplate = new SaveAbleTemplate();
+        saveAbleTemplate.properties = this.getSelectedProperties();
+        saveAbleTemplate.id = this.model.id;
+        saveAbleTemplate.description = this.model.description;
+        saveAbleTemplate.defineTable = this.model.defineTable;
+        saveAbleTemplate.allowPreconditions = this.model.allowPreconditions;
+        saveAbleTemplate.dataTransformation = this.model.dataTransformation;
+        saveAbleTemplate.nifiTemplateId = this.model.nifiTemplateId;
+        saveAbleTemplate.templateName = this.model.templateName;
+        saveAbleTemplate.icon = this.model.icon.title;
+        saveAbleTemplate.iconColor = this.model.icon.color;
+        saveAbleTemplate.reusableTemplate = this.model.reusableTemplate;
+        saveAbleTemplate.needsReusableTemplate = this.model.needsReusableTemplate;
+        saveAbleTemplate.reusableTemplateConnections = this.model.reusableTemplateConnections;
+        saveAbleTemplate.state = this.model.state;
+        saveAbleTemplate.isStream = this.model.isStream;
+        saveAbleTemplate.roleMemberships = this.model.roleMemberships;
+        saveAbleTemplate.owner = this.model.owner;
+        saveAbleTemplate.roleMembershipsUpdated = this.model.roleMembershipsUpdated;
+        saveAbleTemplate.templateTableOption = this.model.templateTableOption;
+        saveAbleTemplate.timeBetweenStartingBatchJobs = this.model.timeBetweenStartingBatchJobs;
+        return saveAbleTemplate;
     }
 
     /**
@@ -186,7 +159,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @return {{reusableTemplateFeedName: string; feedOutputPortName: string; reusableTemplateInputPortName: string}[]}
      */
     newReusableConnectionInfo(): ReusableTemplateConnectionInfo[] {
-        return [{reusableTemplateFeedName: '', feedOutputPortName: '', reusableTemplateInputPortName: ''}];
+        return [{ reusableTemplateFeedName: '', feedOutputPortName: '', reusableTemplateInputPortName: '' }];
     }
 
     /**
@@ -240,7 +213,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
     }
 
     sortPropertiesForDisplay(properties: Property[]): PropertyAndProcessors {
-        let propertiesAndProcessors: PropertyAndProcessors = {properties: [], processors: []};
+        let propertiesAndProcessors: PropertyAndProcessors = { properties: [], processors: [] };
 
         //sort them by processor name and property key
         var arr = _.chain(properties).sortBy('key').sortBy('processorName').value();
@@ -256,7 +229,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             else {
                 property.firstProperty = false;
             }
-            if(!property.hidden) {
+            if (!property.hidden) {
                 lastProcessorId = property.processor.id;
             }
         });
@@ -275,7 +248,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             let _successFn = (response: angular.IHttpResponse<Common.Map<string>>) => {
                 this.configurationProperties = response.data;
                 angular.forEach(response.data, (value: any, key: any) => {
-                    this.propertyList.push({key: key, value: value, description: null, dataType: null, type: 'configuration'});
+                    this.propertyList.push({ key: key, value: value, description: null, dataType: null, type: 'configuration' });
                     this.configurationPropertyMap[key] = value;
                 })
                 if (successFn) {
@@ -288,7 +261,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 }
             }
 
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>  this.$http.get(this.RestUrlService.CONFIGURATION_PROPERTIES_URL);
+            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.RestUrlService.CONFIGURATION_PROPERTIES_URL);
             promise.then(_successFn, _errorFn);
             return promise;
         }
@@ -354,7 +327,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
      * @return {angular.IPromise<angular.IHttpResponse<any>>}
      */
     fetchRootInputPorts(): angular.IPromise<angular.IHttpResponse<any>> {
-       return this.$http.get(this.RestUrlService.ROOT_INPUT_PORTS);
+        return this.$http.get(this.RestUrlService.ROOT_INPUT_PORTS);
     }
 
     replaceAll(str: string, find: string, replace: string): string {
@@ -398,13 +371,13 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             let successFn = (response: angular.IHttpResponse<any>) => {
                 this.codemirrorTypes = response.data;
                 angular.forEach(this.codemirrorTypes, (label: string, type: string) => {
-                    this.propertyRenderTypes.push({type: type, label: label, codemirror: true});
+                    this.propertyRenderTypes.push({ type: type, label: label, codemirror: true });
                 });
             }
             var errorFn = (err: angular.IHttpResponse<any>) => {
 
             }
-            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>> this.$http.get(this.RestUrlService.CODE_MIRROR_TYPES_URL);
+            var promise = <angular.IPromise<angular.IHttpResponse<Common.Map<string>>>>this.$http.get(this.RestUrlService.CODE_MIRROR_TYPES_URL);
             promise.then(successFn, errorFn);
             return promise;
         }
@@ -696,7 +669,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             });
         }
         else {
-            deferred.resolve({data: []});
+            deferred.resolve({ data: [] });
         }
         return deferred.promise;
 
@@ -741,7 +714,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         model.errorMessage = '';
 
         var entityAccessControlled = model.id != null && this.accessControlService.isEntityAccessControlled();
-        var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>> this.$q.defer();
+        var deferred = <angular.IDeferred<AccessControl.EntityAccessCheck>>this.$q.defer();
         var requests = {
             entityEditAccess: entityAccessControlled == true ? this.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.TEMPLATE.EDIT_TEMPLATE, model) : true,
             entityAdminAccess: entityAccessControlled == true ? this.hasEntityAccess(AccessControlService.ENTITY_ACCESS.TEMPLATE.DELETE_TEMPLATE, model) : true,
@@ -757,7 +730,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             let allowAdmin = response.entityEditAccess && response.entityAdminAccess && allowAdminAccess;
             let allowAccessControl = response.entityEditAccess && response.entityAdminAccess && allowEdit;
             let accessAllowed = allowEdit || allowAdmin;
-            let result: AccessControl.EntityAccessCheck = {allowEdit: allowEdit, allowAdmin: allowAdmin, isValid: model.valid && accessAllowed, allowAccessControl: allowAccessControl};
+            let result: AccessControl.EntityAccessCheck = { allowEdit: allowEdit, allowAdmin: allowAdmin, isValid: model.valid && accessAllowed, allowAccessControl: allowAccessControl };
             if (!result.isValid) {
                 if (!accessAllowed) {
                     model.errorMessage = "Access Denied.  You are unable to edit the template. ";
@@ -876,7 +849,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
             inputProperties = inputPropertiesAndProcessors.properties;
             inputProcessors = inputPropertiesAndProcessors.processors;
 
-            var additionalPropertiesAndProcessors = this.sortPropertiesForDisplay(additionalProperties);
+            var additionalPropertiesAndProcessors: PropertyAndProcessors = this.sortPropertiesForDisplay(additionalProperties);
             additionalProperties = additionalPropertiesAndProcessors.properties;
             additionalProcessors = additionalPropertiesAndProcessors.processors;
 
@@ -894,7 +867,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
         let fixDuplicateProcessorNames = (properties: Property[]) => {
             let processorGroups = _.groupBy(properties, 'processorName')
             _.each(processorGroups, (processorProps, processorName) => {
-                var processorMap = <Dictionary<Property[]>> _.groupBy(processorProps, 'processorId');
+                var processorMap = <Dictionary<Property[]>>_.groupBy(processorProps, 'processorId');
                 if (Object.keys(processorMap).length > 1) {
                     //update the names
                     var lastId: any = null;
@@ -1014,7 +987,7 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
                 this.model.loading = false;
             }
             var id = registeredTemplateId != undefined && registeredTemplateId != null ? registeredTemplateId : this.model.nifiTemplateId;
-            var promise = this.$http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true, templateName: templateName}});
+            var promise = this.$http.get(this.RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), { params: { allProperties: true, templateName: templateName } });
             promise.then(successFn, errorFn);
             return promise;
         }
@@ -1042,4 +1015,4 @@ export class RegisterTemplateServiceFactory implements RegisteredTemplateService
 }
 
 
-angular.module(moduleName).service('RegisterTemplateService',  RegisterTemplateServiceFactory);
+angular.module(moduleName).service('RegisterTemplateService', RegisterTemplateServiceFactory);

@@ -12,6 +12,7 @@ import ImportTemplateResult = Import.ImportTemplateResult;
 import InputPortListItem = Import.InputPortListItem;
 import ImportService = Import.ImportService;
 import Map = Common.Map;
+import { RegisterTemplateServiceFactory } from "../../services/RegisterTemplateServiceFactory";
 
 export class ImportTemplateController implements ng.IController, OnInit {
 
@@ -222,7 +223,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
 
     constructor(private $scope: angular.IScope, private $http: angular.IHttpService, private $interval: angular.IIntervalService, private $timeout: angular.ITimeoutService
         , private $mdDialog: angular.material.IDialogService, private FileUpload: any, private RestUrlService: any, private ImportService: ImportService
-        , private RegisterTemplateService: any) {
+        , private registerTemplateService: RegisterTemplateServiceFactory) {
 
 
 
@@ -321,7 +322,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
                     //show the user the list and allow them to configure and save it.
 
                     //add button that will make these connections
-                    this.RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then((inputPortsResponse: any) => {
+                    this.registerTemplateService.fetchRegisteredReusableFeedInputPorts().then((inputPortsResponse: any) => {
                         //Update connectionMap and inputPortList
                         this.inputPortList = [];
                         if (inputPortsResponse.data) {

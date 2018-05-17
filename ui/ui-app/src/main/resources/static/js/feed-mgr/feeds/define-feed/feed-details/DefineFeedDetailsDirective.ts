@@ -19,6 +19,7 @@
  */
 import * as angular from 'angular';
 import * as _ from "underscore";
+import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedDetailsController {
@@ -88,14 +89,14 @@ export class DefineFeedDetailsController {
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
         "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
 
-    constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private FeedService: any, private RegisterTemplateService: any
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private FeedService: any, private registerTemplateService: RegisterTemplateServiceFactory
         , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
         this.model = FeedService.createFeedModel;
 
         var watchers = [];
 
-        this.codemirrorRenderTypes = RegisterTemplateService.codemirrorRenderTypes;
+        this.codemirrorRenderTypes = this.registerTemplateService.codeMirrorRenderTypes;
 
         var inputDatabaseType = ["com.thinkbiganalytics.nifi.GetTableData"]
 
@@ -152,7 +153,7 @@ export class DefineFeedDetailsController {
          */
     initializeProperties(template: any) {
         if (angular.isDefined(this.model.cloned) && this.model.cloned == true) {
-            this.RegisterTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
+            this.registerTemplateService.setProcessorRenderTemplateUrl(this.model, 'create');
             this.inputProcessors = _.sortBy(this.model.inputProcessors, 'name')
             // Find controller services
             _.chain(this.inputProcessors.concat(this.model.nonInputProcessors))
@@ -164,13 +165,13 @@ export class DefineFeedDetailsController {
                 .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
 
         } else {
-            this.RegisterTemplateService.initializeProperties(template, 'create', this.model.properties);
+            this.registerTemplateService.initializeProperties(template, 'create', this.model.properties);
             //sort them by name
-            this.inputProcessors = _.sortBy(this.RegisterTemplateService.removeNonUserEditableProperties(template.inputProcessors, true), 'name')
+            this.inputProcessors = _.sortBy(this.registerTemplateService.removeNonUserEditableProperties(template.inputProcessors, true), 'name')
 
             this.model.allowPreconditions = template.allowPreconditions;
 
-            this.model.nonInputProcessors = this.RegisterTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
+            this.model.nonInputProcessors = this.registerTemplateService.removeNonUserEditableProperties(template.nonInputProcessors, false);
         }
         if (angular.isDefined(this.model.inputProcessor)) {
             var match = this.matchInputProcessor(this.model.inputProcessor, this.inputProcessors);

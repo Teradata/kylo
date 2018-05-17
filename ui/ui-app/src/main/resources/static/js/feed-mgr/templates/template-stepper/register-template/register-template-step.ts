@@ -77,7 +77,7 @@ export class RegisterCompleteRegistrationController {
     static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private stateService: StateService, private RegisterTemplateService: any, private EntityAccessControlService: any) {
+        , private stateService: StateService, private RegisterTemplateService: RegisterTemplateServiceFactory, private EntityAccessControlService: any) {
 
 
         /**
@@ -342,7 +342,7 @@ export class RegisterCompleteRegistrationController {
         });
         savedTemplate.templateOrder = order;
 
-        var thisOrder = order.length - 1;
+        var thisOrder : number = order.length - 1;
         if (this.model.id != undefined) {
             thisOrder = _.indexOf(order, this.model.id)
         }
