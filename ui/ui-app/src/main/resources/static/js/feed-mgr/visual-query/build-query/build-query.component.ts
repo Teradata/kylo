@@ -157,11 +157,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
 
     private fileDataSource : UserDatasource = {id:"FILE",name:"Local File", description:"Local File",type:"File"}
 
+    static readonly $inject = ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "$timeout","Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
+        "DatasourcesService"]
     /**
      * Constructs a {@code BuildQueryComponent}.
      */
     constructor(private $scope: angular.IScope, $element: angular.IAugmentedJQuery, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService,
-                private $document: angular.IDocumentService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
+                private $document: angular.IDocumentService, private $timeout: angular.ITimeoutService, private Utils: any, private RestUrlService: any, private HiveService: any, private SideNavService: any, private StateService: any,
                 private VisualQueryService: any, private FeedService: any, private DatasourcesService: any) {
         // Setup initializers
         this.$scope.$on("$destroy", this.ngOnDestroy.bind(this));
@@ -688,10 +690,16 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             });
     };
 
+    /**
+     * callback after a user selects a file from the local file system
+     */
     onFileUploaded(){
         let step = this.stepperController.getStep(this.stepIndex)
-        //TODO transition to next step
-
+        if(step) {
+            this.$timeout(() => {
+                this.stepperController.selectedStepIndex = step.nextActiveStepIndex;
+            },10)
+        }
     }
 
     // -----------------
@@ -803,8 +811,7 @@ angular.module(moduleName).component("thinkbigVisualQueryBuilder", {
         model: "=",
         stepIndex: "@"
     },
-    controller: ["$scope", "$element", "$mdToast", "$mdDialog", "$document", "Utils", "RestUrlService", "HiveService", "SideNavService", "StateService", "VisualQueryService", "FeedService",
-        "DatasourcesService", QueryBuilderComponent],
+    controller: QueryBuilderComponent,
     controllerAs: "$bq",
     require: {
         stepperController: "^thinkbigStepper"
