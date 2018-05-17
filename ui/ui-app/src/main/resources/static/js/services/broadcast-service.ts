@@ -8,72 +8,68 @@
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
 import * as angular from 'angular';
-import {moduleName} from './module-name';
+import { moduleName } from './module-name';
 import "jquery";
 
-export default class BroadcastService{
+export default class BroadcastService {
 
-static readonly $inject = ["$rootScope", "$timeout"];
+    static readonly $inject = ["$rootScope", "$timeout"];
 
-constructor (private $rootScope: any,
-             private $timeout: any){
-        /**
-         * map to check if multiple events come in for those that {@code data.notifyAfterTime}
-         * to ensure multiple events are not fired.
-         * @type {{}}
-         */
-        var waitingEvents: any = {};
+    /**
+    * map to check if multiple events come in for those that {@code data.notifyAfterTime}
+    * to ensure multiple events are not fired.
+    * @type {{}}
+    */
+    waitingEvents: any = {};
+    constructor(private $rootScope: any,
+        private $timeout: any) {
 
-        var data: any = {
-            /**
-             * notify subscribers of this event passing an optional data object and optional wait time (millis)
-             * @param event
-             * @param data
-             * @param waitTime
-             */
-            notify: function (event: any, data: any, waitTime: any) {
-                if (waitTime == undefined) {
-                    waitTime = 0;
-                }
-                if (waitingEvents[event] == undefined) {
-                    waitingEvents[event] = event;
-                    $timeout(function () {
-                        $rootScope.$emit(event, data);
-                        delete waitingEvents[event];
-                    }, waitTime);
-                }
-            },
-            /**
-             * Subscribe to some event
-             * @param scope
-             * @param event
-             * @param callback
-             */
-            subscribe: function (scope: any, event: any, callback: any) {
-                var handler: any = $rootScope.$on(event, callback);
-                scope.$on('$destroy', handler);
-            },
-            /**
-             * Subscribe to some event
-             * @param scope
-             * @param event
-             * @param callback
-             */
-            subscribeOnce: function (event: any, callback: any) {
-                var handler: any = $rootScope.$on(event, function() {
-                   try{
-                       callback();
-                   } catch(err){
-                       console.error("error calling callback for ",event);
-                   }
-                   //deregister the listener
-                    handler();
-                });
-            }
-
+    }
+    /**
+    * notify subscribers of this event passing an optional data object and optional wait time (millis)
+    * @param event
+    * @param data
+    * @param waitTime
+    */
+    notify = (event: any, data?: any, waitTime?: any) => {
+        if (waitTime == undefined) {
+            waitTime = 0;
         }
-        return data;
-             }
+        if (this.waitingEvents[event] == undefined) {
+            this.waitingEvents[event] = event;
+            this.$timeout(function () {
+                this.$rootScope.$emit(event, data);
+                delete this.waitingEvents[event];
+            }, waitTime);
+        }
+    };
+    /**
+     * Subscribe to some event
+     * @param scope
+     * @param event
+     * @param callback
+     */
+    subscribe = (scope: any, event: any, callback: any) => {
+        var handler: any = this.$rootScope.$on(event, callback);
+        scope.$on('$destroy', handler);
+    };
+    /**
+     * Subscribe to some event
+     * @param scope
+     * @param event
+     * @param callback
+     */
+    subscribeOnce = (event: any, callback: any) => {
+        var handler: any = this.$rootScope.$on(event, () => {
+            try {
+                callback();
+            } catch (err) {
+                console.error("error calling callback for ", event);
+            }
+            //deregister the listener
+            handler();
+        });
+    }
 }
 
 

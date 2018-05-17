@@ -8,7 +8,7 @@ export default class AddButtonService{
         HIDE_ADD_BUTTON_EVENT: any = 'hideAddButton';
         SHOW_ADD_BUTTON_EVENT: any = 'showAddButton';
 
- constructor(private BroadcastService: any){}
+ constructor(private broadcastService: BroadcastService){}
  AddButtonServiceTag() {}
 
         //__tag = new AddButtonServiceTag();
@@ -16,13 +16,13 @@ export default class AddButtonService{
         
         registerAddButton = (state: any, action: any)=> {
             this.addButtons[state] = action;
-            this.BroadcastService.notify(this.NEW_ADD_BUTTON_EVENT, state);
+            this.broadcastService.notify(this.NEW_ADD_BUTTON_EVENT, state);
         }
         hideAddButton = ()=> {
-            this.BroadcastService.notify(this.HIDE_ADD_BUTTON_EVENT);
+            this.broadcastService.notify(this.HIDE_ADD_BUTTON_EVENT);
         }
         showAddButton = ()=> {
-            this.BroadcastService.notify(this.SHOW_ADD_BUTTON_EVENT);
+            this.broadcastService.notify(this.SHOW_ADD_BUTTON_EVENT);
         }
         isShowAddButton =  (state: any)=> {
            return this.addButtons[state] != undefined;
@@ -37,7 +37,5 @@ export default class AddButtonService{
             }
         }
     }
-
  angular.module(moduleName)
- .service('BroadcastService', ["$rootScope", "$timeout",BroadcastService])
  .service('AddButtonService', ["BroadcastService", AddButtonService]);
