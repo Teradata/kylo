@@ -41,9 +41,7 @@ class ModuleFactory  {
             url:'/sla-email-templates',
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
-                    controller:"SlaEmailTemplatesController",
-                    controllerAs:"vm"
+                    component : "slaEmailTemplateController"
                 }
             },
             resolve: {

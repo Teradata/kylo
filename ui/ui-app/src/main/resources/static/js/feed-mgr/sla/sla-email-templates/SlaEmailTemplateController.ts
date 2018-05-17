@@ -3,8 +3,10 @@ import { moduleName } from '../module-name';
 import * as _ from 'underscore';
 import SlaEmailTemplateService from "./SlaEmailTemplateService";
 import AccessControlService from '../../../services/AccessControlService';
+import StateService from '../../../services/StateService';
+import {Transition} from "@uirouter/core";
 
-export class controller implements ng.IComponentController {
+export class SlaEmailTemplatesController implements ng.IComponentController {
     templateId: any;
     allowEdit: boolean = false;
     /**
@@ -22,15 +24,19 @@ export class controller implements ng.IComponentController {
     availableSlaActions: any[] = [];
 
     templateVariables: any = this.slaEmailTemplateService.getTemplateVariables();
+    $transition$ : Transition;
 
     relatedSlas: any[] = [];
-    constructor(private $transition$: any,
-        private $mdDialog: any,
-        private $mdToast: any,
-        private $http: any,
+    static readonly $inject = ['$mdDialog', '$mdToast',
+        '$http', 'SlaEmailTemplateService', 'StateService', 'AccessControlService'];
+    constructor(
+        private $mdDialog: angular.material.IDialogService,
+        private $mdToast: angular.material.IToastService,
+        private $http: angular.IHttpService,
         private slaEmailTemplateService: SlaEmailTemplateService,
-        private StateService: any,
+        private stateService: StateService,
         private accessControlService: AccessControlService) {
+
         this.templateId = this.$transition$.params().emailTemplateId;
         if (angular.isDefined(this.templateId) && this.templateId != null && (this.template == null || angular.isUndefined(this.template))) {
             this.queriedTemplate = null;
@@ -53,7 +59,7 @@ export class controller implements ng.IComponentController {
         }
         else {
             //redirect back to email template list page
-            StateService.FeedManager().Sla().navigateToEmailTemplates();
+            this.stateService.FeedManager().Sla().navigateToEmailTemplates();
         }
         this.getAvailableActionItems();
         this.getRelatedSlas();
@@ -165,7 +171,7 @@ export class controller implements ng.IComponentController {
     }
 
     navigateToSla = (slaId: any) => {
-        this.StateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
+        this.stateService.FeedManager().Sla().navigateToServiceLevelAgreement(slaId);
     }
 
     getRelatedSlas = () => {
@@ -182,15 +188,14 @@ export class controller implements ng.IComponentController {
 
     showTestDialog = (resolvedTemplate: any) => {
         this.$mdDialog.show({
-            controller: 'VelocityTemplateTestController',
-            templateUrl: 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html',
+            template: '<velocity-template-test-controller></velocity-template-test-controller>',
             parent: angular.element(document.body),
             clickOutsideToClose: true,
             fullscreen: true,
-            locals: {
-                resolvedTemplate: resolvedTemplate,
-                emailAddress: this.emailAddress
-            }
+            // locals: {
+            //     resolvedTemplate: resolvedTemplate,
+            //     emailAddress: this.emailAddress
+            // }
         })
             .then((answer: any) => {
                 //do something with result
@@ -218,9 +223,12 @@ export class controller implements ng.IComponentController {
 
 
 export class testDialogController implements ng.IComponentController {
-    constructor(private $scope: any,
-        private $sce: any,
-        private $mdDialog: any,
+    
+    static readonly $inject = ["$scope", "$sce", "$mdDialog", "resolvedTemplate","emailAddress"];
+
+    constructor(private $scope: IScope,
+        private $sce: angular.ISCEService,
+        private $mdDialog: angular.material.IDialogService,
         private resolvedTemplate: any,
         private emailAddress: any) {
 
@@ -247,10 +255,19 @@ export class testDialogController implements ng.IComponentController {
 
 }
 angular.module(moduleName)
-    .controller('VelocityTemplateTestController', ["$scope", "$sce", "$mdDialog", "resolvedTemplate", testDialogController]);
+    .component('velocityTemplateTestController',
+    {
+        controller : testDialogController,
+        templateUrl : 'js/feed-mgr/sla/sla-email-templates/test-velocity-dialog.html'
+    }
+);
+
 angular.module(moduleName)
-    .service('SlaEmailTemplateService', ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", SlaEmailTemplateService])
-    .controller('SlaEmailTemplateController',
-        ['$transition$', '$mdDialog', '$mdToast', '$http',
-            'SlaEmailTemplateService', 'StateService', 'AccessControlService',
-            controller]);
+    .component('slaEmailTemplateController', {
+        templateUrl: 'js/feed-mgr/sla/sla-email-templates/sla-email-templates.html',
+        controller: SlaEmailTemplatesController,
+        controllerAs: "vm",
+        bindings :  {
+            $transition$ : '<'
+        }
+    });

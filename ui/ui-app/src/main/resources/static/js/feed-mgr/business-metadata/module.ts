@@ -24,9 +24,7 @@ class ModuleFactory  {
             params: {},
             views: {
                 'content': {
-                    templateUrl: 'js/feed-mgr/business-metadata/business-metadata.html',
-                    controller:'BusinessMetadataController',
-                    controllerAs:'vm'
+                    component : "businessMetadataController"
                 }
             },
             resolve: {

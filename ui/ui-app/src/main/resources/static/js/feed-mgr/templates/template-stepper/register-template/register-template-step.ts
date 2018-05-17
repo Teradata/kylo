@@ -77,13 +77,13 @@ export class RegisterCompleteRegistrationController {
     static $inject = ["$scope", "$http", "$mdToast", "$mdDialog", "RestUrlService", "StateService", "RegisterTemplateService", "EntityAccessControlService"];
 
     constructor(private $scope: IScope, private $http: angular.IHttpService, private $mdToast: angular.material.IToastService, private $mdDialog: angular.material.IDialogService, private RestUrlService: any
-        , private stateService: StateService, private RegisterTemplateService: RegisterTemplateServiceFactory, private EntityAccessControlService: any) {
+        , private stateService: StateService, private registerTemplateService: RegisterTemplateServiceFactory, private EntityAccessControlService: any) {
 
 
         /**
          * The Template Model
          */
-        this.model = this.RegisterTemplateService.model;
+        this.model = this.registerTemplateService.model;
 
         //set the step number
         this.stepNumber = parseInt(this.stepIndex) + 1
@@ -134,7 +134,7 @@ export class RegisterCompleteRegistrationController {
         //only attempt to query if we have connections set
         var hasPortConnections = (this.model.reusableTemplateConnections == null || this.model.reusableTemplateConnections.length == 0) || (this.model.reusableTemplateConnections != null && this.model.reusableTemplateConnections.length > 0 && assignedPortIds.length == this.model.reusableTemplateConnections.length);
         if (hasPortConnections) {
-            this.RegisterTemplateService.getNiFiTemplateFlowInformation(this.model.nifiTemplateId, this.model.reusableTemplateConnections).then((response: angular.IHttpResponse<any>) => {
+            this.registerTemplateService.getNiFiTemplateFlowInformation(this.model.nifiTemplateId, this.model.reusableTemplateConnections).then((response: angular.IHttpResponse<any>) => {
                 var map = {};
 
                 if (response && response.data) {
@@ -189,7 +189,7 @@ export class RegisterCompleteRegistrationController {
             });
             if (remoteInputPortProperty != undefined) {
                 //validate it against the possible remote input ports
-                this.RegisterTemplateService.fetchRootInputPorts().then((response: angular.IHttpResponse<any>) => {
+                this.registerTemplateService.fetchRootInputPorts().then((response: angular.IHttpResponse<any>) => {
                     if (response && response.data) {
                         let matchingPort = _.find(response.data, function (port: any) {
                             return port.name == remoteInputPortProperty.value;
@@ -229,7 +229,7 @@ export class RegisterCompleteRegistrationController {
      */
     private initTemplateFlowData(): void {
         if (this.model.needsReusableTemplate) {
-            this.RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then((response: any) => {
+            this.registerTemplateService.fetchRegisteredReusableFeedInputPorts().then((response: any) => {
                 // Update connectionMap and inputPortList
                 this.inputPortList = [];
                 if (response.data) {
@@ -330,7 +330,7 @@ export class RegisterCompleteRegistrationController {
         }
 
         //get all properties that are selected
-        var savedTemplate = this.RegisterTemplateService.getModelForSave();
+        var savedTemplate = this.registerTemplateService.getModelForSave();
 
         //prepare access control changes if any
         this.EntityAccessControlService.updateRoleMembershipsForSave(savedTemplate.roleMemberships);
