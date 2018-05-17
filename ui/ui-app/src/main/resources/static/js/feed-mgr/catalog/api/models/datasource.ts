@@ -1,7 +1,7 @@
-import {DataSetTemplate} from "./dataset-template";
 import {Connector} from './connector';
+import {DataSourceTemplate} from './datasource-template';
 
-export interface DataSource {
+export interface DataSource extends DataSourceTemplate {
 
     id?: string;
 

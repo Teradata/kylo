@@ -4,22 +4,22 @@ import {Component, Input, OnInit} from "@angular/core";
 import {StateRegistry, StateService} from "@uirouter/angular";
 
 import {ConnectorTab} from "../api/models/connector-tab";
-import {DataSet} from "../api/models/dataset";
+import {DataSource} from '../api/models/datasource';
 
 /**
  * Displays tabs for configuring a data set (or connection).
  */
 @Component({
     selector: "catalog-dataset",
-    templateUrl: "js/feed-mgr/catalog/dataset/dataset.component.html"
+    templateUrl: "js/feed-mgr/catalog/datasource/datasource.component.html"
 })
-export class DatasetComponent implements OnInit {
+export class DatasourceComponent implements OnInit {
 
     /**
      * Data set to be configured
      */
     @Input()
-    public dataSet: DataSet;
+    public datasource: DataSource;
 
     /**
      * List of tabs
@@ -31,9 +31,9 @@ export class DatasetComponent implements OnInit {
 
     public ngOnInit() {
         // Add tabs and register router states
-        if (this.dataSet.datasource.connector.tabs) {
-            this.tabs = angular.copy(this.dataSet.datasource.connector.tabs);
-            for (let tab of this.dataSet.datasource.connector.tabs) {
+        if (this.datasource.connector.tabs) {
+            this.tabs = angular.copy(this.datasource.connector.tabs);
+            for (let tab of this.datasource.connector.tabs) {
                 if (tab.state) {
                     this.stateRegistry.register(tab.state);
                 }

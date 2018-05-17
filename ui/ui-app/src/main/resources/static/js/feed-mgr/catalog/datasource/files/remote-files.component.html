@@ -1,8 +1,7 @@
 <div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
   <span *ngIf="!searchBox.searchVisible" class="push-left-sm">
     <ol *ngIf="selectedRows.length == 0" class="mat-title">
-      <li><a href="#">Buckets</a></li>
-      <li>thinkbig.greg</li>
+      <li>{{path}}</li>
     </ol>
     <span *ngIf="selectedRows.length > 0">{{selectedRows.length}} item(s) selected</span>
   </span>

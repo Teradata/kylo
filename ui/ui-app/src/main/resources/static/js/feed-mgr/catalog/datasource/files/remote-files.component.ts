@@ -1,6 +1,7 @@
 import {HttpClient} from "@angular/common/http";
-import {Component, OnInit} from "@angular/core";
+import {Component, Input, OnInit} from "@angular/core";
 import {ITdDataTableColumn, TdDataTableService} from "@covalent/core/data-table";
+import {DataSource} from '../../api/models/datasource';
 
 interface RemoteFile {
     name: string;
@@ -9,13 +10,15 @@ interface RemoteFile {
     modification_time: Date;
 }
 
-// TODO https://teradata-corp.slack.com/archives/C4G9S3L4Q/p1524003641000293?thread_ts=1524003072.000184&cid=C4G9S3L4Q
 @Component({
     selector: "remote-files",
-    styleUrls: ["js/feed-mgr/catalog/dataset/files/remote-files.component.css"],
-    templateUrl: "js/feed-mgr/catalog/dataset/files/remote-files.component.html"
+    styleUrls: ["js/feed-mgr/catalog/datasource/files/remote-files.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/files/remote-files.component.html"
 })
 export class RemoteFilesComponent implements OnInit {
+
+    @Input()
+    public datasource: DataSource;
 
     columns: ITdDataTableColumn[] = [
         {name: "isDirectory", label: "", width: 48},
@@ -30,7 +33,7 @@ export class RemoteFilesComponent implements OnInit {
 
     filteredTotal = 0;
 
-    path = "s3n://thinkbig.greg/";
+    private path: string;
 
     pageSize = 50;
 
@@ -40,11 +43,11 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        this.http.get("/proxy/v1/catalog/dataset/abc/browse?path=" + encodeURIComponent(this.path))
-            .subscribe((data: any) => {
-                this.files = data.results.rows.map((row: any) => {
-                    return {name: row[0].substr(this.path.length), length: 0, modification_time: new Date(), isDirectory: row[1]};
-                });
+        console.log('on init');
+        this.path = this.datasource.paths[0];
+        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
+            .subscribe((data: RemoteFile[]) => {
+                this.files = data;
                 this.filter();
             });
     }

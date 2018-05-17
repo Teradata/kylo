@@ -3,7 +3,7 @@ import {catchError} from "rxjs/operators/catchError";
 import {finalize} from "rxjs/operators/finalize";
 
 import {CatalogService} from "./api/services/catalog.service";
-import {DatasetComponent} from "./dataset/dataset.component";
+import {DatasourceComponent} from "./datasource/datasource.component";
 import {CatalogComponent} from "./catalog.component";
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
@@ -65,16 +65,16 @@ export const catalogStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: "catalog.dataset",
+        name: "catalog.datasource",
         url: "/datasource/:datasourceId",
-        component: DatasetComponent,
+        component: DatasourceComponent,
         resolve: [
             {
-                token: "dataSet",
+                token: "datasource",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
                     loading.register(DataSourcesComponent.LOADER);
-                    return catalog.getDataSet(state.transition.params().datasourceId)
+                    return catalog.getDataSource(state.transition.params().datasourceId)
                         .pipe(finalize(() => this.loading.resolve(DataSourcesComponent.LOADER)))
                         .pipe(catchError(() => state.go("catalog")))
                         .toPromise();
@@ -83,18 +83,18 @@ export const catalogStates: Ng2StateDeclaration[] = [
         ]
     },
     {
-        name: "catalog.dataset.preview.**",
+        name: "catalog.datasource.preview.**",
         url: "/preview",
-        loadChildren: "feed-mgr/catalog/dataset/preview-schema/preview-schema.module#PreviewSchemaModule"
+        loadChildren: "feed-mgr/catalog/datasource/preview-schema/preview-schema.module#PreviewSchemaModule"
     },
     {
-        name: "catalog.dataset.upload.**",
+        name: "catalog.datasource.upload.**",
         url: "/upload",
-        loadChildren: "feed-mgr/catalog/dataset/upload/upload.module#UploadModule"
+        loadChildren: "feed-mgr/catalog/datasource/upload/upload.module#UploadModule"
     },
     {
-        name: "catalog.dataset.browse.**",
+        name: "catalog.datasource.browse.**",
         url: "/browse",
-        loadChildren: "feed-mgr/catalog/dataset/files/remote-files.module#RemoteFilesModule"
+        loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesModule"
     }
 ];

@@ -4,7 +4,7 @@ import {DataSource} from "../models/datasource";
 
 export const dataSources: DataSource[] = [
     {
-        id: "1",
+        id: "66da68de-1eef-4db0-af35-5b21c37f8005",
         title: "Gregs Amazon S3",
         connector: {
             id: "2",
@@ -21,7 +21,7 @@ export const dataSources: DataSource[] = [
         }
     },
     {
-        id: "2",
+        id: "dd11125d-8250-49d7-b38c-71b1393a55b0",
         title: "Ruslans Amazon S3",
         connector: {
             id: "2",
@@ -38,7 +38,25 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "3",
+        id: "0001125d-8250-49d7-b38c-71b1393a5000",
+        title: "Ruslans Local File System",
+        connector: {
+            id: "9",
+            title: "Local File System",
+            icon: "fa-file",
+            tabs: [{label: "Files", sref: ".browse"}],
+            template: {
+                options: {
+                    "": "",
+                    "": ""
+                },
+                paths: ["/"]
+            }
+        },
+        paths: ["/Users/RU186002"]
+    },
+    {
+        id: "76816ea7-b922-434d-8924-1b69531ccd47",
         title: "Localhost:9092",
         connector: {
             id: "3",
@@ -54,7 +72,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "4",
+        id: "d6a15df6-1402-4ea3-81d1-980f37be3485",
         title: "Localhost:9093",
         connector: {
             id: "3",
@@ -70,7 +88,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "5",
+        id: "94586bd5-3e4b-498f-977b-a725ee097812",
         title: "File Upload /var/dropzone",
         connector: {
             id: "4",
@@ -80,7 +98,7 @@ export const dataSources: DataSource[] = [
         }
     },
     {
-        id: "6",
+        id: "78211056-4d6e-4b4d-a0a8-9fad904734eb",
         title: "File Upload /opt/kylo/kylo-ui/config",
         connector: {
             id: "4",
@@ -90,7 +108,7 @@ export const dataSources: DataSource[] = [
         }
     },
     {
-        id: "7",
+        id: "c3122d8f-0765-4781-8be2-07480fea318c",
         title: "Ruslans HDFS home",
         connector: {
             id: "5",
@@ -103,7 +121,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "8",
+        id: "d2c0dfda-4ebd-4ce1-9ff3-71153cdff734",
         title: "Spark logs",
         connector: {
             id: "5",
@@ -116,7 +134,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "9",
+        id: "599c4113-35c3-4289-9b82-e57f840668dd",
         title: "Teradata Database 1",
         connector: {
             id: "6",
@@ -136,7 +154,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "10",
+        id: "dd083ed4-0878-41d9-bf70-c4625d519cc8",
         title: "Teradata Database 2",
         connector: {
             id: "6",
@@ -156,7 +174,7 @@ export const dataSources: DataSource[] = [
         },
     },
     {
-        id: "11",
+        id: "9e86c7ec-ead4-44d7-b262-d7976bfd2f19",
         title: "Greg's google storage",
         connector: {
             id: "7",

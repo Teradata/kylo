@@ -5,7 +5,7 @@ import {ITdDataTableColumn} from "@covalent/core/data-table";
 
 @Component({
     selector: "preview-schema",
-    templateUrl: "js/feed-mgr/catalog/dataset/preview-schema/preview-schema.component.html"
+    templateUrl: "js/feed-mgr/catalog/datasource/preview-schema/preview-schema.component.html"
 })
 export class PreviewSchemaComponent implements OnInit {
 

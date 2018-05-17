@@ -4,7 +4,7 @@ import {RemoteFilesComponent} from "./remote-files.component";
 
 export const remoteFileStates: Ng2StateDeclaration[] = [
     {
-        name: "catalog.dataset.browse",
+        name: "catalog.datasource.browse",
         url: "/browse",
         component: RemoteFilesComponent
     }

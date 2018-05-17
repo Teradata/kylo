@@ -2,18 +2,18 @@ import {HttpErrorResponse, HttpEvent, HttpEventType} from "@angular/common/http"
 import {Component, Input, OnInit, ViewChild} from "@angular/core";
 import {TdDialogService} from "@covalent/core/dialogs";
 
-import {DataSetFile} from "../../api/models/dataset-file";
 import {FileManagerService} from "../../api/services/file-manager.service";
 import {FileUpload, FileUploadStatus} from "./models/file-upload";
-import {UploadDataSet} from "./models/upload-dataset";
+import {UploadDataSource} from "./models/upload-dataset";
+import {DataSetFile} from '../../api/models/dataset-file';
 
 /**
  * Provides a form for uploading files and managing uploaded files for a data set.
  */
 @Component({
     selector: "local-files",
-    styleUrls: ["js/feed-mgr/catalog/dataset/upload/upload.component.css"],
-    templateUrl: "js/feed-mgr/catalog/dataset/upload/upload.component.html"
+    styleUrls: ["js/feed-mgr/catalog/datasource/upload/upload.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/upload/upload.component.html"
 })
 export class UploadComponent implements OnInit {
 
@@ -21,7 +21,7 @@ export class UploadComponent implements OnInit {
      * Dataset for uploaded files
      */
     @Input()
-    public dataSet: UploadDataSet;
+    public datasource: UploadDataSource;
 
     /**
      * Input for uploading files
@@ -43,22 +43,22 @@ export class UploadComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        if (this.dataSet.$fileUploads) {
+        if (this.datasource.$fileUploads) {
             // Read uploads cached locally in dataset
-            this.files = this.dataSet.$fileUploads;
+            this.files = this.datasource.$fileUploads;
         } else {
-            this.dataSet.$fileUploads = this.files;
+            this.datasource.$fileUploads = this.files;
 
             // Parse uploads from dataset paths and server
-            if (this.dataSet.paths) {
-                this.files = this.dataSet.paths.map(path => {
+            if (this.datasource.paths) {
+                this.files = this.datasource.paths.map(path => {
                     const name = path.substr(path.lastIndexOf("/") + 1);
                     const file = new FileUpload(name);
                     file.path = path;
                     file.status = FileUploadStatus.SUCCESS;
                     return file;
                 });
-                this.fileManager.listFiles(this.dataSet.id)
+                this.fileManager.listFiles(this.datasource.id)
                     .subscribe(files => this.setFiles(files));
             }
         }
@@ -100,7 +100,7 @@ export class UploadComponent implements OnInit {
         } else {
             // Upload single file
             const file = new FileUpload(event.name);
-            file.upload = this.fileManager.uploadFile(this.dataSet.id, event)
+            file.upload = this.fileManager.uploadFile(this.datasource.id, event)
                 .subscribe(event => this.setStatus(file, event), error => this.setError(file, error));
             this.files.push(file);
         }
@@ -111,7 +111,7 @@ export class UploadComponent implements OnInit {
      */
     private deleteFile(file: FileUpload): void {
         const isFailed = (file.status === FileUploadStatus.FAILED);
-        this.fileManager.deleteFile(this.dataSet.id, file.name)
+        this.fileManager.deleteFile(this.datasource.id, file.name)
             .subscribe(null,
                 error => {
                     if (isFailed) {
@@ -178,11 +178,11 @@ export class UploadComponent implements OnInit {
      * Updates the dataset paths.
      */
     private updateDataSet() {
-        this.dataSet.$fileUploads = this.files;
-        this.dataSet.paths = this.files
+        this.datasource.$fileUploads = this.files;
+        this.datasource.paths = this.files
             .filter(file => file.status === FileUploadStatus.SUCCESS)
             .map(file => file.path)
             .filter(path => path != null);
-        this.isReady = (this.dataSet.paths.length > 0);
+        this.isReady = (this.datasource.paths.length > 0);
     }
 }

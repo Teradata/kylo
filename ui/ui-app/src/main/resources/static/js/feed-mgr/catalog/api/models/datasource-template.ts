@@ -1,4 +1,4 @@
-export interface DataSetTemplate {
+export interface DataSourceTemplate {
 
     files?: string[];
 

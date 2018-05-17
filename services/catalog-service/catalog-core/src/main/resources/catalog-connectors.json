@@ -129,5 +129,21 @@
         "sref": ".table"
       }
     ]
+  },
+  {
+    "id": 9,
+    "title": "Local File System",
+    "icon": "fa-file",
+    "tabs": [
+      {
+        "label": "File",
+        "sref": ".browse"
+      }
+    ],
+    "template": {
+      "paths": [
+        "/"
+      ]
+    }
   }
 ]
