@@ -25,22 +25,46 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
 
+/**
+ * A type of data source.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Connector {
 
+    /**
+     * Color of the icon
+     */
     private String color;
 
-    private boolean hidden;
+    /**
+     * UI plugin for creating new data sources
+     */
+    private UiPlugin dataSourcePlugin;
 
+    /**
+     * Name of the icon
+     */
     private String icon;
 
+    /**
+     * Unique identifier
+     */
     private String id;
 
+    /**
+     * UI tab plugins for setting data set properties
+     */
     private List<ConnectorTab> tabs;
 
+    /**
+     * Properties to apply to all data sets
+     */
     private DataSetTemplate template;
 
+    /**
+     * Display name of this connector
+     */
     private String title;
 
     public String getColor() {
@@ -51,12 +75,12 @@ public class Connector {
         this.color = color;
     }
 
-    public boolean isHidden() {
-        return hidden;
+    public UiPlugin getDataSourcePlugin() {
+        return dataSourcePlugin;
     }
 
-    public void setHidden(boolean hidden) {
-        this.hidden = hidden;
+    public void setDataSourcePlugin(UiPlugin dataSourcePlugin) {
+        this.dataSourcePlugin = dataSourcePlugin;
     }
 
     public String getIcon() {

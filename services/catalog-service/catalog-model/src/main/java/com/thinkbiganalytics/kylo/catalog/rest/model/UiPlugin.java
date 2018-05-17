@@ -23,20 +23,40 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.Map;
+
+/**
+ * Reference to a Kylo UI plugin.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ConnectorTab extends UiPlugin {
+public class UiPlugin {
 
     /**
-     * Name of the tab
+     * Reference to a Ui-Router state
      */
-    private String label;
+    private String sref;
 
-    public String getLabel() {
-        return label;
+    /**
+     * Dynamic UI-Router state to load
+     *
+     * @see <a href="https://ui-router.github.io/ng2/docs/latest/interfaces/state.statedeclaration.html" target="_blank">StateDeclaration</a>
+     */
+    private Map<String, Object> state;
+
+    public String getSref() {
+        return sref;
     }
 
-    public void setLabel(String label) {
-        this.label = label;
+    public void setSref(String sref) {
+        this.sref = sref;
+    }
+
+    public Map<String, Object> getState() {
+        return state;
+    }
+
+    public void setState(Map<String, Object> state) {
+        this.state = state;
     }
 }

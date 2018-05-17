@@ -4,7 +4,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #%L
  * kylo-catalog-controller
  * %%
- * Copyright (C) 2017 - 2018 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,28 +21,25 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
-import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
-import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
+import com.thinkbiganalytics.rest.model.search.SearchResult;
+import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 import org.springframework.context.MessageSource;
 import org.springframework.context.support.ResourceBundleMessageSource;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.RequestContextUtils;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -50,17 +47,18 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
 
 @Component
+@Api(tags = "Feed Manager - Catalog", produces = "application/json")
 @Path(DataSourceController.BASE)
+@Produces(MediaType.APPLICATION_JSON)
 public class DataSourceController {
 
-    private static final XLogger log = XLoggerFactory.getXLogger(DataSourceController.class);
-
-    static final String BASE = "/v1/catalog/datasource";
+    public static final String BASE = "/v1/catalog/datasource";
 
     private static final MessageSource MESSAGES;
 
@@ -71,67 +69,50 @@ public class DataSourceController {
     }
 
     @Inject
-    DataSourceProvider datasourceProvider;
+    DataSourceProvider dataSourceProvider;
 
     @Inject
-    private HttpServletRequest request;
+    MetadataAccess metadataService;
+
+    @Inject
+    HttpServletRequest request;
 
     @GET
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists all configured data sources")
+    @ApiOperation("Gets the specified data source")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "List of all configured data sources", response = DataSetFile.class, responseContainer = "List"),
-                      @ApiResponse(code = 500, message = "Failed to list data sources", response = RestResponseStatus.class)
-                  })
-    public Response listDatasources() {
-        return Response.ok(datasourceProvider.getDataSources()).build();
-    }
-
-    @GET
-    @Path("{id}")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Gets the data source by id")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "Gets the data source by id", response = DataSetFile.class, responseContainer = "List"),
+                      @ApiResponse(code = 200, message = "Returns the data source", response = DataSource.class),
                       @ApiResponse(code = 404, message = "Data source was not found", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "Failed to get data source", response = RestResponseStatus.class)
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response getDatasource(@PathParam("id") final String datasourceId) {
-        final DataSource dataSource = datasourceProvider.getDataSource(datasourceId).orElseThrow(() -> new BadRequestException(getMessage("notFound")));
+    @Path("{id}")
+    public Response getDataSource(@PathParam("id") final String dataSourceId) {
+        final DataSource dataSource = metadataService.read(() -> dataSourceProvider.findDataSource(dataSourceId).orElseThrow(() -> new NotFoundException(getMessage("notFound"))));
         return Response.ok(dataSource).build();
     }
 
     @GET
-    @Path("{id}/browse")
-    @Produces(MediaType.APPLICATION_JSON)
-    @ApiOperation("Lists files on path")
+    @ApiOperation("Lists all data sources")
     @ApiResponses({
-                      @ApiResponse(code = 200, message = "List of files on path", response = DataSetFile.class, responseContainer = "List"),
-                      @ApiResponse(code = 404, message = "Datasource does not exist", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
+                      @ApiResponse(code = 200, message = "Returns the data sources", response = SearchResult.class),
+                      @ApiResponse(code = 400, message = "", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
-    public Response listFiles(@PathParam("id") @UUID final String dataSourceId, @QueryParam("path") String path) {
-        log.entry(dataSourceId);
-
-        final List<DataSetFile> files;
-        File root = new File(path);
-        File[] list = root.listFiles();
-        if (list == null) {
-            files = new ArrayList<>(0);
-        } else {
-            files = new ArrayList<>(list.length);
-            for (File file : list) {
-                DataSetFile dataSetFile = new DataSetFile();
-                dataSetFile.setDirectory(file.isDirectory());
-                dataSetFile.setLength(file.length());
-                dataSetFile.setModificationTime(file.lastModified());
-                dataSetFile.setName(file.getName());
-                dataSetFile.setPath(file.getPath());
-                files.add(dataSetFile);
-            }
+    public Response getDataSources(@QueryParam("connector") final String connectorId, @QueryParam("filter") final String filter, @QueryParam("limit") final Integer limit,
+                                   @QueryParam("start") final Integer start) {
+        if (start != null && start < 0) {
+            throw new BadRequestException(getMessage("getDataSources.invalidStart"));
+        }
+        if (limit != null && limit < 1) {
+            throw new BadRequestException(getMessage("getDataSources.invalidLimit"));
         }
 
-        return log.exit(Response.ok(files).build());
+        final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
+        final Page<DataSource> page = metadataService.read(() -> dataSourceProvider.findAllDataSources(pageRequest, filter));
+
+        final SearchResult<DataSource> searchResult = new SearchResultImpl<>();
+        searchResult.setData(page.getContent());
+        searchResult.setRecordsTotal(page.getTotalElements());
+        return Response.ok(searchResult).build();
     }
 
     /**

@@ -37,7 +37,9 @@ import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
@@ -53,6 +55,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -82,6 +85,39 @@ public class DataSetController {
 
     @Inject
     HttpServletRequest request;
+
+    @GET
+    @Path("{id}/browse")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Lists files on path")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "List of files on path", response = DataSetFile.class, responseContainer = "List"),
+                      @ApiResponse(code = 404, message = "Datasource does not exist", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
+                  })
+    public Response listFiles(@PathParam("id") @UUID final String dataSourceId, @QueryParam("path") String path) {
+        log.entry(dataSourceId);
+
+        final List<DataSetFile> files;
+        File root = new File(path);
+        File[] list = root.listFiles();
+        if (list == null) {
+            files = new ArrayList<>(0);
+        } else {
+            files = new ArrayList<>(list.length);
+            for (File file : list) {
+                DataSetFile dataSetFile = new DataSetFile();
+                dataSetFile.setDirectory(file.isDirectory());
+                dataSetFile.setLength(file.length());
+                dataSetFile.setModificationTime(file.lastModified());
+                dataSetFile.setName(file.getName());
+                dataSetFile.setPath(file.getPath());
+                files.add(dataSetFile);
+            }
+        }
+
+        return log.exit(Response.ok(files).build());
+    }
 
     @GET
     @Path("{id}/uploads")

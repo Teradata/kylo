@@ -23,10 +23,6 @@
       }
     ],
     "template": {
-      "options": {
-        "spark.hadoop.fs.s3n.awsAccessKeyId": "AKIAIGBOE6A3P6KHQ4BQ",
-        "spark.hadoop.fs.s3n.awsSecretAccessKey": "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"
-      },
       "paths": [
         "s3n://"
       ]
