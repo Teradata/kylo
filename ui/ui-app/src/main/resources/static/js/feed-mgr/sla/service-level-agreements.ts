@@ -158,15 +158,6 @@ export default class ServiceLevelAgreements {
 
     ngOnInit() {
 
-        // if(view == "sdfsdf"){
-
-        // }else{
-            
-        // }
-
-
-
-
         /**
         * Load up the Metric Options for defining SLAs
         */
@@ -312,23 +303,23 @@ export default class ServiceLevelAgreements {
      * Build the possible Sorting Options
      * @returns {*[]}
      */
-    loadSortOptions() {
+    loadSortOptions = () => {
         var options = { 'Name': 'name', 'Description': 'description' };
         var sortOptions = this.tableOptionsService.newSortOptions(this.pageName, options, 'name', 'asc');
         this.tableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;
     }
 
-    onViewTypeChange(viewType: any) {
+    onViewTypeChange = (viewType: any) => {
         this.paginationDataService.viewType(this.pageName, this.viewType);
     }
 
-    onOrderChange(order: any) {
+    onOrderChange = (order: any) => {
         this.paginationDataService.sort(this.pageName, order);
         this.tableOptionsService.setSortOption(this.pageName, order);
     };
 
-    onPaginationChange(page: any, limit: any) {
+    onPaginationChange = (page: any, limit: any) => {
         this.paginationDataService.currentPage(this.pageName, null, page);
         this.currentPage = page;
     };
@@ -337,7 +328,7 @@ export default class ServiceLevelAgreements {
      * Called when a user Clicks on a table Option
      * @param option
      */
-    selectedTableOption(option: any) {
+    selectedTableOption = (option: any) => {
         var sortString = this.tableOptionsService.toSortString(option);
         this.paginationDataService.sort(this.pageName, sortString);
         var updatedOption = this.tableOptionsService.toggleSort(this.pageName, option);
@@ -349,7 +340,7 @@ export default class ServiceLevelAgreements {
      * If there is a Feed using this page it will only get the SLAs related for this feed
      * otherwise it will get all the SLas
      */
-    loadSlas() {
+    loadSlas= () => {
         this.loadingMessage = this.loadingListMessage;
         this.loading = true;
         /**
@@ -383,14 +374,14 @@ export default class ServiceLevelAgreements {
     /**
      * Called when the user cancels a specific SLA
      */
-    cancelEditSla() {
+    cancelEditSla = () => {
         this.showList(false);
         this.applyAccessPermissions();
         this.userSuppliedName = false;
         this.userSuppliedDescription = false;
     }
 
-    addNewCondition() {
+    addNewCondition = () => {
         this.ruleType = this.EMPTY_RULE_TYPE;
         //if editing one already validate, complete it and then add the new one
         var valid = true;
@@ -404,11 +395,11 @@ export default class ServiceLevelAgreements {
 
     }
 
-    addNewActionCondition() {
+    addNewActionCondition = () => {
         this.addingSlaAction = true;
     }
 
-    deriveSlaName() {
+    deriveSlaName =() => {
 
         var feedNamesString = null;
         var feedNames = this.PolicyInputFormService.getFeedNames(this.editSla.rules);
@@ -423,7 +414,7 @@ export default class ServiceLevelAgreements {
         return slaName;
     }
 
-    deriveDescription() {
+    deriveDescription = () => {
         var feedNamesString = null;
         var feedNames = this.PolicyInputFormService.getFeedNames(this.editSla.rules);
         if (feedNames.length > 0) {
@@ -437,7 +428,7 @@ export default class ServiceLevelAgreements {
         return desc;
     }
 
-    onPropertyChange(property: any) {
+    onPropertyChange = (property: any) => {
         if (this.PolicyInputFormService.isFeedProperty(property)) {
             if (this.editSla != null && (this.userSuppliedName == false || (this.editSla.name == '' || this.editSla.name == null))) {
                 this.editSla.name = this.deriveSlaName();
@@ -448,15 +439,15 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onNameChange() {
+    onNameChange = () => {
         this.userSuppliedName = true;
     }
 
-    onDescriptionChange() {
+    onDescriptionChange = () => {
         this.userSuppliedDescription = true;
     }
 
-    saveSla() {
+    saveSla = () => {
         var valid = this.validateForm();
         if (valid) {
             let success = (response: any) => { //success
@@ -480,7 +471,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    saveSlaSuccess(successFn: any, failureFn: any) {
+    saveSlaSuccess = (successFn: any, failureFn: any) => {
         this.$mdDialog.show(
             this.$mdDialog.alert()
                 .parent(angular.element(document.body))
@@ -515,7 +506,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onBackToList(ev: any) {
+    onBackToList = (ev: any) => {
         var requery = false;
         if (this.serviceLevelAgreements == null || this.serviceLevelAgreements.length == 0) {
             requery = true;
@@ -525,7 +516,7 @@ export default class ServiceLevelAgreements {
 
     }
 
-    onNewSla() {
+    onNewSla = () => {
         this.addButtonService.hideAddButton();
         this.mode = 'NEW';
         this.creatingNewSla = true;
@@ -540,7 +531,7 @@ export default class ServiceLevelAgreements {
 
     }
 
-    onEditSla(sla: any) {
+    onEditSla = (sla: any) => {
         if (this.allowEdit) {
             this.addButtonService.hideAddButton();
             this.editSlaIndex = _.findIndex(this.serviceLevelAgreements, sla);
@@ -558,13 +549,13 @@ export default class ServiceLevelAgreements {
         }
     };
 
-    viewSlaAssessments() {
+    viewSlaAssessments = () => {
         if (this.editSla) {
             this.stateService.OpsManager().Sla().navigateToServiceLevelAssessments('slaId==' + this.editSla.id);
         }
     }
 
-    loadAndEditSla(slaId: any) {
+    loadAndEditSla = (slaId: any) => {
         this.cardTitle = "Edit Service Level Agreement"
         this.mode = 'EDIT';
         this.creatingNewSla = false;
@@ -616,7 +607,7 @@ export default class ServiceLevelAgreements {
         });
     }
 
-    applyEditPermissionsToSLA(sla: any) {
+    applyEditPermissionsToSLA = (sla: any) => {
 
         var entityAccessControlled = this.accessControlService.isEntityAccessControlled();
 
@@ -634,7 +625,7 @@ export default class ServiceLevelAgreements {
         });
     }
 
-    onDeleteSla(ev: any) {
+    onDeleteSla = (ev: any) => {
         //warn are you sure you want to delete?
         if (this.editSlaIndex != null || this.editSlaId != null) {
             var confirm = this.$mdDialog.confirm()
@@ -674,7 +665,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onDeleteSlaMetric(index: any) {
+    onDeleteSlaMetric = (index: any) => {
         //warn before delete
         this.editSla.rules.splice(index, 1);
         if (this.editSla.rules.length == 0) {
@@ -682,7 +673,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onDeleteSlaAction(index: any) {
+    onDeleteSlaAction = (index: any) => {
         //warn before delete
         this.editSla.actionConfigurations.splice(index, 1);
         if (this.editSla.actionConfigurations.length == 0) {
@@ -690,7 +681,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onAddConditionRuleTypeChange() {
+    onAddConditionRuleTypeChange = () => {
         if (this.ruleType != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             var newRule = angular.copy(this.ruleType);
@@ -714,7 +705,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    onAddSlaActionChange() {
+    onAddSlaActionChange = () => {
         if (this.slaAction != this.EMPTY_RULE_TYPE) {
             //replace current sla rule if already editing
             var newRule = angular.copy(this.slaAction);
@@ -733,7 +724,7 @@ export default class ServiceLevelAgreements {
      * Validate the form before adding/editing a Rule for an SLA
      * @returns {boolean}
      */
-    validateForm() {
+    validateForm = () => {
         //loop through properties and determine if they are valid
         //the following _.some routine returns true if the items are invalid
         var ruleProperties: any[] = [];
@@ -747,7 +738,7 @@ export default class ServiceLevelAgreements {
         return validForm;
     }
 
-    buildDisplayString() {
+    buildDisplayString = () => {
         if (this.editRule != null) {
             var str = '';
             _.each(this.editRule.properties, (prop: any, idx: any) => {
@@ -770,7 +761,7 @@ export default class ServiceLevelAgreements {
         }
     }
 
-    applyAccessPermissions() {
+    applyAccessPermissions = () => {
         //Apply the entity access permissions
         //if its an existing SLA, check to see if we can edit it
         if (this.editSla && !this.newSla) {
@@ -795,7 +786,7 @@ export default class ServiceLevelAgreements {
 
         }
     }
-    showList(requery: any) {
+    showList = (requery: any) => {
         this.cardTitle = "Service Level Agreements"
         this.renderFilter = true;
         this.editSla = null;
