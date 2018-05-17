@@ -224,6 +224,9 @@ export class TransformDataComponent implements OnInit {
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
+        //reset sample file changed flag
+        this.model.sampleFileChanged = false;
+
 
         // Select source model
         let useSqlModel = false;

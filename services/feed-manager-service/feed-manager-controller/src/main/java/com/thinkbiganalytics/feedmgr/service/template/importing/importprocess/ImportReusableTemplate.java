@@ -269,6 +269,7 @@ public class ImportReusableTemplate extends AbstractImportTemplateRoutine implem
 
     public boolean importTemplate() {
         boolean validReusableTemplate = importIntoNiFiAndCreateInstance();
+        templateConnectionUtil.ensureReusableTemplateProcessGroup();
 
         //Check and set the Remote PRocess group settings.
         //use this later to determine if we need to create NiFi Flow input ports connected to this template
