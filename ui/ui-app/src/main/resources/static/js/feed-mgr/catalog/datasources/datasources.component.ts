@@ -3,13 +3,12 @@ import {TdDataTableService} from "@covalent/core/data-table";
 import {TdDialogService} from "@covalent/core/dialogs";
 import {TdLoadingService} from "@covalent/core/loading";
 import {StateService} from "@uirouter/angular";
-import {finalize} from "rxjs/operators/finalize";
 
 import {DataSource} from "../api/models/datasource";
 import {CatalogService} from "../api/services/catalog.service";
 
 /**
- * Displays the available datasources
+ * Displays available datasources
  */
 @Component({
     selector: "catalog-datasources",
@@ -27,12 +26,12 @@ export class DataSourcesComponent {
     public availableDatasources: DataSource[];
 
     /**
-     * Filtered list of connectors to display
+     * Filtered list of datasources to display
      */
     filteredDatasources: DataSource[];
 
     /**
-     * Search term for filtering connectors
+     * Search term for filtering datasources
      */
     searchTerm: string;
 

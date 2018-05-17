@@ -8,12 +8,12 @@ import {CatalogService} from "../api/services/catalog.service";
 import {Connector} from '../api/models/connector';
 
 /**
- * Displays the available connectors and creates new data sets.
+ * Displays available connectors.
  */
 @Component({
-    selector: "explorer-connector-types",
-    styleUrls: ["js/feed-mgr/catalog/connectors/connector-types.component.css"],
-    templateUrl: "js/feed-mgr/catalog/connectors/connector-types.component.html"
+    selector: "catalog-connectors",
+    styleUrls: ["js/feed-mgr/catalog/connectors/connectors.component.css"],
+    templateUrl: "js/feed-mgr/catalog/connectors/connectors.component.html"
 })
 export class ConnectorsComponent {
 
@@ -23,12 +23,12 @@ export class ConnectorsComponent {
      * List of available connectors
      */
     @Input("connectors")
-    public availableConnectorTypes: Connector[];
+    public availableConnectors: Connector[];
 
     /**
      * Filtered list of connectors to display
      */
-    filteredConnectorTypes: Connector[];
+    filteredConnectors: Connector[];
 
     /**
      * Search term for filtering connectors
@@ -39,7 +39,6 @@ export class ConnectorsComponent {
     }
 
     public ngOnInit() {
-        console.log('ngOnInit connector types');
         this.filter();
     }
 
@@ -52,17 +51,15 @@ export class ConnectorsComponent {
      * Creates a new data set from the specified connector.
      */
     selectConnector(connector: Connector) {
-        console.log('selectConnector');
         this.state.go(".new-datasource", {connectorId: connector.id});
     }
 
     /**
-     * Updates filteredConnectorTypes by filtering availableConnectorTypes.
+     * Updates filteredConnectors by filtering availableConnectors.
      */
     private filter() {
-        let filteredConnectorTypes = this.availableConnectorTypes.filter(connector => connector.hidden !== true);
-        filteredConnectorTypes = this.dataTable.filterData(filteredConnectorTypes, this.searchTerm, true);
+        let filteredConnectorTypes = this.dataTable.filterData(this.availableConnectors, this.searchTerm, true);
         filteredConnectorTypes = this.dataTable.sortData(filteredConnectorTypes, "title");
-        this.filteredConnectorTypes = filteredConnectorTypes;
+        this.filteredConnectors = filteredConnectorTypes;
     }
 }

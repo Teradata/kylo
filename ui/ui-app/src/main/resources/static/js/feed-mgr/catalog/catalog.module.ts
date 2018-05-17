@@ -19,7 +19,7 @@ import {DataSourcesComponent} from "./datasources/datasources.component";
 import {DatasetComponent} from "./dataset/dataset.component";
 import {CatalogComponent} from "./catalog.component";
 import {catalogStates} from "./catalog.states";
-import {ConnectorsComponent} from './connectors/connector-types.component';
+import {ConnectorsComponent} from './connectors/connectors.component';
 
 @NgModule({
     declarations: [

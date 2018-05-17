@@ -5,7 +5,7 @@ import {finalize} from "rxjs/operators/finalize";
 import {CatalogService} from "./api/services/catalog.service";
 import {DatasetComponent} from "./dataset/dataset.component";
 import {CatalogComponent} from "./catalog.component";
-import {ConnectorsComponent} from './connectors/connector-types.component';
+import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
 import {DataSourcesComponent} from './datasources/datasources.component';
 
