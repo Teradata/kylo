@@ -2,9 +2,9 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 export default class controller implements ng.IComponentController{
-constructor(private $scope: any,
-            private $mdDialog: any,
-            private $http: any){
+constructor(private $scope: IScope,
+            private $mdDialog: angular.material.IDialogService,
+            private $http: angular.IHttpService){
             $http({
                     method: "GET",
                     url: "/proxy/v1/about/version"
@@ -26,13 +26,11 @@ export class AboutKyloService{
     constructor(private $mdDialog: any){}
        showAboutDialog = ()=> {
             this.$mdDialog.show({
-                controller: 'AboutKyloDialogController',
-                templateUrl: 'js/common/about-kylo/about.html',
+                template: '<about-kylo-dialog></about-kylo-dialog>',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 escapeToClose: true,
-                fullscreen: false,
-                locals: {}
+                fullscreen: false
             }).then((msg: any)=>{
                 //callback (success)
             }, function () {
@@ -42,4 +40,7 @@ export class AboutKyloService{
 }
 
 angular.module(moduleName).service('AboutKyloService',AboutKyloService);
-angular.module(moduleName).controller('AboutKyloDialogController', controller);
+angular.module(moduleName).component('aboutKyloDialog', {
+    controller: controller,
+    templateUrl: 'js/common/about-kylo/about.html'
+});
