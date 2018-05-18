@@ -3,8 +3,8 @@ import {Component, Input, OnInit} from "@angular/core";
 import {ITdDataTableColumn, TdDataTableService} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
 import {DatePipe} from '@angular/common';
-import {FileSizePipe} from '../../api/pipes/file-size.pipe';
 import {StateService} from "@uirouter/angular";
+import {TdBytesPipe} from '@covalent/core/common';
 
 interface RemoteFile {
     name: string;
@@ -27,7 +27,7 @@ export class RemoteFilesComponent implements OnInit {
     @Input()
     path: string;
 
-    FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new FileSizePipe().transform(v);
+    FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new TdBytesPipe().transform(v, 2);
     DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
 
     columns: ITdDataTableColumn[] = [
@@ -36,6 +36,8 @@ export class RemoteFilesComponent implements OnInit {
         {name: "length", label: "Size", numeric: true, sortable: true, width: 200, format: this.FILE_SIZE_FORMAT},
         {name: "modificationTime", label: "Last modified", sortable: true, width: 210, format: this.DATE_FORMAT}
     ];
+
+    paths: string[];
 
     files: RemoteFile[] = [];
 
@@ -51,7 +53,7 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        console.log('on init');
+        this.paths = this.path.split("/");
         this.http.get("/proxy/v1/catalog/dataset/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
@@ -59,8 +61,12 @@ export class RemoteFilesComponent implements OnInit {
             });
     }
 
+    browseTo(pathIndex: number) {
+        const location = this.paths.slice(0, pathIndex + 1).join("/");
+        this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
+    }
+
     rowClick(file: RemoteFile): void {
-        console.log("row click, row=" + file.name);
         if (file.directory) {
             this.state.go("catalog.datasource.browse", {path: encodeURIComponent(this.path + "/" + file.name)}, {notify:false, reload:false});
         }
