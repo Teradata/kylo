@@ -1,10 +1,12 @@
 <div fxLayout="row" fxLayoutAlign="start center" class="pad-left-sm pad-right-sm">
-  <span *ngIf="!searchBox.searchVisible" class="push-left-sm">
-    <ol *ngIf="selectedRows.length == 0" class="mat-title">
-      <li>{{path}}</li>
+  <div *ngIf="!searchBox.searchVisible" class="push-left-sm">
+    <ol class="mat-title">
+      <li>
+        <div>{{path}}</div>
+        <div *ngIf="selectedRows.length > 0" class="selected-items" >{{selectedRows.length}} item(s) selected</div>
+      </li>
     </ol>
-    <span *ngIf="selectedRows.length > 0">{{selectedRows.length}} item(s) selected</span>
-  </span>
+  </div>
   <td-search-box #searchBox backIcon="arrow_back" class="push-right-sm" placeholder="Search here" (searchDebounce)="search($event)" fxFlex></td-search-box>
 </div>
 <mat-divider></mat-divider>

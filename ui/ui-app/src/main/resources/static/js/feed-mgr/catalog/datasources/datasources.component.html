@@ -6,7 +6,7 @@
       <mat-nav-list>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredDatasources">
           <mat-list-item matRipple class="cursor-pointer" (click)="selectDatasource(item)">
-            <ng-md-icon mat-list-icon class="icon-component" [icon]="item.connector.icon ? item.connector.icon : 'fa-database'" [ngClass]="item.connector.color ? 'tc-'+item.connector.color : null"></ng-md-icon>
+            <ng-md-icon mat-list-icon [icon]="item.connector.icon ? item.connector.icon : 'fa-database'" [ngClass]="item.connector.color ? 'tc-'+item.connector.color : 'icon-component'"></ng-md-icon>
             <h4 mat-line>{{item.title}}</h4>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
