@@ -14,7 +14,6 @@ export const remoteFileStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: (state: StateService) => {
                     let browseLocation = state.transition.params().path;
-                    console.log('resolving path ' + browseLocation);
                     return decodeURIComponent(browseLocation);
                 }
             }

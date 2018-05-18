@@ -55,7 +55,6 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 token: "connector",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
-                    console.log('resolving connector for id=' + state.transition.params().connectorId);
                     loading.register(ConnectorComponent.LOADER);
                     return catalog.getConnector(state.transition.params().connectorId)
                         .pipe(finalize(() => loading.resolve(ConnectorComponent.LOADER)))
@@ -76,7 +75,6 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
                     loading.register(DatasourceComponent.LOADER);
                     let datasourceId = state.transition.params().datasourceId;
-                    console.log('resolving data source for id ' + datasourceId);
                     return catalog.getDataSource(datasourceId)
                         .pipe(finalize(() => loading.resolve(DatasourceComponent.LOADER)))
                         .pipe(catchError(() => state.go("catalog")))
