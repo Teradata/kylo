@@ -50,8 +50,8 @@ export class UploadComponent implements OnInit {
             this.datasource.$fileUploads = this.files;
 
             // Parse uploads from dataset paths and server
-            if (this.datasource.paths) {
-                this.files = this.datasource.paths.map(path => {
+            if (this.datasource.template.paths) {
+                this.files = this.datasource.template.paths.map(path => {
                     const name = path.substr(path.lastIndexOf("/") + 1);
                     const file = new FileUpload(name);
                     file.path = path;
@@ -179,10 +179,10 @@ export class UploadComponent implements OnInit {
      */
     private updateDataSet() {
         this.datasource.$fileUploads = this.files;
-        this.datasource.paths = this.files
+        this.datasource.template.paths = this.files
             .filter(file => file.status === FileUploadStatus.SUCCESS)
             .map(file => file.path)
             .filter(path => path != null);
-        this.isReady = (this.datasource.paths.length > 0);
+        this.isReady = (this.datasource.template.paths.length > 0);
     }
 }
