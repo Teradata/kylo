@@ -649,14 +649,14 @@ export class ColumnDelegate implements IColumnDelegate {
             let formulaFields : string[] = []
             if (idxOfCurrentColumn == 0) {
                 formulaFields.push(fieldParts);
-                formulaFields.push(existingCols.splice(idxOfCurrentColumn+1));
+                formulaFields.push(existingCols.slice(idxOfCurrentColumn+1));
             } else if (idxOfCurrentColumn == existingCols.length - 1) {
-                formulaFields.push(existingCols.splice(0, idxOfCurrentColumn));
+                formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
                 formulaFields.push(fieldParts);
             } else {
-                formulaFields.push(existingCols.splice(0, idxOfCurrentColumn));
+                formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
                 formulaFields.push(fieldParts);
-                formulaFields.push(existingCols.splice(idxOfCurrentColumn+1));
+                formulaFields.push(existingCols.slice(idxOfCurrentColumn+1));
             }
             formula = `select(${formulaFields.join(",")})`;
         }
