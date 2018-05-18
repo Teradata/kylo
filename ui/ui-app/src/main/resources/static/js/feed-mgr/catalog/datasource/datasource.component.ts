@@ -46,6 +46,6 @@ export class DatasourceComponent implements OnInit {
         this.tabs.push({label: "Preview", sref: ".preview"});
 
         // Go to the first tab
-        this.state.go(this.tabs[0].sref, null, {location: "replace"});
+        this.state.go(this.tabs[0].sref, {path: this.datasource.template.paths[0]}, {location: "replace"});
     }
 }

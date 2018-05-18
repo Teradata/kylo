@@ -4,6 +4,7 @@ import {ITdDataTableColumn, TdDataTableService} from "@covalent/core/data-table"
 import {DataSource} from '../../api/models/datasource';
 import {DatePipe} from '@angular/common';
 import {FileSizePipe} from '../../api/pipes/file-size.pipe';
+import {StateService} from "@uirouter/angular";
 
 interface RemoteFile {
     name: string;
@@ -23,6 +24,9 @@ export class RemoteFilesComponent implements OnInit {
     @Input()
     public datasource: DataSource;
 
+    @Input()
+    path: string;
+
     FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new FileSizePipe().transform(v);
     DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
 
@@ -39,22 +43,15 @@ export class RemoteFilesComponent implements OnInit {
 
     filteredTotal = 0;
 
-    path: string;
-
     pageSize = 50;
 
     selectedRows: any[] = [];
 
-    constructor(private dataTableService: TdDataTableService, private http: HttpClient) {
+    constructor(private dataTableService: TdDataTableService, private http: HttpClient, private state: StateService) {
     }
 
     public ngOnInit(): void {
         console.log('on init');
-        this.path = this.datasource.template.paths[0];
-        this.browse();
-    }
-
-    browse() {
         this.http.get("/proxy/v1/catalog/dataset/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
@@ -65,8 +62,7 @@ export class RemoteFilesComponent implements OnInit {
     rowClick(file: RemoteFile): void {
         console.log("row click, row=" + file.name);
         if (file.directory) {
-            this.path += "/" + file.name;
-            this.browse();
+            this.state.go("catalog.datasource.browse", {path: encodeURIComponent(this.path + "/" + file.name)}, {notify:false, reload:false});
         }
     }
 
