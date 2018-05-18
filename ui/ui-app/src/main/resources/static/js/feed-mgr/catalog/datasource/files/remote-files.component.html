@@ -20,7 +20,7 @@
     [selectable]="true"
     (rowClick)="rowClick($event.row)">
   <ng-template tdDataTableTemplate="directory" let-value="value">
-    <ng-md-icon [icon]="value ? 'fa-folder' : 'fa-file'" style="fill: #898989"></ng-md-icon>
+    <ng-md-icon [icon]="value ? 'fa-folder' : 'fa-file-r'" style="fill: #607D8B;"></ng-md-icon>
   </ng-template>
 </td-data-table>
 <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
