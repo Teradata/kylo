@@ -417,14 +417,9 @@ export class CategoryDefinitionController {
             });
         }
     }
-
-angular.module(moduleName).controller('CategoryDefinitionController',
-    ["$scope", "$mdDialog", "$mdToast", "$q", "$timeout", "$window", "AccessControlService", "EntityAccessControlService", "CategoriesService", "StateService", "FeedSecurityGroups", "FeedService",
-     CategoryDefinitionController]);
-
-     angular.module(moduleName).component("thinkbigCategoryDefinition",{
-    controller: "CategoryDefinitionController",
-    controllerAs: "vm",
-    templateUrl: "js/feed-mgr/categories/details/category-definition.html"
+    angular.module(moduleName).component("thinkbigCategoryDefinition",{
+        controller: CategoryDefinitionController,
+        controllerAs: "vm",
+        templateUrl: "js/feed-mgr/categories/details/category-definition.html"
 });
 

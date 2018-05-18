@@ -26,7 +26,8 @@ export class AboutKyloService{
     constructor(private $mdDialog: any){}
        showAboutDialog = ()=> {
             this.$mdDialog.show({
-                template: '<about-kylo-dialog></about-kylo-dialog>',
+                controller: 'AboutKyloDialogController',
+                templateUrl: 'js/common/about-kylo/about.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose: false,
                 escapeToClose: true,
@@ -40,7 +41,4 @@ export class AboutKyloService{
 }
 
 angular.module(moduleName).service('AboutKyloService',AboutKyloService);
-angular.module(moduleName).component('aboutKyloDialog', {
-    controller: controller,
-    templateUrl: 'js/common/about-kylo/about.html'
-});
+angular.module(moduleName).controller('AboutKyloDialogController', controller);

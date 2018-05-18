@@ -1,8 +1,10 @@
 <div>
   <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
   <card-layout header-css="filter-header" class="centered" ng-if="!vm.loading">
-    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" filter-model="vm.filter"
-                    on-selected-option="vm.selectedTableOption">
+    <header-section>
+      <tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" filter-model="vm.filter"
+        on-selected-option="vm.selectedTableOption">
+      </tba-card-filter-header>
     </header-section>
     <body-section>
       <div ng-show="vm.viewType == 'list'">
