@@ -117,12 +117,13 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
     @Override
     public SampleFileSparkScript getSparkScript(InputStream is) throws IOException {
         File tempFile = streamToFile(is);
-        try {
-            HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
-            rowTag = hiveParse.getStartTag();
-        }catch (Exception e) {
-            // unable to parse the file to get the row tag.
-            //it will use the default getRowTag()
+        if (StringUtils.isEmpty(rowTag)) {
+            try {
+                HiveXMLSchemaHandler hiveParse = parseForHive(tempFile);
+                rowTag = hiveParse.getStartTag();
+            } catch (Exception e) {
+                throw new IOException(e);
+            }
         }
         return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkScriptCommandBuilder());
     }
@@ -177,7 +178,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
         public String build(String pathToFile) {
             StringBuffer sb = new StringBuffer();
 
-            sb.append("import com.databricks.spark.xml._;\n");
+            sb.append("\nimport com.databricks.spark.xml._;\n");
             sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + String
                 .format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
             return sb.toString();
