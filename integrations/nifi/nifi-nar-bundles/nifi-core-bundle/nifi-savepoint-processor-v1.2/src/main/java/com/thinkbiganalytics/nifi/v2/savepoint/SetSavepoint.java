@@ -46,32 +46,19 @@ import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
 import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
-import org.apache.nifi.processor.FlowFileFilter;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.Stack;
-import java.util.TreeMap;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 @EventDriven
 @SupportsBatching
@@ -188,34 +175,6 @@ public class SetSavepoint extends AbstractProcessor {
     }
 
 
-    /**
-     * Check to see if a flowfile in queue has an expired savepoint
-     *
-     * @param flowFile           the flowfile
-     * @param expirationDuration the expire duration
-     * @return true if expired, false if not
-     */
-    private boolean isExpired(FlowFile flowFile, long expirationDuration) {
-        boolean expired = false;
-        // Set wait start timestamp if it's not set yet
-        String waitStartTimestamp = flowFile.getAttribute(SAVEPOINT_START_TIMESTAMP);
-        if (waitStartTimestamp != null) {
-            long lWaitStartTimestamp = 0L;
-            try {
-                lWaitStartTimestamp = Long.parseLong(waitStartTimestamp);
-            } catch (NumberFormatException nfe) {
-                expired = false;
-            }
-
-            // check for expiration
-            long now = System.currentTimeMillis();
-            if (now > (lWaitStartTimestamp + expirationDuration)) {
-                expired = true;
-            }
-        }
-        return expired;
-    }
-
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
 
@@ -225,19 +184,55 @@ public class SetSavepoint extends AbstractProcessor {
         final PropertyValue pvSavepointId = context.getProperty(SAVEPOINT_ID);
         final String processorId = getIdentifier();
 
-        FlowFile flowFile = null;
         long start = System.currentTimeMillis();
-        Optional<FlowFile> nextFlowfile = getNextFlowFile(context, session,controller, provider, pvSavepointId);
+        long expirationDuration = context.getProperty(EXPIRATION_DURATION)
+            .asTimePeriod(TimeUnit.MILLISECONDS);
 
-        long stop = System.currentTimeMillis();
-        if (!nextFlowfile.isPresent()) {
-            return;
-        } else {
-            flowFile = nextFlowfile.get();
+        SavepointContextData savepointContextData = new SavepointContextData(controller, provider, pvSavepointId, processorId, expirationDuration);
+
+        // the list of flow files to process
+        List<FlowFile> flowFiles = null;
+        //the flow file filter
+        SavepointFlowFileFilter flowFileFilter = null;
+        try {
+            List<String> nextFlowFiles = controller.getNextFlowFiles(getIdentifier());
+            flowFileFilter = new DefaultSavepointFlowFileFilter(nextFlowFiles, savepointContextData);
+            flowFiles = session.get(flowFileFilter);
+        } catch (CacheNotInitializedException e) {
+            flowFileFilter = new SavepointCacheInitializingFilter(savepointContextData);
+            flowFiles = ((SavepointCacheInitializingFilter) flowFileFilter).initializeAndFilter(session);
         }
-        getLogger().info("Time to iterate over {} flow files: {} ms, {} ", new Object[]{session.getQueueSize(), (stop - start), nextFlowfile.isPresent() ? nextFlowfile.get() : " Nothing found "});
+
+        //if we are unable to find any flow files, yield the processor
+        if (flowFiles == null || flowFiles.isEmpty()) {
+            context.yield();
+            return;
+        }
+        long stop = System.currentTimeMillis();
+        getLogger().info("Time to iterate over {} flow files: {} ms, using filter: {}.  Will Process: {} flow files.  Will skip {} flow files.",
+                         new Object[]{session.getQueueSize(), (stop - start), flowFileFilter.getClass().getSimpleName(), flowFileFilter.getAcceptedCount(), flowFileFilter.getRejectedCount()});
+
+        for (FlowFile flowFile : flowFiles) {
+
+            if (!isScheduled()) {
+                // If stopped, re-queue FlowFile instead of sending it
+                session.transfer(flowFile);
+                continue;
+            }
+            getLogger().info("Processsing flow file {} ", new Object[]{flowFile.getAttribute(CoreAttributes.UUID.key())});
+            processFlowFile(flowFile, context, session, savepointContextData);
+        }
+    }
+
+    private void processFlowFile(FlowFile flowFile, final ProcessContext context, final ProcessSession session, final SavepointContextData contextData) {
 
         final ComponentLog logger = getLogger();
+
+        final SavepointController controller = contextData.getController();
+        final SavepointProvider provider = contextData.getProvider();
+
+        final PropertyValue pvSavepointId = contextData.getSavepointId();
+        final String processorId = contextData.getProcessorId();
 
         // We do processing on each flowfile here
         final String savepointIdStr = pvSavepointId.evaluateAttributeExpressions(flowFile).getValue();
@@ -260,7 +255,7 @@ public class SetSavepoint extends AbstractProcessor {
                 if (entry == null || entry.getState(processorId) == null) {
                     // Register new
                     provider.register(savepointIdStr, processorId, flowfileId, lock);
-                    flowFile =  tryFlowFile(session, flowFile, "-1");
+                    flowFile = tryFlowFile(session, flowFile, "-1");
 
                     //add in timestamps
                     // Set wait start timestamp if it's not set yet
@@ -292,8 +287,8 @@ public class SetSavepoint extends AbstractProcessor {
                                 retryCount = "0";
                             }
                             provider.commitRetry(savepointIdStr, processorId, lock);
-                           flowFile = tryFlowFile(session, flowFile, retryCount);
-                           session.transfer(flowFile);
+                            flowFile = tryFlowFile(session, flowFile, retryCount);
+                            session.transfer(flowFile);
                             break;
                         case WAIT:
                             session.transfer(flowFile, REL_SELF);
@@ -308,15 +303,15 @@ public class SetSavepoint extends AbstractProcessor {
             } else {
                 // Lock busy so try again later
                 //add it back to cache
-                 controller.putFlowfileBack(processorId, flowfileId);
-                logger.info("Unable to obtain lock.  It is already locked by another process.  Adding back to queue {} ",new Object[] {flowfileId});
+                controller.putFlowfileBack(processorId, flowfileId, true);
+                logger.info("Unable to obtain lock.  It is already locked by another process.  Adding back to queue {} ", new Object[]{flowfileId});
 
                 session.transfer(flowFile, REL_SELF);
 
             }
         } catch (IOException | InvalidLockException | InvalidSetpointException e) {
-            logger.warn("Failed to process flowfile {} for savepoint {}", new String[]{flowfileId,savepointIdStr}, e);
-            flowFile = session.putAttribute(flowFile, SAVEPOINT_EXCEPTION, "Failed to process flowfile "+flowfileId+" for savepoint " + savepointIdStr + ". " + e.getMessage());
+            logger.warn("Failed to process flowfile {} for savepoint {}", new String[]{flowfileId, savepointIdStr}, e);
+            flowFile = session.putAttribute(flowFile, SAVEPOINT_EXCEPTION, "Failed to process flowfile " + flowfileId + " for savepoint " + savepointIdStr + ". " + e.getMessage());
             session.transfer(flowFile, REL_FAILURE);
         } finally {
             if (lock != null) {
@@ -327,18 +322,18 @@ public class SetSavepoint extends AbstractProcessor {
                 }
             }
         }
-
     }
 
+
     private boolean isExpired(ProcessContext context, ProcessSession session, SavepointProvider provider, FlowFile flowFile, String savepointIdStr,
-                                 Lock lock) throws InvalidLockException, InvalidSetpointException {
+                              Lock lock) throws InvalidLockException, InvalidSetpointException {
 
         String waitStartTimestamp = flowFile.getAttribute(SAVEPOINT_START_TIMESTAMP);
         long lWaitStartTimestamp = 0L;
-        if(StringUtils.isNotBlank(waitStartTimestamp)) {
+        if (StringUtils.isNotBlank(waitStartTimestamp)) {
             try {
-                 lWaitStartTimestamp = Long.parseLong(waitStartTimestamp);
-            }catch (NumberFormatException e){
+                lWaitStartTimestamp = Long.parseLong(waitStartTimestamp);
+            } catch (NumberFormatException e) {
                 getLogger().warn("{} has an invalid value '{}' on FlowFile {}. Time will be reset.", new Object[]{SAVEPOINT_START_TIMESTAMP, waitStartTimestamp, flowFile});
                 flowFile = session.putAttribute(flowFile, SAVEPOINT_START_TIMESTAMP, String.valueOf(System.currentTimeMillis()));
                 session.transfer(flowFile, REL_SELF);
@@ -358,162 +353,6 @@ public class SetSavepoint extends AbstractProcessor {
         return false;
     }
 
-
-    private class FindFirstFlowFileFilter implements FlowFileFilter {
-
-        private Optional<String> nextFlowFile;
-
-        private long expirationDuration;
-
-        private SavepointController controller;
-
-        public FindFirstFlowFileFilter(Optional<String> nextFlowFile,long expirationDuration,SavepointController controller){
-            this.nextFlowFile = nextFlowFile;
-            this.expirationDuration = expirationDuration;
-            this.controller = controller;
-        }
-
-        private boolean isNew(FlowFile flowFile){
-            String savepointProcessor = flowFile.getAttribute(SAVEPOINT_PROCESSOR_ID);
-            return StringUtils.isBlank(savepointProcessor) || !getIdentifier().equalsIgnoreCase(savepointProcessor);
-        }
-
-        @Override
-        public FlowFileFilterResult filter(FlowFile flowFile) {
-            if(!nextFlowFile.isPresent()){
-                //check to see if its new or expired
-                if(isExpired(flowFile, expirationDuration) || isNew(flowFile)){
-                    return FlowFileFilterResult.ACCEPT_AND_TERMINATE;
-                }
-                return FlowFileFilter.FlowFileFilterResult.REJECT_AND_CONTINUE;
-            }
-            else if(nextFlowFile.get().equals(flowFile.getAttribute(CoreAttributes.UUID.key()))){
-                return FlowFileFilter.FlowFileFilterResult.ACCEPT_AND_TERMINATE;
-            }
-            else {
-                return FlowFileFilter.FlowFileFilterResult.REJECT_AND_CONTINUE;
-            }
-
-
-        }
-    }
-
-    private class CacheInitializingFilter implements FlowFileFilter {
-
-        private PropertyValue pvSavepointId;
-
-        private SavepointProvider provider;
-        private SavepointController controller;
-
-        Map<Long,SavepointEntry>savepointsToCache = new TreeMap<>();
-
-        Map<Long,String>flowfilesToCache = new TreeMap<>();
-
-        private long expirationDuration;
-
-        public CacheInitializingFilter(PropertyValue pvSavepointId,SavepointController controller, SavepointProvider provider, long expirationDuration) {
-            this.pvSavepointId = pvSavepointId;
-            this.provider = provider;
-            this.controller = controller;
-            this.expirationDuration = expirationDuration;
-        }
-
-        private SavepointEntry toSavepoint(String processorId, String flowfileId){
-            SavepointEntry savepointEntry = new SavepointEntry();
-            savepointEntry.register(processorId,flowfileId);
-            savepointEntry.retry();
-            return  savepointEntry;
-        }
-
-        public FlowFileFilterResult filter(FlowFile f) {
-            final String savepointIdStr = pvSavepointId.evaluateAttributeExpressions(f).getValue();
-            SavepointEntry entry = provider.lookupEntry(savepointIdStr);
-            if (entry == null || entry.getState(getIdentifier()) == null){
-                flowfilesToCache.put(f.getLastQueueDate(),f.getAttribute(CoreAttributes.UUID.key()));
-            } else if(isExpired(f, expirationDuration)) {
-                savepointsToCache.put(f.getLastQueueDate(),entry);
-            } else if (SavepointEntry.SavePointState.WAIT != entry.getState(getIdentifier())) {
-                savepointsToCache.put(f.getLastQueueDate(),entry);
-            }
-            return FlowFileFilter.FlowFileFilterResult.REJECT_AND_CONTINUE;
-        }
-
-        Optional<FlowFile> initializeAndGetNextFlowfile(ProcessSession session){
-            flowfilesToCache = new TreeMap<>();
-            //initialize the map to cache
-            session.get(this);
-            //cache it
-            Optional<String> nextFlowFile = controller.initializeAndGetNextFlowFile(getIdentifier(),flowfilesToCache.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList()),savepointsToCache.entrySet().stream().map(Map.Entry::getValue).collect(Collectors.toList()));
-            //refetch
-            return session.get(new FindFirstFlowFileFilter(nextFlowFile,expirationDuration,controller)).stream().findFirst();
-        }
-
-    }
-
-    /**
-     * Return the next available flow file in the queue that is not in a waiting state.
-     *
-     * @param session       the process session
-     * @param provider      the save point provider
-     * @param pvSavepointId the savepoint id
-     * @return the first flowfile not in a waiting savepoint state
-     */
-    private Optional<FlowFile> getNextFlowFile(ProcessContext context, ProcessSession session,SavepointController controller, SavepointProvider provider, PropertyValue pvSavepointId) {
-
-        long expirationDuration = context.getProperty(EXPIRATION_DURATION)
-            .asTimePeriod(TimeUnit.MILLISECONDS);
-
-        FlowFileFilter flowFileFilter = null;
-        try {
-            Optional<String> nextFlowFile = controller.getNextFlowFile(getIdentifier());
-            flowFileFilter = new FindFirstFlowFileFilter(nextFlowFile, expirationDuration,controller);
-            return session.get(flowFileFilter).stream().findFirst();
-        } catch (CacheNotInitializedException e) {
-            CacheInitializingFilter filter = new CacheInitializingFilter(pvSavepointId, controller, provider, expirationDuration);
-            return filter.initializeAndGetNextFlowfile(session);
-        }
-
-    }
-
-
-    private Optional<FlowFile> getNextFlowFilex(ProcessContext context, ProcessSession session, SavepointProvider provider, PropertyValue pvSavepointId) {
-        long expirationDuration = context.getProperty(EXPIRATION_DURATION)
-            .asTimePeriod(TimeUnit.MILLISECONDS);
-
-        List<FlowFile> match = new ArrayList<>();
-        List<FlowFile> noMatch = new LinkedList<>();
-
-        session.get(session.getQueueSize().getObjectCount()).stream()
-            .sorted(Comparator.comparing(FlowFile::getLastQueueDate)
-                        .reversed()).forEach(f -> {
-            boolean isMatch = false;
-            if (match.isEmpty()) {
-                final String savepointIdStr = pvSavepointId.evaluateAttributeExpressions(f).getValue();
-                String processorId = getIdentifier();
-                SavepointEntry entry = provider.lookupEntry(savepointIdStr);
-
-                if (entry == null || entry.getState(processorId) == null || isExpired(f, expirationDuration)) {
-                    isMatch = true;
-                } else if (SavepointEntry.SavePointState.WAIT != entry.getState(processorId)) {
-                    isMatch = true;
-                }
-                //add it
-                if (isMatch) {
-                    match.add(f);
-                }
-                else {
-                    noMatch.add(f);
-                }
-            } else {
-                noMatch.add(f);
-            }
-        });
-        //clear those that failed
-        session.transfer(noMatch);
-
-        return match.isEmpty() ? Optional.empty() : Optional.of(match.get(0));
-
-    }
 
     /**
      * Try or retry a flowfile
