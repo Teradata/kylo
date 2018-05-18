@@ -9,7 +9,6 @@ import {MatProgressBarModule} from "@angular/material/progress-bar";
 import {MatSelectModule} from '@angular/material/select';
 import {CovalentFileModule} from "@covalent/core/file";
 import {CovalentSearchModule} from "@covalent/core/search";
-import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {CovalentPagingModule} from '@covalent/core/paging';
 import {UIRouterModule} from "@uirouter/angular";
 
@@ -17,6 +16,8 @@ import {KyloCommonModule} from "../../../../common/common.module";
 import {CatalogApiModule} from "../../api/catalog-api.module";
 import {RemoteFilesComponent} from "./remote-files.component";
 import {remoteFileStates} from "./remote-files.states";
+import {CovalentDataTableModule} from '@covalent/core/data-table';
+import {FormsModule} from '@angular/forms';
 
 @NgModule({
     declarations: [
@@ -26,11 +27,12 @@ import {remoteFileStates} from "./remote-files.states";
         RemoteFilesComponent
     ],
     imports: [
+        FormsModule,
+        CovalentDataTableModule,
         CatalogApiModule,
         CommonModule,
         CovalentFileModule,
         CovalentSearchModule,
-        CovalentDataTableModule,
         CovalentPagingModule,
         FlexLayoutModule,
         KyloCommonModule,

@@ -32,7 +32,7 @@
     "@angular/platform-browser-dynamic": "~5.1",
     "@angular/router": "~5.1",
     "@angular/upgrade": "~5.1",
-    "@covalent/core": "~1.0.0",
+    "@covalent/core": "^1.0.0",
     "@covalent/dynamic-forms": "^1.0.0",
     "@uirouter/angular-hybrid": "3.1.8",
     "angular": "1.6.7",
