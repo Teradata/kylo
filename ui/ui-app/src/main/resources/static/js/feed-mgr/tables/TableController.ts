@@ -50,7 +50,7 @@ export class TableController {
 
         var successFn = function (response:any) {
             self.tableSchema = response.data;
-            self.cardTitle = self.datasource.name + "." + self.schema + " " + $filter('translate')('views.TableController.Tables');
+            self.cardTitle = self.schema;
             self.loading = false;
         };
         var errorFn = function (err:any) {

@@ -341,13 +341,13 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         if(this.model.$selectedDatasourceId == 'FILE'){
             //warn if the user has other items
             if(this.chartViewModel.nodes != null && (this.chartViewModel.nodes.length >0) ){
-                //WARN if you upload a file you will loose your other data
+                //WARN if you upload a file you will lose your other data
                 this.$mdDialog.show(
                     this.$mdDialog.confirm()
                         .parent($("body"))
                         .clickOutsideToClose(true)
                         .title("Upload a local file")
-                        .textContent("If you switch and upload a local file you will loose your other data sources. Are you sure you want to continue?")
+                        .textContent("If you switch and upload a local file you will lose your other data sources. Are you sure you want to continue?")
                         .ariaLabel("Upload local file or stay in visual editor?")
                         .ok("Continue")
                         .cancel("Cancel"))
