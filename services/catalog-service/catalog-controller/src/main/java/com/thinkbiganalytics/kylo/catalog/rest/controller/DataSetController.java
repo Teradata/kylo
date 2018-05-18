@@ -95,7 +95,7 @@ public class DataSetController {
                       @ApiResponse(code = 404, message = "Datasource does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
                   })
-    public Response listFiles(@PathParam("id") @UUID final String dataSourceId, @QueryParam("path") String path) {
+    public Response listFiles(@PathParam("id") final String dataSourceId, @QueryParam("path") String path) {
         log.entry(dataSourceId);
 
         final List<DataSetFile> files;

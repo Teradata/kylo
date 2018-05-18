@@ -35,7 +35,7 @@ export class DatasourceComponent implements OnInit {
         // Add tabs and register router states
         if (this.datasource.connector.tabs) {
             this.tabs = angular.copy(this.datasource.connector.tabs);
-            for (let tab of this.datasource.connector.tabs) {
+            for (let tab of this.tabs) {
                 if (tab.state) {
                     this.stateRegistry.register(tab.state);
                 }

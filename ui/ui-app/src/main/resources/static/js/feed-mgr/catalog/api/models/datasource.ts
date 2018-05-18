@@ -1,11 +1,19 @@
 import {Connector} from './connector';
 import {DataSourceTemplate} from './datasource-template';
 
-export interface DataSource extends DataSourceTemplate {
 
-    id?: string;
+/**
+ * DataSource knows how to connect to a source.
+ * It has an instance of a Connector's DataSourceTemplate which is
+ * configured with required properties, i.e. configured to connect to S3, JDBC, Kafka, Hive, etc
+ */
+export interface DataSource {
+
+    id: string;
 
     connector: Connector,
 
     title: string;
+
+    template: DataSourceTemplate;
 }

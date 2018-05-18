@@ -50,12 +50,12 @@ export class RemoteFilesComponent implements OnInit {
 
     public ngOnInit(): void {
         console.log('on init');
-        this.path = this.datasource.paths[0];
+        this.path = this.datasource.template.paths[0];
         this.browse();
     }
 
     browse() {
-        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
+        this.http.get("/proxy/v1/catalog/dataset/" + this.datasource.id + "/browse?path=" + encodeURIComponent(this.path))
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
                 this.filter();

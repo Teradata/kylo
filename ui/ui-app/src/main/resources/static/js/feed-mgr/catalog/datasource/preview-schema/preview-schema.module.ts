@@ -24,7 +24,7 @@ import {MatSlideToggleModule} from '@angular/material/slide-toggle';
         UIRouterModule.forChild({
             states: [
                 {
-                    name: "catalog.dataset.preview",
+                    name: "catalog.datasource.preview",
                     url: "/preview",
                     component: PreviewSchemaComponent
                 }
