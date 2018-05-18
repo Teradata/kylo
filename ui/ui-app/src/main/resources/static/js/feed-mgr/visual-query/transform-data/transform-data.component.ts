@@ -696,10 +696,25 @@ export class TransformDataComponent implements OnInit {
         this.tableColumns = columns;
         this.tableValidation = this.engine.getValidationResults();
         this.updateSortIcon();
-
-
-
         this.updateCodeMirrorAutoComplete();
+
+        // look for non-unique columns and show a warning
+        let cols = this.tableColumns.map((v:string)=> { return v.displayName;  }).slice().sort();
+        var duplicateCols = [];
+        for (var i = 0; i < cols.length - 1; i++) {
+            if (cols[i + 1] == cols[i]) {
+                duplicateCols.push(cols[i]);
+            }
+        }
+        if (duplicateCols.length > 0) {
+            let alert = this.$mdDialog.alert()
+                .parent($('body'))
+                .clickOutsideToClose(true)
+                .title("Warning")
+                .textContent("Your last operation created duplicate columns for: "+duplicateCols.join(",")+". Please undo from history and alias the new column")
+                .ok("Ok");
+            this.$mdDialog.show(alert);
+        }
     }
 
     addColumnSort(direction:string,column:any,query?:boolean) : IPromise<any> {
