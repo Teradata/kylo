@@ -29,8 +29,8 @@ export class RemoteFilesComponent implements OnInit {
     columns: ITdDataTableColumn[] = [
         {name: "directory", label: "", width: 48},
         {name: "name", label: "Name", sortable: true},
-        {name: "length", label: "Size", numeric: true, sortable: true, format: this.FILE_SIZE_FORMAT},
-        {name: "modificationTime", label: "Last modified", sortable: true, format: this.DATE_FORMAT}
+        {name: "length", label: "Size", numeric: true, sortable: true, width: 200, format: this.FILE_SIZE_FORMAT},
+        {name: "modificationTime", label: "Last modified", sortable: true, width: 210, format: this.DATE_FORMAT}
     ];
 
     files: RemoteFile[] = [];
