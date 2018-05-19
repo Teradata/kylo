@@ -57,7 +57,7 @@ export class UploadSampleFile implements  OnInit {
 
     ngOnInit(){
 
-        if(angular.isDefined(this.model.sampleFile)){
+        if(angular.isDefined(this.model.sampleFile) && this.model.sampleFile != null){
             this.sampleFile = this.model.sampleFile.localFileObject;
             this.schemaParser = this.model.sampleFile.schemaParser;
         }
