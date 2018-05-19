@@ -552,10 +552,8 @@ export class TransformDataComponent implements OnInit {
             template: `
                   <md-dialog arial-label="error executing the query" style="max-width: 640px;">
                     <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Error executing the query</h2>
-                      <p>There was a problem executing the query.</p>
-                      <md-button ng-if="!dialog.showDetail" ng-click="dialog.showDetail = true" style="margin: 0; padding: 0;">Show more</md-button>
-                      <p ng-if="dialog.showDetail">{{ dialog.detailMessage }}</p>
+                      <h2 class="md-title">Transform Exception</h2>
+                      <p>{{ dialog.detailMessage }}</p>
                     </md-dialog-content>
                     <md-dialog-actions>
                       <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
@@ -636,7 +634,7 @@ export class TransformDataComponent implements OnInit {
         const errorCallback = function (message: string) {
             self.setExecutingQuery(false);
             self.resetAllProgress();
-            self.showError(message);
+            self.showError(self.cleanError(message));
 
             // Reset state
             self.onUndo();
@@ -655,6 +653,20 @@ export class TransformDataComponent implements OnInit {
         self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
         return  promise;
     };
+
+
+    /**
+     * Attempt to extract the error string from the verbose message
+     */
+    private cleanError(message : string) : string {
+        if (message != null && message.startsWith("AnalysisException: ")) {
+            let idx = message.indexOf(";;");
+            if (idx > -1) {
+                message = message.substr(19,1).toUpperCase()+message.substr(20, idx-20);
+            }
+        }
+        return message;
+    }
 
     private removeExecution(promise : IPromise<any>) : void {
         var idx = this.executionStack.indexOf(promise);
@@ -823,12 +835,22 @@ export class TransformDataComponent implements OnInit {
             this.engine.push(file.ast, context);
             return true;
         } catch (e) {
+            let msg : string = e.message;
+            if (msg != null) {
+
+                if (msg.indexOf("Cannot read property") > -1) {
+                    msg = "Please ensure fieldnames are correct.";
+                } else if (msg.indexOf("Program is too long") > -1) {
+                    msg = "Please check parenthesis align."
+                }
+            }
+
             let alert = this.$mdDialog.alert()
                 .parent($('body'))
                 .clickOutsideToClose(true)
-                .title("Error executing the query")
-                .textContent(e.message)
-                .ariaLabel("Error executing the query")
+                .title("Oops! Error in formula")
+                .textContent(msg)
+                .ariaLabel("Formula error")
                 .ok("Ok");
             this.$mdDialog.show(alert);
             console.log(e);

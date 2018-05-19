@@ -691,7 +691,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractNumeric(self: any, column: any, grid: any) {
         const fieldName = self.getColumnFieldName(column);
-        let script = `regexp_replace(${fieldName}, "[^0-9\\\\.]+","").as('${fieldName}')`;
+        let script = `regexp_replace(${fieldName}, "[^0-9\-\\\\.]+","").as('${fieldName}')`;
 
         const formula = self.toFormula(script, column, grid);
         self.controller.addFunction(formula, {

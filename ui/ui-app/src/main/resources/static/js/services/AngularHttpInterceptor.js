@@ -134,6 +134,9 @@ define(['angular','services/module-name'], function (angular,moduleName) {
                             var rejectionMessage = rejection.data['message'];
                             if (rejectionMessage == undefined || rejectionMessage == '') {
                                 rejectionMessage = 'OtherError';
+                            } else if (rejectionMessage.startsWith("AnalysisException:")) {
+                                // Don't notify for messages from wrangler. These are handled.
+                                return $q.reject(rejection);
                             }
                             NotificationService.errorWithGroupKey("Error", message, rejectionMessage, rejection.data["message"]);
                         }
