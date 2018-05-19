@@ -172,6 +172,7 @@
                     <span class="hint"> {{"views.feed-details.Category" | translate}} </span>
                 </div>
 
+                <!-- Most users won't want to see this level of detail
                 <div layout="column" class="layout-padding-top-bottom">
                   <div>
                     <span ng-if="vm.shouldIndexingOptionsBeDisabled()">{{"views.feed-data-policies.Rip.Yes" | translate}}</span>
@@ -186,14 +187,15 @@
                   </div>
                   <span class="hint"> {{"views.feed-data-policies.Rls" | translate}} </span>
                 </div>
+                -->
 
               <md-divider></md-divider>
               <div layout="column" class="layout-padding-top-bottom" layout-align="space-between start" ng-if="!vm.errorLoadingFeed">
-                <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div>
+               <!-- <div class="md-subhead layout-padding-bottom">{{"views.feed-details.Links" | translate}}</div> -->
                   <md-button style="text-align:left" class="md-primary md-link" ng-click="vm.gotoFeedStats($event)" ng-if="vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
                   <md-button style="text-align:left"  ng-click="vm.gotoFeedDetails($event)" class="md-primary md-link" ng-if="!vm.model.isStream">{{"views.feed-details.OJD" | translate}}</md-button>
                  <md-button style="text-align:left"  ng-repeat="item in vm.feedNavigationLinks" ng-click="vm.feedNavigationLink(item)" class="md-primary md-link">{{item.linkText}}</md-button>
-              </div>
+              <!-- </div> -->
 
               <md-divider ng-if="!vm.isNiFiRunning"></md-divider>
               <div layout="row" class="warn layout-padding-top-bottom" ng-if="!vm.isNiFiRunning">
