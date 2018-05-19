@@ -701,7 +701,7 @@ export class TransformDataComponent implements OnInit {
     }
 
     checkWarnDuplicateColumnName() : void {
-        let cols = this.tableColumns.map((v:string)=> { return v.displayName;  }).slice().sort();
+        let cols = this.tableColumns.map((v:any)=> { return v.displayName;  }).slice().sort();
         var duplicateCols = [];
         for (var i = 0; i < cols.length - 1; i++) {
             if (cols[i + 1] == cols[i]) {
