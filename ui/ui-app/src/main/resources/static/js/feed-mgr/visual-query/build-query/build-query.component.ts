@@ -362,6 +362,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
         }
         else {
             this.model.sampleFile = null;
+            this.engine.setSampleFile(null);
         }
     }
 

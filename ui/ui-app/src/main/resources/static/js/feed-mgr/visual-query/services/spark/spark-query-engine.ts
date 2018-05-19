@@ -198,7 +198,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         if (start === 0) {
 
-            if (angular.isDefined(this.sampleFile)) {
+            if (angular.isDefined(this.sampleFile) && this.sampleFile != null) {
                 //we are working with a file.. add the spark code to use it
                 //extract options out from a variable to do the parsing
                 sparkScript += this.sampleFile.script;
