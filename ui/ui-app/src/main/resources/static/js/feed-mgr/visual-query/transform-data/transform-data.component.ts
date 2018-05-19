@@ -697,8 +697,10 @@ export class TransformDataComponent implements OnInit {
         this.tableValidation = this.engine.getValidationResults();
         this.updateSortIcon();
         this.updateCodeMirrorAutoComplete();
+        this.checkWarnDuplicateColumnName();
+    }
 
-        // look for non-unique columns and show a warning
+    checkWarnDuplicateColumnName() : void {
         let cols = this.tableColumns.map((v:string)=> { return v.displayName;  }).slice().sort();
         var duplicateCols = [];
         for (var i = 0; i < cols.length - 1; i++) {
@@ -707,13 +709,15 @@ export class TransformDataComponent implements OnInit {
             }
         }
         if (duplicateCols.length > 0) {
+            this.onUndo();
             let alert = this.$mdDialog.alert()
                 .parent($('body'))
                 .clickOutsideToClose(true)
                 .title("Warning")
-                .textContent("Your last operation created duplicate columns for: "+duplicateCols.join(",")+". Please undo from history and alias the new column")
+                .textContent("The last operation created duplicate columns for: "+duplicateCols.join(",")+". Please try again and alias the new column.")
                 .ok("Ok");
             this.$mdDialog.show(alert);
+
         }
     }
 
