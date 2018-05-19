@@ -23,7 +23,10 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
  * Reference to a Kylo UI plugin.
@@ -43,6 +46,14 @@ public class UiPlugin {
      * @see <a href="https://ui-router.github.io/ng2/docs/latest/interfaces/state.statedeclaration.html" target="_blank">StateDeclaration</a>
      */
     private Map<String, Object> state;
+
+    public UiPlugin() {
+    }
+
+    public UiPlugin(@Nonnull final UiPlugin other) {
+        sref = other.sref;
+        state = (other.state != null) ? new HashMap<>(other.state) : null;
+    }
 
     public String getSref() {
         return sref;

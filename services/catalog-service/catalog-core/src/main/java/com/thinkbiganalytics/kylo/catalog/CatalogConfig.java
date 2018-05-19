@@ -4,7 +4,7 @@ package com.thinkbiganalytics.kylo.catalog;
  * #%L
  * kylo-catalog-core
  * %%
- * Copyright (C) 2017 - 2018 ThinkBig Analytics
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,18 @@ package com.thinkbiganalytics.kylo.catalog;
  * #L%
  */
 
-/**
- * Indicates that the requested data set does not exist.
- */
-public class DataSetNotFound extends RuntimeException {
+import org.springframework.context.MessageSource;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.support.ResourceBundleMessageSource;
 
-    private static final long serialVersionUID = -1790395416384448655L;
+@Configuration
+public class CatalogConfig {
+
+    @Bean
+    public MessageSource catalogMessages() {
+        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
+        messageSource.setBasename("CatalogMessages");
+        return messageSource;
+    }
 }

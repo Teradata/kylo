@@ -24,6 +24,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
 
 /**
  * A type of data source.
@@ -66,6 +69,19 @@ public class Connector {
      * Display name of this connector
      */
     private String title;
+
+    public Connector() {
+    }
+
+    public Connector(@Nonnull final Connector other) {
+        color = other.color;
+        dataSourcePlugin = (other.dataSourcePlugin != null) ? new UiPlugin(other.dataSourcePlugin) : null;
+        icon = other.icon;
+        id = other.id;
+        tabs = (other.tabs != null) ? other.tabs.stream().map(ConnectorTab::new).collect(Collectors.toList()) : null;
+        template = (other.template != null) ? new DataSetTemplate(other.template) : null;
+        title = other.title;
+    }
 
     public String getColor() {
         return color;
@@ -121,5 +137,10 @@ public class Connector {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String toString() {
+        return "Connector{id=" + id + ", title='" + title + "'}";
     }
 }

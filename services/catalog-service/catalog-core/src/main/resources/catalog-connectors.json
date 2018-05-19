@@ -1,6 +1,5 @@
 [
   {
-    "id": 1,
     "title": "SQL Source",
     "tabs": [
       {
@@ -13,7 +12,6 @@
     }
   },
   {
-    "id": 2,
     "title": "Amazon S3",
     "icon": "amazon",
     "tabs": [
@@ -29,7 +27,6 @@
     }
   },
   {
-    "id": 3,
     "title": "Kafka",
     "icon": "kafka",
     "template": {
@@ -44,7 +41,6 @@
     }
   },
   {
-    "id": 4,
     "title": "File Upload",
     "icon": "file_upload",
     "tabs": [
@@ -55,7 +51,6 @@
     ]
   },
   {
-    "id": 5,
     "title": "HDFS",
     "icon": "hadoop",
     "tabs": [
@@ -71,7 +66,6 @@
     }
   },
   {
-    "id": 6,
     "title": "Teradata",
     "color": "orange-700",
     "tabs": [
@@ -94,7 +88,6 @@
     }
   },
   {
-    "id": 7,
     "title": "Google Cloud Storage",
     "icon": "google",
     "tabs": [
@@ -117,7 +110,6 @@
     }
   },
   {
-    "id": 8,
     "title": "Hive",
     "tabs": [
       {
@@ -127,7 +119,6 @@
     ]
   },
   {
-    "id": 9,
     "title": "Local File System",
     "icon": "fa-file",
     "tabs": [

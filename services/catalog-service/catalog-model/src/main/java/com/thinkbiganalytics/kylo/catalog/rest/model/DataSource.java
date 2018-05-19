@@ -23,6 +23,8 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nonnull;
+
 /**
  * Connection details to a source of data sets.
  */
@@ -49,6 +51,16 @@ public class DataSource {
      * Display name of this connector
      */
     private String title;
+
+    public DataSource() {
+    }
+
+    public DataSource(@Nonnull final DataSource other) {
+        connector = (other.connector != null) ? new Connector(other.connector) : null;
+        id = other.id;
+        template = (other.template != null) ? new DataSetTemplate(other.template) : null;
+        title = other.title;
+    }
 
     public Connector getConnector() {
         return connector;
@@ -80,5 +92,10 @@ public class DataSource {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSource{id=" + id + ", connector=" + connector + '}';
     }
 }

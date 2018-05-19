@@ -27,8 +27,9 @@ import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Component;
@@ -60,16 +61,12 @@ public class DataSourceController {
 
     public static final String BASE = "/v1/catalog/datasource";
 
-    private static final MessageSource MESSAGES;
-
-    static {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("DataSourceMessages");
-        MESSAGES = messageSource;
-    }
-
     @Inject
     DataSourceProvider dataSourceProvider;
+
+    @Autowired
+    @Qualifier("catalogMessages")
+    MessageSource messages;
 
     @Inject
     MetadataAccess metadataService;
@@ -86,7 +83,7 @@ public class DataSourceController {
                   })
     @Path("{id}")
     public Response getDataSource(@PathParam("id") final String dataSourceId) {
-        final DataSource dataSource = metadataService.read(() -> dataSourceProvider.findDataSource(dataSourceId).orElseThrow(() -> new NotFoundException(getMessage("notFound"))));
+        final DataSource dataSource = metadataService.read(() -> dataSourceProvider.findDataSource(dataSourceId).orElseThrow(() -> new NotFoundException(getMessage("catalog.datasource.notFound"))));
         return Response.ok(dataSource).build();
     }
 
@@ -100,10 +97,10 @@ public class DataSourceController {
     public Response getDataSources(@QueryParam("connector") final String connectorId, @QueryParam("filter") final String filter, @QueryParam("limit") final Integer limit,
                                    @QueryParam("start") final Integer start) {
         if (start != null && start < 0) {
-            throw new BadRequestException(getMessage("getDataSources.invalidStart"));
+            throw new BadRequestException(getMessage("catalog.datasource.getDataSources.invalidStart"));
         }
         if (limit != null && limit < 1) {
-            throw new BadRequestException(getMessage("getDataSources.invalidLimit"));
+            throw new BadRequestException(getMessage("catalog.datasource.getDataSources.invalidLimit"));
         }
 
         final PageRequest pageRequest = new PageRequest((start != null) ? start : 0, (limit != null) ? limit : Integer.MAX_VALUE);
@@ -120,6 +117,6 @@ public class DataSourceController {
      */
     @Nonnull
     private String getMessage(@Nonnull final String code) {
-        return MESSAGES.getMessage(code, null, RequestContextUtils.getLocale(request));
+        return messages.getMessage(code, null, RequestContextUtils.getLocale(request));
     }
 }

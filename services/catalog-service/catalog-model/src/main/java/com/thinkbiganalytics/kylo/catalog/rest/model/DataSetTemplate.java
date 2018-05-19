@@ -20,12 +20,22 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.base.MoreObjects;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
  * Template for creating a new data set
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataSetTemplate {
 
     /**
@@ -52,6 +62,17 @@ public class DataSetTemplate {
      * File paths (and URIs) for input data
      */
     private List<String> paths;
+
+    public DataSetTemplate() {
+    }
+
+    public DataSetTemplate(@Nonnull final DataSetTemplate other) {
+        files = (other.files != null) ? new ArrayList<>(other.files) : null;
+        format = other.format;
+        jars = (other.jars != null) ? new ArrayList<>(other.jars) : null;
+        options = (other.options != null) ? new HashMap<>(other.options) : null;
+        paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
+    }
 
     public List<String> getFiles() {
         return files;
@@ -91,5 +112,17 @@ public class DataSetTemplate {
 
     public void setPaths(List<String> paths) {
         this.paths = paths;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+            .add("files", files)
+            .add("format", format)
+            .add("jars", jars)
+            .add("options", options)
+            .add("paths", paths)
+            .omitNullValues()
+            .toString();
     }
 }

@@ -24,8 +24,9 @@ import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.MessageSource;
-import org.springframework.context.support.ResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.support.RequestContextUtils;
 
@@ -53,16 +54,12 @@ public class ConnectorController {
 
     public static final String BASE = "/v1/catalog/connector";
 
-    private static final MessageSource MESSAGES;
-
-    static {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("ConnectorMessages");
-        MESSAGES = messageSource;
-    }
-
     @Inject
     ConnectorProvider connectorProvider;
+
+    @Autowired
+    @Qualifier("catalogMessages")
+    MessageSource messages;
 
     @Inject
     HttpServletRequest request;
@@ -76,7 +73,7 @@ public class ConnectorController {
                   })
     @Path("{id}")
     public Response getConnector(@PathParam("id") final String connectorId) {
-        final Connector connector = connectorProvider.getConnector(connectorId).orElseThrow(() -> new BadRequestException(getMessage("notFound")));
+        final Connector connector = connectorProvider.findConnector(connectorId).orElseThrow(() -> new BadRequestException(getMessage("catalog.controller.notFound")));
         return Response.ok(connector).build();
     }
 
@@ -87,7 +84,7 @@ public class ConnectorController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     public Response listConnectors() {
-        return Response.ok(connectorProvider.getConnectors()).build();
+        return Response.ok(connectorProvider.findAllConnectors()).build();
     }
 
     /**
@@ -95,6 +92,6 @@ public class ConnectorController {
      */
     @Nonnull
     private String getMessage(@Nonnull final String code) {
-        return MESSAGES.getMessage(code, null, RequestContextUtils.getLocale(request));
+        return messages.getMessage(code, null, RequestContextUtils.getLocale(request));
     }
 }

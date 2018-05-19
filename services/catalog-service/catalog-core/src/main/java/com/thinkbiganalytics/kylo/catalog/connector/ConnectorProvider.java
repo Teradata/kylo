@@ -29,7 +29,6 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -58,6 +57,11 @@ public class ConnectorProvider {
         final List<Connector> connectorList = ObjectMapperSerializer.deserialize(connectorsJson, new TypeReference<List<Connector>>() {
         });
         connectors = connectorList.stream()
+            .peek(connector -> {
+                if (connector.getId() == null) {
+                    connector.setId(connector.getTitle().toLowerCase().replaceAll("\\W", "-").replaceAll("-{2,}", "-"));
+                }
+            })
             .collect(Collectors.toMap(Connector::getId, Function.identity()));
     }
 
@@ -65,15 +69,15 @@ public class ConnectorProvider {
      * Gets the connector with the specified id.
      */
     @Nonnull
-    public Optional<Connector> getConnector(@Nonnull final String id) {
-        return Optional.ofNullable(connectors.get(id));
+    public Optional<Connector> findConnector(@Nonnull final String id) {
+        return Optional.ofNullable(connectors.get(id)).map(Connector::new);
     }
 
     /**
      * Gets the list of available connectors.
      */
     @Nonnull
-    public List<Connector> getConnectors() {
-        return new ArrayList<>(connectors.values());
+    public List<Connector> findAllConnectors() {
+        return connectors.values().stream().map(Connector::new).collect(Collectors.toList());
     }
 }

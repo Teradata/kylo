@@ -23,6 +23,8 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
+import javax.annotation.Nonnull;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ConnectorTab extends UiPlugin {
@@ -31,6 +33,14 @@ public class ConnectorTab extends UiPlugin {
      * Name of the tab
      */
     private String label;
+
+    public ConnectorTab() {
+    }
+
+    public ConnectorTab(@Nonnull final ConnectorTab other) {
+        super(other);
+        label = other.label;
+    }
 
     public String getLabel() {
         return label;

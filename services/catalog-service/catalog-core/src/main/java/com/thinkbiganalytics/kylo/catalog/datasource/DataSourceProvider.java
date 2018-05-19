@@ -37,6 +37,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -60,7 +61,6 @@ import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 /**
  * Provides access to {@link DataSource} objects.
@@ -70,20 +70,29 @@ public class DataSourceProvider {
 
     private static final Logger log = LoggerFactory.getLogger(DataSourceProvider.class);
 
-    @Inject
-    ConnectorProvider connectorProvider;
-
-    @Inject
-    DatasourceProvider feedDataSourceProvider;
-
-    @Inject
-    DatasourceModelTransform feedDataSourceTransform;
-
     /**
      * Maps id to connection
      */
     @Nonnull
     private final Map<String, DataSource> catalogDataSources;
+
+    /**
+     * Provides access to connectors
+     */
+    @Nonnull
+    private final ConnectorProvider connectorProvider;
+
+    /**
+     * Provides access to feed data sources
+     */
+    @Nonnull
+    private final DatasourceProvider feedDataSourceProvider;
+
+    /**
+     * Transforms domain data sources to rest models
+     */
+    @Nonnull
+    private final DatasourceModelTransform feedDataSourceTransform;
 
     /**
      * Connector identifier for JDBC data sources from {@code feedDataSourceProvider}
@@ -95,14 +104,21 @@ public class DataSourceProvider {
     /**
      * Constructs a {@code ConnectorProvider}.
      */
-    public DataSourceProvider() throws IOException {
+    @Autowired
+    public DataSourceProvider(@Nonnull final DatasourceProvider feedDataSourceProvider, @Nonnull final DatasourceModelTransform feedDataSourceTransform,
+                              @Nonnull final ConnectorProvider connectorProvider) throws IOException {
+        this.feedDataSourceProvider = feedDataSourceProvider;
+        this.feedDataSourceTransform = feedDataSourceTransform;
+        this.connectorProvider = connectorProvider;
+
+        // Load data sources
         final String connectionsJson = IOUtils.toString(getClass().getResourceAsStream("/catalog-datasources.json"), StandardCharsets.UTF_8);
         final List<DataSource> connectionList = ObjectMapperSerializer.deserialize(connectionsJson, new TypeReference<List<DataSource>>() {
         });
         catalogDataSources = connectionList.stream()
             .peek(connection -> {
                 if (connection.getId() == null) {
-                    connection.setId(connection.getTitle().toLowerCase().replace(' ', '-'));
+                    connection.setId(connection.getTitle().toLowerCase().replaceAll("\\W", "-").replaceAll("-{2,}", "-"));
                 }
             })
             .collect(Collectors.toMap(DataSource::getId, Function.identity()));
@@ -112,9 +128,13 @@ public class DataSourceProvider {
      * Gets the connector with the specified id.
      */
     @Nonnull
+    @SuppressWarnings("squid:S2259")
     public Optional<DataSource> findDataSource(@Nonnull final String id) {
+        // Find the data source
         DataSource dataSource = catalogDataSources.get(id);
-        if (dataSource == null) {
+        if (dataSource != null) {
+            dataSource = new DataSource(dataSource);
+        } else {
             try {
                 final Datasource feedDataSource = feedDataSourceProvider.getDatasource(feedDataSourceProvider.resolve(id));
                 dataSource = toDataSource(feedDataSource, DatasourceModelTransform.Level.FULL);
@@ -123,11 +143,15 @@ public class DataSourceProvider {
             }
         }
 
-        if (dataSource != null) {
-            connectorProvider.getConnector(dataSource.getConnector().getId())
-                .ifPresent(dataSource::setConnector);
+        // Set connector
+        final Optional<Connector> connector = Optional.ofNullable(dataSource).map(DataSource::getConnector).map(Connector::getId).flatMap(connectorProvider::findConnector);
+        if (connector.isPresent()) {
+            dataSource.setConnector(connector.get());
             return Optional.of(dataSource);
         } else {
+            if (dataSource != null) {
+                log.error("Unable to find connector for data source: {}", dataSource);
+            }
             return Optional.empty();
         }
     }
@@ -139,7 +163,8 @@ public class DataSourceProvider {
     public Page<DataSource> findAllDataSources(@Nonnull final Pageable pageable, @Nullable final String filter) {
         // Filter catalog data sources
         @SuppressWarnings("squid:HiddenFieldCheck") final Supplier<Stream<DataSource>> catalogDataSources = () -> this.catalogDataSources.values().stream()
-            .filter(containsIgnoreCase(DataSource::getTitle, filter));
+            .filter(containsIgnoreCase(DataSource::getTitle, filter))
+            .map(DataSource::new);
 
         // Filter feed data sources
         final DatasourceCriteria feedDataSourcesCriteria = feedDataSourceProvider.datasetCriteria().type(UserDatasource.class);
@@ -197,6 +222,9 @@ public class DataSourceProvider {
         }
     }
 
+    /**
+     * Attaches the connector to a data source.
+     */
     @Nonnull
     @SuppressWarnings("squid:S2789")
     private Consumer<DataSource> findConnector() {
@@ -206,7 +234,7 @@ public class DataSourceProvider {
             final String connectorId = dataSource.getConnector().getId();
             Optional<Connector> connector = connectors.get(connectorId);
             if (connector == null) {
-                connector = connectorProvider.getConnector(connectorId);
+                connector = connectorProvider.findConnector(connectorId);
                 connectors.put(connectorId, connector);
             }
 
@@ -228,7 +256,7 @@ public class DataSourceProvider {
                 .thenComparing(DataSetTemplate::getJars, nullComparator)
                 .thenComparing(DataSetTemplate::getOptions, nullComparator)
                 .thenComparing(DataSetTemplate::getPaths, nullComparator);
-            jdbcConnectorId = connectorProvider.getConnectors().stream()
+            jdbcConnectorId = connectorProvider.findAllConnectors().stream()
                 .filter(connector -> {
                     final String format = (connector.getTemplate() != null) ? connector.getTemplate().getFormat() : null;
                     return StringUtils.equalsAnyIgnoreCase(format, "jdbc", "org.apache.spark.sql.jdbc", "org.apache.spark.sql.jdbc.DefaultSource", "org.apache.spark.sql.execution.datasources.jdbc",

@@ -22,10 +22,12 @@ package com.thinkbiganalytics.kylo.catalog.file;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.thinkbiganalytics.kylo.catalog.DataSetNotFound;
 import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
 
 import org.apache.commons.io.IOUtils;
@@ -44,10 +46,11 @@ import org.springframework.stereotype.Component;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.nio.file.AccessDeniedException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
@@ -68,16 +71,16 @@ public class CatalogFileManager {
     private final Configuration defaultConf;
 
     /**
-     * Root path for Kylo data directory
-     */
-    @Nonnull
-    private final Path dataSetsRoot;
-
-    /**
      * Default group for uploaded files
      */
     @Nullable
     private String groupname;
+
+    /**
+     * Validates data set paths
+     */
+    @Nonnull
+    private PathValidator pathValidator;
 
     /**
      * Default permissions for uploaded files
@@ -95,8 +98,8 @@ public class CatalogFileManager {
      * Constructs a {@code CatalogFileManager} using the specified Kylo data directory.
      */
     @Autowired
-    public CatalogFileManager(@Nonnull @Value("${config.kylo.datasets.root}") final String dataRoot) {
-        this.dataSetsRoot = new Path(dataRoot);
+    public CatalogFileManager(@Nonnull final PathValidator pathValidator) {
+        this.pathValidator = pathValidator;
 
         defaultConf = new Configuration();
         defaultConf.size();  // causes defaults to be loaded
@@ -130,21 +133,19 @@ public class CatalogFileManager {
     /**
      * Creates a file in the specified dataset from an uploaded file.
      *
-     * @param dataSetId the dataset id
-     * @param fileName  the file name
-     * @param in        the file input stream
+     * @param dataSet  the data set
+     * @param fileName the file name
+     * @param in       the file input stream
      * @return the uploaded file
-     * @throws DataSetNotFound            if the dataset does not exist
      * @throws FileAlreadyExistsException if a file with the same name already exists
      * @throws IllegalArgumentException   if the fileName is invalid
      * @throws IOException                if an I/O error occurs creating the file
      */
     @Nonnull
-    public DataSetFile createUpload(@Nonnull final String dataSetId, @Nonnull final String fileName, @Nonnull final InputStream in) throws IOException {
-        final DataSet dataSet = getDataSet(dataSetId).orElseThrow(DataSetNotFound::new);
-        final Path path = getUploadPath(dataSet.getId(), fileName);
+    public DataSetFile createUpload(@Nonnull final DataSet dataSet, @Nonnull final String fileName, @Nonnull final InputStream in) throws IOException {
+        final Path path = getUploadPath(dataSet, fileName);
         final List<DataSetFile> files = isolatedFunction(dataSet, path, fs -> {
-            log.debug("Creating file [{}] for dataset {}", fileName, dataSetId);
+            log.debug("Creating file [{}] for dataset {}", fileName, dataSet.getId());
             try (final FSDataOutputStream out = fs.create(path, false)) {
                 IOUtils.copyLarge(in, out);
             }
@@ -172,35 +173,50 @@ public class CatalogFileManager {
     /**
      * Deletes the uploaded file with the specified name.
      *
-     * @param dataSetId the dataset id
-     * @param fileName  the file name
-     * @throws DataSetNotFound          if the dataset does not exist
+     * @param dataSet  the data set
+     * @param fileName the file name
      * @throws IllegalArgumentException if the fileName is invalid
      * @throws IOException              if an I/O error occurs when deleting the file
      */
-    public void deleteUpload(@Nonnull final String dataSetId, @Nonnull final String fileName) throws IOException {
-        final DataSet dataSet = getDataSet(dataSetId).orElseThrow(DataSetNotFound::new);
-        final Path path = getUploadPath(dataSet.getId(), fileName);
+    public void deleteUpload(@Nonnull final DataSet dataSet, @Nonnull final String fileName) throws IOException {
+        final Path path = getUploadPath(dataSet, fileName);
         if (!isolatedFunction(dataSet, path, fs -> fs.delete(path, false))) {
-            log.debug("Delete unsuccessful for path: {}", path);
+            log.info("Delete unsuccessful for path: {}", path);
             throw new IOException("Failed to delete: " + dataSet.getId() + Path.SEPARATOR + fileName);
+        }
+    }
+
+    /**
+     * Lists the files at the specified URI for the specified data set.
+     *
+     * @param uri     directory for listing files
+     * @param dataSet data set
+     * @return files and directories at the URI
+     * @throws AccessDeniedException if the URI is not allowed for the data set
+     * @throws IOException           if an I/O error occurs when listing files
+     */
+    @Nonnull
+    public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSet dataSet) throws IOException {
+        final Path path = new Path(uri);
+        if (pathValidator.isPathAllowed(path, dataSet)) {
+            return isolatedFunction(dataSet, path, fs -> listFiles(fs, path));
+        } else {
+            log.info("Dataset {} does not allow access to path: {}", dataSet.getId(), uri);
+            throw new AccessDeniedException("Access to path [{}] is restricted: " + uri);
         }
     }
 
     /**
      * Lists files that have been uploaded for the specified dataset.
      *
-     * @param dataSetId the dataset id
+     * @param dataSet the data set
      * @return the uploaded files
-     * @throws DataSetNotFound          if the dataset does not exist
      * @throws IllegalArgumentException if the dataSetId is invalid
      * @throws IOException              if an I/O error occurs when accessing the files
      */
     @Nonnull
-    public List<DataSetFile> listUploads(@Nonnull final String dataSetId) throws IOException {
-        final DataSet dataSet = getDataSet(dataSetId).orElseThrow(DataSetNotFound::new);
-        final Path path = getUploadPath(dataSet.getId());
-
+    public List<DataSetFile> listUploads(@Nonnull final DataSet dataSet) throws IOException {
+        final Path path = getUploadPath(dataSet);
         try {
             return isolatedFunction(dataSet, path, fs -> listFiles(fs, path));
         } catch (final FileNotFoundException e) {
@@ -210,32 +226,30 @@ public class CatalogFileManager {
     }
 
     /**
-     * Gets the data set with the specified id.
-     */
-    @Nonnull
-    private Optional<DataSet> getDataSet(@Nonnull final String dataSetId) {
-        final DataSet dataSet = new DataSet();
-        dataSet.setId(dataSetId);
-        return Optional.of(dataSet);
-    }
-
-    /**
      * Gets the upload storage path for the specified data set.
+     *
+     * @throws IllegalArgumentException if the upload path cannot be determined
      */
     @Nonnull
-    private Path getUploadPath(@Nonnull final String dataSetId) {
-        Preconditions.checkArgument(dataSetId.matches("^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"), "Invalid dataset id");
-        return new Path(dataSetsRoot, dataSetId);
+    private Path getUploadPath(@Nonnull final DataSet dataSet) {
+        final List<String> paths = DataSourceUtil.getPaths(dataSet.getDataSource()).orElseGet(Collections::emptyList);
+        if (paths.size() == 1) {
+            return new Path(paths.get(0), dataSet.getId());
+        } else {
+            log.error("Unable to determine upload path for dataset: {}", dataSet.getId());
+            throw new IllegalArgumentException("Connector or data source must specify the upload path");
+        }
     }
 
     /**
      * Gets the path for the specified uploaded file.
+     *
+     * @throws IllegalArgumentException if the filename is invalid
      */
     @Nonnull
-    private Path getUploadPath(@Nonnull final String dataSetId, @Nonnull final String fileName) {
-        Preconditions.checkArgument(!fileName.matches("|\\.|\\.\\.|.*[/:].*"), "Invalid filename");
-        Preconditions.checkArgument(fileName.chars().noneMatch(Character::isIdentifierIgnorable), "Invalid filename");
-        return new Path(getUploadPath(dataSetId), fileName);
+    private Path getUploadPath(@Nonnull final DataSet dataSet, @Nonnull final String fileName) {
+        Preconditions.checkArgument(pathValidator.isValidFileName(fileName), "Invalid filename");
+        return new Path(getUploadPath(dataSet), fileName);
     }
 
     /**
@@ -243,20 +257,22 @@ public class CatalogFileManager {
      */
     @VisibleForTesting
     protected <R> R isolatedFunction(@Nonnull final DataSet dataSet, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
+        final DataSetTemplate mergedTemplate = DataSetUtil.mergeTemplates(dataSet);
+
         // Create configuration with dataset options
         final Configuration conf = new Configuration(defaultConf);
-        if (dataSet.getOptions() != null) {
-            log.debug("Creating Hadoop configuration with options: {}", dataSet.getOptions());
-            dataSet.getOptions().entrySet().stream()
+        if (mergedTemplate.getOptions() != null) {
+            log.debug("Creating Hadoop configuration with options: {}", mergedTemplate.getOptions());
+            mergedTemplate.getOptions().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
-                .forEach(entry -> conf.set(entry.getKey(), entry.getValue().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length())));
+                .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
         }
 
         // Run function in separate class loader
         try (final HadoopClassLoader classLoader = new HadoopClassLoader(conf)) {
-            if (dataSet.getJars() != null) {
-                log.debug("Adding jars to HadoopClassLoader: {}", dataSet.getJars());
-                classLoader.addJars(dataSet.getJars());
+            if (mergedTemplate.getJars() != null) {
+                log.debug("Adding jars to HadoopClassLoader: {}", mergedTemplate.getJars());
+                classLoader.addJars(mergedTemplate.getJars());
             }
 
             log.debug("Creating FileSystem from path: {}", path);

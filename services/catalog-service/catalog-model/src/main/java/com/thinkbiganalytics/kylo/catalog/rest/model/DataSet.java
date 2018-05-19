@@ -20,15 +20,44 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
  * #L%
  */
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import javax.annotation.Nonnull;
+
 /**
- * Connection details for a specific data source. Can be either a data file or a table.
+ * Reference to a specific data set in a data source.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataSet extends DataSetTemplate {
 
     /**
-     * Data set unique identifier
+     * Parent data source
+     */
+    private DataSource dataSource;
+
+    /**
+     * Unique identifier
      */
     private String id;
+
+    public DataSet() {
+    }
+
+    public DataSet(@Nonnull final DataSet other) {
+        super(other);
+        dataSource = (other.dataSource != null) ? new DataSource(other.dataSource) : null;
+        id = other.id;
+    }
+
+    public DataSource getDataSource() {
+        return dataSource;
+    }
+
+    public void setDataSource(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public String getId() {
         return id;
@@ -36,5 +65,10 @@ public class DataSet extends DataSetTemplate {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    @Override
+    public String toString() {
+        return "DataSet{id=" + id + ", dataSource=" + dataSource + '}';
     }
 }
