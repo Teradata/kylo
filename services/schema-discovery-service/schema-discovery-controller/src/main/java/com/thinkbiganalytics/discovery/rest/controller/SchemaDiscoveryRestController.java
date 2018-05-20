@@ -24,7 +24,6 @@ import com.thinkbiganalytics.discovery.FileParserFactory;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
-import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
@@ -40,9 +39,9 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
@@ -151,6 +150,7 @@ public class SchemaDiscoveryRestController {
         return Response.ok(schema).build();
     }
 
+
     @GET
     @Path("/file-parsers")
     @Produces(MediaType.APPLICATION_JSON)
@@ -160,13 +160,13 @@ public class SchemaDiscoveryRestController {
     )
     public Response getFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
-        List<SchemaParserDescriptor> descriptors = new ArrayList<>();
+
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-        for (FileSchemaParser parser : parsers) {
-            SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
-            descriptors.add(descriptor);
-        }
-        return Response.ok(descriptors).build();
+        List<SchemaParserDescriptor> list = parsers.stream().map(parser -> transformer.toUIModel(parser))
+            .sorted(SchemaParserDescriptorUtil.compareByNameThenPrimaryThenSpark()).collect(Collectors.toList());
+        list = SchemaParserDescriptorUtil.keepFirstByName(list);
+
+        return Response.ok(list).build();
     }
 
     @GET
@@ -178,15 +178,11 @@ public class SchemaDiscoveryRestController {
     )
     public Response getSparkFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
-        List<SchemaParserDescriptor> descriptors = new ArrayList<>();
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-        for (FileSchemaParser parser : parsers) {
-            SchemaParser schemaParserAnnotation = (parser.getClass().getAnnotation(SchemaParser.class));
-            if (schemaParserAnnotation.usesSpark()) {
-                SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
-                descriptors.add(descriptor);
-            }
-        }
-        return Response.ok(descriptors).build();
+        List<SchemaParserDescriptor> list = parsers.stream().map(parser -> transformer.toUIModel(parser))
+            .sorted(SchemaParserDescriptorUtil.compareByNameThenSpark()).collect(Collectors.toList());
+        list = SchemaParserDescriptorUtil.keepFirstByName(list);
+
+        return Response.ok(list).build();
     }
 }
