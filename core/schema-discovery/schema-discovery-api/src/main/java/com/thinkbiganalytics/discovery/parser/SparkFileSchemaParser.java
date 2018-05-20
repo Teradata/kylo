@@ -30,6 +30,18 @@ import java.io.InputStream;
  * Parses a file using Spark to determine its structure and format.
  */
 public interface SparkFileSchemaParser extends FileSchemaParser {
+    enum SparkVersion{
+        SPARK1("v1"),SPARK2("v2");
+
+        String version;
+        SparkVersion(String ver){
+            this.version = ver;
+        }
+
+       public String getVersion(){
+            return this.version;
+        }
+    }
 
 
     void setLimit(Integer limit);
@@ -50,5 +62,9 @@ public interface SparkFileSchemaParser extends FileSchemaParser {
      * this is used in the Data Wrangler to transform a local file
      */
     public SparkCommandBuilder getSparkScriptCommandBuilder();
+
+    void setSparkVersion(SparkVersion sparkVersion);
+
+    SparkVersion getSparkVersion();
 
 }

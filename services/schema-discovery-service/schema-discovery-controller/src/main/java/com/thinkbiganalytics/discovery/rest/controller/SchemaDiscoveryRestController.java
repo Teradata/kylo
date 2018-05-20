@@ -35,14 +35,17 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -71,6 +74,19 @@ public class SchemaDiscoveryRestController {
 
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
+
+    @Inject
+    private Environment environment;
+
+    /**
+     * Determine the SparkVersion supplied to kylo-services
+     * @return
+     */
+    private SparkFileSchemaParser.SparkVersion getSparkVersion(){
+        String sparkVersion = environment.getProperty("spark.version","v1");
+        SparkFileSchemaParser.SparkVersion version = Arrays.stream(SparkFileSchemaParser.SparkVersion.values()).filter(v -> sparkVersion.equalsIgnoreCase(v.getVersion())).findFirst().orElse(SparkFileSchemaParser.SparkVersion.SPARK1);
+        return version;
+    }
 
 
     /**
@@ -104,8 +120,9 @@ public class SchemaDiscoveryRestController {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
             SparkFileSchemaParser sparkFileSchemaParser = (SparkFileSchemaParser) p;
+            sparkFileSchemaParser.setSparkVersion(getSparkVersion());
             sparkFileSchemaParser.setDataFrameVariable(dataFrameVariable);
-            sparkFileSchemaParser.setLimit(100);
+            sparkFileSchemaParser.setLimit(limit);
             sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(fileInputStream);
         } catch (IOException e) {
             throw new WebApplicationException(e.getMessage());
@@ -139,6 +156,9 @@ public class SchemaDiscoveryRestController {
         try {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
+            if(p instanceof SparkFileSchemaParser){
+                ((SparkFileSchemaParser) p).setSparkVersion(getSparkVersion());
+            }
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
         } catch (IOException e) {

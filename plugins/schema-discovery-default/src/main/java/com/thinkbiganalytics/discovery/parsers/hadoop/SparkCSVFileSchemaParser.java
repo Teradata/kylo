@@ -29,13 +29,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * CSV parser using Spark  https://github.com/databricks/spark-csv
- * kylo spark.properties needs to have this --package property added:
- *
- * Spark compiled with Scala 2.11
- * --packages com.databricks:spark-csv_2.11:1.5.0
- * Spark compiled with Scala 2.10
- * --packages com.databricks:spark-csv_2.10:1.5.0
+ * CSV parser using Spark
+ * Spark 2:
+ *   - Native support for CSV parsing
+ * Spark 1:
+ *   https://github.com/databricks/spark-csv
+ *   kylo spark.properties needs to have this --package property added:
+ *      Spark compiled with Scala 2.11
+ *        --packages com.databricks:spark-csv_2.11:1.5.0
+ *      Spark compiled with Scala 2.10
+ *        --packages com.databricks:spark-csv_2.10:1.5.0
  */
 @SchemaParser(name = "CSV", allowSkipHeader = true, description = "Supports CSV formatted files.", tags = {"CSV"}, usesSpark = true, primary = false)
 public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
@@ -57,6 +60,7 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
     private String escapeChar = "\\";
 
 
+
     @Override
     public SparkFileType getSparkFileType() {
         return SparkFileType.CSV;
@@ -64,6 +68,8 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
 
 
     private class CsvSparkCommandBuilder extends AbstractSparkCommandBuilder {
+
+
 
         private Map<String, String> options = new HashMap();
 
@@ -77,10 +83,34 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
 
         @Override
         public String build(String pathToFile) {
+            return build(pathToFile,getSparkVersion());
+        }
+
+        private String build(String pathToFile,SparkVersion sparkVersion ){
             StringBuilder sb = new StringBuilder();
-            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + "sqlContext.read.format(\"com.databricks.spark.csv\")");
+            switch(sparkVersion) {
+                case SPARK1:
+                    sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + "sqlContext.read.format(\"com.databricks.spark.csv\")");
+                    break;
+                case SPARK2:
+                    sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + "sqlContext.read.format(\"csv\")");
+                    break;
+            }
+            addOptions(sb);
+            sb.append(String.format(".load(\"%s\")", pathToFile));
+            if (isLimit()) {
+                sb.append(String.format(".limit(%s)", limit));
+            }
+            return sb.toString();
+
+            }
+
+
+
+        private void addOptions(StringBuilder sb){
             addOption(sb, "header", headerRow + "");
             addOption(sb, "inferSchema", autoDetect + "");
+            addOption(sb,"delimiter",separatorChar);
             if (escapeChar.equalsIgnoreCase("\\")) {
                 escapeChar = "\\\\";
             }
@@ -89,11 +119,6 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
                 quoteChar = "\\\"";
             }
             addOption(sb, "quote", quoteChar);
-            sb.append(String.format(".load(\"%s\")", pathToFile));
-            if (isLimit()) {
-                sb.append(String.format(".limit(%s)", limit));
-            }
-            return sb.toString();
         }
     }
 

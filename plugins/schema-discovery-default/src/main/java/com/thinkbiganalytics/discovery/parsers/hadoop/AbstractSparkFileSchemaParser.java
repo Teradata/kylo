@@ -38,6 +38,8 @@ import javax.inject.Inject;
  */
 public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaParser {
 
+    private SparkVersion sparkVersion;
+
     /**
      * how many rows should the script limit
      */
@@ -93,5 +95,13 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
         return new DefaultSparkCommandBuilder(dataFrameVariable, limit, getSparkFileType().name().toLowerCase());
     }
 
+    @Override
+    public void setSparkVersion(SparkVersion sparkVersion) {
 
+    }
+
+    @Override
+    public SparkVersion getSparkVersion() {
+        return sparkVersion == null ? SparkVersion.SPARK1 : sparkVersion;
+    }
 }
