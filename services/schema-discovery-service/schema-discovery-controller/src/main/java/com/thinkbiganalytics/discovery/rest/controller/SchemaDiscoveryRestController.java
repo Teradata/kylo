@@ -83,7 +83,7 @@ public class SchemaDiscoveryRestController {
      * @return
      */
     private SparkFileSchemaParser.SparkVersion getSparkVersion(){
-        String sparkVersion = environment.getProperty("spark.version","v1");
+        String sparkVersion = environment.getProperty("spark.version","v2");
         SparkFileSchemaParser.SparkVersion version = Arrays.stream(SparkFileSchemaParser.SparkVersion.values()).filter(v -> sparkVersion.equalsIgnoreCase(v.getVersion())).findFirst().orElse(SparkFileSchemaParser.SparkVersion.SPARK1);
         return version;
     }

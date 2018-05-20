@@ -102,6 +102,6 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
 
     @Override
     public SparkVersion getSparkVersion() {
-        return sparkVersion == null ? SparkVersion.SPARK1 : sparkVersion;
+        return sparkVersion == null ? SparkVersion.SPARK2 : sparkVersion;
     }
 }
