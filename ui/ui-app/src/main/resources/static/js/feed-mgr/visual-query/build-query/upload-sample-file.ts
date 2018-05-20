@@ -86,7 +86,9 @@ export class UploadSampleFile implements  OnInit {
         let file = this.sampleFile;
         let params = {};
         if (this.schemaParser) {
-            params = {parser: JSON.stringify(this.schemaParser),dataFrameVariable:SparkConstants.DATA_FRAME_VARIABLE,limit:100};
+            //limit is set to -1.  -1 or null will imply no limit.
+            //limits are taken care of by the 'sample' option which defaults to 1000 limit
+            params = {parser: JSON.stringify(this.schemaParser),dataFrameVariable:SparkConstants.DATA_FRAME_VARIABLE,limit:-1};
         }
 
         let uploadUrl = this.restUrlService.UPLOAD_SPARK_SAMPLE_FILE;

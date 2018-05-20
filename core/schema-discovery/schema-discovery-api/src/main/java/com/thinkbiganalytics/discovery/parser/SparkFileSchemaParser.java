@@ -43,6 +43,7 @@ public interface SparkFileSchemaParser extends FileSchemaParser {
         }
     }
 
+    public static Integer NO_LIMIT = -1;
 
     void setLimit(Integer limit);
 

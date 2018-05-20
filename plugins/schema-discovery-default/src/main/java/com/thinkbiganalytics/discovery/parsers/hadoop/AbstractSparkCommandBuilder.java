@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.discovery.parsers.hadoop;
 
+import static com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser.NO_LIMIT;
+
 /*-
  * #%L
  * thinkbig-schema-discovery-default
@@ -55,7 +57,7 @@ public abstract class AbstractSparkCommandBuilder implements SparkCommandBuilder
     }
 
     public boolean isLimit() {
-        return limit != null;
+        return limit != null && NO_LIMIT != limit;
     }
 
     public void appendDataFrameScript(StringBuilder sb, String method, String pathToFile) {

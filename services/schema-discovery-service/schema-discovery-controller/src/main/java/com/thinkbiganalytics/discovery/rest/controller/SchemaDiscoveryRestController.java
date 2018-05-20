@@ -110,7 +110,7 @@ public class SchemaDiscoveryRestController {
                   })
     public Response uploadFileSpark(@FormDataParam("parser") String parserDescriptor,
                                     @FormDataParam("dataFrameVariable") @DefaultValue("df") String dataFrameVariable,
-                                    @FormDataParam("limit") @DefaultValue("100") Integer limit,
+                                    @FormDataParam("limit") @DefaultValue("-1") Integer limit,
                                     @FormDataParam("file") InputStream fileInputStream,
                                     @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
 
