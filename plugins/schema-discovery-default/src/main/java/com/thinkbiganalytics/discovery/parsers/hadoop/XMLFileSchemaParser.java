@@ -173,8 +173,7 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
             sb.append("\nimport com.databricks.spark.xml._;\n");
             appendDataFrameVariable(sb);
-            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + String
-                .format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
+            sb.append(String.format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
             return sb.toString();
         }
     }
