@@ -35,9 +35,7 @@ class ModuleFactory  {
                 params: {},
                 views: {
                     content: {
-                        templateUrl: "js/feed-mgr/domain-types/domain-types.html",
-                        controller: "DomainTypesController",
-                        controllerAs: "vm"
+                        component : "domainTypesController"
                     }
                 },
                 resolve: {
