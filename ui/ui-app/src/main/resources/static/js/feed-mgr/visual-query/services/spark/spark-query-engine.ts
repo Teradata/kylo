@@ -202,6 +202,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
                 //we are working with a file.. add the spark code to use it
                 //extract options out from a variable to do the parsing
                 sparkScript += this.sampleFile.script;
+                sparkScript += "\n";
                 sparkScript += SparkConstants.DATA_FRAME_VARIABLE + " = " + SparkConstants.DATA_FRAME_VARIABLE;
             }else {
                 sparkScript += this.source_;
@@ -218,8 +219,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
             if (sample && !this.limitBeforeSample_ && this.limit_ > 0) {
                 sparkScript += ".limit(" + this.limit_ + ")";
             }
-
-
             sparkScript += "\n";
             ++start;
         } else {
