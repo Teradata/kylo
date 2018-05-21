@@ -1,54 +1,63 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
-import {moduleName} from "./module-name";
+import { moduleName } from "./module-name";
 import AccessControlService from '../../services/AccessControlService';
+import { DatasourcesService } from '../services/DatasourcesService';
 
 export class CatalogController {
 
 
-    datasources:any;
-    loading:any;
-    navigateToSchemas:any;
+    datasources: any;
+    loading: boolean = true;
+
+    $onInit() {
+        this.ngOnInit();
+    }
+    ngOnInit() {
+        this.$q.when(this.accessControlService.hasPermission(AccessControlService.DATASOURCE_ACCESS))
+            .then((access: any) => {
+                if (access) {
+                    this.getDataSources();
+                } else {
+                    this.loading = false;
+                }
+            });
+    }
+
     /**
      * Displays a list of datasources.
      */
-    constructor(private $scope:any, private $q:any, private DatasourcesService:any, private StateService:any, private accessControlService:any) {
-        var self = this;
-        this.datasources = [DatasourcesService.getHiveDatasource()];
 
-        self.loading = true;
-
-        self.navigateToSchemas = function (datasource:any) {
-            StateService.FeedManager().Table().navigateToSchemas(datasource.id);
+    static readonly $inject = ["$scope", "$q", "DatasourcesService", "StateService", "AccessControlService"];
+    constructor(private $scope: IScope, private $q: angular.IQService, private datasourcesService: DatasourcesService, private StateService: any,
+        private accessControlService: AccessControlService) {
+       
+            this.datasources = [this.datasourcesService.getHiveDatasource()];
+    
+        };
+    navigateToSchemas = (datasource: any) => {
+        this.StateService.FeedManager().Table().navigateToSchemas(datasource.id);
+    };
+    getDataSources() {
+        var successFn = (response: any) => {
+            var jdbcSources = _.filter(response, (ds) => {
+                return ds['@type'] === 'JdbcDatasource';
+            });
+            this.datasources.push.apply(this.datasources, jdbcSources);
+            this.loading = false;
+        };
+        var errorFn = (err: any) => {
+            this.loading = false;
         };
 
-        function getDataSources() {
-            var successFn = function (response:any) {
-                var jdbcSources = _.filter(response, function(ds) {
-                    return ds['@type'] === 'JdbcDatasource';
-                });
-                self.datasources.push.apply(self.datasources, jdbcSources);
-                self.loading = false;
-            };
-            var errorFn = function (err:any) {
-                self.loading = false;
-            };
-
-            var promise = DatasourcesService.findAll();
-            promise.then(successFn, errorFn);
-            return promise;
-        }
-
-        $q.when(accessControlService.hasPermission(AccessControlService.DATASOURCE_ACCESS))
-            .then(function (access:any) {
-                if (access) {
-                    getDataSources();
-                } else {
-                    self.loading = false;
-                }
-            });
+        var promise = this.datasourcesService.findAll();
+        promise.then(successFn, errorFn);
+        return promise;
     };
-
 }
-angular.module(moduleName).controller('CatalogController', ["$scope", "$q", "DatasourcesService", "StateService", "AccessControlService", CatalogController]);
+angular.module(moduleName).component('catalogController', {
+    controller: CatalogController,
+    controllerAs: 'vm',
+    templateUrl: 'js/feed-mgr/tables/catalog.html'
+});
 
