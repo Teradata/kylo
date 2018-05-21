@@ -2,7 +2,7 @@
   {
     "title": "Gregs Amazon S3",
     "connector": {
-      "id": "2"
+      "id": "amazon-s3"
     },
     "template": {
       "options": {
@@ -14,7 +14,7 @@
   {
     "title": "Ruslans Amazon S3",
     "connector": {
-      "id": "2"
+      "id": "amazon-s3"
     },
     "template": {
       "options": {
@@ -26,7 +26,7 @@
   {
     "title": "Ruslans Local File System",
     "connector": {
-      "id": "9"
+      "id": "local-file-system"
     },
     "template": {
       "paths": [
@@ -37,7 +37,7 @@
   {
     "title": "Localhost:9092",
     "connector": {
-      "id": "3"
+      "id": "kafka"
     },
     "template": {
       "options": {
@@ -48,7 +48,7 @@
   {
     "title": "Localhost:9093",
     "connector": {
-      "id": "3"
+      "id": "kafka"
     },
     "template": {
       "options": {
@@ -59,7 +59,7 @@
   {
     "title": "Ruslans HDFS home",
     "connector": {
-      "id": "5"
+      "id": "hdfs"
     },
     "template": {
       "paths": [
@@ -70,7 +70,7 @@
   {
     "title": "Spark logs",
     "connector": {
-      "id": "5"
+      "id": "hdfs"
     },
     "template": {
       "paths": [
@@ -81,7 +81,7 @@
   {
     "title": "Teradata Database 1",
     "connector": {
-      "id": "6"
+      "id": "teradata"
     },
     "template": {
       "options": {
@@ -94,7 +94,7 @@
   {
     "title": "Teradata Database 2",
     "connector": {
-      "id": "6"
+      "id": "teradata"
     },
     "template": {
       "options": {
@@ -107,7 +107,7 @@
   {
     "title": "Greg's google storage",
     "connector": {
-      "id": "7"
+      "id": "google-cloud-storage"
     },
     "template": {
       "options": {

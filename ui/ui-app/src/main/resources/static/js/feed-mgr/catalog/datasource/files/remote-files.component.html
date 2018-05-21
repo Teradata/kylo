@@ -25,6 +25,10 @@
     [clickable]="true"
     [multiple]="true"
     [selectable]="true"
+    [sortable]="true"
+    [sortBy]="sortBy"
+    [sortOrder]="sortOrder"
+    (sortChange)="sort($event)"
     (rowClick)="rowClick($event.row)">
   <ng-template tdDataTableTemplate="directory" let-value="value">
     <ng-md-icon [icon]="value ? 'fa-folder' : 'fa-file-r'" style="fill: #607D8B;"></ng-md-icon>
