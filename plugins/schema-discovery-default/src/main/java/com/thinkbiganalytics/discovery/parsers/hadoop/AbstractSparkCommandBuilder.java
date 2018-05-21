@@ -68,7 +68,12 @@ public abstract class AbstractSparkCommandBuilder implements SparkCommandBuilder
         sb.append(".toDF()");
     }
 
+    public void appendDataFrameVariable(StringBuilder sb){
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+    }
+
     public void appendDataFrameReadScript(StringBuilder sb, String method, String pathToFile){
-        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
+        appendDataFrameVariable(sb);
+        sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
     }
 }

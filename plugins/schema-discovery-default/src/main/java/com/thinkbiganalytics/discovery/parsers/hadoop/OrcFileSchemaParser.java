@@ -32,12 +32,7 @@ public class OrcFileSchemaParser extends AbstractSparkFileSchemaParser implement
     }
 
     @Override
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder() {
-        return new DefaultSparkCommandBuilder("orc");
-    }
-
-    @Override
-    public SparkCommandBuilder getSparkScriptCommandBuilder() {
+    public SparkCommandBuilder getSparkCommandBuilder() {
 
         return new DefaultSparkCommandBuilder(dataFrameVariable, limit, "orc");
     }

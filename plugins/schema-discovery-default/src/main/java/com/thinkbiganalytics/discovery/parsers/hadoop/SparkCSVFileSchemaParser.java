@@ -90,10 +90,12 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
             StringBuilder sb = new StringBuilder();
             switch(sparkVersion) {
                 case SPARK1:
-                    sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + "sqlContext.read.format(\"com.databricks.spark.csv\")");
+                    appendDataFrameVariable(sb);
+                    sb.append("sqlContext.read.format(\"com.databricks.spark.csv\")");
                     break;
                 case SPARK2:
-                    sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + "sqlContext.read.format(\"csv\")");
+                    appendDataFrameVariable(sb);
+                    sb.append("sqlContext.read.format(\"csv\")");
                     break;
             }
             addOptions(sb);
@@ -123,12 +125,7 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
     }
 
     @Override
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder() {
-        return new CsvSparkCommandBuilder(dataFrameVariable, limit);
-    }
-
-    @Override
-    public SparkCommandBuilder getSparkScriptCommandBuilder() {
+    public SparkCommandBuilder getSparkCommandBuilder() {
         return new CsvSparkCommandBuilder(dataFrameVariable, limit);
     }
 

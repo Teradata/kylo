@@ -54,15 +54,9 @@ public interface SparkFileSchemaParser extends FileSchemaParser {
     public SparkFileType getSparkFileType();
 
     /**
-     * Return the command builder used to parse the sample file to detect schema
-     */
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder();
-
-    /**
      * return the command builder used to generate the spark script
-     * this is used in the Data Wrangler to transform a local file
      */
-    public SparkCommandBuilder getSparkScriptCommandBuilder();
+    public SparkCommandBuilder getSparkCommandBuilder();
 
     void setSparkVersion(SparkVersion sparkVersion);
 

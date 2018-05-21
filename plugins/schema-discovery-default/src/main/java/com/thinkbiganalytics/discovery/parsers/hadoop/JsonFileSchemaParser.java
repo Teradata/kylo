@@ -35,7 +35,7 @@ public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implemen
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, getSparkFileType(), target, getSparkSchemaDetectionCommandBuilder());
+        HiveTableSchema schema = (HiveTableSchema) getSparkParserService().doParse(is, getSparkFileType(), target, getSparkCommandBuilder());
         schema.setStructured(true);
         schema.setHiveFormat(
             "ROW FORMAT SERDE 'org.apache.hive.hcatalog.data.JsonSerDe' STORED AS INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.IgnoreKeyTextOutputFormat'");
