@@ -237,7 +237,7 @@ fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
 SPARK_PROFILE="v"$(spark-shell --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-echo "using NiFi profile: \${SPARK_PROFILE}"
+echo "using spark: \${SPARK_PROFILE}"
 
 java \$KYLO_SERVICES_OPTS \$KYLO_SPRING_PROFILES_OPTS -Dspark.version=\${SPARK_PROFILE} -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
@@ -261,7 +261,7 @@ fi
 echo "using NiFi profile: \${KYLO_NIFI_PROFILE}"
 
 SPARK_PROFILE="v"$(spark-shell --version 2>&1 | grep -o "version [0-9]" | grep -o "[0-9]" | head -1)
-echo "using NiFi profile: \${SPARK_PROFILE}"
+echo "using spark: \${SPARK_PROFILE}"
 
 java \$KYLO_SERVICES_OPTS \$JAVA_DEBUG_OPTS -Dspark.version=\${SPARK_PROFILE} -cp $INSTALL_HOME/kylo-services/conf:$INSTALL_HOME/kylo-services/lib/*:$INSTALL_HOME/kylo-services/lib/\${KYLO_NIFI_PROFILE}/*:$INSTALL_HOME/kylo-services/plugin/* com.thinkbiganalytics.server.KyloServerApplication --pgrep-marker=$pgrepMarkerKyloServices > $LOG_DIRECTORY_LOCATION/kylo-services/std.out 2>$LOG_DIRECTORY_LOCATION/kylo-services/std.err &
 EOF
