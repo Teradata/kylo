@@ -35,6 +35,7 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 
 import java.io.IOException;
@@ -75,7 +76,7 @@ public class SchemaDiscoveryRestController {
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
 
-    @Inject
+    @Autowired
     private Environment environment;
 
     /**
@@ -83,7 +84,8 @@ public class SchemaDiscoveryRestController {
      * @return
      */
     private SparkFileSchemaParser.SparkVersion getSparkVersion(){
-        String sparkVersion = environment.getProperty("spark.version","v2");
+        String defaultVersion = "v2";
+        String sparkVersion = environment != null ? environment.getProperty("spark.version",defaultVersion) : defaultVersion;
         SparkFileSchemaParser.SparkVersion version = Arrays.stream(SparkFileSchemaParser.SparkVersion.values()).filter(v -> sparkVersion.equalsIgnoreCase(v.getVersion())).findFirst().orElse(SparkFileSchemaParser.SparkVersion.SPARK1);
         return version;
     }
@@ -204,5 +206,9 @@ public class SchemaDiscoveryRestController {
         list = SchemaParserDescriptorUtil.keepFirstByName(list);
 
         return Response.ok(list).build();
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }
