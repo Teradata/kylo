@@ -327,15 +327,27 @@ public class FeedRestController {
     
     @POST
     @Path("/start/{feedId}")
-    @Produces(MediaType.TEXT_PLAIN)
+    @Produces(MediaType.APPLICATION_JSON)
     @ApiOperation("Starts a feed.")
     @ApiResponses({
         @ApiResponse(code = 200, message = "The feed was started.", response = FeedSummary.class),
         @ApiResponse(code = 500, message = "The feed could not be started.", response = RestResponseStatus.class)
     })
     public Response startFeed(@PathParam("feedId") String feedId) {
-        FeedSummary feed = getMetadataService().startFeed(feedId);
-        return Response.ok("Feed " + feed.getSystemFeedName() + " (" + feed.getId() + ") started successfully").build();
+
+            FeedSummary feed = getMetadataService().startFeed(feedId);
+            RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
+            RestResponseStatus status = null;
+            if(feed != null){
+                status = builder.message("Feed " + feed.getCategoryAndFeedDisplayName() +" started successfully")
+                    .buildSuccess();
+            }
+            else {
+                status = builder.message("Error starting feed for id "+feedId).buildError();
+            }
+
+
+        return Response.ok(status).build();
     }
 
     @POST

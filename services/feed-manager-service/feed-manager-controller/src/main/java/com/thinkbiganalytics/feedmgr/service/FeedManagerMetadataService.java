@@ -337,7 +337,8 @@ public class FeedManagerMetadataService implements MetadataService {
                 return inputProcessor;
             });
         if(!feedInputProcessor.isPresent()){
-            throw new RuntimeException("Unable to start Feed " + feedMetadata.getCategoryAndFeedName());
+            log.error("Unable to start the feed {}.  Could not find the input processor to start.", feedMetadata.getCategoryAndFeedName());
+            throw new RuntimeException("Unable to start Feed " + feedMetadata.getCategoryAndFeedName()+ ".  Could not find the input processor to start the feed");
         }
 
         return new FeedSummary(feedMetadata);
