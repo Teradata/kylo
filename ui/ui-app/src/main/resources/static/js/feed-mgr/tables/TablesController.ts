@@ -185,7 +185,7 @@ export class TablesController {
             self.loading = true;
             var successFn = function (response:any) {
                 self.datasource = response;
-                self.cardTitle = self.datasource.name + " " + self.schema + " " + $filter('translate')('views.TableController.Tables');
+                self.cardTitle = self.schema;
                 self.loading = false;
             };
             var errorFn = function (err:any) {

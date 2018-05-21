@@ -33,7 +33,7 @@
         <body-section>
             <md-content>
                 <ng-form name="vm.propertiesForm" layout-fill>
-                    <md-virtual-repeat-container browser-height browser-height-offset="400"
+                    <md-virtual-repeat-container browser-height browser-height-offset="300"
                                                  browser-height-scroll-y="false" style="width:100%;"
                                                  md-top-index="vm.topIndex">
 
@@ -85,7 +85,7 @@
                                                            mentio-typed-text="typedTerm"
                                                            ng-model="property.value"
                                                            size="100"
-                                                           ng-required="!property.userEditable"
+                                                           ng-required="!property.userEditable && property.propertyDescriptor.required"
                                                            ng-change="vm.changedPropertyInput(property)"
                                                            ng-keydown="vm.keydownPropertyInput(property)"
                                                     ng-init="property.changed=false"/>
@@ -105,16 +105,26 @@
                                             </div>
 
                                             <div layout="row" layout-align="start-center">
+
                                                 <md-input-container style="height:30px;margin-bottom:5px;"
+                                                                    class="md-block" ng-if="property.value == null || property.value == ''">
+                                                    <div class="md-checkbox-div-top" ng-repeat="v in [0]">
+                                                        <md-checkbox aria-label="Set as empty string"
+                                                                     ng-checked="property.value == ''"
+                                                                     ng-click="vm.toggleSetAsEmptyString(property)">
+                                                            Set as empty string
+                                                        </md-checkbox>
+                                                    </div>
+                                                </md-input-container>
+                                                <md-input-container style="height:30px;margin-bottom:5px;padding-left:10px;"
                                                                     class="md-block">
                                                     <div class="md-checkbox-div-top" ng-repeat="v in [0]">
                                                         <md-checkbox aria-label="User can supply input"
                                                                      ng-model="property.userEditable">
-                                                          Allow user input?
+                                                          Allow user input
                                                         </md-checkbox>
                                                     </div>
                                                 </md-input-container>
-
                                                 <md-input-container
                                                         style="height:30px;margin-bottom:5px; padding-left:10px;"
                                                         class="md-block" ng-if="property.userEditable">
@@ -214,7 +224,7 @@
         </header-section>
 
         <body-section style="padding-left:25px;">
-            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()">
+            <md-checkbox ng-model="vm.showOnlySelected" aria-label="Show Selected" ng-change="vm.onShowOnlySelected()" style="margin-left:-9px">
                 Show only selected
             </md-checkbox>
             <md-subheader class="md-primary left-aligned layout-padding-left">Jump to a group</md-subheader>
@@ -223,7 +233,7 @@
                      layout-align="start start" layout="column" md-item-size="30">
 
                 <div md-virtual-repeat="processor in vm.processors " >
-                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;" >
+                    <md-button ng-click="vm.scrollToProcessor(processor)" class="grey" style="text-transform: capitalize;text-align:left" >
                     {{processor.name}}
                     </md-button>
                     <md-divider ng-if="!$last"></md-divider>

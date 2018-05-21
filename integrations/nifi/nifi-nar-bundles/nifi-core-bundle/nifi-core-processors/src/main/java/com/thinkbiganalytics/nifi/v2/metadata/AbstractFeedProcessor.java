@@ -26,7 +26,7 @@ package com.thinkbiganalytics.nifi.v2.metadata;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.v2.common.BaseProcessor;
+import com.thinkbiganalytics.nifi.processor.BaseProcessor;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 import org.apache.nifi.components.PropertyDescriptor;

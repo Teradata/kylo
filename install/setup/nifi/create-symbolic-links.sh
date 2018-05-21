@@ -74,6 +74,7 @@ ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-validate-cleanse-${SPARK_PROFILE}-*-
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-job-profiler-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-job-profiler-jar-with-dependencies.jar
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-interpreter-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-interpreter-jar-with-dependencies.jar
 ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-merge-table-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-merge-table-jar-with-dependencies.jar
+ln -f -s $NIFI_HOME/data/lib/app/kylo-spark-multi-exec-${SPARK_PROFILE}-*-jar-with-dependencies.jar $NIFI_HOME/current/lib/app/kylo-spark-multi-exec-jar-with-dependencies.jar
 
 chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/kylo*.nar
 chown -h $NIFI_USER:$NIFI_GROUP $NIFI_HOME/current/lib/app/kylo*.jar

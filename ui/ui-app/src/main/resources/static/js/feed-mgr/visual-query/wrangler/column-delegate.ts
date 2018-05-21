@@ -601,16 +601,73 @@ export class ColumnDelegate implements IColumnDelegate {
         });
     }
 
-    flattenStructColumn(self: any, column: any, grid:any) {
-        const fieldName = self.getColumnFieldName(column);
-        const formula = self.toFormula(`col("${fieldName}.*")`, column, grid);
-        self.controller.addFunction(formula, {
-            formula: formula, icon: "functions",
-            name: "Flatten " + fieldName
+    /**
+     * Parse a struct field into its top-level fields
+     * @param column
+     * @returns {string[]} list of fields
+     */
+    structToFields(column: any) : string[] {
+
+        // Strip initial struct wrapper then remove any additional structs
+        let fields : string = column.dataType;
+        fields = fields.substr(7, fields.length-2);
+        fields = fields.replace(/struct\<(.*?)\>/g, "ignore");
+        let fieldArray : string[] = fields.split(",");
+        return fieldArray.map( (v:string) => {
+            return v.split(":")[0];
         });
     }
 
     /**
+     * Flattens a struct column into multiple fields (one-level)
+     * @param self
+     * @param column
+     * @param grid
+     */
+    flattenStructColumn(self: any, column: any, grid:any) {
+
+        const fieldName = self.getColumnFieldName(column);
+
+        // Check for potential name conflicts
+        let structFields = self.structToFields(column);
+        let existingCols = self.toColumnArray(grid.columns);
+
+        let conflicts = structFields.filter( (n:string) =>  {
+            return existingCols.indexOf(n) !== -1;
+        });
+
+        let formula : string;
+        if (conflicts.length == 0) {
+            formula = self.toFormula(`col("${fieldName}.*")`, column, grid);
+        } else {
+            let fieldParts = structFields.map ( (field:string)=> {
+                return (conflicts.indexOf(field) !== -1 ? `getField(${fieldName},"${field}").as("${fieldName}_${field}")` : `getField(${fieldName},"${field}").as("${field}")`);
+            });
+
+            // Insert new fields into the field list
+            let idxOfCurrentColumn = existingCols.indexOf(fieldName);
+            let formulaFields : string[] = []
+            if (idxOfCurrentColumn == 0) {
+                formulaFields.push(fieldParts);
+                formulaFields.push(existingCols.slice(idxOfCurrentColumn+1));
+            } else if (idxOfCurrentColumn == existingCols.length - 1) {
+                formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
+                formulaFields.push(fieldParts);
+            } else {
+                formulaFields.push(existingCols.slice(0, idxOfCurrentColumn));
+                formulaFields.push(fieldParts);
+                formulaFields.push(existingCols.slice(idxOfCurrentColumn+1));
+            }
+            formula = `select(${formulaFields.join(",")})`;
+        }
+        self.controller.addFunction(formula, {
+            formula: formula, icon: "functions",
+            name: "Flatten " + fieldName
+        });
+
+    }
+
+   /**
      * Generates a temporary fieldname
      * @returns {string} the fieldName
      */
@@ -634,7 +691,7 @@ export class ColumnDelegate implements IColumnDelegate {
      */
     extractNumeric(self: any, column: any, grid: any) {
         const fieldName = self.getColumnFieldName(column);
-        let script = `regexp_replace(${fieldName}, "[^0-9\\\\.]+","").as('${fieldName}')`;
+        let script = `regexp_replace(${fieldName}, "[^0-9\-\\\\.]+","").as('${fieldName}')`;
 
         const formula = self.toFormula(script, column, grid);
         self.controller.addFunction(formula, {

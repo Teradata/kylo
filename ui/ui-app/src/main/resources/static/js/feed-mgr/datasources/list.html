@@ -10,7 +10,7 @@
           <md-list-item class="md-secondary" dir-paginate="datasource in vm.datasources |orderBy:vm.paginationData.sort |filter:vm.filter |itemsPerPage:vm.paginationData.rowsPerPage"
                         pagination-id="vm.pageName">
             <div layout="row" layout-fill>
-              <div flex="20" layout="column" class="item-column md-list-item-text" ng-click="vm.editDatasource(datasource)" title="{{datasource.name}}">
+              <div flex="65 " layout="column" class="item-column md-list-item-text" ng-click="vm.editDatasource(datasource)" title="{{datasource.name}}">
                 <span class="item-title" title="{{datasource.name}}">{{datasource.name}}</span>
                 <span class="column-title column-title-bottom">Name</span>
               </div>
@@ -18,11 +18,7 @@
                 <span class="item-title">{{datasource.type}}</span>
                 <span class="column-title column-title-bottom">Type</span>
               </div>
-              <div flex="40" layout="column" class="item-column md-list-item-text">
-                <span class="item-title">{{datasource.description}}</span>
-                <span class="column-title column-title-bottom">Description</span>
-              </div>
-              <div flex="20" layout="column" class="item-column md-list-item-text">
+              <div flex="15" layout="column" class="item-column md-list-item-text">
                 <span class="item-title">{{vm.getRelatedFeedsCount(datasource)}}</span>
                 <span class="column-title column-title-bottom">Related Feeds</span>
               </div>

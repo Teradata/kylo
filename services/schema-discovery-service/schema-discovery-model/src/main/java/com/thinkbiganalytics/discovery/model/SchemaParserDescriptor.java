@@ -35,6 +35,8 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
     private String[] tags;
     private String clientHelper;
     private boolean allowSkipHeader;
+    private boolean usesSpark;
+    private boolean primary;
 
     public boolean isSupportsBinary() {
         return supportsBinary;
@@ -74,5 +76,21 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
 
     public void setAllowSkipHeader(boolean allowSkipHeader) {
         this.allowSkipHeader = allowSkipHeader;
+    }
+
+    public boolean isUsesSpark() {
+        return usesSpark;
+    }
+
+    public void setUsesSpark(boolean usesSpark) {
+        this.usesSpark = usesSpark;
+    }
+
+    public boolean isPrimary() {
+        return primary;
+    }
+
+    public void setPrimary(boolean primary) {
+        this.primary = primary;
     }
 }

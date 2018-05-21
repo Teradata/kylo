@@ -82,7 +82,7 @@ public class SparkFileSchemaParserServiceTest {
         return transformResponse;
     }
 
-    private Schema parseQueryResult(List<QueryResultColumn> columns, SparkFileSchemaParserService.SparkFileType sparkFileType, TableSchemaType tableSchemaType) throws Exception {
+    private Schema parseQueryResult(List<QueryResultColumn> columns, SparkFileType sparkFileType, TableSchemaType tableSchemaType) throws Exception {
         final SparkShellRestClient restClient = Mockito.mock(SparkShellRestClient.class);
         final SparkShellProcessManager sparkShellProcessManager = Mockito.mock(SparkShellProcessManager.class);
 
@@ -106,7 +106,7 @@ public class SparkFileSchemaParserServiceTest {
     @org.junit.Test
     public void testDecimalParsing() {
         try {
-            Schema decimalSchema = parseQueryResult(decimalColumns(), SparkFileSchemaParserService.SparkFileType.PARQUET, TableSchemaType.HIVE);
+            Schema decimalSchema = parseQueryResult(decimalColumns(), SparkFileType.PARQUET, TableSchemaType.HIVE);
             assertNotNull(decimalSchema);
             Field decimalField = decimalSchema.getFields().stream().filter(field -> field.getName().equalsIgnoreCase("decimalColumn")).findFirst().orElse(null);
             assertNotNull(decimalField);
@@ -125,7 +125,7 @@ public class SparkFileSchemaParserServiceTest {
     @org.junit.Test
     public void testParsing() {
         try {
-            Schema schema = parseQueryResult(nonDecimalColumns(), SparkFileSchemaParserService.SparkFileType.AVRO, TableSchemaType.HIVE);
+            Schema schema = parseQueryResult(nonDecimalColumns(), SparkFileType.AVRO, TableSchemaType.HIVE);
             assertNotNull(schema);
             schema.getFields().stream().forEach(field -> {
                 assertNotNull(field);

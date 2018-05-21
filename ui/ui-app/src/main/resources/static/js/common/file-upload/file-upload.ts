@@ -5,6 +5,8 @@ import {moduleName} from "../module-name";
 angular.module(moduleName).directive('uploadFile', ['$parse', 
       ($parse: any) => {return {
             restrict: 'E',
+             scope: {uploadFileModel: '='
+              },
             template: '<input id="fileInput" type="file" class="ng-hide">' +
                       '<md-button id="uploadButton" class="md-raised md-primary" aria-label="attach_file">{{"views.file-upload.btn-Choose" | translate}}</md-button>' +
                       '<md-input-container class="condensed-no-float" md-no-float  flex>' +
@@ -29,9 +31,14 @@ angular.module(moduleName).directive('uploadFile', ['$parse',
                     } catch (e) {
                     }
                 }
-                var model = $parse(attrs.uploadFileModel);
-                var modelSetter = model.assign;
-                var isModelArray = _.isArray(model);
+                if(angular.isDefined(scope.uploadFileModel) && scope.uploadFileModel != null){
+                    if(_.isArray(scope.uploadFileModel)){
+                        scope.fileNames = scope.uploadFileModel.map((f :any) => f.name).join(', ');
+                    }
+                    else {
+                        scope.fileNames = scope.uploadFileModel.name;
+                    }
+                }
 
                 if (input.length && button.length && textInput.length) {
                     button.click((e: any)=>{
@@ -45,21 +52,27 @@ angular.module(moduleName).directive('uploadFile', ['$parse',
                 input.on('change', (e: any)=>{
                     var files = _.values(e.target.files);
 
-                    scope.fileNames = files.map(f => f.name).join(', ');
+                    scope.fileNames = files.map((f:any) => f.name).join(', ');
 
                     if (scope.fileNames !== '') {
                         button.removeClass('md-primary')
                     } else {
                         button.addClass('md-primary')
                     }
-                    scope.$apply(()=>{
-                        if(isModelArray) {
-                            modelSetter(scope, files);
-                        }
-                        else {
-                            modelSetter(scope, files[0]);
-                        }
-                    });
+                    if(files && files.length >0) {
+                       // scope.$apply(() => {
+                            if (_.isArray(scope.uploadFileModel)) {
+                                scope.uploadFileModel = files;
+                            }
+                            else {
+                                scope.uploadFileModel = files[0];
+                            }
+                      //  });
+                    }
+                    else {
+                        scope.uploadFileModel = null
+                    }
+
                 });
             }
         }

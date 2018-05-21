@@ -10,14 +10,15 @@
     <div class="visual-query-loading" flex layout="row" layout-align="center center" ng-show="$bq.loadingPage">
       <md-progress-circular md-mode="indeterminate" md-diameter="80"></md-progress-circular>
     </div>
-    <div layout="row" layout-align="center center" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
-      <md-input-container style="right: 16px;" flex="5">
-        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.tablesAutocomplete.searchText = ''" ng-disabled="!$bq.canChangeDatasource()">
+    <div layout="row" layout-align="center start" ng-hide="$bq.advancedMode" class="layout-padding-top-bottom">
+      <md-input-container style="right: 16px;" flex="15">
+        <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source" ng-change="$bq.onDatasourceChange()" ng-disabled="!$bq.canChangeDatasource()">
           <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
         </md-select>
         <div class="hint">Data Source</div>
       </md-input-container>
-      <div flex="30" layout="column">
+      <div  ng-if="$bq.model.$selectedDatasourceId != 'FILE' " flex="40" layout="row" class="layout-padding-top">
+      <div flex layout="column">
         <md-autocomplete
             md-input-id="tables-auto-complete"
             md-no-cache="$bq.tablesAutocomplete.noCache"
@@ -55,15 +56,17 @@
       </div>
       <md-button ng-click="$bq.onAddTable()" class="md-raised md-accent" ng-disabled="!$bq.tablesAutocomplete.selectedTable">Add Table</md-button>
       <md-button ng-click="$bq.toggleAdvancedMode()" class="md-raised" ng-disabled="$bq.error != null">Edit SQL</md-button>
+      </div>
+      <kylo-upload-sample-file model="$bq.model" engine="$bq.engine" is-valid="$bq.isValid" on-file-uploaded="$bq.onFileUploaded()" ng-if="$bq.model.$selectedDatasourceId == 'FILE'"></kylo-upload-sample-file>
       <span flex-auto layout-align="end center">
-      <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}" style="margin-top:-22px"></thinkbig-step-buttons>
+      <thinkbig-step-buttons can-continue="$bq.isValid" step-index="{{::$bq.stepIndex}}" style="margin-top:-8px"></thinkbig-step-buttons>
     </span>
     </div>
   </div>
   <div layout="row" layout-align="end center" ng-hide="!$bq.advancedMode" style="padding-top: 20px; padding-bottom: 20px">
     <md-input-container style="margin-left: 16px;" ng-if="$bq.advancedMode == true">
       <md-select ng-model="$bq.model.$selectedDatasourceId" placeholder="Data Source">
-        <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id">{{datasource.name}}</md-option>
+        <md-option ng-repeat="datasource in $bq.availableDatasources" ng-value="datasource.id" ng-if="datasource.id != 'FILE' ">{{datasource.name}}</md-option>
       </md-select>
       <div class="hint">Data Source</div>
     </md-input-container>
@@ -74,6 +77,8 @@
   </div>
   <thinkbig-hql-editor ng-model="$bq.advancedModeSql" ng-model-options="{getterSetter: true}" ng-if="$bq.advancedMode == true" allow-fullscreen="false" allow-database-browse="false"
                        allow-execute-query="false"></thinkbig-hql-editor>
+
+
 </div>
 
 <div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$bq.chartViewModel.data.nodes.length == 0 || $bq.advancedMode == true">

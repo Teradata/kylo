@@ -37,20 +37,25 @@ import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.expression.AttributeExpression;
 import org.apache.nifi.flowfile.FlowFile;
+import org.apache.nifi.processor.DataUnit;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.FlowFileFilters;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  */
@@ -101,6 +106,25 @@ public class InitializeFeed extends FeedProcessor {
         .required(false)
         .allowableValues(CommonProperties.BOOLEANS)
         .defaultValue("true")
+        .expressionLanguageSupported(true)
+        .build();
+    
+    protected static final PropertyDescriptor MAX_FLOW_FILES_COUNT = new PropertyDescriptor.Builder()
+        .name("Max Flow File Count")
+        .description("The maximum number of flow files to process at one time")
+        .required(false)
+        .defaultValue("500")
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+    
+    protected static final PropertyDescriptor MAX_FLOW_FILES_SIZE = new PropertyDescriptor.Builder()
+        .name("Max Flow Files size")
+        .description("The maximum accumulated flow file sizes (in kilobytes) to process at one time")
+        .required(false)
+        .defaultValue("1000")
+        .addValidator(StandardValidators.POSITIVE_INTEGER_VALIDATOR)
+        .expressionLanguageSupported(true)
         .build();
 
     Relationship REL_INITIALIZE = new Relationship.Builder()
@@ -139,30 +163,51 @@ public class InitializeFeed extends FeedProcessor {
      */
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        FlowFile inputFF = session.get();
-        if (inputFF != null) {
-            inputFF = initialize(context, session, inputFF);
-            InitializationStatus status = getMetadataRecorder().getInitializationStatus(getFeedId(context, inputFF))
+        int maxFlowFilesCount = context.getProperty(MAX_FLOW_FILES_COUNT).evaluateAttributeExpressions().asInteger();
+        int maxFlowFilesSize = context.getProperty(MAX_FLOW_FILES_SIZE).evaluateAttributeExpressions().asInteger();
+        Map<String, List<FlowFile>> batches = getFlowFileBatches(context, session, maxFlowFilesCount, maxFlowFilesSize);
+
+        for (Entry<String, List<FlowFile>> entry : batches.entrySet()) {
+            processFlowFiles(context, session, entry.getKey(), entry.getValue());
+        }
+   }
+
+    private Map<String, List<FlowFile>> getFlowFileBatches(ProcessContext context, ProcessSession session, int maxFlowFilesCount, int maxFlowFilesSize) {
+        Map<String, List<FlowFile>> map = new HashMap<>();
+        List<FlowFile> allFiles = session.get(FlowFileFilters.newSizeBasedFilter(maxFlowFilesSize, DataUnit.KB, maxFlowFilesCount));
+        
+        allFiles.forEach(ff -> {
+            FlowFile inputFF = ensureFeedId(context, session, ff);
+            List<FlowFile> batch = map.computeIfAbsent(getFeedId(context, inputFF), k -> new ArrayList<>());
+            batch.add(inputFF);
+        });
+        
+        return map;
+    }
+    
+    private void processFlowFiles(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch) {
+        if (batch != null) {
+            InitializationStatus status = getMetadataRecorder().getInitializationStatus(feedId)
                 .orElse(new InitializationStatus(State.PENDING));
 
             switch (status.getState()) {
                 case PENDING:
-                    pending(context, session, inputFF);
+                    pending(context, session, feedId, batch);
                     break;
                 case IN_PROGRESS:
-                    inProgress(context, session, inputFF);
+                    inProgress(context, session, feedId, batch);
                     break;
                 case FAILED:
-                    failed(context, session, inputFF, status.getTimestamp(), false);
+                    failed(context, session, feedId, batch, status.getTimestamp(), false);
                     break;
                 case REINITIALIZE:
-                    reinitialize(context, session, inputFF);
+                    reinitialize(context, session, feedId, batch);
                     break;
                 case REINITIALIZE_FAILED:
-                    reinitializeFailed(context, session, inputFF, status.getTimestamp());
+                    reinitializeFailed(context, session, feedId, batch, status.getTimestamp());
                     break;
                 case SUCCESS:
-                    success(context, session, inputFF);
+                    success(context, session, feedId, batch);
             }
         }
     }
@@ -174,6 +219,8 @@ public class InitializeFeed extends FeedProcessor {
         list.add(RETRY_DELAY);
         list.add(MAX_INIT_ATTEMPTS);
         list.add(CLONE_INIT_FLOWFILE);
+        list.add(MAX_FLOW_FILES_COUNT);
+        list.add(MAX_FLOW_FILES_SIZE);
     }
 
     @Override
@@ -185,29 +232,30 @@ public class InitializeFeed extends FeedProcessor {
         set.add(REL_REINITIALIZE);
     }
 
-    private void pending(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        beginInitialization(context, session, inputFF, false);
-        requeueFlowFile(session, inputFF);
+    private void pending(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch) {
+        beginInitialization(context, session, feedId, batch, false);
+        requeueFlowFiles(session, batch);
     }
 
-    private void inProgress(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        requeueFlowFile(session, inputFF);
+    private void inProgress(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch) {
+        requeueFlowFiles(session, batch);
     }
 
-    private void failed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime, boolean reinitializing) {
+    private void failed(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch, DateTime failTime, boolean reinitializing) {
         String strategy = context.getProperty(FAILURE_STRATEGY).getValue();
+        FlowFile inputFF = batch.stream().findFirst().get();  // batch size will always be > 0
 
         if (strategy.equals("RETRY")) {
-            int delay = context.getProperty(RETRY_DELAY).asInteger();
-            int max = context.getProperty(MAX_INIT_ATTEMPTS).asInteger();
+            int delay = context.getProperty(RETRY_DELAY).evaluateAttributeExpressions(inputFF).asInteger();
+            int max = context.getProperty(MAX_INIT_ATTEMPTS).evaluateAttributeExpressions(inputFF).asInteger();
             AtomicInteger count = getRetryCount(context, inputFF);
 
             if (count.getAndIncrement() >= max) {
                 count.set(max);
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             } else if (failTime.plusSeconds(delay).isBefore(DateTime.now(DateTimeZone.UTC))) {
-                beginInitialization(context, session, inputFF, reinitializing);
-                requeueFlowFile(session, inputFF);
+                beginInitialization(context, session, feedId, batch, reinitializing);
+                requeueFlowFiles(session, batch);
             } else {
                 session.transfer(inputFF, CommonProperties.REL_FAILURE);
             }
@@ -216,25 +264,26 @@ public class InitializeFeed extends FeedProcessor {
         }
     }
 
-    private void reinitialize(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        beginInitialization(context, session, inputFF, true);
-        requeueFlowFile(session, inputFF);
+    private void reinitialize(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch) {
+        beginInitialization(context, session, feedId, batch, true);
+        requeueFlowFiles(session, batch);
     }
 
-    private void reinitializeFailed(ProcessContext context, ProcessSession session, FlowFile inputFF, DateTime failTime) {
-        failed(context, session, inputFF, failTime, true);
+    private void reinitializeFailed(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch, DateTime failTime) {
+        failed(context, session, feedId, batch, failTime, true);
     }
 
-    private void success(ProcessContext context, ProcessSession session, FlowFile inputFF) {
-        session.transfer(inputFF, CommonProperties.REL_SUCCESS);
+    private void success(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch) {
+        session.transfer(batch, CommonProperties.REL_SUCCESS);
     }
 
-    private void beginInitialization(ProcessContext context, ProcessSession session, FlowFile inputFF, boolean reinitializing) {
-        getMetadataRecorder().startFeedInitialization(getFeedId(context, inputFF));
+    private void beginInitialization(ProcessContext context, ProcessSession session, String feedId, List<FlowFile> batch, boolean reinitializing) {
+        getMetadataRecorder().startFeedInitialization(feedId);
+        FlowFile inputFF = batch.stream().findFirst().get();  // batch size will always be > 0
         FlowFile initFF;
         Relationship initRelationship;
 
-        if (context.getProperty(CLONE_INIT_FLOWFILE).asBoolean()) {
+        if (context.getProperty(CLONE_INIT_FLOWFILE).evaluateAttributeExpressions(inputFF).asBoolean()) {
             initFF = session.clone(inputFF);
         } else {
             initFF = session.create(inputFF);
@@ -251,9 +300,11 @@ public class InitializeFeed extends FeedProcessor {
         session.transfer(initFF, initRelationship);
     }
 
-    private void requeueFlowFile(ProcessSession session, FlowFile inputFF) {
-        FlowFile penalizedFF = session.penalize(inputFF);
-        session.transfer(penalizedFF);
+    private void requeueFlowFiles(ProcessSession session, List<FlowFile> batch) {
+        List<FlowFile> penalizedBatch = batch.stream()
+                .map(inputFF -> session.penalize(inputFF))
+                .collect(Collectors.toList());
+        session.transfer(penalizedBatch);
     }
 
     private AtomicInteger getRetryCount(ProcessContext context, FlowFile inputFF) {

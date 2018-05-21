@@ -9,9 +9,9 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -22,18 +22,20 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
-import com.thinkbiganalytics.discovery.schema.Schema;
-import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.Charset;
-
-@SchemaParser(name = "ORC", description = "Supports ORC formatted files.", tags = {"ORC"})
+@SchemaParser(name = "ORC", description = "Supports ORC formatted files.", tags = {"ORC"}, usesSpark = true)
 public class OrcFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override
-    public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return getSparkParserService().doParse(is, SparkFileSchemaParserService.SparkFileType.ORC, target, new DefaultSparkCommandBuilder("orc"));
+    public SparkFileType getSparkFileType() {
+        return SparkFileType.ORC;
     }
+
+    @Override
+    public SparkCommandBuilder getSparkCommandBuilder() {
+
+        return new DefaultSparkCommandBuilder(dataFrameVariable, limit, "orc");
+    }
+
+
 }

@@ -133,8 +133,28 @@ public class DistributedSavepointController extends AbstractControllerService im
      * @param processorId the processor id
      * @param flowfileId  the flow file to add back to the cache
      */
-    public void putFlowfileBack(String processorId, String flowfileId) {
-        cache.putFlowfileBack(processorId, flowfileId);
+    public void putFlowfileBack(String processorId, String flowfileId, boolean top) {
+        if(top) {
+            cache.putFlowfileBack(processorId, flowfileId);
+        }
+        else {
+            cache.putFlowfile(processorId,flowfileId);
+        }
+    }
+
+    public List<String> getNextFlowFiles(String processorId) throws CacheNotInitializedException {
+        return cache.getNextFlowFiles(processorId);
+    }
+
+    public List<String> initializeAndGetNextFlowFiles(String processorId, Collection<String> newFlowfiles, Collection<SavepointEntry> savepointEntries) {
+        newFlowfiles.stream().forEach(e -> cache.putFlowfile(processorId, e));
+        savepointEntries.stream().forEach(e -> cache.putSavepoint(e));
+        cache.markInitialized(processorId);
+        try {
+            return getNextFlowFiles(processorId);
+        } catch (CacheNotInitializedException e) {
+            return Collections.emptyList();
+        }
     }
 
     public Optional<String> getNextFlowFile(String processorId) throws CacheNotInitializedException {
