@@ -125,21 +125,14 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
                 throw new IOException(e);
             }
         }
-        return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkScriptCommandBuilder());
+        return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkCommandBuilder());
     }
 
     @Override
-    public SparkCommandBuilder getSparkScriptCommandBuilder() {
+    public SparkCommandBuilder getSparkCommandBuilder() {
         XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag());
         xmlCommandBuilder.setDataframeVariable(dataFrameVariable);
         xmlCommandBuilder.setLimit(limit);
-        return xmlCommandBuilder;
-    }
-
-
-    @Override
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder() {
-        XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag());
         return xmlCommandBuilder;
     }
 
@@ -176,11 +169,11 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
 
         @Override
         public String build(String pathToFile) {
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
 
             sb.append("\nimport com.databricks.spark.xml._;\n");
-            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + String
-                .format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
+            appendDataFrameVariable(sb);
+            sb.append(String.format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
             return sb.toString();
         }
     }

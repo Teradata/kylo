@@ -398,18 +398,27 @@ export class controller {
             if (!self.startingFeed && self.allowStart) {
                 self.startingFeed = true;
                 $http.post(RestUrlService.START_FEED_URL(self.feedId)).then(function (response:any) {
+                    let msg = "Feed started";
+                    if(response && response.data && response.data.message) {
+                        msg = response.data.message;
+                    }
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Feed started')
+                            .textContent(msg)
                             .hideDelay(3000)
                     );
                 self.startingFeed = false;
                 }, function (response : any) {
+                    let msg = "The feed could not be started.";
+                    if(response && response.data && response.data.message) {
+                        msg +="<br/><br/>"+response.data.message;
+                    }
+                    console.error("Unable to start the feed ",response);
                     $mdDialog.show(
                         $mdDialog.alert()
                         .clickOutsideToClose(true)
-                        .title("NiFi Error")
-                        .textContent("The feed could not be started.")
+                        .title("Error starting the feed")
+                        .htmlContent(msg)
                         .ariaLabel("Cannot start feed.")
                         .ok("OK")
                      );

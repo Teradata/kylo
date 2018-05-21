@@ -82,4 +82,10 @@ public @interface SchemaParser {
      * Does this schema parser support spark script generation?
      */
     boolean usesSpark() default false;
+
+    /**
+     * If there is more than 1 schema parser with the same name you can use this flag to determine which one to use
+     * @return true/false
+     */
+    boolean primary() default  true;
 }

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.discovery.parsers.hadoop;
 
+import static com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser.NO_LIMIT;
+
 /*-
  * #%L
  * thinkbig-schema-discovery-default
@@ -55,14 +57,23 @@ public abstract class AbstractSparkCommandBuilder implements SparkCommandBuilder
     }
 
     public boolean isLimit() {
-        return limit != null;
+        return limit != null && NO_LIMIT != limit;
     }
 
     public void appendDataFrameScript(StringBuilder sb, String method, String pathToFile) {
-        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : "") + String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
+        appendDataFrameReadScript(sb,method,pathToFile);
         if (isLimit()) {
             sb.append(String.format(".limit(%s)", limit));
         }
         sb.append(".toDF()");
+    }
+
+    public void appendDataFrameVariable(StringBuilder sb){
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+    }
+
+    public void appendDataFrameReadScript(StringBuilder sb, String method, String pathToFile){
+        appendDataFrameVariable(sb);
+        sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
     }
 }

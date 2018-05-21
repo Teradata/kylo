@@ -24,7 +24,6 @@ import com.thinkbiganalytics.discovery.FileParserFactory;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
-import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
@@ -36,14 +35,18 @@ import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.stream.Collectors;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -73,6 +76,20 @@ public class SchemaDiscoveryRestController {
     private static final Logger log = LoggerFactory.getLogger(SchemaDiscoveryRestController.class);
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.discovery.rest.controller.DiscoveryMessages");
 
+    @Autowired
+    private Environment environment;
+
+    /**
+     * Determine the SparkVersion supplied to kylo-services
+     * @return
+     */
+    private SparkFileSchemaParser.SparkVersion getSparkVersion(){
+        String defaultVersion = "v2";
+        String sparkVersion = environment != null ? environment.getProperty("spark.version",defaultVersion) : defaultVersion;
+        SparkFileSchemaParser.SparkVersion version = Arrays.stream(SparkFileSchemaParser.SparkVersion.values()).filter(v -> sparkVersion.equalsIgnoreCase(v.getVersion())).findFirst().orElse(SparkFileSchemaParser.SparkVersion.SPARK1);
+        return version;
+    }
+
 
     /**
      * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
@@ -95,7 +112,7 @@ public class SchemaDiscoveryRestController {
                   })
     public Response uploadFileSpark(@FormDataParam("parser") String parserDescriptor,
                                     @FormDataParam("dataFrameVariable") @DefaultValue("df") String dataFrameVariable,
-                                    @FormDataParam("limit") @DefaultValue("100") Integer limit,
+                                    @FormDataParam("limit") @DefaultValue("-1") Integer limit,
                                     @FormDataParam("file") InputStream fileInputStream,
                                     @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
 
@@ -105,8 +122,9 @@ public class SchemaDiscoveryRestController {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
             SparkFileSchemaParser sparkFileSchemaParser = (SparkFileSchemaParser) p;
+            sparkFileSchemaParser.setSparkVersion(getSparkVersion());
             sparkFileSchemaParser.setDataFrameVariable(dataFrameVariable);
-            sparkFileSchemaParser.setLimit(100);
+            sparkFileSchemaParser.setLimit(limit);
             sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(fileInputStream);
         } catch (IOException e) {
             throw new WebApplicationException(e.getMessage());
@@ -140,6 +158,9 @@ public class SchemaDiscoveryRestController {
         try {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
+            if(p instanceof SparkFileSchemaParser){
+                ((SparkFileSchemaParser) p).setSparkVersion(getSparkVersion());
+            }
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
         } catch (IOException e) {
@@ -151,6 +172,7 @@ public class SchemaDiscoveryRestController {
         return Response.ok(schema).build();
     }
 
+
     @GET
     @Path("/file-parsers")
     @Produces(MediaType.APPLICATION_JSON)
@@ -160,13 +182,13 @@ public class SchemaDiscoveryRestController {
     )
     public Response getFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
-        List<SchemaParserDescriptor> descriptors = new ArrayList<>();
+
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-        for (FileSchemaParser parser : parsers) {
-            SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
-            descriptors.add(descriptor);
-        }
-        return Response.ok(descriptors).build();
+        List<SchemaParserDescriptor> list = parsers.stream().map(parser -> transformer.toUIModel(parser))
+            .sorted(SchemaParserDescriptorUtil.compareByNameThenPrimaryThenSpark()).collect(Collectors.toList());
+        list = SchemaParserDescriptorUtil.keepFirstByName(list);
+
+        return Response.ok(list).build();
     }
 
     @GET
@@ -178,15 +200,15 @@ public class SchemaDiscoveryRestController {
     )
     public Response getSparkFileParsers() {
         List<FileSchemaParser> parsers = FileParserFactory.instance().listSchemaParsers();
-        List<SchemaParserDescriptor> descriptors = new ArrayList<>();
         SchemaParserAnnotationTransformer transformer = new SchemaParserAnnotationTransformer();
-        for (FileSchemaParser parser : parsers) {
-            SchemaParser schemaParserAnnotation = (parser.getClass().getAnnotation(SchemaParser.class));
-            if (schemaParserAnnotation.usesSpark()) {
-                SchemaParserDescriptor descriptor = transformer.toUIModel(parser);
-                descriptors.add(descriptor);
-            }
-        }
-        return Response.ok(descriptors).build();
+        List<SchemaParserDescriptor> list = parsers.stream().map(parser -> transformer.toUIModel(parser))
+            .sorted(SchemaParserDescriptorUtil.compareByNameThenSpark()).collect(Collectors.toList());
+        list = SchemaParserDescriptorUtil.keepFirstByName(list);
+
+        return Response.ok(list).build();
+    }
+
+    public void setEnvironment(Environment environment) {
+        this.environment = environment;
     }
 }

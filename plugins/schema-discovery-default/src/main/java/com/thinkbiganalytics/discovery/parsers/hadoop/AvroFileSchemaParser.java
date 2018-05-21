@@ -45,13 +45,7 @@ public class AvroFileSchemaParser extends AbstractSparkFileSchemaParser implemen
 
 
     @Override
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder() {
-        AvroCommandBuilder avroCommandBuilder = new AvroCommandBuilder();
-        return avroCommandBuilder;
-    }
-
-    @Override
-    public SparkCommandBuilder getSparkScriptCommandBuilder() {
+    public SparkCommandBuilder getSparkCommandBuilder() {
         AvroCommandBuilder avroCommandBuilder = new AvroCommandBuilder();
         avroCommandBuilder.setLimit(limit);
         avroCommandBuilder.setDataframeVariable(dataFrameVariable);

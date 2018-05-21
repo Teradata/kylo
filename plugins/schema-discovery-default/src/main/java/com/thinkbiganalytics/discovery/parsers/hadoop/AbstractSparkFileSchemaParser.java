@@ -38,6 +38,8 @@ import javax.inject.Inject;
  */
 public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaParser {
 
+    private SparkVersion sparkVersion;
+
     /**
      * how many rows should the script limit
      */
@@ -45,7 +47,7 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
     /**
      * if supplied, what should the variable name of the dataframe be called in the generated script.
      */
-    protected String dataFrameVariable = "df";
+    protected String dataFrameVariable;
 
     public void setLimit(Integer limit) {
         this.limit = limit;
@@ -68,7 +70,7 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
     }
 
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
-        return getSparkParserService().doParse(is, getSparkFileType(), target, getSparkSchemaDetectionCommandBuilder());
+        return getSparkParserService().doParse(is, getSparkFileType(), target, getSparkCommandBuilder());
     }
 
     /**
@@ -80,18 +82,21 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
 
 
     public SampleFileSparkScript getSparkScript(InputStream is) throws IOException {
-        return getSparkParserService().getSparkScript(is, getSparkFileType(), getSparkScriptCommandBuilder());
+        return getSparkParserService().getSparkScript(is, getSparkFileType(), getSparkCommandBuilder());
     }
 
     @Override
-    public SparkCommandBuilder getSparkSchemaDetectionCommandBuilder() {
-        return new DefaultSparkCommandBuilder(getSparkFileType().name().toLowerCase());
-    }
-
-    @Override
-    public SparkCommandBuilder getSparkScriptCommandBuilder() {
+    public SparkCommandBuilder getSparkCommandBuilder() {
         return new DefaultSparkCommandBuilder(dataFrameVariable, limit, getSparkFileType().name().toLowerCase());
     }
 
+    @Override
+    public void setSparkVersion(SparkVersion sparkVersion) {
 
+    }
+
+    @Override
+    public SparkVersion getSparkVersion() {
+        return sparkVersion == null ? SparkVersion.SPARK2 : sparkVersion;
+    }
 }
