@@ -1,7 +1,26 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import { DefaultPaginationDataService } from "../../services/PaginationDataService";
 
-export default class OptionsMenu implements ng.IComponentController {
+export default class OptionsMenu {
+
+    sortOptions: any;
+    selectedOption: any;
+    openedMenu: any;
+    menuIcon: any;
+    menuKey: any;
+    tabs: any;
+    rowsPerPageOptions: any;
+    showViewType: any;
+    showPagination: any;
+    additionalOptions: any;
+    selectedAdditionalOption: any;
+    originatorEv: any;
+    rowsPerPage: any;
+    paginationData: any;
+    viewType: any;
+    currentPage: any;
+    paginationId: any;
 
     $onInit() {
         this.ngOnInit();
@@ -9,104 +28,112 @@ export default class OptionsMenu implements ng.IComponentController {
 
     ngOnInit() {
 
-        if (this.$scope.showViewType) {
-            this.$scope.viewType = {label: 'List View', icon: 'list', value: 'list', type: 'viewType'};
+        if (this.showViewType) {
+            this.viewType = {label: 'List View', icon: 'list', value: 'list', type: 'viewType'};
         }
 
-        this.$scope.getPaginationId = function (tab: any) {
-            return this.PaginationDataService.paginationId(this.$scope.menuKey, tab.title);
-        };
-
-        this.$scope.getCurrentPage = function (tab: any) {
-            return this.PaginationDataService.currentPage(this.$scope.menuKey, tab.title);
-        };
-
-        if (this.$scope.showViewType) {
+        if (this.showViewType) {
             //toggle the view Type so its opposite the current view type
             this.setViewTypeOption(true);
         }
 
-        this.$scope.rowsPerPage = 5;
-        this.$scope.paginationData = this.PaginationDataService.paginationData(this.$scope.menuKey);
-        var originatorEv;
-        this.$scope.openMenu = function ($mdOpenMenu: any, ev: any) {
-
-            originatorEv = ev;
-            if (angular.isFunction(this.$scope.openedMenu)) {
-                var openedMenuFn = this.$scope.openedMenu();
-                if (angular.isFunction(openedMenuFn)) {
-                    openedMenuFn({sortOptions: this.$scope.sortOptions, additionalOptions: this.$scope.additionalOptions});
-                }
-            }
-            if (this.$scope.showPagination) {
-                var tabData = this.PaginationDataService.getActiveTabData(this.$scope.menuKey);
-                this.$scope.currentPage = tabData.currentPage;
-                this.$scope.paginationId = tabData.paginationId;
-            }
-            $mdOpenMenu(ev);
-        };
-
-        /**
-         * Selected an additional option
-         * @param item
-         */
-        this.$scope.selectAdditionalOption = (item: any) => {
-            if (this.$scope.selectedAdditionalOption) {
-                originatorEv = null;
-                this.$scope.selectedAdditionalOption()(item);
-            }
-        };
-
-        /**
-         * Selected a Sort Option
-         * @param item
-         */
-        this.$scope.selectOption = (item: any) => {
-
-            var itemCopy = {};
-            angular.extend(itemCopy, item);
-            if (item.type === 'viewType') {
-                this.PaginationDataService.toggleViewType(this.$scope.menuKey);
-                this.setViewTypeOption(true);
-            }
-
-            if (this.$scope.selectedOption) {
-                this.$scope.selectedOption()(itemCopy);
-            }
-
-            originatorEv = null;
-        };
+        this.rowsPerPage = 5;
+        this.paginationData = this.PaginationDataService.paginationData(this.menuKey);
     }
 
-    static readonly $inject = ["$scope","PaginationDataService"];
+    static readonly $inject = ["PaginationDataService"];
 
-    constructor(private $scope: IScope,
-                private PaginationDataService: any) {
-
-        $scope.$on('$destroy', function () {
-
-        });
+    constructor(private PaginationDataService: DefaultPaginationDataService) {
     }
+
+    getPaginationId(tab: any) {
+        return this.PaginationDataService.paginationId(this.menuKey, tab.title);
+    };
+
+    getCurrentPage(tab: any) {
+        return this.PaginationDataService.currentPage(this.menuKey, tab.title);
+    };
+
+    openMenu($mdOpenMenu: any, ev: any) {
+
+        this.originatorEv = ev;
+        if (angular.isFunction(this.openedMenu)) {
+            let openedMenuFn = this.openedMenu();
+            if (angular.isFunction(openedMenuFn)) {
+                openedMenuFn({sortOptions: this.sortOptions, additionalOptions: this.additionalOptions});
+            }
+        }
+        if (this.showPagination) {
+            let tabData = this.PaginationDataService.getActiveTabData(this.menuKey);
+            this.currentPage = tabData.currentPage;
+            this.paginationId = tabData.paginationId;
+        }
+        $mdOpenMenu(ev);
+    };
+
+    /**
+     * Selected an additional option
+     * @param item
+     */
+    selectAdditionalOption(item: any) {
+        if (this.selectedAdditionalOption) {
+            this.originatorEv = null;
+            this.selectedAdditionalOption()(item);
+        }
+    };
+
+    /**
+     * Selected a Sort Option
+     * @param item
+     */
+    selectOption(item: any) {
+
+        let itemCopy = {};
+        angular.extend(itemCopy, item);
+        if (item.type === 'viewType') {
+            this.PaginationDataService.toggleViewType(this.menuKey);
+            this.setViewTypeOption(true);
+        }
+
+        if (this.selectedOption) {
+            this.selectedOption()(itemCopy);
+        }
+
+        this.originatorEv = null;
+    };
 
     setViewTypeOption(toggle: any) {
-        
-        this.$scope.viewType.value = this.PaginationDataService.viewType(this.$scope.menuKey);
+
+        this.viewType.value = this.PaginationDataService.viewType(this.menuKey);
 
         if (toggle === true) {
-            this.$scope.viewType.value = this.$scope.viewType.value === 'list' ? 'table' : 'list';
+            this.viewType.value = this.viewType.value === 'list' ? 'table' : 'list';
         }
-        if (this.$scope.viewType.value === 'list') {
-            this.$scope.viewType.label = 'List View';
-            this.$scope.viewType.icon = 'list';
+        if (this.viewType.value === 'list') {
+            this.viewType.label = 'List View';
+            this.viewType.icon = 'list';
         }
         else {
-            this.$scope.viewType.label = 'Table View';
-            this.$scope.viewType.icon = 'grid_on';
+            this.viewType.label = 'Table View';
+            this.viewType.icon = 'grid_on';
         }
     }
 }
 
 angular.module(moduleName).component('tbaOptionsMenu', {
     controller: OptionsMenu,
+    bindings: {
+        sortOptions: "=",
+        selectedOption: "&",
+        openedMenu: "&",
+        menuIcon: "@",
+        menuKey: "@",
+        tabs: '=',
+        rowsPerPageOptions: "=",
+        showViewType: '=',
+        showPagination: '=',
+        additionalOptions: '=?',
+        selectedAdditionalOption: "&?"
+    },
     templateUrl: 'js/common/options-menu/options-menu-template.html'
 });

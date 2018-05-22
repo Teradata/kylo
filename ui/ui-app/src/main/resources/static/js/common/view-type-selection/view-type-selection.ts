@@ -5,19 +5,9 @@ export default class ViewTypeSelection {
 
     viewType: any;
 
-    $onInit() {
-        this.ngOnInit();
+    viewTypeChanged(viewType: any) {
+        this.viewType = viewType;
     }
-
-    ngOnInit() {
-        this.$scope.viewTypeChanged = (viewType: any) => {
-            this.viewType = viewType;
-        }
-    }
-
-    static readonly $inject = ["$scope"];
-
-    constructor(private $scope: IScope) {}
 }
 
 angular.module(moduleName).component("tbaViewTypeSelection",{
@@ -27,16 +17,3 @@ angular.module(moduleName).component("tbaViewTypeSelection",{
     },
     templateUrl: 'js/common/view-type-selection/view-type-selection-template.html'
 });
-
-// angular.module(moduleName).directive("tbaViewTypeSelection",
-//   [ () => {
-//           return {
-//             restrict: 'E',
-//             templateUrl: 'js/common/view-type-selection/view-type-selection-template.html',
-//             scope: {
-//                 viewType: '='
-//             },
-//             controller: ViewTypeSelection
-//         }
-//   }
-//   ]);

@@ -1,12 +1,12 @@
 <span layout="row" layout-align="center center">
     <md-button class="icon-btn"
-               ng-click="viewTypeChanged('table')"
-               ng-class="{'selected' : viewType == 'table'}">
+               ng-click="$ctrl.viewTypeChanged('table')"
+               ng-class="{'selected' : $ctrl.viewType == 'table'}">
         <ng-md-icon md-icon icon="list"></ng-md-icon>
     </md-button>
     <md-button class="icon-btn"
-               ng-click="viewTypeChanged('list')"
-               ng-class="{'selected' : viewType == 'list'}">
+               ng-click="$ctrl.viewTypeChanged('list')"
+               ng-class="{'selected' : $ctrl.viewType == 'list'}">
         <ng-md-icon md-icon icon="view_list"></ng-md-icon>
     </md-button>
 </span>
