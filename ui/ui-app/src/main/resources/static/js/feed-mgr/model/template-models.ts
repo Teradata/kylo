@@ -1,7 +1,50 @@
 import {Templates} from "../services/TemplateTypes";
 import processors = Templates.Processor; 
 import properties = Templates.Property;
+import NiFiRemoteProcessGroup = Templates.NiFiRemoteProcessGroup;
 import ReusableTemplateConnectionInfo = Templates.ReusableTemplateConnectionInfo;
+import TemplateProcessorDatasourceDefinition = Templates.TemplateProcessorDatasourceDefinition;
+import { Property } from "estree";
+
+export interface SaveTemplate {
+
+    properties: properties[];
+    nonInputProcessors: processors[];
+    inputProcessors: processors[];
+    remoteProcessGroups: NiFiRemoteProcessGroup[];
+
+    id: string;
+    nifiTemplateId: string;
+    templateName: string;
+
+    updateDate: Date;
+    createDate: Date;
+
+    icon: string;
+    iconColor: string;
+    description: string;
+    state: string;
+
+    defineTable: boolean;
+    allowPreconditions: boolean;
+    dataTransformation: boolean;
+    reusableTemplate: boolean;
+
+    reusableTemplateConnections: ReusableTemplateConnectionInfo[];
+    registeredDatasourceDefinitions: TemplateProcessorDatasourceDefinition[];
+    
+    order: number;
+    templateOrder: string[];
+    isStream: boolean;
+    feedNames: Set<string>;
+    feedsCount: number;
+
+    nifiTemplate: any;
+
+    updated: boolean;
+    templateTableOption: string;
+    timeBetweenStartingBatchJobs: number;
+}
 
 export interface Template {
     id: string,
@@ -20,9 +63,23 @@ export interface Template {
     owner: any,
     roleMembershipsUpdated: boolean
 }
-export class SaveAbleTemplate implements Template {
+export class SaveAbleTemplate implements SaveTemplate {
     id: string;
+
     properties : properties[];
+    nonInputProcessors: processors[] = null;
+    inputProcessors:processors[] =null;
+    remoteProcessGroups: NiFiRemoteProcessGroup[] = null;
+
+    updateDate: Date = null;
+    createDate: Date = null;
+    
+    feedNames: Set<string> = null;
+    feedsCount: number = null;
+    
+    nifiTemplate:any = null;
+
+    updated: boolean = null;
     nifiTemplateId: string;
     templateName: string;
     description: string;
@@ -44,6 +101,7 @@ export class SaveAbleTemplate implements Template {
     templateOrder : any[];
     order : number;
     registeredDatasourceDefinitions : any;
+    
 };
 export class EmptyTemplate implements Template {
     id: string = null;

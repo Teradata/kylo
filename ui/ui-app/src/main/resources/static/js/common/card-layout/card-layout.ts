@@ -3,6 +3,11 @@ import {moduleName} from "../module-name";
 
 export default class CardLayout implements ng.IComponentController {
 
+    headerCss: any;
+    bodyCss: any; 
+    cardCss: any;
+    cardToolbar: any;
+
     static readonly $inject = ["$scope"];
 
     $onInit() {
@@ -11,8 +16,8 @@ export default class CardLayout implements ng.IComponentController {
 
     ngOnInit() {
 
-        if(angular.isUndefined(this.$scope.cardToolbar)){
-            this.$scope.cardToolbar = true;
+        if(angular.isUndefined(this.cardToolbar)){
+            this.cardToolbar = true;
         }
     }
 
@@ -22,6 +27,12 @@ export default class CardLayout implements ng.IComponentController {
 
 angular.module(moduleName).component('cardLayout', {
     controller: CardLayout,
+    bindings: {
+        headerCss: "@", 
+        bodyCss: "@", 
+        cardCss: '@',
+        cardToolbar: "=?"
+    },
     transclude: {
         'header1': '?headerSection',
         'body1': '?bodySection'

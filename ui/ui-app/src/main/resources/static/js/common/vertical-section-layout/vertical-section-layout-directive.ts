@@ -1,82 +1,103 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
 
-angular.module(moduleName).directive("verticalSectionLayout",
-  [ () => {
-       return {
-            restrict: 'E',
-            scope: {
-                showVerticalCheck: '=?',
-                allowEdit: '=?',
-                sectionTitle: '@',
-                formName: '@',
-                onDelete: '&?',
-                isDeleteVisible: '=?',
-                allowDelete: '=?',
-                onEdit: '&',
-                onSaveEdit: '&',
-                onCancelEdit: '&',
-                editable: '=?',
-                keepEditableAfterSave: '=?',
-                isValid: '=?',
-                theForm: '=?'
-            },
-            transclude: {
-                'readonly': '?readonlySection',
-                'editable': '?editableSection'
-            },
-            templateUrl: 'js/common/vertical-section-layout/vertical-section-layout-template.html',
-            link: function ($scope: any, iElem: any, iAttrs: any, ctrl: any, transcludeFn: any) {
-                /**
-                 * Delete button is visible if this flag is true and if the method onDelete is set
-                 */
-                if ($scope.isDeleteVisible == undefined) {
-                    $scope.isDeleteVisible = true;
-                }
+export default class VerticalSectionLayout {
 
-                if ($scope.editable == undefined) {
-                    $scope.editable = false;
-                }
+    showVerticalCheck: any;
+    allowEdit: any;
+    sectionTitle: any;
+    formName: any;
+    onDelete: any;
+    isDeleteVisible: any;
+    allowDelete: any;
+    onEdit: any;
+    onSaveEdit: any;
+    onCancelEdit: any;
+    editable: any;
+    keepEditableAfterSave: any;
+    isValid: any;
+    theForm: any;
 
-                if ($scope.showVerticalCheck == undefined) {
-                    $scope.showVerticalCheck = true;
-                }
+    $onInit() {
+        this.ngOnInit();
+    }
 
-                if ($scope.allowEdit == undefined) {
-                    $scope.allowEdit = true;
-                }
-                if ($scope.isValid == undefined) {
-                    $scope.isValid = true;
-                }
+    ngOnInit() {
+        /**
+         * Delete button is visible if this flag is true and if the method onDelete is set
+         */
+        if (this.isDeleteVisible == undefined) {
+            this.isDeleteVisible = true;
+        }
 
-                if ($scope.keepEditableAfterSave == undefined) {
-                    $scope.keepEditableAfterSave = false;
-                }
+        if (this.editable == undefined) {
+            this.editable = false;
+        }
 
-                $scope.edit = function (ev: any) {
-                    $scope.editable = true;
-                    $scope.onEdit(ev);
-                }
+        if (this.showVerticalCheck == undefined) {
+            this.showVerticalCheck = true;
+        }
 
-                $scope.cancel = function (ev: any) {
-                    $scope.onCancelEdit(ev);
-                    $scope.editable = false;
-                }
+        if (this.allowEdit == undefined) {
+            this.allowEdit = true;
+        }
+        if (this.isValid == undefined) {
+            this.isValid = true;
+        }
 
-                $scope.save = function (ev: any) {
-                    $scope.onSaveEdit(ev);
-                    if (!$scope.keepEditableAfterSave) {
-                        $scope.editable = false;
-                    }
-                }
+        if (this.keepEditableAfterSave == undefined) {
+            this.keepEditableAfterSave = false;
+        }
 
-                $scope.delete = function (ev: any) {
-                    if ($scope.onDelete) {
-                        $scope.onDelete(ev);
-                    }
-                }
+        this.$scope.edit = (ev: any) => {
+            this.editable = true;
+            this.onEdit(ev);
+        }
 
+        this.$scope.cancel = (ev: any) => {
+            this.onCancelEdit(ev);
+            this.editable = false;
+        }
+
+        this.$scope.save = (ev: any) => {
+            this.onSaveEdit(ev);
+            if (!this.keepEditableAfterSave) {
+                this.editable = false;
             }
-        };
-  }
-  ]);
+        }
+
+        this.$scope.delete = (ev: any) => {
+            if (this.onDelete) {
+                this.onDelete(ev);
+            }
+        }
+    }
+
+    static readonly $inject = ["$scope"];
+    constructor(private $scope: IScope) {}
+}
+
+angular.module(moduleName).component("verticalSectionLayout",{
+    controller: VerticalSectionLayout,
+    bindings: {
+        showVerticalCheck: '=?',
+        allowEdit: '=?',
+        sectionTitle: '@',
+        formName: '@',
+        onDelete: '&?',
+        isDeleteVisible: '=?',
+        allowDelete: '=?',
+        onEdit: '&',
+        onSaveEdit: '&',
+        onCancelEdit: '&',
+        editable: '=?',
+        keepEditableAfterSave: '=?',
+        isValid: '=?',
+        theForm: '=?'
+    },
+    transclude: {
+        'readonly': '?readonlySection',
+        'editable': '?editableSection'
+    },
+    templateUrl: 'js/common/vertical-section-layout/vertical-section-layout-template.html'
+});

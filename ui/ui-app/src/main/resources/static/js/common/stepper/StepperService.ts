@@ -2,12 +2,12 @@ import * as angular from "angular";
 import {moduleName} from "../module-name";
 
 export default class StepperService{
-    ACTIVE_STEP_EVENT: any;
-    STEP_CHANGED_EVENT: any;
-    STEP_STATE_CHANGED_EVENT: any;
-    steppers: any;
-    stepperNameMap: any;
-    newNameIndex: any;  
+    ACTIVE_STEP_EVENT: string = 'ACTIVE_STEP_EVENT';
+    STEP_CHANGED_EVENT: string = 'STEP_CHANGED_EVENT';
+    STEP_STATE_CHANGED_EVENT: string = 'STEP_STATE_CHANGED_EVENT';
+    steppers: any = {};
+    stepperNameMap: any = {};
+    newNameIndex: number = 0;  
     registerStepper: any;
     assignStepName: any;
     assignedStepName: any;
@@ -29,42 +29,8 @@ export default class StepperService{
     nextActiveStep: any;
 
     constructor(){
-         /**
-         * subscribers of this event will get the following data passed to them
-         * current  - number datatype
-         * @type {string}
-         */
-        this.ACTIVE_STEP_EVENT = 'ACTIVE_STEP_EVENT';
-        /**
-         * subscribers of this event will get the following data passed to them:
-         * {newStep:current,oldStep:old}
-         * newStep - number datatype
-         * oldStep - number datatype
-         * @type {string}
-         */
-        this.STEP_CHANGED_EVENT = 'STEP_CHANGED_EVENT';
-
-        /**
-         * Event called when a step is enabled or disabled
-         * @type {string}
-         */
-        this.STEP_STATE_CHANGED_EVENT = 'STEP_STATE_CHANGED_EVENT';
-
-        /**
-         * Map of stepper Name  -> to Array of Steps
-         * @type {{}}
-         */
-        this.steppers = {};
-
-        /**
-         * Map of stepper name  -> {stepName,step}
-         * populated only with this.assignStepNames
-         * @type {{}}
-         */
-        this.stepperNameMap = {};
-
-        this.newNameIndex = 0;
-        this.registerStepper = function (name: any, totalSteps: any) {
+        
+        this.registerStepper = (name: any, totalSteps: any) => {
             var steps: any[] = [];
             this.steppers[name] = steps;
             this.stepperNameMap[name] = {};
@@ -109,14 +75,14 @@ export default class StepperService{
                 };
             }
         }
-        this.assignStepName = function(name: any, index: any, stepName: any){
+        this.assignStepName = (name: any, index: any, stepName: any) => {
             var step = this.getStep(name,index);
             if(step != null && step.stepName == null){
                 step.stepName = stepName;
                 this.assignedStepName(name,step)
             }
         };
-        this.assignedStepName = function(name: any, step: any){
+        this.assignedStepName = (name: any, step: any) => {
             if(step != null && step.stepName != null){
                  //register the step to the name map index
                 this.stepperNameMap[name][step.stepName] = step;
@@ -128,7 +94,7 @@ export default class StepperService{
          * @param stepperName
          * @param stepName
          */
-        this.getStepByName=function(stepperName: any,stepName: any){
+        this.getStepByName=(stepperName: any,stepName: any) => {
             if(angular.isDefined(this.stepperNameMap[stepperName])){
                 return  this.stepperNameMap[stepperName][stepName];
             }
@@ -136,15 +102,15 @@ export default class StepperService{
                 return null;
             }
         };
-        this.deRegisterStepper = function (name: any) {
+        this.deRegisterStepper = (name: any) => {
             delete this.steppers[name];
             delete this.stepperNameMap[name]
         }
-        this.newStepperName = function () {
+        this.newStepperName = () => {
             this.newNameIndex++;
             return 'stepper_' + this.newNameIndex;
         }
-        this.getStep = function (stepperName: any, index: any) {
+        this.getStep = (stepperName: any, index: any) => {
             if (typeof index == 'string') {
                 index = parseInt(index);
             }
@@ -158,11 +124,11 @@ export default class StepperService{
             return null;
         }
     
-        this.getSteps = function (stepper: any) {
+        this.getSteps = (stepper: any) => {
             return this.steppers[stepper];
         }
 
-        this.updatePreviousNextActiveStepIndexes = function (stepper: any) {
+        this.updatePreviousNextActiveStepIndexes = (stepper: any) => {
             var steps = this.steppers[stepper];
             if (steps != null && steps.length > 0) {
                 for (var i = 0; i < steps.length; i++) {
@@ -186,7 +152,7 @@ export default class StepperService{
             }
         }
 
-        this.deactivateStep = function (stepper: any, index: any) {
+        this.deactivateStep = (stepper: any, index: any) => {
             var step = this.getStep(stepper, index);
             if (step != null) {
                 step.active = false;
@@ -195,7 +161,7 @@ export default class StepperService{
             }
         }
 
-        this.activateStep = function (stepper: any, index: any) {
+        this.activateStep = (stepper: any, index: any) => {
             var step = this.getStep(stepper, index);
             if (step != null) {
                 step.active = true;
@@ -203,21 +169,21 @@ export default class StepperService{
             }
         }
 
-        this.stepDisabled = function (stepper: any, index: any) {
+        this.stepDisabled = (stepper: any, index: any) => {
             var step = this.getStep(stepper, index);
             if (step != null) {
                 step.disabled = true;
             }
         }
 
-        this.stepEnabled = function (stepper: any, index: any) {
+        this.stepEnabled = (stepper: any, index: any) => {
             var step = this.getStep(stepper, index);
             if (step != null && step.active) {
                 step.disabled = false;
             }
         }
 
-        this.arePreviousVisitedStepsComplete = function (stepper: any, index: any) {
+        this.arePreviousVisitedStepsComplete = (stepper: any, index: any) => {
             var complete = true;
             var steps = this.steppers[stepper];
             for (var i = 0; i < index; i++) {
@@ -229,7 +195,7 @@ export default class StepperService{
             }
             return complete;
         }
-        this.arePreviousStepsComplete = function (stepper: any, index: any) {
+        this.arePreviousStepsComplete = (stepper: any, index: any) => {
             var complete = true;
             var steps = this.steppers[stepper];
             for (var i = 0; i < index; i++) {
@@ -242,7 +208,7 @@ export default class StepperService{
             return complete;
         }
 
-        this.arePreviousStepsVisited = function (stepper: any, index: any) {
+        this.arePreviousStepsVisited = (stepper: any, index: any) => {
             var complete = true;
             var steps = this.steppers[stepper];
             for (var i = 0; i < index; i++) {
@@ -255,7 +221,7 @@ export default class StepperService{
             return complete;
         }
 
-        this.arePreviousStepsDisabled = function (stepper: any, index: any) {
+        this.arePreviousStepsDisabled = (stepper: any, index: any) => {
             var disabled = false;
             var steps = this.steppers[stepper];
             for (var i = 0; i < index; i++) {
@@ -268,7 +234,7 @@ export default class StepperService{
             return disabled;
         }
 
-        this.previousActiveStep = function (stepperName: any, index: any) {
+        this.previousActiveStep = (stepperName: any, index: any) => {
             var previousIndex = index - 1;
             var previousEnabledStep = null;
             var previousEnabledStepIndex = null;
@@ -289,7 +255,7 @@ export default class StepperService{
             }
         }
 
-        this.nextActiveStep = function (stepperName: any, index: any) {
+        this.nextActiveStep = (stepperName: any, index: any) => {
             var nextIndex = index + 1;
             var nextEnabledStep = null;
             var nextEnabledStepIndex = null;

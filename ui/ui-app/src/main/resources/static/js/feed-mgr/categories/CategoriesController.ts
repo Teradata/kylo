@@ -34,7 +34,7 @@ export class CategoriesController {
      * @param CategoriesService the categories service
      * @param StateService the page state service
      */
-    constructor(private $scope: any, private accessControlService: AccessControlService, private AddButtonService: any
+    constructor(private $scope: IScope, private accessControlService: AccessControlService, private AddButtonService: any
         , private CategoriesService: any, private StateService: any) {
 
         this.$scope.$watchCollection(

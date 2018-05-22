@@ -1,7 +1,8 @@
 import * as angular from "angular";
 import {moduleName} from "../module-name";
+import { DefaultTableOptionsService } from "../../services/TableOptionsService";
 
-export default class CardFilterHeader implements ng.IComponentController {
+export default class CardFilterHeader {
 
     cardTitle: any;
     viewType: any;
@@ -14,9 +15,14 @@ export default class CardFilterHeader implements ng.IComponentController {
     onSelectedAdditionalOption: any;
     onMenuOpen: any;
     onShowFilterHelp: any;
-    renderFilter: any
-    cardController: any
-    customFilterTemplate: any
+    renderFilter: any;
+    cardController: any;
+    customFilterTemplate: any;
+    renderHelp:any;
+
+    $postLink() {
+        this.$element.parents('.md-toolbar-tools:first').addClass('card-filter-header');
+    }
 
     $onInit() {
         this.ngOnInit();
@@ -24,11 +30,9 @@ export default class CardFilterHeader implements ng.IComponentController {
 
     ngOnInit() {
 
-        this.$element.parents('.md-toolbar-tools:first').addClass('card-filter-header');
-        
         this.filterModelOptions = this.filterModelOptions || {};
         this.renderFilter = angular.isUndefined(this.renderFilter) ? true : this.renderFilter;
-        var renderHelp = angular.isDefined(this.onShowFilterHelp);
+        this.renderHelp = angular.isDefined(this.onShowFilterHelp);
         this.customFilterTemplate = angular.isUndefined(this.customFilterTemplate) ? '' : this.customFilterTemplate;
     
     }
@@ -37,9 +41,7 @@ export default class CardFilterHeader implements ng.IComponentController {
 
     constructor(private $scope: IScope, 
                 private $element: JQuery, 
-                private TableOptionsService: any) {
-        
-    }
+                private TableOptionsService: DefaultTableOptionsService) {}
 
     /**
      * Called when a user Clicks on a table Option
