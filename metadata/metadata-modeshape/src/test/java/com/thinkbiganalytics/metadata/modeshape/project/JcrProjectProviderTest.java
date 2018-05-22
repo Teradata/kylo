@@ -32,7 +32,7 @@ import com.thinkbiganalytics.metadata.modeshape.project.providers.ProjectProvide
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.Test;
@@ -48,7 +48,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class})
 public class JcrProjectProviderTest extends AbstractTestNGSpringContextTests {
     private static final Logger logger = LoggerFactory.getLogger(JcrProjectProviderAccessControlTest.class);
 

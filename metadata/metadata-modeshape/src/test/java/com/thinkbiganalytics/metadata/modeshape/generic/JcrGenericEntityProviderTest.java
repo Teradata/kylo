@@ -27,7 +27,7 @@ import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.api.generic.GenericType.PropertyType;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 
@@ -39,7 +39,7 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class})
 public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTests {
 
     @Inject

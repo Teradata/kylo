@@ -37,7 +37,7 @@ import org.mockito.Matchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.AfterMethod;
@@ -58,7 +58,7 @@ import static org.mockito.Mockito.verify;
  *
  */
 @TestPropertySource(locations = "classpath:test-jpa-application.properties")
-@SpringApplicationConfiguration(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class, SpringOperationalMetadataTestConfiguration.class})
+@SpringBootTest(classes = {MetadataPersistenceConfig.class, TestPersistenceConfiguration.class, KyloAlertManagerConfig.class, SpringOperationalMetadataTestConfiguration.class})
 public class DefaultAlertManagerTest extends AbstractTestNGSpringContextTests {
 
     private static final String LONG_DESCR;
