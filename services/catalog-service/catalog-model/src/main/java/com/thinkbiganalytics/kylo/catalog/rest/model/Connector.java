@@ -22,6 +22,8 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -33,6 +35,7 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@SuppressWarnings("unused")
 public class Connector {
 
     /**
@@ -63,6 +66,8 @@ public class Connector {
     /**
      * Properties to apply to all data sets
      */
+    @JsonDeserialize(as = DefaultDataSetTemplate.class)
+    @JsonSerialize(as = DefaultDataSetTemplate.class)
     private DataSetTemplate template;
 
     /**
@@ -79,7 +84,7 @@ public class Connector {
         icon = other.icon;
         id = other.id;
         tabs = (other.tabs != null) ? other.tabs.stream().map(ConnectorTab::new).collect(Collectors.toList()) : null;
-        template = (other.template != null) ? new DataSetTemplate(other.template) : null;
+        template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
     }
 

@@ -20,9 +20,11 @@ package com.thinkbiganalytics.kylo.catalog.datasource;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
 import java.util.List;
 import java.util.Optional;
@@ -44,6 +46,23 @@ public class DataSourceUtil {
         } else {
             return Optional.of(dataSource).map(DataSource::getConnector).map(Connector::getTemplate).map(DataSetTemplate::getPaths);
         }
+    }
+
+    /**
+     * Merges the data source and connector templates for the specified data source.
+     */
+    @Nonnull
+    public static DefaultDataSetTemplate mergeTemplates(@Nonnull final DataSource dataSource) {
+        final DefaultDataSetTemplate template = new DefaultDataSetTemplate();
+
+        if (dataSource.getConnector() != null && dataSource.getConnector().getTemplate() != null) {
+            DataSetUtil.mergeTemplates(template, dataSource.getConnector().getTemplate());
+        }
+        if (dataSource.getTemplate() != null) {
+            DataSetUtil.mergeTemplates(template, dataSource.getTemplate());
+        }
+
+        return template;
     }
 
     /**

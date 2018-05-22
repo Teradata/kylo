@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.base.MoreObjects;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,45 +32,37 @@ import java.util.Map;
 import javax.annotation.Nonnull;
 
 /**
- * Reference to a specific data set in a data source.
+ * Template for creating a new data set
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
-@SuppressWarnings("unused")
-public class DataSet implements DataSetTemplate {
+public class DefaultDataSetTemplate implements DataSetTemplate {
 
-    private DataSource dataSource;
+    private List<String> files;
     private String format;
-    private String id;
+    private List<String> jars;
     private Map<String, String> options;
     private List<String> paths;
 
-    public DataSet() {
+    public DefaultDataSetTemplate() {
     }
 
-    public DataSet(@Nonnull final DataSet other) {
-        dataSource = (other.dataSource != null) ? new DataSource(other.dataSource) : null;
-        format = other.format;
-        id = other.id;
-        options = (other.options != null) ? new HashMap<>(other.options) : null;
-        paths = (other.paths != null) ? new ArrayList<>(other.paths) : null;
-    }
-
-    /**
-     * Parent data source
-     */
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
-    public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+    public DefaultDataSetTemplate(@Nonnull final DataSetTemplate other) {
+        files = (other.getFiles() != null) ? new ArrayList<>(other.getFiles()) : null;
+        format = other.getFormat();
+        jars = (other.getJars() != null) ? new ArrayList<>(other.getJars()) : null;
+        options = (other.getOptions() != null) ? new HashMap<>(other.getOptions()) : null;
+        paths = (other.getPaths() != null) ? new ArrayList<>(other.getPaths()) : null;
     }
 
     @Override
-    @SuppressWarnings("squid:S1168")
     public List<String> getFiles() {
-        return null;
+        return files;
+    }
+
+    @SuppressWarnings("squid:S1161")
+    public void setFiles(List<String> files) {
+        this.files = files;
     }
 
     @Override
@@ -82,21 +75,14 @@ public class DataSet implements DataSetTemplate {
         this.format = format;
     }
 
-    /**
-     * Unique identifier
-     */
-    public String getId() {
-        return id;
-    }
-
-    public void setId(String id) {
-        this.id = id;
-    }
-
     @Override
-    @SuppressWarnings("squid:S1168")
     public List<String> getJars() {
-        return null;
+        return jars;
+    }
+
+    @SuppressWarnings("squid:S1161")
+    public void setJars(List<String> jars) {
+        this.jars = jars;
     }
 
     @Override
@@ -121,6 +107,13 @@ public class DataSet implements DataSetTemplate {
 
     @Override
     public String toString() {
-        return "DataSet{id=" + id + ", dataSource=" + dataSource + '}';
+        return MoreObjects.toStringHelper(this)
+            .add("files", files)
+            .add("format", format)
+            .add("jars", jars)
+            .add("options", options)
+            .add("paths", paths)
+            .omitNullValues()
+            .toString();
     }
 }

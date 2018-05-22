@@ -23,6 +23,9 @@ package com.thinkbiganalytics.kylo.catalog.file;
 import com.google.common.io.Files;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -41,6 +44,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -61,19 +65,19 @@ public class CatalogFileManagerTest {
      */
     @Test
     public void createUpload() throws IOException {
-//        final String id = UUID.randomUUID().toString();
-//        final String src = "Hello world!";
-//
-//        // Test uploading a file
-//        final CatalogFileManager fileManager = new MockCatalogFileManager();
-//        final DataSetFile upload = fileManager.createUpload(id, "file-upload.txt", new ByteArrayInputStream(src.getBytes(StandardCharsets.UTF_8)));
-//
-//        final File file = datasetsFolder.getRoot().toPath().resolve(id).resolve("file-upload.txt").toFile();
-//        Assert.assertFalse("Expected uploaded file to not be a directory", upload.isDirectory());
-//        Assert.assertEquals(src.length(), upload.getLength().longValue());
-//        Assert.assertEquals("file-upload.txt", upload.getName());
-//        Assert.assertEquals(file.toURI().toURL().toString(), upload.getPath());
-//        Assert.assertEquals(src, Files.toString(file, StandardCharsets.UTF_8));
+        final DataSet dataSet = createDataSet();
+        final String src = "Hello world!";
+
+        // Test uploading a file
+        final CatalogFileManager fileManager = new MockCatalogFileManager();
+        final DataSetFile upload = fileManager.createUpload(dataSet, "file-upload.txt", new ByteArrayInputStream(src.getBytes(StandardCharsets.UTF_8)));
+
+        final File file = datasetsFolder.getRoot().toPath().resolve(dataSet.getId()).resolve("file-upload.txt").toFile();
+        Assert.assertFalse("Expected uploaded file to not be a directory", upload.isDirectory());
+        Assert.assertEquals(src.length(), upload.getLength().longValue());
+        Assert.assertEquals("file-upload.txt", upload.getName());
+        Assert.assertEquals(file.toURI().toURL().toString(), upload.getPath());
+        Assert.assertEquals(src, Files.toString(file, StandardCharsets.UTF_8));
     }
 
     /**
@@ -82,16 +86,17 @@ public class CatalogFileManagerTest {
     @Test
     @SuppressWarnings("ResultOfMethodCallIgnored")
     public void deleteUpload() throws IOException {
-//        final String id = UUID.randomUUID().toString();
-//
-//        final File file = new File(datasetsFolder.newFolder(id), "test-file.txt");
-//        file.createNewFile();
-//        Assert.assertTrue("Expected file to exist", file.exists());
-//
-//        // Test deleting a file
-//        final CatalogFileManager fileManager = new MockCatalogFileManager();
-//        fileManager.deleteUpload(id, "test-file.txt");
-//        Assert.assertFalse("Expected file to be deleted", file.exists());
+        // Create data set including files
+        final DataSet dataSet = createDataSet();
+
+        final File file = new File(datasetsFolder.newFolder(dataSet.getId()), "test-file.txt");
+        file.createNewFile();
+        Assert.assertTrue("Expected file to exist", file.exists());
+
+        // Test deleting a file
+        final CatalogFileManager fileManager = new MockCatalogFileManager();
+        fileManager.deleteUpload(dataSet, "test-file.txt");
+        Assert.assertFalse("Expected file to be deleted", file.exists());
     }
 
     /**
@@ -99,22 +104,44 @@ public class CatalogFileManagerTest {
      */
     @Test
     public void listUploads() throws IOException {
-//        final String id = UUID.randomUUID().toString();
-//        final File dataSetFolder = datasetsFolder.newFolder(id);
-//
-//        Files.write("data1", new File(dataSetFolder, "file1.txt"), StandardCharsets.UTF_8);
-//        Files.write("data2", new File(dataSetFolder, "file2.txt"), StandardCharsets.UTF_8);
-//        Files.write("data3", new File(dataSetFolder, "file3.txt"), StandardCharsets.UTF_8);
-//
-//        // Test listing files
-//        final CatalogFileManager fileManager = new MockCatalogFileManager();
-//        final List<DataSetFile> files = fileManager.listUploads(id);
-//        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", dataSetFolder.toPath().resolve("file1.txt").toUri().toURL().toString(), false, 5, "data1")));
-//        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", dataSetFolder.toPath().resolve("file2.txt").toUri().toURL().toString(), false, 5, "data2")));
-//        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", dataSetFolder.toPath().resolve("file3.txt").toUri().toURL().toString(), false, 5, "data3")));
-//        Assert.assertEquals(3, files.size());
+        // Create data set including files
+        final DataSet dataSet = createDataSet();
+        final File dataSetFolder = datasetsFolder.newFolder(dataSet.getId());
+
+        Files.write("data1", new File(dataSetFolder, "file1.txt"), StandardCharsets.UTF_8);
+        Files.write("data2", new File(dataSetFolder, "file2.txt"), StandardCharsets.UTF_8);
+        Files.write("data3", new File(dataSetFolder, "file3.txt"), StandardCharsets.UTF_8);
+
+        // Test listing files
+        final CatalogFileManager fileManager = new MockCatalogFileManager();
+        final List<DataSetFile> files = fileManager.listUploads(dataSet);
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file1.txt", dataSetFolder.toPath().resolve("file1.txt").toUri().toURL().toString(), false, 5, "data1")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file2.txt", dataSetFolder.toPath().resolve("file2.txt").toUri().toURL().toString(), false, 5, "data2")));
+        Assert.assertThat(files, CoreMatchers.hasItem(equalTo("file3.txt", dataSetFolder.toPath().resolve("file3.txt").toUri().toURL().toString(), false, 5, "data3")));
+        Assert.assertEquals(3, files.size());
     }
 
+    /**
+     * Creates a new data set.
+     */
+    @Nonnull
+    private DataSet createDataSet() {
+        final DefaultDataSetTemplate dataSourceTemplate = new DefaultDataSetTemplate();
+        dataSourceTemplate.setPaths(Collections.singletonList(datasetsFolder.getRoot().toURI().toString()));
+
+        final DataSource dataSource = new DataSource();
+        dataSource.setId(UUID.randomUUID().toString());
+        dataSource.setTemplate(dataSourceTemplate);
+
+        final DataSet dataSet = new DataSet();
+        dataSet.setId(UUID.randomUUID().toString());
+        dataSet.setDataSource(dataSource);
+        return dataSet;
+    }
+
+    /**
+     * Matches data set files with the specified attributes.
+     */
     @Nonnull
     @SuppressWarnings("SameParameterValue")
     private static Matcher<DataSetFile> equalTo(@Nonnull final String name, @Nonnull final String path, final boolean isDirectory, final long size, @Nonnull final String content) {
@@ -153,11 +180,11 @@ public class CatalogFileManagerTest {
          * Construct a {@code MockCatalogFileManager}.
          */
         MockCatalogFileManager() {
-            super(null);
+            super(new PathValidator());
         }
 
         @Override
-        protected <R> R isolatedFunction(@Nonnull final DataSet dataSet, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
+        protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
             return function.apply(FileSystem.getLocal(new Configuration(false)));
         }
     }

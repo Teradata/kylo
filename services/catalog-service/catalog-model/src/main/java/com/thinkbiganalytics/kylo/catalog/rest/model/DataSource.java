@@ -22,6 +22,8 @@ package com.thinkbiganalytics.kylo.catalog.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import javax.annotation.Nonnull;
 
@@ -30,6 +32,7 @@ import javax.annotation.Nonnull;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@SuppressWarnings("unused")
 public class DataSource {
 
     /**
@@ -45,6 +48,8 @@ public class DataSource {
     /**
      * Properties to apply to all data sets
      */
+    @JsonDeserialize(as = DefaultDataSetTemplate.class)
+    @JsonSerialize(as = DefaultDataSetTemplate.class)
     private DataSetTemplate template;
 
     /**
@@ -58,7 +63,7 @@ public class DataSource {
     public DataSource(@Nonnull final DataSource other) {
         connector = (other.connector != null) ? new Connector(other.connector) : null;
         id = other.id;
-        template = (other.template != null) ? new DataSetTemplate(other.template) : null;
+        template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
     }
 

@@ -28,6 +28,7 @@ import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
 
 import org.apache.commons.io.IOUtils;
@@ -189,19 +190,19 @@ public class CatalogFileManager {
     /**
      * Lists the files at the specified URI for the specified data set.
      *
-     * @param uri     directory for listing files
-     * @param dataSet data set
+     * @param uri        directory for listing files
+     * @param dataSource data source
      * @return files and directories at the URI
      * @throws AccessDeniedException if the URI is not allowed for the data set
      * @throws IOException           if an I/O error occurs when listing files
      */
     @Nonnull
-    public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSet dataSet) throws IOException {
+    public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSource dataSource) throws IOException {
         final Path path = new Path(uri);
-        if (pathValidator.isPathAllowed(path, dataSet)) {
-            return isolatedFunction(dataSet, path, fs -> listFiles(fs, path));
+        if (pathValidator.isPathAllowed(path, dataSource)) {
+            return isolatedFunction(dataSource, path, fs -> listFiles(fs, path));
         } else {
-            log.info("Dataset {} does not allow access to path: {}", dataSet.getId(), uri);
+            log.info("Datasource {} does not allow access to path: {}", dataSource.getId(), uri);
             throw new AccessDeniedException("Access to path [{}] is restricted: " + uri);
         }
     }
@@ -255,24 +256,36 @@ public class CatalogFileManager {
     /**
      * Executes the specified function in a separate class loader containing the jars of the specified data set.
      */
-    @VisibleForTesting
-    protected <R> R isolatedFunction(@Nonnull final DataSet dataSet, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
-        final DataSetTemplate mergedTemplate = DataSetUtil.mergeTemplates(dataSet);
+    private <R> R isolatedFunction(@Nonnull final DataSet dataSet, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
+        return isolatedFunction(DataSetUtil.mergeTemplates(dataSet), path, function);
+    }
 
+    /**
+     * Executes the specified function in a separate class loader containing the jars of the specified data source.
+     */
+    private <R> R isolatedFunction(@Nonnull final DataSource dataSource, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
+        return isolatedFunction(DataSourceUtil.mergeTemplates(dataSource), path, function);
+    }
+
+    /**
+     * Executes the specified function in a separate class loader containing the jars of the specified template.
+     */
+    @VisibleForTesting
+    protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
         // Create configuration with dataset options
         final Configuration conf = new Configuration(defaultConf);
-        if (mergedTemplate.getOptions() != null) {
-            log.debug("Creating Hadoop configuration with options: {}", mergedTemplate.getOptions());
-            mergedTemplate.getOptions().entrySet().stream()
+        if (template.getOptions() != null) {
+            log.debug("Creating Hadoop configuration with options: {}", template.getOptions());
+            template.getOptions().entrySet().stream()
                 .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
                 .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
         }
 
         // Run function in separate class loader
         try (final HadoopClassLoader classLoader = new HadoopClassLoader(conf)) {
-            if (mergedTemplate.getJars() != null) {
-                log.debug("Adding jars to HadoopClassLoader: {}", mergedTemplate.getJars());
-                classLoader.addJars(mergedTemplate.getJars());
+            if (template.getJars() != null) {
+                log.debug("Adding jars to HadoopClassLoader: {}", template.getJars());
+                classLoader.addJars(template.getJars());
             }
 
             log.debug("Creating FileSystem from path: {}", path);
