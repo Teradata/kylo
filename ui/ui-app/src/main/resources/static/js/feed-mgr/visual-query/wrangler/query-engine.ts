@@ -451,6 +451,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.limit_ = value;
+            this.stateChanged = true;
         }
         return this.limit_;
     }
@@ -514,6 +515,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.sample_ = value;
+            this.stateChanged = true;
         }
         return this.sample_;
     }
@@ -601,6 +603,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (typeof value !== "undefined") {
             this.clearTableState();
             this.limitBeforeSample_ = value;
+            this.stateChanged = true;
         }
         return this.limitBeforeSample_;
     }

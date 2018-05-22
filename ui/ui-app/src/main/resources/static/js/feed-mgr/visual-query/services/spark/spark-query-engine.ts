@@ -417,7 +417,6 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         let successCallback = function (response: angular.IHttpResponse<TransformResponse>) {
             let state = self.states_[index];
-            self.lastIndex = index;
             self.resetStateChange();
             // Check status
             if (response.data.status === "PENDING") {
