@@ -6,6 +6,7 @@ import * as _ from "underscore";
 
 import {WindowUnloadService} from "../../../services/WindowUnloadService";
 import {FeedDataTransformation} from "../../model/feed-data-transformation";
+import {TableColumnDefinition} from "../../model/TableColumnDefinition"
 import {DomainType, DomainTypesService} from "../../services/DomainTypesService";
 import {ChainedOperation, DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
@@ -1144,7 +1145,7 @@ export class TransformDataComponent implements OnInit {
                 }
 
                 if (index === columnIndex) {
-                    this.FeedService.setDomainTypeForField({}, fieldPolicy, domainType);
+                    this.FeedService.setDomainTypeForField(new TableColumnDefinition(), fieldPolicy, domainType);
                 }
                 return fieldPolicy;
             });

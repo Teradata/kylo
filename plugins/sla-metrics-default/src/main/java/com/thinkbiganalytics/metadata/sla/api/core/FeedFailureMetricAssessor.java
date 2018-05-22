@@ -67,7 +67,9 @@ public class FeedFailureMetricAssessor implements MetricAssessor<FeedFailedMetri
         LOG.debug("Assessing FeedFailureMetric for '{}'.  The Last Feed Job was: {} ",feedName,lastFeedJob);
         if (!feedFailureService.isEmptyJob(lastFeedJob)) {
 
-            data.put("jobExecutionId",lastFeedJob.getBatchJobExecutionId().toString());
+            if(lastFeedJob.getBatchJobExecutionId() != null) {
+                data.put("jobExecutionId", lastFeedJob.getBatchJobExecutionId().toString());
+            }
 
             //compare with the latest feed time, alerts with same timestamps will not be raised
             builder.compareWith(feedName, lastTime.getMillis());
