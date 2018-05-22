@@ -229,7 +229,7 @@ constructor(private $scope: angular.IScope,
         transformAssessments (tabTitle: any, assessments: any){
             //first clear out the arrays
             this.TabService.clearTabs(this.pageName);
-            angular.forEach(assessments, function(assessment, i) {
+            angular.forEach(assessments, (assessment, i) =>{
                 this.TabService.addContent(this.pageName, tabTitle, assessment);
             });
             return assessments;
@@ -249,13 +249,7 @@ constructor(private $scope: angular.IScope,
             this.loaded = true;
         }
 
-        clearRefreshTimeout= function(instanceId: any) {
-            var timeoutInstance = this.timeoutMap[instanceId];
-            if (timeoutInstance) {
-                this.$timeout.cancel(timeoutInstance);
-                delete this.timeoutMap[instanceId];
-            }
-        }
+
 
 
 }
