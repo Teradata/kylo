@@ -33,7 +33,6 @@ import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -48,7 +47,7 @@ import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication
-@EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
+@EnableAutoConfiguration
 @EnableConfigurationProperties
 @Import({DatabaseConfiguration.class, OperationalMetadataConfig.class, SpringJerseyConfiguration.class, SecurityCoreConfig.class})
 @ComponentScan("com.thinkbiganalytics")
