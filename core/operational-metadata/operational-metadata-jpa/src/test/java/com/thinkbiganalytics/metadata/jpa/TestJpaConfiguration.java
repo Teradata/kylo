@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.sql.DataSource;
 
@@ -45,6 +46,7 @@ import reactor.bus.EventBus;
 @EnableAutoConfiguration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @Configuration
+@PropertySource("classpath:test-application.properties")
 public class TestJpaConfiguration {
 
     @Bean
@@ -68,7 +70,7 @@ public class TestJpaConfiguration {
      */
     @Bean(name = "dataSource")
     @Primary
-    @ConfigurationProperties(prefix = "spring.datasource", locations = "classpath:test-application.properties")
+    @ConfigurationProperties(prefix = "spring.datasource")
     public DataSource dataSource() {
         DataSource newDataSource = DataSourceBuilder.create().build();
 
