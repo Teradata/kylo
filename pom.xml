@@ -109,7 +109,6 @@
     <automatic-release-repo-promotion>false</automatic-release-repo-promotion>
     <activemq.version>5.15.0</activemq.version>
     <avro.version>1.7.7</avro.version>
-    <spring.version>4.2.5.RELEASE</spring.version>
     <jersey.version>2.22.2</jersey.version>
     <jackson.version>2.6.2</jackson.version>
     <hibernate.version>5.1.5.Final</hibernate.version>
@@ -160,9 +159,9 @@
     <scala.binary.version>2.10</scala.binary.version>
     <spark.version>1.6.1</spark.version>
     <spark.binary.version>1.6</spark.binary.version>
-    <spring.version>4.2.5.RELEASE</spring.version>
+    <spring.version>4.3.17.RELEASE</spring.version>
     <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
-    <spring.boot.version>1.3.7.RELEASE</spring.boot.version>
+    <spring.boot.version>1.5.13.RELEASE</spring.boot.version>
     <spring.cloud.version>1.1.3.RELEASE</spring.cloud.version>
     <spring.jpa.version>1.10.2.RELEASE</spring.jpa.version>
     <spring.security.version>4.1.3.RELEASE</spring.security.version>
