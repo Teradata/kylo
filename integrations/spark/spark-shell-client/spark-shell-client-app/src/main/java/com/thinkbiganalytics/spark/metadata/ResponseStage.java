@@ -123,6 +123,7 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
     @Override
     public TransformResponse apply(@Nullable final TransformResult result) {
         Preconditions.checkNotNull(result);
+        result.getDataSet().registerTempTable(table);
 
         // Transform data set into rows
         final QueryResultRowTransform rowTransform = new QueryResultRowTransform(result.getDataSet().schema(), table, converterService);
