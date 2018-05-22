@@ -614,7 +614,7 @@ export class ColumnDelegate implements IColumnDelegate {
         fields = fields.replace(/struct\<(.*?)\>/g, "ignore");
         let fieldArray : string[] = fields.split(",");
         return fieldArray.map( (v:string) => {
-            return v.split(":")[0];
+            return v.split(":")[0].toLowerCase();
         });
     }
 
@@ -631,9 +631,10 @@ export class ColumnDelegate implements IColumnDelegate {
         // Check for potential name conflicts
         let structFields = self.structToFields(column);
         let existingCols = self.toColumnArray(grid.columns);
+        let existingColsLower = existingCols.map((field:string)=> { return field.toLowerCase(); });
 
         let conflicts = structFields.filter( (n:string) =>  {
-            return existingCols.indexOf(n) !== -1;
+            return existingColsLower.indexOf(n) !== -1;
         });
 
         let formula : string;
