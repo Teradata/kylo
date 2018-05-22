@@ -28,7 +28,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.ldap.authentication.LdapAuthenticator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 import org.springframework.test.context.ActiveProfiles;
@@ -54,7 +54,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 /**
  *
  */
-@SpringApplicationConfiguration(classes = {
+@SpringBootTest(classes = {
     SecurityConfig.class,
     JaasAuthConfig.class,
     LdapAuthConfig.class,

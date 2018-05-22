@@ -31,7 +31,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrTestConfig;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 
-import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
@@ -44,7 +44,7 @@ import javax.inject.Inject;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringApplicationConfiguration(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
+@SpringBootTest(classes = {ModeShapeEngineConfig.class, JcrTestConfig.class, JcrExtensibleProvidersTestConfig.class})
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
