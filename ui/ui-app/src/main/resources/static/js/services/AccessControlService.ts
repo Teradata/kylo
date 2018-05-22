@@ -415,7 +415,7 @@ static readonly $inject = ["$http","$q","$timeout","CommonRestUrlService","UserG
              * @param entityPermissions  a string or an array of entity permissions to check against the user and supplied entity
              * @return a promise with a boolean value as the response
              */
-            hasPermission=(functionalPermission: any,entity: any,entityPermissions: any)=> {
+            hasPermission=(functionalPermission: any,entity?: any,entityPermissions?: any)=> {
                 var entityAccessControlled = entity != null && entityPermissions != null && this.isEntityAccessControlled();
                 var defer = this.$q.defer();
                 var requests = {

@@ -138,7 +138,7 @@ export class DefaultPaginationDataService implements PaginationDataService{
      * @param value
      * @returns {string|Function|*|number}
      */
-    rowsPerPage(pageName:string, value?:number) :number{
+    rowsPerPage(pageName:string, value?:number) :any{
         if (value != undefined) {
             this.paginationData(pageName).rowsPerPage = value;
         }
