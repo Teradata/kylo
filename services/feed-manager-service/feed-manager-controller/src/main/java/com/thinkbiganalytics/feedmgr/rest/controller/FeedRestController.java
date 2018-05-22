@@ -989,7 +989,7 @@ public class FeedRestController {
             } catch (Exception e) {
                 String errTemplate = getErrorTemplate(uploadedFiles, "Unexpected exception writing file [%s] to [%s].");
                 String err = String.format(errTemplate, fileName, context.getDropzone());
-                log.error(err);
+                log.error(err,e);
                 throw new InternalServerErrorException(err, e);
             }
         }
