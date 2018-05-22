@@ -57,13 +57,13 @@ public class JsonFeedIT extends FeedITBase{
     private static final int VALID_RESULTS = 7;
 
     @Test
-    @Ignore //until Riaz is back
+//    @Ignore //until Riaz is back
     public void testJsonDataIngestFeed() throws Exception {
         dataIngestFeedBase();
     }
 
     @Test
-    @Ignore //until Riaz is back
+//    @Ignore //until Riaz is back
     public void testJsonEditFeed() throws Exception {
         editFeed();
     }
@@ -122,7 +122,7 @@ public class JsonFeedIT extends FeedITBase{
         return tags;
     }
 
-    public void assertExecutedJobs(String feedName, String feedId) throws IOException{
+    public void assertExecutedJobs(String feedName, String feedId) {
         LOG.info("Asserting there is 1 completed jobs: json ingest job");
         DefaultExecutedJob[] jobs = getJobs(0,50,null,null);
 
