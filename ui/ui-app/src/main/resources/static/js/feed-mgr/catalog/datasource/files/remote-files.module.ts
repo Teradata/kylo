@@ -17,7 +17,8 @@ import {CatalogApiModule} from "../../api/catalog-api.module";
 import {RemoteFilesComponent} from "./remote-files.component";
 import {remoteFileStates} from "./remote-files.states";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import {MatCheckboxModule} from '@angular/material/checkbox';
 
 @NgModule({
     declarations: [
@@ -28,6 +29,7 @@ import {FormsModule} from '@angular/forms';
     ],
     imports: [
         FormsModule,
+        ReactiveFormsModule,
         CovalentDataTableModule,
         CatalogApiModule,
         CommonModule,
@@ -42,6 +44,7 @@ import {FormsModule} from '@angular/forms';
         MatListModule,
         MatProgressBarModule,
         MatSelectModule,
+        MatCheckboxModule,
         UIRouterModule.forChild({states: remoteFileStates})
     ]
 })

@@ -8,6 +8,7 @@ import {DatePipe} from '@angular/common';
 import {StateService} from "@uirouter/angular";
 import {TdBytesPipe} from '@covalent/core/common';
 import {IPageChangeEvent} from '@covalent/core/paging';
+import {SelectionService} from '../../api/services/selection.service';
 
 interface RemoteFile {
     name: string;
@@ -34,26 +35,29 @@ export class RemoteFilesComponent implements OnInit {
     DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
 
     columns: ITdDataTableColumn[] = [
-        {name: "directory", label: "", width: 48, filter: false},
+        {name: "directory", label: "", sortable: false, width: 48, filter: false},
         {name: "name", label: "Name", sortable: true, filter: true},
         {name: "length", label: "Size", numeric: true, sortable: true, filter: false, width: 200, format: this.FILE_SIZE_FORMAT},
         {name: "modificationTime", label: "Last modified", sortable: true, filter: false, width: 210, format: this.DATE_FORMAT}
     ];
 
-    sortBy: string = 'name';
-    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Descending;
+    sortBy = 'name';
+    sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
     filteredFiles: RemoteFile[] = [];
     filteredTotal = 0;
     fromRow: number = 1;
     currentPage: number = 1;
     pageSize: number = 50;
-    selectedRows: any[] = [];
+    selectedRows: RemoteFile[] = [];
+    selected: Map<string, boolean> = new Map<string, boolean>();
+    selectAll: boolean = false;
 
     paths: string[];
     files: RemoteFile[] = [];
 
-    constructor(private dataTableService: TdDataTableService, private http: HttpClient, private state: StateService) {
+    constructor(private dataTableService: TdDataTableService, private http: HttpClient,
+                private state: StateService, private selection: SelectionService) {
     }
 
     public ngOnInit(): void {
@@ -64,6 +68,13 @@ export class RemoteFilesComponent implements OnInit {
         this.http.post("/proxy/v1/catalog/dataset/" + datasetId + "/files", template)
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
+                for (let file of this.files) {
+                    this.selected.set(file.name, false);
+                }
+                const existingSelection = this.selection.get(this.datasource.id, this.path);
+                existingSelection.forEach((value: boolean, key: string) => {
+                    this.selected.set(key, value);
+                });
                 this.filter();
             });
     }
@@ -71,6 +82,31 @@ export class RemoteFilesComponent implements OnInit {
     browseTo(pathIndex: number) {
         const location = this.paths.slice(0, pathIndex + 1).join("/");
         this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
+    }
+
+    toggleAll(): void {
+        for (let file of this.files) {
+            this.selected.set(file.name, this.selectAll);
+        }
+        this.select();
+    }
+
+    toggleRow(event: any, file: RemoteFile): void {
+        this.selected.set(file.name, event.checked);
+        this.select();
+    }
+
+    private select() {
+        this.selection.set(this.datasource.id, this.path, this.selected);
+    }
+
+    getNumberOfSelectedRows() {
+        let result = 0;
+        let map = this.selection.getAll(this.datasource.id);
+        map.forEach((value: any) => {
+            result += value.length;
+        });
+        return result;
     }
 
     rowClick(file: RemoteFile): void {
@@ -81,7 +117,7 @@ export class RemoteFilesComponent implements OnInit {
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
         this.sortBy = sortEvent.name;
-        this.sortOrder = sortEvent.order;
+        this.sortOrder = sortEvent.order === TdDataTableSortingOrder.Descending ? TdDataTableSortingOrder.Ascending : TdDataTableSortingOrder.Descending;
         this.filter();
     }
 

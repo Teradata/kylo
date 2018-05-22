@@ -5,6 +5,7 @@ import {StateRegistry, StateService} from "@uirouter/angular";
 
 import {ConnectorTab} from "../api/models/connector-tab";
 import {DataSource} from '../api/models/datasource';
+import {SelectionService} from '../api/services/selection.service';
 
 /**
  * Displays tabs for configuring a data set (or connection).
@@ -28,11 +29,12 @@ export class DatasourceComponent implements OnInit {
      */
     tabs: ConnectorTab[] = [];
 
-    constructor(private state: StateService, private stateRegistry: StateRegistry) {
+    constructor(private state: StateService, private stateRegistry: StateRegistry, private selection: SelectionService) {
     }
 
     public ngOnInit() {
         // Add tabs and register router states
+        this.selection.reset(this.datasource.id);
         if (this.datasource.connector.tabs) {
             this.tabs = angular.copy(this.datasource.connector.tabs);
             for (let tab of this.tabs) {
