@@ -171,9 +171,9 @@ export class FeedLineageController implements ng.IComponentController {
     };
 
     events = {
-        onload: this.onLoad,
-        selectNode: this.onSelect,
-        stabilized:this.stabilized
+        onload: this.onLoad.bind(this),
+        selectNode: this.onSelect.bind(this),
+        stabilized:this.stabilized.bind(this)
       //  stabilizationIterationsDone: stabilizationIterationsDone
     };
     
