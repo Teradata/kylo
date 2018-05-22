@@ -134,7 +134,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
     }
 
     /**
-     * Gets the schema fields for the the current transformation.
+     * Gets the schema fields  for the the current transformation.
      *
      * @returns the schema fields or {@code null} if the transformation has not been applied
      */
@@ -381,7 +381,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
         };
         let index = this.states_.length - 1;
 
-        if (index > 0) {
+        if (index > -1) {
             // Find last cached state
             let last = index - 1;
             while (last >= 0 && this.states_[last].table === null) {
@@ -389,7 +389,13 @@ export class SparkQueryEngine extends QueryEngine<string> {
             }
 
             // Add script to body
-            body["script"] = this.getScript(last + 1, index);
+            if (!this.hasStateChanged()) {
+                body["script"] = "import org.apache.spark.sql._\nvar df = parent\ndf";
+                last = index;
+            } else {
+                body["script"] = this.getScript(last + 1, index);
+            }
+
             if (last >= 0) {
                 body["parent"] = {
                     table: this.states_[last].table,
@@ -411,7 +417,8 @@ export class SparkQueryEngine extends QueryEngine<string> {
 
         let successCallback = function (response: angular.IHttpResponse<TransformResponse>) {
             let state = self.states_[index];
-
+            self.lastIndex = index;
+            self.resetStateChange();
             // Check status
             if (response.data.status === "PENDING") {
 
@@ -478,6 +485,7 @@ export class SparkQueryEngine extends QueryEngine<string> {
             let state = self.states_[index];
             state.columns = [];
             state.rows = [];
+            self.resetStateChange();
 
             // Respond with error message
             let message;

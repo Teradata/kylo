@@ -102,6 +102,12 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     protected states_: ScriptState<T>[] = [this.newState()];
 
     /**
+     * Whether state has changed since last execution
+     * @type {boolean}
+     */
+    protected stateChanged = false;
+
+    /**
      * Construct a {@code QueryEngine}.
      */
     constructor(protected $mdDialog: angular.material.IDialogService, protected DatasourcesService: DatasourcesServiceStatic.DatasourcesService, protected uiGridConstants: any, private injector: Injector) {
@@ -152,6 +158,21 @@ export abstract class QueryEngine<T> implements WranglerEngine {
     canRedo(): boolean {
         return (this.redo_.length !== 0);
     }
+
+    /**
+     * Whether state has changed
+     */
+    hasStateChanged(): boolean {
+        return this.stateChanged;
+    }
+
+    /**
+     * State executed
+     */
+    resetStateChange() : void {
+        this.stateChanged = false;
+    }
+
 
     /**
      * Indicates if the current transformation can be undone.
@@ -459,6 +480,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         state.script = this.parseAcornTree(tree);
         state.sort = angular.isDefined(context.sort) ? context.sort : this.getState().sort;
         this.states_.push(state);
+        this.stateChanged = true;
 
         // Clear redo states
         this.redo_ = [];
@@ -475,6 +497,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (this.redo_.length > 0) {
             let state = this.redo_.pop();
             this.states_.push(state);
+            this.stateChanged = true;
             return state.context;
         } else {
             throw new Error("No states to redo");
@@ -553,6 +576,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
             state.script = src.script;
             this.states_.push(state);
         });
+        this.stateChanged = true;
     }
 
     /**
@@ -564,6 +588,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         this.source_ = this.parseQuery(query);
         this.states_ = [this.newState()];
         this.pageSpec = pageSpec;
+        this.stateChanged = true;
     }
 
     /**
@@ -621,6 +646,7 @@ export abstract class QueryEngine<T> implements WranglerEngine {
         if (this.states_.length > 1) {
             let state = this.states_.pop();
             this.redo_.push(state);
+            this.stateChanged = true;
             return state.context;
         } else {
             throw new Error("No states to undo");
