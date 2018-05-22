@@ -254,10 +254,8 @@ constructor(private $scope: angular.IScope,
 
 }
 angular.module(moduleName)
-        .service("IconService", [IconService])
-        .service("OpsManagerRestUrlService", [OpsManagerRestUrlService])
-        .service("TabService", TabService)
         .controller("ServiceLevelAssessmentsController", ["$scope","$http","$timeout","$q","$mdToast","$mdPanel","OpsManagerRestUrlService","TableOptionsService","PaginationDataService","StateService","IconService","TabService","AccessControlService","BroadcastService",controller]);
+
 angular.module(moduleName).directive("kyloServiceLevelAssessments", //[this.thinkbigPermissionsTable]);
   [ () => {  return {
             restrict: "EA",
