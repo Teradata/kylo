@@ -49,7 +49,6 @@ export class RemoteFilesComponent implements OnInit {
     fromRow: number = 1;
     currentPage: number = 1;
     pageSize: number = 50;
-    selectedRows: RemoteFile[] = [];
     selected: Map<string, boolean> = new Map<string, boolean>();
     selectAll: boolean = false;
 
@@ -57,7 +56,7 @@ export class RemoteFilesComponent implements OnInit {
     files: RemoteFile[] = [];
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
-                private state: StateService, private selection: SelectionService) {
+                private state: StateService, private selectionService: SelectionService) {
     }
 
     public ngOnInit(): void {
@@ -71,7 +70,7 @@ export class RemoteFilesComponent implements OnInit {
                 for (let file of this.files) {
                     this.selected.set(file.name, false);
                 }
-                const existingSelection = this.selection.get(this.datasource.id, this.path);
+                const existingSelection = this.selectionService.get(this.datasource.id, this.path);
                 existingSelection.forEach((value: boolean, key: string) => {
                     this.selected.set(key, value);
                 });
@@ -84,27 +83,31 @@ export class RemoteFilesComponent implements OnInit {
         this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
     }
 
-    toggleAll(): void {
+    onToggleAll(): void {
         for (let file of this.files) {
             this.selected.set(file.name, this.selectAll);
         }
-        this.select();
+        this.storeSelection();
     }
 
-    toggleRow(event: any, file: RemoteFile): void {
+    onToggleRow(event: any, file: RemoteFile): void {
         this.selected.set(file.name, event.checked);
-        this.select();
+        this.storeSelection();
     }
 
-    private select() {
-        this.selection.set(this.datasource.id, this.path, this.selected);
+    private storeSelection() {
+        this.selectionService.set(this.datasource.id, this.path, this.selected);
     }
 
-    getNumberOfSelectedRows() {
+    numberOfSelectedFiles() {
+        return Array.from(this.selected.values()).filter(selected => selected).length;
+    }
+
+    totalNumberOfSelectedFiles() {
         let result = 0;
-        let map = this.selection.getAll(this.datasource.id);
-        map.forEach((value: any) => {
-            result += value.length;
+        let allPaths = this.selectionService.getAll(this.datasource.id);
+        allPaths.forEach((path: Map<string, boolean>) => {
+            result += Array.from(path.values()).filter(selected => selected).length;
         });
         return result;
     }

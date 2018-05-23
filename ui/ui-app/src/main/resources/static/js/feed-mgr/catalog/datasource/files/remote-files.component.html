@@ -10,7 +10,7 @@
             <span *ngIf="!isLast">/</span>
           </span>
         </div>
-        <div *ngIf="getNumberOfSelectedRows() > 0" class="selected-items" >{{selectedRows.length}} item(s) selected here, {{getNumberOfSelectedRows()}} in total</div>
+        <div *ngIf="totalNumberOfSelectedFiles() > 0" class="selected-items" >{{numberOfSelectedFiles()}} item(s) selected here, {{totalNumberOfSelectedFiles()}} in total</div>
       </li>
     </ol>
   </div>
@@ -28,7 +28,7 @@
       [numeric]="false"
       [width]="50"
       [active]="false">
-    <mat-checkbox [(ngModel)]="selectAll" [indeterminate]="false" (change)="toggleAll()"></mat-checkbox>
+    <mat-checkbox [(ngModel)]="selectAll" [indeterminate]="false" (change)="onToggleAll()"></mat-checkbox>
   </th>
   <th td-data-table-column *ngFor="let column of columns"
       [name]="column.name"
@@ -45,7 +45,7 @@
 <tbody>
 <tr td-data-table-row *ngFor="let file of filteredFiles;" [ngClass]="file.directory ? 'cursor-pointer' : ''">
   <td td-data-table-cell>
-    <mat-checkbox [checked]="selected.get(file.name)" (change)="toggleRow($event, file)"></mat-checkbox>
+    <mat-checkbox [checked]="selected.get(file.name)" (change)="onToggleRow($event, file)"></mat-checkbox>
   </td>
   <td td-data-table-cell *ngFor="let column of columns" (click)="rowClick(file)"
       [numeric]="column.numeric">
@@ -57,28 +57,6 @@
 </tr>
 </tbody>
 </table>
-
-
-<!--<td-data-table-->
-    <!--#dataTable-->
-    <!--[data]="filteredFiles"-->
-    <!--[columns]="columns"-->
-    <!--[(ngModel)]="selectedRows"-->
-    <!--[clickable]="true"-->
-    <!--[multiple]="true"-->
-    <!--[sortable]="true"-->
-    <!--[sortBy]="sortBy"-->
-    <!--[sortOrder]="sortOrder"-->
-    <!--(sortChange)="sort($event)"-->
-    <!--(rowClick)="rowClick($event.row)"-->
-    <!--[selectable]="true"-->
-    <!--(rowSelect)="toggleRow($event)"-->
-    <!--(selectAll)="toggleAll($event)"-->
-    <!--[compareWith]="compareWith">-->
-  <!--<ng-template tdDataTableTemplate="directory" let-value="value">-->
-    <!--<ng-md-icon fxFlex [icon]="value ? 'fa-folder' : 'fa-file-r'" style="fill: #607D8B;" [ngClass]="value ? 'cursor-pointer' : ''"></ng-md-icon>-->
-  <!--</ng-template>-->
-<!--</td-data-table>-->
 
 <div class="md-padding" *ngIf="filteredFiles.length === 0" layout="row" layout-align="center center">
   <h3>No results to display.</h3>
