@@ -92,7 +92,7 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
 
     @Override
     public void setSparkVersion(SparkVersion sparkVersion) {
-
+        this.sparkVersion = sparkVersion;
     }
 
     @Override

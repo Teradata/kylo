@@ -12,7 +12,6 @@
   <properties>
     <plugin.license.parentRelative>../../../../</plugin.license.parentRelative>
     <spark.avro.version>2.0.1</spark.avro.version>
-    <spark.csv.version>1.5.0</spark.csv.version>
   </properties>
 
   <artifactId>kylo-spark-shell-client-v1</artifactId>
@@ -123,8 +122,19 @@
     </dependency>
     <dependency>
       <groupId>com.databricks</groupId>
-      <artifactId>spark-csv_2.10</artifactId>
-      <version>${spark.csv.version}</version>
+      <artifactId>spark-csv_${scala.binary.version}</artifactId>
+      <version>${spark1.csv.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.scala-lang</groupId>
+          <artifactId>scala-library</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>com.databricks</groupId>
+      <artifactId>spark-xml_${scala.binary.version}</artifactId>
+      <version>${spark1.xml.version}</version>
       <exclusions>
         <exclusion>
           <groupId>org.scala-lang</groupId>

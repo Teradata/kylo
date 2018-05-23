@@ -13,6 +13,9 @@
   <properties>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
+    <spark1.xml.version>0.3.5</spark1.xml.version>
+    <spark2.xml.version>0.4.1</spark2.xml.version>
+    <spark1.csv.version>1.5.0</spark1.csv.version>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
 
