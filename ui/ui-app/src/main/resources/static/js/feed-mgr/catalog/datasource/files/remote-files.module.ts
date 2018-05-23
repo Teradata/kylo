@@ -31,7 +31,6 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
         FormsModule,
         ReactiveFormsModule,
         CovalentDataTableModule,
-        CatalogApiModule,
         CommonModule,
         CovalentFileModule,
         CovalentSearchModule,

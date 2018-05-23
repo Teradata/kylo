@@ -7,9 +7,7 @@ import {DatasourceComponent} from "./datasource/datasource.component";
 import {CatalogComponent} from "./catalog.component";
 import {ConnectorsComponent} from './connectors/connectors.component';
 import {TdLoadingService} from '@covalent/core/loading';
-import {DataSourcesComponent} from './datasources/datasources.component';
 import {ConnectorComponent} from './connector/connector.component';
-import {RemoteFilesComponent} from './datasource/files/remote-files.component';
 
 export const catalogStates: Ng2StateDeclaration[] = [
     {

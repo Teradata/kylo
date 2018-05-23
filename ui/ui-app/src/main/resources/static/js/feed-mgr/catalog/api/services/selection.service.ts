@@ -6,6 +6,7 @@ export class SelectionService {
     private selections: Map<string, Map<any, any>>;
 
     constructor() {
+        console.log('new SelectionService');
         this.selections = new Map<string, Map<any, any>>();
     }
 
@@ -16,6 +17,7 @@ export class SelectionService {
      * @param {any[]} selectedItems
      */
     set(datasourceId: string, location: any, selectedItems: any): void {
+        console.log('set for data source ' + datasourceId);
         let selection = this.selections.get(datasourceId);
         if (selection === undefined) {
             selection = new Map<any, any>();
@@ -29,7 +31,10 @@ export class SelectionService {
      * @param {string} datasourceId
      */
     reset(datasourceId: string): void {
+        console.log('reset for data source ' + datasourceId);
+        console.log('selections before', this.selections);
         this.selections.delete(datasourceId);
+        console.log('selections after', this.selections);
     }
 
     /**

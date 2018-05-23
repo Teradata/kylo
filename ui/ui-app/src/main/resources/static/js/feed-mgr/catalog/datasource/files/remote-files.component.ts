@@ -57,6 +57,7 @@ export class RemoteFilesComponent implements OnInit {
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService) {
+        console.log('new RemoteFilesComponent');
     }
 
     public ngOnInit(): void {
@@ -66,11 +67,41 @@ export class RemoteFilesComponent implements OnInit {
         this.paths = this.path.split("/");
         this.http.post("/proxy/v1/catalog/dataset/" + datasetId + "/files", template)
             .subscribe((data: RemoteFile[]) => {
+                console.log('resetting selection');
+                this.selected = new Map<string, boolean>();
                 this.files = data;
                 for (let file of this.files) {
                     this.selected.set(file.name, false);
                 }
+                console.log('getting existing selection for data source id ' + this.datasource.id + ' and path ' + this.path);
+
+                //disable selection if parent directory is selected
+                console.log('paths', this.paths);
+                let parent = "";
+                let hasParentSelection = false;
+                let nextChildIdx: number;
+                for (let i in this.paths) {
+                    console.log('i = ' + i);
+                    let currentPath = this.paths[i];
+                    if (currentPath.length !== 0) {
+                        parent += "/" + currentPath;
+                        console.log('parent = ' + parent);
+                        nextChildIdx = 1 + Number(i);
+                        console.log('next child idx = ' + nextChildIdx + ', paths.length=' + this.paths.length);
+                        if (this.paths.length > Number(nextChildIdx)) {
+                            let child = this.paths[nextChildIdx];
+                            console.log('child = ' + child);
+                            this.selectionService.get(this.datasource.id, parent).forEach((isSelected: boolean, childPath: string) => {
+                                hasParentSelection = hasParentSelection || (childPath === child && isSelected);
+                            });
+                        }
+                    }
+                }
+                console.log("has parent selection? " + hasParentSelection);
+
+
                 const existingSelection = this.selectionService.get(this.datasource.id, this.path);
+                console.log(existingSelection);
                 existingSelection.forEach((value: boolean, key: string) => {
                     this.selected.set(key, value);
                 });
@@ -84,6 +115,9 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     onToggleAll(): void {
+        //todo warn user that downstream selection will be removed, e.g.
+        //todo 1. user selects file on path /a/b/c/file.txt
+        //todo 2. user selects directory on path /a/b, which includes downstream /a/b/c/file.txt
         for (let file of this.files) {
             this.selected.set(file.name, this.selectAll);
         }
@@ -106,8 +140,8 @@ export class RemoteFilesComponent implements OnInit {
     totalNumberOfSelectedFiles() {
         let result = 0;
         let allPaths = this.selectionService.getAll(this.datasource.id);
-        allPaths.forEach((path: Map<string, boolean>) => {
-            result += Array.from(path.values()).filter(selected => selected).length;
+        allPaths.forEach((pathSelection: Map<string, boolean>) => {
+            result += Array.from(pathSelection.values()).filter(selected => selected).length;
         });
         return result;
     }
