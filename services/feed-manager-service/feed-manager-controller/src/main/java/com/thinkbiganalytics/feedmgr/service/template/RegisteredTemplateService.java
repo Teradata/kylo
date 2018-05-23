@@ -191,9 +191,10 @@ public class RegisteredTemplateService {
         }
         if (registeredTemplate != null) {
             if (registeredTemplateRequest.isIncludeAllProperties()) {
-                registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate, registeredTemplateRequest);
-                registeredTemplate.initializeProcessors();
-                ensureRegisteredTemplateInputProcessors(registeredTemplate);
+                RegisteredTemplate mergedTemplate = mergeRegisteredTemplateProperties(registeredTemplate, registeredTemplateRequest);
+                mergedTemplate.initializeProcessors();
+                ensureRegisteredTemplateInputProcessors(mergedTemplate);
+                registeredTemplate = mergedTemplate;
             }
             if (NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiFeedConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
                 registeredTemplate.setAllowPreconditions(true);
@@ -243,7 +244,6 @@ public class RegisteredTemplateService {
                 return registeredTemplate;
             }, principals);
         }
-
     }
 
     /**
@@ -278,8 +278,6 @@ public class RegisteredTemplateService {
             }
             return registeredTemplate;
         }, principals);
-
-
     }
 
     /**
@@ -310,8 +308,6 @@ public class RegisteredTemplateService {
             }
             return registeredTemplate;
         }, principals);
-
-
     }
 
     /**
@@ -387,9 +383,7 @@ public class RegisteredTemplateService {
                         reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
                     }
                     updatedConnectionInfo.add(reusableTemplateConnectionInfo);
-
                 }
-
                 registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
                 registeredTemplate.initializeProcessors();
                 ensureRegisteredTemplateInputProcessors(registeredTemplate);
@@ -413,7 +407,6 @@ public class RegisteredTemplateService {
                 });
 
                 registeredTemplates = templateModelTransform.domainToRegisteredTemplateWithFeedNames(templates);
-
             }
             return registeredTemplates;
         });
@@ -439,7 +432,7 @@ public class RegisteredTemplateService {
             registeredTemplate.setNifiTemplateId(nifiTemplateId);
 
             properties = niFiTemplateCache.getTemplateProperties(nifiTemplate, true, null);
-            // TODO not sure if this is needed
+
             List<NiFiRemoteProcessGroup> remoteProcessGroups = niFiTemplateCache.getRemoteProcessGroups(nifiTemplate);
             registeredTemplate.setRemoteProcessGroups(remoteProcessGroups);
             registeredTemplate.setNifiTemplate(nifiTemplate);
@@ -473,17 +466,8 @@ public class RegisteredTemplateService {
             if (templateDTO != null) {
                 registeredTemplate.setNifiTemplate(templateDTO);
                 properties = niFiTemplateCache.getTemplateProperties(templateDTO, registeredTemplateRequest.isIncludePropertyDescriptors(), registeredTemplate);
-                //first attempt to match the properties by the processorid and processor name
-                //     NifiPropertyUtil
-                //         .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
             }
 
-         /*   if (properties != null) {
-                //match the properties to the processors by the processor name
-                NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),
-                                                                    NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
-            }
-            */
             if (templateDTO != null && !templateDTO.getId().equalsIgnoreCase(registeredTemplate.getNifiTemplateId())) {
                 syncNiFiTemplateId(registeredTemplate);
 
@@ -497,12 +481,13 @@ public class RegisteredTemplateService {
             copy.setProperties(properties);
             copy.setNifiTemplate(registeredTemplate.getNifiTemplate());
 
-            registeredTemplate = copy;
+            return copy;
 
         } else {
             log.info("Unable to merge Registered Template.  It is null");
+            return registeredTemplate;
         }
-        return registeredTemplate;
+
     }
 
 
@@ -516,9 +501,9 @@ public class RegisteredTemplateService {
         if (registeredTemplate != null) {
             feedMetadata.setTemplateId(registeredTemplate.getId());
 
-            List<NifiProperty> templateProperties =registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
+            List<NifiProperty> templateProperties = registeredTemplate.getProperties().stream().map(nifiProperty -> new NifiProperty(nifiProperty)).collect(Collectors.toList());
             NifiPropertyUtil
-                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.FEED_DETAILS_MATCH_TEMPLATE);
+                .matchAndSetPropertyByProcessorName(templateProperties, feedMetadata.getProperties(), NifiPropertyUtil.PropertyUpdateMode.FEED_DETAILS_MATCH_TEMPLATE);
 
             //detect template properties that dont match the feed.properties from the registeredtemplate
             ensureFeedPropertiesExistInTemplate(feedMetadata, templateProperties);
@@ -817,8 +802,7 @@ public class RegisteredTemplateService {
     }
 
 
-
-    public boolean isRemoteProcessGroupsEnabled(){
+    public boolean isRemoteProcessGroupsEnabled() {
         final NiFiClusterSummary clusterSummary = nifiRestClient.getNiFiRestClient().clusterSummary();
         return remoteProcessGroupsEnabledd || clusterSummary.getClustered();
     }

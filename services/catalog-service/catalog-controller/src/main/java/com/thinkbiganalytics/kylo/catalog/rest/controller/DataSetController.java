@@ -20,12 +20,12 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
-import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
-import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
@@ -35,26 +35,15 @@ import org.glassfish.jersey.media.multipart.BodyPartEntity;
 import org.glassfish.jersey.media.multipart.FormDataMultiPart;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.support.RequestContextUtils;
 
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.nio.file.AccessDeniedException;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
-import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
@@ -73,7 +62,7 @@ import io.swagger.annotations.ApiResponses;
 @Component
 @Path(DataSetController.BASE)
 @Produces(MediaType.APPLICATION_JSON)
-public class DataSetController {
+public class DataSetController extends AbstractCatalogController {
 
     private static final XLogger log = XLoggerFactory.getXLogger(DataSetController.class);
 
@@ -85,12 +74,8 @@ public class DataSetController {
     @Inject
     CatalogFileManager fileManager;
 
-    @Autowired
-    @Qualifier("catalogMessages")
-    MessageSource messages;
-
     @Inject
-    HttpServletRequest request;
+    MetadataAccess metadataService;
 
     @POST
     @ApiOperation("Creates a new data set")
@@ -105,10 +90,10 @@ public class DataSetController {
 
         final DataSet dataSet;
         try {
-            dataSet = dataSetProvider.createDataSet(source);
-        } catch (final IllegalArgumentException e) {
+            dataSet = metadataService.commit(() -> dataSetProvider.createDataSet(source));
+        } catch (final CatalogException e) {
             log.debug("Invalid data source for creating data set: {}", source, e);
-            throw log.throwing(new BadRequestException(getMessage("catalog.dataset.createDataSet.invalidDataSource")));
+            throw new BadRequestException(getMessage(e));
         }
 
         return Response.ok(log.exit(dataSet)).build();
@@ -128,51 +113,6 @@ public class DataSetController {
         return Response.ok(log.exit(dataSet)).build();
     }
 
-    @POST
-    @Path("{id}/files")
-    @ApiOperation("List files of a data set")
-    @ApiResponses({
-                      @ApiResponse(code = 200, message = "List of files in path", response = DataSetFile.class, responseContainer = "List"),
-                      @ApiResponse(code = 400, message = "A path is not valid", response = RestResponseStatus.class),
-                      @ApiResponse(code = 403, message = "Access to the path is restricted", response = RestResponseStatus.class),
-                      @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
-                  })
-    @Consumes(MediaType.APPLICATION_JSON)
-    public Response listFiles(@PathParam("id") @UUID final String dataSetId, @Nullable final DataSetTemplate changes) {
-        log.entry(dataSetId, changes);
-
-        // Apply changes to data set
-        final DataSet dataSet = findDataSet(dataSetId);
-        if (changes != null) {
-            DataSetUtil.mergeTemplates(dataSet, changes);
-        }
-
-        // List files at path
-        final List<DataSetFile> files = new ArrayList<>();
-
-        for (final String path : dataSet.getPaths()) {
-            try {
-                log.debug("Listing files at path: {}", path);
-                files.addAll(fileManager.listFiles(new URI(path), dataSet));
-            } catch (final AccessDeniedException e) {
-                throw new ForbiddenException(getMessage("catalog.dataset.listFiles.forbidden", path));
-            } catch (final URISyntaxException e) {
-                throw new BadRequestException(getMessage("catalog.dataset.listFiles.invalidPath", path));
-            } catch (final Exception e) {
-                log.error("Failed to list dataset files at path {}: {}", path, e, e);
-                final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
-                    .message(getMessage("catalog.dataset.listFiles.error", path))
-                    .url(request.getRequestURI())
-                    .setDeveloperMessage(e)
-                    .buildError();
-                throw new InternalServerErrorException(Response.serverError().entity(status).build());
-            }
-        }
-
-        return Response.ok(log.exit(files)).build();
-    }
-
     @GET
     @Path("{id}/uploads")
     @Produces(MediaType.APPLICATION_JSON)
@@ -180,7 +120,7 @@ public class DataSetController {
     @ApiResponses({
                       @ApiResponse(code = 200, message = "List of uploaded files", response = DataSetFile.class, responseContainer = "List"),
                       @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "Failed to list uploads", response = RestResponseStatus.class)
+                      @ApiResponse(code = 500, message = "Failed to list uploaded files", response = RestResponseStatus.class)
                   })
     public Response getUploads(@PathParam("id") @UUID final String dataSetId) {
         log.entry(dataSetId);
@@ -190,9 +130,6 @@ public class DataSetController {
         try {
             log.debug("Listing uploaded files for dataset {}", dataSetId);
             files = fileManager.listUploads(dataSet);
-        } catch (final IllegalArgumentException e) {
-            log.debug("Unable to retrieve dataset uploads: {}", e, e);
-            throw new NotFoundException(getMessage("catalog.dataset.notFound"));
         } catch (final Exception e) {
             log.error("Unable to retrieve dataset uploads: {}", e, e);
             throw new InternalServerErrorException(getMessage("catalog.dataset.getUploads.error"));
@@ -211,7 +148,7 @@ public class DataSetController {
                       @ApiResponse(code = 400, message = "Invalid filename", response = RestResponseStatus.class),
                       @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 409, message = "A file already exists with the same name", response = RestResponseStatus.class),
-                      @ApiResponse(code = 500, message = "Failed to upload files", response = RestResponseStatus.class)
+                      @ApiResponse(code = 500, message = "Failed to upload file", response = RestResponseStatus.class)
                   })
     public Response postUpload(@PathParam("id") @UUID final String dataSetId, @Nonnull final FormDataMultiPart form) {
         log.entry(dataSetId, form);
@@ -248,8 +185,7 @@ public class DataSetController {
     @ApiOperation("Deletes an upload file from a data set.")
     @ApiResponses({
                       @ApiResponse(code = 204, message = "The file was deleted successfully"),
-                      @ApiResponse(code = 400, message = "Invalid filename", response = RestResponseStatus.class),
-                      @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "Data set or file does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to delete file", response = RestResponseStatus.class)
                   })
     public Response deleteUpload(@PathParam("id") @UUID final String dataSetId, @PathParam("name") final String fileName) {
@@ -271,28 +207,16 @@ public class DataSetController {
     }
 
     /**
-     * Gets the dataset with the specified id and applies the specified changes.
+     * Gets the dataset with the specified id.
      *
      * @throws NotFoundException if the dataset does not exist
      */
     @Nonnull
     private DataSet findDataSet(@Nonnull final String id) {
-        return dataSetProvider.findDataSet(id).orElseThrow(() -> new NotFoundException(getMessage("catalog.dataset.notFound")));
-    }
-
-    /**
-     * Gets the specified message in the current locale.
-     */
-    @Nonnull
-    private String getMessage(@Nonnull final String code) {
-        return getMessage(code, (Object[]) null);
-    }
-
-    /**
-     * Gets the specified message in the current locale with the specified arguments.
-     */
-    @Nonnull
-    private String getMessage(@Nonnull final String code, @Nullable final Object... args) {
-        return messages.getMessage(code, args, RequestContextUtils.getLocale(request));
+        return metadataService.read(() -> dataSetProvider.findDataSet(id))
+            .orElseThrow(() -> {
+                log.debug("Data set not found: {}", id);
+                return new NotFoundException(getMessage("catalog.dataset.notFound"));
+            });
     }
 }

@@ -1,6 +1,6 @@
 <div class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" style="padding: 0;">
   <span class="ui-grid-header-cell-label">
-    <span class="ui-grid-header-cell-title">{{ header.displayName || 'Loading'}}<md-tooltip>{{ header.headerTooltip }}</md-tooltip></span>
+    <span class="ui-grid-header-cell-title">{{ header.displayName || 'Loading'}}<md-tooltip>{{ header.headerTooltip || 'Loading'}}</md-tooltip></span>
     <span ng-if="header.dataType" style="display: block;">{{ header.dataType || ''}}</span>
   </span>
   <span>

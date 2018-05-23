@@ -66,6 +66,8 @@ export class RegisteredTemplatesController {
         this.loading = true;
         this.cardTitle = 'Templates';
 
+        this.selectedTableOption = this.selectedTableOption.bind(this);
+
         // Register Add button
         this.AccessControlService.getUserAllowedActions()
             .then((actionSet: any) => {
@@ -148,7 +150,7 @@ export class RegisteredTemplatesController {
      * @returns {*[]}
      */
     loadSortOptions() {
-        var options = {'Template': 'templateName', 'Last Modified': 'updateDate'};
+        var options = {'Name': 'templateName', 'Last modified': 'updateDate'};
         var sortOptions = this.TableOptionsService.newSortOptions(this.pageName, options, 'templateName', 'asc');
         this.TableOptionsService.initializeSortOption(this.pageName);
         return sortOptions;

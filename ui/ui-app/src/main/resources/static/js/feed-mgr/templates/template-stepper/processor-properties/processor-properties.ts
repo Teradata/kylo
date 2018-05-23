@@ -43,6 +43,7 @@ export class RegisterProcessorPropertiesController {
     changedPropertyInput:any;
     keydownPropertyInput:any;
     onRenderTypeChange:any;
+    toggleSetAsEmptyString:any;
     customSelectOptionChanged:any;
     initializeRenderTypes:any;
     searchExpressionProperties:any;
@@ -133,6 +134,15 @@ export class RegisterProcessorPropertiesController {
         this.keydownPropertyInput = function(property:any) {
             if( ! property.changed && property.sensitive ) {
                 property.value = "";
+            }
+        }
+
+        this.toggleSetAsEmptyString = function(property:any){
+            if(property.value == ''){
+                property.value = null;
+            }
+            else {
+                property.value = '';
             }
         }
 

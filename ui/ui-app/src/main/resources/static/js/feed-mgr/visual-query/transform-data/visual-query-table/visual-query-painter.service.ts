@@ -159,6 +159,7 @@ export class VisualQueryPainterService extends fattable.Painter {
             zIndex: 100
         });
         this.tooltipPanel.attach();
+
     }
 
     /**
@@ -336,9 +337,10 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param headerDiv
      */
     cleanUpHeader(headerDiv: HTMLElement){
-        var scope = angular.element(headerDiv).scope();
-        if(scope){
-            scope.$destroy();
+        //destroy the old scope if it exists
+        let oldScope = angular.element(headerDiv).isolateScope();
+        if(angular.isDefined(oldScope)){
+            oldScope.$destroy();
         }
     }
 
@@ -356,14 +358,26 @@ export class VisualQueryPainterService extends fattable.Painter {
      * @param table
      */
     cleanUp(table:HTMLElement){
+        //remove all header scopes
+        this.headerScopes.forEach((headerScope: IScope) => {
+            headerScope.$destroy();
+        });
+        this.headerScopes = [];
+
         super.cleanUp(table);
         angular.element(table).unbind();
     }
+    private headerScopes : IScope[] = []
 
     private compileHeader(headerDiv: HTMLElement) {
         // Load template
         headerDiv.innerHTML = this.$templateCache.get(HEADER_TEMPLATE) as string;
-        this.$compile(headerDiv)(this.$scope.$new(true));
+
+        let newScope = this.$scope.$new(true)
+        this.headerScopes.push(newScope);
+        this.$compile(headerDiv)(newScope);
+
+
     }
 
     /**

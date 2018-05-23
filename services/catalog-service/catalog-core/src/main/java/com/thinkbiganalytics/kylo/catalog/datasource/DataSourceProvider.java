@@ -27,6 +27,7 @@ import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -187,8 +188,8 @@ public class DataSourceProvider {
      * Creates a data set template for the specified JDBC data source.
      */
     @Nullable
-    private DataSetTemplate createTemplate(@Nonnull final JdbcDatasource jdbcDatasource) {
-        final DataSetTemplate template = new DataSetTemplate();
+    private DefaultDataSetTemplate createTemplate(@Nonnull final JdbcDatasource jdbcDatasource) {
+        final DefaultDataSetTemplate template = new DefaultDataSetTemplate();
         template.setOptions(new HashMap<>());
 
         if (jdbcDatasource.getDatabaseConnectionUrl() != null) {
@@ -290,7 +291,7 @@ public class DataSourceProvider {
 
         // Set properties based on type
         final Connector connector = new Connector();
-        final DataSetTemplate template;
+        final DefaultDataSetTemplate template;
 
         if (metadataDataSource instanceof JdbcDatasource && getJdbcConnectorId().isPresent()) {
             connector.setId(getJdbcConnectorId().get());

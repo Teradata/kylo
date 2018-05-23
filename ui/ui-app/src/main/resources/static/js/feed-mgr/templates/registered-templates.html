@@ -43,23 +43,23 @@
                                            </span>
 
                                 <div layout="row" class="column-title column-title-bottom">
-                                  <ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
-                                  </ng-md-icon>
+                                  <!--<ng-md-icon icon="{{template.icon}}" size="20" hide-xs ng-style="{'fill':template.iconColor}">
+                                  </ng-md-icon>-->
                                   <span>Template Name</span>
                                   <span ng-if="template.state == 'DISABLED'">DISABLED</span>
                                 </div>
                                 </div>
-                              <div flex="10" layout="column" class="item-column md-list-item-text ">
+                              <div flex="25" layout="column" class="item-column md-list-item-text ">
                                            <span  class="item-title" title="{{feed.active}}" >
                                              {{template.feedsCount}}</span>
                                              <span class="column-title column-title-bottom">
                                              Feeds
                                            </span>
                               </div>
-                              <div flex="30" layout="column" class="item-column md-list-item-text ">
+                              <div flex="15" layout="column" class="item-column md-list-item-text ">
 
                                            <span class="item-title">
-                                             {{template.updateDate | date: 'MM/dd/yyyy h:mm:ssa'}}</span>
+                                             {{template.updateDate | date: 'MM/dd/yyyy'}}</span>
                                              <span class="column-title column-title-bottom">
                                              Last Updated
                                            </span>

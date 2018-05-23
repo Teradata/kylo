@@ -100,6 +100,7 @@ public class TableRegisterSupport {
         return invalidColumnSpecs.toArray(new ColumnSpec[invalidColumnSpecs.size()]);
     }
 
+
     /**
      * Registers the specified table by generating and executing a {@code CREATE TABLE} query.
      *
@@ -113,11 +114,42 @@ public class TableRegisterSupport {
      * @param feedTableProperties       the properties for the table (feed or target only)
      * @param tableType             the type of table
      * @param registerDatabase      {@code true} to create the database if it does not exist, or {@code false} to require an existing database
+     **/
+    public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
+        columnSpecs, String feedTableProperties, String targetTableProperties, TableType tableType, boolean registerDatabase) {
+        return registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions,columnSpecs, feedTableProperties, targetTableProperties,
+                             tableType, registerDatabase, null);
+    }
+
+    /**
+     * Registers the specified table by generating and executing a {@code CREATE TABLE} query.
+     *
+     * @param source                the name of the database
+     * @param tableEntity           the name of the table
+     * @param feedColumnSpecs       the column specification for the feed table
+     * @param feedFormatOptions     the format for the feed table
+     * @param targetFormatOptions   the format for the target table
+     * @param partitions            the partitions for the target table
+     * @param columnSpecs           the columns for the table
+     * @param feedTableProperties       the properties for the table (feed or target only)
+     * @param tableType             the type of table
+     * @param registerDatabase      {@code true} to create the database if it does not exist, or {@code false} to require an existing database
+     * @param feedTableOverride     utilizes the provided ddl for the feed table
      * @return {@code true} if the table was registered, or {@code false} if there was an error
      */
     public boolean registerTable(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-            columnSpecs, String feedTableProperties, String targetTableProperties, TableType tableType, boolean registerDatabase) {
+            columnSpecs, String feedTableProperties, String targetTableProperties, TableType tableType, boolean registerDatabase, String feedTableOverride) {
         Validate.notNull(conn);
+
+        // Register the database
+        if (registerDatabase && !registerDatabase(source)) {
+            return false;
+        }
+
+        // Use override
+        if (tableType.equals(TableType.FEED) && !StringUtils.isEmpty(feedTableOverride)) {
+            return createTable(feedTableOverride);
+        }
 
         //_invalid and _feed tables should use the schema provided from the Source 'feedColumnSpecs'.
         //_valid and the final feed table should use the target schema
@@ -126,11 +158,6 @@ public class TableRegisterSupport {
         //if invalid use the feed column specs and update the data types on the _invalid table
         if (tableType == TableType.INVALID) {
             useColumnSpecs = adjustInvalidColumnSpec(feedColumnSpecs, columnSpecs);
-        }
-
-        // Register the database
-        if (registerDatabase && !registerDatabase(source)) {
-            return false;
         }
 
         String tableProperties = tablePropertiesForType(tableType, feedTableProperties, targetTableProperties);
@@ -198,16 +225,22 @@ public class TableRegisterSupport {
     }
 
     public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
-            columnSpecs, String feedTblProperties, String targetTblProperties) {
+        columnSpecs, String feedTblProperties, String targetTblProperties, String feedTblOverride) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
         for (TableType tableType : TableType.values()) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTblProperties, targetTblProperties, tableType, false) && result;
+                result = registerTable(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTblProperties, targetTblProperties, tableType,
+                                       false, feedTblOverride) && result;
             }
         }
         return result;
+    }
+
+    public boolean registerStandardTables(String source, String tableEntity, ColumnSpec[] feedColumnSpecs, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[]
+            columnSpecs, String feedTblProperties, String targetTblProperties) {
+        return registerStandardTables(source, tableEntity, feedColumnSpecs, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, feedTblProperties, targetTblProperties, null);
     }
 
     /**

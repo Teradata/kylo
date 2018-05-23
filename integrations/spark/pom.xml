@@ -29,6 +29,7 @@
     <module>spark-job-cleanup</module>
     <module>spark-catalog</module>
     <module>spark-ingest</module>
+    <module>spark-multi-exec</module>
   </modules>
 
 </project>

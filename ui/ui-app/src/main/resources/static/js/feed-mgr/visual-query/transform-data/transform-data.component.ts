@@ -12,6 +12,7 @@ import {TransformValidationResult} from "../wrangler/model/transform-validation-
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
 import {ScriptState} from "../wrangler";
+import {SparkConstants} from "../services/spark/spark-constants";
 
 declare const CodeMirror: any;
 
@@ -36,6 +37,7 @@ export class TransformDataComponent implements OnInit {
 
     //Flag to determine if we can move on to the next step
     isValid: boolean = false;
+
     //The SQL String from the previous step
     sql: string;
     //The sql model passed over from the previous step
@@ -222,6 +224,9 @@ export class TransformDataComponent implements OnInit {
         this.sql = this.model.sql;
         this.sqlModel = this.model.chartViewModel;
         this.selectedColumnsAndTables = this.model.$selectedColumnsAndTables;
+        //reset sample file changed flag
+        this.model.sampleFileChanged = false;
+
 
         // Select source model
         let useSqlModel = false;
@@ -259,7 +264,9 @@ export class TransformDataComponent implements OnInit {
                 this.engine.setState(this.model.states);
                 this.functionHistory = this.engine.getHistory();
             } else {
-                this.engine.setQuery(source, this.model.$datasources);
+                    this.engine.setQuery(source, this.model.$datasources);
+                    this.functionHistory = this.engine.getHistory();
+
             }
 
             // Provide access to table for fetching pages
@@ -545,10 +552,8 @@ export class TransformDataComponent implements OnInit {
             template: `
                   <md-dialog arial-label="error executing the query" style="max-width: 640px;">
                     <md-dialog-content class="md-dialog-content" role="document" tabIndex="-1">
-                      <h2 class="md-title">Error executing the query</h2>
-                      <p>There was a problem executing the query.</p>
-                      <md-button ng-if="!dialog.showDetail" ng-click="dialog.showDetail = true" style="margin: 0; padding: 0;">Show more</md-button>
-                      <p ng-if="dialog.showDetail">{{ dialog.detailMessage }}</p>
+                      <h2 class="md-title">Transform Exception</h2>
+                      <p>{{ dialog.detailMessage }}</p>
                     </md-dialog-content>
                     <md-dialog-actions>
                       <md-button ng-click="dialog.hide()" class="md-primary md-confirm-button" md-autofocus="true">Got it!</md-button>
@@ -629,7 +634,7 @@ export class TransformDataComponent implements OnInit {
         const errorCallback = function (message: string) {
             self.setExecutingQuery(false);
             self.resetAllProgress();
-            self.showError(message);
+            self.showError(self.cleanError(message));
 
             // Reset state
             self.onUndo();
@@ -648,6 +653,20 @@ export class TransformDataComponent implements OnInit {
         self.engine.transform(pageSpec, doValidate, doProfile).subscribe(notifyCallback, errorCallback, successCallback);
         return  promise;
     };
+
+
+    /**
+     * Attempt to extract the error string from the verbose message
+     */
+    private cleanError(message : string) : string {
+        if (message != null && message.startsWith("AnalysisException: ")) {
+            let idx = message.indexOf(";;");
+            if (idx > -1) {
+                message = message.substr(19,1).toUpperCase()+message.substr(20, idx-20);
+            }
+        }
+        return message;
+    }
 
     private removeExecution(promise : IPromise<any>) : void {
         var idx = this.executionStack.indexOf(promise);
@@ -689,10 +708,29 @@ export class TransformDataComponent implements OnInit {
         this.tableColumns = columns;
         this.tableValidation = this.engine.getValidationResults();
         this.updateSortIcon();
-
-
-
         this.updateCodeMirrorAutoComplete();
+        this.checkWarnDuplicateColumnName();
+    }
+
+    checkWarnDuplicateColumnName() : void {
+        let cols = this.tableColumns.map((v:any)=> { return v.displayName;  }).slice().sort();
+        var duplicateCols = [];
+        for (var i = 0; i < cols.length - 1; i++) {
+            if (cols[i + 1] == cols[i]) {
+                duplicateCols.push(cols[i]);
+            }
+        }
+        if (duplicateCols.length > 0) {
+            this.onUndo();
+            let alert = this.$mdDialog.alert()
+                .parent($('body'))
+                .clickOutsideToClose(true)
+                .title("Warning")
+                .textContent("The last operation created duplicate columns for: "+duplicateCols.join(",")+". Please try again and alias the new column.")
+                .ok("Ok");
+            this.$mdDialog.show(alert);
+
+        }
     }
 
     addColumnSort(direction:string,column:any,query?:boolean) : IPromise<any> {
@@ -797,12 +835,22 @@ export class TransformDataComponent implements OnInit {
             this.engine.push(file.ast, context);
             return true;
         } catch (e) {
+            let msg : string = e.message;
+            if (msg != null) {
+
+                if (msg.indexOf("Cannot read property") > -1) {
+                    msg = "Please ensure fieldnames are correct.";
+                } else if (msg.indexOf("Program is too long") > -1) {
+                    msg = "Please check parenthesis align."
+                }
+            }
+
             let alert = this.$mdDialog.alert()
                 .parent($('body'))
                 .clickOutsideToClose(true)
-                .title("Error executing the query")
-                .textContent(e.message)
-                .ariaLabel("Error executing the query")
+                .title("Oops! Error in formula")
+                .textContent(msg)
+                .ariaLabel("Formula error")
                 .ok("Ok");
             this.$mdDialog.show(alert);
             console.log(e);
@@ -987,19 +1035,34 @@ export class TransformDataComponent implements OnInit {
         return (this.engine && this.engine.canRedo) ? this.engine.canRedo() : false;
     };
 
+    isUsingSampleFile(){
+        //TODO reference "FILE" as a constant  or a method ... model.isFileDataSource()
+        return this.model.$selectedDatasourceId == "FILE"
+    }
+
+    isSampleFileChanged(){
+        return this.isUsingSampleFile()  && this.model.sampleFileChanged;
+    }
+
     /**
      * Update the feed model when changing from this transform step to a different step
      */
     private onStepChange(event: string, changedSteps: { newStep: number, oldStep: number }) {
         const self = this;
         const thisIndex = parseInt(this.stepIndex);
+
+       let localFileChanged = this.isSampleFileChanged();
+
         if (changedSteps.oldStep === thisIndex) {
             this.saveToFeedModel().then(function () {
                 // notify those that the data is loaded/updated
                 self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+            },function(){
+                self.BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
             });
-        } else if (changedSteps.newStep === thisIndex && this.sql == null) {
+        } else if (changedSteps.newStep === thisIndex && (this.sql == null || localFileChanged)) {
             this.ngOnInit();
+            this.model.sampleFileChanged = false;
         }
     }
 

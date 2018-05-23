@@ -384,6 +384,10 @@ angular.module(moduleName).factory('FieldPolicyRuleOptionsFactory', ["$http","$q
         return $http.get(RestUrlService.LIST_FILE_PARSERS, {cache: true});
     }
 
+    function getSparkParserOptions() {
+        return $http.get(RestUrlService.LIST_SPARK_FILE_PARSERS, {cache: true});
+    }
+
     var data:any = {
         standardizationOptions: [],
         validationOptions: [],
@@ -393,6 +397,8 @@ angular.module(moduleName).factory('FieldPolicyRuleOptionsFactory', ["$http","$q
             }
             else if (type == 'validation') {
                 return 'Validation Policies';
+            } else if (type == 'schemaParser') {
+                return 'Supported Parsers'
             } else if (type == 'schemaParser') {
                 return 'Supported Parsers'
             }
@@ -418,6 +424,9 @@ angular.module(moduleName).factory('FieldPolicyRuleOptionsFactory', ["$http","$q
             }
             else if (type == 'schemaParser') {
                 return getParserOptions();
+            }
+            else if (type == 'sparkSchemaParser') {
+                return getSparkParserOptions();
             }
         }
     };

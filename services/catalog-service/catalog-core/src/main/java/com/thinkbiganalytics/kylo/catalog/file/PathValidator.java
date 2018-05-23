@@ -24,6 +24,7 @@ import com.thinkbiganalytics.kylo.catalog.connector.ConnectorUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
 import org.apache.hadoop.fs.Path;
 import org.springframework.beans.factory.annotation.Value;
@@ -80,18 +81,39 @@ public class PathValidator {
      * Determines if the specified path is allowed for the specified data set.
      */
     public boolean isPathAllowed(@Nonnull final Path path, @Nonnull final DataSet dataSet) {
-        final Optional<List<String>> dataSourcePaths = DataSourceUtil.getPaths(dataSet.getDataSource());
+        return isPathAllowed(path, dataSet.getId(), dataSet.getDataSource());
+    }
+
+    /**
+     * Determines if the specified path is allowed for the specified data source.
+     */
+    public boolean isPathAllowed(@Nonnull final Path path, @Nonnull final DataSource dataSource) {
+        return isPathAllowed(path, null, dataSource);
+    }
+
+    /**
+     * Indicates if the specified file name is valid.
+     */
+    public boolean isValidFileName(@Nonnull final String fileName) {
+        return FILENAME_REGEX.matcher(fileName).matches() && fileName.chars().noneMatch(Character::isIdentifierIgnorable);
+    }
+
+    /**
+     * Determines if the specified path is allowed for the specified data set and data source.
+     */
+    private boolean isPathAllowed(@Nonnull final Path path, @Nullable final String dataSetId, @Nonnull final DataSource dataSource) {
+        final Optional<List<String>> dataSourcePaths = DataSourceUtil.getPaths(dataSource);
         if (dataSourcePaths.isPresent()) {
             final Stream<String> allowedPaths = dataSourcePaths.get().stream();
-            final Connector connector = dataSet.getDataSource().getConnector();
+            final Connector connector = dataSource.getConnector();
 
             if (ConnectorUtil.hasAnyTabSref(connector, fileSystemSrefs)) {
                 return isPathAllowed(path.toUri(), toURIs(allowedPaths));
             }
-            if (ConnectorUtil.hasAnyTabSref(connector, uploadSrefs)) {
+            if (dataSetId != null && ConnectorUtil.hasAnyTabSref(connector, uploadSrefs)) {
                 final Stream<String> uploadPaths = allowedPaths
                     .map(allowedPath -> allowedPath.endsWith(Path.SEPARATOR) ? allowedPath : allowedPath + Path.SEPARATOR)
-                    .map(allowedPath -> allowedPath + dataSet.getId() + Path.SEPARATOR);
+                    .map(allowedPath -> allowedPath + dataSetId + Path.SEPARATOR);
                 return isPathAllowed(path.toUri(), toURIs(uploadPaths));
             }
         }
@@ -113,13 +135,6 @@ public class PathValidator {
         }
 
         return false;
-    }
-
-    /**
-     * Indicates if the specified file name is valid.
-     */
-    public boolean isValidFileName(@Nonnull final String fileName) {
-        return FILENAME_REGEX.matcher(fileName).matches() && fileName.chars().noneMatch(Character::isIdentifierIgnorable);
     }
 
     /**

@@ -169,10 +169,10 @@ export class CategoryDefinitionController {
             // console.log("self.hasFeeds() = " + self.hasFeeds());
 
             if (!self.isNewCategory() && !self.isSystemNameEditable() && self.hasNoFeeds()) {
-                return "Can be customised";
+                return "Can be customized";
             }
             if (!self.isNewCategory() && !self.isSystemNameEditable() && self.hasFeeds()) {
-                return "Cannot be customised because Category has Feeds";
+                return "Cannot be customized because category has feeds";
             }
             if (!self.isNewCategory() && self.isSystemNameEditable() && self.hasNoFeeds()) {
                 return "System name is now editable";
@@ -181,7 +181,7 @@ export class CategoryDefinitionController {
                 return ""; //invalid state, cannot be both editable and have feeds!
             }
             if (self.isNewCategory() && !self.isSystemNameEditable() && self.hasNoFeeds()) {
-                return "Auto generated from Category Name, can be customised";
+                return "Auto generated from category name, can be customized";
             }
             if (self.isNewCategory() && !self.isSystemNameEditable() && self.hasFeeds()) {
                 return ""; //invalid state, cannot be new and already have feeds

@@ -22,19 +22,18 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
 import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.MessageSource;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.support.RequestContextUtils;
 
-import javax.annotation.Nonnull;
+import java.util.List;
+
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.BadRequestException;
 import javax.ws.rs.GET;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -50,19 +49,17 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "Feed Manager - Catalog", produces = "application/json")
 @Path(ConnectorController.BASE)
 @Produces(MediaType.APPLICATION_JSON)
-public class ConnectorController {
+public class ConnectorController extends AbstractCatalogController {
+
+    private final XLogger log = XLoggerFactory.getXLogger(ConnectorController.class);
 
     public static final String BASE = "/v1/catalog/connector";
 
     @Inject
     ConnectorProvider connectorProvider;
 
-    @Autowired
-    @Qualifier("catalogMessages")
-    MessageSource messages;
-
     @Inject
-    HttpServletRequest request;
+    MetadataAccess metadataService;
 
     @GET
     @ApiOperation("Gets the specified connector")
@@ -73,8 +70,13 @@ public class ConnectorController {
                   })
     @Path("{id}")
     public Response getConnector(@PathParam("id") final String connectorId) {
-        final Connector connector = connectorProvider.findConnector(connectorId).orElseThrow(() -> new BadRequestException(getMessage("catalog.controller.notFound")));
-        return Response.ok(connector).build();
+        log.entry(connectorId);
+        final Connector connector = metadataService.read(() -> connectorProvider.findConnector(connectorId))
+            .orElseThrow(() -> {
+                log.debug("Connector not found: {}", connectorId);
+                return new NotFoundException(getMessage("catalog.controller.notFound"));
+            });
+        return Response.ok(log.exit(connector)).build();
     }
 
     @GET
@@ -84,14 +86,8 @@ public class ConnectorController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     public Response listConnectors() {
-        return Response.ok(connectorProvider.findAllConnectors()).build();
-    }
-
-    /**
-     * Gets the specified message in the current locale.
-     */
-    @Nonnull
-    private String getMessage(@Nonnull final String code) {
-        return messages.getMessage(code, null, RequestContextUtils.getLocale(request));
+        log.entry();
+        final List<Connector> connectors = metadataService.read(() -> connectorProvider.findAllConnectors());
+        return Response.ok(log.exit(connectors)).build();
     }
 }
