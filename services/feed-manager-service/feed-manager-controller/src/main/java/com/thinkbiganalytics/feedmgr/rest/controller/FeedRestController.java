@@ -184,6 +184,9 @@ public class FeedRestController {
     @Inject
     PropertyExpressionResolver propertyExpressionResolver;
 
+    @org.springframework.beans.factory.annotation.Value("${kylo.feed.file.upload.preserveFileName:false}")
+    private boolean feedFileUploadPreserveFileNameFlag;
+
     private MetadataService getMetadataService() {
         return metadataService;
     }
@@ -978,7 +981,7 @@ public class FeedRestController {
             BodyPartEntity entity = (BodyPartEntity)bodyPart.getEntity();
             String fileName = bodyPart.getContentDisposition().getFileName();
             try {
-                saveFile(entity.getInputStream(), context);
+                saveFile(entity.getInputStream(), context, fileName);
                 uploadedFiles.add(fileName);
             } catch (AccessDeniedException e) {
                 String errTemplate = getErrorTemplate(uploadedFiles, "Permission denied attempting to write file [%s] to [%s]. Check with system administrator to ensure this application has write permissions to folder");
@@ -989,7 +992,7 @@ public class FeedRestController {
             } catch (Exception e) {
                 String errTemplate = getErrorTemplate(uploadedFiles, "Unexpected exception writing file [%s] to [%s].");
                 String err = String.format(errTemplate, fileName, context.getDropzone());
-                log.error(err);
+                log.error(err,e);
                 throw new InternalServerErrorException(err, e);
             }
         }
@@ -1001,10 +1004,10 @@ public class FeedRestController {
         return !uploadedFiles.isEmpty() ? "Successfully uploaded files: " + String.join(", ", uploadedFiles) + ".\n" + msg : msg;
     }
 
-    private void saveFile(InputStream stream, FileUploadContext context) throws IOException {
+    private void saveFile(InputStream stream, FileUploadContext context, String uploadedFileName) throws IOException {
         File tempTarget = File.createTempFile("kylo-upload", "");
 
-        java.nio.file.Path dropZoneTarget = generateDropZonePath(context);
+        java.nio.file.Path dropZoneTarget = generateDropZonePath(context, uploadedFileName);
         if (dropZoneTarget == null) {
             throw new IOException("Unable to upload file");
         }
@@ -1028,9 +1031,23 @@ public class FeedRestController {
      * file whose name doesn't match regular expression defined in feed.
      *
      * @param context   file upload context
+     * @param uploadedFileName original name of uploaded file
      * @return          generated path if successful, null otherwise
      */
-    private java.nio.file.Path generateDropZonePath(FileUploadContext context) {
+    private java.nio.file.Path generateDropZonePath(FileUploadContext context, String uploadedFileName) {
+
+        if (feedFileUploadPreserveFileNameFlag) {
+            log.info("Uploaded file name will be preserved [{}]", uploadedFileName);
+            java.nio.file.Path path = Paths.get(context.getDropzone(), uploadedFileName);
+
+            if (path.toFile().exists()) {
+                log.warn("An existing file with same name found at {}", path.toString());
+                return null;
+            } else {
+                return path;
+            }
+        }
+
         for (int i = 0; i < FILE_UPLOAD_RETRY; i++) {
             Generex fileNameGenerator = new Generex(context.getRegexFileFilter());
             String fileName = fileNameGenerator.random();
