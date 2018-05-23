@@ -37,10 +37,9 @@ export default class CardFilterHeader {
     
     }
 
-    static readonly $inject = ["$scope","$element","TableOptionsService"];
+    static readonly $inject = ["$element","TableOptionsService"];
 
-    constructor(private $scope: IScope, 
-                private $element: JQuery, 
+    constructor(private $element: JQuery, 
                 private TableOptionsService: DefaultTableOptionsService) {}
 
     /**

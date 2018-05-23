@@ -49,32 +49,30 @@ export default class VerticalSectionLayout {
             this.keepEditableAfterSave = false;
         }
 
-        this.$scope.edit = (ev: any) => {
-            this.editable = true;
-            this.onEdit(ev);
-        }
+    }
 
-        this.$scope.cancel = (ev: any) => {
-            this.onCancelEdit(ev);
+    edit(ev: any) {
+        this.editable = true;
+        this.onEdit(ev);
+    }
+
+    cancel(ev: any) {
+        this.onCancelEdit(ev);
+        this.editable = false;
+    }
+
+    save(ev: any) {
+        this.onSaveEdit(ev);
+        if (!this.keepEditableAfterSave) {
             this.editable = false;
-        }
-
-        this.$scope.save = (ev: any) => {
-            this.onSaveEdit(ev);
-            if (!this.keepEditableAfterSave) {
-                this.editable = false;
-            }
-        }
-
-        this.$scope.delete = (ev: any) => {
-            if (this.onDelete) {
-                this.onDelete(ev);
-            }
         }
     }
 
-    static readonly $inject = ["$scope"];
-    constructor(private $scope: IScope) {}
+    delete(ev: any) {
+        if (this.onDelete) {
+            this.onDelete(ev);
+        }
+    }
 }
 
 angular.module(moduleName).component("verticalSectionLayout",{

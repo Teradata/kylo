@@ -10,6 +10,9 @@ var templateUrl = 'js/common/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html';
 
 export default class RouterBreadcrumbs implements ng.IComponentController {
 
+    breadcrumbs: any = [];
+    lastBreadcrumbs: any = []; 
+
     displaynameProperty: any;
     abstractProxyProperty: any;
 
@@ -31,26 +34,20 @@ export default class RouterBreadcrumbs implements ng.IComponentController {
         });
     }
 
-    static readonly $inject = ["$scope","$interpolate","$state","$transitions", 
-                                "$element", "$attrs"];
+    static readonly $inject = ["$interpolate","$state","$transitions","$element", "$attrs"];
 
-    constructor(private $scope: IScope,
-                private $interpolate: angular.IInterpolateService,
+    constructor(private $interpolate: angular.IInterpolateService,
                 private $state: StateService,
                 private $transitions: Transition,
                 private $element: JQuery, 
-                private $attrs: any) {
+                private $attrs: any) {}
 
-        $scope.breadcrumbs = [];
-        $scope.lastBreadcrumbs = [];     
-        
-        $scope.navigate = (crumb: any)=> {
-            $state.go(crumb.route,crumb.params);
-        }
+    navigate(crumb: any) {
+        this.$state.go(crumb.route,crumb.params);
     }
 
     updateLastBreadcrumbs(){
-        this.$scope.lastBreadcrumbs = this.$scope.breadcrumbs.slice(Math.max(this.$scope.breadcrumbs.length - 2,0));
+        this.lastBreadcrumbs = this.breadcrumbs.slice(Math.max(this.breadcrumbs.length - 2,0));
     }
 
     getBreadcrumbKey(state: any){
@@ -77,7 +74,7 @@ export default class RouterBreadcrumbs implements ng.IComponentController {
         });
 
         var displayName = this.getDisplayName(state);
-        this.$scope.breadcrumbs.push({
+        this.breadcrumbs.push({
             key:breadcrumbKey,
             displayName: displayName,
             route: state.name,
@@ -90,11 +87,11 @@ export default class RouterBreadcrumbs implements ng.IComponentController {
 
     getBreadcrumbIndex(state: any){
         var breadcrumbKey = this.getBreadcrumbKey(state);
-        var matchingState = _.find(this.$scope.breadcrumbs,(breadcrumb: any)=>{
+        var matchingState = _.find(this.breadcrumbs,(breadcrumb: any)=>{
             return breadcrumb.key == breadcrumbKey;
         });
         if(matchingState){
-            return _.indexOf(this.$scope.breadcrumbs,matchingState)
+            return _.indexOf(this.breadcrumbs,matchingState)
         }
         return -1;
     }
@@ -108,7 +105,7 @@ export default class RouterBreadcrumbs implements ng.IComponentController {
         }
         else {
             //back track until we get to this index and then replace it with the incoming one
-            this.$scope.breadcrumbs =  this.$scope.breadcrumbs.slice(0,index);
+            this.breadcrumbs =  this.breadcrumbs.slice(0,index);
             this.addBreadcrumb(state,params);
         }
     }

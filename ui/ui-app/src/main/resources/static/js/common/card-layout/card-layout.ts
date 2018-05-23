@@ -8,8 +8,6 @@ export default class CardLayout implements ng.IComponentController {
     cardCss: any;
     cardToolbar: any;
 
-    static readonly $inject = ["$scope"];
-
     $onInit() {
         this.ngOnInit();
     }
@@ -20,9 +18,7 @@ export default class CardLayout implements ng.IComponentController {
             this.cardToolbar = true;
         }
     }
-
-    constructor(private $scope: IScope) {}
-
+    
 }
 
 angular.module(moduleName).component('cardLayout', {
