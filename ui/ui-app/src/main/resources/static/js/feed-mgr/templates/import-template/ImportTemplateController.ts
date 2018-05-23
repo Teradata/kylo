@@ -628,7 +628,7 @@ export class ImportTemplateController implements ng.IController, OnInit {
         }
         else {
             this.nifiTemplateImportOption.continueIfExists = false;
-            this.reusableTemplateImportOption.shouldImport = true;
+            this.reusableTemplateImportOption.shouldImport = false;
             this.reusableTemplateImportOption.userAcknowledged = true;
             this.remoteProcessGroupImportOption.shouldImport = false;
             this.remoteProcessGroupImportOption.userAcknowledged = false;
