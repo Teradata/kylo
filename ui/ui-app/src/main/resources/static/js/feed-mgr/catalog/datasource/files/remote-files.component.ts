@@ -52,6 +52,7 @@ export class RemoteFilesComponent implements OnInit {
     selected: Map<string, boolean> = new Map<string, boolean>();
     selectAll: boolean = false;
     isParentSelected: boolean = false;
+    selectedChildCount: Map<string, number> = new Map<string, number>();
 
     paths: string[];
     files: RemoteFile[] = [];
@@ -70,22 +71,8 @@ export class RemoteFilesComponent implements OnInit {
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
 
-                //disable selection if parent directory is selected
-                let parent = "";
-                let nextChildIdx: number;
-                for (let i in this.paths) {
-                    let currentPath = this.paths[i];
-                    if (currentPath.length !== 0) {
-                        parent += "/" + currentPath;
-                        nextChildIdx = 1 + Number(i);
-                        if (this.paths.length > Number(nextChildIdx)) {
-                            let child = this.paths[nextChildIdx];
-                            this.selectionService.get(this.datasource.id, parent).forEach((isSelected: boolean, childPath: string) => {
-                                this.isParentSelected = this.isParentSelected || (childPath === child && isSelected);
-                            });
-                        }
-                    }
-                }
+                this.initParentSelection();
+                this.initChildSelection();
 
                 let previousSelection = this.selectionService.get(this.datasource.id, this.path);
                 this.selected = previousSelection !== undefined ? previousSelection : new Map<string, boolean>();
@@ -93,9 +80,46 @@ export class RemoteFilesComponent implements OnInit {
             });
     }
 
+    private initChildSelection() {
+        const allPaths = this.selectionService.getAll(this.datasource.id);
+        for (let file of this.files) {
+            let searchString = this.path + "/" + file.name;
+            let selectedChildren = 0;
+            allPaths.forEach((selection: Map<string, boolean>, path: string) => {
+                if (path.startsWith(searchString)) {
+                    selectedChildren += selection.size;
+                }
+            });
+            this.selectedChildCount.set(file.name, selectedChildren);
+        }
+    }
+
+    private initParentSelection() {
+        //disable selection if parent directory is selected
+        let parent = "";
+        let nextChildIdx: number;
+        for (let i in this.paths) {
+            let currentPath = this.paths[i];
+            if (currentPath.length !== 0) {
+                parent += "/" + currentPath;
+                nextChildIdx = 1 + Number(i);
+                if (this.paths.length > Number(nextChildIdx)) {
+                    let child = this.paths[nextChildIdx];
+                    this.selectionService.get(this.datasource.id, parent).forEach((isSelected: boolean, childPath: string) => {
+                        this.isParentSelected = this.isParentSelected || (childPath === child && isSelected);
+                    });
+                }
+            }
+        }
+    }
+
     browseTo(pathIndex: number) {
         const location = this.paths.slice(0, pathIndex + 1).join("/");
         this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
+    }
+
+    numberOfSelectedChildren(fileName: string): number {
+        return this.selectedChildCount.get(fileName);
     }
 
     isChecked(fileName: string) {

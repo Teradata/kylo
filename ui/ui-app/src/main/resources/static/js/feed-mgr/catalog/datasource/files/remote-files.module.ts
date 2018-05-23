@@ -13,12 +13,12 @@ import {CovalentPagingModule} from '@covalent/core/paging';
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../../../common/common.module";
-import {CatalogApiModule} from "../../api/catalog-api.module";
 import {RemoteFilesComponent} from "./remote-files.component";
 import {remoteFileStates} from "./remote-files.states";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
+import { CovalentNotificationsModule } from '@covalent/core/notifications';
 
 @NgModule({
     declarations: [
@@ -35,6 +35,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
         CovalentFileModule,
         CovalentSearchModule,
         CovalentPagingModule,
+        CovalentNotificationsModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatButtonModule,
