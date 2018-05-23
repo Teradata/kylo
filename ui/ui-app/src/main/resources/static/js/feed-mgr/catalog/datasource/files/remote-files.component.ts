@@ -63,11 +63,10 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        const datasetId = "3781fb2e-74a7-4d28-a3d6-580087b0f6d9";
         const template = angular.copy(this.datasource.template);
         template.paths[0] = this.path;
         this.paths = this.path.split("/");
-        this.http.post("/proxy/v1/catalog/dataset/" + datasetId + "/files", template)
+        this.http.post("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
 
