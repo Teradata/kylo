@@ -45,8 +45,11 @@ export class SelectionService {
      */
     get(datasourceId: string, location: any): any {
         let selection = this.selections.get(datasourceId);
-        let result = selection ? selection.get(location) : [];
-        return result ? result : [];
+        let result;
+        if (selection) {
+            result = selection.get(location);
+        }
+        return result ? result : new Map<any, any>();
     }
 
     /**

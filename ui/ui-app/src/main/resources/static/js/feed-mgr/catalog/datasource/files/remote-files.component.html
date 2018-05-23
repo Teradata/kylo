@@ -28,7 +28,7 @@
       [numeric]="false"
       [width]="50"
       [active]="false">
-    <mat-checkbox [(ngModel)]="selectAll" [indeterminate]="false" (change)="onToggleAll()"></mat-checkbox>
+    <mat-checkbox [(ngModel)]="selectAll" [disabled]="isParentSelected" (change)="onToggleAll()"></mat-checkbox>
   </th>
   <th td-data-table-column *ngFor="let column of columns"
       [name]="column.name"
@@ -45,7 +45,7 @@
 <tbody>
 <tr td-data-table-row *ngFor="let file of filteredFiles;" [ngClass]="file.directory ? 'cursor-pointer' : ''">
   <td td-data-table-cell>
-    <mat-checkbox [checked]="selected.get(file.name)" (change)="onToggleRow($event, file)"></mat-checkbox>
+    <mat-checkbox [checked]="isChecked(file.name)" [disabled]="isParentSelected" (change)="onToggleRow($event, file)"></mat-checkbox>
   </td>
   <td td-data-table-cell *ngFor="let column of columns" (click)="rowClick(file)"
       [numeric]="column.numeric">
