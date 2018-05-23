@@ -57,13 +57,13 @@ public class JsonFeedIT extends FeedITBase{
     private static final int VALID_RESULTS = 7;
 
     @Test
-//    @Ignore //until Riaz is back
+    @Ignore //Ignore until missing JsonSerDe issue is fixed in Cloudera sandbox
     public void testJsonDataIngestFeed() throws Exception {
         dataIngestFeedBase();
     }
 
     @Test
-//    @Ignore //until Riaz is back
+    @Ignore //Ignore until missing JsonSerDe issue is fixed in Cloudera sandbox
     public void testJsonEditFeed() throws Exception {
         editFeed();
     }
