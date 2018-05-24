@@ -1,28 +1,88 @@
-import {Component} from '@angular/core';
+import * as _ from 'underscore';
+
+import {Component, Inject, OnInit} from '@angular/core';
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
 import {IPageChangeEvent} from '@covalent/core/paging';
-import {RemoteFile, RemoteFileDescriptor} from '../remote-file';
+import {SelectionService} from '../../../api/services/selection.service';
+import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+
+export class SelectedItem {
+    location: string;
+    file: string;
+    path: string;
+    constructor(location:string, file:string) {
+        this.location = location;
+        this.file = file;
+        this.path = this.location + "/" + this.file;
+    }
+}
+
 
 @Component({
     selector: 'selection-dialog',
+    styleUrls: ['js/feed-mgr/catalog/datasource/files/dialog/selection-dialog.component.css'],
     templateUrl: 'js/feed-mgr/catalog/datasource/files/dialog/selection-dialog.component.html',
 })
-export class SelectionDialogComponent {
+export class SelectionDialogComponent implements OnInit {
 
-    sortBy = 'name';
+    sortBy = 'path';
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
-    filteredFiles: RemoteFile[] = [];
+    filteredFiles: any = [];
     filteredTotal = 0;
     fromRow: number = 1;
     currentPage: number = 1;
-    pageSize: number = 50;
-    files: RemoteFile[] = [];
-    columns: ITdDataTableColumn[] = RemoteFileDescriptor.COLUMNS;
+    pageSize: number = 10;
+    columns: ITdDataTableColumn[] = [
+        {name: "path", label: "Path", sortable: false},
+        {name: "remove", label: "", sortable: false, width: 50},
+    ];
+    datasourceId: string;
+    selected: SelectedItem[] = [];
+    initialItemCount: number = 0;
 
 
-    constructor(private dataTableService: TdDataTableService) {
+    constructor(private selfReference: MatDialogRef<SelectionDialogComponent>, private dataTableService: TdDataTableService,
+                private selectionService: SelectionService, @Inject(MAT_DIALOG_DATA) public data: any) {
+        this.datasourceId = data.datasourceId;
+    }
 
+    public ngOnInit(): void {
+        this.selectionService.getAll(this.datasourceId).forEach((selection: Map<string, boolean>, path: string) => {
+            Array.from(selection.keys()).forEach(child => {
+                this.selected.push(new SelectedItem(path, child));
+                this.initialItemCount = this.selected.length;
+                this.filter();
+            });
+        });
+    }
+
+    onOk() {
+        if (this.isSelectionUpdated()) {
+            const selectionService = this.selectionService;
+            const datasourceId = this.datasourceId;
+            this.selectionService.reset(this.datasourceId);
+            const groupedByLocation = _.groupBy(this.selected, 'location');
+            _.forEach(groupedByLocation, function(group: SelectedItem[], location: string) {
+                const selectedItems: Map<string, boolean> = new Map<string, boolean>();
+                for (let item of group) {
+                    selectedItems.set(item.file, true);
+                }
+                selectionService.set(datasourceId, location, selectedItems);
+            });
+            this.selfReference.close(true);
+        } else {
+            this.selfReference.close(false);
+        }
+    }
+
+    private isSelectionUpdated() {
+        return this.initialItemCount !== this.selected.length;
+    }
+
+    removeItem(toBeRemoved: SelectedItem) {
+        this.selected = this.selected.filter(item => item !== toBeRemoved);
+        this.filter();
     }
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {
@@ -40,11 +100,15 @@ export class SelectionDialogComponent {
         this.fromRow = pagingEvent.fromRow;
         this.currentPage = pagingEvent.page;
         this.pageSize = pagingEvent.pageSize;
-        this.filter();
+        setTimeout(() => {
+            //async because otherwise ExpressionChangedAfterItHasBeenCheckedError
+            // occurs when changing page size
+            this.filter();
+        });
     }
 
     private filter(): void {
-        let newData: any[] = this.files;
+        let newData: any[] = this.selected;
         let excludedColumns: string[] = this.columns
             .filter((column: ITdDataTableColumn) => {
                 return ((column.filter === undefined && column.hidden === true) ||

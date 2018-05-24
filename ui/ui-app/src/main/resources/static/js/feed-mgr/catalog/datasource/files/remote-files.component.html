@@ -12,7 +12,7 @@
         </div>
         <div *ngIf="totalNumberOfSelectedFiles() > 0" class="selected-items" >
           {{numberOfSelectedFiles()}} item(s) selected here,
-          <button mat-button class="mat-accent" (click)="openSelectionDialog()">{{totalNumberOfSelectedFiles()}} in total</button>
+          <a class="mat-accent" (click)="openSelectionDialog()" class="cursor-pointer">{{totalNumberOfSelectedFiles()}} in total</a>
         </div>
       </li>
     </ol>

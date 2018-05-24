@@ -53,14 +53,17 @@ export class RemoteFilesComponent implements OnInit {
         this.http.post("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
-
-                this.initParentSelection();
-                this.initChildSelection();
-
-                let previousSelection = this.selectionService.get(this.datasource.id, this.path);
-                this.selected = previousSelection !== undefined ? previousSelection : new Map<string, boolean>();
-                this.filter();
+                this.init();
             });
+    }
+
+    private init() {
+        this.initParentSelection();
+        this.initChildSelection();
+
+        let previousSelection = this.selectionService.get(this.datasource.id, this.path);
+        this.selected = previousSelection !== undefined ? previousSelection : new Map<string, boolean>();
+        this.filter();
     }
 
     private initChildSelection() {
@@ -158,11 +161,16 @@ export class RemoteFilesComponent implements OnInit {
 
     openSelectionDialog(): void {
         const dialogRef = this.dialog.open(SelectionDialogComponent, {
-            height: '350px'
+            data: {
+                datasourceId: this.datasource.id
+            }
         });
 
-        dialogRef.afterClosed().subscribe(result => {
-            console.log(`Dialog result: ${result}`);
+        dialogRef.afterClosed().subscribe(itemsWereRemoved => {
+            if (itemsWereRemoved) {
+                this.selectAll = false;
+                this.init();
+            }
         });
     }
 
