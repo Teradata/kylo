@@ -59,7 +59,6 @@ export class RemoteFilesComponent implements OnInit {
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService) {
-        console.log('new RemoteFilesComponent');
     }
 
     public ngOnInit(): void {
