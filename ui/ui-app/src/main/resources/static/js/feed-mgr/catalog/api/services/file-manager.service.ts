@@ -1,0 +1,33 @@
+import {HttpClient, HttpEvent, HttpRequest} from "@angular/common/http";
+import {Injectable} from "@angular/core";
+import {Observable} from "rxjs/Observable";
+
+import {DataSetFile} from "../models/dataset-file";
+
+@Injectable()
+export class FileManagerService {
+
+    constructor(private http: HttpClient) {
+    }
+
+    deleteFile(dataSetId: string, name: string): Observable<any> {
+        return this.http.delete(FileManagerService.getUploadsUrl(dataSetId, name));
+    }
+
+    listFiles(dataSetId: string): Observable<DataSetFile[]> {
+        return this.http.get<DataSetFile[]>(FileManagerService.getUploadsUrl(dataSetId));
+    }
+
+    uploadFile(dataSetId: string, file: File): Observable<HttpEvent<DataSetFile>> {
+        const formData = new FormData();
+        formData.append("file", file, file.name);
+
+        const request = new HttpRequest("POST", FileManagerService.getUploadsUrl(dataSetId), formData, {reportProgress: true});
+        return this.http.request<DataSetFile>(request);
+    }
+
+    private static getUploadsUrl(id: string, fileName?: string) {
+        const url = `/proxy/v1/catalog/dataset/${encodeURIComponent(id)}/uploads`;
+        return fileName ? `${url}/${encodeURIComponent(fileName)}` : url;
+    }
+}

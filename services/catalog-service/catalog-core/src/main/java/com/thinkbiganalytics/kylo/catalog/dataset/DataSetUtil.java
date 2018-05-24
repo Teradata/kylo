@@ -1,0 +1,94 @@
+package com.thinkbiganalytics.kylo.catalog.dataset;
+
+/*-
+ * #%L
+ * kylo-catalog-core
+ * %%
+ * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+
+import javax.annotation.Nonnull;
+
+/**
+ * Static utility methods for {@link DataSet} instances.
+ */
+public class DataSetUtil {
+
+    /**
+     * Merges the data set, data source, and connector templates for the specified data set.
+     */
+    @Nonnull
+    public static DefaultDataSetTemplate mergeTemplates(@Nonnull final DataSet dataSet) {
+        final DefaultDataSetTemplate template;
+
+        if (dataSet.getDataSource() != null) {
+            template = DataSourceUtil.mergeTemplates(dataSet.getDataSource());
+            mergeTemplates(template, dataSet);
+        } else {
+            template = new DefaultDataSetTemplate(dataSet);
+        }
+
+        return template;
+    }
+
+    /**
+     * Merges the specified source template into the specified destination template.
+     */
+    public static void mergeTemplates(@Nonnull final DefaultDataSetTemplate dst, @Nonnull final DataSetTemplate src) {
+        if (src.getFiles() != null) {
+            if (dst.getFiles() != null) {
+                dst.getFiles().addAll(src.getFiles());
+            } else {
+                dst.setFiles(new ArrayList<>(src.getFiles()));
+            }
+        }
+        if (src.getJars() != null) {
+            if (dst.getJars() != null) {
+                dst.getJars().addAll(src.getJars());
+            } else {
+                dst.setJars(new ArrayList<>(src.getJars()));
+            }
+        }
+        if (src.getFormat() != null) {
+            dst.setFormat(src.getFormat());
+        }
+        if (src.getOptions() != null) {
+            if (dst.getOptions() != null) {
+                dst.getOptions().putAll(src.getOptions());
+            } else {
+                dst.setOptions(new HashMap<>(src.getOptions()));
+            }
+        }
+        if (src.getPaths() != null) {
+            dst.setPaths(src.getPaths());
+        }
+    }
+
+    /**
+     * Instances of {@code DataSetUtil} should not be constructed.
+     */
+    private DataSetUtil() {
+        throw new UnsupportedOperationException();
+    }
+}

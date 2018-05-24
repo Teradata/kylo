@@ -30,6 +30,7 @@
     <module>alerts-service</module>
     <module>metadata-service</module>
     <module>upgrade-service</module>
+    <module>catalog-service</module>
   </modules>
 
   <build>
