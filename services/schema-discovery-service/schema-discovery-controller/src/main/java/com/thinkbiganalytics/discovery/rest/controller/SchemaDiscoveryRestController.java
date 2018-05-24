@@ -80,18 +80,6 @@ public class SchemaDiscoveryRestController {
     private Environment environment;
 
     /**
-     * Determine the SparkVersion supplied to kylo-services
-     * @return
-     */
-    private SparkFileSchemaParser.SparkVersion getSparkVersion(){
-        String defaultVersion = "v2";
-        String sparkVersion = environment != null ? environment.getProperty("spark.version",defaultVersion) : defaultVersion;
-        SparkFileSchemaParser.SparkVersion version = Arrays.stream(SparkFileSchemaParser.SparkVersion.values()).filter(v -> sparkVersion.equalsIgnoreCase(v.getVersion())).findFirst().orElse(SparkFileSchemaParser.SparkVersion.SPARK1);
-        return version;
-    }
-
-
-    /**
      * Generate the spark script that can parse the passed in file using the passed in "parserDescriptor"
      *
      * @param parserDescriptor  metadata about how the file should be parsed
@@ -122,7 +110,6 @@ public class SchemaDiscoveryRestController {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
             SparkFileSchemaParser sparkFileSchemaParser = (SparkFileSchemaParser) p;
-            sparkFileSchemaParser.setSparkVersion(getSparkVersion());
             sparkFileSchemaParser.setDataFrameVariable(dataFrameVariable);
             sparkFileSchemaParser.setLimit(limit);
             sampleFileSparkScript = sparkFileSchemaParser.getSparkScript(fileInputStream);
@@ -158,9 +145,6 @@ public class SchemaDiscoveryRestController {
         try {
             SchemaParserDescriptor descriptor = ObjectMapperSerializer.deserialize(parserDescriptor, SchemaParserDescriptor.class);
             FileSchemaParser p = transformer.fromUiModel(descriptor);
-            if(p instanceof SparkFileSchemaParser){
-                ((SparkFileSchemaParser) p).setSparkVersion(getSparkVersion());
-            }
             // TODO: Detect charset
             schema = p.parse(fileInputStream, Charset.defaultCharset(), TableSchemaType.HIVE);
         } catch (IOException e) {

@@ -83,31 +83,16 @@ public class SparkCSVFileSchemaParser extends AbstractSparkFileSchemaParser impl
 
         @Override
         public String build(String pathToFile) {
-            return build(pathToFile,getSparkVersion());
-        }
-
-        private String build(String pathToFile,SparkVersion sparkVersion ){
             StringBuilder sb = new StringBuilder();
-            switch(sparkVersion) {
-                case SPARK1:
-                    appendDataFrameVariable(sb);
-                    sb.append("sqlContext.read.format(\"com.databricks.spark.csv\")");
-                    break;
-                case SPARK2:
-                    appendDataFrameVariable(sb);
-                    sb.append("sqlContext.read.format(\"csv\")");
-                    break;
-            }
+            appendDataFrameVariable(sb);
+            sb.append("sqlContext.read.format(\"csv\")");
             addOptions(sb);
             sb.append(String.format(".load(\"%s\")", pathToFile));
             if (isLimit()) {
                 sb.append(String.format(".limit(%s)", limit));
             }
             return sb.toString();
-
-            }
-
-
+        }
 
         private void addOptions(StringBuilder sb){
             addOption(sb, "header", headerRow + "");

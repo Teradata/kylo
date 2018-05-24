@@ -31,14 +31,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
  * abstract Spark file schema parser
  */
 public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaParser {
-
-    private SparkVersion sparkVersion;
 
     /**
      * how many rows should the script limit
@@ -90,13 +89,4 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
         return new DefaultSparkCommandBuilder(dataFrameVariable, limit, getSparkFileType().name().toLowerCase());
     }
 
-    @Override
-    public void setSparkVersion(SparkVersion sparkVersion) {
-        this.sparkVersion = sparkVersion;
-    }
-
-    @Override
-    public SparkVersion getSparkVersion() {
-        return sparkVersion == null ? SparkVersion.SPARK2 : sparkVersion;
-    }
 }
