@@ -5,7 +5,7 @@
 	<parent>
 		<artifactId>kylo-hadoop-authorization-sentry-default</artifactId>
 		<groupId>com.thinkbiganalytics.kylo.plugins</groupId>
-		<version>0.9.1</version>
+		<version>0.9.1.1-SNAPSHOT</version>
 	</parent>
 	<properties>
 		<plugin.license.parentRelative>../../../</plugin.license.parentRelative>
