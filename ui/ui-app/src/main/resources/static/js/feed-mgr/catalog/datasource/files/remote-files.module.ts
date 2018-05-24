@@ -18,14 +18,18 @@ import {remoteFileStates} from "./remote-files.states";
 import {CovalentDataTableModule} from '@covalent/core/data-table';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
-import { CovalentNotificationsModule } from '@covalent/core/notifications';
+import {CovalentNotificationsModule} from '@covalent/core/notifications';
+import {MatDialogModule} from '@angular/material/dialog';
+import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 
 @NgModule({
     declarations: [
-        RemoteFilesComponent
+        RemoteFilesComponent,
+        SelectionDialogComponent
     ],
     entryComponents: [
-        RemoteFilesComponent
+        RemoteFilesComponent,
+        SelectionDialogComponent
     ],
     imports: [
         FormsModule,
@@ -45,6 +49,7 @@ import { CovalentNotificationsModule } from '@covalent/core/notifications';
         MatProgressBarModule,
         MatSelectModule,
         MatCheckboxModule,
+        MatDialogModule,
         UIRouterModule.forChild({states: remoteFileStates})
     ]
 })

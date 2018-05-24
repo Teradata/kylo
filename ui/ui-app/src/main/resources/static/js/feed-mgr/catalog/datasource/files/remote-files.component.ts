@@ -4,19 +4,12 @@ import {HttpClient} from "@angular/common/http";
 import {Component, Input, OnInit} from "@angular/core";
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
-import {DatePipe} from '@angular/common';
 import {StateService} from "@uirouter/angular";
-import {TdBytesPipe} from '@covalent/core/common';
 import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService} from '../../api/services/selection.service';
-
-interface RemoteFile {
-    name: string;
-    directory: boolean;
-    length: number;
-    modificationTime: Date;
-    path: string;
-}
+import {MatDialog} from '@angular/material/dialog';
+import {SelectionDialogComponent} from './dialog/selection-dialog.component';
+import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 
 @Component({
     selector: "remote-files",
@@ -31,16 +24,7 @@ export class RemoteFilesComponent implements OnInit {
     @Input()
     path: string;
 
-    FILE_SIZE_FORMAT: (v: any) => any = (v: number) => new TdBytesPipe().transform(v, 2);
-    DATE_FORMAT: (v: any) => any = (v: number) => new DatePipe('en-US').transform(v, 'dd/MM/yyyy hh:mm:ss');
-
-    columns: ITdDataTableColumn[] = [
-        {name: "directory", label: "", sortable: false, width: 48, filter: false},
-        {name: "name", label: "Name", sortable: true, filter: true},
-        {name: "length", label: "Size", numeric: true, sortable: true, filter: false, width: 200, format: this.FILE_SIZE_FORMAT},
-        {name: "modificationTime", label: "Last modified", sortable: true, filter: false, width: 210, format: this.DATE_FORMAT}
-    ];
-
+    columns: ITdDataTableColumn[] = RemoteFileDescriptor.COLUMNS;
     sortBy = 'name';
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
@@ -58,7 +42,8 @@ export class RemoteFilesComponent implements OnInit {
     files: RemoteFile[] = [];
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
-                private state: StateService, private selectionService: SelectionService) {
+                private state: StateService, private selectionService: SelectionService,
+                private dialog: MatDialog) {
     }
 
     public ngOnInit(): void {
@@ -169,6 +154,16 @@ export class RemoteFilesComponent implements OnInit {
         if (file.directory) {
             this.state.go("catalog.datasource.browse", {path: encodeURIComponent(this.path + "/" + file.name)}, {notify:false, reload:false});
         }
+    }
+
+    openSelectionDialog(): void {
+        const dialogRef = this.dialog.open(SelectionDialogComponent, {
+            height: '350px'
+        });
+
+        dialogRef.afterClosed().subscribe(result => {
+            console.log(`Dialog result: ${result}`);
+        });
     }
 
     sort(sortEvent: ITdDataTableSortChangeEvent): void {

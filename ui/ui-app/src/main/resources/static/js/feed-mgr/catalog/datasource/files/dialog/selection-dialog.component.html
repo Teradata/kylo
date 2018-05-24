@@ -1,0 +1,31 @@
+<h2 mat-dialog-title>Selected Items</h2>
+<mat-dialog-content>
+  <td-data-table
+      #dataTable
+      [data]="filteredFiles"
+      [columns]="columns"
+      [sortable]="true"
+      [sortBy]="sortBy"
+      [sortOrder]="sortOrder"
+      (sortChange)="sort($event)">
+    <ng-template tdDataTableTemplate="directory" let-value="value">
+      <ng-md-icon [icon]="value ? 'fa-folder' : 'fa-file-r'" style="fill: #607D8B;"></ng-md-icon>
+    </ng-template>
+  </td-data-table>
+  <div class="md-padding" *ngIf="!dataTable.hasData" layout="row" layout-align="center center">
+    <h3>No results to display.</h3>
+  </div>
+  <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">
+    <span hide-xs>Rows per page:</span>
+    <mat-select [style.width.px]="50" [(value)]="pageSize">
+      <mat-option *ngFor="let size of [50, 100, 200, 500]" [value]="size">
+        {{size}}
+      </mat-option>
+    </mat-select>
+    {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
+  </td-paging-bar>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button mat-button mat-dialog-close>Cancel</button>
+  <button mat-button [mat-dialog-close]="true" cdkFocusInitial>Ok</button>
+</mat-dialog-actions>
