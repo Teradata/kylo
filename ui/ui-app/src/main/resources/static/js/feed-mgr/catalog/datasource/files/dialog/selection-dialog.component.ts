@@ -36,8 +36,8 @@ export class SelectionDialogComponent implements OnInit {
     ];
     datasourceId: string;
     selected: SelectedItem[] = [];
+    removed: SelectedItem[] = [];
     initialItemCount: number = 0;
-
 
     constructor(private selfReference: MatDialogRef<SelectionDialogComponent>, private dataTableService: TdDataTableService,
                 private selectionService: SelectionService, @Inject(MAT_DIALOG_DATA) public data: any) {
@@ -57,22 +57,14 @@ export class SelectionDialogComponent implements OnInit {
 
 
     onOk() {
-        // if (this.isSelectionUpdated()) {
-        //     const selectionService = this.selectionService;
-        //     const datasourceId = this.datasourceId;
-        //     this.selectionService.reset(this.datasourceId);
-        //     const groupedByLocation = _.groupBy(this.selected, 'location');
-        //     _.forEach(groupedByLocation, function(group: SelectedItem[], location: string) {
-        //         const selectedItems: Map<string, boolean> = new Map<string, boolean>();
-        //         for (let item of group) {
-        //             selectedItems.set(item.file, true);
-        //         }
-        //         selectionService.set(datasourceId, location, selectedItems);
-        //     });
-        //     this.selfReference.close(true);
-        // } else {
-        //     this.selfReference.close(false);
-        // }
+        if (this.isSelectionUpdated()) {
+            for (let item of this.removed) {
+                item.node.isSelected = false;
+            }
+            this.selfReference.close(true);
+        } else {
+            this.selfReference.close(false);
+        }
     }
 
     private isSelectionUpdated() {
@@ -81,6 +73,7 @@ export class SelectionDialogComponent implements OnInit {
 
     removeItem(toBeRemoved: SelectedItem) {
         this.selected = this.selected.filter(item => item !== toBeRemoved);
+        this.removed.push(toBeRemoved);
         this.filter();
     }
 
