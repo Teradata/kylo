@@ -1,19 +1,16 @@
-import * as _ from 'underscore';
-
 import {Component, Inject, OnInit} from '@angular/core';
 import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
 import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService} from '../../../api/services/selection.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
+import {Node} from '../node';
 
 export class SelectedItem {
-    location: string;
-    file: string;
+    node: Node;
     path: string;
-    constructor(location:string, file:string) {
-        this.location = location;
-        this.file = file;
-        this.path = this.location + "/" + this.file;
+    constructor(path: string, node: Node) {
+        this.node = node;
+        this.path = path;
     }
 }
 
@@ -28,7 +25,7 @@ export class SelectionDialogComponent implements OnInit {
     sortBy = 'path';
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
-    filteredFiles: any = [];
+    filteredFiles: SelectedItem[] = [];
     filteredTotal = 0;
     fromRow: number = 1;
     currentPage: number = 1;
@@ -48,32 +45,39 @@ export class SelectionDialogComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        this.selectionService.getAll(this.datasourceId).forEach((selection: Map<string, boolean>, path: string) => {
-            Array.from(selection.keys()).forEach(child => {
-                this.selected.push(new SelectedItem(path, child));
-                this.initialItemCount = this.selected.length;
-                this.filter();
-            });
-        });
+        console.log('on init');
+        const root: Node = this.selectionService.get(this.datasourceId);
+        this.addSelectedChildren(root);
+        this.initialItemCount = this.selected.length;
+        this.filter();
     }
 
-    onOk() {
-        if (this.isSelectionUpdated()) {
-            const selectionService = this.selectionService;
-            const datasourceId = this.datasourceId;
-            this.selectionService.reset(this.datasourceId);
-            const groupedByLocation = _.groupBy(this.selected, 'location');
-            _.forEach(groupedByLocation, function(group: SelectedItem[], location: string) {
-                const selectedItems: Map<string, boolean> = new Map<string, boolean>();
-                for (let item of group) {
-                    selectedItems.set(item.file, true);
-                }
-                selectionService.set(datasourceId, location, selectedItems);
-            });
-            this.selfReference.close(true);
-        } else {
-            this.selfReference.close(false);
+    addSelectedChildren(node: Node) {
+        const children = node.getSelectedChildren();
+        for (let child of children) {
+            this.selected.push(new SelectedItem(child.getPath(), child));
+            this.addSelectedChildren(child);
         }
+    }
+
+
+    onOk() {
+        // if (this.isSelectionUpdated()) {
+        //     const selectionService = this.selectionService;
+        //     const datasourceId = this.datasourceId;
+        //     this.selectionService.reset(this.datasourceId);
+        //     const groupedByLocation = _.groupBy(this.selected, 'location');
+        //     _.forEach(groupedByLocation, function(group: SelectedItem[], location: string) {
+        //         const selectedItems: Map<string, boolean> = new Map<string, boolean>();
+        //         for (let item of group) {
+        //             selectedItems.set(item.file, true);
+        //         }
+        //         selectionService.set(datasourceId, location, selectedItems);
+        //     });
+        //     this.selfReference.close(true);
+        // } else {
+        //     this.selfReference.close(false);
+        // }
     }
 
     private isSelectionUpdated() {

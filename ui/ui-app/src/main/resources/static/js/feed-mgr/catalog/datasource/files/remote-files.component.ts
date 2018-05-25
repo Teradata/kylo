@@ -10,6 +10,8 @@ import {SelectionService} from '../../api/services/selection.service';
 import {MatDialog} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {RemoteFile, RemoteFileDescriptor} from './remote-file';
+import {Node} from './node';
+
 
 @Component({
     selector: "remote-files",
@@ -25,7 +27,7 @@ export class RemoteFilesComponent implements OnInit {
     path: string;
 
     columns: ITdDataTableColumn[] = RemoteFileDescriptor.COLUMNS;
-    sortBy = 'name';
+    sortBy = this.columns[1].name;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
     filteredFiles: RemoteFile[] = [];
@@ -33,13 +35,15 @@ export class RemoteFilesComponent implements OnInit {
     fromRow: number = 1;
     currentPage: number = 1;
     pageSize: number = 50;
-    selected: Map<string, boolean> = new Map<string, boolean>();
+    selected: Node[] = [];
     selectAll: boolean = false;
     isParentSelected: boolean = false;
-    selectedChildCount: Map<string, number> = new Map<string, number>();
+    selectedDescendantCounts: Map<string, number> = new Map<string, number>();
 
     paths: string[];
     files: RemoteFile[] = [];
+    private root: Node;
+    private node: Node;
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
@@ -47,110 +51,86 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        const template = angular.copy(this.datasource.template);
-        template.paths[0] = this.path;
         this.paths = this.path.split("/");
+        this.initNodes();
+        const node = this.node;
         this.http.post("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
+                for (let file of this.files) {
+                    node.addChild(new Node(file.name));
+                }
                 this.init();
             });
     }
 
     private init() {
-        this.initParentSelection();
-        this.initChildSelection();
-
-        let previousSelection = this.selectionService.get(this.datasource.id, this.path);
-        this.selected = previousSelection !== undefined ? previousSelection : new Map<string, boolean>();
+        this.initIsParentSelected();
+        this.initSelectedDescendantCounts();
         this.filter();
     }
 
-    private initChildSelection() {
-        const allPaths = this.selectionService.getAll(this.datasource.id);
-        for (let file of this.files) {
-            let searchString = this.path + "/" + file.name;
-            let selectedChildren = 0;
-            allPaths.forEach((selection: Map<string, boolean>, path: string) => {
-                if (path.startsWith(searchString)) {
-                    selectedChildren += selection.size;
-                }
-            });
-            this.selectedChildCount.set(file.name, selectedChildren);
+    private initNodes() {
+        this.root = this.selectionService.get(this.datasource.id);
+        if (this.root === undefined) {
+            this.root = this.createNode(this.getPaths());
+            this.selectionService.set(this.datasource.id, this.root);
+        }
+        this.node = this.root.find(this.getPaths());
+    }
+
+    getPaths(): string[] {
+        return angular.copy(this.paths);
+    }
+
+    createNode(paths: string[]): Node {
+        const node = new Node(paths.splice(0, 1)[0]);
+        if (paths.length > 0) {
+            const child = this.createNode(paths);
+            node.addChild(child);
+        }
+        return node;
+    }
+
+    private initSelectedDescendantCounts() {
+        for (let node of this.node.children()) {
+            this.selectedDescendantCounts.set(node.name, node.countSelectedDescendants());
         }
     }
 
-    private initParentSelection() {
-        //disable selection if parent directory is selected
-        let parent = "";
-        let nextChildIdx: number;
-        for (let i in this.paths) {
-            let currentPath = this.paths[i];
-            if (currentPath.length !== 0) {
-                parent += "/" + currentPath;
-                nextChildIdx = 1 + Number(i);
-                if (this.paths.length > Number(nextChildIdx)) {
-                    let child = this.paths[nextChildIdx];
-                    this.selectionService.get(this.datasource.id, parent).forEach((isSelected: boolean, childPath: string) => {
-                        this.isParentSelected = this.isParentSelected || (childPath === child && isSelected);
-                    });
-                }
-            }
-        }
+    private initIsParentSelected() {
+        this.isParentSelected = this.node.isAnyParentSelected();
     }
 
     browseTo(pathIndex: number) {
-        const location = this.paths.slice(0, pathIndex + 1).join("/");
+        const location = this.getPaths().slice(0, pathIndex + 1).join("/");
         this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
     }
 
-    numberOfSelectedChildren(fileName: string): number {
-        return this.selectedChildCount.get(fileName);
-    }
-
     isChecked(fileName: string) {
-        return this.isParentSelected || this.selected.get(fileName) !== undefined;
+        return this.isParentSelected || this.node.isChildSelected(fileName);
     }
 
     onToggleAll(): void {
-        //todo warn user that downstream selection will be removed, e.g.
-        //todo 1. user selects file on path /a/b/c/file.txt
-        //todo 2. user selects directory on path /a/b, which includes downstream /a/b/c/file.txt
-        if (this.selectAll) {
-            for (let file of this.files) {
-                this.selected.set(file.name, this.selectAll);
-            }
-        } else {
-            this.selected = new Map<string, boolean>();
-        }
-
-        this.storeSelection();
+        this.node.toggleAll(this.selectAll);
+        this.init();
     }
 
     onToggleRow(event: any, file: RemoteFile): void {
-        if (event.checked) {
-            this.selected.set(file.name, event.checked);
-        } else {
-            this.selected.delete(file.name);
-        }
-        this.storeSelection();
+        this.node.toggleChild(file.name, event.checked);
+        this.init();
     }
 
-    private storeSelection() {
-        this.selectionService.set(this.datasource.id, this.path, this.selected);
+    numberOfSelectedDescendants(fileName: string): number {
+        return this.selectedDescendantCounts.get(fileName);
     }
 
-    numberOfSelectedFiles() {
-        return Array.from(this.selected.values()).filter(selected => selected).length;
+    selectedHere() {
+        return this.node.countSelectedChildren();
     }
 
-    totalNumberOfSelectedFiles() {
-        let result = 0;
-        let allPaths = this.selectionService.getAll(this.datasource.id);
-        allPaths.forEach((pathSelection: Map<string, boolean>) => {
-            result += Array.from(pathSelection.values()).filter(selected => selected).length;
-        });
-        return result;
+    selectedTotal() {
+        return this.root.countSelectedDescendants();
     }
 
     rowClick(file: RemoteFile): void {
