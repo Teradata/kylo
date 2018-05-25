@@ -46,6 +46,20 @@ export class Node {
         return count;
     }
 
+    getSelectedDescendants(): Node[] {
+        let selectedItems: Node[] = [];
+        const children = this.children();
+        for (let child of children) {
+            if (child.isSelected) {
+                selectedItems.push(child);
+            } else {
+                const selectedDescendants = child.getSelectedDescendants();
+                selectedItems = selectedItems.concat(selectedDescendants);
+            }
+        }
+        return selectedItems;
+    }
+
     isAnyParentSelected(): boolean {
         if (this.isSelected) {
             return true;
@@ -101,7 +115,7 @@ export class Node {
         return this.getSelectedChildren().length;
     }
 
-    getSelectedChildren() {
+    private getSelectedChildren() {
         return this.children().filter(c => c.isSelected);
     }
 
