@@ -117,7 +117,7 @@ public class CatalogFileManager {
     /**
      * Sets the file system providers to use for listing files.
      */
-    @Autowired
+    @Autowired(required = false)
     public void setFileSystemProviders(@Nullable final List<FileSystemProvider> fileSystemProviders) {
         this.fileSystemProviders = fileSystemProviders;
     }
