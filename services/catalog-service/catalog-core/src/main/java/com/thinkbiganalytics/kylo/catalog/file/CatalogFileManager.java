@@ -215,16 +215,15 @@ public class CatalogFileManager {
     public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSource dataSource) throws IOException {
         final Path path = new Path(uri);
         if (pathValidator.isPathAllowed(path, dataSource)) {
-            return isolatedFunction(dataSource, path, fs -> {
-                if (fileSystemProviders != null) {
-                    for (final FileSystemProvider fileSystemProvider : fileSystemProviders) {
-                        if (fileSystemProvider.supportsPath(path)) {
-                            return fileSystemProvider.listFiles(path, fs.getConf());
-                        }
+            if (fileSystemProviders != null) {
+                for (final FileSystemProvider fileSystemProvider : fileSystemProviders) {
+                    if (fileSystemProvider.supportsPath(path)) {
+                        final Configuration conf = getConfiguration(DataSourceUtil.mergeTemplates(dataSource));
+                        return fileSystemProvider.listFiles(path, conf);
                     }
                 }
-                return listFiles(fs, path);
-            });
+            }
+            return isolatedFunction(dataSource, path, fs -> listFiles(fs, path));
         } else {
             log.info("Datasource {} does not allow access to path: {}", dataSource.getId(), uri);
             throw new AccessDeniedException("Access to path [{}] is restricted: " + uri);
@@ -248,6 +247,23 @@ public class CatalogFileManager {
             log.debug("Dataset directory does not exist: {}", path);
             return Collections.emptyList();
         }
+    }
+
+    /**
+     * Gets the Hadoop configuration for the specified data set template.
+     */
+    @Nonnull
+    private Configuration getConfiguration(@Nonnull final DataSetTemplate template) {
+        final Configuration conf = new Configuration(defaultConf);
+
+        if (template.getOptions() != null) {
+            log.debug("Creating Hadoop configuration with options: {}", template.getOptions());
+            template.getOptions().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
+                .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
+        }
+
+        return conf;
     }
 
     /**
@@ -296,16 +312,7 @@ public class CatalogFileManager {
      */
     @VisibleForTesting
     protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
-        // Create configuration with dataset options
-        final Configuration conf = new Configuration(defaultConf);
-        if (template.getOptions() != null) {
-            log.debug("Creating Hadoop configuration with options: {}", template.getOptions());
-            template.getOptions().entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
-                .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
-        }
-
-        // Run function in separate class loader
+        final Configuration conf = getConfiguration(template);
         try (final HadoopClassLoader classLoader = new HadoopClassLoader(conf)) {
             if (template.getJars() != null) {
                 log.debug("Adding jars to HadoopClassLoader: {}", template.getJars());

@@ -92,7 +92,7 @@ public class DataSetController extends AbstractCatalogController {
         try {
             dataSet = metadataService.commit(() -> dataSetProvider.createDataSet(source));
         } catch (final CatalogException e) {
-            log.debug("Invalid data source for creating data set: {}", source, e);
+            log.debug("Cannot create data set from request: {}", source, e);
             throw new BadRequestException(getMessage(e));
         }
 

@@ -2,7 +2,7 @@ package com.thinkbiganalytics.kylo.catalog.aws;
 
 /*-
  * #%L
- * kylo-catalog-filesystem-aws
+ * kylo-catalog-filesystem-aws-hadoop-v3
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%

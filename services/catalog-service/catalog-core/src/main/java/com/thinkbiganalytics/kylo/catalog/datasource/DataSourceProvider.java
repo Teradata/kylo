@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.datasource;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
@@ -53,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -123,6 +125,28 @@ public class DataSourceProvider {
                 }
             })
             .collect(Collectors.toMap(DataSource::getId, Function.identity()));
+    }
+
+    /**
+     * Creates a new data source using the specified template.
+     *
+     * @throws CatalogException if the data source is not valid
+     */
+    @Nonnull
+    public DataSource createDataSource(@Nonnull final DataSource source) {
+        // Find connector
+        final Connector connector = Optional.ofNullable(source.getConnector()).map(Connector::getId).flatMap(connectorProvider::findConnector)
+            .orElseThrow(() -> new CatalogException("catalog.datasource.connector.invalid"));
+
+        // Create and store data source
+        final DataSource dataSource = new DataSource(source);
+        dataSource.setId(UUID.randomUUID().toString());
+        catalogDataSources.put(dataSource.getId(), dataSource);
+
+        // Return a copy with the connector
+        final DataSource copy = new DataSource(dataSource);
+        copy.setConnector(connector);
+        return copy;
     }
 
     /**
