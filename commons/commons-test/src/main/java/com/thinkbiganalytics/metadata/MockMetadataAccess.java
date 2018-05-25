@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.sla.spi.core;
+package com.thinkbiganalytics.metadata;
 /*-
  * #%L
  * thinkbig-sla-metrics-default
@@ -19,6 +19,7 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
  * #L%
  */
 
+import com.google.common.base.Throwables;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -29,18 +30,13 @@ import java.security.Principal;
 
 public class MockMetadataAccess implements MetadataAccess {
 
-    public MockMetadataAccess() {
-
-    }
-
     @Override
     public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
         try {
             return cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 
     @Override
@@ -48,9 +44,8 @@ public class MockMetadataAccess implements MetadataAccess {
         try {
             return cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 
     @Override
@@ -58,7 +53,7 @@ public class MockMetadataAccess implements MetadataAccess {
         try {
             cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
     }
 
@@ -67,7 +62,7 @@ public class MockMetadataAccess implements MetadataAccess {
         try {
             cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
     }
 
@@ -76,9 +71,8 @@ public class MockMetadataAccess implements MetadataAccess {
         try {
             return cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
-        return null;
     }
 
     @Override
@@ -86,7 +80,7 @@ public class MockMetadataAccess implements MetadataAccess {
         try {
             cmd.execute();
         } catch (Exception e) {
-
+            throw Throwables.propagate(e);
         }
     }
 }

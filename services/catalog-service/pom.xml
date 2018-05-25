@@ -21,5 +21,6 @@
     <module>catalog-controller</module>
     <module>catalog-core</module>
     <module>catalog-model</module>
+    <module>catalog-api</module>
   </modules>
 </project>

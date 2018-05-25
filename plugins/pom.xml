@@ -33,5 +33,6 @@
     <module>jms-service-amazon-sqs</module>
     <module>search-elasticsearch-rest</module>
     <module>service-monitor-activemq</module>
+    <module>catalog-filesystem-aws</module>
   </modules>
 </project>

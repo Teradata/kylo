@@ -22,6 +22,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 
 import com.thinkbiganalytics.kylo.catalog.connector.ConnectorProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.metadata.MockMetadataAccess;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -52,6 +53,7 @@ public class ConnectorControllerTest {
         // Test retrieving connector
         final ConnectorController controller = newConnectionController();
         controller.connectorProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
 
         final Response response = controller.getConnector("C1");
         Assert.assertEquals(connector, response.getEntity());
@@ -69,6 +71,7 @@ public class ConnectorControllerTest {
         // Test retrieving connector
         final ConnectorController controller = newConnectionController();
         controller.connectorProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
         controller.getConnector("C1");
     }
 
@@ -79,6 +82,7 @@ public class ConnectorControllerTest {
     private ConnectorController newConnectionController() {
         final ConnectorController controller = new ConnectorController();
         controller.connectorProvider = Mockito.mock(ConnectorProvider.class);
+        controller.metadataService = new MockMetadataAccess();
         controller.request = Mockito.mock(HttpServletRequest.class);
 
         final StaticMessageSource messages = new StaticMessageSource();

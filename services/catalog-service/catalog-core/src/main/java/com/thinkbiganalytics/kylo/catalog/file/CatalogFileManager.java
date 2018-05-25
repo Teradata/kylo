@@ -29,6 +29,7 @@ import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.spi.FileSystemProvider;
 import com.thinkbiganalytics.kylo.util.HadoopClassLoader;
 
 import org.apache.commons.io.IOUtils;
@@ -72,6 +73,12 @@ public class CatalogFileManager {
     private final Configuration defaultConf;
 
     /**
+     * File system providers for listing buckets (or hosts) of Hadoop-compatible file systems
+     */
+    @Nullable
+    private List<FileSystemProvider> fileSystemProviders;
+
+    /**
      * Default group for uploaded files
      */
     @Nullable
@@ -105,6 +112,14 @@ public class CatalogFileManager {
         defaultConf = new Configuration();
         defaultConf.size();  // causes defaults to be loaded
         defaultConf.set(FileSystem.FS_DEFAULT_NAME_KEY, "file:///");  // Spark uses file:/// as default FileSystem
+    }
+
+    /**
+     * Sets the file system providers to use for listing files.
+     */
+    @Autowired
+    public void setFileSystemProviders(@Nullable final List<FileSystemProvider> fileSystemProviders) {
+        this.fileSystemProviders = fileSystemProviders;
     }
 
     /**
@@ -200,7 +215,16 @@ public class CatalogFileManager {
     public List<DataSetFile> listFiles(@Nonnull final URI uri, @Nonnull final DataSource dataSource) throws IOException {
         final Path path = new Path(uri);
         if (pathValidator.isPathAllowed(path, dataSource)) {
-            return isolatedFunction(dataSource, path, fs -> listFiles(fs, path));
+            return isolatedFunction(dataSource, path, fs -> {
+                if (fileSystemProviders != null) {
+                    for (final FileSystemProvider fileSystemProvider : fileSystemProviders) {
+                        if (fileSystemProvider.supportsPath(path)) {
+                            return fileSystemProvider.listFiles(path, fs.getConf());
+                        }
+                    }
+                }
+                return listFiles(fs, path);
+            });
         } else {
             log.info("Datasource {} does not allow access to path: {}", dataSource.getId(), uri);
             throw new AccessDeniedException("Access to path [{}] is restricted: " + uri);

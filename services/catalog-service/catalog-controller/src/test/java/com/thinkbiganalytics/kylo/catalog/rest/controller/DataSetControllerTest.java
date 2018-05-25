@@ -23,6 +23,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetProvider;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
+import com.thinkbiganalytics.metadata.MockMetadataAccess;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -55,6 +56,7 @@ public class DataSetControllerTest {
         // Test creating a data set
         final DataSetController controller = newDataSetController();
         controller.dataSetProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
 
         final Response response = controller.createDataSet(new DataSet());
         Assert.assertEquals(dataSet, response.getEntity());
@@ -72,6 +74,7 @@ public class DataSetControllerTest {
         // Test creating data set
         final DataSetController controller = newDataSetController();
         controller.dataSetProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
         controller.createDataSet(new DataSet());
     }
 
@@ -90,6 +93,7 @@ public class DataSetControllerTest {
         // Test retrieving data set
         final DataSetController controller = newDataSetController();
         controller.dataSetProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
 
         final Response response = controller.getDataSet(dataSet.getId());
         Assert.assertEquals(dataSet, response.getEntity());
@@ -107,6 +111,7 @@ public class DataSetControllerTest {
         // Test retrieving data set
         final DataSetController controller = newDataSetController();
         controller.dataSetProvider = provider;
+        controller.metadataService = new MockMetadataAccess();
         controller.getDataSet("DT1");
     }
 
@@ -117,6 +122,7 @@ public class DataSetControllerTest {
     private DataSetController newDataSetController() {
         final DataSetController controller = new DataSetController();
         controller.dataSetProvider = Mockito.mock(DataSetProvider.class);
+        controller.metadataService = new MockMetadataAccess();
         controller.request = Mockito.mock(HttpServletRequest.class);
 
         final StaticMessageSource messages = new StaticMessageSource();

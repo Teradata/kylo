@@ -29,6 +29,12 @@
       <scope>test</scope>
       <type>pom</type>
     </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-commons-test</artifactId>
+      <version>${project.version}</version>
+      <scope>test</scope>
+    </dependency>
 
     <!-- Data Lake dependencies -->
     <dependency>
