@@ -45,7 +45,6 @@ export class SelectionDialogComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        console.log('on init');
         const root: Node = this.selectionService.get(this.datasourceId);
         const items = root.getSelectedDescendants();
         for (let item of items) {
