@@ -4,36 +4,13 @@
 export class Node {
     name: string;
     isSelected: boolean = false;
-    private childrenMap: Map<string, Node> = new Map<string, Node>();
-    private parent: Node;
-    private path: string;
+    childrenMap: Map<string, Node> = new Map<string, Node>();
+    parent: Node;
+    path: string;
 
     constructor(name: string) {
         this.name = name;
         this.path = name;
-    }
-
-    find(paths: string[]): Node {
-        const ownName = paths.splice(0, 1)[0];
-        if (this.name !== ownName) {
-            throw ReferenceError("Invalid path, expecting this node's name as first path name");
-        }
-        if (paths.length === 0) {
-            return this;
-        }
-
-        const childName = paths[0];
-        let child = this.childrenMap.get(childName);
-        if (child === undefined) {
-            //e.g. when browsing to this path for the fist time
-            child = new Node(childName);
-            this.addChild(child);
-        }
-        if (paths.length > 0) {
-            return child.find(paths);
-        } else {
-            return child;
-        }
     }
 
     countSelectedDescendants(): number {
@@ -76,7 +53,7 @@ export class Node {
     addChild(node: Node): void {
         if (!this.childrenMap.get(node.name)) {
             node.parent = this;
-            node.path = this.path + "/" + node.path;
+            node.path = this.path + "/" + node.name;
             this.childrenMap.set(node.name, node);
         }
     }
@@ -121,5 +98,32 @@ export class Node {
 
     getPath(): string {
         return this.path;
+    }
+
+    /**
+     * @param {string} fullPath - full path including path of all parents
+     * @returns {Node}
+     */
+    findFullPath(fullPath: string): Node {
+        if (this.path === fullPath) {
+            return this;
+        }
+
+        let relativePath = fullPath.substring(this.path.length, fullPath.length);
+        if (relativePath.length > 0) {
+            let node = this;
+            let paths = relativePath.split("/").filter(p => p.length > 0);
+            for (let path of paths) {
+                let child = node.childrenMap.get(path);
+                if (child === undefined) {
+                    child = new Node(path);
+                    node.addChild(child);
+                }
+                node = child;
+            }
+            return node;
+        } else {
+            return this;
+        }
     }
 }

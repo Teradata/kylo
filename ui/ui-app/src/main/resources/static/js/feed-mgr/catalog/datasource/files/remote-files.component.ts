@@ -44,6 +44,7 @@ export class RemoteFilesComponent implements OnInit {
     files: RemoteFile[] = [];
     private root: Node;
     private node: Node;
+    private pathNodes: Node[] = [];
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
@@ -51,10 +52,9 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        this.paths = this.path.split("/");
         this.initNodes();
         const node = this.node;
-        this.http.post("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
+        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
             .subscribe((data: RemoteFile[]) => {
                 this.files = data;
                 for (let file of this.files) {
@@ -71,25 +71,20 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     private initNodes() {
+        console.log('init nodes');
         this.root = this.selectionService.get(this.datasource.id);
         if (this.root === undefined) {
-            this.root = this.createNode(this.getPaths());
+            this.root = new Node(this.datasource.template.paths[0]);
             this.selectionService.set(this.datasource.id, this.root);
         }
-        this.node = this.root.find(this.getPaths());
-    }
-
-    getPaths(): string[] {
-        return angular.copy(this.paths);
-    }
-
-    createNode(paths: string[]): Node {
-        const node = new Node(paths.splice(0, 1)[0]);
-        if (paths.length > 0) {
-            const child = this.createNode(paths);
-            node.addChild(child);
+        this.node = this.root.findFullPath(this.path);
+        this.pathNodes.push(this.node);
+        let parent = this.node.parent;
+        while (parent) {
+            this.pathNodes.push(parent);
+            parent = parent.parent;
         }
-        return node;
+        this.pathNodes = this.pathNodes.reverse();
     }
 
     private initSelectedDescendantCounts() {
@@ -102,9 +97,18 @@ export class RemoteFilesComponent implements OnInit {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
 
-    browseTo(pathIndex: number) {
-        const location = this.getPaths().slice(0, pathIndex + 1).join("/");
-        this.state.go("catalog.datasource.browse", {path: encodeURIComponent(location)}, {notify:false, reload:false});
+    rowClick(file: RemoteFile): void {
+        if (file.directory) {
+            this.browse(this.path + "/" + file.name);
+        }
+    }
+
+    browseTo(node: Node) {
+        this.browse(node.path);
+    }
+
+    private browse(path: string) {
+        this.state.go("catalog.datasource.browse", {path: encodeURIComponent(path)}, {notify: false, reload: false});
     }
 
     isChecked(fileName: string) {
@@ -131,12 +135,6 @@ export class RemoteFilesComponent implements OnInit {
 
     selectedTotal() {
         return this.root.countSelectedDescendants();
-    }
-
-    rowClick(file: RemoteFile): void {
-        if (file.directory) {
-            this.state.go("catalog.datasource.browse", {path: encodeURIComponent(this.path + "/" + file.name)}, {notify:false, reload:false});
-        }
     }
 
     openSelectionDialog(): void {
