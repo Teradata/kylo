@@ -111,7 +111,7 @@ export class Node {
 
         let relativePath = fullPath.substring(this.path.length, fullPath.length);
         if (relativePath.length > 0) {
-            let node = this;
+            let node: Node = this;
             let paths = relativePath.split("/").filter(p => p.length > 0);
             for (let path of paths) {
                 let child = node.childrenMap.get(path);
