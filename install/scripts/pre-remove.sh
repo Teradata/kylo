@@ -56,6 +56,7 @@ echo "        - Contents in this directory is for kylo RPM: $lastRpm " > $readme
 cp -r $rpmInstallDir/kylo-ui/conf $bkupDir/kylo-ui
 cp -r $rpmInstallDir/kylo-services/conf $bkupDir/kylo-services
 cp -r $rpmInstallDir/kylo-services/plugin $bkupDir/kylo-services/plugin
+cp -r $rpmInstallDir/kylo-install-inspector/conf $bkupDir/kylo-install-inspector
 echo "        - BACKUP COMPLETE!! "
 echo "        - Backup Configuration is located at : $bkupDir "
 echo "        - A README.txt file will be included in the backup directory indicating what RPM these files came from "
