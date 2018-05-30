@@ -218,8 +218,8 @@
           <groupId>org.slf4j</groupId>
         </exclusion>
       </exclusions>
-    </dependency>
 
+    </dependency>
 
     <!-- Testing -->
     <dependency>
@@ -257,6 +257,18 @@
       <artifactId>powermock-mockito-release-full</artifactId>
       <scope>test</scope>
       <type>pom</type>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+      <version>${spring.boot.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+      <version>${spring.boot.version}</version>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
