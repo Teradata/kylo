@@ -37,9 +37,13 @@ import javax.persistence.EntityManager;
 public class AugmentableQueryRepositoryFactoryBean<R extends JpaRepository<T, I>, T,
     I extends Serializable> extends JpaRepositoryFactoryBean<R, T, I> {
 
-
     @Inject
     AccessController accessController;
+
+    public AugmentableQueryRepositoryFactoryBean(Class<? extends R> repositoryInterface) {
+        super(repositoryInterface);
+    }
+
 
     protected RepositoryFactorySupport createRepositoryFactory(EntityManager em) {
         return new AugmentableQueryRepositoryFactory(em, accessController);
