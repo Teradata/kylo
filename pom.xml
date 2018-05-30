@@ -141,7 +141,7 @@
     <javax.servlet.version>3.1.0</javax.servlet.version>
     <jersey.version>2.22.2</jersey.version>
     <joda.time.version>2.9.2</joda.time.version>
-    <junit.version>4.11</junit.version>
+    <junit.version>4.12</junit.version>
     <maven-jar-plugin.version>2.6</maven-jar-plugin.version>
     <maven-javadoc-plugin.version>2.10.3</maven-javadoc-plugin.version>
     <maven-source-plugin.version>3.0.0</maven-source-plugin.version>
@@ -162,9 +162,10 @@
     <spring.version>4.3.17.RELEASE</spring.version>
     <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
     <spring.boot.version>1.5.13.RELEASE</spring.boot.version>
-    <spring.cloud.version>1.1.3.RELEASE</spring.cloud.version>
-    <spring.jpa.version>1.10.2.RELEASE</spring.jpa.version>
-    <spring.security.version>4.1.3.RELEASE</spring.security.version>
+    <spring.cloud.config.version>1.4.3.RELEASE</spring.cloud.config.version>
+    <spring.cloud.context.version>1.3.3.RELEASE</spring.cloud.context.version>
+    <spring.jpa.version>1.11.12.RELEASE</spring.jpa.version>
+    <spring.security.version>4.2.6.RELEASE</spring.security.version>
     <!--  <spring.security.version>4.1.1.RELEASE</spring.security.version> -->
     <spring.ldap.version>2.1.0.RELEASE</spring.ldap.version>
     <projectreactor.version>2.0.8.RELEASE</projectreactor.version>
@@ -188,7 +189,7 @@
     <maven.scala.plugin.version>2.15.2</maven.scala.plugin.version>
     <maven.surefire.plugin.version>2.20</maven.surefire.plugin.version>
     <maven.site.plugin.version>3.6</maven.site.plugin.version>
-    <spring-data-commons.version>1.12.0.RELEASE</spring-data-commons.version>
+    <spring-data-commons.version>1.13.12.RELEASE</spring-data-commons.version>
     <modeshape.version>5.4.1.Final</modeshape.version>
     <codehaus.jettison.version>1.3.8</codehaus.jettison.version>
   </properties>
@@ -531,17 +532,17 @@
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-context</artifactId>
-        <version>${spring.cloud.version}</version>
+        <version>${spring.cloud.context.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-starter-config</artifactId>
-        <version>${spring.cloud.version}</version>
+        <version>${spring.cloud.config.version}</version>
       </dependency>
       <dependency>
         <groupId>org.springframework.cloud</groupId>
         <artifactId>spring-cloud-config-server</artifactId>
-        <version>${spring.cloud.version}</version>
+        <version>${spring.cloud.config.version}</version>
       </dependency>
 
       <dependency>
