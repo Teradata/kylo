@@ -39,6 +39,7 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Value;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -50,6 +51,9 @@ public class DataSourceIT extends IntegrationTestBase {
 
     @Value("${fs.s3a.secret.key:#{null}}")
     String awsSecretAccessKey;
+
+    @Value("${fs.azure.account.key:#{null}}")
+    String azureAccountKey;
 
     /**
      * Verify retrieving a single data source.
@@ -102,6 +106,61 @@ public class DataSourceIT extends IntegrationTestBase {
         Assert.assertThat(searchResult.getData(), CoreMatchers.hasItem(isHive));
         Assert.assertThat(searchResult.getData(), CoreMatchers.hasItem(isJdbc));
         Assert.assertEquals(searchResult.getData().size(), searchResult.getRecordsTotal().longValue());
+    }
+
+    /**
+     * Verify listing files from the Azure Storage connector.
+     */
+    @Test
+    public void testListFilesAzureNative() {
+        Assume.assumeNotNull(azureAccountKey);
+
+        // Create an Azure data source
+        final Connector connector = new Connector();
+        connector.setId("azure-storage");
+
+        final DefaultDataSetTemplate template = new DefaultDataSetTemplate();
+        template.setOptions(Collections.singletonMap("spark.hadoop.fs.azure.account.key.kylogreg1.blob.core.windows.net", azureAccountKey));
+
+        final DataSource request = new DataSource();
+        request.setConnector(connector);
+        request.setTemplate(template);
+        request.setTitle("test list files wasb");
+
+        final DataSource dataSource = given(DataSourceController.BASE)
+            .when().body(request).post()
+            .then().statusCode(200)
+            .extract().as(DataSource.class);
+
+        // Test listing containers
+        final List<DataSetFile> containers = given(DataSourceController.BASE)
+            .when().pathParam("id", dataSource.getId()).queryParam("path", "wasb://kylogreg1.blob.core.windows.net/").get("{id}/files")
+            .then().statusCode(200)
+            .extract().as(DataSetFileList.class);
+        Assert.assertThat(containers, CoreMatchers.hasItem(new CustomMatcher<DataSetFile>("DataSetFile name=blob123 directory=true") {
+            @Override
+            public boolean matches(final Object item) {
+                return (item instanceof DataSetFile)
+                       && Objects.equals("blob123", ((DataSetFile) item).getName())
+                       && Objects.equals("wasb://blob123@kylogreg1.blob.core.windows.net/", ((DataSetFile) item).getPath())
+                       && ((DataSetFile) item).isDirectory();
+            }
+        }));
+
+        // Test listing files
+        final List<DataSetFile> files = given(DataSourceController.BASE)
+            .when().pathParam("id", dataSource.getId()).queryParam("path", "wasb://blob123@kylogreg1.blob.core.windows.net/").get("{id}/files")
+            .then().statusCode(200)
+            .extract().as(DataSetFileList.class);
+        Assert.assertThat(files, CoreMatchers.hasItem(new CustomMatcher<DataSetFile>("DataSetFile name=books1.json directory=true") {
+            @Override
+            public boolean matches(final Object item) {
+                return (item instanceof DataSetFile)
+                       && Objects.equals("books1.json", ((DataSetFile) item).getName())
+                       && Objects.equals("wasb://blob123@kylogreg1.blob.core.windows.net/books1.json", ((DataSetFile) item).getPath())
+                       && !((DataSetFile) item).isDirectory();
+            }
+        }));
     }
 
     /**

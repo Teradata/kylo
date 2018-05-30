@@ -35,5 +35,6 @@
     <module>service-monitor-activemq</module>
     <module>catalog-filesystem-aws-hadoop-v2</module>
     <module>catalog-filesystem-aws-hadoop-v3</module>
+    <module>catalog-filesystem-azure</module>
   </modules>
 </project>

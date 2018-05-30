@@ -22,7 +22,22 @@
     ],
     "template": {
       "paths": [
-        "s3a://"
+        "s3n:///"
+      ]
+    }
+  },
+  {
+    "title": "Azure Storage",
+    "icon": "windows",
+    "tabs": [
+      {
+        "label": "Files",
+        "sref": ".browse"
+      }
+    ],
+    "template": {
+      "paths": [
+        "wasb:///"
       ]
     }
   },
