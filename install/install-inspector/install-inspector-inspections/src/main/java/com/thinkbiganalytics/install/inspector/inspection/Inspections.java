@@ -44,6 +44,7 @@ public class Inspections {
 
         ctx.scan("com.thinkbiganalytics.install.inspector.inspection"
             , "com.thinkbiganalytics.hive.config"
+            , "com.thinkbiganalytics.spring"
                  // , "com.thinkbiganalytics.server" - this will load the whole kylo-services app
                  // , "com.thinkbiganalytics.kerberos" - this too will scan 'com.thinkbiganalytics'
                  // , "com.thinkbiganalytics.nifi.rest.config"
