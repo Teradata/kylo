@@ -438,7 +438,7 @@ chmod +x ${INSTALL_HOME}/kylo-install-inspector/bin/run-kylo-install-inspector.s
 if [ "$linux_type" == "chkonfig" ]; then
 cat << EOF > /etc/init.d/kylo-install-inspector
 #! /bin/sh
-# chkconfig: 345 98 21
+# chkconfig: - 98 98
 # description: kylo-install-inspector
 # processname: kylo-install-inspector
 EOF
@@ -449,8 +449,8 @@ cat << EOF > /etc/init.d/kylo-install-inspector
 # Provides:          kylo-install-inspector
 # Required-Start:    $local_fs $network $named $time $syslog
 # Required-Stop:     $local_fs $network $named $time $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
+# Default-Start:
+# Default-Stop:      0 1 2 3 4 5 6
 # Description:       kylo-install-inspector
 ### END INIT INFO
 EOF
@@ -519,7 +519,7 @@ if [ "$linux_type" == "chkonfig" ]; then
     chkconfig --add kylo-install-inspector
     chkconfig kylo-install-inspector off
 elif [ "$linux_type" == "update-rc.d" ]; then
-    update-rc.d kylo-install-inspector defaults
+    update-rc.d kylo-install-inspector disable
 fi
 echo "   - Added service 'kylo-install-inspector'"
 echo "    - Completed kylo-install-inspector install"
