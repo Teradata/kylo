@@ -1,6 +1,9 @@
 import * as angular from 'angular';
-import { moduleName } from './module-name';
 import BroadcastService from "./broadcast-service";
+
+import {moduleName} from './module-name';
+
+import "./module"; // ensure module is loaded first
 
 export default class AddButtonService {
     addButtons: any = {};

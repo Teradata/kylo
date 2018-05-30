@@ -1,3 +1,10 @@
+import * as angular from 'angular';
+import "jquery";
+
+import {moduleName} from './module-name';
+
+import "./module"; // ensure module is loaded first
+
 /**
  * Allow different controllers/services to subscribe and notify each other
  *
@@ -7,10 +14,6 @@
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
-import * as angular from 'angular';
-import { moduleName } from './module-name';
-import "jquery";
-
 export default class BroadcastService {
 
     static readonly $inject = ["$rootScope", "$timeout"];
@@ -37,7 +40,7 @@ export default class BroadcastService {
         }
         if (this.waitingEvents[event] == undefined) {
             this.waitingEvents[event] = event;
-            this.$timeout(function () {
+            this.$timeout(() => {
                 this.$rootScope.$emit(event, data);
                 delete this.waitingEvents[event];
             }, waitTime);
@@ -45,22 +48,18 @@ export default class BroadcastService {
     };
     /**
      * Subscribe to some event
-     * @param scope
-     * @param event
-     * @param callback
      */
     subscribe = (scope: any, event: any, callback: any) => {
-        var handler: any = this.$rootScope.$on(event, callback);
-        scope.$on('$destroy', handler);
+        const handler: any = this.$rootScope.$on(event, callback);
+        if (scope != null) {
+            scope.$on('$destroy', handler);
+        }
     };
     /**
      * Subscribe to some event
-     * @param scope
-     * @param event
-     * @param callback
      */
     subscribeOnce = (event: any, callback: any) => {
-        var handler: any = this.$rootScope.$on(event, () => {
+        const handler: any = this.$rootScope.$on(event, () => {
             try {
                 callback();
             } catch (err) {

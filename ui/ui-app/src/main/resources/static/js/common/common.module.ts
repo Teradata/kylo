@@ -10,13 +10,16 @@ import {CovalentMenuModule} from "@covalent/core/menu";
 import {CovalentNotificationsModule} from "@covalent/core/notifications";
 
 import {KyloServicesModule} from "../services/services.module";
+import {AddButtonComponent} from "./add-button/add-button.component";
 import {NotificationMenuComponent} from "./notifications/notification-menu.component";
 
 @NgModule({
     declarations: [
+        AddButtonComponent,
         NotificationMenuComponent
     ],
     entryComponents: [
+        AddButtonComponent,
         NotificationMenuComponent
     ],
     imports: [

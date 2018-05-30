@@ -15,7 +15,7 @@ import "./icon-picker-dialog/icon-picker-dialog";
 import "./draggable/draggable";
 import "./sticky/sticky";
 import "./sticky-tabs/sticky-tabs";
-import "./add-button/add-button";
+import "./add-button/angular1";
 import "./fixed-top-right/fixed-top-right";
 import "./ui-router-breadcrumbs/ui-router-breadcrumbs";
 import "./kylo-options/kylo-options";

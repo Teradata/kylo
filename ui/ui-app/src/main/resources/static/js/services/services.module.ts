@@ -2,7 +2,7 @@ import {NgModule} from "@angular/core";
 import {BrowserModule} from "@angular/platform-browser";
 import {UpgradeModule} from "@angular/upgrade/static";
 
-import {notificationServiceProvider} from "./angular2";
+import {addButtonServiceProvider, broadcastServiceProvider, notificationServiceProvider} from "./angular2";
 
 @NgModule({
     imports: [
@@ -10,6 +10,8 @@ import {notificationServiceProvider} from "./angular2";
         UpgradeModule
     ],
     providers: [
+        addButtonServiceProvider,
+        broadcastServiceProvider,
         notificationServiceProvider
     ]
 })
