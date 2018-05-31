@@ -9,7 +9,7 @@ import BroadcastService from "../../services/broadcast-service";
     selector: "add-button",
     template: `
       <button mat-button
-              class="md-fab md-fab-bottom-right kylo-add-button"
+              class="md-button md-fab md-fab-bottom-right kylo-add-button md-kylo-theme"
               aria-label="Add" (click)="onClickAddButton($event)">
         <mat-icon>add</mat-icon>
       </button>`
@@ -21,14 +21,13 @@ export class AddButtonComponent {
     constructor(private elRef: ElementRef,
                 private $transitions: TransitionService,
                 private addButtonService: AddButtonService,
-                private broadcastService: BroadcastService) {
-    }
+                private broadcastService: BroadcastService) {}
 
     ngOnInit() {
 
-        this.broadcastService.subscribe(null, this.addButtonService.NEW_ADD_BUTTON_EVENT, () => this.updateShowState);
-        this.broadcastService.subscribe(null, this.addButtonService.HIDE_ADD_BUTTON_EVENT, () => this.hideButton);
-        this.broadcastService.subscribe(null, this.addButtonService.SHOW_ADD_BUTTON_EVENT, () => this.showButton);
+        this.broadcastService.subscribe(null, this.addButtonService.NEW_ADD_BUTTON_EVENT, () => this.updateShowState());
+        this.broadcastService.subscribe(null, this.addButtonService.HIDE_ADD_BUTTON_EVENT, () => this.hideButton());
+        this.broadcastService.subscribe(null, this.addButtonService.SHOW_ADD_BUTTON_EVENT, () => this.showButton());
 
         this.$transitions.onSuccess({}, (transition: any) => {
             const toState = transition.to();
@@ -41,7 +40,7 @@ export class AddButtonComponent {
                 this.updateShowState();
             }
         });
-
+        
     }
 
     onClickAddButton(event: any) {
