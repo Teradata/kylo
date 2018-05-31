@@ -1,34 +1,33 @@
-import {HttpClient} from "@angular/common/http";
-import {Component, Input, OnInit} from "@angular/core";
-import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
-import {DataSource} from '../../api/models/datasource';
-import {StateService} from "@uirouter/angular";
+import {Component, Input} from "@angular/core";
+import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from '@covalent/core/data-table';
+import {RemoteFile} from '../files/remote-file';
+import {SelectionDialogComponent} from '../files/dialog/selection-dialog.component';
 import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService} from '../../api/services/selection.service';
-import {MatDialog} from '@angular/material/dialog';
-import {SelectionDialogComponent} from './dialog/selection-dialog.component';
-import {RemoteFile, RemoteFileDescriptor} from './remote-file';
+import {HttpClient} from '@angular/common/http';
+import {DataSource} from '../../api/models/datasource';
 import {Node} from '../api/node';
-
+import {StateService} from '@uirouter/angular';
+import {MatDialog} from '@angular/material/dialog';
+import {DatabaseObject, DatabaseObjectDescriptor} from './database-object';
 
 @Component({
-    selector: "remote-files",
-    styleUrls: ["js/feed-mgr/catalog/datasource/files/remote-files.component.css"],
-    templateUrl: "js/feed-mgr/catalog/datasource/files/remote-files.component.html"
+    selector: "data-source-select",
+    styleUrls: ["js/feed-mgr/catalog/datasource/jdbc/jdbc.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/jdbc/jdbc.component.html"
 })
-export class RemoteFilesComponent implements OnInit {
-
+export class JdbcComponent {
     @Input()
     public datasource: DataSource;
 
     @Input()
     path: string;
 
-    columns: ITdDataTableColumn[] = RemoteFileDescriptor.COLUMNS;
-    sortBy = this.columns[1].name;
+    columns: ITdDataTableColumn[] = DatabaseObjectDescriptor.COLUMNS;
+    sortBy = this.columns[0].name;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
-    filteredFiles: RemoteFile[] = [];
+    filteredFiles: DatabaseObject[] = [];
     filteredTotal = 0;
     fromRow: number = 1;
     currentPage: number = 1;
@@ -39,7 +38,7 @@ export class RemoteFilesComponent implements OnInit {
     selectedDescendantCounts: Map<string, number> = new Map<string, number>();
 
     paths: string[];
-    files: RemoteFile[] = [];
+    files: DatabaseObject[] = [];
     private root: Node;
     private node: Node;
     private pathNodes: Node[] = [];
@@ -52,9 +51,10 @@ export class RemoteFilesComponent implements OnInit {
     public ngOnInit(): void {
         this.initNodes();
         const node = this.node;
-        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
-            .subscribe((data: RemoteFile[]) => {
-                this.files = data;
+        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/jdbc?path=" + encodeURIComponent(this.path), {})
+            .subscribe((data: Array) => {
+                console.log('received db objects', data);
+                this.files = data.map(obj => new DatabaseObject(obj.name, obj.type));
                 for (let file of this.files) {
                     node.addChild(new Node(file.name));
                 }
@@ -95,9 +95,10 @@ export class RemoteFilesComponent implements OnInit {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
 
-    rowClick(file: RemoteFile): void {
-        if (file.directory) {
-            this.browse(this.path + "/" + file.name);
+    rowClick(obj: DatabaseObject): void {
+        console.log('row click, obj', obj);
+        if (!obj.isColumn()) {
+            this.browse(this.path + "/" + obj.name);
         }
     }
 
@@ -106,7 +107,7 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     private browse(path: string) {
-        this.state.go("catalog.datasource.browse", {path: encodeURIComponent(path)}, {notify: false, reload: false});
+        this.state.go("catalog.datasource.jdbc", {path: encodeURIComponent(path)}, {notify: false, reload: false});
     }
 
     isChecked(fileName: string) {
@@ -183,4 +184,5 @@ export class RemoteFilesComponent implements OnInit {
         newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
         this.filteredFiles = newData;
     }
+
 }

@@ -19,7 +19,12 @@ export const catalogStates: Ng2StateDeclaration[] = [
             }
         },
         resolve: [
-            {token: "datasources", deps: [CatalogService], resolveFn: (catalog: CatalogService) => catalog.getDataSources().toPromise()}
+            {token: "datasources", deps: [CatalogService], resolveFn: (catalog: CatalogService) =>
+                {
+                    console.log('/catalog resolve');
+                    return catalog.getDataSources().toPromise();
+                }
+            }
         ],
         data: {
             breadcrumbRoot: true,
@@ -35,6 +40,7 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 token: "connectors",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
+                    console.log('/connectors resolve');
                     loading.register(ConnectorsComponent.LOADER);
                     return catalog.getConnectors()
                         .pipe(finalize(() => loading.resolve(ConnectorsComponent.LOADER)))
@@ -95,5 +101,10 @@ export const catalogStates: Ng2StateDeclaration[] = [
         name: "catalog.datasource.browse.**",
         url: "/browse",
         loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesModule"
+    },
+    {
+        name: "catalog.datasource.jdbc.**",
+        url: "/jdbc",
+        loadChildren: "feed-mgr/catalog/datasource/jdbc/jdbc.module#JdbcModule"
     }
 ];
