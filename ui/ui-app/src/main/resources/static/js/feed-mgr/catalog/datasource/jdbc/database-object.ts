@@ -1,4 +1,5 @@
 import {ITdDataTableColumn} from '@covalent/core/data-table';
+import {BrowserObject} from '../api/browser-object';
 
 enum DatabaseObjectType {
     Schema = "schema",
@@ -6,18 +7,17 @@ enum DatabaseObjectType {
     Column = "column"
 }
 
-export class DatabaseObject {
-    path: string;
-    name: string;
+export class DatabaseObject extends BrowserObject {
     type: DatabaseObjectType;
 
     constructor(name: string, type: DatabaseObjectType) {
+        super();
         this.name = name;
         this.type = type;
     }
 
-    isColumn(): boolean {
-        return this.type === DatabaseObjectType.Column;
+    canBeParent(): boolean {
+        return this.type !== DatabaseObjectType.Column;
     }
 }
 

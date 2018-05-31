@@ -7,16 +7,15 @@ import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService} from '../../api/services/selection.service';
 import {MatDialog} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
-import {RemoteFile, RemoteFileDescriptor} from './remote-file';
-import {Node} from '../api/node';
-
+import {Node} from './node';
+import {BrowserObject} from './browser-object';
 
 @Component({
     selector: "remote-files",
-    styleUrls: ["js/feed-mgr/catalog/datasource/files/remote-files.component.css"],
-    templateUrl: "js/feed-mgr/catalog/datasource/files/remote-files.component.html"
+    styleUrls: ["js/feed-mgr/catalog/datasource/api/browser.component.css"],
+    templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
 })
-export class RemoteFilesComponent implements OnInit {
+export class BrowserComponent implements OnInit {
 
     @Input()
     public datasource: DataSource;
@@ -24,11 +23,11 @@ export class RemoteFilesComponent implements OnInit {
     @Input()
     path: string;
 
-    columns: ITdDataTableColumn[] = RemoteFileDescriptor.COLUMNS;
-    sortBy = this.columns[1].name;
+    columns: ITdDataTableColumn[];
+    sortBy: string;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
-    filteredFiles: RemoteFile[] = [];
+    filteredFiles: BrowserObject[] = [];
     filteredTotal = 0;
     fromRow: number = 1;
     currentPage: number = 1;
@@ -39,7 +38,7 @@ export class RemoteFilesComponent implements OnInit {
     selectedDescendantCounts: Map<string, number> = new Map<string, number>();
 
     paths: string[];
-    files: RemoteFile[] = [];
+    files: BrowserObject[] = [];
     private root: Node;
     private node: Node;
     private pathNodes: Node[] = [];
@@ -50,26 +49,69 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        this.columns = this.getColumns();
+        this.sortBy = this.getSortByColumnName();
         this.initNodes();
         const node = this.node;
-        this.http.get("/proxy/v1/catalog/datasource/" + this.datasource.id + "/files?path=" + encodeURIComponent(this.path), {})
-            .subscribe((data: RemoteFile[]) => {
-                this.files = data;
-                for (let file of this.files) {
-                    node.addChild(new Node(file.name));
-                }
+        this.http.get(this.getUrl() + encodeURIComponent(this.path), {})
+            .subscribe((data: Array<any>) => {
+                this.files = data.map(obj => {
+                    const dbObj = this.mapServerResponseToBrowserObject(obj);
+                    node.addChild(new Node(dbObj.name));
+                    return dbObj;
+                });
                 this.init();
             });
     }
 
-    private init() {
+    /**
+     * To be implemented by subclasses
+     * @returns {undefined} column name for initial sort of the table
+     */
+    getSortByColumnName(): string {
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses
+     * @returns {undefined} column descriptions
+     */
+    getColumns(): ITdDataTableColumn[] {
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses
+     * @returns {string}
+     */
+    getStateName(): string {
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses
+     * @returns {string} request URL from where to get the data
+     */
+    getUrl(): string {
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses
+     * @param obj object returned by the server
+     * @returns {BrowserObject} must be a subclass of BrowserObject
+     */
+    mapServerResponseToBrowserObject(obj: any): BrowserObject {
+        return undefined;
+    }
+
+    private init(): void {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
         this.filter();
     }
 
-    private initNodes() {
-        console.log('init nodes');
+    private initNodes(): void {
         this.root = this.selectionService.get(this.datasource.id);
         if (this.root === undefined) {
             this.root = new Node(this.datasource.template.paths[0]);
@@ -85,31 +127,31 @@ export class RemoteFilesComponent implements OnInit {
         this.pathNodes = this.pathNodes.reverse();
     }
 
-    private initSelectedDescendantCounts() {
+    private initSelectedDescendantCounts(): void {
         for (let node of this.node.children()) {
             this.selectedDescendantCounts.set(node.name, node.countSelectedDescendants());
         }
     }
 
-    private initIsParentSelected() {
+    private initIsParentSelected(): void {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
 
-    rowClick(file: RemoteFile): void {
-        if (file.directory) {
-            this.browse(this.path + "/" + file.name);
+    rowClick(obj: BrowserObject): void {
+        if (obj.canBeParent()) {
+            this.browse(this.path + "/" + obj.name);
         }
     }
 
-    browseTo(node: Node) {
+    browseTo(node: Node): void {
         this.browse(node.path);
     }
 
-    private browse(path: string) {
-        this.state.go("catalog.datasource.browse", {path: encodeURIComponent(path)}, {notify: false, reload: false});
+    private browse(path: string): void {
+        this.state.go(this.getStateName(), {path: encodeURIComponent(path)}, {notify: false, reload: false});
     }
 
-    isChecked(fileName: string) {
+    isChecked(fileName: string): boolean {
         return this.isParentSelected || this.node.isChildSelected(fileName);
     }
 
@@ -118,7 +160,7 @@ export class RemoteFilesComponent implements OnInit {
         this.init();
     }
 
-    onToggleRow(event: any, file: RemoteFile): void {
+    onToggleRow(event: any, file: BrowserObject): void {
         this.node.toggleChild(file.name, event.checked);
         this.init();
     }
@@ -169,7 +211,7 @@ export class RemoteFilesComponent implements OnInit {
     }
 
     private filter(): void {
-        let newData: any[] = this.files;
+        let newData: BrowserObject[] = this.files;
         let excludedColumns: string[] = this.columns
             .filter((column: ITdDataTableColumn) => {
                 return ((column.filter === undefined && column.hidden === true) ||

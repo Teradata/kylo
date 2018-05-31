@@ -1,13 +1,25 @@
 import {DatePipe} from '@angular/common';
 import {TdBytesPipe} from '@covalent/core/common';
 import {ITdDataTableColumn} from '@covalent/core/data-table';
+import {BrowserObject} from '../api/browser-object';
 
-export interface RemoteFile {
-    name: string;
+export class RemoteFile extends BrowserObject {
     directory: boolean;
     length: number;
     modificationTime: Date;
-    path: string;
+
+    constructor(name: string, path: string, directory: boolean, length: number, modificationTime: Date) {
+        super();
+        this.name = name;
+        this.path = path;
+        this.directory = directory;
+        this.length = length;
+        this.modificationTime = modificationTime;
+    }
+
+    canBeParent(): boolean {
+        return this.directory;
+    }
 }
 
 export class RemoteFileDescriptor {

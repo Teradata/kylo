@@ -20,7 +20,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
-import {SelectionDialogComponent} from './dialog/selection-dialog.component';
+import {SelectionDialogComponent} from '../api/dialog/selection-dialog.component';
 
 @NgModule({
     declarations: [
