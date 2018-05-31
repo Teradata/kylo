@@ -20,6 +20,8 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import { RegisterTemplateServiceFactory } from '../../../services/RegisterTemplateServiceFactory';
+import { FeedService } from '../../../services/FeedService';
+import BroadcastService from '../../../../services/broadcast-service';
 const moduleName = require('feed-mgr/feeds/define-feed/module-name');
 
 export class DefineFeedDetailsController {
@@ -89,10 +91,10 @@ export class DefineFeedDetailsController {
     static readonly $inject = ["$scope", "$http", "RestUrlService", "FeedService", "RegisterTemplateService",
         "FeedInputProcessorOptionsFactory", "BroadcastService", "StepperService", "FeedDetailsProcessorRenderingHelper"];
 
-    constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private FeedService: any, private registerTemplateService: RegisterTemplateServiceFactory
-        , private FeedInputProcessorOptionsFactory: any, private BroadcastService: any, private StepperService: any,
+    constructor(private $scope: IScope, private $http: angular.IHttpService, private RestUrlService: any, private feedService: FeedService, private registerTemplateService: RegisterTemplateServiceFactory
+        , private FeedInputProcessorOptionsFactory: any, private broadcastService: BroadcastService, private StepperService: any,
         private FeedDetailsProcessorRenderingHelper: any) {
-        this.model = FeedService.createFeedModel;
+        this.model = this.feedService.createFeedModel;
 
         var watchers = [];
 
@@ -100,7 +102,7 @@ export class DefineFeedDetailsController {
 
         var inputDatabaseType = ["com.thinkbiganalytics.nifi.GetTableData"]
 
-        BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, (event: any, index: any) => {
+        this.broadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, (event: any, index: any) => {
             if (index == parseInt(this.stepIndex)) {
                 this.validate();
             } 
@@ -162,7 +164,7 @@ export class DefineFeedDetailsController {
                 .filter((property) => {
                     return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
                 })
-                .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
+                .each((property:any) => this.feedService.findControllerServicesForProperty(property));
 
         } else {
             this.registerTemplateService.initializeProperties(template, 'create', this.model.properties);
@@ -201,7 +203,7 @@ export class DefineFeedDetailsController {
             .filter((property) => {
                 return angular.isObject(property.propertyDescriptor) && angular.isString(property.propertyDescriptor.identifiesControllerService);
             })
-            .each((property:any) => this.FeedService.findControllerServicesForProperty(property));
+            .each((property:any) => this.feedService.findControllerServicesForProperty(property));
 
         this.loading = false;
         this.model.isStream = template.isStream;

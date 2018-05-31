@@ -2,6 +2,7 @@ import * as angular from 'angular';
 import * as _ from 'underscore';
 import 'pascalprecht.translate';
 import AccessControlService from '../../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/feeds/edit-feed/module-name');
 var directive = function() {
     return {
@@ -111,7 +112,7 @@ export class FeedAdditionalPropertiesController {
         };
 
 
-    constructor (private $scope:any,private $q:any, private accessControlService:AccessControlService, private EntityAccessControlService:any,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
+    constructor (private $scope:any,private $q:any, private accessControlService:AccessControlService, private entityAccessControlService:EntityAccessControlService,private FeedService:any, private FeedTagService:any, private FeedSecurityGroups:any, private $filter:any) {
        // var self = this;
         this.tagChips.selectedItem = null;
         this.tagChips.searchText = null;

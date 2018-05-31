@@ -2,11 +2,12 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../services/AccessControlService';
+import { EntityAccessControlService } from '../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/module-name');
 
 // export class CategoriesService {
     export default class CategoriesService {
-          loadAll= function() {
+          loadAll= () => {
             if (!this.loading) {
                 this.loading = true;
                 this.loadingRequest = this.$http.get(this.RestUrlService.CATEGORIES_URL).then((response:any) =>{
@@ -18,7 +19,7 @@ const moduleName = require('feed-mgr/module-name');
                         //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                         //if the user doesnt have this permission they cannot create feeds under this category
                         if (this.accessControlService.isEntityAccessControlled()) {
-                            if (this.accessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
+                            if (this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, category, "category")) {
                                 category.createFeed = true;
                             }
                         }
@@ -54,10 +55,10 @@ const moduleName = require('feed-mgr/module-name');
                  * @type {CategoryModel}
                  */
                 model: any= {};
-                init= function() {
+                init= () => {
                     this.reload();
                 }
-                reload=function() {
+                reload=() => {
                     //var self = this;
                     return this.loadAll().then((categories:any)=>{
                         return categories = categories;
@@ -70,7 +71,7 @@ const moduleName = require('feed-mgr/module-name');
                  * @param savedCategory
                  * @return {boolean}
                  */
-                update= function(savedCategory:any){
+                update= (savedCategory:any) => {
                     var self = this;
                     if(angular.isDefined(savedCategory.id)) {
                         var category:any = _.find(self.categories, (category: any)=>{
@@ -81,7 +82,7 @@ const moduleName = require('feed-mgr/module-name');
                         //if under entity access control we need to check if the user has the "CREATE_FEED" permission associated with the selected category.
                         //if the user doesnt have this permission they cannot create feeds under this category
                         if (this.accessControlService.isEntityAccessControlled()) {
-                            if (this.accessControlService.hasEntityAccess(this.EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
+                            if (this.accessControlService.hasEntityAccess(EntityAccessControlService.ENTITY_ACCESS.CATEGORY.CREATE_FEED, savedCategory, "category")) {
                                 savedCategory.createFeed = true;
                             }
                         }
@@ -103,17 +104,17 @@ const moduleName = require('feed-mgr/module-name');
                     }
                     return false;
                 }
-                delete= function (category:any) {
+                delete= (category:any) => {
                     var promise = this.$http({
                         url: this.RestUrlService.CATEGORIES_URL + "/" + category.id,
                         method: "DELETE"
                     });
                     return promise;
                 }
-                save= function (category:any) {
+                save= (category:any) => {
                     //prepare access control changes if any
-                    this.EntityAccessControlService.updateRoleMembershipsForSave(category.roleMemberships);
-                    this.EntityAccessControlService.updateRoleMembershipsForSave(category.feedRoleMemberships);
+                    this.entityAccessControlService.updateRoleMembershipsForSave(category.roleMemberships);
+                    this.entityAccessControlService.updateRoleMembershipsForSave(category.feedRoleMemberships);
                     var promise = this.$http({
                         url: this.RestUrlService.CATEGORIES_URL,
                         method: "POST",
@@ -124,7 +125,7 @@ const moduleName = require('feed-mgr/module-name');
                     });
                     return promise;
                 }
-                populateRelatedFeeds= function (category:any) {
+                populateRelatedFeeds= (category:any) => {
                     var deferred = this.$q.defer();
                     this.getRelatedFeeds(category).then((response:any)=>{
                         category.relatedFeedSummaries = response.data || [];
@@ -134,17 +135,17 @@ const moduleName = require('feed-mgr/module-name');
                     })
                     return deferred.promise;
                 }
-                getRelatedFeeds= function (category:any) {
+                getRelatedFeeds= (category:any) => {
                     return this.$http.get(this.RestUrlService.CATEGORIES_URL + "/" + category.id + "/feeds");
                 }
-                findCategory= function (id:any) {
+                findCategory= (id:any) => {
                     var self = this;
                     var category:any = _.find(self.categories, (category: any)=> {
                         return category.id == id;
                     });
                     return category;
                 }
-                findCategoryByName= function (name:any) {
+                findCategoryByName= (name:any) => {
                     if (name != undefined) {
                         var self = this;
                         var category:any = _.find(self.categories, (category: any)=> {
@@ -154,7 +155,7 @@ const moduleName = require('feed-mgr/module-name');
                     }
                     return null;
                 }
-                findCategoryBySystemName= function (systemName:any) {
+                findCategoryBySystemName= (systemName:any) => {
                   if (systemName != undefined) {
                       var self = this;
                       var category:any = _.find(self.categories, (category: any)=> {
@@ -164,7 +165,7 @@ const moduleName = require('feed-mgr/module-name');
                   }
                   return null;
                 }
-                getCategoryBySystemName=function(systemName:any){
+                getCategoryBySystemName=(systemName:any)=> {
                     var self = this;
                     var deferred = this.$q.defer();
                     var categoryCache = self.findCategoryBySystemName(systemName);
@@ -180,7 +181,7 @@ const moduleName = require('feed-mgr/module-name');
                     }
                     return deferred.promise;
                 }
-                getCategoryById=function(categoryId:any) {
+                getCategoryById=(categoryId:any) => {
                     var deferred = this.$q.defer();
                     this.$http.get(this.RestUrlService.CATEGORY_DETAILS_BY_ID_URL(categoryId))
                         .then((response:any)=>{
@@ -190,7 +191,7 @@ const moduleName = require('feed-mgr/module-name');
                     return deferred.promise;
                 }
                 categories= new Array();
-                querySearch= function (query:any) {
+                querySearch= (query:any) => {
                     var self = this;
                     var deferred = this.$q.defer();
                     if (self.categories.length == 0) {
@@ -219,7 +220,7 @@ const moduleName = require('feed-mgr/module-name');
                  *
                  * @returns {CategoryModel} the new category model
                  */
-                newCategory= function () {
+                newCategory= () => {
                     let data:any = {
                         id: null,
                         name: null,
@@ -242,7 +243,7 @@ const moduleName = require('feed-mgr/module-name');
                  *
                  * @returns {Promise} for the user fields
                  */
-                getUserFields= function () {
+                getUserFields= () => {
                     return this.$http.get(this.RestUrlService.GET_CATEGORY_USER_FIELD_URL)
                         .then((response:any)=>{
                             return response.data;
@@ -254,11 +255,11 @@ const moduleName = require('feed-mgr/module-name');
                  * @param entity the entity to check. if its undefined it will use the current category in the model
                  * @returns {*} a promise, or a true/false.  be sure to wrap this with a $q().then()
                  */
-                hasEntityAccess= function (permissionsToCheck:any, entity:any) {
+                hasEntityAccess= (permissionsToCheck:any, entity:any) => {
                     if (entity == undefined) {
-                        entity = this.data.model;
+                        entity = this.model;
                     }
-                    return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.CATEGORY);
+                    return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.CATEGORY);
                 }
            // };
 
@@ -314,43 +315,14 @@ const moduleName = require('feed-mgr/module-name');
             }
             return builder;
         }
-    //return this.data;
-      
+        static readonly $inject = ["$q","$http","RestUrlService","AccessControlService","EntityAccessControlService"];
         constructor(private $q:any, 
                     private $http:any, 
                     private RestUrlService:any,
                     private accessControlService:AccessControlService, 
-                    private EntityAccessControlService:any) {
-
-            //EntityAccessControlService.ENTITY_ACCESS.CHANGE_CATEGORY_PERMISSIONS
-            /**
-             * Utility functions for managing categories.
-             *
-             * @type {Object}
-             */
-            /**
-             * A category for grouping similar feeds.
-             *
-             * @typedef {Object} CategoryModel
-             * @property {string|null} id the unique identifier
-             * @property {string|null} name a human-readable name
-             * @property {string|null} description a sentence describing the category
-             * @property {string|null} icon the name of a Material Design icon
-             * @property {string|null} iconColor the color of the icon
-             * @property {Object.<string,string>} userProperties map of user-defined property name to value
-             * @property {Array<Object>} relatedFeedSummaries the feeds within this category
-             */
-
-           this.init();
+                    private entityAccessControlService:EntityAccessControlService) {
+                this.init();
     } // end of constructor
  }
 
-angular.module(moduleName).factory('CategoriesService',["$q","$http","RestUrlService","AccessControlService","EntityAccessControlService",
-                                    ($q: any,$http: any, 
-                                    RestUrlService: any,
-                                    AccessControlService: any , 
-                                    EntityAccessControlService: any)=> new CategoriesService($q, 
-                                    $http, 
-                                    RestUrlService,
-                                    AccessControlService, 
-                                    EntityAccessControlService)]);
+angular.module(moduleName).service('CategoriesService',CategoriesService);

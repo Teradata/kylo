@@ -1,6 +1,7 @@
 import * as angular from 'angular';
 import * as _ from "underscore";
 import AccessControlService from '../../../services/AccessControlService';
+import { EntityAccessControlService } from '../../shared/entity-access-control/EntityAccessControlService';
 const moduleName = require('feed-mgr/categories/module-name');
 
 
@@ -36,7 +37,7 @@ export class CategoryAccessControlController {
 
     static readonly $inject = ["$scope", "$q", "$mdToast", "CategoriesService", "AccessControlService", "EntityAccessControlService", "$mdDialog"];
     constructor(private $scope: IScope, private $q: angular.IQService, private $mdToast: angular.material.IToastService, private CategoriesService: any
-        , private accessControlService: AccessControlService, private EntityAccessControlService: any, private $mdDialog: angular.material.IDialogService) {
+        , private accessControlService: AccessControlService, private entityAccessControlService: EntityAccessControlService, private $mdDialog: angular.material.IDialogService) {
 
 
         this.model = CategoriesService.model;
@@ -95,8 +96,8 @@ export class CategoryAccessControlController {
         model.feedRoleMemberships = this.editModel.feedRoleMemberships;
         model.owner = this.editModel.owner;
         model.allowIndexing = this.editModel.allowIndexing;
-        this.EntityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
-        this.EntityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
+        this.entityAccessControlService.updateRoleMembershipsForSave(model.roleMemberships);
+        this.entityAccessControlService.updateRoleMembershipsForSave(model.feedRoleMemberships);
 
         //TODO Open a Dialog showing Category is Saving progress
         this.CategoriesService.save(model).then((response: any) => {

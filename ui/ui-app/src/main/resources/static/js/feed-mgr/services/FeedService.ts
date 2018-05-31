@@ -3,6 +3,7 @@ import * as _ from "underscore";
 import {DomainType} from "./DomainTypesService";
 import {Common} from "../../common/CommonTypes";
 import AccessControlService from "../../services/AccessControlService";
+import { EntityAccessControlService } from "../shared/entity-access-control/EntityAccessControlService";
 /**
  * A cache of the controllerservice Id to its display name.
  * This is used when a user views a feed that has a controller service as a property so it shows the Name (i.e. MySQL)
@@ -491,7 +492,7 @@ export class FeedService {
             copy.nonInputProcessors = null
 
                 //prepare access control changes if any
-                this.EntityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
+                this.entityAccessControlService.updateRoleMembershipsForSave(copy.roleMemberships);
 
             if(copy.cloned){
                 copy.state = null;
@@ -916,7 +917,7 @@ export class FeedService {
                 if (entity == undefined) {
                     // entity = this.model; @Greg model is not defined anywhere inside this service what is it?
                 }
-                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, this.EntityAccessControlService.entityRoleTypes.FEED);
+                return this.accessControlService.hasEntityAccess(permissionsToCheck, entity, EntityAccessControlService.entityRoleTypes.FEED);
             }
 
             /**
@@ -999,7 +1000,7 @@ static $inject = ["$http", "$q", "$mdToast", "$mdDialog", "RestUrlService", "Vis
         private FeedCreationErrorService: any,
         private FeedPropertyService: any,
         private accessControlService: AccessControlService,
-        private EntityAccessControlService: any,
+        private entityAccessControlService: EntityAccessControlService,
         private StateService: any) {
         this.init();
         //return this.data;

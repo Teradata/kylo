@@ -317,7 +317,7 @@ var flowchart: any = {};
 		return nodesViewModel;
 	};
 
-	//
+	// 
 	// View model for a connection.
 	//
 	flowchart.ConnectionViewModel = (connectionDataModel: any, sourceConnector: any, destConnector: any)=>{
@@ -491,7 +491,7 @@ var flowchart: any = {};
 	 * @param {function} [onEditConnectionCallback] the callback to edit a function
 	 * @param {function} [onDeleteSelectedCallback] the callback when the current selection is deleted
 	 */
-	flowchart.ChartViewModel = (chartDataModel:any, onCreateConnectionCallback:any, onEditConnectionCallback:any, onDeleteSelectedCallback:any)=>{
+	flowchart.ChartViewModel = function(chartDataModel:any, onCreateConnectionCallback:any, onEditConnectionCallback:any, onDeleteSelectedCallback:any){
 		//
 		// Find a specific node within the chart.
 		//
