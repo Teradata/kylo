@@ -37,8 +37,6 @@ export class DataSourcesComponent {
 
     constructor(private catalog: CatalogService, private dataTable: TdDataTableService, private dialog: TdDialogService, private loading: TdLoadingService,
                 private state: StateService, private $$angularInjector: Injector) {
-        console.log('data sources component constructor');
-
         // Register Add button
         let accessControlService = $$angularInjector.get("AccessControlService");
         let addButtonService = $$angularInjector.get("AddButtonService");
@@ -53,7 +51,6 @@ export class DataSourcesComponent {
     }
 
     public ngOnInit() {
-        console.log('data sources component oninit');
         this.filter();
     }
 

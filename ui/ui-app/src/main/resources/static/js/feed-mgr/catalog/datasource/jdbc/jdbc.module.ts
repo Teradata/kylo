@@ -19,18 +19,17 @@ import {MatButtonModule} from '@angular/material/button';
 import {MatSelectModule} from '@angular/material/select';
 import {CovalentPagingModule} from '@covalent/core/paging';
 import {CommonModule} from '@angular/common';
-import {SelectionDialogComponent} from '../api/dialog/selection-dialog.component';
+import {BrowserModule} from '../api/browser.module';
 
 @NgModule({
     declarations: [
         JdbcComponent,
-        SelectionDialogComponent
     ],
     entryComponents: [
         JdbcComponent,
-        SelectionDialogComponent
     ],
     imports: [
+        BrowserModule,
         FormsModule,
         ReactiveFormsModule,
         CovalentDataTableModule,
