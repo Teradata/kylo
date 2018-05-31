@@ -22,7 +22,9 @@ package com.thinkbiganalytics.integration.catalog;
 
 import com.thinkbiganalytics.integration.IntegrationTestBase;
 import com.thinkbiganalytics.kylo.catalog.rest.controller.DataSetController;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.CoreMatchers;
@@ -36,7 +38,6 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +49,16 @@ public class DataSetIT extends IntegrationTestBase {
      */
     @Test
     public void testUpload() {
-        final String id = UUID.randomUUID().toString();
+        // Create a data set
+        final DataSet request = new DataSet();
+        request.setDataSource(new DataSource());
+        request.getDataSource().setId("local-files");
+
+        final DataSet dataSet = given(DataSetController.BASE)
+            .when().body(request).post()
+            .then().statusCode(200)
+            .extract().as(DataSet.class);
+        final String id = dataSet.getId();
 
         // Test empty data set
         List<DataSetFile> files = listUploads(id);
