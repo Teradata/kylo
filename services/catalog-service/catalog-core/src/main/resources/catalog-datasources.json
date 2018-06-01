@@ -129,6 +129,11 @@
     "title": "Local Files",
     "connector": {
       "id": "file-upload"
+    },
+    "template": {
+      "paths": [
+        "file:/tmp/kylo-upload"
+      ]
     }
   }
 ]
