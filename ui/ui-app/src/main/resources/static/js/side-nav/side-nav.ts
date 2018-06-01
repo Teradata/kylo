@@ -122,6 +122,27 @@ export class directive implements ng.IDirective {
                 return menu
             }
 
+            /**
+             * Build the Marketplace Menu
+             * @param allowed
+             */
+            let buildMarketplaceMenu: any=()=>{
+
+                let links: any[] = [];
+                links.push({sref: "marketplace-templates", type: "link", icon: "storage", text: this.$filter('translate')('views.marketplace.templates'), defaultActive: false, permission: this.AccessControlService.DATASOURCE_ACCESS});
+                links.push({sref: "marketplace-feeds", type: "link", icon: "linear_scale", text: this.$filter('translate')('views.marketplace.feeds'), defaultActive: false, permission: this.AccessControlService.FEEDS_ADMIN});
+                addExtensionLinks(MENU_KEY.MKTPLC, links);
+                let menu = ({type:'toggle',
+                    text: this.$filter('translate')('views.main.marketplace'),
+                    narrowText:this.$filter('translate')('views.main.marketplace-narrow'),
+                    expanded:false,
+                    links:links,
+                });
+                menu.links = links;
+                menuMap[MENU_KEY.MKTPLC] = menu;
+                return menu
+            }
+
     let buildSideNavMenu: any =()=> {
         var menu = [];
 
@@ -131,6 +152,8 @@ export class directive implements ng.IDirective {
         menu.push(buildOpsManagerMenu());
         menu.push(buildFeedManagerMenu());
         menu.push(buildAdminMenu());
+        menu.push(buildMarketplaceMenu());
+
         buildExtensionsMenu(menu);
         buildMenuStateMap(menu);
 
@@ -189,7 +212,7 @@ export class directive implements ng.IDirective {
      */
     let menuMap: any = {};
     
-    let MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN"}
+    let MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN","MKTPLC":"MKTPLC"}
     let extensionsMenus: any = {};  
     /**
      * a pointer to the highlighted menu item

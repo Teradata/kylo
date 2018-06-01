@@ -29,6 +29,8 @@
     "views.main.adminTitle": "Admin",
     "views.main.feedManagerTitle": "Feed Manager",
     "views.main.opsManagerTitle": "Operations",
+    "views.main.marketplace": "Marketplace",
+    "views.main.marketplace-narrow": "Mkt",
     "views.main.access-denied": "Access Deined",
     "views.main.got-it": "Got it!",
     "views.main.accessCategories": "Access Categories",
@@ -770,6 +772,9 @@
     "views.feed-stats-charts.Failed Events": "Failed Events",
     "views.feed-stats-charts.Processor": "Processor",
     "views.feed-stats-charts.Errors": "Errors",
+
+    "views.marketplace.templates": "Templates",
+    "views.marketplace.feeds": "Feeds",
 
     "views.feed-details-delete-dialogDelete": "Delete",
     "views.feed-details-delete-dialogDelete2": "All data for this feed will be permanently deleted.",

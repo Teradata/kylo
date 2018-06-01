@@ -777,6 +777,12 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
             url: '/catalog',
             loadChildren: 'feed-mgr/catalog/catalog.module#CatalogModule'
         });
+
+        $stateProvider.state({
+            name: 'marketplace-templates.**',
+            url: '/marketplace-templates',
+            loadChildren: 'marketplace/templates/templates.module#MarketplaceTemplatesModule'
+        });
     }
 
 runFn($rootScope: any, $state: any, $location: any, $transitions: any,$timeout: any, $q: any,
