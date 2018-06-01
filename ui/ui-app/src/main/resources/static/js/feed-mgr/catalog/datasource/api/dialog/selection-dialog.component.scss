@@ -1,3 +1,5 @@
+@import '../../../../../../assets/theme';
+
 .selection-dialog-header {
   margin-bottom: 0;
 }
@@ -9,6 +11,6 @@
 }
 
 .remove-row-button:hover {
-  color: red;
+  color: mat-color($warn);
   font-size: 28px;
 }
