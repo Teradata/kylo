@@ -74,7 +74,6 @@ export const catalogStates: Ng2StateDeclaration[] = [
                 token: "datasources",
                 deps: [CatalogService, StateService, TdLoadingService],
                 resolveFn: (catalog: CatalogService, state: StateService, loading: TdLoadingService) => {
-                    console.log('resolve');
                     loading.register(DataSourcesComponent.LOADER);
                     return catalog.getDataSources()
                         .pipe(finalize(() => loading.resolve(DataSourcesComponent.LOADER)))

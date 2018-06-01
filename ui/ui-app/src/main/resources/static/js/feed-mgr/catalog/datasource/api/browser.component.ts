@@ -1,6 +1,6 @@
 import {HttpClient} from "@angular/common/http";
 import {Component, Input, OnInit} from "@angular/core";
-import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
+import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder} from "@covalent/core/data-table";
 import {DataSource} from '../../api/models/datasource';
 import {StateService} from "@uirouter/angular";
 import {IPageChangeEvent} from '@covalent/core/paging';
@@ -9,6 +9,7 @@ import {MatDialog} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {Node} from './node';
 import {BrowserObject} from './browser-object';
+import {BrowserColumn} from './browser-column';
 
 @Component({
     selector: "remote-files",
@@ -23,7 +24,7 @@ export class BrowserComponent implements OnInit {
     @Input()
     path: string;
 
-    columns: ITdDataTableColumn[];
+    columns: BrowserColumn[];
     sortBy: string;
     sortOrder: TdDataTableSortingOrder = TdDataTableSortingOrder.Ascending;
     searchTerm: string = '';
@@ -76,7 +77,7 @@ export class BrowserComponent implements OnInit {
      * To be implemented by subclasses
      * @returns {undefined} column descriptions
      */
-    getColumns(): ITdDataTableColumn[] {
+    getColumns(): BrowserColumn[] {
         return undefined;
     }
 
@@ -213,10 +214,10 @@ export class BrowserComponent implements OnInit {
     private filter(): void {
         let newData: BrowserObject[] = this.files;
         let excludedColumns: string[] = this.columns
-            .filter((column: ITdDataTableColumn) => {
+            .filter((column: BrowserColumn) => {
                 return ((column.filter === undefined && column.hidden === true) ||
                     (column.filter !== undefined && column.filter === false));
-            }).map((column: ITdDataTableColumn) => {
+            }).map((column: BrowserColumn) => {
                 return column.name;
             });
         newData = this.dataTableService.filterData(newData, this.searchTerm, true, excludedColumns);

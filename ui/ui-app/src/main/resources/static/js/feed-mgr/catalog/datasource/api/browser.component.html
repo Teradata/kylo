@@ -49,17 +49,16 @@
 <tr td-data-table-row *ngFor="let file of filteredFiles;" [ngClass]="file.canBeParent() ? 'cursor-pointer' : ''">
   <td td-data-table-cell>
     <mat-checkbox [checked]="isChecked(file.name)" [disabled]="isParentSelected" (change)="onToggleRow($event, file)"></mat-checkbox>
+    <td-notification-count *ngIf="numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="numberOfSelectedDescendants(file.name)"
+                           [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-left: -3px; margin-right: -30px; min-height: 0; min-width: 0"></td-notification-count>
   </td>
   <td td-data-table-cell *ngFor="let column of columns" (click)="rowClick(file)"
       [numeric]="column.numeric" [width]="column.width">
-    <div *ngIf="column.name === 'directory'" >
-      <ng-md-icon fxFlex [icon]="file.canBeParent() ? 'fa-folder' : 'fa-file-r'" style="fill: #607D8B; float: left"></ng-md-icon>
-      <td-notification-count *ngIf="numberOfSelectedDescendants(file.name) > 0" color="accent" [notifications]="numberOfSelectedDescendants(file.name)"
-                             [positionX]="after" [positionY]="bottom" style="margin-top: -15px; margin-right: -30px"></td-notification-count>
+
+    <div class="cell-content">
+      <span class="cell-icon" *ngIf="column.icon"><ng-md-icon [icon]="file.getIcon(column)"></ng-md-icon></span>
+      <span class="cell-value" *ngIf="!column.icon">{{column.format ? column.format(file[column.name]) : file[column.name]}}</span>
     </div>
-    <span *ngIf="column.name !== 'directory'">
-      {{column.format ? column.format(file[column.name]) : file[column.name]}}
-    </span>
   </td>
 </tr>
 </tbody>

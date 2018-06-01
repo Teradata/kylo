@@ -1,11 +1,11 @@
 import {DatabaseObject, DatabaseObjectDescriptor} from './database-object';
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../api/browser-object';
-import {ITdDataTableColumn} from '@covalent/core/data-table';
+import {BrowserColumn} from '../api/browser-column';
 
 export class JdbcComponent extends BrowserComponent {
 
-    getColumns(): ITdDataTableColumn[] {
+    getColumns(): BrowserColumn[] {
         return DatabaseObjectDescriptor.COLUMNS;
     }
 

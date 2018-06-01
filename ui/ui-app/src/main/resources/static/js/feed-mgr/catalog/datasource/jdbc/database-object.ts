@@ -1,5 +1,5 @@
-import {ITdDataTableColumn} from '@covalent/core/data-table';
 import {BrowserObject} from '../api/browser-object';
+import {BrowserColumn} from '../api/browser-column';
 
 enum DatabaseObjectType {
     Schema = "schema",
@@ -23,7 +23,7 @@ export class DatabaseObject extends BrowserObject {
 
 export class DatabaseObjectDescriptor {
 
-    static COLUMNS: ITdDataTableColumn[] = [
+    static COLUMNS: BrowserColumn[] = [
         {name: "name", label: "Name", sortable: true, filter: true},
     ];
 }

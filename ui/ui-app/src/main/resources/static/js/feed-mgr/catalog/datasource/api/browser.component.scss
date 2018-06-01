@@ -20,10 +20,19 @@ ol {
     content: "/";
   }
 }
-
 .selected-items {
   color: rgba(0, 0, 0, 0.54);
   font-size: 12px;
   margin-top: -12px;
   margin-bottom: -20px;
+}
+
+.cell-icon {
+
+  ng-md-icon {
+    fill: #607D8B;
+    display: contents;
+  }
+}
+.cell-value {
 }
