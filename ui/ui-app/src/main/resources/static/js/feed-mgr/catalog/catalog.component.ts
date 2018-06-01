@@ -1,17 +1,6 @@
-import {Component, Input} from "@angular/core";
-
-import {DataSource} from "./api/models/datasource";
+import {Component} from "@angular/core";
 
 @Component({
-    template: `
-      <td-layout>
-        <ui-view>
-          <catalog-datasources [datasources]="datasources"></catalog-datasources>
-        </ui-view>
-      </td-layout>`
+    template: `<td-layout><ui-view></ui-view></td-layout>`
 })
-export class CatalogComponent {
-
-    @Input()
-    public datasources: DataSource[];
-}
+export class CatalogComponent {}
