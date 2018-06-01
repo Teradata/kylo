@@ -32,6 +32,7 @@ import com.thinkbiganalytics.server.upgrade.UpgradeState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.io.Serializable;
@@ -51,9 +52,12 @@ import javax.inject.Inject;
  */
 @Component("hiveColumnsUpgradeAction083")
 @Profile(KyloUpgrader.KYLO_UPGRADE)
+@Order(HiveColumnsUpgradeAction.UPGRADE_ORDER) 
 public class HiveColumnsUpgradeAction implements UpgradeState {
-
+    
     private static final Logger log = LoggerFactory.getLogger(HiveColumnsUpgradeAction.class);
+    
+    public static final int UPGRADE_ORDER = 83 + 2;  // Run second in v0.8.3
 
     /**
      * Provides access to datasources
