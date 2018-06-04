@@ -14,6 +14,7 @@ export class EntityAccessControlController {
     readOnly: boolean = false;
     theForm: any = {};
     roleMembershipsProperty: string = "roleMemberships";
+    entityType:string;
     allowOwnerChange: boolean = true;
     entity: any;
     entityRoleMemberships: any;
@@ -216,9 +217,9 @@ export class EntityAccessControlController {
 
     init = () => {
         if (this.rolesInitialized == false) {
-            this.$q.when(this.entityAccessControlService.mergeRoleAssignments(this.entity, self["entityType"], this.entity[this.roleMembershipsProperty]))
+            this.$q.when(this.entityAccessControlService.mergeRoleAssignments(this.entity, this.entityType, this.entity[this.roleMembershipsProperty]))
                 .then(() => {
-                    this.rolesInitialized == true
+                    this.rolesInitialized = true;
                     this.entityRoleMemberships = this.entity[this.roleMembershipsProperty];
                 });
         }
@@ -233,7 +234,7 @@ angular.module(moduleName).component('entityAccessControl', {
         theForm: '=?',
         readOnly: '=?',
         queryForEntityAccess: '=?'
-    },
+    }, 
     controllerAs: 'vm',
     templateUrl: 'js/feed-mgr/shared/entity-access-control/entity-access-control.html',
     controller: EntityAccessControlController
