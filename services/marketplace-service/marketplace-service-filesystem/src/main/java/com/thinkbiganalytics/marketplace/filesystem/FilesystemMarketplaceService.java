@@ -106,7 +106,7 @@ public class FilesystemMarketplaceService implements MarketplaceService {
             TemplateImporter templateImporter = templateImporterFactory.apply(fileName, content, options);
             ImportTemplate importTemplate = templateImporter.validateAndImport();
             log.info("End template import {} - {}", fileName, importTemplate.isSuccess());
-            String jsonFileName = com.google.common.io.Files.getNameWithoutExtension(fileName) + ".json";
+            String jsonFileName = com.google.common.io.Files.getNameWithoutExtension(fileName) + "-marketplace.json";
             MarketplaceItemMetadata metadata = new MarketplaceItemMetadata(importTemplate.getTemplateName(),
                                                                            importTemplate.getFileName(), "", importTemplate.isSuccess());
             mapper.writeValue(new File(templateLocation + "/" + jsonFileName), metadata);

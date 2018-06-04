@@ -713,8 +713,8 @@ configFn($ocLazyLoadProvider: any, $stateProvider: any, $urlRouterProvider: any)
         });
 
         $stateProvider.state({
-            name: 'marketplace-templates.**',
-            url: '/marketplace-templates',
+            name: 'marketplace.**',
+            url: '/marketplace',
             loadChildren: 'marketplace/templates/templates.module#MarketplaceTemplatesModule'
         });
     }

@@ -19,6 +19,9 @@ import { marketplaceTemplateStates } from "./templates.states";
 import { ListTemplatesComponent } from "./list/list.component";
 import { TemplateService } from "./services/template.service";
 import {MatCheckboxModule} from "@angular/material/checkbox";
+import {CovalentPagingModule} from "@covalent/core/paging";
+import {MatSelectModule} from "@angular/material/select";
+import {FormsModule} from "@angular/forms";
 
 @NgModule({
     declarations: [
@@ -26,12 +29,14 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
         TemplatesComponent
     ],
     imports: [
+        FormsModule,
         CommonModule,
         CovalentDataTableModule,
         CovalentDialogsModule,
         CovalentLayoutModule,
         CovalentLoadingModule,
         CovalentSearchModule,
+        CovalentPagingModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatCardModule,
@@ -40,6 +45,7 @@ import {MatCheckboxModule} from "@angular/material/checkbox";
         MatTabsModule,
         MatToolbarModule,
         MatCheckboxModule,
+        MatSelectModule,
         UIRouterModule.forChild({states: marketplaceTemplateStates})
     ],
     providers:[

@@ -1,6 +1,8 @@
-import {Component, Input} from "@angular/core";
+import {Component, Input, OnInit} from "@angular/core";
 import {TemplateMetadata} from "../api/model/model";
 import {TemplateService} from "../services/template.service";
+import {TdDataTableService} from "@covalent/core/data-table";
+import {IPageChangeEvent} from "@covalent/core/paging";
 
 /**
  * Displays available datasources
@@ -9,11 +11,11 @@ import {TemplateService} from "../services/template.service";
     selector: "list-templates",
     templateUrl: "js/marketplace/templates/list/list.component.html"
 })
-export class ListTemplatesComponent {
+export class ListTemplatesComponent implements OnInit {
 
     static readonly LOADER = "ListTemplatesComponent.LOADER";
 
-    constructor(private templateService: TemplateService){}
+    constructor(private templateService: TemplateService, private dataTableService: TdDataTableService){}
 
     selectedTemplates: string[] = [];
 
@@ -22,6 +24,10 @@ export class ListTemplatesComponent {
      */
     @Input("templates")
     public templates: TemplateMetadata[];
+
+    public ngOnInit() {
+        this.filter();
+    }
 
     /**
      * Install template if not already installed
@@ -51,5 +57,31 @@ export class ListTemplatesComponent {
             }
         }
         console.log(this.selectedTemplates);
+    }
+
+    pageSize: number = 50;
+    currentPage: number = 1;
+    fromRow: number = 1;
+    searchTerm: string = '';
+    filteredTotal = 0;
+    filteredTemplates: TemplateMetadata[] = [];
+
+    page(pagingEvent: IPageChangeEvent): void {
+        this.fromRow = pagingEvent.fromRow;
+        this.currentPage = pagingEvent.page;
+        this.pageSize = pagingEvent.pageSize;
+        this.filter();
+    }
+
+    search(searchTerm: string): void {
+        this.searchTerm = searchTerm;
+        this.filter();
+    }
+
+    private filter(): void {
+        let newData = this.dataTableService.filterData(this.templates, this.searchTerm, true, []);
+        this.filteredTotal = newData.length;
+        newData = this.dataTableService.pageData(newData, this.fromRow, this.currentPage * this.pageSize);
+        this.filteredTemplates = newData;
     }
 }

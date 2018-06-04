@@ -129,8 +129,7 @@ export class directive implements ng.IDirective {
             let buildMarketplaceMenu: any=()=>{
 
                 let links: any[] = [];
-                links.push({sref: "marketplace-templates", type: "link", icon: "storage", text: this.$filter('translate')('views.marketplace.templates'), defaultActive: false, permission: this.AccessControlService.DATASOURCE_ACCESS});
-                links.push({sref: "marketplace-feeds", type: "link", icon: "linear_scale", text: this.$filter('translate')('views.marketplace.feeds'), defaultActive: false, permission: this.AccessControlService.FEEDS_ADMIN});
+                links.push({sref: "marketplace", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.marketplace'), defaultActive: false, permission: this.AccessControlService.DATASOURCE_ACCESS});
                 addExtensionLinks(MENU_KEY.MKTPLC, links);
                 let menu = ({type:'toggle',
                     text: this.$filter('translate')('views.main.marketplace'),

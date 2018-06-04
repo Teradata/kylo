@@ -5,8 +5,8 @@ import { TemplateService } from "./services/template.service";
 
 export const marketplaceTemplateStates: Ng2StateDeclaration[] = [
     {
-        name: "marketplace-templates",
-        url: "/marketplace-templates",
+        name: "marketplace",
+        url: "/marketplace",
         views: {
             "content": {
                 component: TemplatesComponent
