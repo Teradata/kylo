@@ -19,7 +19,7 @@ import {SelectionService} from './services/selection.service';
     providers: [
         CatalogService,
         SelectionService,
-        FileManagerService,
+        FileManagerService
     ]
 })
 export class CatalogApiModule {

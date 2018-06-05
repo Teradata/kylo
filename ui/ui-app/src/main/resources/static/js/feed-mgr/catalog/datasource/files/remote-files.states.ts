@@ -14,7 +14,11 @@ export const remoteFileStates: Ng2StateDeclaration[] = [
                 deps: [StateService],
                 resolveFn: (state: StateService) => {
                     let browseLocation = state.transition.params().path;
-                    return decodeURIComponent(browseLocation);
+                    if(browseLocation != undefined) {
+                        return decodeURIComponent(browseLocation);
+                    }else {
+                        return browseLocation;
+                    }
                 }
             }
         ]

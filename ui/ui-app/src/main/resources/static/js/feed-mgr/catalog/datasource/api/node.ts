@@ -105,6 +105,9 @@ export class Node {
      * @returns {Node}
      */
     findFullPath(fullPath: string): Node {
+        if(this.path ==""){
+            this.path = fullPath;
+        }
         if (this.path === fullPath) {
             return this;
         }

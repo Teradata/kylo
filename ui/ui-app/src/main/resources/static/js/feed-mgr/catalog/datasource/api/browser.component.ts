@@ -52,8 +52,14 @@ export class BrowserComponent implements OnInit {
     public ngOnInit(): void {
         this.columns = this.getColumns();
         this.sortBy = this.getSortByColumnName();
+        if(this.path == undefined || this.path == ""){
+            //attempt to get it from the selection service
+            this.path = this.selectionService.getLastPath(this.datasource.id) || ""
+        }
         this.initNodes();
         const node = this.node;
+
+
         this.http.get(this.getUrl() + encodeURIComponent(this.path), {})
             .subscribe((data: Array<any>) => {
                 this.files = data.map(obj => {
@@ -110,6 +116,8 @@ export class BrowserComponent implements OnInit {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
         this.filter();
+        //mark the last selected path for this datasource.id in the selection service
+        this.selectionService.setLastPath(this.datasource.id,this.path)
     }
 
     private initNodes(): void {
