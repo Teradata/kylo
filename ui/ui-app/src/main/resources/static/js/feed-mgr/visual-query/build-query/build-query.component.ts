@@ -513,7 +513,7 @@ export class QueryBuilderComponent implements OnDestroy, OnInit {
             //
             const coord = this.getNewXYCoord();
 
-            angular.forEach(schemaData.fields, function (attr: any) {
+            angular.forEach(schemaData.fields, (attr: any) => {
                 attr.selected = true;
                 if (this.engine.useNativeDataType) {
                     attr.dataTypeWithPrecisionAndScale = attr.nativeDataType.toLowerCase();

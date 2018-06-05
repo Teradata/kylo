@@ -11,10 +11,10 @@ import {ChainedOperation, DataCategory} from "../wrangler/column-delegate";
 import {TransformValidationResult} from "../wrangler/model/transform-validation-result";
 import {PageSpec, QueryEngine} from "../wrangler/query-engine";
 import {WranglerDataService} from "./services/wrangler-data.service";
-import {ScriptState, StringUtils} from "../wrangler";
+import {ScriptState, StringUtils} from "../wrangler/index";
 
 import BroadcastService from '../../../services/broadcast-service';
-import FeedService from '../../services/FeedService';
+import {FeedService} from '../../services/FeedService';
 import StepperService from '../../../common/stepper/StepperService';
 
 declare const CodeMirror: any;
