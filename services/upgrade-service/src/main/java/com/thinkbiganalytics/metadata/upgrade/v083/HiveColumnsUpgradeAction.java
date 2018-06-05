@@ -23,9 +23,10 @@ package com.thinkbiganalytics.metadata.upgrade.v083;
 import com.thinkbiganalytics.KyloVersion;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DerivedDatasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.server.upgrade.KyloUpgrader;
 import com.thinkbiganalytics.server.upgrade.UpgradeState;
 
@@ -69,7 +70,10 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
      * Provides access to feeds
      */
     @Inject
-    private FeedManagerFeedService feedService;
+    private FeedProvider feedProvider;
+    
+    @Inject
+    private FeedModelTransform modelTransform;
 
     @Override
     public boolean isTargetVersion(KyloVersion version) {
@@ -80,7 +84,8 @@ public class HiveColumnsUpgradeAction implements UpgradeState {
     public void upgradeTo(final KyloVersion startingVersion) {
         log.info("Upgrading hive columns from version: {}", startingVersion);
 
-        feedService.getFeeds().stream()
+        feedProvider.getFeeds().stream()
+            .map(domain -> modelTransform.deserializeFeedMetadata(domain))
             .filter(feed -> Optional.ofNullable(feed.getTable()).map(TableSetup::getTableSchema).map(TableSchema::getFields).isPresent())
             .forEach(feed -> {
                 final TableSchema schema = feed.getTable().getTableSchema();
