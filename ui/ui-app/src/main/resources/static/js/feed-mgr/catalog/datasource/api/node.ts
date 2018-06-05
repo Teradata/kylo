@@ -105,7 +105,7 @@ export class Node {
      * @returns {Node}
      */
     findFullPath(fullPath: string): Node {
-        if (this.path === fullPath) {
+        if (fullPath === undefined || fullPath === '' || this.path === fullPath) {
             return this;
         }
 

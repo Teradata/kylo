@@ -38,7 +38,6 @@ export class BrowserComponent implements OnInit {
     isParentSelected: boolean = false;
     selectedDescendantCounts: Map<string, number> = new Map<string, number>();
 
-    paths: string[];
     files: BrowserObject[] = [];
     private root: Node;
     private node: Node;
@@ -47,21 +46,37 @@ export class BrowserComponent implements OnInit {
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
                 private dialog: MatDialog) {
+        this.columns = this.getColumns();
+        this.sortBy = this.getSortByColumnName();
     }
 
     public ngOnInit(): void {
-        this.columns = this.getColumns();
-        this.sortBy = this.getSortByColumnName();
         this.initNodes();
+        this.init();
+    }
+
+    /**
+     * To be implemented by subclasses, e.g. load data from server.
+     */
+    init(): void {
+
+    }
+
+    /**
+     * Needs to be explicitly called by subclasses to load data from server.
+     *
+     */
+    initData(): void {
         const node = this.node;
-        this.http.get(this.getUrl() + encodeURIComponent(this.path), {})
+        this.http.get(this.getUrl(), {})
             .subscribe((data: Array<any>) => {
-                this.files = data.map(obj => {
-                    const dbObj = this.mapServerResponseToBrowserObject(obj);
-                    node.addChild(new Node(dbObj.name));
-                    return dbObj;
+                this.files = data.map(serverObject => {
+                    const browserObject = this.mapServerResponseToBrowserObject(serverObject);
+                    node.addChild(new Node(browserObject.name));
+                    return browserObject;
                 });
-                this.init();
+                this.initSelection();
+                this.filter();
             });
     }
 
@@ -106,16 +121,23 @@ export class BrowserComponent implements OnInit {
         return undefined;
     }
 
-    private init(): void {
+    /**
+     * To be implemented by subclasses
+     * @returns {Node} root node of the hierarchy
+     */
+    createRootNode(): Node {
+        return new Node(this.datasource.template.paths[0]);
+    }
+
+    private initSelection(): void {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
-        this.filter();
     }
 
     private initNodes(): void {
         this.root = this.selectionService.get(this.datasource.id);
         if (this.root === undefined) {
-            this.root = new Node(this.datasource.template.paths[0]);
+            this.root = this.createRootNode();
             this.selectionService.set(this.datasource.id, this.root);
         }
         this.node = this.root.findFullPath(this.path);
@@ -138,6 +160,18 @@ export class BrowserComponent implements OnInit {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
 
+
+//http://localhost:8420/api/v1/catalog/datasource/td-test/tables
+//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?schema=s
+//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?catalog=c
+//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?catalog=c&schema=s&table=t
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file:///
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file://users
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file://users/ru186002/abc
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb:///
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb://kylogreg1.blob.core.windows.net
+//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb://kylocontainer@kylohost.file.core.windows.net/
+
     rowClick(obj: BrowserObject): void {
         if (obj.canBeParent()) {
             this.browse(this.path + "/" + obj.name);
@@ -148,9 +182,20 @@ export class BrowserComponent implements OnInit {
         this.browse(node.path);
     }
 
-    private browse(path: string): void {
-        this.state.go(this.getStateName(), {path: encodeURIComponent(path)}, {notify: false, reload: false});
+    browse(path: string): void {
+        this.browse(path, undefined);
     }
+
+    /**
+     * @param {string} path
+     * @param {string} location to replace OS browser location set this to "replace"
+     */
+    browse(path: string, location: string): void {
+        this.state.go(this.getStateName(), {path: encodeURIComponent(path)},
+            {notify: false, reload: false, location: location});
+    }
+
+
 
     isChecked(fileName: string): boolean {
         return this.isParentSelected || this.node.isChildSelected(fileName);
@@ -180,6 +225,7 @@ export class BrowserComponent implements OnInit {
 
     openSelectionDialog(): void {
         const dialogRef = this.dialog.open(SelectionDialogComponent, {
+            minWidth: 600,
             data: {
                 datasourceId: this.datasource.id
             }

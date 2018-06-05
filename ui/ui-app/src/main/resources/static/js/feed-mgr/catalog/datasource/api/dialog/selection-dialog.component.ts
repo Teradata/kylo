@@ -31,7 +31,7 @@ export class SelectionDialogComponent implements OnInit {
     currentPage: number = 1;
     pageSize: number = 10;
     columns: ITdDataTableColumn[] = [
-        {name: "path", label: "Path", sortable: false},
+        {name: "path", label: "Path", sortable: false, width: 500},
         {name: "remove", label: "", sortable: false, width: 50},
     ];
     datasourceId: string;

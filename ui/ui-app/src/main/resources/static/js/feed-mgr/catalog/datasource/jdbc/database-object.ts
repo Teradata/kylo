@@ -2,6 +2,7 @@ import {BrowserObject} from '../api/browser-object';
 import {BrowserColumn} from '../api/browser-column';
 
 enum DatabaseObjectType {
+    Catalog = "catalog",
     Schema = "schema",
     Table = "table",
     Column = "column"

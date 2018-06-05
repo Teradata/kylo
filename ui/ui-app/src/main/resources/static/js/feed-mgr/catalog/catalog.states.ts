@@ -122,8 +122,8 @@ export const catalogStates: Ng2StateDeclaration[] = [
         loadChildren: "feed-mgr/catalog/datasource/files/remote-files.module#RemoteFilesModule"
     },
     {
-        name: "catalog.datasource.jdbc.**",
-        url: "/jdbc",
+        name: "catalog.datasource.connection.**",
+        url: "/tables",
         loadChildren: "feed-mgr/catalog/datasource/jdbc/jdbc.module#JdbcModule"
     }
 ];
