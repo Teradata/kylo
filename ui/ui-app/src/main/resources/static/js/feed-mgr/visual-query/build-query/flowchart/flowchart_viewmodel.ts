@@ -1,22 +1,24 @@
 namespace flowchart {
+
+	export class FlowchartModelBase{
 	// Width of a node.
-	let defaultNodeWidth = 250;
+	static defaultNodeWidth = 250;
 	// Amount of space reserved for displaying the node's name.
-	let nodeNameHeight = 75;
+	static nodeNameHeight = 75;
 	// Height of a connector in a node.
-	let connectorHeight = 35;
-	let attributeHeight = 25;
-	let CONNECTOR_LOCATION = { TOP: "TOP", BOTTOM: "BOTTOM", LEFT: "LEFT", RIGHT: "RIGHT" };
-	let connectorRadius = 5;
-	let nextConnectorID = 1
+	static connectorHeight = 35;
+	static attributeHeight = 25;
+	static CONNECTOR_LOCATION = { TOP: "TOP", BOTTOM: "BOTTOM", LEFT: "LEFT", RIGHT: "RIGHT" };
+	static connectorRadius = 5;
+	static nextConnectorID = 1
 	// Compute the Y coordinate of a connector, given its index.
 	/**
 	 * @Deprecated
 	 * @param connectorIndex
 	 * @returns {number}
 	 */
-	let computeConnectorY = (connectorIndex: any) => {
-		return nodeNameHeight + (connectorIndex * connectorHeight);
+	static computeConnectorY = (connectorIndex: any) => {
+		return FlowchartModelBase.nodeNameHeight + (connectorIndex * FlowchartModelBase.connectorHeight);
 	}
 	// Compute the position of a connector in the graph.
 	/**
@@ -26,28 +28,28 @@ namespace flowchart {
 	 * @param inputConnector
 	 * @returns {{x: *, y: *}}
 	 */
-	let computeConnectorPosOld = (node: any, connectorIndex: any, inputConnector: any) => {
+	static computeConnectorPosOld = (node: any, connectorIndex: any, inputConnector: any) => {
 		return {
-			x: node.x() + (inputConnector ? 0 : node.width ? node.width() : defaultNodeWidth),
-			y: node.y() + computeConnectorY(connectorIndex),
+			x: node.x() + (inputConnector ? 0 : node.width ? node.width() : FlowchartModelBase.defaultNodeWidth),
+			y: node.y() + FlowchartModelBase.computeConnectorY(connectorIndex),
 		};
 	};
 
-	let computeConnectorPos = (node: any, connector: any) => {
+	static computeConnectorPos = (node: any, connector: any) => {
 		var x: any = 0;
-		if (connector.location() == CONNECTOR_LOCATION.LEFT || connector.location() == CONNECTOR_LOCATION.RIGHT) {
-			x = node.x() + (connector.location() == CONNECTOR_LOCATION.LEFT ? 0 : node.width ? node.width() : defaultNodeWidth);
+		if (connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.LEFT || connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.RIGHT) {
+			x = node.x() + (connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.LEFT ? 0 : node.width ? node.width() : FlowchartModelBase.defaultNodeWidth);
 		}
 		else {
 			//center the top and bottom
-			x = node.x() + (node.width ? node.width() : defaultNodeWidth) / 2;
+			x = node.x() + (node.width ? node.width() : FlowchartModelBase.defaultNodeWidth) / 2;
 		}
 		var y = 0;
-		if (connector.location() == CONNECTOR_LOCATION.LEFT || connector.location() == CONNECTOR_LOCATION.RIGHT) {
+		if (connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.LEFT || connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.RIGHT) {
 			y = node.y() + (node.height()) / 2
 		}
 		else {
-			y = node.y() + (connector.location() == CONNECTOR_LOCATION.TOP ? 0 : node.height())
+			y = node.y() + (connector.location() == FlowchartModelBase.CONNECTOR_LOCATION.TOP ? 0 : node.height())
 		}
 
 		return {
@@ -56,10 +58,100 @@ namespace flowchart {
 		};
 	};
 
+	// Create view model for a list of data models.
+	static createConnectorsViewModel = (connectorDataModels: any, x: any, parentNode: any) => {
+		var viewModels: any = [];
+		if (connectorDataModels) {
+			for (var i = 0; i < connectorDataModels.length; ++i) {
+				var connectorViewModel =
+					new flowchart.ConnectorViewModel(connectorDataModels[i], x, FlowchartModelBase.computeConnectorY(i), parentNode);
+				viewModels.push(connectorViewModel);
+			}
+		}
+		return viewModels;
+	};
 
+	static createConnectorViewModel = (connectorDataModel: any, x: any, y: any, parentNode: any) => {
+		var connectorViewModel: any = null
+		if (connectorDataModel) {
+			connectorViewModel =
+				new flowchart.ConnectorViewModel(connectorDataModel, x, y, parentNode);
+		}
+		return connectorViewModel;
+	};
+
+	//
+	// Helper function.
+	//
+	static computeConnectionTangentOffset = (pt1: any, pt2: any) => {
+		return (pt2.x - pt1.x) / 2;
+	}
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionSourceTangentX = (pt1: any, pt2: any) => {
+		return pt1.x + FlowchartModelBase.computeConnectionTangentOffset(pt1, pt2);
+	};
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionSourceTangentY = (pt1: any, pt2: any) => {
+		return pt1.y;
+	};
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionSourceTangent = (pt1: any, pt2: any) => {
+		return {
+			x: FlowchartModelBase.computeConnectionSourceTangentX(pt1, pt2),
+			y: FlowchartModelBase.computeConnectionSourceTangentY(pt1, pt2),
+		};
+	};
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionDestTangentX = (pt1: any, pt2: any) => {
+
+		return pt2.x - FlowchartModelBase.computeConnectionTangentOffset(pt1, pt2);
+	};
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionDestTangentY = (pt1: any, pt2: any) => {
+
+		return pt2.y;
+	};
+
+	//
+	// Compute the tangent for the bezier curve.
+	//
+	static computeConnectionDestTangent = (pt1: any, pt2: any) => {
+		return {
+			x: FlowchartModelBase.computeConnectionDestTangentX(pt1, pt2),
+			y: FlowchartModelBase.computeConnectionDestTangentY(pt1, pt2),
+		};
+	};
+	// 
+	// Wrap the nodes data-model in a view-model.
+	//
+	static createNodesViewModel = (nodesDataModel: any) => {
+		var nodesViewModel: any = [];
+		if (nodesDataModel) {
+			for (var i = 0; i < nodesDataModel.length; ++i) {
+				nodesViewModel.push(new flowchart.NodeViewModel(nodesDataModel[i]));
+			}
+		}
+		return nodesViewModel;
+	};
+	}
 
 	// View model for a connector.
-	export class ConnectorViewModel {
+	export class ConnectorViewModel extends FlowchartModelBase {
 		
 		data : any;
 		_parentNode : any;
@@ -67,7 +159,7 @@ namespace flowchart {
 		_y : any;
 		TRIANGLE_SIZE : number = 30;
 		constructor(connectorDataModel: any, x: any, y: any, parentNode: any) {
-		
+			super();
 			this.data = connectorDataModel;
 			this._parentNode = parentNode;
 			this._x = x;
@@ -84,23 +176,23 @@ namespace flowchart {
 			var end: any = "";
 			var point: any = "";
 			var point2: any = "";
-			if (this.location() == CONNECTOR_LOCATION.BOTTOM) {
+			if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.BOTTOM) {
 				start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
 				end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
 				point = this.x() + "," + (this.y() + this.TRIANGLE_SIZE);
 				//point2 = this.x()+","+(this.y()+this.TRIANGLE_SIZE);
 			}
-			else if (this.location() == CONNECTOR_LOCATION.TOP) {
+			else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.TOP) {
 				start = this.x() - this.TRIANGLE_SIZE / 2 + "," + this.y();
 				end = this.x() + this.TRIANGLE_SIZE / 2 + "," + this.y();
 				point = this.x() + "," + (this.y() - this.TRIANGLE_SIZE);
 			}
-			if (this.location() == CONNECTOR_LOCATION.LEFT) {
+			if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.LEFT) {
 				start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
 				end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
 				point = (this.x() - this.TRIANGLE_SIZE) + "," + this.y();
 			}
-			else if (this.location() == CONNECTOR_LOCATION.RIGHT) {
+			else if (this.location() == ConnectorViewModel.CONNECTOR_LOCATION.RIGHT) {
 				start = this.x() + "," + (this.y() - this.TRIANGLE_SIZE / 2);
 				end = this.x() + "," + (this.y() + this.TRIANGLE_SIZE / 2);
 				point = (this.x() + this.TRIANGLE_SIZE) + "," + this.y();
@@ -134,32 +226,11 @@ namespace flowchart {
 			return this._parentNode;
 		};
 	};
-	// Create view model for a list of data models.
-	let createConnectorsViewModel: any = (connectorDataModels: any, x: any, parentNode: any) => {
-		var viewModels: any = [];
-		if (connectorDataModels) {
-			for (var i = 0; i < connectorDataModels.length; ++i) {
-				var connectorViewModel =
-					new flowchart.ConnectorViewModel(connectorDataModels[i], x, computeConnectorY(i), parentNode);
-				viewModels.push(connectorViewModel);
-			}
-		}
-		return viewModels;
-	};
-
-	let createConnectorViewModel: any = (connectorDataModel: any, x: any, y: any, parentNode: any) => {
-		var connectorViewModel: any = null
-		if (connectorDataModel) {
-			connectorViewModel =
-				new flowchart.ConnectorViewModel(connectorDataModel, x, y, parentNode);
-		}
-		return connectorViewModel;
-	};
 
 	//
 	// View model for a node.
 	//
-	export class NodeViewModel {
+	export class NodeViewModel extends FlowchartModelBase{
 
 		data : any;
 		connectors : any[] = [];
@@ -174,11 +245,11 @@ namespace flowchart {
 		outputConnectors:any;
 
 		constructor(nodeDataModel: any) {
-		
+			super();
 			this.data = nodeDataModel;
 			// set the default width value of the node
 			if (!this.data.width || this.data.width < 0) {
-				this.data.width = defaultNodeWidth;
+				this.data.width = NodeViewModel.defaultNodeWidth;
 			}
 			this.createConnectors();
 		};
@@ -186,33 +257,33 @@ namespace flowchart {
 			var connectors: any = this.data.connectors;
 			var leftConnector: any = connectors.left;
 			if (leftConnector) {
-				leftConnector.location = CONNECTOR_LOCATION.LEFT;
-				leftConnector.id = nextConnectorID++;
-				var connectorViewModel = createConnectorViewModel(leftConnector, 0, this.height() / 2, this);
+				leftConnector.location = NodeViewModel.CONNECTOR_LOCATION.LEFT;
+				leftConnector.id = NodeViewModel.nextConnectorID++;
+				var connectorViewModel = NodeViewModel.createConnectorViewModel(leftConnector, 0, this.height() / 2, this);
 				this.leftConnectors.push(connectorViewModel);
 				this.connectors.push(connectorViewModel);
 			}
 			var rightConnector = connectors.right;
 			if (rightConnector) {
-				rightConnector.location = CONNECTOR_LOCATION.RIGHT;
-				rightConnector.id = nextConnectorID++;
-				var connectorViewModel = createConnectorViewModel(rightConnector, this.data.width, this.height() / 2, this);
+				rightConnector.location = NodeViewModel.CONNECTOR_LOCATION.RIGHT;
+				rightConnector.id = NodeViewModel.nextConnectorID++;
+				var connectorViewModel = NodeViewModel.createConnectorViewModel(rightConnector, this.data.width, this.height() / 2, this);
 				this.rightConnectors.push(connectorViewModel);
 				this.connectors.push(connectorViewModel);
 			}
 			var topConnector = connectors.top;
 			if (topConnector) {
-				topConnector.location = CONNECTOR_LOCATION.TOP;
-				topConnector.id = nextConnectorID++;
-				var connectorViewModel  = createConnectorViewModel(topConnector, this.data.width / 2, 0, this);
+				topConnector.location = NodeViewModel.CONNECTOR_LOCATION.TOP;
+				topConnector.id = NodeViewModel.nextConnectorID++;
+				var connectorViewModel  = NodeViewModel.createConnectorViewModel(topConnector, this.data.width / 2, 0, this);
 				this.topConnectors.push(connectorViewModel);
 				this.connectors.push(connectorViewModel);
 			}
 			var bottomConnector = connectors.bottom;
 			if (bottomConnector) {
-				bottomConnector.location = CONNECTOR_LOCATION.BOTTOM;
-				bottomConnector.id = nextConnectorID++;
-				var connectorViewModel = createConnectorViewModel(bottomConnector, this.data.width / 2, this.height(), this);
+				bottomConnector.location = NodeViewModel.CONNECTOR_LOCATION.BOTTOM;
+				bottomConnector.id = NodeViewModel.nextConnectorID++;
+				var connectorViewModel = NodeViewModel.createConnectorViewModel(bottomConnector, this.data.width / 2, this.height(), this);
 				this.bottomConnectors.push(connectorViewModel);
 				this.connectors.push(connectorViewModel);
 			}
@@ -244,14 +315,14 @@ namespace flowchart {
 				return this.data.height;
 			}
 			else if (this.data.nodeAttributes && this.data.nodeAttributes.attributes) {
-				return 95 + attributeHeight * this.data.nodeAttributes.attributes.length;
+				return 95 + NodeViewModel.attributeHeight * this.data.nodeAttributes.attributes.length;
 			}
 			else {
 				var numConnectors =
 					Math.max(
 						this.inputConnectors.length,
 						this.outputConnectors.length);
-				return computeConnectorY(numConnectors);
+				return NodeViewModel.computeConnectorY(numConnectors);
 			}
 		}
 		// Select the node.
@@ -283,7 +354,7 @@ namespace flowchart {
 		_addConnector = (connectorDataModel: any, x: any, connectorsDataModel: any, connectorsViewModel: any) => {
 			var connectorViewModel: any =
 				new flowchart.ConnectorViewModel(connectorDataModel, x,
-					computeConnectorY(connectorsViewModel.length), this);
+					NodeViewModel.computeConnectorY(connectorsViewModel.length), this);
 
 			connectorsDataModel.push(connectorDataModel);
 
@@ -316,24 +387,10 @@ namespace flowchart {
 			return this.connectors;
 		}
 	}
-
-	// 
-	// Wrap the nodes data-model in a view-model.
-	//
-	let createNodesViewModel = (nodesDataModel: any) => {
-		var nodesViewModel: any = [];
-		if (nodesDataModel) {
-			for (var i = 0; i < nodesDataModel.length; ++i) {
-				nodesViewModel.push(new flowchart.NodeViewModel(nodesDataModel[i]));
-			}
-		}
-		return nodesViewModel;
-	};
-
 	// 
 	// View model for a connection.
 	//
-	export class ConnectionViewModel {
+	export class ConnectionViewModel extends FlowchartModelBase{
 
 		data : any;
 		source : any;
@@ -341,7 +398,8 @@ namespace flowchart {
 		_selected : boolean;
 		name : any;
 
-		constructor(connectionDataModel: any, sourceConnector: any, destConnector: any) {
+		constructor(connectionDataModel: any, sourceConnector: any = undefined, destConnector: any = undefined) {
+			super();
 			this.data = connectionDataModel;
 			this.source = sourceConnector;
 			this.dest = destConnector;
@@ -373,11 +431,11 @@ namespace flowchart {
 		}
 
 		sourceTangentX = () => {
-			return computeConnectionSourceTangentX(this.sourceCoord(), this.destCoord());
+			return ConnectionViewModel.computeConnectionSourceTangentX(this.sourceCoord(), this.destCoord());
 		};
 
 		sourceTangentY = () => {
-			return computeConnectionSourceTangentY(this.sourceCoord(), this.destCoord());
+			return ConnectionViewModel.computeConnectionSourceTangentY(this.sourceCoord(), this.destCoord());
 		};
 
 		destCoordX = () => {
@@ -396,11 +454,11 @@ namespace flowchart {
 		}
 
 		destTangentX = () => {
-			return computeConnectionDestTangentX(this.sourceCoord(), this.destCoord());
+			return ConnectionViewModel.computeConnectionDestTangentX(this.sourceCoord(), this.destCoord());
 		};
 
 		destTangentY = () => {
-			return computeConnectionDestTangentY(this.sourceCoord(), this.destCoord());
+			return ConnectionViewModel.computeConnectionDestTangentY(this.sourceCoord(), this.destCoord());
 		};
 
 		middleX = (scale: any) => {
@@ -445,62 +503,6 @@ namespace flowchart {
 		};
 
 	}
-	//
-	// Helper function.
-	//
-	let computeConnectionTangentOffset = (pt1: any, pt2: any) => {
-		return (pt2.x - pt1.x) / 2;
-	}
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionSourceTangentX = (pt1: any, pt2: any) => {
-		return pt1.x + computeConnectionTangentOffset(pt1, pt2);
-	};
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionSourceTangentY = (pt1: any, pt2: any) => {
-		return pt1.y;
-	};
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionSourceTangent = (pt1: any, pt2: any) => {
-		return {
-			x: computeConnectionSourceTangentX(pt1, pt2),
-			y: computeConnectionSourceTangentY(pt1, pt2),
-		};
-	};
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionDestTangentX = (pt1: any, pt2: any) => {
-
-		return pt2.x - computeConnectionTangentOffset(pt1, pt2);
-	};
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionDestTangentY = (pt1: any, pt2: any) => {
-
-		return pt2.y;
-	};
-
-	//
-	// Compute the tangent for the bezier curve.
-	//
-	let computeConnectionDestTangent = (pt1: any, pt2: any) => {
-		return {
-			x: computeConnectionDestTangentX(pt1, pt2),
-			y: computeConnectionDestTangentY(pt1, pt2),
-		};
-	};
 	/**
 	 * View model for the chart.
 	 *
@@ -511,17 +513,17 @@ namespace flowchart {
 	 * @param {function} [onEditConnectionCallback] the callback to edit a function
 	 * @param {function} [onDeleteSelectedCallback] the callback when the current selection is deleted
 	 */
-	export class ChartViewModel {
+	export class ChartViewModel extends FlowchartModelBase{
 
 		data: any;
 		nodes: any;
 		connections: any;
-		constructor(chartDataModel: any, onCreateConnectionCallback: any, private onEditConnectionCallback: any, private onDeleteSelectedCallback: any) {
-
+		constructor(private chartDataModel: any, private onCreateConnectionCallback: any = undefined, private onEditConnectionCallback: any = undefined, private onDeleteSelectedCallback: any = undefined) {
+			super();
 			// Reference to the underlying data.
 			this.data = chartDataModel;
 			// Create a view-model for nodes.
-			this.nodes = createNodesViewModel(this.data.nodes);
+			this.nodes = ChartViewModel.createNodesViewModel(this.data.nodes);
 			// Create a view-model for connections.
 			this.connections = this._createConnectionsViewModel(this.data.connections);
 

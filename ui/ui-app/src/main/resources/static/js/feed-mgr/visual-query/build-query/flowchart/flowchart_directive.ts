@@ -214,13 +214,13 @@ constructor(private $scope: any,
                         var curCoords = controller.translateCoordinates(x, y, evt);
                         $scope.draggingConnection = true;
                         //$scope.dragPoint1 = flowchart.computeConnectorPos(node, connectorIndex, isInputConnector);
-                        $scope.dragPoint1 = flowchart.computeConnectorPos(node, connector);
+                        $scope.dragPoint1 = flowchart.FlowchartModelBase.computeConnectorPos(node, connector);
                         $scope.dragPoint2 = {
                             x: curCoords.x,
                             y: curCoords.y
                         };
-                        $scope.dragTangent1 = flowchart.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
-                        $scope.dragTangent2 = flowchart.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
+                        $scope.dragTangent1 = flowchart.FlowchartModelBase.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
+                        $scope.dragTangent2 = flowchart.FlowchartModelBase.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
                     },
 
                     //
@@ -229,13 +229,13 @@ constructor(private $scope: any,
                     dragging: function (x: any, y: any, evt: any) {
                         var startCoords = controller.translateCoordinates(x, y, evt);
                         //$scope.dragPoint1 = flowchart.computeConnectorPos(node, connectorIndex, isInputConnector);
-                        $scope.dragPoint1 = flowchart.computeConnectorPos(node, connector);
+                        $scope.dragPoint1 = flowchart.FlowchartModelBase.computeConnectorPos(node, connector);
                         $scope.dragPoint2 = {
                             x: startCoords.x,
                             y: startCoords.y
                         };
-                        $scope.dragTangent1 = flowchart.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
-                        $scope.dragTangent2 = flowchart.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
+                        $scope.dragTangent1 = flowchart.FlowchartModelBase.computeConnectionSourceTangent($scope.dragPoint1, $scope.dragPoint2);
+                        $scope.dragTangent2 = flowchart.FlowchartModelBase.computeConnectionDestTangent($scope.dragPoint1, $scope.dragPoint2);
                     },
 
                     //

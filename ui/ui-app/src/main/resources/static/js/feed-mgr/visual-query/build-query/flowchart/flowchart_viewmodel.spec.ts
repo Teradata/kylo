@@ -47,9 +47,9 @@ describe('flowchart-viewmodel', function () {
 			y: function () { return 15 },
 		};
 
-		flowchart.computeConnectorPos(mockNode, 0, true);
-		flowchart.computeConnectorPos(mockNode, 1, true);
-		flowchart.computeConnectorPos(mockNode, 2, true);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 0);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 1);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 2);
 	});
 
 	xit('compute output connector pos', function () {
@@ -59,9 +59,9 @@ describe('flowchart-viewmodel', function () {
 			y: function () { return 15 },
 		};
 
-		flowchart.computeConnectorPos(mockNode, 0, false);
-		flowchart.computeConnectorPos(mockNode, 1, false);
-		flowchart.computeConnectorPos(mockNode, 2, false);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 0);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 1);
+		flowchart.FlowchartModelBase.computeConnectorPos(mockNode, 2);
 	});
 
 	it('construct ConnectorViewModel', function () {
@@ -157,7 +157,7 @@ describe('flowchart-viewmodel', function () {
 	xit('test node width is set by default', function () {
 		var mockDataModel: any = {};
 		var testObject: any = new flowchart.NodeViewModel(mockDataModel);
-		expect(testObject.width() === flowchart.defaultNodeWidth).toBe(true);
+		expect(testObject.width() === flowchart.FlowchartModelBase.defaultNodeWidth).toBe(true);
 	});
 
 	xit('test node width is used', function () {
@@ -178,7 +178,7 @@ describe('flowchart-viewmodel', function () {
 				return 900;
 			},
 		};
-		var testObject: any = flowchart.computeConnectorPos(mockDataModel, 1, false);
+		var testObject: any = flowchart.FlowchartModelBase.computeConnectorPos(mockDataModel, 1);
 		expect(testObject.x).toBe(910);
 	});
 
@@ -191,9 +191,9 @@ describe('flowchart-viewmodel', function () {
 				return 15
 			},
 		};
-		var testObject: any = flowchart.computeConnectorPos(mockDataModel, 1, false);
+		var testObject: any = flowchart.FlowchartModelBase.computeConnectorPos(mockDataModel, 1);
 
-		expect(testObject.x).toBe(flowchart.defaultNodeWidth + 10);
+		expect(testObject.x).toBe(flowchart.FlowchartModelBase.defaultNodeWidth + 10);
 	});
 
 	xit('test node can be selected', function () {
