@@ -114,4 +114,13 @@ export class Node {
     setBrowserObject(browserObj: BrowserObject) {
         this.browserObject = browserObj;
     }
+
+    /**
+     * Temporary just not to break existing Preview code,
+     * this is currently only valid for subset of files, e.g. valid for Local/HDFS/S3 files, but not valid for Azure
+     * @returns {string} full path of this Node
+     */
+    getPath(): string {
+        return this.getPathNodes().map(n => n.name).join("/");
+    }
 }
