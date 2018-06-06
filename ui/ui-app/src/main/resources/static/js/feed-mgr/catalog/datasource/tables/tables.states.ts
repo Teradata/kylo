@@ -21,7 +21,6 @@ export const tablesStates: Ng2StateDeclaration[] = [
                     if (transParams.schema) {
                         params.schema = transParams.schema;
                     }
-                    console.log('resolve table params', params);
                     return params;
                 }
             }

@@ -77,6 +77,7 @@ export class TablesComponent extends BrowserComponent {
             if (node === undefined) {
                 node = new Node(params.catalog);
                 node.setBrowserObject(new DatabaseObject(params.catalog, DatabaseObjectType.Catalog));
+                root.addChild(node);
             }
             return node;
         } else if (params.schema) {
@@ -84,6 +85,7 @@ export class TablesComponent extends BrowserComponent {
             if (node === undefined) {
                 node = new Node(params.schema);
                 node.setBrowserObject(new DatabaseObject(params.schema, DatabaseObjectType.Schema));
+                root.addChild(node);
             }
             return node;
         }
