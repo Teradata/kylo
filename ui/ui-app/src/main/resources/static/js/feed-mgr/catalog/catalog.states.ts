@@ -124,6 +124,6 @@ export const catalogStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.connection.**",
         url: "/tables",
-        loadChildren: "feed-mgr/catalog/datasource/jdbc/jdbc.module#JdbcModule"
+        loadChildren: "feed-mgr/catalog/datasource/tables/tables.module#TablesModule"
     }
 ];

@@ -1,7 +1,7 @@
 import {NgModule} from "@angular/core";
 import {UIRouterModule} from "@uirouter/angular";
-import {JdbcComponent} from "./jdbc.component";
-import {jdbcStates} from "./jdbc.states";
+import {TablesComponent} from "./tables.component";
+import {tablesStates} from "./tables.states";
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {CovalentFileModule} from '@covalent/core/file';
@@ -23,10 +23,10 @@ import {BrowserModule} from '../api/browser.module';
 
 @NgModule({
     declarations: [
-        JdbcComponent,
+        TablesComponent,
     ],
     entryComponents: [
-        JdbcComponent,
+        TablesComponent,
     ],
     imports: [
         BrowserModule,
@@ -48,8 +48,8 @@ import {BrowserModule} from '../api/browser.module';
         MatSelectModule,
         MatCheckboxModule,
         MatDialogModule,
-        UIRouterModule.forChild({states: jdbcStates})
+        UIRouterModule.forChild({states: tablesStates})
     ]
 })
-export class JdbcModule {
+export class TablesModule {
 }

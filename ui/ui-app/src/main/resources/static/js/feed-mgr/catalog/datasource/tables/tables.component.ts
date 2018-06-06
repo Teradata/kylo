@@ -4,7 +4,7 @@ import {BrowserObject} from '../api/browser-object';
 import {BrowserColumn} from '../api/browser-column';
 import {Node} from '../api/node';
 
-export class JdbcComponent extends BrowserComponent {
+export class TablesComponent extends BrowserComponent {
 
     init(): void {
         this.initData();

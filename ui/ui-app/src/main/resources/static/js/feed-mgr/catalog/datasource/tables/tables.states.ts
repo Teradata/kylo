@@ -1,13 +1,13 @@
 import {Ng2StateDeclaration} from "@uirouter/angular";
 
-import {JdbcComponent} from "./jdbc.component";
+import {TablesComponent} from "./tables.component";
 import {StateService} from "@uirouter/angular";
 
-export const jdbcStates: Ng2StateDeclaration[] = [
+export const tablesStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.connection",
         url: "/tables?catalog=:c&schema=:s",
-        component: JdbcComponent,
+        component: TablesComponent,
         resolve: [
             {
                 token: "params",
