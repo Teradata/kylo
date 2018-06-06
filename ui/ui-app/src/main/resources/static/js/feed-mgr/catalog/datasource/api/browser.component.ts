@@ -21,8 +21,8 @@ import {catchError} from 'rxjs/operators/catchError';
 })
 export class BrowserComponent implements OnInit {
 
-    private static LOADER: string = "BrowserComponent.LOADER";
-    private static LOADER1: string = "BrowserComponent.LOADER1";
+    private static topOfPageLoader: string = "BrowserComponent.topOfPageLoader";
+    private static tableLoader: string = "BrowserComponent.tableLoader";
 
     @Input()
     public datasource: DataSource;
@@ -57,7 +57,7 @@ export class BrowserComponent implements OnInit {
         this.sortBy = this.getSortByColumnName();
 
         this.loadingService.create({
-            name: BrowserComponent.LOADER,
+            name: BrowserComponent.topOfPageLoader,
             mode: LoadingMode.Indeterminate,
             type: LoadingType.Linear,
             color: 'accent',
@@ -89,12 +89,12 @@ export class BrowserComponent implements OnInit {
         const thisNode = this.node;
         this.files = [];
         this.errorMsg = undefined;
-        this.loadingService.register(BrowserComponent.LOADER);
-        this.loadingService.register(BrowserComponent.LOADER1);
+        this.loadingService.register(BrowserComponent.topOfPageLoader);
+        this.loadingService.register(BrowserComponent.tableLoader);
         this.http.get(this.getUrl(), {params: this.params})
             .pipe(finalize(() => {
-                this.loadingService.resolve(BrowserComponent.LOADER);
-                this.loadingService.resolve(BrowserComponent.LOADER1);
+                this.loadingService.resolve(BrowserComponent.topOfPageLoader);
+                this.loadingService.resolve(BrowserComponent.tableLoader);
             }))
             .pipe(catchError((err) => {
                 this.errorMsg = err.message;
