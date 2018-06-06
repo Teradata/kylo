@@ -41,7 +41,7 @@ export class BrowserComponent implements OnInit {
     files: BrowserObject[] = [];
     private root: Node;
     private node: Node;
-    private pathNodes: Node[] = [];
+    private pathNodes: Node[];
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
@@ -51,9 +51,9 @@ export class BrowserComponent implements OnInit {
     }
 
     public ngOnInit(): void {
-        if(this.path == undefined || this.path == ""){
+        if(this.params == undefined){
             //attempt to get it from the selection service
-            this.path = this.selectionService.getLastPath(this.datasource.id) || ""
+            this.params = this.selectionService.getLastPath(this.datasource.id);
         }
         this.initNodes();
         this.init();
@@ -167,7 +167,7 @@ export class BrowserComponent implements OnInit {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
         //mark the last selected path for this datasource.id in the selection service
-        this.selectionService.setLastPath(this.datasource.id,this.path)
+        this.selectionService.setLastPath(this.datasource.id, this.params)
     }
 
     private initNodes(): void {
@@ -213,14 +213,14 @@ export class BrowserComponent implements OnInit {
     }
 
     private browse(params: any): void {
-        this.browse(params, undefined);
+        this.browseTo(params, undefined);
     }
 
     /**
      * @param {string} params
      * @param {string} location to replace OS browser location set this to "replace"
      */
-    browse(params: any, location: string): void {
+    browseTo(params: any, location: string): void {
         const options: any = {notify: false, reload: false};
         if (location !== undefined) {
             options.location = location;

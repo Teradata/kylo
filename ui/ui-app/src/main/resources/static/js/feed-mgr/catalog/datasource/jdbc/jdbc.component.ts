@@ -37,8 +37,8 @@ export class JdbcComponent extends BrowserComponent {
     createParentNodeParams(node: Node): any {
         console.log('createParentNodeParams');
         const params = {
-            catalog: undefined,
-            schema: undefined
+            catalog: '',
+            schema: ''
         };
         const dbObj: DatabaseObject = <DatabaseObject>node.browserObject;
         if (dbObj === undefined) {

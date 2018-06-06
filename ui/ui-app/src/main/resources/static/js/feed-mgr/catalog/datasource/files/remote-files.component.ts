@@ -9,7 +9,7 @@ export class RemoteFilesComponent extends BrowserComponent {
     init(): void {
         if (this.params.path === undefined) { //e.g. when navigating from Catalog into Files
             this.params.path = this.datasource.template.paths[0];
-            this.browse(this.params, "replace");
+            this.browseTo(this.params, "replace");
         } else {
             this.initData();
         }
@@ -56,7 +56,8 @@ export class RemoteFilesComponent extends BrowserComponent {
         let relativePath = params.path.substring(root.name.length, params.path.length);
         if (relativePath.length > 0) {
             let node: Node = root;
-            let paths = relativePath.split("/").filter(p => p.length > 0);
+            const splits: string[] = relativePath.split("/");
+            const paths = splits.filter(p => p.length > 0);
             for (let path of paths) {
                 let child = node.childrenMap.get(path);
                 if (child === undefined) {
