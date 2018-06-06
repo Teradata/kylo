@@ -109,7 +109,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     @Override
     public boolean isDataTransformation() {
-        return getProperty(DATA_TRANSFORMATION, Boolean.class);
+        return getProperty(DATA_TRANSFORMATION, Boolean.class, Boolean.FALSE);
     }
 
     @Override
@@ -119,7 +119,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     @Override
     public boolean isAllowPreconditions() {
-        return getProperty(ALLOW_PRECONDITIONS, Boolean.class);
+        return getProperty(ALLOW_PRECONDITIONS, Boolean.class, Boolean.FALSE);
     }
 
     @Override
