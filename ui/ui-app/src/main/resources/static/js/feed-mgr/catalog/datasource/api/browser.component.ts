@@ -22,7 +22,7 @@ export class BrowserComponent implements OnInit {
     public datasource: DataSource;
 
     @Input()
-    path: string;
+    params: any;
 
     columns: BrowserColumn[];
     sortBy: string;
@@ -68,7 +68,7 @@ export class BrowserComponent implements OnInit {
      */
     initData(): void {
         const node = this.node;
-        this.http.get(this.getUrl(), {})
+        this.http.get(this.getUrl(), {params: this.params})
             .subscribe((data: Array<any>) => {
                 this.files = data.map(serverObject => {
                     const browserObject = this.mapServerResponseToBrowserObject(serverObject);
@@ -126,7 +126,25 @@ export class BrowserComponent implements OnInit {
      * @returns {Node} root node of the hierarchy
      */
     createRootNode(): Node {
-        return new Node(this.datasource.template.paths[0]);
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses.
+     * @param {BrowserObject} obj
+     * @returns {any} query parameters when navigating into child browser object
+     */
+    createChildBrowserObjectParams(obj: BrowserObject): any {
+        return undefined;
+    }
+
+    /**
+     * To be implemented by subclasses.
+     * @param {Node} node
+     * @returns {any} query parameters when navigating to any parent node
+     */
+    createParentNodeParams(node: Node): any {
+        return undefined;
     }
 
     private initSelection(): void {
@@ -140,7 +158,7 @@ export class BrowserComponent implements OnInit {
             this.root = this.createRootNode();
             this.selectionService.set(this.datasource.id, this.root);
         }
-        this.node = this.root.findFullPath(this.path);
+        this.node = this.root.findFullPath(this.params);
         this.pathNodes.push(this.node);
         let parent = this.node.parent;
         while (parent) {
@@ -174,26 +192,30 @@ export class BrowserComponent implements OnInit {
 
     rowClick(obj: BrowserObject): void {
         if (obj.canBeParent()) {
-            this.browse(this.path + "/" + obj.name);
+            this.browse(this.createChildBrowserObjectParams(obj));
         }
     }
 
-    browseTo(node: Node): void {
-        this.browse(node.path);
+    breadcrumbClick(node: Node): void {
+        this.browse(this.createParentNodeParams(node));
     }
 
-    browse(path: string): void {
+    private browse(path: string): void {
         this.browse(path, undefined);
     }
 
     /**
-     * @param {string} path
+     * @param {string} params
      * @param {string} location to replace OS browser location set this to "replace"
      */
-    browse(path: string, location: string): void {
-        this.state.go(this.getStateName(), {path: encodeURIComponent(path)},
-            {notify: false, reload: false, location: location});
+    browse(params: any, location: string): void {
+        const options: any = {notify: false, reload: false};
+        if (location !== undefined) {
+            options.location = location;
+        }
+        this.state.go(this.getStateName(), params, options);
     }
+
 
 
 
@@ -203,12 +225,12 @@ export class BrowserComponent implements OnInit {
 
     onToggleAll(): void {
         this.node.toggleAll(this.selectAll);
-        this.init();
+        this.initSelection();
     }
 
     onToggleRow(event: any, file: BrowserObject): void {
         this.node.toggleChild(file.name, event.checked);
-        this.init();
+        this.initSelection();
     }
 
     numberOfSelectedDescendants(fileName: string): number {
@@ -234,7 +256,7 @@ export class BrowserComponent implements OnInit {
         dialogRef.afterClosed().subscribe(itemsWereRemoved => {
             if (itemsWereRemoved) {
                 this.selectAll = false;
-                this.init();
+                this.initSelection();
             }
         });
     }

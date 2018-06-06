@@ -4,7 +4,7 @@
       <li>
         <div>
           <span *ngFor="let node of pathNodes; last as isLast">
-            <a matRipple class="cursor-pointer" (click)="browseTo(node)">
+            <a matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
               {{node.name}}
             </a>
             <span *ngIf="!isLast"> / </span>

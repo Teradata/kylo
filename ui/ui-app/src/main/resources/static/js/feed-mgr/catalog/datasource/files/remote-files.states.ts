@@ -6,15 +6,14 @@ import {StateService} from "@uirouter/angular";
 export const remoteFileStates: Ng2StateDeclaration[] = [
     {
         name: "catalog.datasource.browse",
-        url: "/browse?path=:browseLocation",
+        url: "/browse?path=:p",
         component: RemoteFilesComponent,
         resolve: [
             {
-                token: "path",
+                token: "params",
                 deps: [StateService],
                 resolveFn: (state: StateService) => {
-                    let browseLocation = state.transition.params().path;
-                    return decodeURIComponent(browseLocation);
+                    return {path: state.transition.params().path};
                 }
             }
         ]

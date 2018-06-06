@@ -1,11 +1,11 @@
 import {BrowserObject} from '../api/browser-object';
 import {BrowserColumn} from '../api/browser-column';
 
-enum DatabaseObjectType {
-    Catalog = "catalog",
-    Schema = "schema",
-    Table = "table",
-    Column = "column"
+export enum DatabaseObjectType {
+    Catalog = "CATALOG",
+    Schema = "SCHEMA",
+    Table = "TABLE",
+    Column = "COLUMN"
 }
 
 export class DatabaseObject extends BrowserObject {

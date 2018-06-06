@@ -101,15 +101,15 @@ export class Node {
     }
 
     /**
-     * @param {string} fullPath - full path including path of all parents
+     * @param {string} params - query parameters which define the 'path' of this node
      * @returns {Node}
      */
-    findFullPath(fullPath: string): Node {
-        if (fullPath === undefined || fullPath === '' || this.path === fullPath) {
+    findFullPath(params: any): Node {
+        if (params.path === undefined || params.path === '' || this.path === params.path) {
             return this;
         }
 
-        let relativePath = fullPath.substring(this.path.length, fullPath.length);
+        let relativePath = params.path.substring(this.path.length, params.path.length);
         if (relativePath.length > 0) {
             let node: Node = this;
             let paths = relativePath.split("/").filter(p => p.length > 0);
