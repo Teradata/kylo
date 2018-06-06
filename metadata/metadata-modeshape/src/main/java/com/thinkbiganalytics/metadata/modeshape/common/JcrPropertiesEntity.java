@@ -162,6 +162,11 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     public <T> T getProperty(String name, Class<T> type) {
         return getProperty(name, type, true);
     }
+    
+    public <T> T getProperty(String name, Class<T> type, T defaultValue) {
+        T value = getProperty(name, type, true);
+        return value != null ? value : defaultValue;
+    }
 
 
     @Override
