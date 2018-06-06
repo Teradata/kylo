@@ -11,10 +11,8 @@ import {Node} from './node';
 import {BrowserObject} from './browser-object';
 import {BrowserColumn} from './browser-column';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
-import {DatasourceComponent} from '../datasource.component';
 import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';
-import {Observable} from 'rxjs/Observable';
 
 @Component({
     selector: "remote-files",
@@ -49,7 +47,7 @@ export class BrowserComponent implements OnInit {
     files: BrowserObject[] = [];
     private root: Node;
     private node: Node;
-    private pathNodes: Node[];
+    pathNodes: Node[];
     errorMsg: undefined;
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
@@ -98,7 +96,7 @@ export class BrowserComponent implements OnInit {
                 this.loadingService.resolve(BrowserComponent.LOADER);
                 this.loadingService.resolve(BrowserComponent.LOADER1);
             }))
-            .pipe(catchError((err, caught) => {
+            .pipe(catchError((err) => {
                 this.errorMsg = err.message;
                 return [];
             }))
