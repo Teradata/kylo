@@ -15,7 +15,7 @@ export class JdbcComponent extends BrowserComponent {
     }
 
     getSortByColumnName(): string {
-        return this.columns[0].name;
+        return this.columns[1].name;
     }
 
     getStateName(): string {

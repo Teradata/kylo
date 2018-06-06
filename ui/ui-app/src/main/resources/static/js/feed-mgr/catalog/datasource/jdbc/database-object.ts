@@ -25,6 +25,7 @@ export class DatabaseObject extends BrowserObject {
 export class DatabaseObjectDescriptor {
 
     static COLUMNS: BrowserColumn[] = [
+        {name: "type", label: "Type", sortable: false, filter: false, width: 100},
         {name: "name", label: "Name", sortable: true, filter: true},
     ];
 }

@@ -3,8 +3,12 @@
     <ol class="mat-title">
       <li>
         <div>
-          <span *ngFor="let node of pathNodes; last as isLast">
-            <a matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
+          <span *ngFor="let node of pathNodes; last as isLast; first as isFirst;">
+            <a  *ngIf="isFirst" matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
+              <ng-md-icon icon="home" style="vertical-align: sub;"></ng-md-icon> Home
+              <!--<span class="hint">{{node.name}}</span>-->
+            </a>
+            <a *ngIf="!isFirst" matRipple class="cursor-pointer" (click)="breadcrumbClick(node)">
               {{node.name}}
             </a>
             <span *ngIf="!isLast"> / </span>
