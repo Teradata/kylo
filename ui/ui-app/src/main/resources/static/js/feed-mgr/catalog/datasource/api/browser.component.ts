@@ -13,6 +13,8 @@ import {BrowserColumn} from './browser-column';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {DatasourceComponent} from '../datasource.component';
 import {finalize} from 'rxjs/operators/finalize';
+import {catchError} from 'rxjs/operators/catchError';
+import {Observable} from 'rxjs/Observable';
 
 @Component({
     selector: "remote-files",
@@ -48,6 +50,7 @@ export class BrowserComponent implements OnInit {
     private root: Node;
     private node: Node;
     private pathNodes: Node[];
+    errorMsg: undefined;
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
@@ -86,16 +89,20 @@ export class BrowserComponent implements OnInit {
      */
     initData(): void {
         const thisNode = this.node;
+        this.files = [];
+        this.errorMsg = undefined;
         this.loadingService.register(BrowserComponent.LOADER);
         this.loadingService.register(BrowserComponent.LOADER1);
         this.http.get(this.getUrl(), {params: this.params})
             .pipe(finalize(() => {
-                console.log('finalise');
                 this.loadingService.resolve(BrowserComponent.LOADER);
                 this.loadingService.resolve(BrowserComponent.LOADER1);
             }))
+            .pipe(catchError((err, caught) => {
+                this.errorMsg = err.message;
+                return [];
+            }))
             .subscribe((data: Array<any>) => {
-                console.log('received');
                 this.files = data.map(serverObject => {
                     const browserObject = this.mapServerResponseToBrowserObject(serverObject);
                     const node = new Node(browserObject.name);
