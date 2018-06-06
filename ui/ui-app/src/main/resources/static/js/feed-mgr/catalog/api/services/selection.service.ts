@@ -5,6 +5,8 @@ export class SelectionService {
 
     private selections: Map<string, any> = new Map<string, any>();
 
+    private lastPath: Map<string, string> = new Map<string, string>();
+
     /**
      * Stores selection for data source
      * @param {string} datasourceId
@@ -28,5 +30,13 @@ export class SelectionService {
      */
     get(datasourceId: string): any {
         return this.selections.get(datasourceId);
+    }
+
+    setLastPath(datasourceId:string,path:string):void {
+        this.lastPath.set(datasourceId, path)
+    }
+
+    getLastPath(datasourceId:string){
+        return this.lastPath.get(datasourceId)
     }
 }

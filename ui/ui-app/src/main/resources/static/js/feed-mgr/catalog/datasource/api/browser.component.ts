@@ -51,6 +51,10 @@ export class BrowserComponent implements OnInit {
     }
 
     public ngOnInit(): void {
+        if(this.path == undefined || this.path == ""){
+            //attempt to get it from the selection service
+            this.path = this.selectionService.getLastPath(this.datasource.id) || ""
+        }
         this.initNodes();
         this.init();
     }
@@ -162,6 +166,8 @@ export class BrowserComponent implements OnInit {
     private initSelection(): void {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
+        //mark the last selected path for this datasource.id in the selection service
+        this.selectionService.setLastPath(this.datasource.id,this.path)
     }
 
     private initNodes(): void {
