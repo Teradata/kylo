@@ -18,6 +18,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
+import {CovalentLoadingModule} from '@covalent/core/loading';
 
 @NgModule({
     declarations: [
@@ -35,6 +36,7 @@ import {SelectionDialogComponent} from './dialog/selection-dialog.component';
         CovalentSearchModule,
         CovalentPagingModule,
         CovalentNotificationsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatButtonModule,

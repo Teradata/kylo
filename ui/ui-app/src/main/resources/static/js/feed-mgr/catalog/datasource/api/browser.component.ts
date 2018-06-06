@@ -22,6 +22,7 @@ import {finalize} from 'rxjs/operators/finalize';
 export class BrowserComponent implements OnInit {
 
     private static LOADER: string = "BrowserComponent.LOADER";
+    private static LOADER1: string = "BrowserComponent.LOADER1";
 
     @Input()
     public datasource: DataSource;
@@ -86,10 +87,12 @@ export class BrowserComponent implements OnInit {
     initData(): void {
         const thisNode = this.node;
         this.loadingService.register(BrowserComponent.LOADER);
+        this.loadingService.register(BrowserComponent.LOADER1);
         this.http.get(this.getUrl(), {params: this.params})
             .pipe(finalize(() => {
                 console.log('finalise');
-                this.loadingService.resolve(BrowserComponent.LOADER)
+                this.loadingService.resolve(BrowserComponent.LOADER);
+                this.loadingService.resolve(BrowserComponent.LOADER1);
             }))
             .subscribe((data: Array<any>) => {
                 console.log('received');

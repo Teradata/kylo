@@ -21,6 +21,7 @@ import {MatCheckboxModule} from '@angular/material/checkbox';
 import {CovalentNotificationsModule} from '@covalent/core/notifications';
 import {MatDialogModule} from '@angular/material/dialog';
 import {BrowserModule} from '../api/browser.module';
+import {CovalentLoadingModule} from '@covalent/core/loading';
 
 @NgModule({
     declarations: [
@@ -39,6 +40,7 @@ import {BrowserModule} from '../api/browser.module';
         CovalentSearchModule,
         CovalentPagingModule,
         CovalentNotificationsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatButtonModule,

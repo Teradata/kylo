@@ -25,6 +25,8 @@
 </div>
 <mat-divider></mat-divider>
 
+<div *tdLoading="'BrowserComponent.LOADER1'; mode:'indeterminate'; type:'circle'; strategy:'overlay'; color:'accent'">
+
 <table td-data-table
        #dataTable>
 <thead>
@@ -70,6 +72,8 @@
 
 <div class="md-padding" *ngIf="filteredFiles.length === 0" layout="row" layout-align="center center">
   <h3>No results to display.</h3>
+</div>
+
 </div>
 
 <td-paging-bar #pagingBar [pageSize]="pageSize" [total]="filteredTotal" (change)="page($event)">

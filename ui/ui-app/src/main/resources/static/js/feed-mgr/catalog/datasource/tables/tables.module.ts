@@ -20,6 +20,7 @@ import {MatSelectModule} from '@angular/material/select';
 import {CovalentPagingModule} from '@covalent/core/paging';
 import {CommonModule} from '@angular/common';
 import {BrowserModule} from '../api/browser.module';
+import {CovalentLoadingModule} from '@covalent/core/loading';
 
 @NgModule({
     declarations: [
@@ -38,6 +39,7 @@ import {BrowserModule} from '../api/browser.module';
         CovalentSearchModule,
         CovalentPagingModule,
         CovalentNotificationsModule,
+        CovalentLoadingModule,
         FlexLayoutModule,
         KyloCommonModule,
         MatButtonModule,
