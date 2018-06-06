@@ -32,20 +32,43 @@ export class RemoteFilesComponent extends BrowserComponent {
         return "catalog.datasource.browse";
     }
 
-    createParentNodeParams(node: Node): any {
-        return {path: node.path};
-    }
-
-    createChildBrowserObjectParams(obj: BrowserObject): object {
-        return {path: this.params.path !== undefined ? this.params.path + "/" + obj.name : obj.name};
-    }
-
     getUrl(): string {
         return "/proxy/v1/catalog/datasource/" + this.datasource.id + "/files";
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {
         return new RemoteFile(obj.name, obj.path, obj.directory, obj.length, obj.modificationTime);
+    }
+
+    createParentNodeParams(node: Node): any {
+        return {path: node.getPathNodes().map(n => n.name).join("/")};
+    }
+
+    createChildBrowserObjectParams(obj: BrowserObject): object {
+        return {path: this.params.path !== undefined ? this.params.path + "/" + obj.name : obj.name};
+    }
+
+    findOrCreateThisNode(root: Node, params: any): Node {
+        if (params.path === undefined || params.path === '') {
+            return root;
+        }
+
+        let relativePath = params.path.substring(root.name.length, params.path.length);
+        if (relativePath.length > 0) {
+            let node: Node = root;
+            let paths = relativePath.split("/").filter(p => p.length > 0);
+            for (let path of paths) {
+                let child = node.childrenMap.get(path);
+                if (child === undefined) {
+                    child = new Node(path);
+                    node.addChild(child);
+                }
+                node = child;
+            }
+            return node;
+        } else {
+            return root;
+        }
     }
 
 }

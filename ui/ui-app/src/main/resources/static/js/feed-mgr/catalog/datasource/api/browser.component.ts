@@ -57,22 +57,24 @@ export class BrowserComponent implements OnInit {
 
     /**
      * To be implemented by subclasses, e.g. load data from server.
+     * This method is called during standard lifecycle ngOnInit method.
      */
     init(): void {
 
     }
 
     /**
-     * Needs to be explicitly called by subclasses to load data from server.
-     *
+     * Needs to be explicitly called by subclasses to load data from server, e.g. during init() method.
      */
     initData(): void {
-        const node = this.node;
+        const thisNode = this.node;
         this.http.get(this.getUrl(), {params: this.params})
             .subscribe((data: Array<any>) => {
                 this.files = data.map(serverObject => {
                     const browserObject = this.mapServerResponseToBrowserObject(serverObject);
-                    node.addChild(new Node(browserObject.name));
+                    const node = new Node(browserObject.name);
+                    node.setBrowserObject(browserObject);
+                    thisNode.addChild(node);
                     return browserObject;
                 });
                 this.initSelection();
@@ -147,6 +149,16 @@ export class BrowserComponent implements OnInit {
         return undefined;
     }
 
+    /**
+     * To be implemented by subclasses.
+     * @param {Node} root
+     * @param params query parameters
+     * @returns {Node} must return hierarchy node for browser location identified by query parameters
+     */
+    findOrCreateThisNode(root: Node, params: any): Node {
+        return undefined;
+    }
+
     private initSelection(): void {
         this.initIsParentSelected();
         this.initSelectedDescendantCounts();
@@ -158,14 +170,8 @@ export class BrowserComponent implements OnInit {
             this.root = this.createRootNode();
             this.selectionService.set(this.datasource.id, this.root);
         }
-        this.node = this.root.findFullPath(this.params);
-        this.pathNodes.push(this.node);
-        let parent = this.node.parent;
-        while (parent) {
-            this.pathNodes.push(parent);
-            parent = parent.parent;
-        }
-        this.pathNodes = this.pathNodes.reverse();
+        this.node = this.findOrCreateThisNode(this.root, this.params);
+        this.pathNodes = this.node.getPathNodes();
     }
 
     private initSelectedDescendantCounts(): void {
@@ -200,8 +206,8 @@ export class BrowserComponent implements OnInit {
         this.browse(this.createParentNodeParams(node));
     }
 
-    private browse(path: string): void {
-        this.browse(path, undefined);
+    private browse(params: any): void {
+        this.browse(params, undefined);
     }
 
     /**

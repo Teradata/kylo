@@ -1,16 +1,17 @@
+import {BrowserObject} from './browser-object';
+
 /**
- * File hierarchy
+ * Browser object hierarchy
  */
 export class Node {
     name: string;
     isSelected: boolean = false;
     childrenMap: Map<string, Node> = new Map<string, Node>();
     parent: Node;
-    path: string;
+    browserObject: BrowserObject;
 
     constructor(name: string) {
         this.name = name;
-        this.path = name;
     }
 
     countSelectedDescendants(): number {
@@ -48,14 +49,6 @@ export class Node {
             return true;
         }
         return this.parent.isAnyParentSelected();
-    }
-
-    addChild(node: Node): void {
-        if (!this.childrenMap.get(node.name)) {
-            node.parent = this;
-            node.path = this.path + "/" + node.name;
-            this.childrenMap.set(node.name, node);
-        }
     }
 
     toggleAll(isSelected: boolean) {
@@ -96,34 +89,29 @@ export class Node {
         return this.children().filter(c => c.isSelected);
     }
 
-    getPath(): string {
-        return this.path;
+    addChild(node: Node): void {
+        if (!this.childrenMap.get(node.name)) {
+            node.parent = this;
+            this.childrenMap.set(node.name, node);
+        }
     }
 
-    /**
-     * @param {string} params - query parameters which define the 'path' of this node
-     * @returns {Node}
-     */
-    findFullPath(params: any): Node {
-        if (params.path === undefined || params.path === '' || this.path === params.path) {
-            return this;
+    getPathNodes(): Node[] {
+        const pathNodes: Node[] = [];
+        pathNodes.push(this);
+        let parent = this.parent;
+        while (parent) {
+            pathNodes.push(parent);
+            parent = parent.parent;
         }
+        return pathNodes.reverse();
+    }
 
-        let relativePath = params.path.substring(this.path.length, params.path.length);
-        if (relativePath.length > 0) {
-            let node: Node = this;
-            let paths = relativePath.split("/").filter(p => p.length > 0);
-            for (let path of paths) {
-                let child = node.childrenMap.get(path);
-                if (child === undefined) {
-                    child = new Node(path);
-                    node.addChild(child);
-                }
-                node = child;
-            }
-            return node;
-        } else {
-            return this;
-        }
+    getChild(name: string): Node {
+        return this.childrenMap.get(name);
+    }
+
+    setBrowserObject(browserObj: BrowserObject) {
+        this.browserObject = browserObj;
     }
 }

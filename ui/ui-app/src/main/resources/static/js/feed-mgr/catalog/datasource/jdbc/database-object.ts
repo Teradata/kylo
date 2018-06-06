@@ -18,7 +18,7 @@ export class DatabaseObject extends BrowserObject {
     }
 
     canBeParent(): boolean {
-        return this.type !== DatabaseObjectType.Column;
+        return this.type === DatabaseObjectType.Schema || this.type === DatabaseObjectType.Catalog;
     }
 }
 

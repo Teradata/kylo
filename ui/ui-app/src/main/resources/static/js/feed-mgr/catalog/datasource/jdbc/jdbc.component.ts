@@ -35,7 +35,23 @@ export class JdbcComponent extends BrowserComponent {
     }
 
     createParentNodeParams(node: Node): any {
-        return {path: node.path};
+        console.log('createParentNodeParams');
+        const params = {
+            catalog: undefined,
+            schema: undefined
+        };
+        const dbObj: DatabaseObject = <DatabaseObject>node.browserObject;
+        if (dbObj === undefined) {
+            //root node for database will have no browser object
+            return params;
+        }
+        if (dbObj.type === DatabaseObjectType.Catalog) {
+            return params.catalog = dbObj.name;
+        } else if (dbObj.type === DatabaseObjectType.Schema) {
+            return params.schema = dbObj.name;
+        }
+
+        return params;
     }
 
     createChildBrowserObjectParams(obj: BrowserObject): any {
@@ -52,4 +68,26 @@ export class JdbcComponent extends BrowserComponent {
         return this.params;
     }
 
+    findOrCreateThisNode(root: Node, params: any): Node {
+        if (params.catalog === undefined && params.schema === undefined) {
+            return root;
+        }
+        if (params.catalog) {
+            let node = root.getChild(params.catalog);
+            if (node === undefined) {
+                node = new Node(params.catalog);
+                node.setBrowserObject(new DatabaseObject(params.catalog, DatabaseObjectType.Catalog));
+            }
+            return node;
+        } else if (params.schema) {
+            let node = root.getChild(params.schema);
+            if (node === undefined) {
+                node = new Node(params.schema);
+                node.setBrowserObject(new DatabaseObject(params.schema, DatabaseObjectType.Schema));
+            }
+            return node;
+        }
+
+        return undefined;
+    }
 }
