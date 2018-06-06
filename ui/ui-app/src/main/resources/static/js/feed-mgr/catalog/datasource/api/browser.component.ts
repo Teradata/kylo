@@ -10,6 +10,9 @@ import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {Node} from './node';
 import {BrowserObject} from './browser-object';
 import {BrowserColumn} from './browser-column';
+import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
+import {DatasourceComponent} from '../datasource.component';
+import {finalize} from 'rxjs/operators/finalize';
 
 @Component({
     selector: "remote-files",
@@ -17,6 +20,8 @@ import {BrowserColumn} from './browser-column';
     templateUrl: "js/feed-mgr/catalog/datasource/api/browser.component.html"
 })
 export class BrowserComponent implements OnInit {
+
+    private static LOADER: string = "BrowserComponent.LOADER";
 
     @Input()
     public datasource: DataSource;
@@ -45,9 +50,17 @@ export class BrowserComponent implements OnInit {
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
-                private dialog: MatDialog) {
+                private dialog: MatDialog, private loadingService: TdLoadingService) {
         this.columns = this.getColumns();
         this.sortBy = this.getSortByColumnName();
+
+        this.loadingService.create({
+            name: BrowserComponent.LOADER,
+            mode: LoadingMode.Indeterminate,
+            type: LoadingType.Linear,
+            color: 'accent',
+        });
+
     }
 
     public ngOnInit(): void {
@@ -72,8 +85,14 @@ export class BrowserComponent implements OnInit {
      */
     initData(): void {
         const thisNode = this.node;
+        this.loadingService.register(BrowserComponent.LOADER);
         this.http.get(this.getUrl(), {params: this.params})
+            .pipe(finalize(() => {
+                console.log('finalise');
+                this.loadingService.resolve(BrowserComponent.LOADER)
+            }))
             .subscribe((data: Array<any>) => {
+                console.log('received');
                 this.files = data.map(serverObject => {
                     const browserObject = this.mapServerResponseToBrowserObject(serverObject);
                     const node = new Node(browserObject.name);
@@ -189,18 +208,6 @@ export class BrowserComponent implements OnInit {
     private initIsParentSelected(): void {
         this.isParentSelected = this.node.isAnyParentSelected();
     }
-
-
-//http://localhost:8420/api/v1/catalog/datasource/td-test/tables
-//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?schema=s
-//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?catalog=c
-//http://localhost:8420/api/v1/catalog/datasource/td-test/tables?catalog=c&schema=s&table=t
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file:///
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file://users
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=file://users/ru186002/abc
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb:///
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb://kylogreg1.blob.core.windows.net
-//http://localhost:8420/api/v1/catalog/datasource/td-test/files?path=wasb://kylocontainer@kylohost.file.core.windows.net/
 
     rowClick(obj: BrowserObject): void {
         if (obj.canBeParent()) {
