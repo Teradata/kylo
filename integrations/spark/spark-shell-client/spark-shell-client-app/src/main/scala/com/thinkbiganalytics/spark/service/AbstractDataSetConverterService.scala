@@ -12,7 +12,13 @@ abstract class AbstractDataSetConverterService extends DataSetConverterService {
 
     override def getHiveObjectConverter(dataType: DataType): ObjectInspectorConverters.Converter = dataType match {
         case ArrayType(_, _) => new ObjectInspectorConverters.Converter {
-            override def convert(o: Object): Object = o.asInstanceOf[mutable.WrappedArray[Object]].toArray
+            override def convert(o: Object): Object = {
+                if(o == null){
+                  null
+                } else {
+                   o.asInstanceOf[mutable.WrappedArray[Object]].toArray
+                 }
+            }
         }
         case _ => findHiveObjectConverter(dataType).getOrElse(new ObjectInspectorConverters.IdentityConverter)
     }
