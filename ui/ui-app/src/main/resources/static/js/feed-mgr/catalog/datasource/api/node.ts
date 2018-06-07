@@ -121,6 +121,6 @@ export class Node {
      * @returns {string} full path of this Node
      */
     getPath(): string {
-        return this.getPathNodes().map(n => n.name).join("/");
+        return this.browserObject.path;
     }
 }

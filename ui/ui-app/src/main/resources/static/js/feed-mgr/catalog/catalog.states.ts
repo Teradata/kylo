@@ -77,8 +77,9 @@ export const catalogStates: Ng2StateDeclaration[] = [
                     loading.register(DataSourcesComponent.LOADER);
                     return catalog.getDataSources()
                         .pipe(finalize(() => loading.resolve(DataSourcesComponent.LOADER)))
-                        .pipe(catchError(() => {
-                            return state.go("catalog")
+                        .pipe(catchError((err) => {
+                            console.error('Failed to load catalog', err);
+                            return [];
                         }))
                         .toPromise();
                 }

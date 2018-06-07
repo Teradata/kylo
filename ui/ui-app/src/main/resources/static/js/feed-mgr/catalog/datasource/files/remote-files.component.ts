@@ -17,7 +17,10 @@ export class RemoteFilesComponent extends BrowserComponent {
 
 
     createRootNode(): Node {
-        return new Node(this.datasource.template.paths[0]);
+        const rootPath = this.datasource.template.paths[0];
+        const root = new Node(rootPath);
+        root.setBrowserObject(new RemoteFile(rootPath, rootPath, false, 0, new Date()));
+        return root;
     }
 
     getColumns() {
@@ -40,12 +43,18 @@ export class RemoteFilesComponent extends BrowserComponent {
         return new RemoteFile(obj.name, obj.path, obj.directory, obj.length, obj.modificationTime);
     }
 
-    createParentNodeParams(node: Node): any {
-        return {path: node.getPathNodes().map(n => n.name).join("/")};
+    createChildBrowserObjectParams(obj: BrowserObject): object {
+        return {path: obj.path};
     }
 
-    createChildBrowserObjectParams(obj: BrowserObject): object {
-        return {path: this.params.path !== undefined ? this.params.path + "/" + obj.name : obj.name};
+    createParentNodeParams(node: Node): any {
+        const pathNodes = node.getPathNodes();
+        const root = pathNodes[0];
+        if (RemoteFilesComponent.isAzure(new URL(root.name))) {
+            return {path: node.browserObject.path};
+        } else {
+            return {path: pathNodes.map(n => n.name).join("/")};
+        }
     }
 
     findOrCreateThisNode(root: Node, params: any): Node {
@@ -53,23 +62,94 @@ export class RemoteFilesComponent extends BrowserComponent {
             return root;
         }
 
-        let relativePath = params.path.substring(root.name.length, params.path.length);
-        if (relativePath.length > 0) {
+        const rootUrl = new URL(root.name);
+        const pathUrl = new URL(params.path);
+
+        if (RemoteFilesComponent.isAzure(rootUrl)) {
+            //for azure
+
             let node: Node = root;
-            const splits: string[] = relativePath.split("/");
-            const paths = splits.filter(p => p.length > 0);
-            for (let path of paths) {
-                let child = node.childrenMap.get(path);
+            let child: Node;
+
+            const pathname = pathUrl.pathname;
+            //remove first slash and split into segments
+            const segments = pathname.substring(1).split("/").filter(p => p.length > 0);
+
+            //First segment can have container and host
+            const segment = segments[0];
+            const containerNameIdx = segment.indexOf("@");
+            let containerPath;
+            if (containerNameIdx > 0) {
+                //has container
+                const container = segment.substring(0, containerNameIdx);
+                child = node.childrenMap.get(container);
+                if (child === undefined) {
+                    child = new Node(container);
+                    containerPath = rootUrl.protocol + "//" + segment + "/";
+                    child.setBrowserObject(RemoteFilesComponent.createTempPlaceholder(container, containerPath));
+                    node.addChild(child);
+                }
+                node = child;
+            } else {
+                //there is no container, so there must be no more segments either
+                if (segments.length > 1) {
+                    console.error("Invalid Azure URL '" + params.path + "'. Found reference to file(s) without a container");
+                }
+            }
+
+            // Remove the container from the segments
+            segments.shift();
+
+            for (let path of segments) {
+                child = node.childrenMap.get(path);
                 if (child === undefined) {
                     child = new Node(path);
+                    const childPath = containerPath + "/" + path;
+                    child.setBrowserObject(RemoteFilesComponent.createTempPlaceholder(path, childPath));
                     node.addChild(child);
                 }
                 node = child;
             }
             return node;
+
         } else {
-            return root;
+            //for all others
+            const rootPath = rootUrl.toString(); //normalise root url
+            const path = pathUrl.toString(); //normalise path url
+            let relativePath = path.substring(rootPath.length, path.length);
+            if (relativePath.length > 0) {
+                let node: Node = root;
+                const splits: string[] = relativePath.split("/");
+                const paths = splits.filter(p => p.length > 0);
+                for (let path of paths) {
+                    let child = node.childrenMap.get(path);
+                    if (child === undefined) {
+                        child = new Node(path);
+                        node.addChild(child);
+                    }
+                    node = child;
+                }
+                return node;
+            } else {
+                return root;
+            }
         }
+    }
+
+    /**
+     * Create temporary placeholder for file.
+     * Its directory indicator, length and date are not accurate, but its ok since its only a placeholder until user browses
+     * to the parent at which point this object will be replaced with result from server.
+     * @param {string} name
+     * @param {string} path
+     * @returns {RemoteFile}
+     */
+    private static createTempPlaceholder(name: string, path: string) {
+        return new RemoteFile(name, path, true, 0, new Date());
+    }
+
+    private static isAzure(url: URL) {
+        return url.protocol === "wasb:";
     }
 
 }
