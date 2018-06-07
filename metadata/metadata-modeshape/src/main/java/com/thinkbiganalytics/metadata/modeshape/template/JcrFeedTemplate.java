@@ -99,7 +99,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     @Override
     public boolean isDefineTable() {
-        return getProperty(DEFINE_TABLE, Boolean.class);
+        return getProperty(DEFINE_TABLE, Boolean.class, Boolean.FALSE);
     }
 
     @Override
@@ -215,10 +215,7 @@ public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements
 
     @Override
     public boolean isStream() {
-        if (!hasProperty(IS_STREAM)) {
-            setStream(false);
-        }
-        return getProperty(IS_STREAM, Boolean.class, true);
+        return getProperty(IS_STREAM, Boolean.class, Boolean.FALSE);
     }
 
     @Override
