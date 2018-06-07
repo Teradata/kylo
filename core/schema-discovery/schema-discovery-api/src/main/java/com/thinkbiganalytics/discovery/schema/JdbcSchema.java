@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.kylo.catalog;
+package com.thinkbiganalytics.discovery.schema;
 
 /*-
  * #%L
- * kylo-catalog-core
+ * kylo-schema-discovery-api
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,19 +20,23 @@ package com.thinkbiganalytics.kylo.catalog;
  * #L%
  */
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-@Configuration
-public class CatalogConfig {
+/**
+ * A table schema.
+ */
+public interface JdbcSchema {
 
-    @Bean
-    public MessageSource catalogMessages() {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("CatalogMessages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
-    }
+    /**
+     * Returns the catalog name.
+     */
+    @Nullable
+    String getCatalog();
+
+    /**
+     * Returns the schema name.
+     */
+    @Nonnull
+    String getSchema();
 }

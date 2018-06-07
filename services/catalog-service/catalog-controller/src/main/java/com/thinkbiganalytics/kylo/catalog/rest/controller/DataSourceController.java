@@ -24,7 +24,9 @@ import com.thinkbiganalytics.kylo.catalog.CatalogException;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTable;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.kylo.catalog.table.CatalogTableManager;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
@@ -80,6 +82,9 @@ public class DataSourceController extends AbstractCatalogController {
 
     @Inject
     MetadataAccess metadataService;
+
+    @Inject
+    CatalogTableManager tableManager;
 
     @POST
     @ApiOperation("Create a new data source")
@@ -149,12 +154,12 @@ public class DataSourceController extends AbstractCatalogController {
 
     @GET
     @Path("{id}/files")
-    @ApiOperation("List files of a data set")
+    @ApiOperation("List files of a data source")
     @ApiResponses({
                       @ApiResponse(code = 200, message = "List of files in path", response = DataSetFile.class, responseContainer = "List"),
                       @ApiResponse(code = 400, message = "A path is not valid", response = RestResponseStatus.class),
                       @ApiResponse(code = 403, message = "Access to the path is restricted", response = RestResponseStatus.class),
-                      @ApiResponse(code = 404, message = "Data set does not exist", response = RestResponseStatus.class),
+                      @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
                       @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
                   })
     public Response listFiles(@PathParam("id") final String dataSourceId, @QueryParam("path") final String path) {
@@ -187,6 +192,38 @@ public class DataSourceController extends AbstractCatalogController {
         }
 
         return Response.ok(log.exit(files)).build();
+    }
+
+    @GET
+    @Path("{id}/tables")
+    @ApiOperation("List tables in a data source")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "List of tables", response = DataSetTable.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
+                  })
+    public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("catalog") final String catalogName, @QueryParam("schema") final String schemaName) {
+        log.entry(dataSourceId, catalogName, schemaName);
+
+        // List tables
+        final DataSource dataSource = findDataSource(dataSourceId);
+        final List<DataSetTable> tables;
+
+        try {
+            log.debug("List tables for catalog:{} schema:{}", catalogName, schemaName);
+            tables = tableManager.listCatalogsOrTables(dataSource, catalogName, schemaName);
+        } catch (final Exception e) {
+            log.error("Failed to list tables for catalog [{}] schema [{}]: {}", catalogName, schemaName, e);
+            final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                .message(getMessage("catalog.datasource.listTables.error", catalogName, schemaName))
+                .url(request.getRequestURI())
+                .setDeveloperMessage(e)
+                .buildError();
+            throw new InternalServerErrorException(Response.serverError().entity(status).build());
+        }
+
+
+        return Response.ok(log.exit(tables)).build();
     }
 
     /**

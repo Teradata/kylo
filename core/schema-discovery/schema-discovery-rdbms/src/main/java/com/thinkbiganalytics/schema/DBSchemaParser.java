@@ -23,6 +23,10 @@ package com.thinkbiganalytics.schema;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultTableSchema;
 import com.thinkbiganalytics.discovery.schema.Field;
+import com.thinkbiganalytics.discovery.schema.JdbcCatalog;
+import com.thinkbiganalytics.discovery.schema.JdbcSchema;
+import com.thinkbiganalytics.discovery.schema.JdbcSchemaParser;
+import com.thinkbiganalytics.discovery.schema.JdbcTable;
 import com.thinkbiganalytics.discovery.schema.TableSchema;
 import com.thinkbiganalytics.discovery.util.ParserHelper;
 import com.thinkbiganalytics.jdbc.util.DatabaseType;
@@ -33,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.jdbc.support.MetaDataAccessException;
 
 import java.sql.Connection;
@@ -40,23 +45,34 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.Vector;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.sql.DataSource;
 
-public class DBSchemaParser {
+/**
+ * Provides database metadata and schema information from JDBC.
+ */
+public class DBSchemaParser implements JdbcSchemaParser {
 
     private static final Logger log = LoggerFactory.getLogger(DBSchemaParser.class);
 
-    private DataSource ds;
-    private KerberosTicketConfiguration kerberosTicketConfiguration;
+    /**
+     * Column name containing the catalog name
+     */
+    private static final String CATALOG_COLUMN = "TABLE_CAT";
 
-    public DBSchemaParser(DataSource ds, KerberosTicketConfiguration kerberosTicketConfiguration) {
+    /**
+     * Column name containing the schema name
+     */
+    private static final String SCHEMA_COLUMN = "TABLE_SCHEM";
+
+    private final DataSource ds;
+    private final KerberosTicketConfiguration kerberosTicketConfiguration;
+
+    public DBSchemaParser(@Nonnull final DataSource ds, @Nonnull final KerberosTicketConfiguration kerberosTicketConfiguration) {
         this.ds = ds;
         this.kerberosTicketConfiguration = kerberosTicketConfiguration;
     }
@@ -64,15 +80,15 @@ public class DBSchemaParser {
     /**
      * This will list schemas for a connection.
      * NOTE it will not close the connection
-     * @param conn
+     *
      * @return a list of schema names
-     * @throws SQLException
      */
-    private List<String> listSchemas(Connection conn) throws SQLException{
+    @Nonnull
+    private List<String> listSchemas(@Nonnull final Connection conn) throws SQLException {
         List<String> schemas = new ArrayList<>();
         try (ResultSet rs = conn.getMetaData().getSchemas()) {
             while (rs.next()) {
-                String schema = rs.getString("TABLE_SCHEM");
+                String schema = rs.getString(SCHEMA_COLUMN);
                 schemas.add(schema);
             }
             return schemas;
@@ -82,48 +98,68 @@ public class DBSchemaParser {
     /**
      * List the catalogs for a given connection.
      * NOTE it will not close the connection
-     * @param conn
+     *
      * @return a list of catalog names
-     * @throws SQLException
      */
-    private List<String> listCatalogs(Connection conn) throws SQLException{
+    @Nonnull
+    private List<String> listCatalogs(@Nonnull final Connection conn) throws SQLException {
         List<String> catalogs = new ArrayList<>();
         try (ResultSet rs = conn.getMetaData().getCatalogs()) {
             while (rs.next()) {
-                String cat = rs.getString("TABLE_CAT");
+                String cat = rs.getString(CATALOG_COLUMN);
                 catalogs.add(cat);
             }
             return catalogs;
         }
     }
 
+    @Nonnull
     public List<String> listSchemas() {
-        Vector<String> schemas = new Vector<>();
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-           return listSchemas(conn);
+            return listSchemas(conn);
         } catch (SQLException e) {
             throw new SchemaParserException("Unable to list schemas", e);
         }
     }
 
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<JdbcSchema> listSchemas(@Nullable final String catalog, @Nullable final String pattern, @Nullable final Pageable pageable) throws SQLException {
+        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+            final ResultSet resultSet = connection.getMetaData().getSchemas(catalog, null);
+            return (List) transformResults(resultSet, DefaultJdbcSchema.fromResultSet());
+        }
+    }
+
+    @Nonnull
     public List<String> listCatalogs() {
-        Vector<String> catalogs = new Vector<>();
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-           return listCatalogs(conn);
+            return listCatalogs(conn);
         } catch (SQLException e) {
             throw new SchemaParserException("Unable to list catalogs", e);
         }
     }
 
-    public List<String> listSchemasOrCatalogs(){
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<JdbcCatalog> listCatalogs(@Nullable String pattern, @Nullable Pageable pageable) throws SQLException {
+        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+            final ResultSet resultSet = connection.getMetaData().getCatalogs();
+            return (List) transformResults(resultSet, DefaultJdbcCatalog.fromResultSet());
+        }
+    }
+
+    @Nonnull
+    public List<String> listSchemasOrCatalogs() {
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-        if(conn.getMetaData().supportsCatalogsInIndexDefinitions()){
-            return listCatalogs(conn);
-        }
-        else {
+            if (conn.getMetaData().supportsCatalogsInIndexDefinitions()) {
+                return listCatalogs(conn);
+            } else {
 //conn.getMetadata.supportsSchemasInIndexDefinitions
-            return listSchemas(conn);
-        }
+                return listSchemas(conn);
+            }
         } catch (SQLException e) {
             throw new SchemaParserException("Unable to list schemas/catalogs", e);
         }
@@ -159,10 +195,10 @@ public class DBSchemaParser {
         }
     }
 
-    private void addTableToList(final ResultSet result, final List<String> tables) throws SQLException {
+    private void addTableToList(@Nonnull final ResultSet result, @Nonnull final List<String> tables) throws SQLException {
         final String tableName = result.getString("TABLE_NAME");
-        final String tableSchem = result.getString("TABLE_SCHEM");
-        final String tableCat = result.getString("TABLE_CAT");
+        final String tableSchem = result.getString(SCHEMA_COLUMN);
+        final String tableCat = result.getString(CATALOG_COLUMN);
         tables.add((tableSchem != null ? tableSchem : tableCat) + "." + tableName);
     }
 
@@ -265,15 +301,14 @@ public class DBSchemaParser {
         final List<String> tables = new ArrayList<>();
 
         try {
-                try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
-                    if(conn.getMetaData().supportsCatalogsInIndexDefinitions()) {
-                        try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
-                            while (result != null && result.next()) {
-                                addTableToList(result, tables);
-                            }
+            try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+                if (conn.getMetaData().supportsCatalogsInIndexDefinitions()) {
+                    try (final ResultSet result = getTables(conn, catalog, "%", "%")) {
+                        while (result != null && result.next()) {
+                            addTableToList(result, tables);
                         }
                     }
-                    else {
+                } else {
                     try (final ResultSet result = getTables(conn, null, catalog, "%")) {
                         while (result != null && result.next()) {
                             addTableToList(result, tables);
@@ -288,6 +323,16 @@ public class DBSchemaParser {
         return tables;
     }
 
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<JdbcTable> listTables(@Nullable String catalog, @Nullable String schema, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException {
+        try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
+            final ResultSet resultSet = connection.getMetaData().getTables(catalog, schema, null, null);
+            return (List) transformResults(resultSet, DefaultJdbcTable.fromResultSet(connection.getMetaData()));
+        }
+    }
+
     /**
      * Gets the schema for the specified table.
      *
@@ -300,26 +345,13 @@ public class DBSchemaParser {
     @Nullable
     public TableSchema describeTable(@Nullable final String schema, @Nonnull final String table) {
         Validate.isTrue(!StringUtils.isEmpty(table), "Table expected");
-/*
-        String catalog = null;
-        if (StringUtils.isNotBlank(schema)) {
-            final Iterator<String> catalogIter = listCatalogs().iterator();
-            while (catalog == null && catalogIter.hasNext()) {
-                final String next = catalogIter.next();
-                if (schema.equalsIgnoreCase(next)) {
-                    catalog = next;
-                }
-            }
-        }
-        */
 
         try (final Connection conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             String queryCatalog = schema;
             String querySchema = schema;
-            if(conn.getMetaData().supportsCatalogsInIndexDefinitions()) {
+            if (conn.getMetaData().supportsCatalogsInIndexDefinitions()) {
                 querySchema = "%";
-            }
-            else if(conn.getMetaData().supportsSchemasInIndexDefinitions()) {
+            } else if (conn.getMetaData().supportsSchemasInIndexDefinitions()) {
                 queryCatalog = null;
             }
 
@@ -344,12 +376,13 @@ public class DBSchemaParser {
         return null;
     }
 
-    private Set<String> listPrimaryKeys(Connection conn, String schema, String tableName) throws SQLException {
+    @Nonnull
+    private Set<String> listPrimaryKeys(@Nonnull Connection conn, @Nullable String schema, @Nonnull String tableName) throws SQLException {
         HashSet<String> primaryKeys = new HashSet<>();
         try (ResultSet rs = conn.getMetaData().getPrimaryKeys(null, schema, tableName)) {
             while (rs.next()) {
                 String columnName = rs.getString("COLUMN_NAME");
-                String cat = rs.getString("TABLE_CAT");
+                String cat = rs.getString(CATALOG_COLUMN);
                 if (StringUtils.isNotBlank(cat) && StringUtils.isNotBlank(schema)) {
                     //this db supports Catalogs.  Ensure the cat matches the supplied schema
                     if (schema.equalsIgnoreCase(cat)) {
@@ -373,7 +406,8 @@ public class DBSchemaParser {
         return primaryKeys;
     }
 
-    private List<Field> listColumns(Connection conn, String schema, String tableName) throws SQLException {
+    @Nonnull
+    private List<Field> listColumns(@Nonnull Connection conn, @Nullable String schema, @Nonnull String tableName) throws SQLException {
         List<Field> fields;
         Set<String> pkSet = listPrimaryKeys(conn, schema, tableName);
         try (ResultSet columns = conn.getMetaData().getColumns(null, schema, tableName, null)) {
@@ -388,11 +422,12 @@ public class DBSchemaParser {
         return fields;
     }
 
-    private List<Field> columnsResultSetToField(ResultSet columns, Set<String> pkSet, String schema) throws SQLException {
-        List<Field> fields = new Vector<>();
+    @Nonnull
+    private List<Field> columnsResultSetToField(@Nullable ResultSet columns, @Nonnull Set<String> pkSet, @Nullable String schema) throws SQLException {
+        List<Field> fields = new ArrayList<>();
         if (columns != null) {
             while (columns.next()) {
-                String cat = columns.getString("TABLE_CAT");
+                String cat = columns.getString(CATALOG_COLUMN);
                 if (StringUtils.isNotBlank(cat) && StringUtils.isNotBlank(schema)) {
                     //this db supports Catalogs.  Ensure the cat matches the supplied schema
                     if (!schema.equalsIgnoreCase(cat)) {
@@ -420,5 +455,17 @@ public class DBSchemaParser {
 
     }
 
+    /**
+     * Transforms the specified result set using the specified function.
+     */
+    @Nonnull
+    private <T> List<T> transformResults(@Nonnull final ResultSet resultSet, @Nonnull final JdbcFunction<ResultSet, T> function) throws SQLException {
+        final List<T> results = new ArrayList<>();
 
+        while (resultSet.next()) {
+            results.add(function.apply(resultSet));
+        }
+
+        return results;
+    }
 }

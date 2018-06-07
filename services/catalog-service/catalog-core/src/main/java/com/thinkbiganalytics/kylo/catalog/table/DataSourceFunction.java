@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.kylo.catalog;
+package com.thinkbiganalytics.kylo.catalog.table;
 
 /*-
  * #%L
@@ -20,19 +20,17 @@ package com.thinkbiganalytics.kylo.catalog;
  * #L%
  */
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import java.sql.SQLException;
 
-@Configuration
-public class CatalogConfig {
+import javax.annotation.Nonnull;
+import javax.sql.DataSource;
 
-    @Bean
-    public MessageSource catalogMessages() {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("CatalogMessages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
-    }
+/**
+ * Represents a function that performs an action on a {@link DataSource} and returns a result.
+ *
+ * @param <R> type of result
+ */
+public interface DataSourceFunction<R> {
+
+    R apply(@Nonnull DataSource fileSystem) throws SQLException;
 }

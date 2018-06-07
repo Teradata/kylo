@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.kylo.catalog;
+package com.thinkbiganalytics.schema;
 
 /*-
  * #%L
- * kylo-catalog-core
+ * kylo-schema-discovery-rdbms
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,19 +20,23 @@ package com.thinkbiganalytics.kylo.catalog;
  * #L%
  */
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import java.sql.SQLException;
 
-@Configuration
-public class CatalogConfig {
+/**
+ * Represents a predicate (boolean-valued function) of one argument.
+ *
+ * <p>This is a function interface whose functional method is {@link #test(Object)}.</p>
+ *
+ * @param <T> the type of the input to the predicate
+ */
+public interface JdbcPredicate<T> {
 
-    @Bean
-    public MessageSource catalogMessages() {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("CatalogMessages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
-    }
+    /**
+     * Evaluates this predicate on the given argument.
+     *
+     * @param t the input argument
+     * @return {@code true} if the input argument matches the predicate, otherwise {@code false}
+     * @throws SQLException if a SQL error occurs
+     */
+    boolean test(T t) throws SQLException;
 }

@@ -1,8 +1,8 @@
-package com.thinkbiganalytics.kylo.catalog;
+package com.thinkbiganalytics.schema;
 
 /*-
  * #%L
- * kylo-catalog-core
+ * kylo-schema-discovery-rdbms
  * %%
  * Copyright (C) 2017 - 2018 ThinkBig Analytics, a Teradata Company
  * %%
@@ -20,19 +20,24 @@ package com.thinkbiganalytics.kylo.catalog;
  * #L%
  */
 
-import org.springframework.context.MessageSource;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.support.ResourceBundleMessageSource;
+import java.sql.SQLException;
 
-@Configuration
-public class CatalogConfig {
+/**
+ * Represents a function that accepts one argument and produces a result.
+ *
+ * <p>This is a functional interface whose functional method is {@link #apply(Object)}.</p>
+ *
+ * @param <T> the type of the input to the function
+ * @param <R> the type of teh result of the function
+ */
+public interface JdbcFunction<T, R> {
 
-    @Bean
-    public MessageSource catalogMessages() {
-        final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
-        messageSource.setBasename("CatalogMessages");
-        messageSource.setUseCodeAsDefaultMessage(true);
-        return messageSource;
-    }
+    /**
+     * Applies this function te the given argument.
+     *
+     * @param t the function argument
+     * @return the function result
+     * @throws SQLException if a SQL error occurs
+     */
+    R apply(T t) throws SQLException;
 }
