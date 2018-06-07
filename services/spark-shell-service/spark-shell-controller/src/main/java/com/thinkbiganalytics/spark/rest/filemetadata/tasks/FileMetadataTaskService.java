@@ -70,8 +70,9 @@ public class FileMetadataTaskService {
     public static String APPLICATION_PARQUET = "application/parquet";
     public static String APPLICATION_XML = "application/xml";
     public static String APPLICATION_ORC = "application/orc";
+    public static String APPLICATION_JSON = "application/json";
 
-    public static List<String> PARSABLE_MIME_TYPES = Lists.newArrayList(APPLICATION_AVRO, APPLICATION_ORC, APPLICATION_PARQUET, APPLICATION_XML);
+    public static List<String> PARSABLE_MIME_TYPES = Lists.newArrayList(APPLICATION_AVRO, APPLICATION_ORC, APPLICATION_PARQUET, APPLICATION_XML, APPLICATION_JSON);
 
 
     @Inject

@@ -65,8 +65,11 @@ class FileMetadataSchemaRelation protected[metadata](pathParam: Option[String],
     else if (mimeType == "application/xml" || mimeType == "xml") {
       schema = sqlContext.read.option("rowTag", rowTag).format("xml").load(path).schema
     }
+    else if (mimeType == "application/json" || mimeType == "json") {
+      schema = sqlContext.read.option("samplingRatio", "1").format("json").load(path).schema
+    }
     else {
-      schema = sqlContext.read.option("samplingRatio", "0.1").format("text").load(path).schema
+      schema = sqlContext.read.option("samplingRatio", "1").format("text").load(path).schema
     }
     var schemaMap: java.util.Map[String, String] = new util.HashMap[String, String]()
     if (schema != null) {
