@@ -26,6 +26,7 @@
     <module>spark-interpreter</module>
     <module>spark-job-profiler</module>
     <module>spark-shell-client</module>
+    <module>spark-file-metadata</module>
     <module>spark-validate-cleanse</module>
     <module>spark-merge-table</module>
     <module>spark-job-dataquality</module>

@@ -25,12 +25,13 @@ import com.thinkbiganalytics.discovery.util.TableSchemaType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
  * Parses a file to determine its structure and format.
  */
-public interface FileSchemaParser {
+public interface FileSchemaParser extends Serializable {
 
     /**
      * Parse the provided file and builds a schema with data types that fit the target

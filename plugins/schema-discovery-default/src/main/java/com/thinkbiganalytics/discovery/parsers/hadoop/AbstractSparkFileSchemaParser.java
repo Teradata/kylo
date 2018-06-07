@@ -30,6 +30,7 @@ import com.thinkbiganalytics.spring.SpringApplicationContext;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -84,9 +85,16 @@ public abstract class AbstractSparkFileSchemaParser implements SparkFileSchemaPa
         return getSparkParserService().getSparkScript(is, getSparkFileType(), getSparkCommandBuilder());
     }
 
+    public SampleFileSparkScript getSparkScript(List<String> filePaths) {
+        return getSparkParserService().getSparkScript(filePaths, getSparkCommandBuilder());
+    }
+
+
     @Override
     public SparkCommandBuilder getSparkCommandBuilder() {
         return new DefaultSparkCommandBuilder(dataFrameVariable, limit, getSparkFileType().name().toLowerCase());
     }
+
+
 
 }

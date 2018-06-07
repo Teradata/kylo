@@ -4,8 +4,11 @@ import java.util
 
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorConverters, ObjectInspectorFactory}
+import org.apache.spark.sql.RowFactory
 import org.apache.spark.sql.types._
 import org.junit.{Assert, Test}
+
+import scala.collection.JavaConverters
 
 class AbstractDataSetConverterServiceTest {
 
@@ -21,6 +24,24 @@ class AbstractDataSetConverterServiceTest {
         // Test identity converter
         val identityConverter = converterService.getHiveObjectConverter(IntegerType)
         Assert.assertEquals(42, identityConverter.convert(42))
+
+
+
+        var m :  java.util.Map[String,String] = new util.HashMap[String,String]();
+        m.put("name","scott");
+        m.put("pr","aaa")
+
+        var scalaMap = JavaConverters.mapAsScalaMapConverter(m).asScala
+        var mt :org.apache.spark.sql.types.MapType = DataTypes.createMapType(DataTypes.StringType,DataTypes.StringType);
+        var row = RowFactory.create(scalaMap);
+
+        val converter = converterService.getHiveObjectConverter(mt)
+        var convertedMap = converter.convert(row.get(0));
+        var k : Int = 1
+
+
+
+
     }
 
     /** Verify converting Spark SQL types to Hive object inspectors. */
@@ -48,5 +69,7 @@ class AbstractDataSetConverterServiceTest {
         val dataType = StructType(Array(StructField("id", IntegerType)))
         val structOI = ObjectInspectorFactory.getStandardStructObjectInspector(util.Arrays.asList("id"), util.Arrays.asList(PrimitiveObjectInspectorFactory.javaIntObjectInspector))
         Assert.assertEquals(structOI, converterService.getHiveObjectInspector(dataType))
+
+
     }
 }

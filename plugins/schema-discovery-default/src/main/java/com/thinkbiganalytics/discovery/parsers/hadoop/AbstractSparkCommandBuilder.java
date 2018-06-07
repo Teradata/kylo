@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.discovery.parsers.hadoop;
 
+import java.util.List;
+
 import static com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser.NO_LIMIT;
 
 /*-
@@ -60,20 +62,96 @@ public abstract class AbstractSparkCommandBuilder implements SparkCommandBuilder
         return limit != null && NO_LIMIT != limit;
     }
 
-    public void appendDataFrameScript(StringBuilder sb, String method, String pathToFile) {
-        appendDataFrameReadScript(sb,method,pathToFile);
-        if (isLimit()) {
-            sb.append(String.format(".limit(%s)", limit));
+
+    public void appendDataFrameScript(StringBuilder sb, String dataframeVariable, String method, String pathToFile, boolean appendLimit) {
+        appendDataFrameReadScript(dataframeVariable,sb,method,pathToFile);
+        if(appendLimit){
+            appendLimit(sb);
         }
         sb.append(".toDF()");
     }
 
-    public void appendDataFrameVariable(StringBuilder sb){
-        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+    public void appendLimit(StringBuilder sb){
+        if(isLimit()) {
+            sb.append(String.format(".limit(%s)", limit));
+        }
     }
 
-    public void appendDataFrameReadScript(StringBuilder sb, String method, String pathToFile){
-        appendDataFrameVariable(sb);
+    @Override
+    public String appendLimit(String script) {
+        StringBuilder sb = new StringBuilder(script);
+        if(isLimit()){
+            sb.append(dataframeVariable + " = "+dataframeVariable );
+            sb.append(String.format(".limit(%s)", limit));
+        }
+        return sb.toString();
+
+    }
+
+    public SparkCommandBuilder dataFrameVariableEquals(String dataframeVariable,StringBuilder sb){
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+        return this;
+    }
+
+    public SparkCommandBuilder appendDataFrameVariable(String dataframeVariable,StringBuilder sb){
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+        return this;
+    }
+
+    public SparkCommandBuilder appendDataFrameReadScript(StringBuilder sb, String method, String pathToFile){
+        sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
+        return this;
+    }
+
+    public void appendDataFrameReadScript(String dataframeVariable,StringBuilder sb, String method, String pathToFile){
+        appendDataFrameVariable(dataframeVariable,sb);
         sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
     }
+
+    /**
+     * unionDataFrames("sqlContext.read.avro(\"%s\").toDF()\n")
+     * @param scriptToParse
+     * @param paths
+     * @return
+     */
+    public String unionDataFrames(List<String> paths,String scriptToParse,  Object... args){
+        StringBuilder sb = new StringBuilder();
+        int counter = 0;
+        String tmpDf = "tmpDf";
+        for(String path: paths) {
+            String df = counter ==0 ? "var tmpDf = " : counter == 1 ? "var df1 = " : "df1 = ";
+            String script = df + scriptToParse;
+            Object[] scriptArgs = null;
+            if(args != null) {
+                scriptArgs = add(args, path);
+            }
+            else {
+                scriptArgs = new Object[] {path};
+            }
+            sb.append(String.format(script, (Object[])scriptArgs));
+            if(counter >0){
+                sb.append(String.format("%s = %s.unionAll(%s)\n", tmpDf,tmpDf,"df1"));
+            }
+            counter++;
+        }
+        if(dataframeVariable == null) {
+            dataframeVariable = "df";
+        }
+        sb.append(String.format("var %s = %s\n",dataframeVariable,tmpDf));
+        if(isLimit()) {
+            sb.append(String.format("%s = %s.limit(%s)\n", dataframeVariable, dataframeVariable, getLimit()));
+        }
+        return sb.toString();
+
+    }
+    private static Object[] add(Object[] arr, Object... elements){
+        Object[] tempArr = new Object[arr.length+elements.length];
+        System.arraycopy(arr, 0, tempArr, 0, arr.length);
+
+        for(int i=0; i < elements.length; i++)
+            tempArr[arr.length+i] = elements[i];
+        return tempArr;
+
+    }
+
 }

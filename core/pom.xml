@@ -28,6 +28,7 @@
     <module>operational-metadata</module>
     <module>cluster-manager</module>
     <module>search</module>
+    <module>file-metadata</module>
   </modules>
 
 </project>

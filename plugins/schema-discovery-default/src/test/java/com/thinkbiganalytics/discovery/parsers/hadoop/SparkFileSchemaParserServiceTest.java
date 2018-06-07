@@ -21,6 +21,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  */
 
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
+import com.thinkbiganalytics.discovery.parser.SampleFileSparkScript;
 import com.thinkbiganalytics.discovery.schema.Field;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.Schema;
@@ -31,6 +32,7 @@ import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.internal.util.reflection.Whitebox;
 
@@ -135,6 +137,54 @@ public class SparkFileSchemaParserServiceTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private AbstractSparkFileSchemaParser setup(AbstractSparkFileSchemaParser schemaParser) throws Exception {
+        final SparkShellRestClient restClient = Mockito.mock(SparkShellRestClient.class);
+        final SparkShellProcessManager sparkShellProcessManager = Mockito.mock(SparkShellProcessManager.class);
+
+        SparkFileSchemaParserService service = Mockito.mock(SparkFileSchemaParserService.class);
+        Whitebox.setInternalState(service, "shellProcessManager", sparkShellProcessManager);
+        Whitebox.setInternalState(service, "restClient", restClient);
+
+        Mockito.when(service.getSparkScript(Mockito.any(List.class), Mockito.any())).thenCallRealMethod();
+        Mockito.when(service.doParse(Mockito.any(InputStream.class), Mockito.any(), Mockito.any(), Mockito.any())).thenCallRealMethod();
+        Mockito.when(schemaParser.getSparkParserService()).thenReturn(service);
+     //   Mockito.when(schemaParser.getSparkScript(Mockito.anyList())).thenCallRealMethod();
+     //   Mockito.when(schemaParser.getSparkCommandBuilder()).thenCallRealMethod();
+         return schemaParser;
+    }
+
+    @org.junit.Test
+    public void testScript(){
+        //String  file1 ="file:///opt/kylo/setup/data/sample-data/avro/userdata1.avro";
+       // String file2 = "file:///opt/kylo/setup/data/sample-data/avro/userdata1.avro";
+
+        String  file1 ="file:///opt/kylo/setup/data/sample-data/csv/userdata1.csv";
+        String file2 = "file:///opt/kylo/setup/data/sample-data/csv/userdata2.csv";
+        String file3 = "file:///opt/kylo/setup/data/sample-data/csv/userdata3.csv";
+        List<String>files = new ArrayList<>();
+        files.add(file1);
+        files.add(file2);
+        files.add(file3);
+
+        AvroFileSchemaParser avroFileSchemaParser = Mockito.spy(AvroFileSchemaParser.class);
+        avroFileSchemaParser.setDataFrameVariable("df");
+
+        OrcFileSchemaParser orcFileSchemaParser = Mockito.spy(OrcFileSchemaParser.class);
+        orcFileSchemaParser.setLimit(-1);
+        XMLFileSchemaParser xmlFileSchemaParser = Mockito.spy(XMLFileSchemaParser.class);
+        xmlFileSchemaParser.setRowTag("row1");
+        SparkCSVFileSchemaParser csvFileSchemaParser = Mockito.spy(SparkCSVFileSchemaParser.class);
+        csvFileSchemaParser.setDataFrameVariable("df");
+      //  orcFileSchemaParser.setDataFrameVariable("df");
+try {
+    SampleFileSparkScript sparkScript = setup(csvFileSchemaParser).getSparkScript(files);
+    System.out.println(sparkScript.getScript());
+}catch (Exception e){
+e.printStackTrace();
+}
+
     }
 
 }

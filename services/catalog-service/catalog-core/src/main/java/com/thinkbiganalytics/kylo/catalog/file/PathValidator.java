@@ -129,7 +129,8 @@ public class PathValidator {
 
         for (final URI allowedUri : allowedUris) {
             final String allowedPath = allowedUri.getPath();
-            if (scheme.equals(allowedUri.getScheme()) && (allowedPath == null || allowedPath.equals(normalPath) || normalPath.startsWith(allowedPath))) {
+            final String allowedScheme = allowedUri.getScheme() != null ? allowedUri.getScheme() : "file";
+            if (scheme.equals(allowedScheme) && (allowedPath == null || allowedPath.equals(normalPath) || normalPath.startsWith(allowedPath))) {
                 return true;
             }
         }

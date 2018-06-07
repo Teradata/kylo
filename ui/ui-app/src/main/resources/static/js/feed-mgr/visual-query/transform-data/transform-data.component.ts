@@ -1,4 +1,4 @@
-import {Input, OnInit} from "@angular/core";
+import {Component, Input, OnInit} from "@angular/core";
 import * as angular from "angular";
 import {IDeferred, IPromise} from "angular";
 import * as $ from "jquery";

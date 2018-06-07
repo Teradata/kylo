@@ -37,6 +37,7 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
     private boolean allowSkipHeader;
     private boolean usesSpark;
     private boolean primary;
+    private String[] mimeTypes;
 
     public boolean isSupportsBinary() {
         return supportsBinary;
@@ -92,5 +93,13 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
 
     public void setPrimary(boolean primary) {
         this.primary = primary;
+    }
+
+    public String[] getMimeTypes() {
+        return mimeTypes;
+    }
+
+    public void setMimeTypes(String[] mimeTypes) {
+        this.mimeTypes = mimeTypes;
     }
 }
