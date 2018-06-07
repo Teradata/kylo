@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.spark.service
 
+import java.util
+
 import org.apache.hadoop.hive.common.`type`.HiveDecimal
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorConverters, ObjectInspectorFactory}
@@ -18,6 +20,18 @@ abstract class AbstractDataSetConverterService extends DataSetConverterService {
                 } else {
                    o.asInstanceOf[mutable.WrappedArray[Object]].toArray
                  }
+            }
+        }
+        case MapType(keyType, valueType, _) => {
+            val keyConverter = getHiveObjectConverter(keyType)
+            val valueConverter = getHiveObjectConverter(valueType)
+            new ObjectInspectorConverters.Converter {
+                override def convert(o: scala.Any): AnyRef = {
+                    val scalaMap = o.asInstanceOf[Map[Object, Object]]
+                    val javaMap = new util.HashMap[Object, Object](scalaMap.size)
+                    scalaMap.foreach(entry => javaMap.put(keyConverter.convert(entry._1), valueConverter.convert(entry._2)))
+                    javaMap
+                }
             }
         }
         case _ => findHiveObjectConverter(dataType).getOrElse(new ObjectInspectorConverters.IdentityConverter)
