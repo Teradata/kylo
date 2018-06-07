@@ -48,7 +48,7 @@ export class FileMetadataTransformService  {
             let path = node.getPath();
             if (datasource.connector.id == "local-file-system") {
                 //ensure the path starts with file://
-                if (path.indexOf("file://") != 0) {
+                if (path.indexOf("file:/") != 0) {
                     path = "file://" + path;
                 }
             }

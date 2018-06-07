@@ -30,7 +30,7 @@
     },
     "template": {
       "paths": [
-        "/opt/kylo"
+        "file::///opt/kylo"
       ]
     }
   },
