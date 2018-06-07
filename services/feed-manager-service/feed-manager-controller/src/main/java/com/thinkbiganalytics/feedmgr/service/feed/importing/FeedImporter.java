@@ -329,7 +329,7 @@ public class FeedImporter {
             if (feedToImport.getCategory().getUserProperties() != null) {
                 Map<String, UserProperty>
                     suppliedCategoryProperties =
-                    feedToImport.getCategory().getUserProperties().stream().filter(f -> Objects.equals(f.isRequired(), Boolean.TRUE)).collect(Collectors.toMap(f -> f.getSystemName(), f -> f));
+                    feedToImport.getCategory().getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
                 suppliedUploadCategoryProperties.putAll(suppliedCategoryProperties);
             }
             //set the list back
@@ -370,7 +370,7 @@ public class FeedImporter {
             suppliedUploadFeedProperties =
             feedUserFieldOption.getProperties().stream().map(property -> toUserProperty(property)).collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
         if (feedToImport.getUserProperties() != null) {
-            Map<String, UserProperty> suppliedFeedProperties = feedToImport.getUserProperties().stream().filter(f -> Objects.equals(f.isRequired(), Boolean.TRUE)).collect(Collectors.toMap(f -> f.getSystemName(), f -> f));
+            Map<String, UserProperty> suppliedFeedProperties = feedToImport.getUserProperties().stream().collect(Collectors.toMap(p -> p.getSystemName(), p -> p));
             suppliedUploadFeedProperties.putAll(suppliedFeedProperties);
         }
         //set the list back
