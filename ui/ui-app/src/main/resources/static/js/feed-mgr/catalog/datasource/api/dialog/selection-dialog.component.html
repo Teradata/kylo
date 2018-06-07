@@ -9,6 +9,9 @@
       [sortBy]="sortBy"
       [sortOrder]="sortOrder"
       (sortChange)="sort($event)">
+    <ng-template tdDataTableTemplate="path" let-row="row">
+      <span title="{{row.path}}">{{row.path}}</span>
+    </ng-template>
     <ng-template tdDataTableTemplate="remove" let-row="row">
       <span class="remove-row-button" title="Remove" (click)="removeItem(row)">&times;</span>
     </ng-template>
