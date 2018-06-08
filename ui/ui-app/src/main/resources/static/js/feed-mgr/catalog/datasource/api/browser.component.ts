@@ -246,10 +246,16 @@ export class BrowserComponent implements OnInit {
     }
 
 
+    isSelectAllDisabled() {
+        return this.selectionStrategy.isSelectAllDisabled(this.node);
+    }
 
+    isSelectChildDisabled(childName: string) {
+        return this.selectionStrategy.isSelectChildDisabled(this.node, childName);
+    }
 
-    isChecked(fileName: string): boolean {
-        return this.isParentSelected || this.node.isChildSelected(fileName);
+    isChildSelected(childName: string): boolean {
+        return this.selectionStrategy.isChildSelected(this.node, childName);
     }
 
     onToggleAll(): void {
@@ -257,7 +263,7 @@ export class BrowserComponent implements OnInit {
         this.initSelection();
     }
 
-    onToggleRow(event: any, file: BrowserObject): void {
+    onToggleChild(event: any, file: BrowserObject): void {
         this.selectionStrategy.toggleChild(this.node, file.name, event.checked);
         this.initSelection();
     }

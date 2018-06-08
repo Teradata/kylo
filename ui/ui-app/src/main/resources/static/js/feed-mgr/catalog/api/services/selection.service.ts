@@ -2,17 +2,108 @@ import {Injectable} from "@angular/core";
 import {Node} from '../models/node';
 
 /**
- * Defines what to do when Node is selected/de-selected in BrowserComponent.
+ * Defines what to do when Node is selected/de-selected in BrowserComponent
  */
 export interface SelectionStrategy {
     toggleAllChildren(node: Node, checked: boolean): void;
     toggleChild(node: Node, childName: string, checked: boolean): void;
+    isChildSelected(node: Node, childName: string): boolean;
+    isSelectChildDisabled(node: Node, childName: string): boolean;
+    isSelectAllDisabled(node: Node): boolean;
+    withPolicy(policy: SelectionPolicy): SelectionStrategy;
+}
+
+export interface SelectionPolicy {
+    isSelectAllDisabled(node: Node): boolean;
+    isSelectChildDisabled(node: Node, childName: string): boolean;
+    toggleNode(node: Node, checked: boolean): void;
 }
 
 /**
- * Allows to select multiple items on different paths.
+ * Allows for multiple times to be selected on any path.
+ * If parent item (item which hold other items) is selected then all
+ * its descendants will be automatically deselected.
  */
-export class MultipleSelectionStrategy implements SelectionStrategy {
+export class DefaultSelectionPolicy implements SelectionPolicy {
+    toggleNode(node: Node, checked: boolean): void {
+        if (checked) {
+            this.uncheckAllDescendants(node);
+        }
+    }
+    isSelectChildDisabled(node: Node, childName: string): boolean {
+        return node.isAnyParentSelected();
+    }
+    isSelectAllDisabled(node: Node): boolean {
+        return node.isAnyParentSelected();
+    }
+    private uncheckAllDescendants(node: Node) {
+        for (let child of node.children()) {
+            child.setSelected(false);
+            this.uncheckAllDescendants(child);
+        }
+    }
+}
+
+/**
+ * Allows only a single item to be selected at a time.
+ */
+export class SingleSelectionPolicy implements SelectionPolicy {
+    private selectedNode: Node = new Node('initial-placeholder');
+
+    toggleNode(node: Node, checked: boolean): void {
+        this.selectedNode.setSelected(false);
+        this.selectedNode = node;
+        this.selectedNode.setSelected(checked);
+    }
+
+    isSelectChildDisabled(node: Node, childName: string): boolean {
+        return false;
+    }
+    isSelectAllDisabled(node: Node): boolean {
+        return true;
+    }
+}
+
+/**
+ * Does not allow parent items (items which can hold other items) to be selected, e.g.
+ * this will not allow for directories to be selected in file browser or for schemas and
+ * catalogs to be selected in database browser.
+ */
+export class BlockParentObjectSelectionPolicy implements SelectionPolicy {
+    toggleNode(node: Node, checked: boolean): void {
+    }
+    isSelectChildDisabled(node: Node, childName: string): boolean {
+        return node.getChild(childName).getBrowserObject().canBeParent();
+    }
+    isSelectAllDisabled(node: Node): boolean {
+        return false;
+    }
+}
+
+/**
+ * Allows for selection of multiple items on different paths
+ */
+export class DefaultSelectionStrategy implements SelectionStrategy {
+
+    private policies: SelectionPolicy[] = [];
+
+    withPolicy(policy: SelectionPolicy): SelectionStrategy {
+        this.policies.push(policy);
+        return this;
+    }
+
+    isSelectAllDisabled(node: Node): boolean {
+        return this.policies.map(p => p.isSelectAllDisabled(node)).reduce((sum, next) => sum || next, false);
+    }
+
+    isSelectChildDisabled(node: Node, childName: string): boolean {
+        return this.policies.map(p => p.isSelectChildDisabled(node, childName)).reduce((sum, next) => sum || next, false);
+    }
+
+    isChildSelected(node: Node, childName: string): boolean {
+        return node.isAnyParentSelected() || node.isChildSelected(childName);
+    }
+
     toggleAllChildren(node: Node, checked: boolean): void {
         const children = node.children();
         for (let child of children) {
@@ -27,37 +118,9 @@ export class MultipleSelectionStrategy implements SelectionStrategy {
 
     private toggleNode(node: Node, checked: boolean) {
         node.setSelected(checked);
-        if (checked) {
-            this.uncheckAllDescendants(node);
+        for (let policy of this.policies) {
+            policy.toggleNode(node, checked);
         }
-    }
-
-    private uncheckAllDescendants(node: Node) {
-        for (let child of node.children()) {
-            child.setSelected(false);
-            this.uncheckAllDescendants(child);
-        }
-    }
-}
-
-/**
- * Allows a single item to be selected at a time.
- */
-export class SingleSelectionStrategy implements SelectionStrategy {
-
-    private selectedNode: Node;
-
-    /**
-     * This should not really be called since its a single selection at a time.
-     */
-    toggleAllChildren(node: Node, checked: boolean): void {
-    }
-
-    toggleChild(node: Node, childName: string, checked: boolean): void {
-        const child = node.getChild(childName);
-        this.selectedNode.setSelected(false);
-        this.selectedNode = child;
-        this.selectedNode.setSelected(checked);
     }
 }
 
@@ -66,7 +129,10 @@ export class SelectionService {
 
     private selections: Map<string, any> = new Map<string, any>();
     private lastPath: Map<string, any> = new Map<string, any>();
-    private selectionStrategy: SelectionStrategy = new MultipleSelectionStrategy();
+    private selectionStrategy: SelectionStrategy = new DefaultSelectionStrategy()
+        .withPolicy(new DefaultSelectionPolicy())
+        .withPolicy(new SingleSelectionPolicy())
+        .withPolicy(new BlockParentObjectSelectionPolicy());
 
     /**
      * Stores selection for data source
