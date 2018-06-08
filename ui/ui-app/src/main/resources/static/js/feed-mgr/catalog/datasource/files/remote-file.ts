@@ -1,7 +1,7 @@
 import {DatePipe} from '@angular/common';
 import {TdBytesPipe} from '@covalent/core/common';
-import {BrowserObject} from '../api/browser-object';
-import {BrowserColumn} from '../api/browser-column';
+import {BrowserObject} from '../../api/models/browser-object';
+import {BrowserColumn} from '../../api/models/browser-column';
 
 export class RemoteFile extends BrowserObject {
     directory: boolean;

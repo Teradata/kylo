@@ -1,6 +1,6 @@
 import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 import {BrowserComponent} from '../api/browser.component';
-import {BrowserObject} from '../api/browser-object';
+import {BrowserObject} from '../../api/models/browser-object';
 import {Node} from '../../api/models/node';
 
 

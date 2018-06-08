@@ -5,7 +5,7 @@ import {BrowserObject} from './browser-object';
  */
 export class Node {
     name: string;
-    isSelected: boolean = false;
+    private isSelected: boolean = false;
     childrenMap: Map<string, Node> = new Map<string, Node>();
     parent: Node;
     browserObject: BrowserObject;
@@ -100,5 +100,9 @@ export class Node {
      */
     getPath(): string {
         return this.browserObject.path;
+    }
+
+    setSelected(selected: boolean): void {
+        this.isSelected = selected;
     }
 }

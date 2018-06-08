@@ -26,7 +26,7 @@ export class MultipleSelectionStrategy implements SelectionStrategy {
     }
 
     private toggleNode(node: Node, checked: boolean) {
-        node.isSelected = checked;
+        node.setSelected(checked);
         if (checked) {
             this.uncheckAllDescendants(node);
         }
@@ -34,7 +34,7 @@ export class MultipleSelectionStrategy implements SelectionStrategy {
 
     private uncheckAllDescendants(node: Node) {
         for (let child of node.children()) {
-            child.isSelected = false;
+            child.setSelected(false);
             this.uncheckAllDescendants(child);
         }
     }
@@ -55,9 +55,9 @@ export class SingleSelectionStrategy implements SelectionStrategy {
 
     toggleChild(node: Node, childName: string, checked: boolean): void {
         const child = node.getChild(childName);
-        this.selectedNode.isSelected = false;
+        this.selectedNode.setSelected(false);
         this.selectedNode = child;
-        this.selectedNode.isSelected = checked;
+        this.selectedNode.setSelected(checked);
     }
 }
 

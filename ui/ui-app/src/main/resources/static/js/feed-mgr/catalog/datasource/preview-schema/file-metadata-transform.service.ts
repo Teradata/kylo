@@ -1,5 +1,5 @@
 import {FileMetadataTransformResponse} from "./file-metadata-transform-response";
-import {Node} from "../api/node";
+import {Node} from "../../api/models/node";
 import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';

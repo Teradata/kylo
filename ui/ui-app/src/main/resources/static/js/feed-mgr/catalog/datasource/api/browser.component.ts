@@ -8,8 +8,8 @@ import {SelectionService, SelectionStrategy} from '../../api/services/selection.
 import {MatDialog} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
 import {Node} from '../../api/models/node';
-import {BrowserObject} from './browser-object';
-import {BrowserColumn} from './browser-column';
+import {BrowserObject} from '../../api/models/browser-object';
+import {BrowserColumn} from '../../api/models/browser-column';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
 import {finalize} from 'rxjs/operators/finalize';
 import {catchError} from 'rxjs/operators/catchError';

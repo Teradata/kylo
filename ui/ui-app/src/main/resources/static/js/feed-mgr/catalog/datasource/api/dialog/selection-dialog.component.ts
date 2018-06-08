@@ -58,7 +58,7 @@ export class SelectionDialogComponent implements OnInit {
     onOk() {
         if (this.isSelectionUpdated()) {
             for (let item of this.removed) {
-                item.node.isSelected = false;
+                item.node.setSelected(false);
             }
             this.selfReference.close(true);
         } else {

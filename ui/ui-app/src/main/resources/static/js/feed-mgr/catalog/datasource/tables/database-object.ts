@@ -1,5 +1,5 @@
-import {BrowserObject} from '../api/browser-object';
-import {BrowserColumn} from '../api/browser-column';
+import {BrowserObject} from '../../api/models/browser-object';
+import {BrowserColumn} from '../../api/models/browser-column';
 
 export enum DatabaseObjectType {
     Catalog = "CATALOG",
