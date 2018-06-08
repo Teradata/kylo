@@ -10,9 +10,11 @@ export interface SelectionStrategy {
     isChildSelected(node: Node, childName: string): boolean;
     isSelectChildDisabled(node: Node, childName: string): boolean;
     isSelectAllDisabled(node: Node): boolean;
-    withPolicy(policy: SelectionPolicy): SelectionStrategy;
 }
 
+/**
+ * Participates in deciding what selection actions are allowed for end user.
+ */
 export interface SelectionPolicy {
     isSelectAllDisabled(node: Node): boolean;
     isSelectChildDisabled(node: Node, childName: string): boolean;
@@ -81,13 +83,15 @@ export class BlockParentObjectSelectionPolicy implements SelectionPolicy {
 }
 
 /**
- * Allows for selection of multiple items on different paths
+ * Uses SelectionPolicy array to decide what selection actions are available to user.
+ * All SelectionPolicies participate to decide whether action is available or not where
+ * their "votes" are OR'ed, i.e. it is enough for one SelectionPolicy to block an action.
  */
 export class DefaultSelectionStrategy implements SelectionStrategy {
 
     private policies: SelectionPolicy[] = [];
 
-    withPolicy(policy: SelectionPolicy): SelectionStrategy {
+    withPolicy(policy: SelectionPolicy): DefaultSelectionStrategy {
         this.policies.push(policy);
         return this;
     }
