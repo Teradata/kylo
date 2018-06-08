@@ -16,7 +16,7 @@ export const marketplaceTemplateStates: Ng2StateDeclaration[] = [
         ],
         data: {
             breadcrumbRoot: true,
-            displayName: "Templates"
+            displayName: "Marketplace"
         }
     }
 ];

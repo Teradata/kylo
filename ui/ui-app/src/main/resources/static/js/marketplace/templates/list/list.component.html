@@ -1,34 +1,20 @@
 <td-layout>
-  <mat-toolbar>
-    <mat-toolbar-row>
-      <span>Marketplace</span>
-      <span class="flex">
-        <td-search-box backIcon="arrow_back"
-                     placeholder="Search Marketplace for feeds or templates"
-                     [(ngModel)]="searchTerm"
-                     [showUnderline]="true"
-                     (debounce)="0" [alwaysVisible]="false"
-                     (searchDebounce)="search($event)"
-                     (search)="searchTerm = $event">
-        </td-search-box>
-        </span>
-      </mat-toolbar-row>
-  </mat-toolbar>
   <ng-container>
     <mat-card>
       <mat-list *ngIf="templates.length > 0">
+        <td-search-box placeholder="Search Marketplace" debounce="0" [alwaysVisible]="true" (searchDebounce)="search($event)">
+        </td-search-box>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredTemplates">
           <mat-list-item>
             <div flex="30" layout="column" class="item-column md-list-item-text">
-              <ng-md-icon icon="check_circle" style="fill:green" size="20" *ngIf="item.installed"></ng-md-icon>
-              <mat-checkbox *ngIf="!item.installed" (change)="toggleImportTemplate($event, item)">
-              </mat-checkbox>
+              <ng-md-icon icon="done" style="fill:green" size="20" *ngIf="item.installed"></ng-md-icon>
+              <ng-md-icon *ngIf="!item.installed" icon="file_upload" (click)="toggleImportTemplate(item)" style="fill:#F08C38;cursor: pointer;" size="20"></ng-md-icon>
             </div>
             <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text">
               <span class="item-title" >
-                 {{item.templateName}}
+                 {{item.templateName}} <ng-md-icon icon="layers" style="fill:#9e9e9e" size="15"></ng-md-icon>
               </span>
-              <span class="column-title column-title-bottom">Description: {{item.description}}</span>
+              <span class="column-title column-title-bottom">{{item.description}}</span>
             </div>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
@@ -47,8 +33,8 @@
 
       <div *ngIf="templates.length == 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
         <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
-        <h2>No Templates</h2>
-        <span>There are no available templates.</span>
+        <h2>No Templates or Feeds available in marketplace.</h2>
+        <span>No Templates or Feeds available in marketplace.</span>
       </div>
     </mat-card>
   </ng-container>

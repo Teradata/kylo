@@ -18,7 +18,8 @@ export class ListTemplatesComponent implements OnInit {
 
     constructor(private templateService: TemplateService,
                 private dataTableService: TdDataTableService,
-                private state: StateService){}
+                private state: StateService) {
+    }
 
     selectedTemplate: string;
 
@@ -35,8 +36,8 @@ export class ListTemplatesComponent implements OnInit {
     /**
      * Install template if not already installed
      */
-    importTemplates(){
-        if(this.selectedTemplate.length == 0){
+    importTemplates() {
+        if (this.selectedTemplate.length == 0) {
             console.warn("Select at least one template to import.")
             return;
         }
@@ -50,15 +51,10 @@ export class ListTemplatesComponent implements OnInit {
     /**
      * select/un-select template to be imported
      */
-    toggleImportTemplate(event: any, template: TemplateMetadata){
-        if(event.checked)
-            this.selectedTemplate = template.fileName;
-        else
-            this.selectedTemplate = null;
-
-        console.log(this.selectedTemplate);
+    toggleImportTemplate(template: TemplateMetadata) {
+        this.selectedTemplate = template.fileName;
         let param = {"template": template};
-        this.state.go("import-template",param);
+        this.state.go("import-template", param);
     }
 
     pageSize: number = 50;
