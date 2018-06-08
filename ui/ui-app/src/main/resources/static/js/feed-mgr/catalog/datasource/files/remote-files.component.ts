@@ -44,14 +44,14 @@ export class RemoteFilesComponent extends BrowserComponent {
     }
 
     createChildBrowserObjectParams(obj: BrowserObject): object {
-        return {path: obj.path};
+        return {path: (<RemoteFile>obj).path};
     }
 
     createParentNodeParams(node: Node): any {
         const pathNodes = node.getPathNodes();
         const root = pathNodes[0];
         if (RemoteFilesComponent.isAzure(new URL(root.getName()))) {
-            return {path: node.getBrowserObject().path};
+            return {path: (<RemoteFile>node.getBrowserObject()).path};
         } else {
             return {path: pathNodes.map(n => n.getName()).join("/")};
         }

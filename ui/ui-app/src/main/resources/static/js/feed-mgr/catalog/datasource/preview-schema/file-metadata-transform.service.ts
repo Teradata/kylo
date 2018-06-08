@@ -4,7 +4,6 @@ import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/map';
-import {SatusDialogComponent} from "../../dialog/status-dialog.component";
 import {DataSource} from "../../api/models/datasource";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
@@ -45,7 +44,7 @@ export class FileMetadataTransformService  {
     }
     getSelectedFiles(node:Node, datasource:DataSource) :string[] {
         let paths = node.getSelectedDescendants().map((node) => {
-            let path = node.getPath();
+            let path = node.getBrowserObject().getPath();
             if (datasource.connector.id == "local-file-system") {
                 //ensure the path starts with file://
                 if (path.indexOf("file:/") != 0) {

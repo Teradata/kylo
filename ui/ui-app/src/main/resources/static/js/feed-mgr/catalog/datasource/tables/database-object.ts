@@ -11,15 +11,31 @@ export enum DatabaseObjectType {
 
 export class DatabaseObject extends BrowserObject {
     type: DatabaseObjectType;
+    catalog: string;
+    schema: string;
 
-    constructor(name: string, type: DatabaseObjectType) {
+    constructor(name: string, type: DatabaseObjectType, catalog: string, schema: string) {
         super();
         this.name = name;
         this.type = type;
+        this.catalog = catalog;
+        this.schema = schema;
     }
 
     canBeParent(): boolean {
         return this.type === DatabaseObjectType.Schema || this.type === DatabaseObjectType.Catalog;
+    }
+
+    getPath(): string {
+        let path = [];
+        if (this.catalog) {
+            path.push("catalog=" + this.catalog);
+        } else if (this.schema) {
+            path.push("schema=" + this.schema);
+        }
+        path.push("type=" + this.type);
+        path.push("name=" + this.name);
+        return path.join("&");
     }
 }
 

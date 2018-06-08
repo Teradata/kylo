@@ -2,7 +2,6 @@ import {BrowserColumn} from './browser-column';
 
 export class BrowserObject {
     name: string;
-    path: string;
 
     /**
      * Whether or not this object can be parent, i.e. have children.
@@ -20,4 +19,12 @@ export class BrowserObject {
     getIcon(column: BrowserColumn): string {
         return '';
     }
+
+    /**
+     * @returns {string}
+     */
+    getPath(): string {
+        return undefined;
+    }
+
 }

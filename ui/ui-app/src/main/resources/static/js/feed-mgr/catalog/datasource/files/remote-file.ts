@@ -7,6 +7,7 @@ export class RemoteFile extends BrowserObject {
     directory: boolean;
     length: number;
     modificationTime: Date;
+    path: string;
 
     constructor(name: string, path: string, directory: boolean, length: number, modificationTime: Date) {
         super();
@@ -23,6 +24,10 @@ export class RemoteFile extends BrowserObject {
 
     getIcon(column: BrowserColumn) {
         return this.directory ? 'fa-folder' : 'fa-file-r'
+    }
+
+    getPath(): string {
+        return this.path;
     }
 }
 

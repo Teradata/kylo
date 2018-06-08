@@ -27,7 +27,7 @@ export class TablesComponent extends BrowserComponent {
     }
 
     mapServerResponseToBrowserObject(obj: any): BrowserObject {
-        return new DatabaseObject(obj.name, obj.type);
+        return new DatabaseObject(obj.name, obj.type, obj.catalog, obj.schema);
     }
 
     createRootNode(): Node {
@@ -75,7 +75,7 @@ export class TablesComponent extends BrowserComponent {
             let node = root.getChild(params.catalog);
             if (node === undefined) {
                 node = new Node(params.catalog);
-                node.setBrowserObject(new DatabaseObject(params.catalog, DatabaseObjectType.Catalog));
+                node.setBrowserObject(this.createTempPlaceholder(params.catalog, DatabaseObjectType.Catalog));
                 root.addChild(node);
             }
             return node;
@@ -83,12 +83,16 @@ export class TablesComponent extends BrowserComponent {
             let node = root.getChild(params.schema);
             if (node === undefined) {
                 node = new Node(params.schema);
-                node.setBrowserObject(new DatabaseObject(params.schema, DatabaseObjectType.Schema));
+                node.setBrowserObject(this.createTempPlaceholder(params.schema, DatabaseObjectType.Schema));
                 root.addChild(node);
             }
             return node;
         }
 
         return undefined;
+    }
+
+    private createTempPlaceholder(name: string, type: DatabaseObjectType) {
+        return new DatabaseObject(name, type, undefined, undefined);
     }
 }
