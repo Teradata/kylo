@@ -1,18 +1,13 @@
-import {FileMetadataTransformResponse} from "./file-metadata-transform-response";
-import {Node} from "../api/node";
 import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/map';
-import {SatusDialogComponent} from "../../dialog/status-dialog.component";
-import {DataSource} from "../../api/models/datasource";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {TransformRequest, TransformResponse} from "../../../visual-query/wrangler";
 import {PageSpec} from "../../../visual-query/wrangler/query-engine";
 import {SchemaParser} from "../../../model/field-policy";
 import {SampleFile} from "../../../model/feed-data-transformation";
-import {Observer} from "rxjs/Observer";
 
 export interface UpdatedParserWithScript {
     updatedScript:string;

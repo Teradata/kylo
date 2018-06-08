@@ -3,21 +3,19 @@ import {Component, Input, OnInit} from "@angular/core";
 import {DomSanitizer} from "@angular/platform-browser";
 import {SelectionService} from "../../api/services/selection.service";
 import {DataSource} from "../../api/models/datasource";
-import {Node} from "../api/node";
+import {Node} from '../../api/models/node';
 import {MatDialog} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
 import {MatDialogRef} from "@angular/material/dialog/typings/dialog-ref";
 import {TransformResponse} from "../../../visual-query/wrangler/model/transform-response";
 import {QueryResultColumn} from "../../../visual-query/wrangler";
-import {SchemaParser} from "../../../model/field-policy";
-import {FeedDataTransformation} from "../../../model/feed-data-transformation";
 //import {QueryEngine} from "../../../visual-query/wrangler/query-engine";
 import {DataSetPreview, FileDataSet, FileMetadata, FileMetadataTransformResponse, TableColumn} from "./file-metadata-transform-response";
 import {Common} from "../../../../common/CommonTypes"
 //import {QueryEngineFactory} from "../../../visual-query/wrangler/query-engine-factory.service";
 import {FileMetadataTransformService} from "./file-metadata-transform.service";
-import {FilePreviewService, UpdatedParserWithScript} from "./preview-schema.service";
-import { ITdDataTableColumn } from '@covalent/core/data-table';
+import {FilePreviewService} from "./preview-schema.service";
+import {ITdDataTableColumn} from '@covalent/core/data-table';
 import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.component";
 import {SimpleChanges} from "@angular/core/src/metadata/lifecycle_hooks";
 
