@@ -91,18 +91,21 @@ public class HadoopClassLoaderTest {
 
         // Test Hadoop path
         Assert.assertTrue("Expected Hadoop jar to be added", classLoader.addJar("mock:/tmp/file.ext"));
-        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo("hadoop:mock:/tmp/file.ext"))));
+        Matcher matcher1 = withToString(CoreMatchers.equalTo("hadoop:mock:/tmp/file.ext"));
+        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(matcher1));
 
         // Test path without FileSystem services
         final String classUrl = getClass().getResource("./").toString();
         Assert.assertTrue("Expected class directory to be added", classLoader.addJar(classUrl));
-        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(classUrl))));
+        Matcher matcher2 = withToString(CoreMatchers.equalTo(classUrl));
+        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(matcher2));
         Assert.assertEquals(0, conf.size());
 
         // Test path with FileSystem services
         final String resourceUrl = getClass().getResource("/").toString();
         Assert.assertTrue("Expected resource directory to be added", classLoader.addJar(resourceUrl));
-        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(withToString(CoreMatchers.equalTo(resourceUrl))));
+        Matcher matcher3 = withToString(CoreMatchers.equalTo(resourceUrl));
+        Assert.assertThat(Arrays.asList(classLoader.getURLs()), CoreMatchers.hasItems(matcher3));
         Assert.assertEquals(MockFileSystem.class, conf.getClass("fs.mock.impl", null));
 
         // Test existing jar

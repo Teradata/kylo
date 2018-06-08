@@ -26,6 +26,7 @@ import com.thinkbiganalytics.kylo.hadoop.MockFileSystem;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.LocalFileSystem;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.Matcher;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -81,6 +82,7 @@ public class IsolatedServiceLoaderTest {
         result = loader.update();
         Assert.assertTrue(result);
         Assert.assertEquals(2, Iterables.size(loader));
-        Assert.assertThat(loader, CoreMatchers.hasItems(CoreMatchers.instanceOf(MockFileSystem.class), CoreMatchers.instanceOf(LocalFileSystem.class)));
+        Matcher[] matchers = new Matcher[] {CoreMatchers.instanceOf(MockFileSystem.class), CoreMatchers.instanceOf(LocalFileSystem.class)};
+        Assert.assertThat(loader, CoreMatchers.hasItems(matchers));
     }
 }
