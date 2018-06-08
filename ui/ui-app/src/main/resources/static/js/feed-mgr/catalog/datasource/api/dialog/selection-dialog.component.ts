@@ -3,7 +3,7 @@ import {ITdDataTableColumn, ITdDataTableSortChangeEvent, TdDataTableService, TdD
 import {IPageChangeEvent} from '@covalent/core/paging';
 import {SelectionService} from '../../../api/services/selection.service';
 import {MAT_DIALOG_DATA, MatDialogRef} from '@angular/material/dialog';
-import {Node} from '../node';
+import {Node} from '../../../api/models/node';
 
 export class SelectedItem {
     node: Node;

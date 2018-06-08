@@ -1,7 +1,7 @@
 import {RemoteFile, RemoteFileDescriptor} from './remote-file';
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../api/browser-object';
-import {Node} from '../api/node';
+import {Node} from '../../api/models/node';
 
 
 export class RemoteFilesComponent extends BrowserComponent {

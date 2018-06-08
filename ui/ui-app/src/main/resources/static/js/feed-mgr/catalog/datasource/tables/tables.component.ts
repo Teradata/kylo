@@ -2,7 +2,7 @@ import {DatabaseObject, DatabaseObjectDescriptor, DatabaseObjectType} from './da
 import {BrowserComponent} from '../api/browser.component';
 import {BrowserObject} from '../api/browser-object';
 import {BrowserColumn} from '../api/browser-column';
-import {Node} from '../api/node';
+import {Node} from '../../api/models/node';
 
 export class TablesComponent extends BrowserComponent {
 

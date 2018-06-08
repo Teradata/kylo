@@ -4,10 +4,10 @@ import {ITdDataTableSortChangeEvent, TdDataTableService, TdDataTableSortingOrder
 import {DataSource} from '../../api/models/datasource';
 import {StateService} from "@uirouter/angular";
 import {IPageChangeEvent} from '@covalent/core/paging';
-import {SelectionService} from '../../api/services/selection.service';
+import {SelectionService, SelectionStrategy} from '../../api/services/selection.service';
 import {MatDialog} from '@angular/material/dialog';
 import {SelectionDialogComponent} from './dialog/selection-dialog.component';
-import {Node} from './node';
+import {Node} from '../../api/models/node';
 import {BrowserObject} from './browser-object';
 import {BrowserColumn} from './browser-column';
 import {LoadingMode, LoadingType, TdLoadingService} from '@covalent/core/loading';
@@ -49,12 +49,14 @@ export class BrowserComponent implements OnInit {
     private node: Node;
     pathNodes: Node[];
     errorMsg: undefined;
+    private selectionStrategy: SelectionStrategy;
 
     constructor(private dataTableService: TdDataTableService, private http: HttpClient,
                 private state: StateService, private selectionService: SelectionService,
                 private dialog: MatDialog, private loadingService: TdLoadingService) {
         this.columns = this.getColumns();
         this.sortBy = this.getSortByColumnName();
+        this.selectionStrategy = selectionService.getSelectionStrategy();
 
         this.loadingService.create({
             name: BrowserComponent.topOfPageLoader,
@@ -174,7 +176,7 @@ export class BrowserComponent implements OnInit {
     /**
      * To be implemented by subclasses.
      * @param {Node} node
-     * @returns {any} query parameters when navigating to any parent node
+     * @returns {any} query parameters when navigating to any parent node from breadcrumbs
      */
     createParentNodeParams(node: Node): any {
         return undefined;
@@ -251,12 +253,12 @@ export class BrowserComponent implements OnInit {
     }
 
     onToggleAll(): void {
-        this.node.toggleAll(this.selectAll);
+        this.selectionStrategy.toggleAllChildren(this.node, this.selectAll);
         this.initSelection();
     }
 
     onToggleRow(event: any, file: BrowserObject): void {
-        this.node.toggleChild(file.name, event.checked);
+        this.selectionStrategy.toggleChild(this.node, file.name, event.checked);
         this.initSelection();
     }
 

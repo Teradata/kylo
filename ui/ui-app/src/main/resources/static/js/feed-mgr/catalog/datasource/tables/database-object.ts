@@ -5,6 +5,7 @@ export enum DatabaseObjectType {
     Catalog = "CATALOG",
     Schema = "SCHEMA",
     Table = "TABLE",
+    View = "VIEW",
     Column = "COLUMN"
 }
 

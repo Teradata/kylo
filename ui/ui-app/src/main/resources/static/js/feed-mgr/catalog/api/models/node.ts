@@ -51,28 +51,6 @@ export class Node {
         return this.parent.isAnyParentSelected();
     }
 
-    toggleAll(isSelected: boolean) {
-        const children = this.children();
-        for (let child of children) {
-            Node.toggleNode(child, isSelected);
-        }
-    }
-
-    toggleChild(name: string, isSelected: boolean) {
-        const child = this.childrenMap.get(name);
-        Node.toggleNode(child, isSelected);
-    }
-
-    private static toggleNode(node: Node, isSelected: boolean) {
-        node.isSelected = isSelected;
-        if (isSelected) {
-            for (let child of node.children()) {
-                child.isSelected = false;
-                child.toggleAll(false);
-            }
-        }
-    }
-
     children() {
         return Array.from(this.childrenMap.values());
     }

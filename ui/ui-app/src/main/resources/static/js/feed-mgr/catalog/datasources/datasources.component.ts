@@ -26,6 +26,12 @@ export class DataSourcesComponent implements OnInit {
     public datasources: DataSource[];
 
     /**
+     * List of available data sources
+     */
+    @Input()
+    public selection: string;
+
+    /**
      * Filtered list of datasources to display
      */
     filteredDatasources: DataSource[];
