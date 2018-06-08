@@ -106,6 +106,10 @@ public class Validator {
         } catch (Exception e) {
             log.error("Failed to perform validation: {}", e.toString(), e);
             throw e;
+        } finally {
+            log.info("Closing the Validator spark context");
+            sparkContext.stop();
+            log.info("Closed the Validator spark context");
         }
     }
 }
