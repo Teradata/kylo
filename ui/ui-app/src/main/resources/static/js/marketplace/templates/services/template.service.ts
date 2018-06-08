@@ -1,9 +1,9 @@
 import {HttpClient, HttpErrorResponse, HttpHeaders} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 import {Observable} from "rxjs/Observable";
-import { TemplateMetadata } from "../api/model/model";
+import {TemplateMetadata} from "../api/model/model";
 import {catchError} from "rxjs/operators";
-import {ImportStatus} from "../api/model/model";
+import {Import} from "../../../feed-mgr/services/ImportComponentOptionTypes";
 
 const httpOptions = {
     headers: new HttpHeaders({
@@ -20,8 +20,14 @@ export class TemplateService {
         return this.http.get<TemplateMetadata[]>("/proxy/v1/marketplace/templates");
     }
 
-    importTemplate(fileNames: string[]): Observable<ImportStatus> {
-        return this.http.post("/proxy/v1/marketplace/templates/import", fileNames, httpOptions)
+    importTemplate(fileName: string, params?: any): Observable<Object> {
+        let fd: FormData = new FormData();
+        fd.append('fileName', fileName);
+        if(params){
+            //add params to form data
+            Object.keys(params).map((key) => { fd.append(key, params[key])});
+        }
+        return this.http.post("/proxy/v1/marketplace/templates/import", fd,httpOptions)
             .pipe(
                 catchError(this.handleError)
             )
@@ -31,16 +37,13 @@ export class TemplateService {
     private handleError(error: HttpErrorResponse) {
         if (error.error instanceof ErrorEvent) {
             // A client-side or network error occurred. Handle it accordingly.
-            console.error('An error occurred:', error.error.message);
+            console.error('Marketplace import error:', error.error.message);
+            return Observable.throw('Marketplace import error:' +error.error.message);
         } else {
             // The backend returned an unsuccessful response code.
             // The response body may contain clues as to what went wrong,
-            console.error(
-                'Backend returned code ${error.status}, ' +
-                'body was: ${error.error}');
+            console.error('Marketplace import error:', error.error);
+            return Observable.throw('Marketplace import error:' +error.error.message);
         }
-        // return an observable with a user-facing error message
-        return Observable.throw(
-            'Something bad happened; please try again later.');
     };
 }

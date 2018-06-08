@@ -1,7 +1,6 @@
 import {Ng2StateDeclaration} from "@uirouter/angular";
-
 import {TemplatesComponent} from "./templates.component";
-import { TemplateService } from "./services/template.service";
+import {TemplateService} from "./services/template.service";
 
 export const marketplaceTemplateStates: Ng2StateDeclaration[] = [
     {

@@ -16,22 +16,19 @@
   </mat-toolbar>
   <ng-container>
     <mat-card>
-      <mat-nav-list *ngIf="templates.length > 0">
-        <button class="md-raised md-primary md-button ng-scope md-kylo-theme" type="button" (click)="importTemplates()">
-          Import
-        </button>
+      <mat-list *ngIf="templates.length > 0">
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredTemplates">
-          <mat-list-item matRipple class="cursor-pointer">
+          <mat-list-item>
             <div flex="30" layout="column" class="item-column md-list-item-text">
               <ng-md-icon icon="check_circle" style="fill:green" size="20" *ngIf="item.installed"></ng-md-icon>
               <mat-checkbox *ngIf="!item.installed" (change)="toggleImportTemplate($event, item)">
               </mat-checkbox>
             </div>
-            <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text" (click)="importTemplate(item)">
-                        <span class="item-title" >
-                           {{item.templateName}}
-                        </span>
-              <span class="column-title column-title-bottom">File Name: {{item.fileName}} | Description: {{item.description}}</span>
+            <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text">
+              <span class="item-title" >
+                 {{item.templateName}}
+              </span>
+              <span class="column-title column-title-bottom">Description: {{item.description}}</span>
             </div>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
@@ -46,7 +43,7 @@
           </mat-select>
           {{pagingBar.range}} <span hide-xs>of {{pagingBar.total}}</span>
         </td-paging-bar>
-      </mat-nav-list>
+      </mat-list>
 
       <div *ngIf="templates.length == 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
         <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>

@@ -20,22 +20,22 @@ package com.thinkbiganalytics.marketplace.filesystem;
  * #L%
  */
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.feedmgr.rest.ImportComponent;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 import com.thinkbiganalytics.feedmgr.util.ImportUtil;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.marketplace.MarketplaceItemMetadata;
 import com.thinkbiganalytics.marketplace.MarketplaceService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +45,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,40 +82,37 @@ public class FilesystemMarketplaceService implements MarketplaceService {
     }
 
     @Override
-    public List<ImportTemplate> importTemplates(List<String> templateFileNames) throws Exception {
-        log.info("Templates to import {}", templateFileNames.size());
-        List<ImportTemplate> statusList = new ArrayList<>();
-        for (String fileName : templateFileNames) {
-            log.info("Begin template import {}", fileName);
-            File template = new File(templateLocation + "/" + fileName);
-            ImportTemplateOptions options = new ImportTemplateOptions();
-            String uploadKey = uploadProgressService.newUpload();
-            options.setUploadKey(uploadKey);
-            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setShouldImport(true);
-            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setUserAcknowledged(true);
-            options.findImportComponentOption(ImportComponent.REUSABLE_TEMPLATE).setOverwrite(true);
-            options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setOverwrite(true);
-            options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setUserAcknowledged(true);
-            options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setShouldImport(true);
-            options.findImportComponentOption(ImportComponent.NIFI_TEMPLATE).setContinueIfExists(false);
-            options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setOverwrite(true);
-            options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setUserAcknowledged(true);
-            options.findImportComponentOption(ImportComponent.TEMPLATE_DATA).setShouldImport(true);
+    public ImportTemplate importTemplates(String fileName, String uploadKey, String importComponents) throws Exception {
 
-            byte[] content = ImportUtil.streamToByteArray(new FileInputStream(template));
-            TemplateImporter templateImporter = templateImporterFactory.apply(fileName, content, options);
-            ImportTemplate importTemplate = templateImporter.validateAndImport();
-            log.info("End template import {} - {}", fileName, importTemplate.isSuccess());
-            String jsonFileName = com.google.common.io.Files.getNameWithoutExtension(fileName) + "-marketplace.json";
-            MarketplaceItemMetadata metadata = new MarketplaceItemMetadata(importTemplate.getTemplateName(),
-                                                                           importTemplate.getFileName(), "", importTemplate.isSuccess());
-            mapper.writeValue(new File(templateLocation + "/" + jsonFileName), metadata);
-            log.info("Updated {} metadata with {}", jsonFileName, metadata);
 
-            statusList.add(importTemplate);
+        log.info("Begin template import {}", fileName);
+        File template = new File(templateLocation + "/" + fileName);
+        ImportTemplateOptions options = new ImportTemplateOptions();
+        options.setUploadKey(uploadKey);
+
+        byte[] content = ImportUtil.streamToByteArray(new FileInputStream(template));
+        uploadProgressService.newUpload(uploadKey);
+        ImportTemplate importTemplate = null;
+        TemplateImporter templateImporter = null;
+        if (importComponents == null) {
+            templateImporter = templateImporterFactory.apply(fileName, content, options);
+            importTemplate = templateImporter.validate();
+            importTemplate.setSuccess(false);
+        } else {
+            options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
+            }));
+            templateImporter = templateImporterFactory.apply(fileName, content, options);
+            importTemplate = templateImporter.validateAndImport();
         }
+        log.info("End template import {} - {}", fileName, importTemplate.isSuccess());
+        String jsonFileName = com.google.common.io.Files.getNameWithoutExtension(fileName) + "-marketplace.json";
+        MarketplaceItemMetadata metadata = new MarketplaceItemMetadata(importTemplate.getTemplateName(),
+                                                                       importTemplate.getFileName(), "", importTemplate.isSuccess());
+        mapper.writeValue(new File(templateLocation + "/" + jsonFileName), metadata);
+        log.info("Updated {} metadata with {}", jsonFileName, metadata);
 
-        return statusList;
+        return importTemplate;
+
     }
 
     private MarketplaceItemMetadata jsonToMetadata(Path path) {
@@ -124,14 +121,9 @@ public class FilesystemMarketplaceService implements MarketplaceService {
             s = new String(Files.readAllBytes(path));
             return mapper.readValue(s, MarketplaceItemMetadata.class);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error reading metadata from {}", path.getFileName());
         }
         return null;
     }
 
-//    public static void main(String[] args) throws Exception {
-//        ApplicationContext ctx =
-//            new AnnotationConfigApplicationContext(FilesystemConfig.class);
-//        ctx.getBean(FilesystemMarketplaceService.class).listTemplates().forEach(d -> System.out.println(d.getFileName()));
-//    }
 }

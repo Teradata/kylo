@@ -24,7 +24,6 @@ import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemp
 import com.thinkbiganalytics.marketplace.MarketplaceItemMetadata;
 import com.thinkbiganalytics.marketplace.MarketplaceService;
 
-import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -37,6 +36,7 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -71,11 +71,11 @@ public class MarketplaceController {
     @ApiOperation("Imports selected templates.")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public Response importTemplate(List<String> templateFileNames)  throws Exception{
-        log.info("importTemplate - begin");
-        List<ImportTemplate> statusList = filesystemMarketplaceService.importTemplates(templateFileNames);
-        log.info("importTemplate - Received response", statusList);
-        return Response.ok(statusList).build();
+    public Response importTemplate(MarketplaceRequest request) throws Exception{
+        log.info("import - begin {}, {}, {}", request.getFileName(), request.getUploadKey(), request.getImportComponents());
+        ImportTemplate importStatus = filesystemMarketplaceService.importTemplates(request.getFileName(), request.getUploadKey(), request.getImportComponents());
+        log.info("import - Received service response", importStatus);
+        return Response.ok(importStatus).build();
     }
 
 }

@@ -3,6 +3,7 @@ import {TemplateMetadata} from "../api/model/model";
 import {TemplateService} from "../services/template.service";
 import {TdDataTableService} from "@covalent/core/data-table";
 import {IPageChangeEvent} from "@covalent/core/paging";
+import {StateService} from "@uirouter/angular";
 
 /**
  * Displays available datasources
@@ -15,9 +16,11 @@ export class ListTemplatesComponent implements OnInit {
 
     static readonly LOADER = "ListTemplatesComponent.LOADER";
 
-    constructor(private templateService: TemplateService, private dataTableService: TdDataTableService){}
+    constructor(private templateService: TemplateService,
+                private dataTableService: TdDataTableService,
+                private state: StateService){}
 
-    selectedTemplates: string[] = [];
+    selectedTemplate: string;
 
     /**
      * List of available templates
@@ -33,13 +36,13 @@ export class ListTemplatesComponent implements OnInit {
      * Install template if not already installed
      */
     importTemplates(){
-        if(this.selectedTemplates.length == 0){
+        if(this.selectedTemplate.length == 0){
             console.warn("Select at least one template to import.")
             return;
         }
 
-        console.log("importing templates: ", this.selectedTemplates);
-        this.templateService.importTemplate(this.selectedTemplates)
+        console.log("importing templates: ", this.selectedTemplate);
+        this.templateService.importTemplate(this.selectedTemplate)
             .subscribe(data => console.log(data),
                 error => console.error(error));
     }
@@ -49,14 +52,13 @@ export class ListTemplatesComponent implements OnInit {
      */
     toggleImportTemplate(event: any, template: TemplateMetadata){
         if(event.checked)
-            this.selectedTemplates.push(template.fileName);
-        else {
-            for (let i = 0; i < this.selectedTemplates.length; i++){
-                this.selectedTemplates.splice(i, 1);
-                break;
-            }
-        }
-        console.log(this.selectedTemplates);
+            this.selectedTemplate = template.fileName;
+        else
+            this.selectedTemplate = null;
+
+        console.log(this.selectedTemplate);
+        let param = {"template": template};
+        this.state.go("import-template",param);
     }
 
     pageSize: number = 50;

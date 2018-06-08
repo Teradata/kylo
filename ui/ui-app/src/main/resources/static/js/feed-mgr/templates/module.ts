@@ -5,7 +5,6 @@ import AccessConstants from '../../constants/AccessConstants';
 import "@uirouter/angularjs";
 import "kylo-feedmgr";
 import "kylo-common";
-import {KyloServicesModule} from "../../services/services.module";
 import "ment-io";
 import "jquery";
 import "angular-drag-and-drop-lists";
@@ -15,7 +14,7 @@ class ModuleFactory  {
     constructor () {
         this.module = angular.module(moduleName,[]); 
         this.module.config(['$stateProvider',this.configFn.bind(this)]);
-        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);      
+        this.module.run(['$ocLazyLoad', this.runFn.bind(this)]);
     }
     configFn($stateProvider:any) {
       $stateProvider.state('registered-templates',{
@@ -106,12 +105,11 @@ class ModuleFactory  {
         }).state('import-template',{
             url:'/import-template',
             params: {
+                template:null
             },
             views: {
                 'content': {
-                    templateUrl:  'js/feed-mgr/templates/import-template/import-template.html',
-                    controller:'ImportTemplateController',
-                    controllerAs:'vm'
+                    component:'importTemplateController'
                 }
             },
             resolve: {

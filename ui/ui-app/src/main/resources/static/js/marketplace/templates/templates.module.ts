@@ -14,10 +14,10 @@ import {CovalentSearchModule} from "@covalent/core/search";
 import {UIRouterModule} from "@uirouter/angular";
 
 import {KyloCommonModule} from "../../common/common.module";
-import { TemplatesComponent } from "./templates.component";
-import { marketplaceTemplateStates } from "./templates.states";
-import { ListTemplatesComponent } from "./list/list.component";
-import { TemplateService } from "./services/template.service";
+import {TemplatesComponent} from "./templates.component";
+import {marketplaceTemplateStates} from "./templates.states";
+import {ListTemplatesComponent} from "./list/list.component";
+import {TemplateService} from "./services/template.service";
 import {MatCheckboxModule} from "@angular/material/checkbox";
 import {CovalentPagingModule} from "@covalent/core/paging";
 import {MatSelectModule} from "@angular/material/select";

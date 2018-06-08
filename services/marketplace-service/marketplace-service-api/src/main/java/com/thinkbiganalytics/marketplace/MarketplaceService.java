@@ -22,12 +22,11 @@ package com.thinkbiganalytics.marketplace;
 
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
 
-import java.io.IOException;
 import java.util.List;
 
 public interface MarketplaceService {
 
     List<MarketplaceItemMetadata> listTemplates() throws Exception;
 
-    List<ImportTemplate> importTemplates(List<String> templateFileNames) throws Exception;
+    ImportTemplate importTemplates(String fileName, String uploadKey, String importComponentOptions) throws Exception;
 }
