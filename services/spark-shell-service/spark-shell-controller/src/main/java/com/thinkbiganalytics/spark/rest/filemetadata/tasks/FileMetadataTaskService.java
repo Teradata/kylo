@@ -169,7 +169,7 @@ public class FileMetadataTaskService {
     }
 
     private void submitTasks(FileMetadataCompletionTask result, List<SparkShellScriptRunner> tasks) {
-        int parties = tasks.size() + 1;
+        int parties = tasks.size();
         int threadPoolSize = ((ThreadPoolExecutor) executor).getCorePoolSize();
         int activeThreads = ((ThreadPoolExecutor) executor).getActiveCount();
         //dont add to the pool unless we have at least the correct slots open
@@ -177,16 +177,17 @@ public class FileMetadataTaskService {
             waitingTasksQueue.add(new QueuedTasks(result, tasks));
         }
         else {
-            CyclicBarrier barrier = new CyclicBarrier(parties, result);
+            CyclicBarrier barrier = new CyclicBarrier(parties, new FinalMetadataSchemaTaskWrapper(result,tasks));
             tasks.stream().forEach(t -> {
                 Future f = executor.submit(new FileMetadataSchemaTask(barrier, t));
             });
+          /*
             try {
                 barrier.await();
-                checkQueue();
             } catch (Exception e) {
                 log.error("Error clearing final barrier for file metadata schema tasks {} ",e.getMessage(),e);
             }
+            */
         }
     }
 
@@ -260,6 +261,35 @@ public class FileMetadataTaskService {
             }
         }
 
+    }
+
+    private class FinalMetadataSchemaTaskWrapper implements Runnable {
+        private FileMetadataCompletionTask finalTask;
+        private List<SparkShellScriptRunner> tasks;
+
+        public FinalMetadataSchemaTaskWrapper(FileMetadataCompletionTask task, List<SparkShellScriptRunner>tasks){
+            this.finalTask = task;
+            this.tasks = tasks;
+        }
+
+        @Override
+        public void run() {
+            List<String> exceptions = new ArrayList<>();
+            try {
+                try {
+                    this.finalTask.run();
+                } catch (Exception e) {
+                    log.error("Error running file metadata schema task {} ", e.getMessage(), e);
+                    exceptions.add(e.getMessage());
+                }
+
+            }
+            finally {
+                checkQueue();
+            }
+
+
+        }
     }
 
 

@@ -30,12 +30,21 @@ public class FileMetadataSchemaScriptBuilder {
 
     public static String getSparkScript(String type, String rowTag, List<String> files) {
 
-        String script = null;
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("import com.thinkbiganalytics.kylo.catalog._\n");
+        sb.append("var kyloClientBuilder = KyloCatalog.builder(sqlContext) \n");
+        sb.append("var kyloClient = kyloClientBuilder.build()\n");
+        //qlContext.sparkContext.hadoopConfiguration.set("avro.mapred.ignore.inputs.without.extension", "false")
+
+
         if (type == "application/xml") {
-            script = "sqlContext.read.option(\"mimeType\",\"%s\").option(\"rowTag\",\"%s\").format(\"com.thinkbiganalytics.spark.file.metadata.schema\").load(\"%s\");\n";
+            sb.append("kyloClient.option(\"mimeType\",\"%s\").option(\"rowTag\",\"%s\").format(\"com.thinkbiganalytics.spark.file.metadata.schema\").load(\"%s\")\n");
+            String script = sb.toString();
             return unionDataFrames(files, script, type, rowTag);
         } else {
-            script = "sqlContext.read.option(\"mimeType\",\"%s\").format(\"com.thinkbiganalytics.spark.file.metadata.schema\").load(\"%s\");\n";
+            sb.append("kyloClient.option(\"mimeType\",\"%s\").format(\"com.thinkbiganalytics.spark.file.metadata.schema\").load(\"%s\")\n");
+            String script = sb.toString();
             return unionDataFrames(files, script, type);
         }
     }

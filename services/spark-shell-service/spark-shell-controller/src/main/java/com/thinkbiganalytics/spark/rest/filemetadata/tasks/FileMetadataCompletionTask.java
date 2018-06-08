@@ -101,31 +101,47 @@ public class FileMetadataCompletionTask implements Runnable {
 
     @Override
     public void run() {
-        for (Map.Entry<SparkShellScriptRunner, List<com.thinkbiganalytics.spark.rest.model.FileMetadataResponse.ParsedFileMetadata>> e : this.fileSchemaScriptRunnerMap.entrySet()) {
-
-            SparkShellScriptRunner runner = e.getKey();
-            TransformResponse response = runner.getFinalResponse();
-            TransformResponseUtil responseTransformer = new TransformResponseUtil(response);
-
-            Map<String, FileMetadataSchema> schemaMap = response.getResults().getRows().stream().map(row -> {
-                String mimeType = (String) responseTransformer.getRowValue("mimeType", row);
-                String filePath = (String) responseTransformer.getRowValue("resource", row);
-                Map<String, String> schema = responseTransformer.getRowValue("schema", row, Map.class);
-                return new FileMetadataSchema(mimeType, filePath, schema);
-            }).collect(Collectors.toMap(key -> key.getFilePath(), key -> key));
-
-            e.getValue().stream().forEach(originalData -> {
-                                              FileMetadataSchema updatedSchema = schemaMap.get(originalData.getFilePath());
-                                              if (updatedSchema != null) {
-                                                  String headers = ObjectMapperSerializer.serialize(updatedSchema.getSchema());
-                                                  originalData.getProperties().put("headers", headers);
-                                                  originalData.getProperties().put("headerCount", updatedSchema.getSchema().size() + "");
-                                              }
-                                          }
-            );
-
-
+        List<String> exceptions = new ArrayList<>();
+        //aggregrate
+        if(this.tasks != null){
+            exceptions.addAll(this.tasks.stream().filter(task -> task.hasExecutionException()).map(task -> task.getExecutionException()).collect(Collectors.toList()));
         }
+        try {
+            for (Map.Entry<SparkShellScriptRunner, List<com.thinkbiganalytics.spark.rest.model.FileMetadataResponse.ParsedFileMetadata>> e : this.fileSchemaScriptRunnerMap.entrySet()) {
+
+                SparkShellScriptRunner runner = e.getKey();
+                TransformResponse response = runner.getFinalResponse();
+                if (response != null) {
+                    TransformResponseUtil responseTransformer = new TransformResponseUtil(response);
+
+                    Map<String, FileMetadataSchema> schemaMap = response.getResults().getRows().stream().map(row -> {
+                        String mimeType = (String) responseTransformer.getRowValue("mimeType", row);
+                        String filePath = (String) responseTransformer.getRowValue("resource", row);
+                        Map<String, String> schema = responseTransformer.getRowValue("schema", row, Map.class);
+                        return new FileMetadataSchema(mimeType, filePath, schema);
+                    }).collect(Collectors.toMap(key -> key.getFilePath(), key -> key));
+
+                    e.getValue().stream().forEach(originalData -> {
+                                                      FileMetadataSchema updatedSchema = schemaMap.get(originalData.getFilePath());
+                                                      if (updatedSchema != null) {
+                                                          String headers = ObjectMapperSerializer.serialize(updatedSchema.getSchema());
+                                                          originalData.getProperties().put("headers", headers);
+                                                          originalData.getProperties().put("headerCount", updatedSchema.getSchema().size() + "");
+                                                      }
+                                                  }
+                    );
+
+
+                }
+            }
+        }catch (Exception e){
+            exceptions.add(e.getMessage());
+        }
+        if(!exceptions.isEmpty()){
+            String message = exceptions.stream().collect(Collectors.joining("\n"));
+            this.modifiedTransformResponse.setMessage(message);
+        }
+
         this.finalResult.complete(this.modifiedTransformResponse);
         this.complete = true;
     }

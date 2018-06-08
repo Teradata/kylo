@@ -136,7 +136,6 @@ public class FileMetadataTransformResponseModifier extends AbstractTransformResp
         fileMetadataResponse.setDatasets(fileDatasets);
         modifiedTransformResponse.setResults(fileMetadataResponse);
         modifiedTransformResponse.setStatus(TransformResponse.Status.SUCCESS);
-        trackerService.removeFromCache(tableId);
     }
 
     private Optional<SchemaParserDescriptor> findSchemaParserForMimeType(String mimeType) {
