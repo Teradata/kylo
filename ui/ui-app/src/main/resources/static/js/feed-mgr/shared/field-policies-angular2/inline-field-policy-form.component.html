@@ -1,0 +1,37 @@
+<!--
+  #%L
+  thinkbig-ui-feed-manager
+  %%
+  Copyright (C) 2017 ThinkBig Analytics
+  %%
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+  
+      http://www.apache.org/licenses/LICENSE-2.0
+  
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  #L%
+  -->
+<div class="edit-form" style="padding-top:0px;" fxLayout="column">
+  <mat-progress-bar mode="indeterminate" *ngIf="loadingPolicies"></mat-progress-bar>
+
+  <mat-form-field>
+    <mat-label >{{selectLabel}}</mat-label>
+    <mat-select [(value)]="ruleType"  (change)="onRuleTypeChange()" >
+      <mat-option [value]="opt" *ngFor="let opt of ruleTypes">{{ opt.name }}</mat-option>
+    </mat-select>
+    <mat-hint *ngIf="selectedPolicyRule != undefined">{{selectedPolicyRule.description}}</mat-hint>
+  </mat-form-field>
+  <a href="javascript:void(0)" style="margin-left:10px" *ngIf="showAdvancedOptions" (click)="toggleAdvancedOptions()">Advanced Formatting Options</a>
+
+  <div class="layout-padding-indent-20" *ngIf="expandAdvancedOptions == true">
+    <policy-input-form [theForm]="policyForm" [(rule)]="selectedPolicyRule" [mode]="ruleMode" [feed]="feed"></policy-input-form>
+  </div>
+
+
+</div>

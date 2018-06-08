@@ -32,6 +32,7 @@ public class CatalogConfig {
     public MessageSource catalogMessages() {
         final ResourceBundleMessageSource messageSource = new ResourceBundleMessageSource();
         messageSource.setBasename("CatalogMessages");
+        messageSource.setUseCodeAsDefaultMessage(true);
         return messageSource;
     }
 }

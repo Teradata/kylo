@@ -20,6 +20,8 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import java.util.List;
+
 /**
  * Generates the spark command to parse the file
  */
@@ -32,6 +34,10 @@ public interface SparkCommandBuilder {
      * @return the spark command
      */
     String build(String pathToFile);
+
+    String build(List<String> paths);
+
+    String appendLimit(String script);
 
 
 }

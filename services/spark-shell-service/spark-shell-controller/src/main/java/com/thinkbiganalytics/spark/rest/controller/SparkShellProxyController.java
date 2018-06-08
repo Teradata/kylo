@@ -22,18 +22,24 @@ package com.thinkbiganalytics.spark.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.kylo.spark.file.metadata.FileMetadataScalaScriptGenerator;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.spark.rest.filemetadata.FileMetadataTransformResponseModifier;
+import com.thinkbiganalytics.spark.rest.filemetadata.tasks.FileMetadataCompletionTask;
+import com.thinkbiganalytics.spark.rest.filemetadata.tasks.FileMetadataTaskService;
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.ModifiedTransformResponse;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
 import com.thinkbiganalytics.spark.rest.model.TransformRequest;
 import com.thinkbiganalytics.spark.rest.model.TransformResponse;
+import com.thinkbiganalytics.spark.rest.model.TransformResultModifier;
 import com.thinkbiganalytics.spark.shell.SparkShellProcess;
 import com.thinkbiganalytics.spark.shell.SparkShellProcessManager;
 import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
@@ -93,6 +99,7 @@ public class SparkShellProxyController {
 
     public static final String BASE = "/v1/spark/shell";
     public static final String TRANSFORM = "/transform";
+    public static final String FILE_METADATA = "/file-metadata";
     public static final String TRANSFORM_DOWNLOAD = "/transform/{transform}/save/{save}/zip";
     public static final String TRANSFORM_SAVE = "/transform/{transform}/save";
     public static final String TRANSFORM_SAVE_RESULT = "/transform/{transform}/save/{save}";
@@ -144,6 +151,9 @@ public class SparkShellProxyController {
      */
     @Inject
     private SparkShellRestClient restClient;
+
+    @Inject
+    private FileMetadataTaskService fileMetadataTrackerService;
 
     /**
      * Downloads the saved results of a query.
@@ -471,6 +481,64 @@ public class SparkShellProxyController {
         return getTransformResponse(() -> restClient.transform(process, request));
     }
 
+
+    @POST
+    @Path(FILE_METADATA)
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("returns filemetadata based upon the list of file paths in the dataset.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+                  })
+    public Response fileMetadata(com.thinkbiganalytics.kylo.catalog.rest.model.DataSet dataSet) {
+        TransformRequest request = new TransformRequest();
+        request.setScript(FileMetadataScalaScriptGenerator.getScript(dataSet.getPaths()));
+
+        final SparkShellProcess process = getSparkShellProcess();
+        return getModifiedTransformResponse(() -> Optional.of(restClient.transform(process, request)), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
+
+    }
+
+
+    @GET
+    @Path(FILE_METADATA + "/{table}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Fetches the status of a transformation.")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the transformation.", response = TransformResponse.class),
+                      @ApiResponse(code = 404, message = "The transformation does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem accessing the data.", response = RestResponseStatus.class)
+                  })
+    @Nonnull
+    public Response getFileMetadataTransformResult(@Nonnull @PathParam("table") final String id) {
+        //first look at the cache to see if its there
+        FileMetadataCompletionTask result = fileMetadataTrackerService.get(id);
+        if (result != null) {
+            return Response.ok(result.getModifiedTransformResponse()).build();
+        } else {
+            final SparkShellProcess process = getSparkShellProcess();
+            return getModifiedTransformResponse(() -> restClient.getTransformResult(process, id), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
+        }
+
+    }
+
+
+    private <T> Response getModifiedTransformResponse(Supplier<Optional<TransformResponse>> supplier, TransformResultModifier<T> modifier) {
+
+        final Optional<TransformResponse> response;
+        try {
+            response = supplier.get();
+        } catch (final Exception e) {
+            throw transformError(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
+        }
+        ModifiedTransformResponse modifiedResponse = modifier.modify(response.get());
+        return Response.ok(modifiedResponse).build();
+    }
+
+
     /**
      * Adds the data source details to the specified request.
      */
@@ -643,7 +711,7 @@ public class SparkShellProxyController {
      * @return the Spark Shell process
      */
     @Nonnull
-    private SparkShellProcess getSparkShellProcess() {
+    protected SparkShellProcess getSparkShellProcess() {
         final Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         final String username = (auth.getPrincipal() instanceof User) ? ((User) auth.getPrincipal()).getUsername() : auth.getPrincipal().toString();
         try {
@@ -668,6 +736,7 @@ public class SparkShellProxyController {
             throw transformError(Response.Status.INTERNAL_SERVER_ERROR, SparkShellProxyResources.TRANSFORM_ERROR, e);
         }
     }
+
 
     /**
      * Retrieves all details of the specified data sources.

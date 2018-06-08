@@ -46,6 +46,7 @@ public class SchemaParserAnnotationTransformer extends BasePolicyAnnotationTrans
         descriptor.setAllowSkipHeader(annotation.allowSkipHeader());
         descriptor.setPrimary(annotation.primary());
         descriptor.setUsesSpark(annotation.usesSpark());
+        descriptor.setMimeTypes(annotation.mimeTypes());
         return descriptor;
     }
 

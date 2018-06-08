@@ -24,6 +24,17 @@
     }
   },
   {
+    "title": "Virtualbox File System",
+    "connector": {
+      "id": "local-file-system"
+    },
+    "template": {
+      "paths": [
+        "file::///opt/kylo"
+      ]
+    }
+  },
+  {
     "title": "Ruslans Local File System",
     "connector": {
       "id": "local-file-system"
@@ -63,7 +74,7 @@
     },
     "template": {
       "paths": [
-        "hdfs://users/ruslans"
+        "hdfs://"
       ]
     }
   },

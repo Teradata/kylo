@@ -20,20 +20,45 @@ package com.thinkbiganalytics.kylo.catalog.dataset;
  * #L%
  */
 
+import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DefaultDataSetTemplate;
 
+import org.apache.hadoop.conf.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Static utility methods for {@link DataSet} instances.
  */
 public class DataSetUtil {
+
+    private static final Logger log = LoggerFactory.getLogger(DataSetUtil.class);
+
+    /**
+     * Gets the Hadoop configuration for the specified data set template.
+     */
+    @Nonnull
+    public static Configuration getConfiguration(@Nonnull final DataSetTemplate template, @Nullable final Configuration parent) {
+        final Configuration conf = (parent != null) ? new Configuration(parent) : new Configuration();
+
+        if (template.getOptions() != null) {
+            log.debug("Creating Hadoop configuration with options: {}", template.getOptions());
+            template.getOptions().entrySet().stream()
+                .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
+                .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
+        }
+
+        return conf;
+    }
 
     /**
      * Merges the data set, data source, and connector templates for the specified data set.

@@ -23,7 +23,9 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 
-@SchemaParser(name = "Avro", description = "Supports Avro formatted files.", tags = {"Avro"}, usesSpark = true)
+import java.util.List;
+
+@SchemaParser(name = "Avro", description = "Supports Avro formatted files.", tags = {"Avro"}, usesSpark = true, mimeTypes = "application/avro")
 public class AvroFileSchemaParser extends AbstractSparkFileSchemaParser implements SparkFileSchemaParser {
 
     static class AvroCommandBuilder extends AbstractSparkCommandBuilder {
@@ -33,7 +35,23 @@ public class AvroFileSchemaParser extends AbstractSparkFileSchemaParser implemen
             StringBuilder sb = new StringBuilder();
             sb.append("import com.databricks.spark.avro._\n");
             sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
-            appendDataFrameScript(sb, "avro", pathToFile);
+            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+            sb.append(String.format("sqlContext.read.%s(\"%s\")", "avro", pathToFile));
+            if(isLimit()) {
+                sb.append(String.format(".limit(%s)", getLimit()));
+            }
+            sb.append(".toDF()");
+            return sb.toString();
+        }
+
+        @Override
+        public String build(List<String> paths) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("import com.databricks.spark.avro._\n");
+            sb.append("sqlContext.sparkContext.hadoopConfiguration.set(\"avro.mapred.ignore.inputs.without.extension\", \"false\")\n");
+
+            sb.append(unionDataFrames(paths,"sqlContext.read.%s(\"%s\").toDF()\n","avro"));
+
             return sb.toString();
         }
     }

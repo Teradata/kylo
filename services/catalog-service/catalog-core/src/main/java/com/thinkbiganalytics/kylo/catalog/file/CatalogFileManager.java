@@ -22,7 +22,6 @@ package com.thinkbiganalytics.kylo.catalog.file;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import com.thinkbiganalytics.kylo.catalog.api.KyloCatalogConstants;
 import com.thinkbiganalytics.kylo.catalog.dataset.DataSetUtil;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSet;
@@ -218,7 +217,7 @@ public class CatalogFileManager {
             if (fileSystemProviders != null) {
                 for (final FileSystemProvider fileSystemProvider : fileSystemProviders) {
                     if (fileSystemProvider.supportsPath(path)) {
-                        final Configuration conf = getConfiguration(DataSourceUtil.mergeTemplates(dataSource));
+                        final Configuration conf = DataSetUtil.getConfiguration(DataSourceUtil.mergeTemplates(dataSource), defaultConf);
                         return fileSystemProvider.listFiles(path, conf);
                     }
                 }
@@ -247,23 +246,6 @@ public class CatalogFileManager {
             log.debug("Dataset directory does not exist: {}", path);
             return Collections.emptyList();
         }
-    }
-
-    /**
-     * Gets the Hadoop configuration for the specified data set template.
-     */
-    @Nonnull
-    private Configuration getConfiguration(@Nonnull final DataSetTemplate template) {
-        final Configuration conf = new Configuration(defaultConf);
-
-        if (template.getOptions() != null) {
-            log.debug("Creating Hadoop configuration with options: {}", template.getOptions());
-            template.getOptions().entrySet().stream()
-                .filter(entry -> entry.getKey().startsWith(KyloCatalogConstants.HADOOP_CONF_PREFIX))
-                .forEach(entry -> conf.set(entry.getKey().substring(KyloCatalogConstants.HADOOP_CONF_PREFIX.length()), entry.getValue()));
-        }
-
-        return conf;
     }
 
     /**
@@ -312,7 +294,7 @@ public class CatalogFileManager {
      */
     @VisibleForTesting
     protected <R> R isolatedFunction(@Nonnull final DataSetTemplate template, @Nonnull final Path path, @Nonnull final FileSystemFunction<R> function) throws IOException {
-        final Configuration conf = getConfiguration(template);
+        final Configuration conf = DataSetUtil.getConfiguration(template, defaultConf);
         try (final HadoopClassLoader classLoader = new HadoopClassLoader(conf)) {
             if (template.getJars() != null) {
                 log.debug("Adding jars to HadoopClassLoader: {}", template.getJars());

@@ -50,7 +50,7 @@ export class UploadComponent implements OnInit {
             this.datasource.$fileUploads = this.files;
 
             // Parse uploads from dataset paths and server
-            if (this.datasource.template.paths) {
+            if (this.datasource.template && this.datasource.template.paths) {
                 this.files = this.datasource.template.paths.map(path => {
                     const name = path.substr(path.lastIndexOf("/") + 1);
                     const file = new FileUpload(name);
