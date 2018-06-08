@@ -40,6 +40,8 @@ import com.thinkbiganalytics.spark.service.SparkLocatorService;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.shell.DatasourceProviderFactory;
 
+import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
 import org.apache.commons.lang.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
@@ -127,7 +129,20 @@ public class SparkShellApp {
     @Bean
     public EmbeddedServletContainerFactory embeddedServletContainer(final ServerProperties serverProperties, @Qualifier("sparkShellPort") final int serverPort) {
         serverProperties.setPort(serverPort);
-        return new TomcatEmbeddedServletContainerFactory();
+        return new TomcatEmbeddedServletContainerFactory() {
+            @Override
+            protected void customizeConnector(final Connector connector) {
+                super.customizeConnector(connector);
+
+                // KYLO-2237 Bind immediately instead of waiting
+                connector.setProperty("bindOnInit", "true");
+                try {
+                    connector.init();
+                } catch (LifecycleException e) {
+                    throw new IllegalStateException("Failed to start connector: " + e, e);
+                }
+            }
+        };
     }
 
     /**
