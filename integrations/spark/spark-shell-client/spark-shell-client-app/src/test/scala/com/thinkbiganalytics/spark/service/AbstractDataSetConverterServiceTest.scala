@@ -6,6 +6,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalO
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorConverters, ObjectInspectorFactory}
 import org.apache.spark.sql.RowFactory
 import org.apache.spark.sql.types._
+import collection.JavaConversions._
 import org.junit.{Assert, Test}
 
 import scala.collection.JavaConverters
@@ -26,18 +27,17 @@ class AbstractDataSetConverterServiceTest {
         Assert.assertEquals(42, identityConverter.convert(42))
 
 
-
+        //Test Map Conversion
         var m :  java.util.Map[String,String] = new util.HashMap[String,String]();
-        m.put("name","scott");
-        m.put("pr","aaa")
+        m.put("name","a name");
+        m.put("description","some desc")
 
-        var scalaMap = JavaConverters.mapAsScalaMapConverter(m).asScala
+        var scalaMap = m.toMap.asInstanceOf[Map[String, String]]
         var mt :org.apache.spark.sql.types.MapType = DataTypes.createMapType(DataTypes.StringType,DataTypes.StringType);
         var row = RowFactory.create(scalaMap);
-
         val converter = converterService.getHiveObjectConverter(mt)
         var convertedMap = converter.convert(row.get(0));
-        var k : Int = 1
+        Assert.assertEquals(2, convertedMap.asInstanceOf[java.util.Map[String,String]].size)
 
 
 
