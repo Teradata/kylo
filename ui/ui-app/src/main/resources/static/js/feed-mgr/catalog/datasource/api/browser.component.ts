@@ -211,7 +211,7 @@ export class BrowserComponent implements OnInit {
 
     private initSelectedDescendantCounts(): void {
         for (let node of this.node.children()) {
-            this.selectedDescendantCounts.set(node.name, node.countSelectedDescendants());
+            this.selectedDescendantCounts.set(node.getName(), node.countSelectedDescendants());
         }
     }
 

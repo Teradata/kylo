@@ -35,12 +35,11 @@ export class TablesComponent extends BrowserComponent {
     }
 
     createParentNodeParams(node: Node): any {
-        console.log('createParentNodeParams');
         const params = {
             catalog: '',
             schema: ''
         };
-        const dbObj: DatabaseObject = <DatabaseObject>node.browserObject;
+        const dbObj: DatabaseObject = <DatabaseObject>node.getBrowserObject();
         if (dbObj === undefined) {
             //root node for database will have no browser object
             return params;

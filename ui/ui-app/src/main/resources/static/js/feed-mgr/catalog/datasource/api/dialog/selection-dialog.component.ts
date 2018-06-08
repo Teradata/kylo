@@ -48,7 +48,7 @@ export class SelectionDialogComponent implements OnInit {
         const root: Node = this.selectionService.get(this.datasourceId);
         const nodes = root.getSelectedDescendants();
         for (let node of nodes) {
-            this.selected.push(new SelectedItem(node.getPathNodes().map(n => n.name).join("/"), node));
+            this.selected.push(new SelectedItem(node.getPathNodes().map(n => n.getName()).join("/"), node));
         }
         this.initialItemCount = this.selected.length;
         this.filter();

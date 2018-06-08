@@ -50,10 +50,10 @@ export class RemoteFilesComponent extends BrowserComponent {
     createParentNodeParams(node: Node): any {
         const pathNodes = node.getPathNodes();
         const root = pathNodes[0];
-        if (RemoteFilesComponent.isAzure(new URL(root.name))) {
-            return {path: node.browserObject.path};
+        if (RemoteFilesComponent.isAzure(new URL(root.getName()))) {
+            return {path: node.getBrowserObject().path};
         } else {
-            return {path: pathNodes.map(n => n.name).join("/")};
+            return {path: pathNodes.map(n => n.getName()).join("/")};
         }
     }
 
@@ -62,12 +62,10 @@ export class RemoteFilesComponent extends BrowserComponent {
             return root;
         }
 
-        const rootUrl = new URL(root.name);
+        const rootUrl = new URL(root.getName());
         const pathUrl = new URL(params.path);
 
         if (RemoteFilesComponent.isAzure(rootUrl)) {
-            //for azure
-
             let node: Node = root;
             let child: Node;
 
@@ -82,7 +80,7 @@ export class RemoteFilesComponent extends BrowserComponent {
             if (containerNameIdx > 0) {
                 //has container
                 const container = segment.substring(0, containerNameIdx);
-                child = node.childrenMap.get(container);
+                child = node.getChild(container);
                 if (child === undefined) {
                     child = new Node(container);
                     containerPath = rootUrl.protocol + "//" + segment + "/";
@@ -101,7 +99,7 @@ export class RemoteFilesComponent extends BrowserComponent {
             segments.shift();
 
             for (let path of segments) {
-                child = node.childrenMap.get(path);
+                child = node.getChild(path);
                 if (child === undefined) {
                     child = new Node(path);
                     const childPath = containerPath + "/" + path;
@@ -113,7 +111,7 @@ export class RemoteFilesComponent extends BrowserComponent {
             return node;
 
         } else {
-            //for all others
+            //for all others types of file protocols
             const rootPath = rootUrl.toString(); //normalise root url
             const path = pathUrl.toString(); //normalise path url
             let relativePath = path.substring(rootPath.length, path.length);
@@ -122,7 +120,7 @@ export class RemoteFilesComponent extends BrowserComponent {
                 const splits: string[] = relativePath.split("/");
                 const paths = splits.filter(p => p.length > 0);
                 for (let path of paths) {
-                    let child = node.childrenMap.get(path);
+                    let child = node.getChild(path);
                     if (child === undefined) {
                         child = new Node(path);
                         node.addChild(child);

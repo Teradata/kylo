@@ -4,11 +4,11 @@ import {BrowserObject} from './browser-object';
  * Browser object hierarchy
  */
 export class Node {
-    name: string;
+    private name: string;
     private isSelected: boolean = false;
-    childrenMap: Map<string, Node> = new Map<string, Node>();
-    parent: Node;
-    browserObject: BrowserObject;
+    private childrenMap: Map<string, Node> = new Map<string, Node>();
+    private parent: Node;
+    private browserObject: BrowserObject;
 
     constructor(name: string) {
         this.name = name;
@@ -104,5 +104,13 @@ export class Node {
 
     setSelected(selected: boolean): void {
         this.isSelected = selected;
+    }
+
+    getBrowserObject(): BrowserObject {
+        return this.browserObject;
+    }
+
+    getName(): string {
+        return this.name;
     }
 }
