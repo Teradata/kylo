@@ -81,10 +81,16 @@ public class CatalogTableManager {
         throws SQLException {
         return isolatedFunction(DataSourceUtil.mergeTemplates(dataSource), jdbcSource -> {
             final DBSchemaParser parser = new DBSchemaParser(jdbcSource, new KerberosTicketConfiguration());
+            final String tableCatalog;
+            final String tableSchema;
 
             if (catalogName == null) {
                 final List<JdbcCatalog> catalogs = parser.listCatalogs(null, null);
-                if (!catalogs.isEmpty()) {
+                if (catalogs.isEmpty()) {
+                    tableCatalog = null;
+                } else if (catalogs.size() == 1 && catalogs.get(0).getCatalog().isEmpty()) {
+                    tableCatalog = "";
+                } else {
                     return catalogs.stream()
                         .map(catalog -> {
                             final DataSetTable entry = new DataSetTable();
@@ -94,10 +100,17 @@ public class CatalogTableManager {
                         })
                         .collect(Collectors.toList());
                 }
+            } else {
+                tableCatalog = catalogName;
             }
+
             if (schemaName == null) {
-                final List<JdbcSchema> schemas = parser.listSchemas(catalogName, null, null);
-                if (!schemas.isEmpty()) {
+                final List<JdbcSchema> schemas = parser.listSchemas(tableCatalog, null, null);
+                if (schemas.isEmpty()) {
+                    tableSchema = null;
+                } else if (schemas.size() == 1 && schemas.get(0).getSchema().isEmpty()) {
+                    tableSchema = "";
+                } else {
                     return schemas.stream()
                         .map(schema -> {
                             final DataSetTable entry = new DataSetTable();
@@ -108,8 +121,11 @@ public class CatalogTableManager {
                         })
                         .collect(Collectors.toList());
                 }
+            } else {
+                tableSchema = schemaName;
             }
-            return parser.listTables(catalogName, schemaName, null, null).stream()
+
+            return parser.listTables(tableCatalog, tableSchema, null, null).stream()
                 .map(table -> {
                     final DataSetTable entry = new DataSetTable();
                     entry.setCatalog(table.getCatalog());

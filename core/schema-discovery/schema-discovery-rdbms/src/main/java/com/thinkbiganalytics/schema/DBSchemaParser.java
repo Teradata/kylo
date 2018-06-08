@@ -144,7 +144,7 @@ public class DBSchemaParser implements JdbcSchemaParser {
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public List<JdbcCatalog> listCatalogs(@Nullable String pattern, @Nullable Pageable pageable) throws SQLException {
+    public List<JdbcCatalog> listCatalogs(@Nullable final String pattern, @Nullable final Pageable pageable) throws SQLException {
         try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             final ResultSet resultSet = connection.getMetaData().getCatalogs();
             return (List) transformResults(resultSet, DefaultJdbcCatalog.fromResultSet());
@@ -326,7 +326,7 @@ public class DBSchemaParser implements JdbcSchemaParser {
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public List<JdbcTable> listTables(@Nullable String catalog, @Nullable String schema, @Nullable String pattern, @Nullable Pageable pageable) throws SQLException {
+    public List<JdbcTable> listTables(@Nullable final String catalog, @Nullable final String schema, @Nullable final String pattern, @Nullable Pageable pageable) throws SQLException {
         try (final Connection connection = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration)) {
             final ResultSet resultSet = connection.getMetaData().getTables(catalog, schema, null, null);
             return (List) transformResults(resultSet, DefaultJdbcTable.fromResultSet(connection.getMetaData()));
