@@ -517,7 +517,7 @@ public class SparkShellProxyController {
         //first look at the cache to see if its there
         FileMetadataCompletionTask result = fileMetadataTrackerService.get(id);
         if (result != null) {
-            if(result.getModifiedTransformResponse().getStatus() == TransformResponse.Status.SUCCESS){
+            if (result.getModifiedTransformResponse().getStatus() == TransformResponse.Status.SUCCESS) {
                 fileMetadataTrackerService.removeFromCache(id);
             }
             return Response.ok(result.getModifiedTransformResponse()).build();
@@ -639,6 +639,7 @@ public class SparkShellProxyController {
         // Generate the response
         final Response response = Response.status(status).entity(entity).header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON).build();
         if (cause != null) {
+            log.debug("{}: {}", entity.getMessage(), cause);
             return new WebApplicationException(cause, response);
         } else {
             return new WebApplicationException(response);
