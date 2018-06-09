@@ -53,6 +53,7 @@ export class directive implements ng.IDirective {
                             text: this.$filter('translate')('views.main.feeds'), 
                             permission: AccessConstants.UI_STATES.FEEDS.permissions});
                 links.push({sref: "categories",type:'link', icon: "folder_special", text: this.$filter('translate')('views.main.categories'), permission: AccessConstants.UI_STATES.CATEGORIES.permissions});
+                // links.push({sref: "explorer", type: "link", icon: "find_in_page", text: "Explorer"});
                 links.push({sref: "service-level-agreements",type:'link', icon: "beenhere", text: this.$filter('translate')('views.main.sla'), permission: AccessConstants.UI_STATES.SERVICE_LEVEL_AGREEMENTS.permissions});
                 links.push({sref: "visual-query",type:'link', icon: "transform", text:this.$filter('translate')('views.main.visual-query'), fullscreen: true, permission:AccessConstants.UI_STATES.VISUAL_QUERY.permissions});
                 links.push({sref: "catalog",type:'link', icon: "grid_on", text: this.$filter('translate')('views.main.tables'), permission: AccessConstants.UI_STATES.TABLES.permissions});
@@ -110,14 +111,34 @@ export class directive implements ng.IDirective {
                 links.push({sref: "groups",type:'link', icon: "group", text: this.$filter('translate')('views.main.groups'), defaultActive: false, permission: AccessConstants.GROUP_ACCESS});
                 links.push({sref: "sla-email-templates",type:'link', icon: "email", text: this.$filter('translate')('views.main.sla-email'), defaultActive: false, permission: AccessConstants.EDIT_SERVICE_LEVEL_AGREEMENT_EMAIL_TEMPLATE});
                 addExtensionLinks(MENU_KEY.ADMIN, links);
-                    let menu = ({type:'toggle', 
-                            text: this.$filter('translate')('views.main.admin'),
-                            narrowText:this.$filter('translate')('views.main.admin-narrow'),
-                            expanded:false,
-                            links:links,
-                            });
+                let menu = ({type:'toggle',
+                        text: this.$filter('translate')('views.main.admin'),
+                        narrowText:this.$filter('translate')('views.main.admin-narrow'),
+                        expanded:false,
+                        links:links,
+                        });
                 menu.links = links;
                 menuMap[MENU_KEY.ADMIN] = menu;
+                return menu
+            }
+
+            /**
+             * Build the Marketplace Menu
+             * @param allowed
+             */
+            let buildMarketplaceMenu: any=()=>{
+
+                let links: any[] = [];
+                links.push({sref: "marketplace", type: "link", icon: "local_grocery_store", text: this.$filter('translate')('views.main.marketplace'), defaultActive: false, permission: this.AccessControlService.DATASOURCE_ACCESS});
+                addExtensionLinks(MENU_KEY.MKTPLC, links);
+                let menu = ({type:'toggle',
+                    text: this.$filter('translate')('views.main.marketplace'),
+                    narrowText:this.$filter('translate')('views.main.marketplace-narrow'),
+                    expanded:false,
+                    links:links,
+                });
+                menu.links = links;
+                menuMap[MENU_KEY.MKTPLC] = menu;
                 return menu
             }
 
@@ -130,6 +151,8 @@ export class directive implements ng.IDirective {
         menu.push(buildOpsManagerMenu());
         menu.push(buildFeedManagerMenu());
         menu.push(buildAdminMenu());
+        menu.push(buildMarketplaceMenu());
+
         buildExtensionsMenu(menu);
         buildMenuStateMap(menu);
 
@@ -188,7 +211,7 @@ export class directive implements ng.IDirective {
      */
     let menuMap: any = {};
     
-    let MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN"}
+    let MENU_KEY: any = {"OPS_MGR":"OPS_MGR","FEED_MGR":"FEED_MGR","ADMIN":"ADMIN","MKTPLC":"MKTPLC"}
     let extensionsMenus: any = {};  
     /**
      * a pointer to the highlighted menu item

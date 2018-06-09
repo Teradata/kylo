@@ -224,6 +224,14 @@
       <version>${project.version}</version>
     </dependency>
 
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-marketplace-rest-controller</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <!-- metadata server -->
     <dependency>
       <groupId>com.thinkbiganalytics.kylo</groupId>
@@ -239,6 +247,12 @@
           <groupId>org.mortbay.jetty</groupId>
         </exclusion>
       </exclusions>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.kylo</groupId>
+      <artifactId>kylo-catalog-controller</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <!-- Kerberos Ticket Renewer -->

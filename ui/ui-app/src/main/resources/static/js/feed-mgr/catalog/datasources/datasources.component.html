@@ -1,0 +1,25 @@
+<ng-container *tdLoading="'DataSourcesComponent.LOADER'; color:'accent'; mode:'indeterminate'; strategy:'overlay'; type:'circle'">
+  <ng-container *ngIf="datasources && datasources.length > 0">
+    <mat-card>
+      <td-search-box placeholder="Search data sources" alwaysVisible="true" debounce="0" (searchDebounce)="search($event)"></td-search-box>
+      <mat-divider></mat-divider>
+      <mat-nav-list>
+        <ng-template let-datasource let-last="last" ngFor [ngForOf]="filteredDatasources">
+          <mat-list-item matRipple class="cursor-pointer" (click)="selectDatasource(datasource)">
+            <ng-md-icon mat-list-icon [icon]="datasource.connector.icon ? datasource.connector.icon : 'fa-database'" [ngClass]="datasource.connector.color ? 'tc-'+datasource.connector.color : 'icon-component'"></ng-md-icon>
+            <h4 mat-line>{{datasource.title}}</h4>
+          </mat-list-item>
+          <mat-divider *ngIf="!last"></mat-divider>
+        </ng-template>
+      </mat-nav-list>
+    </mat-card>
+  </ng-container>
+
+
+  <div *ngIf="!datasources || datasources.length == 0" class="connectors-empty" fxLayout="column" fxLayoutAlign="center center">
+    <ng-md-icon class="tc-grey-500" icon="find_in_page" size="96"></ng-md-icon>
+    <h2>No Datasources</h2>
+    <span>There are no available datasources. See the Kylo documentation for more information.</span>
+  </div>
+
+</ng-container>

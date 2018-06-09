@@ -44,6 +44,16 @@
     </dependencySet-->
   </dependencySets>
   <fileSets>
+    <!-- Create kylo-install-inspector folders -->
+    <fileSet>
+      <outputDirectory>/kylo-install-inspector/bin</outputDirectory>
+      <!-- This doesn't matter. Just have to specify a folder even though we aren't copying from it -->
+      <directory>.</directory>
+      <excludes>
+        <exclude>**/*</exclude>
+      </excludes>
+      <fileMode>755</fileMode>
+    </fileSet>
     <!-- Create UI folders. Most of the UI files are in the file section since they were individual files -->
     <fileSet>
       <outputDirectory>/kylo-ui/bin</outputDirectory>
@@ -464,17 +474,22 @@
     </file>
     <file>
       <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/target/kylo-install-inspector-app-${project.version}.war</source>
-      <outputDirectory>lib/install-inspector</outputDirectory>
+      <outputDirectory>kylo-install-inspector/lib</outputDirectory>
+      <fileMode>755</fileMode>
+    </file>
+    <file>
+      <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-app/src/main/resources/logback-spring.xml</source>
+      <outputDirectory>kylo-install-inspector/conf</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-api/target/kylo-install-inspector-api-${project.version}.jar</source>
-      <outputDirectory>lib/install-inspector/lib</outputDirectory>
+      <outputDirectory>kylo-install-inspector/inspections</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>
       <source>${project.parent.parent.basedir}/install/install-inspector/install-inspector-inspections/target/kylo-install-inspector-inspections-${project.version}.jar</source>
-      <outputDirectory>lib/install-inspector/lib</outputDirectory>
+      <outputDirectory>kylo-install-inspector/inspections</outputDirectory>
       <fileMode>755</fileMode>
     </file>
     <file>

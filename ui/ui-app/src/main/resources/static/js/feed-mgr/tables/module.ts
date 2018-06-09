@@ -19,7 +19,7 @@ class ModuleFactory  {
 
     configFn($stateProvider: any){
        $stateProvider.state(AccessConstants.UI_STATES.CATALOG.state,{
-            url:'/catalog',
+            url:'/tables',
             params: {
             },
             views: {
@@ -41,7 +41,7 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.SCHEMAS.state,{
-            url:'/catalog/{datasource}/schemas',
+            url:'/tables/{datasource}/schemas',
             params: {
                 datasource: null
             },
@@ -64,7 +64,7 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLES.state,{
-            url:'/catalog/{datasource}/schemas/{schema}',
+            url:'/tables/{datasource}/schemas/{schema}',
             params: {
                 datasource: null,
                 schema: null
@@ -88,7 +88,7 @@ class ModuleFactory  {
         });
 
         $stateProvider.state(AccessConstants.UI_STATES.TABLE.state,{
-            url:'/catalog/{datasource}/schemas/{schema}/{tableName}',
+            url:'/tables/{datasource}/schemas/{schema}/{tableName}',
             params: {
                 datasource: null,
                 schema: null,

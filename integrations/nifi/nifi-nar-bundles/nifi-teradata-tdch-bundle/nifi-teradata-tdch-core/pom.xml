@@ -84,6 +84,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-mockito-release-full</artifactId>
+      <scope>test</scope>
+      <type>pom</type>
+    </dependency>
+
   </dependencies>
 
 </project>

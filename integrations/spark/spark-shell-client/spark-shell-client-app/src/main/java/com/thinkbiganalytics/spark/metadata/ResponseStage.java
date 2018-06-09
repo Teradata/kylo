@@ -149,7 +149,7 @@ public class ResponseStage implements Function<TransformResult, TransformRespons
             });
         } else {
             columnSelection = allColumns;
-            rows = Lists.transform(result.getDataSet().collectAsList(), new Function<Row, List<Object>>() {
+            rows = Lists.transform(allRows, new Function<Row, List<Object>>() {
                 @Nullable
                 @Override
                 public List<Object> apply(@Nullable Row row) {

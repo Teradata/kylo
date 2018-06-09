@@ -1,7 +1,10 @@
+import {HttpClientModule} from "@angular/common/http";
 import {FactoryProvider, NgModule, NgModuleFactoryLoader, SystemJsNgModuleLoader} from "@angular/core";
+import {FlexLayoutModule} from "@angular/flex-layout";
 import {BrowserModule} from "@angular/platform-browser";
 import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 import {UpgradeModule} from "@angular/upgrade/static";
+import {CovalentLoadingModule} from "@covalent/core/loading";
 import {UIRouterModule} from "@uirouter/angular";
 import {UIRouterUpgradeModule} from "@uirouter/angular-hybrid";
 
@@ -13,6 +16,9 @@ import {KyloServicesModule} from "./services/services.module";
     imports: [
         BrowserModule,
         BrowserAnimationsModule,
+        CovalentLoadingModule,
+        FlexLayoutModule,
+        HttpClientModule,
         KyloCommonModule,
         KyloServicesModule,
         UIRouterModule,

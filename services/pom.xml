@@ -30,6 +30,8 @@
     <module>alerts-service</module>
     <module>metadata-service</module>
     <module>upgrade-service</module>
+    <module>catalog-service</module>
+    <module>marketplace-service</module>
   </modules>
 
   <build>

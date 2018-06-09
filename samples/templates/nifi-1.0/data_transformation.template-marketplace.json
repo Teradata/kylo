@@ -1,0 +1,6 @@
+{
+	"templateName":"User friendly template name goes here.",
+	"fileName":"data_transformation.template.zip",
+	"description":"Detailed description goes here.",
+	"type":"Stream or Batch"
+}

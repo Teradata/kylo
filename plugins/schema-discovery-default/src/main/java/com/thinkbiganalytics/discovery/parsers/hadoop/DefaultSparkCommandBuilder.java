@@ -20,6 +20,8 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import java.util.List;
+
 public class DefaultSparkCommandBuilder extends AbstractSparkCommandBuilder {
 
     private String method;
@@ -36,8 +38,19 @@ public class DefaultSparkCommandBuilder extends AbstractSparkCommandBuilder {
     @Override
     public String build(String pathToFile) {
         StringBuilder sb = new StringBuilder();
-        appendDataFrameScript(sb, method, pathToFile);
+        sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
+        sb.append(String.format("sqlContext.read.%s(\"%s\")", method, pathToFile));
+        if(isLimit()) {
+            sb.append(String.format(".limit(%s)", getLimit()));
+        }
+        sb.append(".toDF()");
         return sb.toString();
+    }
+
+    public String build(List<String> paths) {
+
+        return unionDataFrames(paths,"sqlContext.read.%s(\"%s\").toDF()\n",method);
 
     }
+
 }

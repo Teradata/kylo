@@ -23,7 +23,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
 import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.parser.SchemaParser;
 
-@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"}, usesSpark = true)
+@SchemaParser(name = "Parquet", description = "Supports parquet formatted files.", tags = {"Parquet"}, usesSpark = true,mimeTypes = "application/parquet")
 public class ParquetFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override

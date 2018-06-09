@@ -25,6 +25,7 @@ import com.thinkbiganalytics.discovery.parsers.hadoop.SparkFileType;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 
 /**
  * Parses a file using Spark to determine its structure and format.
@@ -38,6 +39,8 @@ public interface SparkFileSchemaParser extends FileSchemaParser {
     void setDataFrameVariable(String dataFrameVariable);
 
     public SampleFileSparkScript getSparkScript(InputStream isa) throws IOException;
+
+    SampleFileSparkScript getSparkScript(List<String> filePaths);
 
     public SparkFileType getSparkFileType();
 

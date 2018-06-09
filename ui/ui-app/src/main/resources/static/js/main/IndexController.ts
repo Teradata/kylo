@@ -1,12 +1,33 @@
+import {Injector} from "@angular/core";
+import {LoadingMode, LoadingType, TdLoadingService} from "@covalent/core/loading";
+import {RejectType, Transition, TransitionService} from "@uirouter/core";
 import * as angular from 'angular';
+
 import "app";
 
-export class controller implements ng.IComponentController{
-        /**
+/**
+ * Identifier for state loader mask of TdLoadingService
+ */
+const STATE_LOADER = "stateLoader";
+
+export class IndexController implements angular.IComponentController {
+
+    /**
      * Time to wait before initializing the loading dialog
      * @type {number}
      */
     LOADING_DIALOG_WAIT_TIME:any = 100;
+
+    /**
+     * Covalent loading service
+     */
+    loadingService: TdLoadingService;
+
+    /**
+     * Timeout for state loader
+     */
+    stateLoaderTimeout: number;
+
     constructor(
         private $scope:any,
         private $http:any,
@@ -20,7 +41,8 @@ export class controller implements ng.IComponentController{
         private $q: any,
         private $element: any,
         private $rootScope: any,
-        private $transitions: any,
+        private $transitions: TransitionService,
+        private $$angularInjector: Injector,
         private $mdDialog:any,
         private StateService:any,
         private SearchService: any,
@@ -47,30 +69,20 @@ export class controller implements ng.IComponentController{
                 document.getElementById('search-input').focus();
             });
 
-            this.$transitions.onSuccess({}, (transition: any)=> {
-            this.currentState = transition.to();
-            if (this.currentState.name != 'search') {
-                this.searchQuery = null;
-            }
-            else {
-                this.searchQuery = this.SearchService.searchQuery;
-            }
-            this.$rootScope.previousState = transition.from().name;
-            this.$rootScope.currentState = transition.to().name;
+            // Create state loading bar
+            this.loadingService = $$angularInjector.get(TdLoadingService);
+            this.loadingService.create({
+                name: STATE_LOADER,
+                mode: LoadingMode.Indeterminate,
+                type: LoadingType.Linear,
+                color: "accent"
+            });
 
-            //hide the loading dialog
-            if (!this.AccessControlService.isFutureState(this.currentState.name)) {
-                if (this.loadingTimeout != null) {
-                    this.$timeout.cancel(this.loadingTimeout);
-                    this.loadingTimeout = null;
-                }
-                if (this.loading) {
-                    this.loading = false;
-                    this.$mdDialog.hide();
-                }
-            }
+            // Listen for state transitions
+            this.$transitions.onCreate({}, this.onTransitionStart.bind(this));
+            this.$transitions.onSuccess({}, this.onTransitionSuccess.bind(this));
+            this.$transitions.onError({}, this.onTransitionError.bind(this));
 
-        });
          // Fetch the allowed actions
             this.AccessControlService.getUserAllowedActions()
                 .then((actionSet: any)=> {
@@ -200,12 +212,65 @@ export class controller implements ng.IComponentController{
 
         }, this.LOADING_DIALOG_WAIT_TIME);
 
+    /**
+     * Called when transitioning to a new state.
+     */
+    onTransitionStart(transition: Transition) {
+        if (this.stateLoaderTimeout == null) {
+            this.stateLoaderTimeout = setTimeout(() => this.loadingService.register(STATE_LOADER), 250);
+        }
+    }
 
+    /**
+     * Called when the transition was successful.
+     */
+    onTransitionSuccess(transition: Transition) {
+        // Clear state loading bar. Ignore parent states as child states will load next.
+        if (!transition.to().name.endsWith(".**")) {
+            clearTimeout(this.stateLoaderTimeout);
+            this.stateLoaderTimeout = null;
+            this.loadingService.resolveAll(STATE_LOADER);
+        }
 
+        // Clear search query on "search" state
+        this.currentState = transition.to();
+        if (this.currentState.name != 'search') {
+            this.searchQuery = null;
+        }
+        else {
+            this.searchQuery = this.SearchService.searchQuery;
+        }
+        this.$rootScope.previousState = transition.from().name;
+        this.$rootScope.currentState = transition.to().name;
+
+        //hide the loading dialog
+        if (!this.AccessControlService.isFutureState(this.currentState.name)) {
+            if (this.loadingTimeout != null) {
+                this.$timeout.cancel(this.loadingTimeout);
+                this.loadingTimeout = null;
+            }
+            if (this.loading) {
+                this.loading = false;
+                this.$mdDialog.hide();
+            }
+        }
+    }
+
+    /**
+     * Called when the transition failed.
+     */
+    onTransitionError(transition: Transition) {
+        // Clear state loading bar. Ignore parent states (type is SUPERSEDED) as child states will load next.
+        if (transition.error().type !== RejectType.SUPERSEDED) {
+            clearTimeout(this.stateLoaderTimeout);
+            this.stateLoaderTimeout = null;
+            this.loadingService.resolveAll(STATE_LOADER);
+        }
+    }
 }
 
 
 
 angular.module('kylo').controller('IndexController', ["$scope", "$http", "$location", "$timeout", "$window", "$mdSidenav", "$mdMedia", "$mdBottomSheet", "$log", "$q", "$element",
-                                                                 "$rootScope", "$transitions", "$mdDialog", "StateService", "SearchService", "SideNavService", "AccessControlService",
-                                                                 controller]);
+                                                                 "$rootScope", "$transitions", "$$angularInjector", "$mdDialog", "StateService", "SearchService", "SideNavService",
+                                                                 "AccessControlService", IndexController]);

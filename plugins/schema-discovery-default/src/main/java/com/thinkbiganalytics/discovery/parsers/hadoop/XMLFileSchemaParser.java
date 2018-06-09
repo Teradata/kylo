@@ -43,13 +43,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true)
+@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true,mimeTypes = "application/xml")
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
@@ -128,6 +129,11 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
         return getSparkParserService().getSparkScript(tempFile, getSparkFileType(), getSparkCommandBuilder());
     }
 
+    public SampleFileSparkScript getSparkScript(List<String> files){
+
+        return getSparkParserService().getSparkScript(files, getSparkCommandBuilder());
+    }
+
     @Override
     public SparkCommandBuilder getSparkCommandBuilder() {
         XMLCommandBuilder xmlCommandBuilder = new XMLCommandBuilder(getRowTag());
@@ -172,10 +178,22 @@ public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implement
             StringBuilder sb = new StringBuilder();
 
             sb.append("\nimport com.databricks.spark.xml._;\n");
-            appendDataFrameVariable(sb);
+            sb.append((dataframeVariable != null ? "var " + dataframeVariable + " = " : ""));
             sb.append(String.format("sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")", xmlRowTag, pathToFile));
             return sb.toString();
         }
+
+        @Override
+        public String build(List<String> paths) {
+            StringBuilder sb = new StringBuilder();
+
+            sb.append("\nimport com.databricks.spark.xml._;\n");
+            sb.append(unionDataFrames(paths,"sqlContext.read.format(\"com.databricks.spark.xml\").option(\"rowTag\",\"%s\").load(\"%s\")\n",xmlRowTag));
+
+            return sb.toString();
+        }
+
+
     }
 
     public String getRowTag() {

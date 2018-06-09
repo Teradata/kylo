@@ -20,6 +20,7 @@ package com.thinkbiganalytics.discovery.parsers.hadoop;
  * #L%
  */
 
+import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultField;
 import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
@@ -113,6 +114,11 @@ public class SparkFileSchemaParserService {
        return getSparkScript(tempFile,fileType,commandBuilder);
     }
 
+    public SampleFileSparkScript getSparkScript(List<String> filePaths,  SparkCommandBuilder commandBuilder){
+        String script = toScript(filePaths, commandBuilder);
+        return new SampleFileSparkScript(filePaths, script);
+    }
+
     public SampleFileSparkScript getSparkScript(File tempFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) throws IOException {
         String script = toScript(tempFile, fileType, commandBuilder);
         SampleFileSparkScript sparkScript = new SampleFileSparkScript(tempFile.getPath(), script);
@@ -127,13 +133,24 @@ public class SparkFileSchemaParserService {
 
     private String toScript(File localFile, SparkFileType fileType, SparkCommandBuilder commandBuilder) {
         String path = "file://" + localFile.getAbsolutePath();
+        return toScript(Lists.newArrayList(path),commandBuilder);
+    }
+
+    private String toScript(List<String> paths,SparkCommandBuilder commandBuilder) {
+
         // IDE testing:
         //path = "file:///var/sample/signups.orc";
         //path = "file:///var/sample/HiveGroup.parquet";
         StringBuffer sb = new StringBuffer();
         //sb.append("import sqlContext.implicits._\n");
         //sb.append("import org.apache.spark.sql._\n");
-        sb.append(commandBuilder.build(path));
+        if(paths.size() >1) {
+            sb.append(commandBuilder.build(paths));
+        }
+        else {
+            sb.append(commandBuilder.build(paths.get(0)));
+        }
+
         log.info("Script {}", sb.toString());
         return sb.toString();
     }
