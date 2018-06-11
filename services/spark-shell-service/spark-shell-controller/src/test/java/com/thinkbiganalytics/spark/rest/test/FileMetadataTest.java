@@ -21,6 +21,7 @@ package com.thinkbiganalytics.spark.rest.test;
  */
 
 
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.thinkbiganalytics.discovery.model.DefaultQueryResultColumn;
 import com.thinkbiganalytics.discovery.schema.QueryResultColumn;
 import com.thinkbiganalytics.spark.rest.filemetadata.FileMetadataTransformResponseModifier;
@@ -41,6 +42,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -49,11 +52,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 
 public class FileMetadataTest {
+
+
+    private static final Logger log = LoggerFactory.getLogger(FileMetadataTest.class);
 
     @Mock
     private FileMetadataTaskService trackerService;
@@ -230,6 +237,22 @@ public class FileMetadataTest {
         FileMetadataTransformResponseModifier fileMetadataResult = new FileMetadataTransformResponseModifier(trackerService);
         ModifiedTransformResponse<FileMetadataResponse> m =fileMetadataResult.modify(initialResponse);
         FileMetadataResponse response = m.getResults();
+        int retryCount = 0;
+        long start = System.currentTimeMillis();
+        boolean process = response == null;
+        while(process){
+            Uninterruptibles.sleepUninterruptibly(1000, TimeUnit.MILLISECONDS);
+            response = m.getResults();
+            if(response != null){
+               process = false;
+            }
+            retryCount +=1;
+            if(retryCount >20){
+                process = false;
+            }
+        }
+        long stop = System.currentTimeMillis();
+        log.info("Time to get chained response {} ms, Retry Attempts: {}", (stop -start),retryCount);
         Assert.assertEquals(3,response.getDatasets().size());
         Assert.assertEquals(2, response.getDatasets().get("file://my/test001.csv").getFiles().size());
         Assert.assertEquals(3, response.getDatasets().get("file://my/parquet001.parquet").getFiles().size());
