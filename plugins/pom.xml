@@ -36,5 +36,6 @@
     <module>catalog-filesystem-aws-hadoop-v2</module>
     <module>catalog-filesystem-aws-hadoop-v3</module>
     <module>catalog-filesystem-azure</module>
+    <module>catalog-credential-simple</module>
   </modules>
 </project>

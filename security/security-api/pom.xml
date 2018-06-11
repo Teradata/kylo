@@ -10,4 +10,11 @@
   <properties>
     <plugin.license.parentRelative>../../</plugin.license.parentRelative>
   </properties>
+  <dependencies>
+  <dependency>
+    <groupId>com.thinkbiganalytics.kylo</groupId>
+    <artifactId>kylo-commons-security</artifactId>
+    <version>${project.version}</version>
+  </dependency>
+  </dependencies>
 </project>

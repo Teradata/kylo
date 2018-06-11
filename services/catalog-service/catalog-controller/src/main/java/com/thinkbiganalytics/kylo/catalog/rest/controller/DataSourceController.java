@@ -21,6 +21,7 @@ package com.thinkbiganalytics.kylo.catalog.rest.controller;
  */
 
 import com.thinkbiganalytics.kylo.catalog.CatalogException;
+import com.thinkbiganalytics.kylo.catalog.credential.api.DataSourceCredentialManager;
 import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceProvider;
 import com.thinkbiganalytics.kylo.catalog.file.CatalogFileManager;
 import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetFile;
@@ -31,6 +32,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.rest.model.RestResponseStatus;
 import com.thinkbiganalytics.rest.model.search.SearchResult;
 import com.thinkbiganalytics.rest.model.search.SearchResultImpl;
+import com.thinkbiganalytics.security.context.SecurityContextUtil;
 
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -41,12 +43,17 @@ import org.springframework.stereotype.Component;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.AccessDeniedException;
+import java.security.Principal;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.ForbiddenException;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;
@@ -76,16 +83,19 @@ public class DataSourceController extends AbstractCatalogController {
     public static final String BASE = "/v1/catalog/datasource";
 
     @Inject
-    DataSourceProvider dataSourceProvider;
+    private DataSourceProvider dataSourceProvider;
 
     @Inject
-    CatalogFileManager fileManager;
+    private CatalogFileManager fileManager;
 
     @Inject
-    MetadataAccess metadataService;
+    private MetadataAccess metadataService;
 
     @Inject
-    CatalogTableManager tableManager;
+    private CatalogTableManager tableManager;
+    
+    @Inject
+    private DataSourceCredentialManager credentialManager;
 
     @POST
     @ApiOperation("Create a new data source")
@@ -119,9 +129,15 @@ public class DataSourceController extends AbstractCatalogController {
                       @ApiResponse(code = 500, message = "Internal server error", response = RestResponseStatus.class)
                   })
     @Path("{id}")
-    public Response getDataSource(@PathParam("id") final String dataSourceId) {
+    public Response getDataSource(@PathParam("id") final String dataSourceId, @QueryParam("filter") @DefaultValue("false") final boolean withCredentials) {
         log.entry(dataSourceId);
-        final DataSource dataSource = findDataSource(dataSourceId);
+        DataSource dataSource = findDataSource(dataSourceId);
+        
+        if (withCredentials) {
+            final Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
+            dataSource = this.credentialManager.applyCredentials(dataSource, principals);
+        }
+        
         return Response.ok(log.exit(dataSource)).build();
     }
 
@@ -205,7 +221,7 @@ public class DataSourceController extends AbstractCatalogController {
     @ApiResponses({
         @ApiResponse(code = 200, message = "List of tables", response = DataSetTable.class, responseContainer = "List"),
         @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
-        @ApiResponse(code = 500, message = "Failed to list files", response = RestResponseStatus.class)
+        @ApiResponse(code = 500, message = "Failed to list tables", response = RestResponseStatus.class)
                   })
     public Response listTables(@PathParam("id") final String dataSourceId, @QueryParam("catalog") final String catalogName, @QueryParam("schema") final String schemaName) {
         log.entry(dataSourceId, catalogName, schemaName);
@@ -231,6 +247,40 @@ public class DataSourceController extends AbstractCatalogController {
 
 
         return Response.ok(log.exit(tables)).build();
+    }
+    
+    @GET
+    @Path("{id}/credentials")
+    @ApiOperation("List credentials for a data source")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "List of credentials", response = DataSetTable.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "Data source does not exist", response = RestResponseStatus.class),
+        @ApiResponse(code = 500, message = "Failed to list credentials", response = RestResponseStatus.class)
+    })
+    public Response listCredentials(@PathParam("id") final String dataSourceId, 
+                                    @QueryParam("encrypted") @DefaultValue("true") final boolean encrypted) {
+        log.entry(dataSourceId, encrypted);
+        
+        // List tables
+        final DataSource dataSource = findDataSource(dataSourceId);
+        final Map<String, String> credentials;
+        
+        try {
+            log.debug("List tables for catalog:{} encrypted:{}", encrypted);
+            Set<Principal> principals = SecurityContextUtil.getCurrentPrincipals();
+            credentials = this.credentialManager.getCredentials(dataSource, encrypted, principals);
+        } catch (final Exception e) {
+            log.error("Failed to retrieve credentials for datasource [{}] encrypted={}: " + e, dataSourceId, encrypted, e);
+            
+            final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
+                            .message(getMessage("catalog.datasource.credentials.error", dataSourceId))
+                            .url(request.getRequestURI())
+                            .setDeveloperMessage(e)
+                            .buildError();
+            throw new InternalServerErrorException(Response.serverError().entity(status).build());
+        }
+        
+        return Response.ok(log.exit(credentials)).build();
     }
 
     /**
