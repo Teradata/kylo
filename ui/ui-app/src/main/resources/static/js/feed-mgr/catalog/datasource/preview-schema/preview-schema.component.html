@@ -1,19 +1,19 @@
 <form fxLayout="column" fxLayoutAlign="start start">
 
   <div fxLayout="row" fxLayoutAlign="space-between start" fxFill>
-    <div  fxLayout="row" *ngIf="fileFormatResults != undefined" fxFill>
+    <div  fxLayout="row" *ngIf="datasets != undefined" fxFill>
 
     <div fxFlex="30" class="dataset-list">
 
       <mat-nav-list dense >
         <h3 matSubheader>Data sets</h3>
-        <ng-container *ngFor="let dataset of fileFormatResults.results.datasetList">
+        <ng-container *ngFor="let dataset of datasets">
         <mat-list-item  (click)="onDatasetSelected(dataset.key)" [ngClass]="{'selected-dataset': dataset.key == selectedDataSet.key}">
 
           <h3 matLine>{{dataset.displayKey}}</h3>
           <p mat-line> {{dataset.mimeType}} </p>
           <span></span>
-          <td-notification-count color="accent" [notifications]="dataset.files.length">
+          <td-notification-count color="accent" [notifications]="dataset.items.length">
           </td-notification-count>
 
         </mat-list-item>
@@ -24,63 +24,66 @@
 
 
     </div>
-      <div fxLayout="column" fxFill *ngIf="selectedDataSet">
+      <div fxLayout="column" fxLayoutAlign="start start">
+        <div fxLayout="column" fxFill *ngIf="selectedDataSet">
 
-      <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.loading"></mat-progress-bar>
-      <mat-tab-group>
-        <mat-tab label="Data">
+          <mat-progress-bar mode="indeterminate" *ngIf="selectedDataSet.loading"></mat-progress-bar>
+          <mat-tab-group>
+            <mat-tab label="Data">
 
-          <div fxLayout="column" fxFill >
+              <div fxLayout="column" fxFill >
+                <p *ngIf="message">
+                  <mat-icon>warning</mat-icon> {{message}}
+                </p>
+                <div *ngIf="selectedDataSet.hasPreviewError()" fxLayout="column">
+                  <p>
+                    <mat-icon>warning</mat-icon> {{selectedDataSet.message}}
+                  </p>
+                  <div fxLayout="row" fxLayoutAlign="start center">
+                    <span fxFlex="5" ></span>
+                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
 
-            <div *ngIf="selectedDataSet.hasPreviewError()" fxLayout="column">
-              <p>
-                <mat-icon>warning</mat-icon> {{selectedDataSet.message}}
-              </p>
-              <div fxLayout="row" fxLayoutAlign="start center">
-                <span fxFlex="5" ></span>
-                <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
+                  </div>
+
+                  <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
+                </div>
+
+                <div *ngIf="!selectedDataSet.hasPreviewError()" fxLayout="column">
+
+                  <div fxLayout="row" fxLayoutAlign="start center" *ngIf="selectedDataSet.allowsRawView">
+                    <span fxFlex="5" ></span>
+                    <mat-slide-toggle [checked]="selectedDataSetViewRaw" (change)="onToggleRaw()">View Raw
+                    </mat-slide-toggle>
+                    <span fxFlex="5" ></span>
+                    <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
+
+                  </div>
+
+                  <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
+
+                  <dataset-simple-table [columns]="selectedDataSet.preview.columns" [rows]="selectedDataSet.preview.rows" *ngIf="selectedDataSetViewRaw == false && selectedDataSet.hasPreview()"></dataset-simple-table>
+
+                </div>
 
               </div>
 
-               <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
-             </div>
+            </mat-tab>
 
-            <div *ngIf="!selectedDataSet.hasPreviewError()" fxLayout="column">
+            <mat-tab label="Schema">
 
-              <div fxLayout="row" fxLayoutAlign="start center">
-                <span fxFlex="5" ></span>
-                <mat-slide-toggle [checked]="selectedDataSetViewRaw" (change)="onToggleRaw()">View Raw
-                </mat-slide-toggle>
-                <span fxFlex="5" ></span>
-                <button mat-raised-button (click)="openSchemaParseSettingsDialog()">Settings</button>
+              <dataset-schema-definition [columns]="selectedDataSet.schema"></dataset-schema-definition>
 
-              </div>
+            </mat-tab>
 
+            <mat-tab label="Save">
 
+            </mat-tab>
 
-              <dataset-simple-table [columns]="selectedDataSet.raw.columns" [rows]="selectedDataSet.raw.rows" *ngIf="selectedDataSetViewRaw == true && selectedDataSet.hasRaw()"></dataset-simple-table>
+          </mat-tab-group>
 
-              <dataset-simple-table [columns]="selectedDataSet.preview.columns" [rows]="selectedDataSet.preview.rows" *ngIf="selectedDataSetViewRaw == false && selectedDataSet.hasPreview()"></dataset-simple-table>
-
-            </div>
-
-          </div>
-
-        </mat-tab>
-
-        <mat-tab label="Schema">
-
-          <dataset-schema-definition [columns]="selectedDataSet.schema"></dataset-schema-definition>
-
-        </mat-tab>
-
-        <mat-tab label="Save">
-
-        </mat-tab>
-
-      </mat-tab-group>
-
+        </div>
       </div>
+
         <!--
         <kylo-visual-query-transform
         <thinkbig-visual-query-transform engine="vm.coreDataModel.engine" height-offset="64" model="vm.coreDataModel.model" step-index="1" ng-if="vm.selectedStepIndex == 1 || vm.isStepVisited(1)">

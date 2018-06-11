@@ -90,4 +90,6 @@ public @interface SchemaParser {
     boolean primary() default  true;
 
     String[] mimeTypes() default "";
+
+    String sparkFormat() default "";
 }

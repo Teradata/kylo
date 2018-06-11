@@ -38,6 +38,7 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
     private boolean usesSpark;
     private boolean primary;
     private String[] mimeTypes;
+    String sparkFormat;
 
     public boolean isSupportsBinary() {
         return supportsBinary;
@@ -101,5 +102,13 @@ public class SchemaParserDescriptor extends BaseUiPolicyRule {
 
     public void setMimeTypes(String[] mimeTypes) {
         this.mimeTypes = mimeTypes;
+    }
+
+    public String getSparkFormat() {
+        return sparkFormat;
+    }
+
+    public void setSparkFormat(String sparkFormat) {
+        this.sparkFormat = sparkFormat;
     }
 }

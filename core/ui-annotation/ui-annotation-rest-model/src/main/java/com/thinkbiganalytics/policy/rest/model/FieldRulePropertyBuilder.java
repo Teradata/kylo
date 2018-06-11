@@ -50,6 +50,7 @@ public class FieldRulePropertyBuilder {
     private boolean hidden;
     private String pattern;
     private String patternInvalidMessage;
+    private List<LabelValue> additionalProperties;
 
     public FieldRulePropertyBuilder(String name) {
         this.name = name;
@@ -153,6 +154,35 @@ public class FieldRulePropertyBuilder {
         return this;
     }
 
+    public FieldRulePropertyBuilder addAdditionalProperty(LabelValue labelValue) {
+        if (additionalProperties == null) {
+            additionalProperties = new ArrayList<>();
+        }
+        if (labelValue != null) {
+            additionalProperties.add(labelValue);
+        }
+        return this;
+    }
+
+    public FieldRulePropertyBuilder addAdditionalProperty(String label, String value) {
+        if (additionalProperties == null) {
+            additionalProperties = new ArrayList<>();
+        }
+        additionalProperties.add(new LabelValue(label, value));
+        return this;
+    }
+
+    public FieldRulePropertyBuilder addAdditionalProperties(List<LabelValue> labelValues) {
+        if (additionalProperties == null) {
+            additionalProperties = new ArrayList<>();
+        }
+        if (labelValues != null) {
+            additionalProperties.addAll(labelValues);
+        }
+        return this;
+    }
+
+
 
     public FieldRuleProperty build() {
         FieldRuleProperty property = new FieldRuleProperty();
@@ -171,6 +201,7 @@ public class FieldRulePropertyBuilder {
         property.setPattern(pattern);
         String invalidPatternMessage = StringUtils.isNotBlank(patternInvalidMessage) ? patternInvalidMessage : "Invalid Input";
         property.setPatternInvalidMessage(invalidPatternMessage);
+        property.setAdditionalProperties(additionalProperties);
         return property;
     }
 }

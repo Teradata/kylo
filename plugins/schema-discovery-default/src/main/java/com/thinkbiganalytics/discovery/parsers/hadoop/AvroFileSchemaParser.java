@@ -25,7 +25,7 @@ import com.thinkbiganalytics.discovery.parser.SparkFileSchemaParser;
 
 import java.util.List;
 
-@SchemaParser(name = "Avro", description = "Supports Avro formatted files.", tags = {"Avro"}, usesSpark = true, mimeTypes = "application/avro")
+@SchemaParser(name = "Avro", description = "Supports Avro formatted files.", tags = {"Avro"}, usesSpark = true, mimeTypes = "application/avro",sparkFormat = "avro")
 public class AvroFileSchemaParser extends AbstractSparkFileSchemaParser implements SparkFileSchemaParser {
 
     static class AvroCommandBuilder extends AbstractSparkCommandBuilder {

@@ -23,8 +23,6 @@ import {MatDialogModule} from "@angular/material/dialog";
 import {SatusDialogComponent} from "../../dialog/status-dialog.component";
 import {CovalentChipsModule} from "@covalent/core/chips";
 import {FieldPoliciesModule} from "../../../shared/field-policies-angular2/field-policies.module"
-import {FileMetadataTransformService} from "./file-metadata-transform.service";
-import {FilePreviewService} from "./preview-schema.service";
 import {MatIconModule} from "@angular/material/icon";
 import {KyloCommonModule} from "../../../../common/common.module";
 import {MatButtonModule} from "@angular/material/button";
@@ -32,6 +30,11 @@ import {SchemaParseSettingsDialog} from "./schema-parse-settings-dialog.componen
 import {MatDividerModule} from "@angular/material/divider";
 import {MatListModule} from "@angular/material/list";
 import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
+
+import {PreviewSchemaService} from "./service/preview-schema.service";
+import {PreviewRawService} from "./service/preview-raw.service";
+import {TransformResponseTableBuilder} from "./service/transform-response-table-builder";
+import {FileMetadataTransformService} from "./service/file-metadata-transform.service";
 
 @NgModule({
     declarations: [
@@ -42,7 +45,7 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
         SchemaDefinitionComponent
     ],
     entryComponents: [
-    SatusDialogComponent,
+        SatusDialogComponent,
         SchemaParseSettingsDialog
     ],
     imports: [
@@ -80,7 +83,9 @@ import {MatProgressSpinnerModule} from "@angular/material/progress-spinner";
     ],
     providers:[
         FileMetadataTransformService,
-        FilePreviewService
+        PreviewSchemaService,
+        PreviewRawService,
+        TransformResponseTableBuilder
     ]
 
 })

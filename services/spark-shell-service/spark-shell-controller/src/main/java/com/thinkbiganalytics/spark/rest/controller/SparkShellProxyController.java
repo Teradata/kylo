@@ -20,8 +20,17 @@ package com.thinkbiganalytics.spark.rest.controller;
  * #L%
  */
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
 import com.thinkbiganalytics.feedmgr.security.FeedServicesAccessControl;
 import com.thinkbiganalytics.feedmgr.service.datasource.DatasourceModelTransform;
+import com.thinkbiganalytics.kylo.catalog.datasource.DataSourceUtil;
+import com.thinkbiganalytics.kylo.catalog.rest.model.Connector;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSetTemplate;
+import com.thinkbiganalytics.kylo.catalog.rest.model.DataSource;
+import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.spark.rest.model.DataSourceObjectPreviewRequest;
 import com.thinkbiganalytics.kylo.spark.file.metadata.FileMetadataScalaScriptGenerator;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -33,7 +42,9 @@ import com.thinkbiganalytics.spark.rest.filemetadata.tasks.FileMetadataTaskServi
 import com.thinkbiganalytics.spark.rest.model.DataSources;
 import com.thinkbiganalytics.spark.rest.model.Datasource;
 import com.thinkbiganalytics.spark.rest.model.JdbcDatasource;
+import com.thinkbiganalytics.spark.rest.model.KyloCatalogReadRequest;
 import com.thinkbiganalytics.spark.rest.model.ModifiedTransformResponse;
+import com.thinkbiganalytics.spark.rest.model.PageSpec;
 import com.thinkbiganalytics.spark.rest.model.RegistrationRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveRequest;
 import com.thinkbiganalytics.spark.rest.model.SaveResponse;
@@ -46,6 +57,8 @@ import com.thinkbiganalytics.spark.shell.SparkShellRestClient;
 import com.thinkbiganalytics.spark.shell.SparkShellSaveException;
 import com.thinkbiganalytics.spark.shell.SparkShellTransformException;
 
+import org.apache.commons.lang.StringEscapeUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
@@ -54,7 +67,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.Optional;
 import java.util.ResourceBundle;
@@ -67,6 +82,7 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -517,7 +533,7 @@ public class SparkShellProxyController {
         //first look at the cache to see if its there
         FileMetadataCompletionTask result = fileMetadataTrackerService.get(id);
         if (result != null) {
-            if (result.getModifiedTransformResponse().getStatus() == TransformResponse.Status.SUCCESS) {
+            if(result.getModifiedTransformResponse().getStatus() != TransformResponse.Status.PENDING){
                 fileMetadataTrackerService.removeFromCache(id);
             }
             return Response.ok(result.getModifiedTransformResponse()).build();
@@ -525,6 +541,85 @@ public class SparkShellProxyController {
             final SparkShellProcess process = getSparkShellProcess();
             return getModifiedTransformResponse(() -> restClient.getTransformResult(process, id), new FileMetadataTransformResponseModifier(fileMetadataTrackerService));
         }
+
+    }
+
+
+
+    @POST
+    @Path("/preview")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Returns the dataset preview")
+    @ApiResponses({
+                      @ApiResponse(code = 200, message = "Returns the status of the file-metadata job.", response = TransformResponse.class),
+                      @ApiResponse(code = 400, message = "The requested data source does not exist.", response = RestResponseStatus.class),
+                      @ApiResponse(code = 500, message = "There was a problem processing the data.", response = RestResponseStatus.class)
+                  })
+    public Response preview(DataSourceObjectPreviewRequest previewRequest){
+        //todo pull from request
+        int previewLimit = 20;
+
+        DataSource dataSource = previewRequest.getDataSource();
+        Connector connector = dataSource.getConnector();
+        //merge template
+        DataSetTemplate dataSetTemplate = DataSourceUtil.mergeTemplates(dataSource);
+        Map<String,String> options =dataSetTemplate.getOptions();
+        if(options == null){
+            options = new HashMap<>();
+        }
+        List<String> jars =dataSetTemplate.getJars();
+        String previewPath = previewRequest.getPreviewPath();
+        List<String> paths = null;
+        if(StringUtils.isNotBlank(previewPath)){
+            paths = Lists.newArrayList(previewPath);
+        }
+        List<String> files = dataSetTemplate.getFiles();
+        String format = dataSetTemplate.getFormat();
+        if(previewRequest.getSchemaParser() != null){
+            SchemaParserDescriptor schemaParser = previewRequest.getSchemaParser();
+            Map<String,String>  sparkOptions =  schemaParser.getProperties().stream()
+                .collect(Collectors.toMap(p->
+                    p.getAdditionalProperties()
+                        .stream()
+                        .filter(labelValue -> "spark.option".equalsIgnoreCase(labelValue.getLabel()))
+                        .map(labelValue -> labelValue.getValue()
+                        ).findFirst().orElse("")
+                ,p->p.getValue()));
+            //remove any options that produced an empty key
+            sparkOptions.remove("");
+            //supplied options by the schema parse take precedence over the template options
+            options.putAll(sparkOptions);
+            format = schemaParser.getSparkFormat();
+        }
+        //add in additional preview options
+        if(previewRequest.getProperties() != null && !previewRequest.getProperties().isEmpty()){
+            options.putAll(previewRequest.getProperties());
+        }
+
+
+
+        KyloCatalogReadRequest request = new KyloCatalogReadRequest();
+        request.setFiles(files);
+        request.setJars(jars);
+        request.setFormat(format);
+        request.setOptions(options);
+        request.setPaths(paths);
+        PageSpec pageSpec = previewRequest.getPageSpec();
+        if(pageSpec == null){
+            pageSpec = new PageSpec();
+        }
+        request.setPageSpec(pageSpec);
+
+
+        //String script = KyloCatalogScalaScriptUtil.asScalaScript(request)
+        //final SparkShellProcess process = getSparkShellProcess();
+        // return getTransformResponse(() -> restClient.transform(process,r));
+
+        final SparkShellProcess process = getSparkShellProcess();
+        return getTransformResponse(() -> restClient.kyloCatalogTransform(process,request));
+
+
 
     }
 
@@ -786,4 +881,5 @@ public class SparkShellProxyController {
                 .collect(Collectors.toList()),
             MetadataAccess.SERVICE);
     }
+
 }

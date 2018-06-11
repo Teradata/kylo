@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-@SchemaParser(name = "JSON", allowSkipHeader = false, description = "Supports JSON formatted files.", tags = {"JSON"}, usesSpark = true,mimeTypes = "application/json")
+@SchemaParser(name = "JSON", allowSkipHeader = false, description = "Supports JSON formatted files.", tags = {"JSON"}, usesSpark = true,mimeTypes = "application/json", sparkFormat = "json")
 public class JsonFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     @Override

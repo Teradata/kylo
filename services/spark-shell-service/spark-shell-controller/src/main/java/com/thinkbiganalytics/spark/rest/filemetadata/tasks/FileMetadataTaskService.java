@@ -170,17 +170,20 @@ public class FileMetadataTaskService {
 
     private void submitTasks(FileMetadataCompletionTask result, List<SparkShellScriptRunner> tasks) {
         int parties = tasks.size();
-        int threadPoolSize = ((ThreadPoolExecutor) executor).getCorePoolSize();
-        int activeThreads = ((ThreadPoolExecutor) executor).getActiveCount();
-        //dont add to the pool unless we have at least the correct slots open
-        if (threadPoolSize - activeThreads < parties) {
-            waitingTasksQueue.add(new QueuedTasks(result, tasks));
+        if(parties == 0) {
+            result.run();
         }
         else {
-            CyclicBarrier barrier = new CyclicBarrier(parties, new FinalMetadataSchemaTaskWrapper(result,tasks));
-            tasks.stream().forEach(t -> {
-                Future f = executor.submit(new FileMetadataSchemaTask(barrier, t));
-            });
+            int threadPoolSize = ((ThreadPoolExecutor) executor).getCorePoolSize();
+            int activeThreads = ((ThreadPoolExecutor) executor).getActiveCount();
+            //dont add to the pool unless we have at least the correct slots open
+            if (threadPoolSize - activeThreads < parties) {
+                waitingTasksQueue.add(new QueuedTasks(result, tasks));
+            } else {
+                CyclicBarrier barrier = new CyclicBarrier(parties, new FinalMetadataSchemaTaskWrapper(result, tasks));
+                tasks.stream().forEach(t -> {
+                    Future f = executor.submit(new FileMetadataSchemaTask(barrier, t));
+                });
           /*
             try {
                 barrier.await();
@@ -188,6 +191,7 @@ public class FileMetadataTaskService {
                 log.error("Error clearing final barrier for file metadata schema tasks {} ",e.getMessage(),e);
             }
             */
+            }
         }
     }
 

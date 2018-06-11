@@ -52,6 +52,7 @@ public class FieldRuleProperty {
     private boolean hidden;
     private String pattern;
     private String patternInvalidMessage;
+    private List<LabelValue> additionalProperties;
 
 
     public FieldRuleProperty() {
@@ -74,6 +75,7 @@ public class FieldRuleProperty {
         this.layout = null;
         this.pattern = null;
         this.patternInvalidMessage = null;
+        this.additionalProperties = null;
     }
 
     public String getName() {
@@ -168,6 +170,7 @@ public class FieldRuleProperty {
         this.required = required;
     }
 
+
     @JsonIgnore
     public String getStringValue() {
         if (StringUtils.isBlank(value) && values != null && !values.isEmpty()) {
@@ -232,5 +235,17 @@ public class FieldRuleProperty {
 
     public void setPatternInvalidMessage(String patternInvalidMessage) {
         this.patternInvalidMessage = patternInvalidMessage;
+    }
+
+    public List<LabelValue> getAdditionalProperties() {
+
+        if (additionalProperties == null) {
+            additionalProperties = new ArrayList<>();
+        }
+        return additionalProperties;
+    }
+
+    public void setAdditionalProperties(List<LabelValue> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 }

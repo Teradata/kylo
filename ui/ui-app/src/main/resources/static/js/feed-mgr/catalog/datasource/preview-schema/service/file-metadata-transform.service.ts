@@ -1,10 +1,13 @@
-import {FileMetadataTransformResponse} from "./file-metadata-transform-response";
-import {Node} from "../../api/models/node";
+import * as angular from 'angular';
+import * as _ from 'underscore';
+import {PreviewFileDataSet} from "../model/preview-file-data-set";
+import {FileMetadataTransformResponse} from "../model/file-metadata-transform-response"
+import {Node} from "../../../api/models/node";
 import {Observable} from "rxjs/Observable";
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/share';
 import 'rxjs/add/operator/map';
-import {DataSource} from "../../api/models/datasource";
+import {DataSource} from "../../../api/models/datasource";
 import {HttpClient} from "@angular/common/http";
 import {Injectable} from "@angular/core";
 
@@ -27,7 +30,7 @@ export class FileMetadataTransformService  {
     }
 
     detectFormatForNode(node:Node, datasource:DataSource): Observable<FileMetadataTransformResponse> {
-        let paths = this.getSelectedFiles(node,datasource);
+        let paths = this.getSelectedItems(node,datasource);
         //return if the paths are the same
         if (this.detectionResult && this.detectionResult.filePaths != undefined) {
             let selectedFilePathsString = this.detectionResult.filePaths.toString();
@@ -37,12 +40,12 @@ export class FileMetadataTransformService  {
             }
         }
 
-        return this.detectFormat(paths);
+        return this.detectFormat(paths, datasource);
 
 
 
     }
-    getSelectedFiles(node:Node, datasource:DataSource) :string[] {
+    getSelectedItems(node:Node, datasource:DataSource) :string[] {
         let paths = node.getSelectedDescendants().map((node) => {
             let path = node.getBrowserObject().getPath();
             if (datasource.connector.id == "local-file-system") {
@@ -57,7 +60,7 @@ export class FileMetadataTransformService  {
     }
 
 
-    detectFormat(paths:string[]) :Observable<FileMetadataTransformResponse>{
+    detectFormat(paths:string[], datasource:DataSource) :Observable<FileMetadataTransformResponse>{
 
         let observable = new Observable<FileMetadataTransformResponse>((observer) => {
 
@@ -69,8 +72,14 @@ export class FileMetadataTransformService  {
             let formatDetected = (data: FileMetadataTransformResponse):void => {
                 console.log('FORMAT DETECTED ', data,);
                 this.detectionResult = {}
+
                 this.detectionResult.filePaths = paths;
                 this.detectionResult.result = new FileMetadataTransformResponse(data)
+                if(this.detectionResult.result.results){
+                    _.each(this.detectionResult.result.results.datasets,(dataset :PreviewFileDataSet, key:string) => {
+                        dataset.dataSource = datasource;
+                    })
+                }
                 observer.next(this.detectionResult.result);
             }
 

@@ -106,7 +106,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .patternInvalidMessage(prop.patternInvalidMessage())
                     .hidden(prop.hidden())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
-                    .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
+                    .addSelectableValues(convertToLabelValue(prop.labelValues()))
+                    .addAdditionalProperties(convertToLabelValue(prop.additionalProperties())).build();
                 properties.add(rule);
                 if (!group.equals("")) {
                     if (!groupedProperties.containsKey(group)) {
@@ -165,7 +166,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .pattern(prop.pattern())
                     .patternInvalidMessage(prop.patternInvalidMessage())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
-                    .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
+                    .addSelectableValues(convertToLabelValue(prop.labelValues()))
+                    .addAdditionalProperties(convertToLabelValue(prop.additionalProperties())).build();
                 properties.add(rule);
                 if (!group.equals("")) {
                     if (!groupedProperties.containsKey(group)) {

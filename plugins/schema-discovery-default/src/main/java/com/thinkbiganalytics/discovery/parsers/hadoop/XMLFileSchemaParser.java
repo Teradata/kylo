@@ -28,6 +28,7 @@ import com.thinkbiganalytics.discovery.schema.HiveTableSchema;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyProperty;
+import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -50,12 +51,12 @@ import java.util.Stack;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
 
-@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true,mimeTypes = "application/xml")
+@SchemaParser(name = "XML", allowSkipHeader = false, description = "Supports XML formatted files.", tags = {"XML"}, usesSpark = true,mimeTypes = "application/xml", sparkFormat = "xml")
 public class XMLFileSchemaParser extends AbstractSparkFileSchemaParser implements FileSchemaParser {
 
     private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
 
-    @PolicyProperty(name = "Row Tag", required = true, hint = "Specify root tag to extract from", value = ",")
+    @PolicyProperty(name = "Row Tag", required = true, hint = "Specify root tag to extract from", value = ",",additionalProperties = {@PropertyLabelValue(label = "spark.option",value = "rowTag")})
     private String rowTag = "";
 
     @Override
