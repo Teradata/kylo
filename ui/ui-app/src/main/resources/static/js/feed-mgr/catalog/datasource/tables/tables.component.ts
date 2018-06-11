@@ -31,7 +31,13 @@ export class TablesComponent extends BrowserComponent {
     }
 
     createRootNode(): Node {
-        return new Node(this.datasource.template.options.url);
+        if (this.datasource.template && this.datasource.template.options && this.datasource.template.options.url) {
+            return new Node(this.datasource.template.options.url);
+        } else if (this.datasource.connector && this.datasource.connector.template && this.datasource.connector.template.options && this.datasource.connector.template.options.url) {
+            return new Node(this.datasource.connector.template.options.url);
+        } else {
+            return new Node("");
+        }
     }
 
     createParentNodeParams(node: Node): any {

@@ -9,9 +9,9 @@ package com.thinkbiganalytics.hive.rest.controller;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *     http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -38,7 +38,6 @@ import org.springframework.dao.DataAccessException;
 import java.security.AccessControlException;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -241,16 +240,12 @@ public class HiveRestController {
                       @ApiResponse(code = 500, message = "Hive is unavailable.", response = RestResponseStatus.class)
                   })
     public Response getTables(@QueryParam("schema") String schema, @QueryParam("table") String table) {
-        List<String> tables;
+        final List<String> tables;
         try {
             tables = hiveMetadataService.getAllTables(schema, table);
-        } catch (DataAccessException e) {
+        } catch (final Exception e) {
             log.error("Error listing Hive Tables from the metastore ", e);
             throw e;
-        }
-        boolean userImpersonationEnabled = Boolean.valueOf(env.getProperty("hive.userImpersonation.enabled"));
-        if (userImpersonationEnabled) {
-            tables = tables.stream().filter(t -> hiveService.isTableAccessibleByImpersonatedUser(t)).collect(Collectors.toList());
         }
         return Response.ok(asJson(tables)).build();
     }

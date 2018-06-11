@@ -68,6 +68,7 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "Feed Manager - Catalog", produces = "application/json")
 @Path(DataSourceController.BASE)
 @Produces(MediaType.APPLICATION_JSON)
+@SuppressWarnings("StringConcatenationArgumentToLogCall")  // SLF4J-334: Exceptions not logged with XLogger
 public class DataSourceController extends AbstractCatalogController {
 
     private static final XLogger log = XLoggerFactory.getXLogger(DataSourceController.class);
@@ -101,7 +102,9 @@ public class DataSourceController extends AbstractCatalogController {
         try {
             dataSource = metadataService.commit(() -> dataSourceProvider.createDataSource(source));
         } catch (final CatalogException e) {
-            log.debug("Cannot create data source from request: {}", source, e);
+            if (log.isDebugEnabled()) {
+                log.debug("Cannot create data source from request: " + source, e);
+            }
             throw new BadRequestException(getMessage(e));
         }
 
@@ -182,7 +185,9 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("Path not a valid URI: {}", path, e);
             throw new BadRequestException(getMessage("catalog.datasource.listFiles.invalidPath", path));
         } catch (final Exception e) {
-            log.error("Failed to list data source files at path {}: {}", path, e, e);
+            if (log.isErrorEnabled()) {
+                log.error("Failed to list data source files at path " + path + ": " + e, e);
+            }
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
                 .message(getMessage("catalog.datasource.listFiles.error", path))
                 .url(request.getRequestURI())
@@ -213,7 +218,9 @@ public class DataSourceController extends AbstractCatalogController {
             log.debug("List tables for catalog:{} schema:{}", catalogName, schemaName);
             tables = tableManager.listCatalogsOrTables(dataSource, catalogName, schemaName);
         } catch (final Exception e) {
-            log.error("Failed to list tables for catalog [{}] schema [{}]: {}", catalogName, schemaName, e);
+            if (log.isErrorEnabled()) {
+                log.error("Failed to list tables for catalog [" + catalogName + "] schema [" + schemaName + "]: " + e, e);
+            }
             final RestResponseStatus status = new RestResponseStatus.ResponseStatusBuilder()
                 .message(getMessage("catalog.datasource.listTables.error", catalogName, schemaName))
                 .url(request.getRequestURI())

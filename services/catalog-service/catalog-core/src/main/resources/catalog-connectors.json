@@ -129,9 +129,12 @@
     "tabs": [
       {
         "label": "Table",
-        "sref": ".table"
+        "sref": ".connection"
       }
-    ]
+    ],
+    "template": {
+      "format": "hive"
+    }
   },
   {
     "title": "Local File System",
