@@ -1,0 +1,6 @@
+{
+  "templateName": "XML Ingest",
+  "description": "Ingest XML into Hive",
+  "fileName": "xml_ingext.template.zip",
+  "stream": false
+}

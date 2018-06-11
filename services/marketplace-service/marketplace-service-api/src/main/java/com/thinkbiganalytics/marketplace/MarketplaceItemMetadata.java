@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.marketplace;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 /*-
  * #%L
  * marketplace-service-api
@@ -19,23 +21,16 @@ package com.thinkbiganalytics.marketplace;
  * limitations under the License.
  * #L%
  */
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MarketplaceItemMetadata {
 
     private String templateName;
     private String description;
-    private String type;
     private String fileName;
+    private boolean stream;
     private boolean installed;
 
     public MarketplaceItemMetadata() {
-    }
-
-    public MarketplaceItemMetadata(String templateName, String fileName, String description, boolean installed){
-        this.templateName = templateName;
-        this.fileName = fileName;
-        this.description = description;
-        this.installed = installed;
     }
 
     public boolean isInstalled() {
@@ -62,14 +57,6 @@ public class MarketplaceItemMetadata {
         this.description = description;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getFileName() {
         return fileName;
     }
@@ -78,14 +65,28 @@ public class MarketplaceItemMetadata {
         this.fileName = fileName;
     }
 
+    public boolean isStream() {
+        return stream;
+    }
+
     @Override
     public String toString() {
         return "MarketplaceItemMetadata{" +
                "templateName='" + templateName + '\'' +
                ", description='" + description + '\'' +
-               ", type='" + type + '\'' +
                ", fileName='" + fileName + '\'' +
-               ", installed=" + installed +
+               ", stream=" + stream +
                '}';
+    }
+
+    public MarketplaceItemMetadata(String templateName, String description, String fileName, boolean stream) {
+        this.templateName = templateName;
+        this.description = description;
+        this.fileName = fileName;
+        this.stream = stream;
+    }
+
+    public void setStream(boolean stream) {
+        this.stream = stream;
     }
 }

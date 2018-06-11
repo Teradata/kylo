@@ -1,6 +1,0 @@
-{
-	"templateName":"User friendly template name goes here.",
-	"fileName":"kafka_provenance_to_jms.feed.zip",
-	"description":"Detailed description goes here.",
-	"type":"Stream or Batch"
-}

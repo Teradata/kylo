@@ -24,7 +24,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportComponentOption;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportTemplateOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.UploadProgressService;
+import com.thinkbiganalytics.feedmgr.service.template.RegisteredTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporter;
 import com.thinkbiganalytics.feedmgr.service.template.importing.TemplateImporterFactory;
 import com.thinkbiganalytics.feedmgr.service.template.importing.model.ImportTemplate;
@@ -45,6 +47,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -58,8 +61,11 @@ public class FilesystemMarketplaceService implements MarketplaceService {
 
     private static final Logger log = LoggerFactory.getLogger(FilesystemMarketplaceService.class);
 
-    @Value("${templates.location}")
+    @Value("${templates.dir}")
     private String templateLocation;
+
+    @Value("${feeds.dir}")
+    private String feedsLocation;
 
     @Inject
     TemplateImporterFactory templateImporterFactory;
@@ -67,30 +73,40 @@ public class FilesystemMarketplaceService implements MarketplaceService {
     @Inject
     UploadProgressService uploadProgressService;
 
+    @Inject
+    private RegisteredTemplateService registeredTemplateService;
+
     ObjectMapper mapper = new ObjectMapper();
 
     @Override
     public List<MarketplaceItemMetadata> listTemplates() throws Exception {
         //get JSON files from samples directory
-        //TODO and check if templates exist
-        try (Stream<Path> stream = Files.find(Paths.get(templateLocation),
-                                              Integer.MAX_VALUE,
-                                              (path, attrs) -> attrs.isRegularFile()
-                                                               && path.toString().endsWith(".json"))) {
-            return stream.map((p) -> jsonToMetadata(p)).collect(Collectors.toList());
-        }
+        List<MarketplaceItemMetadata> metadataList = new ArrayList<>();
+        findFiles(metadataList, templateLocation);
+        findFiles(metadataList, feedsLocation);
+
+        Set<String> registeredTemplates = registeredTemplateService.getRegisteredTemplates().stream().map(t -> t.getTemplateName()).collect(Collectors.toSet());
+
+        metadataList.stream().forEach(m -> m.setInstalled(registeredTemplates.contains(m.getTemplateName())));
+
+        return metadataList;
     }
 
     @Override
     public ImportTemplate importTemplates(String fileName, String uploadKey, String importComponents) throws Exception {
 
-
         log.info("Begin template import {}", fileName);
-        File template = new File(templateLocation + "/" + fileName);
+        File file = new File(templateLocation + "/" + fileName);
+        if(!file.exists()){
+            file = new File(feedsLocation + "/" + fileName);
+        }
+        if(!file.exists())
+            throw new RuntimeException("Unable to find file to import: "+fileName);
+
         ImportTemplateOptions options = new ImportTemplateOptions();
         options.setUploadKey(uploadKey);
 
-        byte[] content = ImportUtil.streamToByteArray(new FileInputStream(template));
+        byte[] content = ImportUtil.streamToByteArray(new FileInputStream(file));
         uploadProgressService.newUpload(uploadKey);
         ImportTemplate importTemplate = null;
         TemplateImporter templateImporter = null;
@@ -99,17 +115,11 @@ public class FilesystemMarketplaceService implements MarketplaceService {
             importTemplate = templateImporter.validate();
             importTemplate.setSuccess(false);
         } else {
-            options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {
-            }));
+            options.setImportComponentOptions(ObjectMapperSerializer.deserialize(importComponents, new TypeReference<Set<ImportComponentOption>>() {}));
             templateImporter = templateImporterFactory.apply(fileName, content, options);
             importTemplate = templateImporter.validateAndImport();
         }
         log.info("End template import {} - {}", fileName, importTemplate.isSuccess());
-        String jsonFileName = com.google.common.io.Files.getNameWithoutExtension(fileName) + "-marketplace.json";
-        MarketplaceItemMetadata metadata = new MarketplaceItemMetadata(importTemplate.getTemplateName(),
-                                                                       importTemplate.getFileName(), "", importTemplate.isSuccess());
-        mapper.writeValue(new File(templateLocation + "/" + jsonFileName), metadata);
-        log.info("Updated {} metadata with {}", jsonFileName, metadata);
 
         return importTemplate;
 
@@ -121,9 +131,19 @@ public class FilesystemMarketplaceService implements MarketplaceService {
             s = new String(Files.readAllBytes(path));
             return mapper.readValue(s, MarketplaceItemMetadata.class);
         } catch (IOException e) {
-            log.error("Error reading metadata from {}", path.getFileName());
+            log.error("Error reading metadata from {}", e);
         }
         return null;
     }
 
+    private void findFiles(List<MarketplaceItemMetadata> metadataList, String templateLocation) throws Exception {
+        if (templateLocation != null) {
+            try (Stream<Path> stream = Files.find(Paths.get(templateLocation),
+                                                  Integer.MAX_VALUE,
+                                                  (path, attrs) -> attrs.isRegularFile()
+                                                                   && path.toString().endsWith(".json"))) {
+                stream.map((p) -> jsonToMetadata(p)).forEach(metadataList::add);
+            }
+        }
+    }
 }

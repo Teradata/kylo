@@ -6,15 +6,17 @@
         </td-search-box>
         <ng-template let-item let-last="last" ngFor [ngForOf]="filteredTemplates">
           <mat-list-item>
-            <div flex="30" layout="column" class="item-column md-list-item-text">
+            <div flex="40" layout="column" class="item-column md-list-item-text">
               <ng-md-icon icon="done" style="fill:green" size="20" *ngIf="item.installed"></ng-md-icon>
               <ng-md-icon *ngIf="!item.installed" icon="file_upload" (click)="toggleImportTemplate(item)" style="fill:#F08C38;cursor: pointer;" size="20"></ng-md-icon>
             </div>
-            <div flex="30" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text">
+            <div flex="40" layout="column" style="overflow:hidden; text-overflow:ellipsis;" class="item-column md-list-item-text">
               <span class="item-title" >
-                 {{item.templateName}} <ng-md-icon icon="layers" style="fill:#9e9e9e" size="15"></ng-md-icon>
+                 {{item.templateName}} <span><ng-md-icon icon="layers" style="fill:#9e9e9e" size="15"></ng-md-icon></span>
               </span>
-              <span class="column-title column-title-bottom">{{item.description}}</span>
+              <div layout="row" class="column-title column-title-bottom">
+                <span>{{item.description}}</span>
+              </div>
             </div>
           </mat-list-item>
           <mat-divider *ngIf="!last"></mat-divider>
