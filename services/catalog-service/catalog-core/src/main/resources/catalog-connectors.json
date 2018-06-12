@@ -9,7 +9,57 @@
     ],
     "template": {
       "format": "jdbc"
-    }
+    },
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url"
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ]
+  },
+  {
+    "title": "Hive",
+    "tabs": [
+      {
+        "label": "Connection",
+        "sref": ".connection"
+      }
+    ],
+    "template": {
+      "format": "jdbc"
+    },
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url"
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
+      }
+    ]
   },
   {
     "title": "Amazon S3",
@@ -22,9 +72,24 @@
     ],
     "template": {
       "paths": [
-        "s3n:///"
+        "s3a:///"
       ]
-    }
+    },
+    "options": [
+      {
+        "key": "path",
+        "label": "Path"
+      },
+      {
+        "key": "spark.hadoop.fs.s3.awsAccessKeyId",
+        "label": "Access Key Id"
+      },
+      {
+        "key": "spark.hadoop.fs.s3.awsSecretAccessKey",
+        "type": "password",
+        "label": "Secret Access Key"
+      }
+    ]
   },
   {
     "title": "Azure Storage",
@@ -39,7 +104,22 @@
       "paths": [
         "wasb:///"
       ]
-    }
+    },
+    "options": [
+      {
+        "key": "path",
+        "label": "Path"
+      },
+      {
+        "key": "account-name",
+        "label": "Account Name"
+      },
+      {
+        "key": "account-key",
+        "type": "password",
+        "label": "Account Key"
+      }
+    ]
   },
   {
     "title": "Kafka",
@@ -49,11 +129,30 @@
       "jars": [
         "file:/opt/nifi/mysql/kafka-clients-0.10.0.1.jar",
         "file:/opt/nifi/mysql/spark-sql-kafka-0-10_2.11-2.2.0.jar"
-      ],
-      "options": {
-        "kafka.bootstrap.servers": "localhost:9092"
+      ]
+    },
+    "options": [
+      {
+        "key": "kafka.bootstrap.servers",
+        "label": "Kafka Server",
+        "type": "select",
+        "value": "localhost:9093",
+        "selections": [
+          {
+            "label": "Dev Server",
+            "value": "localhost:9092"
+          },
+          {
+            "label": "Test Server",
+            "value": "localhost:9093"
+          },
+          {
+            "label": "Prod Server",
+            "value": "prod.server1:9092"
+          }
+        ]
       }
-    }
+    ]
   },
   {
     "title": "File Upload",
@@ -78,7 +177,13 @@
       "paths": [
         "hdfs://"
       ]
-    }
+    },
+    "options": [
+      {
+        "key": "path",
+        "label": "Path"
+      }
+    ]
   },
   {
     "title": "Teradata",
@@ -92,15 +197,29 @@
     "template": {
       "format": "jdbc",
       "jars": [
-        "file:/opt/nifi/mysql/tdgssconfig.jar;file:/opt/nifi/mysql/terajdbc4.jar"
-      ],
-      "options": {
-        "driver": "com.teradata.jdbc.TeraDriver",
-        "url": "jdbc:teradata://34.211.12.96",
-        "user": "dbc",
-        "password": "0Teradata$"
+        "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/tdgssconfig.jar",
+        "file:/Users/RU186002/Documents/tech/Teradata/TeraJDBC-16.10.00.07/terajdbc4.jar"
+      ]
+    },
+    "options": [
+      {
+        "key": "driver",
+        "label": "Driver"
+      },
+      {
+        "key": "url",
+        "label": "Url"
+      },
+      {
+        "key": "user",
+        "label": "User"
+      },
+      {
+        "key": "password",
+        "type": "password",
+        "label": "Password"
       }
-    }
+    ]
   },
   {
     "title": "Google Cloud Storage",
@@ -115,26 +234,20 @@
       "jars": [
         "file:/opt/nifi/mysql/gcs-connector-latest-hadoop2.jar"
       ],
-      "options": {
-        "spark.hadoop.google.cloud.auth.service.account.email": "drive-952@freastro.iam.gserviceaccount.com",
-        "spark.hadoop.google.cloud.auth.service.account.keyfile": "/opt/nifi/mysql/freastro-e330d4b6b80b.p12"
-      },
       "paths": [
         "gcs://"
       ]
-    }
-  },
-  {
-    "title": "Hive",
-    "tabs": [
+    },
+    "options": [
       {
-        "label": "Table",
-        "sref": ".connection"
+        "key": "spark.hadoop.google.cloud.auth.service.account.email",
+        "label": "Email"
+      },
+      {
+        "key": "spark.hadoop.google.cloud.auth.service.account.keyfile",
+        "label": "Key File"
       }
-    ],
-    "template": {
-      "format": "hive"
-    }
+    ]
   },
   {
     "title": "Local File System",
@@ -149,6 +262,12 @@
       "paths": [
         "/"
       ]
-    }
+    },
+    "options": [
+      {
+        "key": "path",
+        "label": "Path"
+      }
+    ]
   }
 ]
