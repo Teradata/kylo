@@ -42,7 +42,13 @@ public class TableMergeApp {
         if (log.isInfoEnabled()) {
             log.info("Running Spark TableMergeApp with the following command line args (comma separated):{}", StringUtils.join(args, ","));
         }
-        new TableMergeApp().run(System.out, args);
+        
+        try {
+            new TableMergeApp().run(System.out, args);
+        } finally {
+            // The context being stopped was created in the run method.
+            SparkContext.getOrCreate().stop();
+        }
     }
 
     private void run(@Nonnull final PrintStream out, @Nonnull final String... args) {
