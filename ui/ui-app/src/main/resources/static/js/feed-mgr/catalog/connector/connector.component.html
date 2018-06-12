@@ -1,6 +1,53 @@
 <ng-container>
-  <!-- todo Display all template options as simple string inputs for now -->
 
-  <button mat-raised-button color="primary" (click)="createDatasource()">Create New Data Source</button>
+  <mat-card>
+    <mat-card-title fxLayout="row" fxLayoutAlign=" center">
+      <div>
+        <ng-md-icon
+            class="card-title-icon"
+            [icon]="connector.icon ? connector.icon : 'fa-database'"
+            [ngClass]="connector.color ? 'tc-'+connector.color : 'icon-component'" size="30"></ng-md-icon>
+      </div>
+      <div>{{connector.title}}</div>
+    </mat-card-title>
+    <mat-card-subtitle>Create new '{{connector.title}}' data source</mat-card-subtitle>
+    <mat-divider></mat-divider>
+
+    <mat-card-content>
+      <form>
+        <ng-template let-element let-last="last" ngFor [ngForOf]="connector.options">
+          <div fxLayout="row">
+            <mat-form-field fxFlex="{{element.flex ? element.flex : 100}}">
+              <input
+                  *ngIf="isInputType(element)"
+                  matInput type="{{element.type}}"
+                  placeholder="{{element.label}}"
+                  required="{{element.required ? element.required : true}}"
+                  value="{{element.value}}"
+                  autocomplete="new-password"
+                  [formControl]="getControl(element)"/>
+
+              <mat-select
+                  *ngIf="isSelectType(element)"
+                  placeholder="{{element.label}}"
+                  required="{{element.required ? element.required : true}}"
+                  [formControl]="getControl(element)">
+                <ng-template let-option ngFor [ngForOf]="element.selections">
+                  <mat-option value="{{option.value}}">{{option.label}}</mat-option>
+                </ng-template>
+              </mat-select>
+
+
+              <mat-error *ngIf="getControl(element).hasError('required')">Required</mat-error>
+              <mat-hint *ngIf="element.hint">{{element.hint}}</mat-hint>
+            </mat-form-field>
+          </div>
+        </ng-template>
+      </form>
+    </mat-card-content>
+
+    <mat-card-actions>
+      <button mat-button mat-raised-button color="accent" class="text-upper" (click)="createDatasource()">Save</button>
+    </mat-card-actions>
+  </mat-card>
 </ng-container>
-

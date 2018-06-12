@@ -49,8 +49,8 @@ export class DataSourcesComponent implements OnInit {
         accessControlService.getUserAllowedActions()
             .then(function (actionSet:any) {
                 if (accessControlService.hasAction(accessControlService.DATASOURCE_EDIT, actionSet.actions)) {
-                    addButtonService.registerAddButton("catalog", function () {
-                        state.go(".connectors")
+                    addButtonService.registerAddButton("catalog.datasources", function () {
+                        state.go("catalog.connectors")
                     });
                 }
             });

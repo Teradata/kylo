@@ -23,7 +23,7 @@ export class CatalogService {
      * Gets connector by id
      */
     getConnector(connectorId: string): Observable<Connector> {
-        return this.http.get<Connector>("/proxy/v1/catalog/connector", {params: {"connectorId": connectorId}});
+        return this.http.get<Connector>("/proxy/v1/catalog/connector/" + connectorId);
     }
 
     /**

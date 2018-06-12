@@ -64,6 +64,12 @@ public class Connector {
     private List<ConnectorTab> tabs;
 
     /**
+     * A list of options which describe how UI should be displayed for each option
+     * a data source would need
+     */
+    private List<UiOption> options;
+
+    /**
      * Properties to apply to all data sets
      */
     @JsonDeserialize(as = DefaultDataSetTemplate.class)
@@ -84,6 +90,7 @@ public class Connector {
         icon = other.icon;
         id = other.id;
         tabs = (other.tabs != null) ? other.tabs.stream().map(ConnectorTab::new).collect(Collectors.toList()) : null;
+        options = (other.options != null) ? other.options.stream().map(UiOption::new).collect(Collectors.toList()) : null;
         template = (other.template != null) ? new DefaultDataSetTemplate(other.template) : null;
         title = other.title;
     }
@@ -126,6 +133,14 @@ public class Connector {
 
     public void setTabs(List<ConnectorTab> tabs) {
         this.tabs = tabs;
+    }
+
+    public List<UiOption> getOptions() {
+        return options;
+    }
+
+    public void setOptions(List<UiOption> options) {
+        this.options = options;
     }
 
     public DataSetTemplate getTemplate() {
