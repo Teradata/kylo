@@ -21,7 +21,7 @@
     <div >
         <div layout="row" layout-align="start stretch">
             <ng-md-icon icon="check" style="fill:#009933;margin-left: -9px;" ng-if="$ctrl.showVerticalCheck == true"></ng-md-icon>
-            <span class="md-subhead layout-padding-left"  >{{sectionTitle}}</span>
+            <span class="md-subhead layout-padding-left"  >{{$ctrl.sectionTitle}}</span>
             <span flex></span>
             <md-button class="icon-btn md-icon-button md-primary" ng-click="$ctrl.edit($event)" ng-if="$ctrl.allowEdit ==true && !$ctrl.editable">
                 <ng-md-icon icon="edit"></ng-md-icon>

@@ -224,7 +224,7 @@ export class controller {
             nifiRunningCheck();
         };
 
-        this.cloneFeed = function(){
+        this.cloneFeed = ()=>{
             StateService.FeedManager().Feed().navigateToCloneFeed(this.model.feedName);
         }
 
@@ -499,14 +499,14 @@ export class controller {
             self.loadingFeedData = true;
             self.model.loaded = false;
             self.loadMessage = '';
-            var successFn = function(response:any) {
+            var successFn = (response:any) => {
                 if (response.data) {
                     var promises = {
                         feedPromise: mergeTemplateProperties(response.data),
                         processorTemplatesPromise:  UiComponentsService.getProcessorTemplates()
                     };
 
-                    $q.all(promises).then(function(result:any) {
+                    $q.all(promises).then((result:any) => {
 
 
                         //deal with the feed data
@@ -642,7 +642,7 @@ export class controller {
             return ((self.model.historyReindexingStatus === 'IN_PROGRESS') || (self.model.historyReindexingStatus === 'DIRTY'));
         };
 
-        this.shouldIndexingOptionsBeEnabled = function() {
+        this.shouldIndexingOptionsBeEnabled = () => {
             return !this.shouldIndexingOptionsBeDisabled();
         };
 
